@@ -1,6 +1,7 @@
 {
   "name": "znk.infra",
   "version": "0.0.1",
+  "private": true,
   "authors": [
     "Zinkerz"
   ],
