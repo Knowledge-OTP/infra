@@ -8,23 +8,23 @@ The dist directory is the package content when used as a dependency used by othe
 
 ## Repo structure
 
- /bower_components
- /dist
- /node_modules
- /src
-     /core
-                 config.js (znk.infra module declaration)
-     /components
-                 /{directory of component}
-                                          module.js (component module declaration)
-                                          /directives
-                                          /services
-                                          /controllers
- /test
- .bowerrc
- .gitignore
- .jshintrc
-  bower.json
-  Gruntfile.js
-  package.json
-  README.md
+     /bower_components
+     /dist
+     /node_modules
+     /src
+         /core
+                     config.js (znk.infra module declaration)
+         /components
+                     /{directory of component}
+                                              module.js (component module declaration)
+                                              /directives
+                                              /services
+                                              /controllers
+     /test
+     .bowerrc
+     .gitignore
+     .jshintrc
+      bower.json
+      Gruntfile.js
+      package.json
+      README.md
