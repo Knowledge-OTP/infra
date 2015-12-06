@@ -129,12 +129,12 @@ module.exports = function (grunt) {
 
     grunt.registerTask('build', [
         'clean:dist',
-        'jshint:all',
+        //'jshint:all',
         'wiredep',
-        'karma:build',
+        //'karma:build',
         'concat:dist',
-        'ngAnnotate:dist',
-        'uglify:dist'
+        //'ngAnnotate:dist',
+        //'uglify:dist'
     ]);
 
     grunt.registerTask('default', [
