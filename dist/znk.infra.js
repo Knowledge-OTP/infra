@@ -87,17 +87,6 @@
     ]);
 })(angular);
 
-## pngSequence
-
-# Testing
-
-currently no testing
-
-# Dependencies
-
-pngSequence directive has a dependency in ExpansionSrcSrv
-
-
 /**
  * Created by Igor on 8/19/2015.
  */

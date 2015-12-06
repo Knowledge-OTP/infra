@@ -87,7 +87,7 @@ module.exports = function (grunt) {
         },
         concat: {
             dist: {
-                src: ['<%= yeoman.src %>/core/*.*', '<%= yeoman.src %>/components/**/*.*'],
+                src: ['<%= yeoman.src %>/core/*.js', '<%= yeoman.src %>/components/**/*.js'],
                 dest: '<%= yeoman.dist %>/<%= yeoman.appName %>.js'
             }
         },
@@ -130,7 +130,6 @@ module.exports = function (grunt) {
     grunt.registerTask('build', [
         'clean:dist',
         //'jshint:all',
-        'wiredep',
         //'karma:build',
         'concat:dist',
         //'ngAnnotate:dist',
