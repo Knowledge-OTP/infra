@@ -6,6 +6,16 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.enum', []);
+})(angular);
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.pngSequence', []);
+})(angular);
+(function (angular) {
+    'use strict';
+
     var exerciseStatusEnum = {
         NEW: 0,
         ACTIVE: 1,
@@ -26,11 +36,6 @@
             ]);
         }
     ]);
-})(angular);
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.enum', []);
 })(angular);
 'use strict';
 (function (angular) {
@@ -200,9 +205,4 @@
             };
         }
     ]);
-})(angular);
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.pngSequence', []);
 })(angular);
