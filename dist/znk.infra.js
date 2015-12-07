@@ -223,7 +223,6 @@
         '$log', 'SvgIconSrv',
         function ($log, SvgIconSrv) {
             return {
-                replace: true,
                 scope: {
                     name: '@'
 
