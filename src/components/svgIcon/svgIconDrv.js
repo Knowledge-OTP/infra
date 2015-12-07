@@ -6,7 +6,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('svgIcon').directive('svgIcon', [
+    angular.module('znk.infra.svgIcon').directive('svgIcon', [
         '$log', 'SvgIconSrv',
         function ($log, SvgIconSrv) {
             return {

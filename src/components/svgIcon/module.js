@@ -1,5 +1,5 @@
 (function (angular) {
     'use strict';
 
-    angular.module('svgIcon', []);
+    angular.module('znk.infra.svgIcon', []);
 })(angular);

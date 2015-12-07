@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('svgIcon').provider('SvgIconSrv', [
+    angular.module('znk.infra.svgIcon').provider('SvgIconSrv', [
 
         function () {
             var defaultConfig = {};
