@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demoApp', ['svgIcon'])
+    angular.module('demoApp', ['znk.infra.svgIcon'])
         .config(function(SvgIconSrvProvider){
             var svgMap = {
                 'checkmark': 'checkmark-icon.svg'
