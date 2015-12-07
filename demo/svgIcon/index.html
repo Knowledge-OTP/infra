@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body ng-app="demoApp">
+
+    <style>
+        .checkmark{
+            width: 50px;
+        }
+
+        .checkmark1 .st0{
+            stroke: red;
+        }
+
+        .checkmark2 .st0{
+            stroke: blue;
+        }
+    </style>
+
+    <svg-icon class="checkmark checkmark1" name="checkmark"></svg-icon>
+    <svg-icon class="checkmark checkmark2" name="checkmark"></svg-icon>
+
+
+    <script src="angular/angular.js"></script>
+
+
+    <script src="components/svgIcon/module.js"></script>
+    <script src="components/svgIcon/svgIconDrv.js"></script>
+    <script src="components/svgIcon/svgIconSrv.js"></script>
+
+    <script src="demoApp.js"></script>
+</body>
+</html>

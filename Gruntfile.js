@@ -68,6 +68,9 @@ module.exports = function (grunt) {
 
         // Automatically inject Bower components into the app
         wiredep: {
+            demo:{
+                src: 'demo/**/index.html'
+            },
             test: {
                 devDependencies: true,
                 src: '<%= karma.unit.configFile %>',
@@ -87,7 +90,7 @@ module.exports = function (grunt) {
         },
         concat: {
             dist: {
-                src: ['<%= yeoman.src %>/core/*.js', '<%= yeoman.src %>/components/**/module.js','<%= yeoman.src %>/components/**/*.js'],
+                src: ['<%= yeoman.src %>/core/*.js', '<%= yeoman.src %>/components/**/module.js', '<%= yeoman.src %>/components/**/*.js'],
                 dest: '<%= yeoman.dist %>/<%= yeoman.appName %>.js'
             }
         },
@@ -119,6 +122,33 @@ module.exports = function (grunt) {
                 configFile: 'test/karma-unit.conf.js',
                 singleRun: true
             }
+        },
+        connect: {
+            options: {
+                base: ['src','bower_components'],
+                open: true,
+                livereload: 35730
+            },
+            serve: {
+                options: {
+                    port: 9001
+                }
+            }
+        },
+        watch: {
+            options: {
+                livereload: '<%= connect.options.livereload %>'
+            },
+            sourceJS: {
+                files: [
+                    'src/**/*.js'
+                ]
+            },
+            demo: {
+                files: [
+                    'demo/**/*.*'
+                ]
+            }
         }
     });
 
@@ -139,4 +169,19 @@ module.exports = function (grunt) {
     grunt.registerTask('default', [
         'build'
     ]);
+
+    grunt.registerTask('serve', function (component) {
+        if (component) {
+            var additionalBase = 'demo/' + component;
+            console.log('serving also from', additionalBase);
+            var connectConfig = grunt.config('connect');
+            connectConfig.options.base.push(additionalBase);
+            grunt.config('connect', connectConfig);
+        }
+        console.log('serving from', grunt.config('connect').options.base);
+        grunt.task.run([
+            'connect:serve',
+            'watch'
+        ]);
+    });
 };
