@@ -1,6 +1,6 @@
 {
   "name": "infra",
-  "version": "v1.0.0",
+  "version": "v1.0.1",
   "authors": [
     "Zinkerz"
   ],
@@ -10,7 +10,8 @@
   "ignore":[
     ".*",
     "src",
-    "test"
+    "test",
+    "demo"
   ],
   "main": "dist/znk.infra.js"
 }
