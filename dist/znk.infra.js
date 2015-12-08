@@ -51,16 +51,23 @@
             }
 
             revSrv.getRev = function(practiceName) {
-                return _getContentFunc().then(function(data) {
-                    var userManifest = data.contentSync.revisionManifest[practiceName];
-                    var publicationManifest = data.publication.latestRevisions[practiceName];
+                return _getContentFunc().then(function(dataObj) {
+
+                    if(!dataObj || !dataObj.revisionManifest || !dataObj.latestRevisions) {
+                        return { error: 'No Data Found! ' +dataObj };
+                    }
+
+                    var userManifest = dataObj.latestRevisions[practiceName];
+                    var publicationManifest = dataObj.revisionManifest[practiceName];
                     var newRev;
+
                     if(angular.isUndefined(publicationManifest)) {
                         return { error: 'Not Found' };
                     }
 
                     if(!userManifest) {
                         newRev = { rev:  publicationManifest.rev, status: 'new' };
+                        dataObj.latestRevisions[practiceName] = { rev: newRev.rev };
                     } else if(userManifest.rev < publicationManifest.rev) {
                         newRev = { rev:  userManifest.rev, status: 'old' };
                     } else if(userManifest.rev === publicationManifest.rev) {
@@ -68,6 +75,7 @@
                     } else {
                         newRev = { error: 'failed to get revision!' };
                     }
+
 
                     return newRev;
 
