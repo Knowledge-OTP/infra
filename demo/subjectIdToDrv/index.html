@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body ng-app="demoApp">
+    <style>
+        div{
+            width: 100px;
+            height: 100px;
+        }
+
+        .math{
+            background: #72C9E7;
+        }
+
+        .reading{
+            background: #FFCA08;
+        }
+
+        .writing{
+            background: #FF5895;
+        }
+
+        .listening{
+            background: #8fe73d;
+        }
+
+        .speaking{
+            background: #AF89D2;
+        }
+    </style>
+    <div subject-id-to-class-drv="0">Math</div>
+    <div subject-id-to-class-drv="1">Reading</div>
+    <div subject-id-to-class-drv="2">Writing</div>
+    <div subject-id-to-class-drv="3">Listening</div>
+    <div subject-id-to-class-drv="4">Speaking</div>
+
+    <script src="angular/angular.js"></script>
+
+    <script src="components/enums/module.js"></script>
+    <script src="components/enums/services/enumSrv.js"></script>
+    <script src="components/enums/enums/subjectEnum.js"></script>
+
+    <script src="components/general/module.js"></script>
+    <script src="components/general/subjectIdToClassDrv.js"></script>
+
+    <script src="demoApp.js"></script>
+</body>
+</html>
