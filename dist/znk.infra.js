@@ -1,12 +1,17 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra', ['znk.infra.pngSequence', 'znk.infra.enum', 'znk.infra.svgIcon']);
+    angular.module('znk.infra', ['znk.infra.pngSequence', 'znk.infra.enum', 'znk.infra.svgIcon', 'znk.infra.general']);
 })(angular);
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.enum', []);
+})(angular);
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.general', ['znk.infra.enum']);
 })(angular);
 (function (angular) {
     'use strict';
@@ -50,7 +55,9 @@
         READING: 1,
         WRITING: 2,
         LISTENING: 3,
-        SPEAKING: 4
+        SPEAKING: 4,
+        ENGLISH: 5,
+        SCIENCE: 6
     };
 
     angular.module('znk.infra.enum').constant('SubjectEnumConst', subjectEnum);
@@ -64,7 +71,9 @@
                 ['READING', subjectEnum.READING, 'reading'],
                 ['WRITING', subjectEnum.WRITING, 'writing'],
                 ['LISTENING', subjectEnum.LISTENING, 'listening'],
-                ['SPEAKING', subjectEnum.SPEAKING, 'speaking']
+                ['SPEAKING', subjectEnum.SPEAKING, 'speaking'],
+                ['ENGLISH', subjectEnum.ENGLISH, 'english'],
+                ['SCIENCE', subjectEnum.SCIENCE, 'science']
             ]);
 
             return SubjectEnum;
@@ -126,6 +135,46 @@
         }
     ]);
 })(angular);
+
+/**
+ * attrs:
+ *  subject-id-to-class-drv
+ */
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.general').directive('subjectIdToClassDrv', [
+        'SubjectEnum',
+        function (SubjectEnum) {
+            return {
+                priority: 1000,
+                link: {
+                    pre: function (scope, element, attrs) {
+                        var watchDestroyer = scope.$watch(attrs.subjectIdToClassDrv,function(subjectId){
+                            if(angular.isUndefined(subjectId)){
+                                return;
+                            }
+
+                            watchDestroyer();
+                            var classToAdd;
+
+                            for(var prop in SubjectEnum){
+                                if(SubjectEnum[prop].enum === subjectId){
+                                    classToAdd = SubjectEnum[prop].val;
+                                    break;
+                                }
+                            }
+
+                            element.addClass(classToAdd);
+                        });
+                    }
+                }
+            };
+        }
+    ]);
+})(angular);
+
 
 /**
  * Created by Igor on 8/19/2015.
