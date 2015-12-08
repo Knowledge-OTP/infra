@@ -105,10 +105,10 @@
 
                 var getterHandler = _getRevisionGetterFunc();
 
-                return revSrv.getRev(path).then(function(result) {
+                return ContentSrv.getRev(path).then(function(result) {
 
                     if(result.status === 'new') {
-                        revSrv.setRev(path, result.rev);
+                        ContentSrv.setRev(path, result.rev);
                     }
 
                     if(!getterHandler.root) {
