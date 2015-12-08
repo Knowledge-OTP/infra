@@ -1,6 +1,7 @@
 /**
  * attrs:
- *  subject-id-to-class-drv
+ *  subject-id-to-class-drv: expression from which subject id will be taken from.
+ *  class-suffix: suffix of the added class
  */
 
 (function (angular) {
@@ -24,6 +25,9 @@
                             for(var prop in SubjectEnum){
                                 if(SubjectEnum[prop].enum === subjectId){
                                     classToAdd = SubjectEnum[prop].val;
+                                    if(attrs.classSuffix){
+                                        classToAdd += attrs.classSuffix;
+                                    }
                                     break;
                                 }
                             }
