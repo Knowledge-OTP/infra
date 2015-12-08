@@ -28,7 +28,7 @@
             revSrv.getRev = function(practiceName) {
                 return _getContentFunc().then(function(dataObj) {
 
-                    if(!dataObj || !dataObj.revisionManifest || dataObj.latestRevisions) {
+                    if(!dataObj || !dataObj.revisionManifest || !dataObj.latestRevisions) {
                         return { error: 'No Data Found! ' +dataObj };
                     }
 
