@@ -2,29 +2,43 @@
 
 (function (angular) {
 
-    angular.module('znk.infra.content').provider('revSrv', revSrv);
+    angular.module('znk.infra.content').provider('ContentSrv', ContentSrv);
 
-    function revSrv() {
+    function ContentSrv() {
 
         var setContentFuncRef;
+        var setRevisionGetterRef;
 
         this.setContent = function(func) {
             setContentFuncRef = func;
         };
 
+        this.setRevisionGetter = function(func) {
+            setRevisionGetterRef = func;
+        };
+
         this.$get = ['$q', '$injector', function($q, $injector) {
 
             var contentFunc;
+            var revisionGetterFunc;
 
             var contentDataFunc = _getContentData();
 
-            var revSrv = {};
+            var ContentSrv = {};
 
             function _getContentFunc(){
                 if (!contentFunc){
                     contentFunc = $injector.invoke(setContentFuncRef);
                 }
                 return contentFunc;
+            }
+
+
+            function _getRevisionGetterFunc(){
+                if (!revisionGetterFunc){
+                    revisionGetterFunc = $injector.invoke(setRevisionGetterRef);
+                }
+                return revisionGetterFunc;
             }
 
             function _getContentData() {
@@ -48,7 +62,7 @@
                 }
             }
 
-            revSrv.getRev = function(practiceName) {
+            ContentSrv.getRev = function(practiceName) {
                 return contentDataFunc().get().then(function(dataObj) {
 
                     if(!dataObj || !dataObj.revisionManifest || !dataObj.latestRevisions) {
@@ -79,11 +93,36 @@
                 });
             };
 
-            revSrv.setRev = function(practiceName, newRev) {
+            ContentSrv.setRev = function(practiceName, newRev) {
                 return contentDataFunc().set(practiceName, { rev: newRev });
             };
 
-            return revSrv;
+            ContentSrv.getContent = function(path) {
+
+                if(!path) {
+                    return $q.when({ error: 'Error: getContent require path!' });
+                }
+
+                var getterHandler = _getRevisionGetterFunc();
+
+                return revSrv.getRev(path).then(function(result) {
+
+                    if(result.status === 'new') {
+                        revSrv.setRev(path, result.rev);
+                    }
+
+                    if(!getterHandler.root) {
+                        getterHandler.root = '';
+                    }
+
+                    var content =  getterHandler.service[getterHandler.method](getterHandler.root+path+'-rev-'+result.rev);
+
+                    return content[getterHandler.getter]();
+
+                });
+            };
+
+            return ContentSrv;
         }];
 
 
