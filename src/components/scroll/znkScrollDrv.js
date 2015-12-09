@@ -96,7 +96,8 @@
                     }
 
                     function preFn(scope,element,attrs){
-
+                        var child = domElement.children[0];
+                        setElementTranslateX(child,0);
                     }
 
                     function postFn(){
