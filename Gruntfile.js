@@ -165,6 +165,12 @@ module.exports = function (grunt) {
                     '.tmp/main.css': 'src/core/main.scss'
                 }
             }
+        },
+        copy: {
+            dist: {
+                src: '.tmp/main.css',
+                dest: 'dist/znk-infra-main.css'
+            }
         }
     });
 
@@ -177,6 +183,8 @@ module.exports = function (grunt) {
         'clean:dist',
         //'jshint:all',
         //'karma:build',
+        'sass',
+        'copy:dist',
         'concat:dist',
         //'ngAnnotate:dist',
         //'uglify:dist'
