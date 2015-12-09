@@ -2,8 +2,8 @@
     'use strict';
 
     angular.module('demoApp', ['znk.infra.content'])
-        .config(function(revSrvProvider){
-            revSrvProvider.setContent(['$q',
+        .config(function(ContentSrvProvider){
+            ContentSrvProvider.setContent(['$q',
                 function ($q) {
                     var mockData = {
                             revisionManifest: {
@@ -26,35 +26,28 @@
                                 }
                             }
                     };
-                    return $q.when(mockData);
+
+                    function updatePublicationCb(cb) {
+                        cb({ key: angular.noop, vak: angular.noop });
+                    }
+
+                        return $q.when({
+                            latestRevisions: mockData.latestRevisions,
+                            revisionManifest: mockData.revisionManifest,
+                            create: function(path) {
+                                return { set: angular.noop, get: angular.noop };
+                            },
+                            updatePublication: updatePublicationCb,
+                            contentRoot: 'mockData/content/',
+                            userRoot: 'mockData/users/0ef5a913-4a69-4c75/contentSync'
+
+                        });
+
                 }
             ]);
-        }).controller('demoCtrl', ['revSrv', '$timeout', function(revSrv, $timeout) {
-               revSrv.getRev('drill10').then(function(result) {
-                    console.log('drill10',result); // {rev: 1, status: "same"}
-               });
-
-               revSrv.getRev('drill11').then(function(result) {
-                    console.log('drill11',result); // {rev: 1, status: "old"}
-               });
-
-               revSrv.getRev('drill12').then(function(result) {
-                    console.log('drill12',result); // {rev: 2, status: "new"}
-                    if(result.status === 'new') {
-                        revSrv.setRev('drill12', result.rev).then(function(revResult) {
-                            console.log('drill12:revResult',revResult);
-                        });
-                    }
-               });
-
-                revSrv.getRev('drill150').then(function(result) {
-                    console.log('drill150',result); //  {error: "Not Found", data: Object}
-                });
-
-                $timeout(function() {
-                    revSrv.getRev('drill12').then(function(result) {
-                        console.log('drill12:timeout',result); // {rev: 2, status: "same"}
-                    });
-                }, 5000);
+        }).controller('demoCtrl', ['ContentSrv', function(ContentSrv) {
+            ContentSrv.getContent({exerciseId: 10, exerciseType: 'drill'}).then(function(result){
+                console.log('result', result);
+            });
         }]);
 })(angular);

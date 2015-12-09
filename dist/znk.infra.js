@@ -32,20 +32,14 @@
     function ContentSrv() {
 
         var setContentFuncRef;
-        var setRevisionGetterRef;
 
         this.setContent = function(func) {
             setContentFuncRef = func;
         };
 
-        this.setRevisionGetter = function(func) {
-            setRevisionGetterRef = func;
-        };
-
         this.$get = ['$q', '$injector', function($q, $injector) {
 
             var contentFunc;
-            var revisionGetterFunc;
 
             var contentDataFunc = _getContentData();
 
@@ -59,91 +53,105 @@
             }
 
 
-            function _getRevisionGetterFunc(){
-                if (!revisionGetterFunc){
-                    revisionGetterFunc = $injector.invoke(setRevisionGetterRef);
-                }
-                return revisionGetterFunc;
-            }
-
             function _getContentData() {
                 var contentData;
                 return function() {
-                     return {
-                         get: function() {
-                             if(!contentData) {
-                                 return _getContentFunc().then(function(dataObj) {
-                                     contentData = dataObj;
-                                     return dataObj;
-                                 });
-                             }
-                             return $q.when(contentData);
-                         },
-                         set: function(practiceName, newData) {
-                             contentData.revisionManifest[practiceName] = newData;
-                             return $q.when({ rev: newData.rev, status: 'update'});
-                         }
-                     }
+                    return {
+                        get: function() {
+                            if(!contentData) {
+                                return _getContentFunc().then(function(dataObj) {
+
+                                    contentData = dataObj;
+                                    contentData.updatePublication(function(updatePublication) {
+                                        if(updatePublication.key() !== contentData.key) {
+                                            contentData.latestRevisions = updatePublication.val();
+                                            contentData.key = updatePublication.key();
+                                        }
+                                    });
+                                    return dataObj;
+                                });
+                            }
+                            return $q.when(contentData);
+                        },
+                        set: function(practiceName, newData) {
+                            contentData.revisionManifest[practiceName] = newData;
+                            return $q.when({ rev: newData.rev, status: 'update'});
+                        }
+                    }
                 }
             }
 
-            ContentSrv.getRev = function(practiceName) {
-                return contentDataFunc().get().then(function(dataObj) {
+            ContentSrv.getRev = function(practiceName, dataObj) {
 
-                    if(!dataObj || !dataObj.revisionManifest || !dataObj.latestRevisions) {
-                        return { error: 'No Data Found! ', data: dataObj };
-                    }
+                if(!dataObj || !dataObj.revisionManifest || !dataObj.latestRevisions) {
+                    return $q.when({ error: 'No Data Found! ', data: dataObj });
+                }
 
-                    var userManifest = dataObj.revisionManifest[practiceName];
-                    var publicationManifest = dataObj.latestRevisions[practiceName];
-                    var newRev;
+                var userManifest = dataObj.revisionManifest[practiceName];
+                var publicationManifest = dataObj.latestRevisions[practiceName];
+                var newRev;
 
-                    if(angular.isUndefined(publicationManifest)) {
-                        return { error: 'Not Found', data: dataObj };
-                    }
+                if(angular.isUndefined(publicationManifest)) {
+                    return $q.when({ error: 'Not Found', data: dataObj });
+                }
 
-                    if(!userManifest) {
-                        newRev = { rev:  publicationManifest.rev, status: 'new' };
-                    } else if(userManifest.rev < publicationManifest.rev) {
-                        newRev = { rev:  userManifest.rev, status: 'old' };
-                    } else if(userManifest.rev === publicationManifest.rev) {
-                        newRev = { rev:  publicationManifest.rev, status: 'same' };
-                    } else {
-                        newRev = { error: 'failed to get revision!', data: dataObj };
-                    }
+                if(!userManifest) {
+                    newRev = { rev:  publicationManifest.rev, status: 'new' };
+                } else if(userManifest.rev < publicationManifest.rev) {
+                    newRev = { rev:  userManifest.rev, status: 'old' };
+                } else if(userManifest.rev === publicationManifest.rev) {
+                    newRev = { rev:  publicationManifest.rev, status: 'same' };
+                } else {
+                    newRev = { error: 'failed to get revision!', data: dataObj };
+                }
 
-
-                    return newRev;
-
-                });
+                return $q.when(newRev);
             };
 
             ContentSrv.setRev = function(practiceName, newRev) {
                 return contentDataFunc().set(practiceName, { rev: newRev });
             };
 
-            ContentSrv.getContent = function(path) {
+            // { exerciseId: 10, exerciseType: 'drill' }
+            ContentSrv.getContent = function(pathObj) {
 
-                if(!path) {
-                    return $q.when({ error: 'Error: getContent require path!' });
+                if(!pathObj || !pathObj.exerciseId || !pathObj.exerciseType) {
+                    return $q.when({ error: 'Error: getContent require exerciseId and exerciseType!' });
                 }
 
-                var getterHandler = _getRevisionGetterFunc();
+                var path = pathObj.exerciseType+pathObj.exerciseId;
 
-                return ContentSrv.getRev(path).then(function(result) {
+                return contentDataFunc().get().then(function(dataObj) {
 
-                    if(result.status === 'new') {
-                        ContentSrv.setRev(path, result.rev);
-                    }
+                    return ContentSrv.getRev(path, dataObj).then(function(result) {
 
-                    if(!getterHandler.root) {
-                        getterHandler.root = '';
-                    }
+                        if(result.error) {
+                            return $q.when(result);
+                        }
 
-                    var content =  getterHandler.service[getterHandler.method](getterHandler.root+path+'-rev-'+result.rev);
+                        if(!dataObj.contentRoot) {
+                            return $q.when({ error: 'Error: getContent require contentRoot to be defined in config phase!' });
+                        }
 
-                    return content[getterHandler.getter]();
+                        if(!dataObj.userRoot) {
+                            return $q.when({ error: 'Error: getContent require userRoot to be defined in config phase!' });
+                        }
 
+                        var contentPath = dataObj.contentRoot+path+'-rev-'+result.rev;
+
+                        var content =  dataObj.create(contentPath);
+
+                        if(result.status === 'new') {
+                            ContentSrv.setRev(path, result.rev).then(function() {
+                                var userPath = dataObj.userRoot+'/revisionManifest/'+path;
+                                var setUserRevision = dataObj.create(userPath);
+                                setUserRevision.set({ rev : result.rev });
+                            });
+                        }
+
+                        return content.get();
+
+                    });
                 });
             };
 
@@ -154,7 +162,6 @@
     }
 
 })(angular);
-
 (function (angular) {
     'use strict';
 
