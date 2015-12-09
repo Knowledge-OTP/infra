@@ -116,8 +116,10 @@
                         setElementTranslateX(child,0);
 
                         if(attrs.actions){
-                            scope.$eval(attrs.actions + '={}');
-                            var actions = scope[attrs.actions];
+                            if(angular.isUndefined(scope.$eval(attrs.actions))){
+                                scope.$eval(attrs.actions + '={}');
+                            }
+                            var actions = scope.$eval(attrs.actions);
 
                             actions.animate = function(scrollTo,transitionDuration,transitionTimingFunction){
                                 if(transitionDuration && transitionTimingFunction){
