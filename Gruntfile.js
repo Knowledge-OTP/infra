@@ -125,7 +125,7 @@ module.exports = function (grunt) {
         },
         connect: {
             options: {
-                base: ['src','bower_components'],
+                base: ['src','bower_components','.tmp'],
                 open: true,
                 livereload: 35730
             },
@@ -148,6 +148,22 @@ module.exports = function (grunt) {
                 files: [
                     'demo/**/*.*'
                 ]
+            },
+            sass: {
+                files:[
+                    'src/**/*.scss',
+                ],
+                tasks: ['sass']
+            }
+        },
+        sass: {
+            options: {
+                sourceMap: true
+            },
+            dist: {
+                files: {
+                    '.tmp/main.css': 'src/core/main.scss'
+                }
             }
         }
     });
@@ -180,6 +196,7 @@ module.exports = function (grunt) {
         }
         console.log('serving from', grunt.config('connect').options.base);
         grunt.task.run([
+            'sass',
             'connect:serve',
             'watch'
         ]);

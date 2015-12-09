@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body ng-app="demoApp">
+    <style>
+        .container{
+            width: 400px;
+            height: 100px;
+            background: red;
+            margin-left: 400px;
+        }
+
+        .child{
+            width: 600px;
+            height: 50px;
+            margin: 20px;
+            background: blue;
+        }
+    </style>
+
+    <znk-scroll class="container">
+        <div class="child"></div>
+    </znk-scroll>
+    <script src="angular/angular.js"></script>
+
+    <script src="components/scroll/module.js"></script>
+    <script src="components/scroll/znkScrollDrv.js"></script>
+
+    <script src="demoApp.js"></script>
+</body>
+</html>
