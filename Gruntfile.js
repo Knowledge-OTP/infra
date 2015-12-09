@@ -181,13 +181,13 @@ module.exports = function (grunt) {
 
     grunt.registerTask('build', [
         'clean:dist',
-        //'jshint:all',
+        'jshint:all',
         //'karma:build',
         'sass',
         'copy:dist',
         'concat:dist',
-        //'ngAnnotate:dist',
-        //'uglify:dist'
+        'ngAnnotate:dist',
+        'uglify:dist'
     ]);
 
     grunt.registerTask('default', [

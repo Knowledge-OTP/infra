@@ -15,7 +15,7 @@
 
                 },
                 link: {
-                    pre: function (scope, element, attrs) {
+                    pre: function (scope, element) {
                         element.css('display','block');
 
                         var name = scope.name;

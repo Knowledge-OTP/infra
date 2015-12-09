@@ -232,6 +232,7 @@
                             }
 
                             var htmlTemplate = '<div ' +
+                                    /* jshint validthis: true */
                                 ' style="background-image: url(\'' + ExpansionSrcSrv.getExpansionSrc(attrs.imgData + imageNum + '.png') + '\'); background-size: cover; will-change: opacity; opacity:0; position: absolute; top:0; left:0;"></div>';
 
                             element.append(htmlTemplate);
@@ -250,7 +251,7 @@
 
 
                     function animatePlay(timestamp) {
-
+                        /* jshint validthis: true */
                         if(this.index === indexBound-1 && !scope.loop()){
                             $timeout(function(){
                                 var children = element.children();
@@ -505,7 +506,7 @@
 
                 },
                 link: {
-                    pre: function (scope, element, attrs) {
+                    pre: function (scope, element) {
                         element.css('display','block');
 
                         var name = scope.name;
