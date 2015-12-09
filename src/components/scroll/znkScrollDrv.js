@@ -6,9 +6,9 @@
     'use strict';
 
     angular.module('znk.infra.scroll').directive('znkScroll', [
-        '$log',
-        function ($log) {
-            function setElementTranslateX(element,val,isOffset){
+        '$log', '$window',
+        function ($log, $window) {
+            function setElementTranslateX(element,val,isOffset,minVal,maxVal){
                 var domElement = angular.isArray(element) ? element[0] : element;
                 var newTranslateX = val;
                 if(isOffset){
@@ -23,6 +23,12 @@
                     }
                     newTranslateX += currX;
                 }
+                minVal = angular.isUndefined(minVal) ? -Infinity : minVal;
+                maxVal = angular.isUndefined(maxVal) ? Infinity : maxVal;
+
+                newTranslateX = Math.max(newTranslateX,minVal);
+                newTranslateX = Math.min(newTranslateX,maxVal);
+
                 var newTransformValue = 'translateX(' + newTranslateX + 'px)';
                 setCssPropery(domElement,'transform',newTransformValue);
             }
@@ -43,6 +49,14 @@
                     function mouseDownHandler(evt){
                         $log.debug('mouse down',evt.pageX);
 
+                        var containerWidth = domElement.offsetWidth;
+
+                        var child = domElement.children[0];
+                        var childStyle = $window.getComputedStyle(child);
+                        var childMarginRight = +childStyle.marginRight.replace('px','');
+                        var childMarginLeft = +childStyle.marginLeft.replace('px','');
+                        var childWidth = child.offsetWidth + childMarginLeft + childMarginRight;
+
                         var currMousePoint = {
                             x: evt.pageX,
                             y: evt.pageY
@@ -55,7 +69,7 @@
 
                             currMousePoint.x = evt.pageX;
                             currMousePoint.y = evt.pageY;
-                            moveScroll(xOffset);
+                            moveScroll(containerWidth,childWidth,xOffset);
                         }
                         document.addEventListener('mousemove',mouseMoveEventHandler);
 
@@ -67,15 +81,18 @@
                         document.addEventListener('mouseup',mouseUpEventHandler);
                     }
 
-                    function moveScroll(xOffset/*,yOffset*/){
+                    function moveScroll(containerWidth,childWidth,xOffset/*,yOffset*/){
                         var children = domElement.children;
                         var child = children[0];
 
+                        var minTranslateX = Math.min(containerWidth - childWidth,0);
+                        var maxTranslateX = 0;
+
                         if(!child.style.transform){
-                            setElementTranslateX(child,0);
+                            setElementTranslateX(child,0,false,false,minTranslateX,maxTranslateX);
                         }
 
-                        setElementTranslateX(child,xOffset,true);
+                        setElementTranslateX(child,xOffset,true,minTranslateX,maxTranslateX);
                     }
 
                     function preFn(scope,element,attrs){
