@@ -365,9 +365,22 @@
                 restrict: 'E',
                 compile: function(element){
                     var domElement = element[0];
-                    var bodyDomElement = document.querySelector('body');
                     var child = domElement.children[0];
 
+                    function mouseMoveEventHandler(evt){
+                        $log.debug('mouse move',evt.pageX);
+                        var xOffset = evt.pageX - currMousePoint.x;
+                        //var yOffset = evt.pageY - currMousePoint.y;
+
+                        currMousePoint.x = evt.pageX;
+                        currMousePoint.y = evt.pageY;
+                        moveScroll(xOffset,containerWidth,childWidth);
+                    }
+                    function mouseUpEventHandler(evt){
+                        $log.debug('mouse up',evt.pageX);
+                        document.removeEventListener('mousemove',mouseMoveEventHandler);
+                        document.removeEventListener('mouseup',mouseUpEventHandler);
+                    }
                     function mouseDownHandler(evt){
                         $log.debug('mouse down',evt.pageX);
 
@@ -379,22 +392,9 @@
                             y: evt.pageY
                         };
 
-                        function mouseMoveEventHandler(evt){
-                            $log.debug('mouse move',evt.pageX);
-                            var xOffset = evt.pageX - currMousePoint.x;
-                            //var yOffset = evt.pageY - currMousePoint.y;
 
-                            currMousePoint.x = evt.pageX;
-                            currMousePoint.y = evt.pageY;
-                            moveScroll(xOffset,containerWidth,childWidth);
-                        }
                         document.addEventListener('mousemove',mouseMoveEventHandler);
 
-                        function mouseUpEventHandler(evt){
-                            $log.debug('mouse up',evt.pageX);
-                            document.removeEventListener('mousemove',mouseMoveEventHandler);
-                            document.removeEventListener('mouseup',mouseUpEventHandler);
-                        }
                         document.addEventListener('mouseup',mouseUpEventHandler);
                     }
                     domElement.addEventListener('mousedown',mouseDownHandler);
@@ -429,18 +429,19 @@
                                 $log.debug('mouse wheel event',evt);
                                 moveScroll(-evt.deltaY, containerWidth, childWidth);
                             }
+                            function mouseEnterEventHandler(){
+                                $log.debug('mouse enter');
+                                containerWidth = domElement.offsetWidth;
+                                childWidth = getElementWidth(domElement.children[0]);
+                                domElement.addEventListener('mousewheel',mouseWheelEventHandler);
+                            }
+                            function mouseUpEventHandler(){
+                                $log.debug('mouse leave');
+                                domElement.removeEventListener('mousewheel',mouseWheelEventHandler);
+                            }
                             if(scrollOnMouseWheel){
-                                domElement.addEventListener('mouseenter',function(){
-                                    $log.debug('mouse enter');
-                                    containerWidth = domElement.offsetWidth;
-                                    childWidth = getElementWidth(domElement.children[0]);
-                                    domElement.addEventListener('mousewheel',mouseWheelEventHandler);
-                                });
-                                domElement.addEventListener('mouseleave',function(){
-                                    $log.debug('mouse leave');
-                                    domElement.removeEventListener('mousewheel',mouseWheelEventHandler);
-                                });
-
+                                domElement.addEventListener('mouseenter',mouseEnterEventHandler);
+                                domElement.addEventListener('mouseleave',mouseUpEventHandler);
                             }
 
                             if(attrs.actions){
@@ -461,6 +462,15 @@
                                     },transitionDuration,false);
                                 };
                             }
+
+                            scope.$on('$destroy',function(){
+                                document.removeEventListener('mousemove',mouseMoveEventHandler);
+                                document.removeEventListener('mouseup',mouseUpEventHandler);
+                                domElement.removeEventListener('mousedown',mouseDownHandler);
+                                domElement.removeEventListener('mouseenter',mouseEnterEventHandler);
+                                domElement.removeEventListener('mouseleave',mouseUpEventHandler);
+                                domElement.removeEventListener('mousewheel',mouseWheelEventHandler);
+                            });
                         }
                     };
 
