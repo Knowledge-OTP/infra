@@ -1,13 +1,15 @@
 /**
  * attrs:
+ *      actions:
+ *          animate: function (scrollTo,animationDuration,transition)
  */
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.scroll').directive('znkScroll', [
-        '$log', '$window',
-        function ($log, $window) {
+        '$log', '$window', '$timeout',
+        function ($log, $window, $timeout) {
             function setElementTranslateX(element,val,isOffset,minVal,maxVal){
                 var domElement = angular.isArray(element) ? element[0] : element;
                 var newTranslateX = val;
@@ -35,7 +37,20 @@
 
             function setCssPropery(element,prop,value){
                 var domElement = angular.isArray(element) ? element[0] : element;
-                domElement.style[prop] = value;
+                if(value === null){
+                    domElement.style[prop] = '';
+                }else{
+                    domElement.style[prop] = value;
+                }
+            }
+
+            function getElementWidth(element){
+                var domElement = angular.isArray(element) ? element[0] : element;
+
+                var domElementStyle  = $window.getComputedStyle(domElement);
+                var domElementMarginRight = +domElementStyle.marginRight.replace('px','');
+                var domElementMarginLeft = +domElementStyle.marginLeft.replace('px','');
+                return domElement .offsetWidth + domElementMarginRight + domElementMarginLeft;
             }
 
             return {
@@ -43,6 +58,7 @@
                 compile: function(element){
                     var domElement = element[0];
                     var bodyDomElement = document.querySelector('body');
+                    var child = domElement.children[0];
 
                     domElement.addEventListener('mousedown',mouseDownHandler);
 
@@ -50,12 +66,7 @@
                         $log.debug('mouse down',evt.pageX);
 
                         var containerWidth = domElement.offsetWidth;
-
-                        var child = domElement.children[0];
-                        var childStyle = $window.getComputedStyle(child);
-                        var childMarginRight = +childStyle.marginRight.replace('px','');
-                        var childMarginLeft = +childStyle.marginLeft.replace('px','');
-                        var childWidth = child.offsetWidth + childMarginLeft + childMarginRight;
+                        var childWidth = getElementWidth(domElement.children[0]);
 
                         var currMousePoint = {
                             x: evt.pageX,
@@ -69,7 +80,7 @@
 
                             currMousePoint.x = evt.pageX;
                             currMousePoint.y = evt.pageY;
-                            moveScroll(containerWidth,childWidth,xOffset);
+                            moveScroll(xOffset,containerWidth,childWidth);
                         }
                         document.addEventListener('mousemove',mouseMoveEventHandler);
 
@@ -81,10 +92,7 @@
                         document.addEventListener('mouseup',mouseUpEventHandler);
                     }
 
-                    function moveScroll(containerWidth,childWidth,xOffset/*,yOffset*/){
-                        var children = domElement.children;
-                        var child = children[0];
-
+                    function moveScroll(xOffset, containerWidth, childWidth/*,yOffset*/){
                         var minTranslateX = Math.min(containerWidth - childWidth,0);
                         var maxTranslateX = 0;
 
@@ -95,9 +103,34 @@
                         setElementTranslateX(child,xOffset,true,minTranslateX,maxTranslateX);
                     }
 
+                    function setScrollPos(scrollX){
+                        var containerWidth = domElement.offsetWidth;
+                        var childWidth = getElementWidth(child);
+                        var minTranslateX = Math.min(containerWidth - childWidth,0);
+                        var maxTranslateX = 0;
+                        setElementTranslateX(child,scrollX,false,minTranslateX,maxTranslateX);
+                    }
+
                     function preFn(scope,element,attrs){
                         var child = domElement.children[0];
                         setElementTranslateX(child,0);
+
+                        if(attrs.actions){
+                            scope.$eval(attrs.actions + '={}');
+                            var actions = scope[attrs.actions];
+
+                            actions.animate = function(scrollTo,transitionDuration,transitionTimingFunction){
+                                if(transitionDuration && transitionTimingFunction){
+                                    var transitionPropVal = 'transform ' + transitionDuration + 'ms ' + transitionTimingFunction;
+                                    setCssPropery(child,'transition',transitionPropVal);
+                                }
+                                setScrollPos(scrollTo);
+                                //@todo(igor) may be out of sync
+                                $timeout(function(){
+                                    setCssPropery(child,'transition',null);
+                                },transitionDuration,false);
+                            };
+                        }
                     }
 
                     function postFn(){
