@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra', ['znk.infra.pngSequence', 'znk.infra.enum', 'znk.infra.svgIcon', 'znk.infra.content']);
+    angular.module('znk.infra', ['znk.infra.pngSequence', 'znk.infra.enum', 'znk.infra.svgIcon', 'znk.infra.general', 'znk.infra.content']);
 })(angular);
 (function (angular) {
     'use strict';
@@ -12,6 +12,11 @@
     'use strict';
 
     angular.module('znk.infra.enum', []);
+})(angular);
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.general', ['znk.infra.enum']);
 })(angular);
 (function (angular) {
     'use strict';
@@ -186,6 +191,40 @@
         }
     ]);
 })(angular);
+(function (angular) {
+    'use strict';
+
+    var subjectEnum = {
+        MATH: 0,
+        READING: 1,
+        WRITING: 2,
+        LISTENING: 3,
+        SPEAKING: 4,
+        ENGLISH: 5,
+        SCIENCE: 6
+    };
+
+    angular.module('znk.infra.enum').constant('SubjectEnumConst', subjectEnum);
+
+    angular.module('znk.infra.enum').factory('SubjectEnum', [
+        'EnumSrv',
+        function (EnumSrv) {
+
+            var SubjectEnum = new EnumSrv.BaseEnum([
+                ['MATH', subjectEnum.MATH, 'math'],
+                ['READING', subjectEnum.READING, 'reading'],
+                ['WRITING', subjectEnum.WRITING, 'writing'],
+                ['LISTENING', subjectEnum.LISTENING, 'listening'],
+                ['SPEAKING', subjectEnum.SPEAKING, 'speaking'],
+                ['ENGLISH', subjectEnum.ENGLISH, 'english'],
+                ['SCIENCE', subjectEnum.SCIENCE, 'science']
+            ]);
+
+            return SubjectEnum;
+        }
+    ]);
+})(angular);
+
 'use strict';
 (function (angular) {
     angular.module('znk.infra.enum').factory('EnumSrv', [
@@ -240,6 +279,50 @@
         }
     ]);
 })(angular);
+
+/**
+ * attrs:
+ *  subject-id-to-class-drv: expression from which subject id will be taken from.
+ *  class-suffix: suffix of the added class
+ */
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.general').directive('subjectIdToClassDrv', [
+        'SubjectEnum',
+        function (SubjectEnum) {
+            return {
+                priority: 1000,
+                link: {
+                    pre: function (scope, element, attrs) {
+                        var watchDestroyer = scope.$watch(attrs.subjectIdToClassDrv,function(subjectId){
+                            if(angular.isUndefined(subjectId)){
+                                return;
+                            }
+
+                            watchDestroyer();
+                            var classToAdd;
+
+                            for(var prop in SubjectEnum){
+                                if(SubjectEnum[prop].enum === subjectId){
+                                    classToAdd = SubjectEnum[prop].val;
+                                    if(attrs.classSuffix){
+                                        classToAdd += attrs.classSuffix;
+                                    }
+                                    break;
+                                }
+                            }
+
+                            element.addClass(classToAdd);
+                        });
+                    }
+                }
+            };
+        }
+    ]);
+})(angular);
+
 
 /**
  * Created by Igor on 8/19/2015.
