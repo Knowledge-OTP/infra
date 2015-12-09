@@ -29,7 +29,9 @@
         }
     </style>
 
-    <znk-scroll class="container" actions="scrollActions">
+    <znk-scroll class="container"
+                actions="scrollActions"
+                scroll-on-mouse-wheel="true">
         <div class="child"></div>
     </znk-scroll>
     <button ng-click="lastAnim = lastAnim ? 0 : -100;scrollActions.animate(lastAnim,1000,'cubic-bezier(1, 0.04, 0.58, 1)')">Animate</button>

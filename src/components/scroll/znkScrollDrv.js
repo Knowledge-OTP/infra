@@ -2,14 +2,15 @@
  * attrs:
  *      actions:
  *          animate: function (scrollTo,animationDuration,transition)
+ *      scrollOnMouseWheel: whether to scroll on mouse wheel default false
  */
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.scroll').directive('znkScroll', [
-        '$log', '$window', '$timeout',
-        function ($log, $window, $timeout) {
+        '$log', '$window', '$timeout', '$interpolate',
+        function ($log, $window, $timeout, $interpolate) {
             function setElementTranslateX(element,val,isOffset,minVal,maxVal){
                 var domElement = angular.isArray(element) ? element[0] : element;
                 var newTranslateX = val;
@@ -60,8 +61,6 @@
                     var bodyDomElement = document.querySelector('body');
                     var child = domElement.children[0];
 
-                    domElement.addEventListener('mousedown',mouseDownHandler);
-
                     function mouseDownHandler(evt){
                         $log.debug('mouse down',evt.pageX);
 
@@ -91,6 +90,7 @@
                         }
                         document.addEventListener('mouseup',mouseUpEventHandler);
                     }
+                    domElement.addEventListener('mousedown',mouseDownHandler);
 
                     function moveScroll(xOffset, containerWidth, childWidth/*,yOffset*/){
                         var minTranslateX = Math.min(containerWidth - childWidth,0);
@@ -111,37 +111,50 @@
                         setElementTranslateX(child,scrollX,false,minTranslateX,maxTranslateX);
                     }
 
-                    function preFn(scope,element,attrs){
-                        var child = domElement.children[0];
-                        setElementTranslateX(child,0);
-
-                        if(attrs.actions){
-                            if(angular.isUndefined(scope.$eval(attrs.actions))){
-                                scope.$eval(attrs.actions + '={}');
-                            }
-                            var actions = scope.$eval(attrs.actions);
-
-                            actions.animate = function(scrollTo,transitionDuration,transitionTimingFunction){
-                                if(transitionDuration && transitionTimingFunction){
-                                    var transitionPropVal = 'transform ' + transitionDuration + 'ms ' + transitionTimingFunction;
-                                    setCssPropery(child,'transition',transitionPropVal);
-                                }
-                                setScrollPos(scrollTo);
-                                //@todo(igor) may be out of sync
-                                $timeout(function(){
-                                    setCssPropery(child,'transition',null);
-                                },transitionDuration,false);
-                            };
-                        }
-                    }
-
-                    function postFn(){
-
-                    }
-
                     return {
-                        pre: preFn,
-                        post: postFn
+                        pre: function(scope,element,attrs){
+                            var child = domElement.children[0];
+                            setElementTranslateX(child,0);
+
+                            var scrollOnMouseWheel = $interpolate(attrs.scrollOnMouseWheel || '')(scope) !== 'false';
+                            var containerWidth,childWidth;
+                            function mouseWheelEventHandler(evt){
+                                $log.debug('mouse wheel event',evt);
+                                moveScroll(-evt.deltaY, containerWidth, childWidth);
+                            }
+                            if(scrollOnMouseWheel){
+                                domElement.addEventListener('mouseenter',function(){
+                                    $log.debug('mouse enter');
+                                    containerWidth = domElement.offsetWidth;
+                                    childWidth = getElementWidth(domElement.children[0]);
+                                    domElement.addEventListener('mousewheel',mouseWheelEventHandler);
+                                });
+                                domElement.addEventListener('mouseleave',function(){
+                                    $log.debug('mouse leave');
+                                    domElement.removeEventListener('mousewheel',mouseWheelEventHandler);
+                                });
+
+                            }
+
+                            if(attrs.actions){
+                                if(angular.isUndefined(scope.$eval(attrs.actions))){
+                                    scope.$eval(attrs.actions + '={}');
+                                }
+                                var actions = scope.$eval(attrs.actions);
+
+                                actions.animate = function(scrollTo,transitionDuration,transitionTimingFunction){
+                                    if(transitionDuration && transitionTimingFunction){
+                                        var transitionPropVal = 'transform ' + transitionDuration + 'ms ' + transitionTimingFunction;
+                                        setCssPropery(child,'transition',transitionPropVal);
+                                    }
+                                    setScrollPos(scrollTo);
+                                    //@todo(igor) may be out of sync
+                                    $timeout(function(){
+                                        setCssPropery(child,'transition',null);
+                                    },transitionDuration,false);
+                                };
+                            }
+                        }
                     };
 
                 }
