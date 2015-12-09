@@ -60,6 +60,9 @@
                     var domElement = element[0];
                     var child = domElement.children[0];
 
+                    var currMousePoint;
+                    var containerWidth;
+                    var childWidth;
                     function mouseMoveEventHandler(evt){
                         $log.debug('mouse move',evt.pageX);
                         var xOffset = evt.pageX - currMousePoint.x;
@@ -73,14 +76,17 @@
                         $log.debug('mouse up',evt.pageX);
                         document.removeEventListener('mousemove',mouseMoveEventHandler);
                         document.removeEventListener('mouseup',mouseUpEventHandler);
+                        containerWidth = null;
+                        childWidth = null;
+                        currMousePoint = null;
                     }
                     function mouseDownHandler(evt){
                         $log.debug('mouse down',evt.pageX);
 
-                        var containerWidth = domElement.offsetWidth;
-                        var childWidth = getElementWidth(domElement.children[0]);
+                        containerWidth = domElement.offsetWidth;
+                        childWidth = getElementWidth(domElement.children[0]);
 
-                        var currMousePoint = {
+                        currMousePoint = {
                             x: evt.pageX,
                             y: evt.pageY
                         };
