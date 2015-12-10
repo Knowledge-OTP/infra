@@ -28,19 +28,29 @@
                     };
 
                     function updatePublicationCb(cb) {
-                        cb({ key: angular.noop, vak: angular.noop });
+                        cb({ key: function() {  return 'key666'; }, val: function() {return {
+                                drill10: {
+                                    rev:1
+                                },
+                                drill11: {
+                                    rev: 2
+                                },
+                                drill12: {
+                                    rev: 2
+                                }
+                        }} });
                     }
 
                         return $q.when({
                             latestRevisions: mockData.latestRevisions,
                             revisionManifest: mockData.revisionManifest,
                             create: function(path) {
-                                return { set: angular.noop, get: angular.noop };
+                                return { set: angular.noop, get: function() { return { value: 666 } } };
                             },
                             updatePublication: updatePublicationCb,
                             contentRoot: 'mockData/content/',
-                            userRoot: 'mockData/users/0ef5a913-4a69-4c75/contentSync'
-
+                            userRoot: 'mockData/users/0ef5a913-4a69-4c75/contentSync',
+                            key: 'key666'
                         });
 
                 }
