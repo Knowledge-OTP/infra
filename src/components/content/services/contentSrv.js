@@ -2,8 +2,6 @@
 
 (function (angular) {
 
-    angular.module('znk.infra.content').provider('ContentSrv', ContentSrv);
-
     function ContentSrv() {
 
         var setContentFuncRef;
@@ -13,20 +11,6 @@
         };
 
         this.$get = ['$q', '$injector', function($q, $injector) {
-
-            var contentFunc;
-
-            var contentDataFunc = _getContentData();
-
-            var ContentSrv = {};
-
-            function _getContentFunc(){
-                if (!contentFunc){
-                    contentFunc = $injector.invoke(setContentFuncRef);
-                }
-                return contentFunc;
-            }
-
 
             function _getContentData() {
                 var contentData;
@@ -52,8 +36,21 @@
                             contentData.revisionManifest[practiceName] = newData;
                             return $q.when({ rev: newData.rev, status: 'update'});
                         }
-                    }
+                    };
+                };
+            }
+
+            var contentFunc;
+
+            var contentDataFunc = _getContentData();
+
+            var ContentSrv = {};
+
+            function _getContentFunc(){
+                if (!contentFunc){
+                    contentFunc = $injector.invoke(setContentFuncRef);
                 }
+                return contentFunc;
             }
 
             ContentSrv.getRev = function(practiceName, dataObj) {
@@ -132,8 +129,8 @@
 
             return ContentSrv;
         }];
-
-
     }
+
+    angular.module('znk.infra.content').provider('ContentSrv', ContentSrv);
 
 })(angular);
