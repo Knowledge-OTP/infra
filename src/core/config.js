@@ -6,6 +6,7 @@
         'znk.infra.enum',
         'znk.infra.svgIcon',
         'znk.infra.general',
-        'znk.infra.scroll'
+        'znk.infra.scroll',
+        'znk.infra.content'
     ]);
 })(angular);

@@ -22,6 +22,7 @@ module.exports = function (config) {
         files: [
             // bower:js
             'bower_components/angular/angular.js',
+            'bower_components/angular-mocks/angular-mocks.js',
             // endbower
 
             //utility
@@ -30,11 +31,11 @@ module.exports = function (config) {
             //mock
             'test/mock/**/*.*',
             //src files
-            'src/scripts/core/*.*',
-            'src/scripts/*.*',
+            'src/core/*.*',
+            'src/components/**/*.js',
 
             //tests
-            'test/spec/**/*.test.js'
+            'test/spec/**/*.spec.js'
         ],
 
         // list of files / patterns to exclude
@@ -52,12 +53,12 @@ module.exports = function (config) {
         // - PhantomJS
         // - IE (only Windows)
         browsers: [
-            'Chrome',
-            'Safari'
+            'PhantomJS'
         ],
 
         // Which plugins to enable
         plugins: [
+            'karma-phantomjs-launcher',
             'karma-chrome-launcher',
             'karma-safari-launcher',
             'karma-jasmine',
