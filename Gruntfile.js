@@ -125,7 +125,7 @@ module.exports = function (grunt) {
         },
         connect: {
             options: {
-                base: ['src','bower_components'],
+                base: ['src','bower_components','.tmp'],
                 open: true,
                 livereload: 35730
             },
@@ -148,6 +148,28 @@ module.exports = function (grunt) {
                 files: [
                     'demo/**/*.*'
                 ]
+            },
+            sass: {
+                files:[
+                    'src/**/*.scss',
+                ],
+                tasks: ['sass']
+            }
+        },
+        sass: {
+            options: {
+                sourceMap: true
+            },
+            dist: {
+                files: {
+                    '.tmp/main.css': 'src/core/main.scss'
+                }
+            }
+        },
+        copy: {
+            dist: {
+                src: '.tmp/main.css',
+                dest: 'dist/znk-infra-main.css'
             }
         }
     });
@@ -159,11 +181,13 @@ module.exports = function (grunt) {
 
     grunt.registerTask('build', [
         'clean:dist',
-        //'jshint:all',
+        'jshint:all',
         //'karma:build',
+        'sass',
+        'copy:dist',
         'concat:dist',
-        //'ngAnnotate:dist',
-        //'uglify:dist'
+        'ngAnnotate:dist',
+        'uglify:dist'
     ]);
 
     grunt.registerTask('default', [
@@ -180,6 +204,7 @@ module.exports = function (grunt) {
         }
         console.log('serving from', grunt.config('connect').options.base);
         grunt.task.run([
+            'sass',
             'connect:serve',
             'watch'
         ]);
