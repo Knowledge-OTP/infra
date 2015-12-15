@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body ng-app="demoApp">
+    <style>
+        .container{
+            width: 400px;
+            height: 100px;
+            background: red;
+            margin-left: 400px;
+        }
+
+        .child{
+            width: 200px;
+            height: 50px;
+            margin: 20px 150px 0 150px;
+            background: blue;
+        }
+
+        button{
+            margin-left: 573px;
+            margin-top: 15px;
+            width: 100px;
+            height: 50px;
+        }
+    </style>
+
+    <znk-scroll class="container"
+                actions="scrollActions"
+                scroll-on-mouse-wheel="true">
+        <div class="child"></div>
+    </znk-scroll>
+    <button ng-click="lastAnim = lastAnim ? 0 : -100;scrollActions.animate(lastAnim,1000,'cubic-bezier(1, 0.04, 0.58, 1)')">Animate</button>
+    <script src="angular/angular.js"></script>
+
+    <script src="components/scroll/module.js"></script>
+    <script src="components/scroll/znkScrollDrv.js"></script>
+
+    <script src="demoApp.js"></script>
+</body>
+</html>
