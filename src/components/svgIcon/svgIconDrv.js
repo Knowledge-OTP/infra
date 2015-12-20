@@ -16,8 +16,6 @@
                 },
                 link: {
                     pre: function (scope, element) {
-                        element.css('display','block');
-
                         var name = scope.name;
                         if (!name) {
                             $log.error('svgIcon directive: name attribute was not set');
