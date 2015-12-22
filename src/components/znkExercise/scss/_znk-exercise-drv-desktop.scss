@@ -13,23 +13,54 @@ znk-exercise.desktop {
       &.right-container {
         right: -40px;
 
-        .chevron{
-          transform: rotate(-90deg);
-          width: 33px;
+        button{
+          border-top-right-radius: 42px;
+          border-bottom-right-radius: 42px;
+          padding-left: 2px;
+
+          .chevron{
+            transform: rotate(-90deg);
+          }
+        }
+      }
+
+      &.left-container{
+        left: -40px;
+
+        button{
+          border-top-left-radius: 42px;
+          border-bottom-left-radius: 42px;
+          padding-left: 5px;
+
+          .chevron{
+            transform: rotate(90deg);
+          }
         }
       }
 
       button {
         padding: 0;
-        border-top-right-radius: 42px;
         height: 80px;
         width: 40px;
-        border-bottom-right-radius: 42px;
-        border-top: none;
-        border-right: none;
-        border-bottom: none;
-        border-left: none;
+        border:{
+          top: none;
+          right: none;
+          bottom: none;
+          left: none;
+        }
+        background: #fbfafa;
 
+        &:focus{
+          outline: none;
+        }
+
+        svg-icon.chevron{
+          width: 33px;
+
+          .st0{
+            stroke: #0a9bad;
+          }
+        }
       }
     }
   }
