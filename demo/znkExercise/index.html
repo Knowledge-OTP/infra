@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body ng-app="demoApp">
+
+    <style>
+        znk-exercise{
+            height: 500px;
+            width: 500px;
+            margin: 200px auto;
+            background: red;
+        }
+    </style>
+
+    <znk-exercise ng-model="results" questions="[]"></znk-exercise>
+    <script src="angular/angular.js"></script>
+
+    <script src="components/enums/module.js"></script>
+    <script src="components/enums/services/enumSrv.js"></script>
+
+    <script src="components/svgIcon/module.js"></script>
+    <script src="components/svgIcon/svgIconDrv.js"></script>
+    <script src="components/svgIcon/svgIconSrv.js"></script>
+
+    <script src="components/znkExercise/module.js"></script>
+    <script src="components/znkExercise/utility/enum/platformEnum.js"></script>
+    <script src="components/znkExercise/utility/directive/templateByPlatform.js"></script>
+    <script src="components/znkExercise/core/constant/znkExerciseEventsConst.js"></script>
+    <script src="components/znkExercise/core/service/znkExerciseSrv.js"></script>
+    <script src="components/znkExercise/core/service/znkExerciseQuestionTypesSrv.js"></script>
+    <script src="components/znkExercise/core/znkExerciseDrv.js"></script>
+
+    <script src="demoApp.js"></script>
+</body>
+</html>

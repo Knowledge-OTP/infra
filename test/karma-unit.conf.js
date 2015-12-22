@@ -25,14 +25,19 @@ module.exports = function (config) {
             'bower_components/angular-mocks/angular-mocks.js',
             // endbower
 
+            //html
+            '**/*.html',
+
             //utility
             'test/utility/**/*.*',
 
-            //mock
-            'test/mock/**/*.*',
             //src files
-            'src/core/*.*',
+            'src/core/*.js',
+            'src/components/**/module.js',
             'src/components/**/*.js',
+
+            //mock
+            'test/mock/**/*.js',
 
             //tests
             'test/spec/**/*.spec.js'
@@ -57,24 +62,36 @@ module.exports = function (config) {
         ],
 
         // Which plugins to enable
-        plugins: [
-            'karma-phantomjs-launcher',
-            'karma-chrome-launcher',
-            'karma-safari-launcher',
-            'karma-jasmine',
-            'karma-jasmine-html-reporter'
-        ],
+        //plugins: [
+        //    'karma-phantomjs-launcher',
+        //    'karma-chrome-launcher',
+        //    'karma-safari-launcher',
+        //    'karma-jasmine',
+        //    'karma-jasmine-html-reporter',
+        //    'karma-ng-html2js-preprocessor'
+        //],
 
         // Continuous Integration mode
         // if true, it capture browsers, run tests and exit
         singleRun: false,
 
         colors: true,
-        preprocessors: {},
+        preprocessors: {
+            '**/*.html': ['ng-html2js']
+        },
         // level of logging
         // possible values: LOG_DISABLE || LOG_ERROR || LOG_WARN || LOG_INFO || LOG_DEBUG
         logLevel: config.LOG_INFO,
+
+        reporters: ['progress', 'html'],
+
         //html to js
-        reporters: ['progress', 'html']
+        ngHtml2JsPreprocessor: {
+            // strip this from the file path
+            stripPrefix: 'src/',
+            // setting this option will create only a single module that contains templates
+            // from all the files, so you can load them all with module('foo')
+            moduleName: 'htmlTemplates'
+        }
     });
 };

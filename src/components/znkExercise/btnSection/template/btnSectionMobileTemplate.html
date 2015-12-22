@@ -1,0 +1,39 @@
+<div ng-class="{ 'next-disabled' : settings.slideDirection === d.slideDirections.NONE ||  settings.slideDirection === d.slideDirections.RIGHT }">
+    <div class="bookmark-icon-container only-tablet"
+         ng-class="d.questionsWithAnswers[d.currentSlide].__questionStatus.bookmark ? 'bookmark-active-icon' : 'bookmark-icon'"
+         ng-click="d.bookmarkCurrentQuestion()"
+         ng-hide="settings.viewMode === d.reviewModeId"
+         analytics-on="click"
+         analytics-event="click-bookmark-question"
+         analytics-category="exercise"></div>
+    <ng-switch
+            on="d.currentSlide !== d.questionsWithAnswers.length - 1 && d.answeredCount !== d.questionsWithAnswers.length"
+            ng-hide="settings.viewMode === d.reviewModeId"
+            class="ng-hide"
+            ng-click="d.next()">
+        <button ng-switch-when="true"
+                class="btn next">
+            <div class="only-tablet"
+                 analytics-on="click"
+                 analytics-event="click-next"
+                 analytics-category="exercise">
+                <span>NEXT</span>
+                <i class="question-arrow-right-icon"></i>
+            </div>
+        </button>
+        <button ng-switch-when="false"
+                class="btn finish">
+            <div analytics-on="click"
+                 analytics-event="click-finish"
+                 analytics-category="exercise">DONE
+            </div>
+        </button>
+    </ng-switch>
+    <button class="btn sum ng-hide"
+            ng-click="settings.onSummary()"
+            ng-show="settings.viewMode === d.reviewModeId"
+            analytics-on="click"
+            analytics-event="click-summary"
+            analytics-category="exercise">SUMMARY
+    </button>
+</div>

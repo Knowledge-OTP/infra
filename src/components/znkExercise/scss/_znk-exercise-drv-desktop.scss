@@ -1,0 +1,47 @@
+znk-exercise.desktop {
+  display: block;
+  position: relative;
+
+  .btn-section {
+    .btn-container {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      display: inline-flex;
+      align-items: center;
+
+      &.right-container {
+        right: -40px;
+
+        .chevron{
+          transform: rotate(-90deg);
+          width: 33px;
+        }
+      }
+
+      button {
+        padding: 0;
+        border-top-right-radius: 42px;
+        height: 80px;
+        width: 40px;
+        border-bottom-right-radius: 42px;
+        border-top: none;
+        border-right: none;
+        border-bottom: none;
+        border-left: none;
+
+      }
+    }
+  }
+
+  svg-icon.chevron {
+    .st0 {
+      fill: none;
+      stroke: #231F20;
+      stroke-width: 12;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-miterlimit: 10;
+    }
+  }
+}

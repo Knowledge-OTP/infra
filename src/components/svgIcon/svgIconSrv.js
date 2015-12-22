@@ -2,16 +2,22 @@
     'use strict';
 
     angular.module('znk.infra.svgIcon').provider('SvgIconSrv', [
-
         function () {
             var defaultConfig = {};
             this.setConfig = function (_config) {
                 angular.extend(defaultConfig, _config);
             };
 
-            var svgMap;
+            var svgMap = {};
             this.registerSvgSources = function (_svgMap) {
-                svgMap = _svgMap;
+                var alreadyRegisteredSvgIconNames = Object.keys(svgMap);
+                alreadyRegisteredSvgIconNames.forEach(function(svgIconName){
+                    if(!!_svgMap[svgIconName]){
+                        console.log('SvgIconSrv: svg icon was already defined before ',svgIconName);
+                    }
+                });
+                angular.extend(svgMap,_svgMap);
+                return true;
             };
 
             var getSvgPromMap = {};
