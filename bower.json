@@ -6,9 +6,10 @@
   ],
   "dependencies": {
     "angular": "1.4.x",
-    "angular-mocks": "1.4.x"
+    "angular-mocks": "1.4.x",
+    "angular-carousel": "~1.0.1"
   },
-  "ignore":[
+  "ignore": [
     ".*",
     "src",
     "test",

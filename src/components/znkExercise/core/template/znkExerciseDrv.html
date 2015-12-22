@@ -1,13 +1,8 @@
 <div ng-transclude></div>
-<template-by-platform class="znk-carousel"
+<template-by-platform class="znk-carousel-container"
                       prefix="components/znkExercise/questionSwiper/template"
-                        mobile-temp="">
-    <question-builder slide-repeat-drv="question in d.questionsWithAnswers"
-         active-slide="d.currentSlide"
-         question="question"
-         ng-model="question.__questionStatus.userAnswer"
-         ng-change="d.questionAnswered(question)">
-    </question-builder>
+                      mobile-temp="questionSwiperMobileTemplate.html"
+                      desktop-temp="questionSwiperDesktopTemplate.html">
 </template-by-platform>
 <template-by-platform class="btn-section"
                       prefix="components/znkExercise/btnSection/template"
@@ -15,7 +10,7 @@
                       desktop-temp="btnSectionDesktopTemplate.html">
 </template-by-platform>
 <znk-exercise-pager
-     ng-hide="d.hidePager"
-     questions="d.questionsWithAnswers"
-     ng-model="d.currentSlide">
+        ng-hide="d.hidePager"
+        questions="d.questionsWithAnswers"
+        ng-model="d.currentSlide">
 </znk-exercise-pager>

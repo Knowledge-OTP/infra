@@ -1,3 +1,5 @@
+@import "../../../../bower_components/angular-carousel/dist/angular-carousel";
+
 znk-exercise.desktop {
   display: block;
   position: relative;
@@ -73,6 +75,32 @@ znk-exercise.desktop {
       stroke-linecap: round;
       stroke-linejoin: round;
       stroke-miterlimit: 10;
+    }
+  }
+
+  template-by-platform{
+    &.znk-carousel-container{
+      display: flex;
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+
+      .znk-carousel{
+        flex-grow: 1;
+        margin: 0;
+
+        .slide{
+          width: 100%;
+          height: 100%;
+
+          question-builder{
+            width: 100%;
+            height: 100%;
+          }
+        }
+      }
     }
   }
 }

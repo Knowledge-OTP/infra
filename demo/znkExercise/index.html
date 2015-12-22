@@ -20,8 +20,13 @@
         }
     </style>
 
-    <znk-exercise ng-model="results" questions="[]"></znk-exercise>
+    <znk-exercise ng-model="results" questions="[
+        {__type: 1},{__type: 2},{__type: 3},{__type: 1},{__type: 2}
+        ]">
+    </znk-exercise>
     <script src="angular/angular.js"></script>
+    <script src="angular-touch/angular-touch.js"></script>
+    <script src="angular-carousel/dist/angular-carousel.js"></script>
 
     <script src="components/enums/module.js"></script>
     <script src="components/enums/services/enumSrv.js"></script>
@@ -33,10 +38,12 @@
     <script src="components/znkExercise/module.js"></script>
     <script src="components/znkExercise/utility/enum/platformEnum.js"></script>
     <script src="components/znkExercise/utility/directive/templateByPlatform.js"></script>
+    <script src="components/znkExercise/core/znkExerciseDrv.js"></script>
     <script src="components/znkExercise/core/constant/znkExerciseEventsConst.js"></script>
     <script src="components/znkExercise/core/service/znkExerciseSrv.js"></script>
-    <script src="components/znkExercise/core/service/znkExerciseQuestionTypesSrv.js"></script>
-    <script src="components/znkExercise/core/znkExerciseDrv.js"></script>
+    <script src="components/znkExercise/core/service/questionTypesSrv.js"></script>
+    <script src="components/znkExercise/core/directive/questionBuilderDrv.js"></script>
+    <script src="components/znkExercise/core/directive/answersBuilderDrv.js"></script>
 
     <script src="demoApp.js"></script>
 </body>

@@ -2,7 +2,12 @@
     'use strict';
 
     angular.module('demoApp', ['znk.infra.znkExercise'])
-        .controller('ctrl',function(){
-
+        .config(function(QuestionTypesSrvProvider){
+            var map = {
+                1: '<div>question Type 1</div>',
+                2: '<div>question Type 2</div>',
+                3: '<div>question Type 3</div>'
+            };
+            QuestionTypesSrvProvider.setQuestionTypesHtmlTemplate(map);
         });
 })(angular);
