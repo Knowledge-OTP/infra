@@ -7,7 +7,8 @@
         'znk.infra.svgIcon',
         'znk.infra.general',
         'znk.infra.scroll',
-        'znk.infra.content'
+        'znk.infra.content',
+        'znk.infra.znkExercise'
     ]);
 })(angular);
 (function (angular) {
