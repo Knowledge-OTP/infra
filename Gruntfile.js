@@ -90,7 +90,7 @@ module.exports = function (grunt) {
         },
         concat: {
             dist: {
-                src: ['<%= yeoman.src %>/core/*.js', '<%= yeoman.src %>/components/**/module.js', '<%= yeoman.src %>/components/**/*.js'],
+                src: ['<%= yeoman.src %>/core/*.js', '<%= yeoman.src %>/components/**/module.js', '<%= yeoman.src %>/components/**/*.js','.tmp/*.js'],
                 dest: '<%= yeoman.dist %>/<%= yeoman.appName %>.js'
             }
         },
@@ -179,6 +179,17 @@ module.exports = function (grunt) {
                 src: '.tmp/main.css',
                 dest: 'dist/znk-infra-main.css'
             }
+        },
+        html2js: {
+            options:{
+                module: 'znk.infra',
+                singleModule: true,
+                existingModule: true
+            },
+            main: {
+                src: ['src/**/*.html','src/**/*.svg'],
+                dest: '.tmp/templates.js'
+            }
         }
     });
 
@@ -192,6 +203,7 @@ module.exports = function (grunt) {
         'jshint:all',
         //'karma:build',
         'sass',
+        'html2js',
         'copy:dist',
         'concat:dist',
         'ngAnnotate:dist',

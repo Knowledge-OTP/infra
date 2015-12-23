@@ -31,7 +31,7 @@
                         };
                     }
                 ],
-                templateUrl: function (element, attrs) {
+                templateUrl: function () {
                     var templateUrl = "components/znkExercise/core/template/";
                     var platform = ZnkExerciseSrv.getPlatform();
                     switch (platform) {

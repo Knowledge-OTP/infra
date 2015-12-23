@@ -13,7 +13,7 @@
 
                 QuestionTypesSrv.getQuestionHtmlTemplate = function getQuestionHtmlTemplate(questionTypeId) {
                     if(!questionTypeToHtmlTemplateMap[questionTypeId]){
-                        $log.error('QuestionTypesSrv: Template was not registered for the following question type:',questionTypeId)
+                        $log.error('QuestionTypesSrv: Template was not registered for the following question type:',questionTypeId);
                     }
                     return questionTypeToHtmlTemplateMap[questionTypeId];
                 };

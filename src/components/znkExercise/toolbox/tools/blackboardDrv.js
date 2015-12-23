@@ -21,6 +21,19 @@
                     }
                     GoBackHardwareSrv.registerHandler(goBackHardwareHandler,undefined,true);
 
+                    function activatePen() {
+                        scope.d.activeDrawMode = drawModes.pen;
+                    }
+
+                    function activateEraser() {
+                        scope.d.activeDrawMode = drawModes.eraser;
+                    }
+
+                    function clearCanvas() {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        scope.drawingData.dataUrl = null;
+                    }
+
                     var actions = scope.actions() || {};
                     angular.extend(actions, {
                         activatePen: activatePen,
@@ -47,19 +60,23 @@
 
                     var ctx = canvas.getContext('2d');
 
+                    function serialize(canvas) {
+                        return canvas.toDataURL();
+                    }
+                    function deserialize(data, canvas) {
+                        var img = new Image();
+                        img.onload = function() {
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            canvas.getContext('2d').drawImage(img, 0, 0);
+                        };
+
+                        img.src = data;
+                    }
+
                     if (scope.drawingData.dataUrl) {
                         deserialize(scope.drawingData.dataUrl, canvas);
                     }
-
-                    canvas.addEventListener('touchstart', onTouchStart);
-                    canvas.addEventListener('touchmove', onTouchMove);
-                    canvas.addEventListener('touchend', onTouchEnd);
-
-                    scope.$on('$destroy', function () {
-                        canvas.removeEventListener('touchstart', onTouchStart);
-                        canvas.removeEventListener('touchmove', onTouchMove);
-                        canvas.removeEventListener('touchend', onTouchEnd);
-                    });
 
                     function onTouchStart(e) {
                         e.preventDefault();
@@ -108,33 +125,15 @@
                         }
                     }
 
-                    function activatePen() {
-                        scope.d.activeDrawMode = drawModes.pen;
-                    }
+                    canvas.addEventListener('touchstart', onTouchStart);
+                    canvas.addEventListener('touchmove', onTouchMove);
+                    canvas.addEventListener('touchend', onTouchEnd);
 
-                    function activateEraser() {
-                        scope.d.activeDrawMode = drawModes.eraser;
-                    }
-
-                    function clearCanvas() {
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        scope.drawingData.dataUrl = null;
-                    }
-
-                    function serialize(canvas) {
-                        return canvas.toDataURL();
-                    }
-
-                    function deserialize(data, canvas) {
-                        var img = new Image();
-                        img.onload = function() {
-                            canvas.width = img.width;
-                            canvas.height = img.height;
-                            canvas.getContext('2d').drawImage(img, 0, 0);
-                        };
-
-                        img.src = data;
-                    }
+                    scope.$on('$destroy', function () {
+                        canvas.removeEventListener('touchstart', onTouchStart);
+                        canvas.removeEventListener('touchmove', onTouchMove);
+                        canvas.removeEventListener('touchend', onTouchEnd);
+                    });
                 }
             };
         }]);

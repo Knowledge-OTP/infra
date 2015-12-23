@@ -11,7 +11,7 @@
                 return platform;
             };
 
-            ZnkExerciseSrv.openExerciseToolBoxModal = function openExerciseToolBoxModal(toolBoxModalSettings) {
+            ZnkExerciseSrv.openExerciseToolBoxModal = function openExerciseToolBoxModal(/*toolBoxModalSettings*/) {
                 //var modalOptions = {
                 //    templateUrl: 'scripts/exercise/templates/znkExerciseToolBoxModal.html',
                 //    hideBackdrop: true,
