@@ -9,5 +9,10 @@
                 3: '<div>question Type 3</div>'
             };
             QuestionTypesSrvProvider.setQuestionTypesHtmlTemplate(map);
+
+            function questionTypeGetter(question){
+                return question.__type;
+            }
+            QuestionTypesSrvProvider.setQuestionTypeGetter(questionTypeGetter);
         });
 })(angular);

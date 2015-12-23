@@ -32,9 +32,7 @@
                     post: function post(scope, element, attrs, ctrls) {
                         var questionBuilderCtrl = ctrls[0];
                         var znkExerciseCtrl = ctrls[1];
-                        /** question type is built out of several properties, can be set via ExerciseUtilsSrv.setQuestionType function **/
-                        var questionType = questionBuilderCtrl.question.__type;
-                        var questionHtmlTemplate = QuestionTypesSrv.getQuestionHtmlTemplate(questionType);
+                        var questionHtmlTemplate = QuestionTypesSrv.getQuestionHtmlTemplate(questionBuilderCtrl.question);
                         element.append(questionHtmlTemplate);
                         var childScope = scope.$new(true);
                         $compile(element.contents())(childScope);
