@@ -3,8 +3,7 @@
  *  questions: questions array
  *  ngModel: results array
  *  settings:
- *      onNext
- *      onLastNext
+ *      onDone
  *      onQuestionAnswered
  *      wrapperCls
  *      toolsToHide
@@ -17,57 +16,23 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExercise', [
-        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log',
-        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log) {
+        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum',
+        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum) {
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExerciseDrv.html',
                 restrict: 'E',
                 transclude: true,
-                require: ['znkExercise','ngModel'],
+                controllerAs: 'vm',
+                require: ['znkExercise', 'ngModel'],
                 scope: {
                     questionsGetter: '&questions',
                     settings: '=?',
                     actions: '=?'
                 },
-                controller: [
-                    '$scope',
-                    function ($scope) {
-                        var self = this;
-
-                        self.getViewMode = function(){
-                            return $scope.settings.viewMode;
-                        };
-
-                        self.getSlideDirection = function(){
-                            return $scope.settings.slideDirection;
-                        };
-
-                        //set resolver which control when to go to next question (if at all) when click on next button
-                        var onNextResolver;
-                        self.setQuestionChangeResolver = function(_onNextResolver){
-                            onNextResolver = _onNextResolver;
-                        };
-
-                        self.__changeQuestionResolver = function(){
-                            return $q.when((typeof onNextResolver === 'function') ? onNextResolver() : onNextResolver);
-                        };
-
-                        self.questionRendered = function(){
-                            if(!self.__exerciseReady){
-                                self.__exerciseReady = true;
-                                if($scope.settings.onExerciseReady){
-                                    $scope.settings.onExerciseReady();
-                                }
-                            }
-                        };
-
-                        self.getCurrentIndex = function(){
-                            return $scope.d.currentSlide;
-                        };
-                    }],
-                compile: function(element){
+                controller: 'ZnkExerciseDrvCtrl',
+                compile: function (element) {
                     var platform = ZnkExerciseSrv.getPlatform();
-                    if(!platform){
+                    if (!platform) {
                         $log.$error('znkExercise directive: undefined platform received.');
                     }
                     var PlatformEnumMap = PlatformEnum.getEnumMap();
@@ -79,12 +44,12 @@
                                 onNext: function () {
                                     scope.d.currentSlide++;
                                 },
-                                onLastNext: angular.noop,
+                                onDone: angular.noop,
                                 onQuestionAnswered: angular.noop,
-                                viewMode: ZnkExerciseSrv.viewModeEnum.answerWithResult.enum,
+                                viewMode: ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
                                 onSlideChange: angular.noop
                             };
-                            scope.settings = angular.extend(defaultSettings,scope.settings);
+                            scope.settings = angular.extend(defaultSettings, scope.settings);
 
                             var znkExerciseDrvCtrl = ctrls[0];
                             var ngModelCtrl = ctrls[1];
@@ -98,8 +63,6 @@
                             scope.d = {
                                 currentSlide: scope.settings.initSlideIndex || 0,
                                 answeredCount: 0,
-                                reviewModeId: ZnkExerciseSrv.viewModeEnum.review.enum,
-                                mustAnswerId: ZnkExerciseSrv.viewModeEnum.mustAnswer.enum,
                                 slideDirections: ZnkExerciseSrv.slideDirections
                             };
 
@@ -107,15 +70,15 @@
                             scope.actions.setSlideIndex = function setSlideIndex(index) {
                                 scope.d.currentSlide = index;
                             };
-                            scope.actions.getCurrentIndex = function(){
+                            scope.actions.getCurrentIndex = function () {
                                 return scope.d.currentSlide;
                             };
-                            scope.actions.finishExercise = function(){
+                            scope.actions.finishExercise = function () {
                                 updateTimeSpentOnQuestion();
                                 setViewValue();
                             };
 
-                            function getCurrentQuestion(){
+                            function getCurrentQuestion() {
                                 return allQuestionWithAnswersArr[scope.d.currentSlide];
                             }
 
@@ -126,10 +89,10 @@
                             toolboxModalSettings.events = {
                                 onToolOpened: function (evt) {
                                     var currQuestion = getCurrentQuestion();
-                                    switch(evt.tool){
+                                    switch (evt.tool) {
                                         case ZnkExerciseSrv.toolBoxTools.BLACKBOARD:
-                                            toolboxModalSettings.actions.setToolValue(ZnkExerciseSrv.toolBoxTools.BLACKBOARD,currQuestion.__questionStatus.blackboardData || {});
-                                            if(isMobile){
+                                            toolboxModalSettings.actions.setToolValue(ZnkExerciseSrv.toolBoxTools.BLACKBOARD, currQuestion.__questionStatus.blackboardData || {});
+                                            if (isMobile) {
                                                 scope.d.hidePager = true;
                                             }
                                             break;
@@ -137,18 +100,18 @@
                                 },
                                 onToolClosed: function (evt) {
                                     var currQuestion = getCurrentQuestion();
-                                    switch(evt.tool){
+                                    switch (evt.tool) {
                                         case ZnkExerciseSrv.toolBoxTools.BLACKBOARD:
                                             currQuestion.__questionStatus.blackboardData = evt.value;
-                                            if(isMobile){
+                                            if (isMobile) {
                                                 scope.d.hidePager = false;
                                             }
                                             break;
                                     }
                                     setViewValue();
                                 },
-                                onToolValueChanged: function(evt){
-                                    switch(evt.tool){
+                                onToolValueChanged: function (evt) {
+                                    switch (evt.tool) {
                                         case ZnkExerciseSrv.toolBoxTools.BOOKMARK:
                                             scope.d.bookmarkCurrentQuestion();
                                             break;
@@ -159,9 +122,6 @@
                             var toolBoxModalInstance = ZnkExerciseSrv.openExerciseToolBoxModal(toolboxModalSettings);
 
                             function setViewValue() {
-                                if(scope.settings.viewMode === ZnkExerciseSrv.viewModeEnum.review.enum){
-                                    return;
-                                }
                                 ngModelCtrl.$setViewValue(angular.copy(scope.d.questionsWithAnswers));
                             }
 
@@ -181,7 +141,9 @@
 
                                 var answersMap = {};
                                 answers.forEach(function (answer) {
-                                    answersMap[answer.questionId] = answer;
+                                    if (answer && angular.isDefined(answer.questionId)) {
+                                        answersMap[answer.questionId] = answer;
+                                    }
                                 });
 
                                 var questions = scope.questionsGetter() || [];
@@ -193,7 +155,7 @@
                                     questionCopy.__questionStatus = {
                                         index: index
                                     };
-                                    for(var prop in answer){
+                                    for (var prop in answer) {
                                         questionCopy.__questionStatus[prop] = answer[prop];
                                     }
 
@@ -215,8 +177,8 @@
                                         questionId: questionWithAnswer.id
                                     };
 
-                                    var propsToCopyFromQuestionStatus = ['blackboardData','timeSpent','bookmark','userAnswer','isAnsweredCorrectly', 'audioEnded'];
-                                    propsToCopyFromQuestionStatus.forEach(function(propName){
+                                    var propsToCopyFromQuestionStatus = ['blackboardData', 'timeSpent', 'bookmark', 'userAnswer', 'isAnsweredCorrectly', 'audioEnded'];
+                                    propsToCopyFromQuestionStatus.forEach(function (propName) {
                                         var value = questionWithAnswer.__questionStatus[propName];
                                         if (angular.isDefined(value)) {
                                             answer[propName] = value;
@@ -235,30 +197,35 @@
                             ngModelCtrl.$parsers.push(questionAnswersToOneObjectfmtr.parser);
 
                             scope.d.questionAnswered = function () {
-                                scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED,getCurrentQuestion());
-                                setViewValue();
+                                scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
+                                if (scope.settings.viewMode !== ZnkExerciseViewModeEnum.REVIEW.enum) {
+                                    setViewValue();
+                                }
                                 scope.settings.onQuestionAnswered(scope.d.currentSlide);
                                 questionAnswered = true;
                                 scope.settings.slideDirection = scope.settings.slideDirectionChange;
                             };
 
                             scope.d.bookmarkCurrentQuestion = function () {
-                                var currQuestion  = getCurrentQuestion();
+                                var currQuestion = getCurrentQuestion();
                                 currQuestion.__questionStatus.bookmark = !currQuestion.__questionStatus.bookmark;
-                                scope.$broadcast(ZnkExerciseEvents.BOOKMARK,currQuestion);
+                                scope.$broadcast(ZnkExerciseEvents.BOOKMARK, currQuestion);
                                 setViewValue();
                             };
-
+                            /**
+                             * @deprecated
+                             * use znkExerciseDrvCtrl setCurrentIndex or setCurrentIndexByOffset instead
+                             * */
                             scope.d.next = function () {
                                 var questionIndex = scope.d.currentSlide;
                                 var lastQuestion = allQuestionWithAnswersArr[allQuestionWithAnswersArr.length - 1];
-                                znkExerciseDrvCtrl.__changeQuestionResolver().then(function(){
+                                znkExerciseDrvCtrl.questionChangeResolver().then(function () {
                                     if (lastQuestion !== scope.d.questionsWithAnswers[questionIndex] && scope.d.answeredCount !== scope.d.questionsWithAnswers.length) {
                                         scope.settings.onNext();
                                     } else {
                                         updateTimeSpentOnQuestion();
                                         setViewValue();
-                                        scope.settings.onLastNext();
+                                        scope.settings.onDone();
                                     }
                                     questionAnswered = false;
                                 });
@@ -266,11 +233,11 @@
 
                             function updateTimeSpentOnQuestion(questionNum) {
                                 questionNum = angular.isDefined(questionNum) ? questionNum : scope.d.currentSlide;
-                                if(scope.settings.viewMode === ZnkExerciseSrv.viewModeEnum.review.enum){
+                                if (scope.settings.viewMode === ZnkExerciseViewModeEnum.REVIEW.enum) {
                                     return;
                                 }
 
-                                if(!updateTimeSpentOnQuestion.lastTimeStamp){
+                                if (!updateTimeSpentOnQuestion.lastTimeStamp) {
                                     updateTimeSpentOnQuestion.lastTimeStamp = Date.now();
                                     return;
                                 }
@@ -281,14 +248,13 @@
                                 question.__questionStatus.timeSpent = (question.__questionStatus.timeSpent || 0) + timePassed;
                             }
 
-                            scope.$watch('d.currentSlide', function (value,prevValue) {
+                            scope.$watch('d.currentSlide', function (value, prevValue) {
                                 updateTimeSpentOnQuestion(prevValue);
                                 if (toolboxModalSettings.actions && toolboxModalSettings.actions.setToolValue) {
                                     var currQuestion = getCurrentQuestion();
-                                    toolboxModalSettings.actions.setToolValue(ZnkExerciseSrv.toolBoxTools.BOOKMARK,!!currQuestion.__questionStatus.bookmark);
+                                    toolboxModalSettings.actions.setToolValue(ZnkExerciseSrv.toolBoxTools.BOOKMARK, !!currQuestion.__questionStatus.bookmark);
                                 }
-
-                                znkExerciseDrvCtrl.setQuestionChangeResolver(null);
+                                znkExerciseDrvCtrl.questionChangeResolver(null);
                                 questionAnswered = false;
                                 scope.settings.onSlideChange();
 
@@ -296,34 +262,25 @@
                                 //$analytics.pageTrack(url);
                             });
 
-                            function slideProm() {
-                                var defer = $q.defer();
-                                if(questionAnswered) {
-                                    defer.resolve();
-                                }
-                                return defer.promise;
-                            }
-
-                            scope.$watch('settings.slideDirection', function(val) {
-                                if(val === ZnkExerciseSrv.slideDirections.NONE) {
-                                    znkExerciseDrvCtrl.setQuestionChangeResolver(slideProm);
+                            scope.$watch('settings.slideDirection', function (val) {
+                                if (val === ZnkExerciseSrv.slideDirections.NONE) {
+                                    znkExerciseDrvCtrl.questionChangeResolver(function () {
+                                        var defer = $q.defer();
+                                        if (znkExerciseDrvCtrl.isCurrentQuestionAnswered()) {
+                                            defer.resolve();
+                                        }
+                                        return defer.promise;
+                                    });
                                 }
                             });
 
-                            if($window.plugins && $window.plugins.insomnia) {
-                                $window.plugins.insomnia.keepAwake();
-                            }
-
-                            scope.$on('$destroy',function(){
-                                if(toolBoxModalInstance){
+                            scope.$on('$destroy', function () {
+                                if (toolBoxModalInstance) {
                                     toolBoxModalInstance.close();
-                                }
-                                if($window.plugins && $window.plugins.insomnia) {
-                                    $window.plugins.insomnia.allowSleepAgain();
                                 }
                             });
                         }
-                    }
+                    };
                 }
             };
         }

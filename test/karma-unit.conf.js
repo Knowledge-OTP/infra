@@ -23,10 +23,13 @@ module.exports = function (config) {
             // bower:js
             'bower_components/angular/angular.js',
             'bower_components/angular-mocks/angular-mocks.js',
+            'bower_components/angular-touch/angular-touch.js',
+            'bower_components/angular-carousel/dist/angular-carousel.js',
             // endbower
 
             //html
-            '**/*.html',
+            'src/**/*.html',
+            'src/**/*.svg',
 
             //utility
             'test/utility/**/*.*',
@@ -57,9 +60,9 @@ module.exports = function (config) {
         // - Safari (only Mac)
         // - PhantomJS
         // - IE (only Windows)
-        browsers: [
-            'PhantomJS'
-        ],
+        //browsers: [
+        //    'Chrome'
+        //],
 
         // Which plugins to enable
         //plugins: [
@@ -77,7 +80,8 @@ module.exports = function (config) {
 
         colors: true,
         preprocessors: {
-            '**/*.html': ['ng-html2js']
+            '**/*.html': ['ng-html2js'],
+            '**/*.svg': ['ng-html2js']
         },
         // level of logging
         // possible values: LOG_DISABLE || LOG_ERROR || LOG_WARN || LOG_INFO || LOG_DEBUG

@@ -26,12 +26,12 @@
                 //return ZnkModalSrv.modal(modalOptions);
             };
 
-            ZnkExerciseSrv.viewModeEnum = new EnumSrv.BaseEnum([
-                ['answerWithResult', 1, 'Answer With Result'],
-                ['answerOnly', 2, 'Answer Only'],
-                ['review', 3, 'Review'],
-                ['mustAnswer', 4, 'Must Answer']
-            ]);
+            //ZnkExerciseSrv.viewModeEnum = new EnumSrv.BaseEnum([
+            //    ['answerWithResult', 1, 'Answer With Result'],
+            //    ['answerOnly', 2, 'Answer Only'],
+            //    ['review', 3, 'Review'],
+            //    ['mustAnswer', 4, 'Must Answer']
+            //]);
 
             ZnkExerciseSrv.toolBoxTools = {
                 BLACKBOARD: 'blackboard',

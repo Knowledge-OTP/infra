@@ -41,15 +41,8 @@ znk-exercise.desktop {
       }
 
       button {
-        padding: 0;
         height: 80px;
         width: 40px;
-        border:{
-          top: none;
-          right: none;
-          bottom: none;
-          left: none;
-        }
         background: #fbfafa;
 
         &:focus{
@@ -64,6 +57,24 @@ znk-exercise.desktop {
           }
         }
       }
+    }
+
+    .done-btn{
+      width: 160px;
+      position: absolute;
+      right: 30px;
+      bottom: 10px;
+      height: 35px;
+      background: #ff931e;
+      font: {
+        family: Lato;
+        size: 13px;
+        weight: normal;
+      }
+      border:{
+        radius: 30px;
+      }
+      color: white;
     }
   }
 
@@ -101,6 +112,20 @@ znk-exercise.desktop {
           }
         }
       }
+    }
+  }
+
+  button {
+    padding: 0;
+    border:{
+      top: none;
+      right: none;
+      bottom: none;
+      left: none;
+    }
+
+    &:focus{
+      outline: none;
     }
   }
 }

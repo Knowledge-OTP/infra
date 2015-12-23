@@ -116,11 +116,19 @@ module.exports = function (grunt) {
         // Test settings
         karma: {
             unit: {
+                browsers: [
+                    'Chrome',
+                    'Safari'
+                ],
                 configFile: 'test/karma-unit.conf.js'
             },
             build: {
                 configFile: 'test/karma-unit.conf.js',
-                singleRun: true
+                singleRun: true,
+                browsers: [
+                    'Chrome',
+                    'Safari'
+                ]
             }
         },
         connect: {

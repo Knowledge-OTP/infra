@@ -5,7 +5,7 @@ describe('testing directive "znkExerciseDrv":', function () {
     beforeEach(module('znk.infra.znkExercise', 'htmlTemplates'));
 
     //get dependencies
-    var $rootScope, $compile, $timeout, $interval, ZnkExerciseSrv;
+    var $rootScope, $compile, $timeout, $interval, ZnkExerciseSrv, $q, ZnkExerciseViewModeEnum;
     beforeEach(inject([
         '$rootScope', '$compile', '$timeout', '$injector',
         function (_$rootScope, _$compile, _$timeout, $injector) {
@@ -14,6 +14,8 @@ describe('testing directive "znkExerciseDrv":', function () {
             $timeout = _$timeout;
             $interval = $injector.get('$interval');
             ZnkExerciseSrv = $injector.get('ZnkExerciseSrv');
+            $q = $injector.get('$q');
+            ZnkExerciseViewModeEnum = $injector.get('ZnkExerciseViewModeEnum');
         }
     ]));
 
@@ -76,7 +78,6 @@ describe('testing directive "znkExerciseDrv":', function () {
                 '</znk-exercise>';
         }
         content = $compile(content)($scope);
-        var contentDomElement = content[0];
 
         content.getNgModelCtrl = function () {
             return content.data().$ngModelController;
@@ -96,12 +97,8 @@ describe('testing directive "znkExerciseDrv":', function () {
 
         //wait for the slide box to compile the questions
         $scope.$digest();
-        //sliders wont be setup unless its container has width
-        //angular.element(document.querySelector('body')).append(content);
-        //var znkCarouselDomElem = contentDomElement.querySelector('.znk-carousel');
-        //znkCarouselDomElem.style.height = znkCarouselDomElem.style.width = '100px';
         $timeout.flush();
-        //$timeout.flush();
+
         return {
             scope: $scope,
             isolateScope: content.isolateScope(),
@@ -248,17 +245,17 @@ describe('testing directive "znkExerciseDrv":', function () {
         expect(scope.d.settings.onNext).toHaveBeenCalled();
     });
 
-    it('when tapping on next button on the last question then scope.d.settings.onLastNext function should be called', function () {
+    it('when tapping on next button on the last question then scope.d.settings.onDone function should be called', function () {
         var scopeContent = createDirectiveHtml();
         var scope = scopeContent.scope;
-        spyOn(scope.d.settings, 'onLastNext');
+        spyOn(scope.d.settings, 'onDone');
         var content = scopeContent.content;
         content.next();
         content.next();
         content.next();
         content.next();
         content.next();
-        expect(scope.d.settings.onLastNext).toHaveBeenCalled();
+        expect(scope.d.settings.onDone).toHaveBeenCalled();
     });
 
     it('when clicking on bookmark icon then the question should be bookmarked',function(){
@@ -293,7 +290,7 @@ describe('testing directive "znkExerciseDrv":', function () {
     });
 
     it('given review mode when 3000 second is passed then the time spend on question property should not be increased',function(){
-        var scopeContent = createDirectiveHtml(null,null,{viewMode: ZnkExerciseSrv.viewModeEnum.review.enum});
+        var scopeContent = createDirectiveHtml(null,null,{viewMode: ZnkExerciseViewModeEnum.REVIEW.enum});
         var scope = scopeContent.scope;
         var initSpentTime = scope.d.answers[0].timeSpent;
         $interval.flush(5000);
@@ -367,5 +364,85 @@ describe('testing directive "znkExerciseDrv":', function () {
         initBookmarkValue = scope.d.answers[0].bookmark;
         modalSettings.events.onToolValueChanged({tool: ZnkExerciseSrv.toolBoxTools.BOOKMARK, value: !initBookmarkValue});
         expect(!!scope.d.answers[0].bookmark).toBe(!initBookmarkValue);
+    });
+
+    it('given question change resolver not resolved when trying to set current question index then it should not be set',function(){
+        var scopeContent = createDirectiveHtml();
+        var isolateScope = scopeContent.isolateScope;
+        var initIndex = isolateScope.vm.getCurrentIndex();
+
+        var defer = $q.defer();
+        isolateScope.vm.questionChangeResolver(defer.promise);
+
+        isolateScope.vm.setCurrentIndex(3);
+        $rootScope.$digest();
+
+        var currentIndex = isolateScope.vm.getCurrentIndex();
+        expect(currentIndex).toBe(initIndex);
+    });
+
+    it('given question change resolver is resolved when trying to set current question index then it should be set',function(){
+        var scopeContent = createDirectiveHtml();
+        var isolateScope = scopeContent.isolateScope;
+        var initIndex = isolateScope.vm.getCurrentIndex();
+
+        var defer = $q.defer();
+        defer.resolve(true);
+        isolateScope.vm.questionChangeResolver(defer.promise);
+
+        isolateScope.vm.setCurrentIndex(3);
+        $rootScope.$digest();
+
+        var currentIndex = isolateScope.vm.getCurrentIndex();
+        expect(currentIndex).toBe(3);
+    });
+
+    it('when trying to set current question by offset then it should be set',function(){
+        var scopeContent = createDirectiveHtml();
+        var isolateScope = scopeContent.isolateScope;
+
+        isolateScope.vm.setCurrentIndexByOffset(1);
+        $rootScope.$digest();
+        var expectedResult = 1;
+        var currentIndex = isolateScope.vm.getCurrentIndex();
+        expect(currentIndex).toBe(expectedResult);
+    });
+
+    it('when trying to set current question by offset to negative value then it should be set to zero',function(){
+        var scopeContent = createDirectiveHtml();
+        var isolateScope = scopeContent.isolateScope;
+
+        isolateScope.vm.setCurrentIndexByOffset(-10);
+        $rootScope.$digest();
+        var expectedResult = 0;
+        var currentIndex = isolateScope.vm.getCurrentIndex();
+        expect(currentIndex).toBe(expectedResult);
+    });
+
+    it('when trying to set current question by offset to number above the question number then it should be set to last question index',function(){
+        var scopeContent = createDirectiveHtml();
+        var isolateScope = scopeContent.isolateScope;
+
+        isolateScope.vm.setCurrentIndexByOffset(10);
+        $rootScope.$digest();
+        var expectedResult = 4;
+        var currentIndex = isolateScope.vm.getCurrentIndex();
+        expect(currentIndex).toBe(expectedResult);
+    });
+
+    it('given review mode when trying to change user answer then it should not be updated',function(){
+        var scopeContent = createDirectiveHtml(undefined,undefined,{viewMode: ZnkExerciseViewModeEnum.REVIEW.enum});
+        var isolateScope = scopeContent.isolateScope;
+        var content = scopeContent.content;
+        var ngModelCtrl = content.getNgModelCtrl();
+        var expectedValue = angular.copy(ngModelCtrl.$modelValue);
+
+        isolateScope.d.questionsWithAnswers[0].__questionStatus.userAnswer = 4;
+        isolateScope.d.questionAnswered();
+        //$rootScope.$digest();
+        //var expectedResult = 4;
+        //var currentIndex = isolateScope.vm.getCurrentIndex();
+        var currModelValue = ngModelCtrl.$modelValue;
+        expect(currModelValue).toEqual(expectedValue);
     });
 });

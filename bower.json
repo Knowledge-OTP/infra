@@ -15,5 +15,8 @@
     "test",
     "demo"
   ],
-  "main": "dist/znk.infra.js"
+  "main": "dist/znk.infra.js",
+  "resolutions": {
+    "angular": "1.4.x"
+  }
 }

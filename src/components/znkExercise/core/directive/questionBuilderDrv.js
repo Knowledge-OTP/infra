@@ -27,8 +27,7 @@
                         var znkExerciseCtrl = ctrls[1];
 
                         questionBuilderCtrl.getViewMode = znkExerciseCtrl.getViewMode;
-
-                        questionBuilderCtrl.setQuestionChangeResolver = znkExerciseCtrl.setQuestionChangeResolver.bind(znkExerciseCtrl);
+                        questionBuilderCtrl.questionChangeResolver = znkExerciseCtrl.questionChangeResolver.bind(znkExerciseCtrl);
                     },
                     post: function post(scope, element, attrs, ctrls) {
                         var questionBuilderCtrl = ctrls[0];
@@ -44,7 +43,7 @@
                         var innerTimeout;
                         $timeout(function(){
                             innerTimeout = $timeout(function(){
-                                znkExerciseCtrl.questionRendered(questionBuilderCtrl.question.__questionStatus.index);
+                                znkExerciseCtrl.notifyQuestionReady(questionBuilderCtrl.question.__questionStatus.index);
                             });
                         },0,false);
 

@@ -1,14 +1,16 @@
 <div ng-transclude></div>
 <template-by-platform class="znk-carousel-container"
-                      prefix="components/znkExercise/questionSwiper/template"
+                      prefix="components/znkExercise/core/template"
                       mobile-temp="questionSwiperMobileTemplate.html"
                       desktop-temp="questionSwiperDesktopTemplate.html">
 </template-by-platform>
-<template-by-platform class="btn-section"
-                      prefix="components/znkExercise/btnSection/template"
-                      mobile-temp="btnSectionMobileTemplate.html"
-                      desktop-temp="btnSectionDesktopTemplate.html">
-</template-by-platform>
+<znk-exercise-btn-section class="btn-section"
+                          prev-question="vm.setCurrentIndexByOffset(-1)"
+                          next-question="vm.setCurrentIndexByOffset(1)"
+                          active-slide="d.currentSlide"
+                          questions="d.questionsWithAnswers">
+
+</znk-exercise-btn-section>
 <znk-exercise-pager
         ng-hide="d.hidePager"
         questions="d.questionsWithAnswers"
