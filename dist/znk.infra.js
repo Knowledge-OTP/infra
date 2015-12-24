@@ -1049,7 +1049,8 @@
 
     var ZnkExerciseEvents = {
         BOOKMARK: 'znk exercise:bookmark',
-        QUESTION_ANSWERED: 'znk exercise:question answered'
+        QUESTION_ANSWERED: 'znk exercise:question answered',
+        READY: 'znk exercise: exercise ready'
     };
     angular.module('znk.infra.znkExercise').constant('ZnkExerciseEvents', ZnkExerciseEvents);
 })(angular);
@@ -1190,15 +1191,17 @@
                 },
                 link: function (scope, element, attrs, ctrls) {
                     var znkExerciseDrvCtrl = ctrls[1];
-                    var questions = znkExerciseDrvCtrl.getQuestions();
 
-                    scope.$parent.$watch(attrs.activeSlide, function(newVal){
-                        if((newVal && newVal === (questions.length -1 )) || znkExerciseDrvCtrl.isLastUnansweredQuestion()){
-                            scope.vm.showDoneButton = true;
-                        }else{
-                            scope.vm.showDoneButton = false;
-                        }
+                    znkExerciseDrvCtrl.getQuestions().then(function(questions){
+                        scope.$parent.$watch(attrs.activeSlide, function(newVal){
+                            if((newVal && newVal === (questions.length -1 )) || znkExerciseDrvCtrl.isLastUnansweredQuestion()){
+                                scope.vm.showDoneButton = true;
+                            }else{
+                                scope.vm.showDoneButton = false;
+                            }
+                        });
                     });
+
 
                     scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function () {
                         if(znkExerciseDrvCtrl.isLastUnansweredQuestion()){
@@ -1220,7 +1223,7 @@
             questionTypeToHtmlTemplateMap = _questionTypeToHtmlTemplateMap;
         };
 
-        var questionTypeGetterFn;
+        var questionTypeGetterFn = angular.noop;
         this.setQuestionTypeGetter = function(typeGetterFn){
             questionTypeGetterFn = typeGetterFn;
         };
@@ -1429,6 +1432,7 @@
                             function render(viewValue) {
                                 allQuestionWithAnswersArr = viewValue;
                                 scope.d.questionsWithAnswers = allQuestionWithAnswersArr;
+                                znkExerciseDrvCtrl.setExerciseAsReady();
                             }
 
                             ngModelCtrl.$render = function () {
@@ -1593,9 +1597,23 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('ZnkExerciseDrvCtrl', [
-        '$scope', '$q',
-        function ($scope, $q) {
+        '$scope', '$q', 'ZnkExerciseEvents',
+        function ($scope, $q, ZnkExerciseEvents) {
             var self = this;
+            var exerciseReadyDefer = $q.defer();
+            var isExerciseReady = false;
+
+            self.setExerciseAsReady = function(){
+                if(isExerciseReady){
+                    return;
+                }
+                isExerciseReady = true;
+                exerciseReadyDefer.resolve(isExerciseReady);
+            };
+
+            self.isExerciseReady = function(){
+                return isExerciseReady ;
+            };
 
             self.getViewMode = function () {
                 return $scope.settings.viewMode;
@@ -1645,6 +1663,8 @@
             self.notifyQuestionReady = function () {
                 if (!self.__exerciseReady) {
                     self.__exerciseReady = true;
+                    $scope.$broadcast(ZnkExerciseEvents.READY);
+                    exerciseReadyDefer.resolve(true);
                     if ($scope.settings.onExerciseReady) {
                         $scope.settings.onExerciseReady();
                     }
@@ -1670,7 +1690,9 @@
             };
 
             self.getQuestions = function(){
-                return $scope.d.questionsWithAnswers;
+                return exerciseReadyDefer.promise.then(function(){
+                    return $scope.d.questionsWithAnswers;
+                });
             };
 
             function isQuestionAnswered(index) {
@@ -2428,8 +2450,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "    rn-carousel-index=\"d.currentSlide\">\n" +
     "    <li class=\"slide\"\n" +
     "        ng-repeat=\"question in d.questionsWithAnswers\">\n" +
-    "        <question-builder slide-repeat-drv=\"question in d.questionsWithAnswers\"\n" +
-    "                          active-slide=\"d.currentSlide\"\n" +
+    "        <question-builder active-slide=\"d.currentSlide\"\n" +
     "                          question=\"question\"\n" +
     "                          ng-model=\"question.__questionStatus.userAnswer\"\n" +
     "                          ng-change=\"d.questionAnswered(question)\">\n" +
