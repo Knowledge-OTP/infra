@@ -6,13 +6,9 @@
 </template-by-platform>
 <znk-exercise-btn-section class="btn-section"
                           prev-question="vm.setCurrentIndexByOffset(-1)"
-                          next-question="vm.setCurrentIndexByOffset(1)"
-                          active-slide="d.currentSlide"
-                          questions="d.questionsWithAnswers">
-
+                          next-question="vm.setCurrentIndexByOffset(1)">
 </znk-exercise-btn-section>
 <znk-exercise-pager
         ng-hide="d.hidePager"
-        questions="d.questionsWithAnswers"
-        ng-model="d.currentSlide">
+        questions="d.questionsWithAnswers">
 </znk-exercise-pager>

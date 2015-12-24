@@ -3,8 +3,7 @@
     rn-carousel-index="d.currentSlide">
     <li class="slide"
         ng-repeat="question in d.questionsWithAnswers">
-        <question-builder active-slide="d.currentSlide"
-                          question="question"
+        <question-builder question="question"
                           ng-model="question.__questionStatus.userAnswer"
                           ng-change="d.questionAnswered(question)">
         </question-builder>

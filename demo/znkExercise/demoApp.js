@@ -4,9 +4,9 @@
     angular.module('demoApp', ['znk.infra.znkExercise'])
         .config(function(QuestionTypesSrvProvider){
             var map = {
-                1: '<div>question Type 1</div>',
-                2: '<div>question Type 2</div>',
-                3: '<div>question Type 3</div>'
+                1: '<div>question Type 1</div><span>{{$parent.questionGetter().id}}</span>',
+                2: '<div>question Type 2</div><span>{{$parent.questionGetter().id}}</span>',
+                3: '<div>question Type 3</div><span>{{$parent.questionGetter().id}}</span>'
             };
             QuestionTypesSrvProvider.setQuestionTypesHtmlTemplate(map);
 

@@ -1050,7 +1050,8 @@
     var ZnkExerciseEvents = {
         BOOKMARK: 'znk exercise:bookmark',
         QUESTION_ANSWERED: 'znk exercise:question answered',
-        READY: 'znk exercise: exercise ready'
+        READY: 'znk exercise: exercise ready',
+        QUESTION_CHANGED: 'znk exercise: question changed'
     };
     angular.module('znk.infra.znkExercise').constant('ZnkExerciseEvents', ZnkExerciseEvents);
 })(angular);
@@ -1159,20 +1160,7 @@
                     nextQuestion: '&?',
                     questionsGetter: '&questions'
                 },
-                require: ['znkExerciseBtnSection', '^znkExercise'],
-                controllerAs: 'vm',
-                controller: [
-                    '$scope',
-                    function ($scope) {
-                        this.prevQuestion = function () {
-                            $scope.prevQuestion();
-                        };
-
-                        this.nextQuestion = function () {
-                            $scope.nextQuestion();
-                        };
-                    }
-                ],
+                require: '^znkExercise',
                 templateUrl: function () {
                     var templateUrl = "components/znkExercise/core/template/";
                     var platform = ZnkExerciseSrv.getPlatform();
@@ -1189,25 +1177,52 @@
                     }
                     return templateUrl;
                 },
-                link: function (scope, element, attrs, ctrls) {
-                    var znkExerciseDrvCtrl = ctrls[1];
+                link: {
+                    pre: function (scope, element, attrs, znkExerciseDrvCtrl) {
+                        scope.vm = {};
 
-                    znkExerciseDrvCtrl.getQuestions().then(function(questions){
-                        scope.$parent.$watch(attrs.activeSlide, function(newVal){
-                            if((newVal && newVal === (questions.length -1 )) || znkExerciseDrvCtrl.isLastUnansweredQuestion()){
+                        function _setCurrentQuestionIndex(index){
+                            scope.vm.currentQuestionIndex = index || 0;
+                        }
+
+                        function init(){
+                            znkExerciseDrvCtrl.getQuestions().then(function (questions) {
+                                scope.vm.maxQuestionIndex = questions.length - 1;
+                            });
+                            _setCurrentQuestionIndex(znkExerciseDrvCtrl.getCurrentIndex());
+                        }
+
+                        init();
+
+
+                        scope.vm.prevQuestion = function () {
+                            scope.prevQuestion();
+                        };
+
+                        scope.vm.nextQuestion = function () {
+                            scope.nextQuestion();
+                        };
+
+                        scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex) {
+                            _setCurrentQuestionIndex(newIndex);
+
+                            var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
+                            getQuestionsProm.then(function (questions) {
+                                scope.vm.maxQuestionIndex = questions.length - 1;
+                                if ((newIndex && newIndex === (questions.length - 1 )) || znkExerciseDrvCtrl.isLastUnansweredQuestion()) {
+                                    scope.vm.showDoneButton = true;
+                                } else {
+                                    scope.vm.showDoneButton = false;
+                                }
+                            });
+                        });
+
+                        scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function () {
+                            if (znkExerciseDrvCtrl.isLastUnansweredQuestion()) {
                                 scope.vm.showDoneButton = true;
-                            }else{
-                                scope.vm.showDoneButton = false;
                             }
                         });
-                    });
-
-
-                    scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function () {
-                        if(znkExerciseDrvCtrl.isLastUnansweredQuestion()){
-                            scope.vm.showDoneButton = true;
-                        }
-                    });
+                    }
                 }
             };
         }
@@ -1345,9 +1360,6 @@
                     return {
                         pre: function (scope, element, attrs, ctrls) {
                             var defaultSettings = {
-                                onNext: function () {
-                                    scope.d.currentSlide++;
-                                },
                                 onDone: angular.noop,
                                 onQuestionAnswered: angular.noop,
                                 viewMode: ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
@@ -1365,17 +1377,17 @@
                             var questionAnswered;
 
                             scope.d = {
-                                currentSlide: scope.settings.initSlideIndex || 0,
                                 answeredCount: 0,
                                 slideDirections: ZnkExerciseSrv.slideDirections
                             };
+                            znkExerciseDrvCtrl.setCurrentIndex(scope.settings.initSlideIndex || 0);
 
                             scope.actions = scope.actions || {};
                             scope.actions.setSlideIndex = function setSlideIndex(index) {
-                                scope.d.currentSlide = index;
+                                znkExerciseDrvCtrl.setCurrentIndex(index);
                             };
                             scope.actions.getCurrentIndex = function () {
-                                return scope.d.currentSlide;
+                                return znkExerciseDrvCtrl.getCurrentIndex();
                             };
                             scope.actions.finishExercise = function () {
                                 updateTimeSpentOnQuestion();
@@ -1517,24 +1529,6 @@
                                 scope.$broadcast(ZnkExerciseEvents.BOOKMARK, currQuestion);
                                 setViewValue();
                             };
-                            /**
-                             * @deprecated
-                             * use znkExerciseDrvCtrl setCurrentIndex or setCurrentIndexByOffset instead
-                             * */
-                            scope.d.next = function () {
-                                var questionIndex = scope.d.currentSlide;
-                                var lastQuestion = allQuestionWithAnswersArr[allQuestionWithAnswersArr.length - 1];
-                                znkExerciseDrvCtrl.questionChangeResolver().then(function () {
-                                    if (lastQuestion !== scope.d.questionsWithAnswers[questionIndex] && scope.d.answeredCount !== scope.d.questionsWithAnswers.length) {
-                                        scope.settings.onNext();
-                                    } else {
-                                        updateTimeSpentOnQuestion();
-                                        setViewValue();
-                                        scope.settings.onDone();
-                                    }
-                                    questionAnswered = false;
-                                });
-                            };
 
                             function updateTimeSpentOnQuestion(questionNum) {
                                 questionNum = angular.isDefined(questionNum) ? questionNum : scope.d.currentSlide;
@@ -1562,7 +1556,7 @@
                                 znkExerciseDrvCtrl.questionChangeResolver(null);
                                 questionAnswered = false;
                                 scope.settings.onSlideChange();
-
+                                scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value,prevValue);
                                 //var url = $location.url() + '/' + scope.d.questionsWithAnswers[value].id;
                                 //$analytics.pageTrack(url);
                             });
@@ -1597,8 +1591,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('ZnkExerciseDrvCtrl', [
-        '$scope', '$q', 'ZnkExerciseEvents',
-        function ($scope, $q, ZnkExerciseEvents) {
+        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$timeout',
+        function ($scope, $q, ZnkExerciseEvents, $log, $timeout) {
             var self = this;
             var exerciseReadyDefer = $q.defer();
             var isExerciseReady = false;
@@ -1641,9 +1635,19 @@
             self.setCurrentIndex = function (newQuestionIndex) {
                 if (angular.isDefined(newQuestionIndex)) {
                     return self.questionChangeResolver().then(function () {
-                        $scope.d.currentSlide = newQuestionIndex;
+                        //minimum index limit
+                        newQuestionIndex = Math.max(0, newQuestionIndex);
+                        //max index limit
+                        var questions = $scope.questionsGetter() || [];
+                        newQuestionIndex = Math.min(newQuestionIndex, questions.length - 1);
+                        //temp hack
+                        $timeout(function(){
+                            $scope.d.currentSlide = newQuestionIndex;
+                        },300);
                         return $scope.d.currentSlide;
                     });
+                }else{
+                    $log.debug('ZnkExerciseDrv: setCurrentIndex was invoked with undefined newQuestionIndex parameter');
                 }
                 return $q.when($scope.d.currentSlide);
             };
@@ -1651,12 +1655,6 @@
             self.setCurrentIndexByOffset = function (offset) {
                 var currIndex = this.getCurrentIndex();
                 var newCurrIndex = currIndex + offset;
-                //minimum index limit
-                newCurrIndex = Math.max(0, newCurrIndex);
-                //max index limit
-                var questions = $scope.questionsGetter() || [];
-                newCurrIndex = Math.min(newCurrIndex, questions.length - 1);
-
                 return this.setCurrentIndex(newCurrIndex);
             };
 
@@ -2393,12 +2391,13 @@
 
 angular.module('znk.infra').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkExercise/core/template/btnSectionDesktopTemplate.html",
-    "<div class=\"btn-container left-container\">\n" +
+    "<div class=\"btn-container left-container ng-hide\" ng-show=\"!!vm.currentQuestionIndex\">\n" +
     "    <button ng-click=\"vm.prevQuestion()\">\n" +
     "        <svg-icon name=\"chevron\"></svg-icon>\n" +
     "    </button>\n" +
     "</div>\n" +
-    "<div class=\"btn-container right-container\">\n" +
+    "<div class=\"btn-container right-container ng-hide\"\n" +
+    "     ng-show=\"vm.maxQuestionIndex !== vm.currentQuestionIndex\">\n" +
     "    <button ng-click=\"vm.nextQuestion()\">\n" +
     "        <svg-icon name=\"chevron\"></svg-icon>\n" +
     "    </button>\n" +
@@ -2450,8 +2449,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "    rn-carousel-index=\"d.currentSlide\">\n" +
     "    <li class=\"slide\"\n" +
     "        ng-repeat=\"question in d.questionsWithAnswers\">\n" +
-    "        <question-builder active-slide=\"d.currentSlide\"\n" +
-    "                          question=\"question\"\n" +
+    "        <question-builder question=\"question\"\n" +
     "                          ng-model=\"question.__questionStatus.userAnswer\"\n" +
     "                          ng-change=\"d.questionAnswered(question)\">\n" +
     "        </question-builder>\n" +
@@ -2462,7 +2460,6 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "               show-pager=\"false\"\n" +
     "               active-slide=\"d.currentSlide\">\n" +
     "    <question-builder slide-repeat-drv=\"question in d.questionsWithAnswers\"\n" +
-    "                      active-slide=\"d.currentSlide\"\n" +
     "                      question=\"question\"\n" +
     "                      ng-model=\"question.__questionStatus.userAnswer\"\n" +
     "                      ng-change=\"d.questionAnswered(question)\">\n" +
@@ -2477,15 +2474,11 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "</template-by-platform>\n" +
     "<znk-exercise-btn-section class=\"btn-section\"\n" +
     "                          prev-question=\"vm.setCurrentIndexByOffset(-1)\"\n" +
-    "                          next-question=\"vm.setCurrentIndexByOffset(1)\"\n" +
-    "                          active-slide=\"d.currentSlide\"\n" +
-    "                          questions=\"d.questionsWithAnswers\">\n" +
-    "\n" +
+    "                          next-question=\"vm.setCurrentIndexByOffset(1)\">\n" +
     "</znk-exercise-btn-section>\n" +
     "<znk-exercise-pager\n" +
     "        ng-hide=\"d.hidePager\"\n" +
-    "        questions=\"d.questionsWithAnswers\"\n" +
-    "        ng-model=\"d.currentSlide\">\n" +
+    "        questions=\"d.questionsWithAnswers\">\n" +
     "</znk-exercise-pager>\n" +
     "");
   $templateCache.put("components/znkExercise/svg/chevron-icon.svg",

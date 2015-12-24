@@ -41,9 +41,6 @@
                     return {
                         pre: function (scope, element, attrs, ctrls) {
                             var defaultSettings = {
-                                onNext: function () {
-                                    scope.d.currentSlide++;
-                                },
                                 onDone: angular.noop,
                                 onQuestionAnswered: angular.noop,
                                 viewMode: ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
@@ -61,17 +58,17 @@
                             var questionAnswered;
 
                             scope.d = {
-                                currentSlide: scope.settings.initSlideIndex || 0,
                                 answeredCount: 0,
                                 slideDirections: ZnkExerciseSrv.slideDirections
                             };
+                            znkExerciseDrvCtrl.setCurrentIndex(scope.settings.initSlideIndex || 0);
 
                             scope.actions = scope.actions || {};
                             scope.actions.setSlideIndex = function setSlideIndex(index) {
-                                scope.d.currentSlide = index;
+                                znkExerciseDrvCtrl.setCurrentIndex(index);
                             };
                             scope.actions.getCurrentIndex = function () {
-                                return scope.d.currentSlide;
+                                return znkExerciseDrvCtrl.getCurrentIndex();
                             };
                             scope.actions.finishExercise = function () {
                                 updateTimeSpentOnQuestion();
@@ -213,24 +210,6 @@
                                 scope.$broadcast(ZnkExerciseEvents.BOOKMARK, currQuestion);
                                 setViewValue();
                             };
-                            /**
-                             * @deprecated
-                             * use znkExerciseDrvCtrl setCurrentIndex or setCurrentIndexByOffset instead
-                             * */
-                            scope.d.next = function () {
-                                var questionIndex = scope.d.currentSlide;
-                                var lastQuestion = allQuestionWithAnswersArr[allQuestionWithAnswersArr.length - 1];
-                                znkExerciseDrvCtrl.questionChangeResolver().then(function () {
-                                    if (lastQuestion !== scope.d.questionsWithAnswers[questionIndex] && scope.d.answeredCount !== scope.d.questionsWithAnswers.length) {
-                                        scope.settings.onNext();
-                                    } else {
-                                        updateTimeSpentOnQuestion();
-                                        setViewValue();
-                                        scope.settings.onDone();
-                                    }
-                                    questionAnswered = false;
-                                });
-                            };
 
                             function updateTimeSpentOnQuestion(questionNum) {
                                 questionNum = angular.isDefined(questionNum) ? questionNum : scope.d.currentSlide;
@@ -258,7 +237,7 @@
                                 znkExerciseDrvCtrl.questionChangeResolver(null);
                                 questionAnswered = false;
                                 scope.settings.onSlideChange();
-
+                                scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value,prevValue);
                                 //var url = $location.url() + '/' + scope.d.questionsWithAnswers[value].id;
                                 //$analytics.pageTrack(url);
                             });

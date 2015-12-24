@@ -2,8 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('ZnkExerciseDrvCtrl', [
-        '$scope', '$q', 'ZnkExerciseEvents',
-        function ($scope, $q, ZnkExerciseEvents) {
+        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$timeout',
+        function ($scope, $q, ZnkExerciseEvents, $log, $timeout) {
             var self = this;
             var exerciseReadyDefer = $q.defer();
             var isExerciseReady = false;
@@ -46,9 +46,19 @@
             self.setCurrentIndex = function (newQuestionIndex) {
                 if (angular.isDefined(newQuestionIndex)) {
                     return self.questionChangeResolver().then(function () {
-                        $scope.d.currentSlide = newQuestionIndex;
+                        //minimum index limit
+                        newQuestionIndex = Math.max(0, newQuestionIndex);
+                        //max index limit
+                        var questions = $scope.questionsGetter() || [];
+                        newQuestionIndex = Math.min(newQuestionIndex, questions.length - 1);
+                        //temp hack
+                        $timeout(function(){
+                            $scope.d.currentSlide = newQuestionIndex;
+                        },300);
                         return $scope.d.currentSlide;
                     });
+                }else{
+                    $log.debug('ZnkExerciseDrv: setCurrentIndex was invoked with undefined newQuestionIndex parameter');
                 }
                 return $q.when($scope.d.currentSlide);
             };
@@ -56,12 +66,6 @@
             self.setCurrentIndexByOffset = function (offset) {
                 var currIndex = this.getCurrentIndex();
                 var newCurrIndex = currIndex + offset;
-                //minimum index limit
-                newCurrIndex = Math.max(0, newCurrIndex);
-                //max index limit
-                var questions = $scope.questionsGetter() || [];
-                newCurrIndex = Math.min(newCurrIndex, questions.length - 1);
-
                 return this.setCurrentIndex(newCurrIndex);
             };
 

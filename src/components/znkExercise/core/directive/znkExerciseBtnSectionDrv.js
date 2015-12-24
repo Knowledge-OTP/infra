@@ -17,20 +17,7 @@
                     nextQuestion: '&?',
                     questionsGetter: '&questions'
                 },
-                require: ['znkExerciseBtnSection', '^znkExercise'],
-                controllerAs: 'vm',
-                controller: [
-                    '$scope',
-                    function ($scope) {
-                        this.prevQuestion = function () {
-                            $scope.prevQuestion();
-                        };
-
-                        this.nextQuestion = function () {
-                            $scope.nextQuestion();
-                        };
-                    }
-                ],
+                require: '^znkExercise',
                 templateUrl: function () {
                     var templateUrl = "components/znkExercise/core/template/";
                     var platform = ZnkExerciseSrv.getPlatform();
@@ -47,25 +34,52 @@
                     }
                     return templateUrl;
                 },
-                link: function (scope, element, attrs, ctrls) {
-                    var znkExerciseDrvCtrl = ctrls[1];
+                link: {
+                    pre: function (scope, element, attrs, znkExerciseDrvCtrl) {
+                        scope.vm = {};
 
-                    znkExerciseDrvCtrl.getQuestions().then(function(questions){
-                        scope.$parent.$watch(attrs.activeSlide, function(newVal){
-                            if((newVal && newVal === (questions.length -1 )) || znkExerciseDrvCtrl.isLastUnansweredQuestion()){
+                        function _setCurrentQuestionIndex(index){
+                            scope.vm.currentQuestionIndex = index || 0;
+                        }
+
+                        function init(){
+                            znkExerciseDrvCtrl.getQuestions().then(function (questions) {
+                                scope.vm.maxQuestionIndex = questions.length - 1;
+                            });
+                            _setCurrentQuestionIndex(znkExerciseDrvCtrl.getCurrentIndex());
+                        }
+
+                        init();
+
+
+                        scope.vm.prevQuestion = function () {
+                            scope.prevQuestion();
+                        };
+
+                        scope.vm.nextQuestion = function () {
+                            scope.nextQuestion();
+                        };
+
+                        scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex) {
+                            _setCurrentQuestionIndex(newIndex);
+
+                            var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
+                            getQuestionsProm.then(function (questions) {
+                                scope.vm.maxQuestionIndex = questions.length - 1;
+                                if ((newIndex && newIndex === (questions.length - 1 )) || znkExerciseDrvCtrl.isLastUnansweredQuestion()) {
+                                    scope.vm.showDoneButton = true;
+                                } else {
+                                    scope.vm.showDoneButton = false;
+                                }
+                            });
+                        });
+
+                        scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function () {
+                            if (znkExerciseDrvCtrl.isLastUnansweredQuestion()) {
                                 scope.vm.showDoneButton = true;
-                            }else{
-                                scope.vm.showDoneButton = false;
                             }
                         });
-                    });
-
-
-                    scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function () {
-                        if(znkExerciseDrvCtrl.isLastUnansweredQuestion()){
-                            scope.vm.showDoneButton = true;
-                        }
-                    });
+                    }
                 }
             };
         }

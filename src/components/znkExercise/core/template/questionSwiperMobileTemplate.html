@@ -2,7 +2,6 @@
                show-pager="false"
                active-slide="d.currentSlide">
     <question-builder slide-repeat-drv="question in d.questionsWithAnswers"
-                      active-slide="d.currentSlide"
                       question="question"
                       ng-model="question.__questionStatus.userAnswer"
                       ng-change="d.questionAnswered(question)">
