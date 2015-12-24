@@ -2,9 +2,23 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('ZnkExerciseDrvCtrl', [
-        '$scope', '$q',
-        function ($scope, $q) {
+        '$scope', '$q', 'ZnkExerciseEvents',
+        function ($scope, $q, ZnkExerciseEvents) {
             var self = this;
+            var exerciseReadyDefer = $q.defer();
+            var isExerciseReady = false;
+
+            self.setExerciseAsReady = function(){
+                if(isExerciseReady){
+                    return;
+                }
+                isExerciseReady = true;
+                exerciseReadyDefer.resolve(isExerciseReady);
+            };
+
+            self.isExerciseReady = function(){
+                return isExerciseReady ;
+            };
 
             self.getViewMode = function () {
                 return $scope.settings.viewMode;
@@ -54,6 +68,8 @@
             self.notifyQuestionReady = function () {
                 if (!self.__exerciseReady) {
                     self.__exerciseReady = true;
+                    $scope.$broadcast(ZnkExerciseEvents.READY);
+                    exerciseReadyDefer.resolve(true);
                     if ($scope.settings.onExerciseReady) {
                         $scope.settings.onExerciseReady();
                     }
@@ -79,7 +95,9 @@
             };
 
             self.getQuestions = function(){
-                return $scope.d.questionsWithAnswers;
+                return exerciseReadyDefer.promise.then(function(){
+                    return $scope.d.questionsWithAnswers;
+                });
             };
 
             function isQuestionAnswered(index) {

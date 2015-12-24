@@ -49,15 +49,17 @@
                 },
                 link: function (scope, element, attrs, ctrls) {
                     var znkExerciseDrvCtrl = ctrls[1];
-                    var questions = znkExerciseDrvCtrl.getQuestions();
 
-                    scope.$parent.$watch(attrs.activeSlide, function(newVal){
-                        if((newVal && newVal === (questions.length -1 )) || znkExerciseDrvCtrl.isLastUnansweredQuestion()){
-                            scope.vm.showDoneButton = true;
-                        }else{
-                            scope.vm.showDoneButton = false;
-                        }
+                    znkExerciseDrvCtrl.getQuestions().then(function(questions){
+                        scope.$parent.$watch(attrs.activeSlide, function(newVal){
+                            if((newVal && newVal === (questions.length -1 )) || znkExerciseDrvCtrl.isLastUnansweredQuestion()){
+                                scope.vm.showDoneButton = true;
+                            }else{
+                                scope.vm.showDoneButton = false;
+                            }
+                        });
                     });
+
 
                     scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function () {
                         if(znkExerciseDrvCtrl.isLastUnansweredQuestion()){

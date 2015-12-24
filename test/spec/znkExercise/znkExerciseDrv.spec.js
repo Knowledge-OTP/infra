@@ -83,6 +83,10 @@ describe('testing directive "znkExerciseDrv":', function () {
             return content.data().$ngModelController;
         };
 
+        content.getZnkExerciseDrvCtrl = function () {
+            return content.data().$znkExerciseController;
+        };
+
         content.next = function () {
             var isolateScope = this.isolateScope();
             isolateScope.d.next();
@@ -113,6 +117,15 @@ describe('testing directive "znkExerciseDrv":', function () {
     function sortArrByQuestionId(item1, item2) {
         return item1.questionId - item2.questionId;
     }
+
+    it('given formatter combining questions with answers has finish when executing isExerciseReady ' +
+        'function then true should be returned', function(){
+        var scopeContent = createDirectiveHtml();
+        var content = scopeContent.content;
+        var znkExerciseCtrl = content.getZnkExerciseDrvCtrl();
+        var isExerciseReady = znkExerciseCtrl.isExerciseReady();
+        expect(isExerciseReady).toBeTruthy();
+    });
 
     it('when questions and model are provided then view value should be transformed to one object which contain ' +
         'array of object which contain both question and answer', function () {

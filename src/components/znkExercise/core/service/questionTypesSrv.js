@@ -6,7 +6,7 @@
             questionTypeToHtmlTemplateMap = _questionTypeToHtmlTemplateMap;
         };
 
-        var questionTypeGetterFn;
+        var questionTypeGetterFn = angular.noop;
         this.setQuestionTypeGetter = function(typeGetterFn){
             questionTypeGetterFn = typeGetterFn;
         };

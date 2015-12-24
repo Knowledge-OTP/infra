@@ -128,6 +128,7 @@
                             function render(viewValue) {
                                 allQuestionWithAnswersArr = viewValue;
                                 scope.d.questionsWithAnswers = allQuestionWithAnswersArr;
+                                znkExerciseDrvCtrl.setExerciseAsReady();
                             }
 
                             ngModelCtrl.$render = function () {
