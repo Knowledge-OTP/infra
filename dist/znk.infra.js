@@ -193,6 +193,21 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.enum').factory('AnswerTypeEnum', [
+        'EnumSrv',
+        function (EnumSrv) {
+            return new EnumSrv.BaseEnum([
+                ['SELECT_ANSWER',0 ,'select answer'],
+                ['FREE_TEXT_ANSWER',1 ,'free text answer']
+            ]);
+        }
+    ]);
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
     var exerciseStatusEnum = {
         NEW: 0,
         ACTIVE: 1,
@@ -737,6 +752,50 @@
         }]);
 })(angular);
 
+/**
+ * attrs:
+ *
+ */
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('answerBuilder', [
+        '$compile', 'AnswerTypeEnum', 'ZnkExerciseUtilitySrv',
+        function ($compile, AnswerTypeEnum, ZnkExerciseUtilitySrv) {
+            var typeToViewMap = {};
+
+            typeToViewMap[AnswerTypeEnum.SELECT_ANSWER.enum] = '<select-answer></select-answer>';
+            typeToViewMap[AnswerTypeEnum.FREE_TEXT_ANSWER.enum] = '<select-answer></select-answer>';
+
+            return {
+                require: ['answerBuilder','^questionBuilder'],
+                restrict: 'E',
+                controller:[
+                    function(){
+
+                    }
+                ],
+                link: {
+                    pre:function (scope, element, attrs, ctrls) {
+                        var answerBuilderCtrl = ctrls[0];
+                        var questionBuilderCtrl = ctrls[1];
+
+                        var fnToBindFromQuestionBuilder = ['getViewMode'];
+                        ZnkExerciseUtilitySrv.bindFunctions(answerBuilderCtrl,questionBuilderCtrl,fnToBindFromQuestionBuilder);
+
+                        answerBuilderCtrl.question = questionBuilderCtrl.question;
+
+                        var answerType = questionBuilderCtrl.question.answerTypeId;
+                        var answerHtml = typeToViewMap[answerType];
+                        element.html(answerHtml);
+                        $compile(element.contents())(scope);
+                    }
+                }
+            };
+        }
+    ]);
+})(angular);
+
 ///**
 // * attrs:
 // */
@@ -857,34 +916,111 @@
 //})(angular);
 //
 
-'use strict';
-
+/**
+ * attrs:
+ *
+ */
 (function (angular) {
-    angular.module('znk.infra.znkExercise').directive('arrayToStringFmtr', [
-        function () {
-            return {
-                require: 'ngModel',
-                link: function (scope, element, attrs, ngModelCtrl) {
-                    function parser(val){
-                        if(!val || !val.length){
-                            return undefined;
-                        }
-                        return val.join('');
-                    }
-                    ngModelCtrl.$parsers.push(parser);
+    'use strict';
 
-                    function formatter(val){
-                        if (!val || !val.length) {
-                            return [];
+    angular.module('znk.infra.znkExercise').directive('selectAnswer', [
+        '$timeout', 'ZnkExerciseViewModeEnum',
+        function ($timeout, ZnkExerciseViewModeEnum) {
+            return {
+                templateUrl: 'components/znkExercise/answerTypes/templates/selectAnswerDrv.html',
+                require: ['^answerBuilder', '^ngModel'],
+                restrict:'E',
+                scope: {},
+                link: function (scope, element, attrs, ctrls) {
+                    var answerBuilder = ctrls[0];
+                    var ngModelCtrl = ctrls[1];
+
+                    var MODE_ANSWER_WITH_QUESTION = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
+                        MODE_ANSWER_ONLY = ZnkExerciseViewModeEnum.ONLY_ANSWER.enum,
+                        MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum,
+                        MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
+
+                    scope.d = {};
+
+                    scope.d.answers = answerBuilder.question.answers;
+
+                    scope.d.click = function (answer) {
+                        var viewMode = answerBuilder.getViewMode();
+
+                        if ((!isNaN(parseInt(ngModelCtrl.$viewValue)) && viewMode === MODE_ANSWER_WITH_QUESTION) || viewMode === MODE_REVIEW) {
+                            return;
                         }
-                        return val.match(/.{1}/g);
+                        ngModelCtrl.$setViewValue(answer.id);
+                        updateAnswersFollowingSelection(viewMode);
+                    };
+
+                    function updateAnswersFollowingSelection(viewMode) {
+                        var selectedAnswerId = ngModelCtrl.$viewValue;
+                        var correctAnswerId = answerBuilder.question.correctAnswerId;
+                        var $answers = angular.element(element[0].querySelectorAll('.answer'));
+                        for (var i = 0; i < $answers.length; i++) {
+
+                            var $answerElem = angular.element($answers[i]);
+                            if(!$answerElem || !$answerElem.scope || !$answerElem.scope()){
+                                continue;
+                            }
+
+                            var answer = $answerElem.scope().answer;
+                            var classToAdd,
+                                classToRemove;
+
+                            if (answerBuilder.getViewMode() === MODE_ANSWER_ONLY || answerBuilder.getViewMode() === MODE_MUST_ANSWER) {
+                                // dont show correct / wrong indication
+                                classToRemove = 'answered';
+                                classToAdd = selectedAnswerId === answer.id ? 'answered' : 'neutral';
+                            } else {
+                                // the rest of the optional states involve correct / wrong indications
+                                if (angular.isUndefined(selectedAnswerId)) {
+                                    // unanswered question
+                                    if (answerBuilder.getViewMode() === MODE_REVIEW) {
+                                        classToAdd = correctAnswerId === answer.id ? 'answered-incorrect' : 'neutral';
+                                    }
+                                } else if (selectedAnswerId === answer.id) {
+                                    // this is the selected answer
+                                    classToAdd = correctAnswerId === answer.id ? 'correct' : 'wrong';
+                                } else {
+                                    // this is the correct answer but the user didn't select it
+                                    classToAdd = answer.id === correctAnswerId ? 'answered-incorrect' : 'neutral';
+                                }
+                            }
+                            $answerElem.removeClass(classToRemove);
+                            $answerElem.addClass(classToAdd);
+                            if (viewMode === MODE_ANSWER_WITH_QUESTION){
+                                if (classToAdd === 'correct'){
+
+                                }
+                                if (classToAdd === 'wrong'){
+
+                                }
+                            }
+                        }
                     }
-                    ngModelCtrl.$formatters.push(formatter);
+
+                    ngModelCtrl.$render = function () {
+                        //skip one digest cycle in order to let the answers time to be compiled
+                        $timeout(function(){
+                            updateAnswersFollowingSelection();
+                        });
+                    };
+                    //ng model controller render function not triggered in case render function was set
+                    // after the model value was changed
+                    ngModelCtrl.$render();
+
+                    scope.$on('exercise:viewModeChanged', function () {
+                        ngModelCtrl.$render();
+                    });
                 }
             };
         }
     ]);
 })(angular);
+
+
 
 (function (angular) {
     'use strict';
@@ -937,104 +1073,127 @@
     });
 }(angular));
 
-/**
- * attrs:
- *
- */
+'use strict';
+
 (function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkExercise').directive('selectAnswerDrv', [
-        '$timeout', 'ZnkExerciseDrvSrv', 'MediaSrv',
-        function ($timeout, ZnkExerciseDrvSrv, MediaSrv) {
+    angular.module('znk.infra.znkExercise').directive('markup', [
+        '$window',
+        function ($window) {
+            var _isMobile = false;//MobileSrv.isMobile();
+            var MAX_IMAGE_WIDTH = 275;
+            var dummyElem = angular.element('<P/>');
             return {
-                templateUrl: 'scripts/exercise/templates/selectAnswerDrv.html',
-                require: ['^simpleQuestion', '^ngModel'],
-                scope: {},
-                link: function (scope, element, attrs, ctrls) {
-                    var questionDrvCtrl = ctrls[0];
-                    var ngModelCtrl = ctrls[1];
+                replace: true,
+                restrict: 'E',
+                link: function (scope, element, attrs) {
 
-                    var MODE_ANSWER_WITH_QUESTION = ZnkExerciseDrvSrv.viewModeEnum.answerWithResult.enum,
-                        MODE_ANSWER_ONLY = ZnkExerciseDrvSrv.viewModeEnum.answerOnly.enum,
-                        MODE_REVIEW = ZnkExerciseDrvSrv.viewModeEnum.review.enum,
-                        MODE_MUST_ANSWER = ZnkExerciseDrvSrv.viewModeEnum.mustAnswer.enum;
-
-                    scope.d = {};
-
-                    scope.d.answers = questionDrvCtrl.question.answers;
-
-                    scope.d.showSolution = questionDrvCtrl.showSolution;
-
-                    scope.d.tap = function (answer) {
-                        var viewMode = questionDrvCtrl.getViewMode();
-
-                        if ((!isNaN(parseInt(ngModelCtrl.$viewValue)) && viewMode === MODE_ANSWER_WITH_QUESTION) || viewMode === MODE_REVIEW) {
-                            return;
-                        }
-                        ngModelCtrl.$setViewValue(answer.id);
-                        updateAnswersFollowingSelection(viewMode);
+                    var toDomElement = function domElement(markup) {
+                        dummyElem.append(markup);
+                        return dummyElem.contents();
                     };
 
-                    function updateAnswersFollowingSelection(viewMode) {
-                        var selectedAnswerId = ngModelCtrl.$viewValue;
-                        var correctAnswerId = questionDrvCtrl.question.correctAnswerId;
-                        var $answers = angular.element(element[0].querySelectorAll('.answer'));
-                        for (var i = 0; i < $answers.length; i++) {
+                    var imageStyle = function imageStyle(image){
+                        var _style = {
+                            width: '',
+                            height: ''
+                        };
 
-                            var $answerElem = angular.element($answers[i]);
-                            if(!$answerElem || !$answerElem.scope || !$answerElem.scope()){
-                                continue;
+                        if(image.style.width){
+                            var _height = image.style.height;
+                            var _width = image.style.width;
+
+                            _height = _height.replace('px','');
+                            _width = _width.replace('px','');
+
+                            if(!isNaN(_width)){
+                                _width = parseInt(_width);
+
+                                while(_width > MAX_IMAGE_WIDTH){
+                                    _width = _width * 0.90;
+                                    _height = _height * 0.90;
+                                }
+                                _style.width = _width + 'px';
+                                _style.height = _height + 'px';
                             }
+                        }
+                        return _style;
+                    };
 
-                            var answer = $answerElem.scope().answer;
-                            var classToAdd,
-                                classToRemove;
+                    var resizeImages = function resizeImages(domElement){
+                        var style;
 
-                            if (questionDrvCtrl.getViewMode() === MODE_ANSWER_ONLY || questionDrvCtrl.getViewMode() === MODE_MUST_ANSWER) {
-                                // dont show correct / wrong indication
-                                classToRemove = 'answered';
-                                classToAdd = selectedAnswerId === answer.id ? 'answered' : 'neutral';
-                            } else {
-                                // the rest of the optional states involve correct / wrong indications
-                                if (angular.isUndefined(selectedAnswerId)) {
-                                    // unanswered question
-                                    if (questionDrvCtrl.getViewMode() === MODE_REVIEW) {
-                                        classToAdd = correctAnswerId === answer.id ? 'answered-incorrect' : 'neutral';
+                        for(var i=0; i<domElement.length; i++ ){
+
+                            if(domElement[i].tagName && domElement[i].tagName.toLowerCase() === 'img')
+                            {
+                                if(domElement[i].style.width){
+                                    style = imageStyle(domElement[i]);
+                                    domElement[i].style.width = style.width;
+                                    domElement[i].style.height = style.height;
+                                }
+                            }
+                            else{
+                                var _images = angular.element(domElement[i]).find('img');
+                                if(_images.length){
+                                    for(var x=0; x<_images.length; x++){
+                                        if(_images[x].style.width){
+                                            style = imageStyle(_images[x]);
+                                            _images[x].style.width = style.width;
+                                            _images[x].style.height = style.height;
+                                        }
                                     }
-                                } else if (selectedAnswerId === answer.id) {
-                                    // this is the selected answer
-                                    classToAdd = correctAnswerId === answer.id ? 'correct' : 'wrong';
-                                } else {
-                                    // this is the correct answer but the user didn't select it
-                                    classToAdd = answer.id === correctAnswerId ? 'answered-incorrect' : 'neutral';
-                                }
-                            }
-                            $answerElem.removeClass(classToRemove);
-                            $answerElem.addClass(classToAdd);
-                            if (viewMode === MODE_ANSWER_WITH_QUESTION){
-                                if (classToAdd === 'correct'){
-                                    MediaSrv.playCorrectAnswerSound();
-                                }
-                                if (classToAdd === 'wrong'){
-                                    MediaSrv.playWrongAnswerSound();
                                 }
                             }
                         }
-                    }
 
-                    ngModelCtrl.$render = function () {
-                        //skip one digest cycle in order to let the answers time to be compiled
-                        $timeout(function(){
-                            updateAnswersFollowingSelection();
-                        });
+                        return domElement;
                     };
-                    //ng model controller render function not triggered in case render function was set
-                    // after the model value was changed
-                    ngModelCtrl.$render();
 
-                    scope.$on('exercise:viewModeChanged', function () {
-                        ngModelCtrl.$render();
+                    var removeLeftMargin = function removeLeftMargin(domElement){
+
+                        for(var i=0; i<domElement.length; i++){
+
+                            if(domElement[i].tagName && domElement[i].tagName.toLowerCase() === 'p')
+                            {
+                                if(!domElement[i].style) {
+                                    break;
+                                }
+
+                                var marginLeft = domElement[i].style.marginLeft;
+                                marginLeft = marginLeft ?  marginLeft.replace('px','') : marginLeft;
+
+                                if(marginLeft && !isNaN(marginLeft))
+                                {
+                                    domElement[i].style.marginLeft = 0;
+                                }
+                            }
+                        }
+
+                        return domElement;
+                    };
+
+                    var watchDestroyer = scope.$watch(attrs.markup,function(newVal){
+                        if(!!newVal){
+
+                            if(_isMobile){
+                                MAX_IMAGE_WIDTH= ($window.innerWidth / 1.05);
+                            }
+                            else{
+                                MAX_IMAGE_WIDTH= ($window.innerWidth / 1.25);
+                            }
+
+                            var _domElements = toDomElement(newVal);
+                            if(_domElements) {
+                                var _newDomElements = resizeImages(_domElements);
+
+                                //remove left margin from <p> tag
+                                _newDomElements = removeLeftMargin(_newDomElements);
+
+                                element.append(_newDomElements);
+                            }
+
+                            watchDestroyer();
+                        }
                     });
                 }
             };
@@ -1043,6 +1202,34 @@
 })(angular);
 
 
+'use strict';
+
+(function (angular) {
+    angular.module('znk.infra.znkExercise').directive('arrayToStringFmtr', [
+        function () {
+            return {
+                require: 'ngModel',
+                link: function (scope, element, attrs, ngModelCtrl) {
+                    function parser(val){
+                        if(!val || !val.length){
+                            return undefined;
+                        }
+                        return val.join('');
+                    }
+                    ngModelCtrl.$parsers.push(parser);
+
+                    function formatter(val){
+                        if (!val || !val.length) {
+                            return [];
+                        }
+                        return val.match(/.{1}/g);
+                    }
+                    ngModelCtrl.$formatters.push(formatter);
+                }
+            };
+        }
+    ]);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -1054,33 +1241,6 @@
         QUESTION_CHANGED: 'znk exercise: question changed'
     };
     angular.module('znk.infra.znkExercise').constant('ZnkExerciseEvents', ZnkExerciseEvents);
-})(angular);
-
-/**
- * attrs:
- *
- */
-(function (angular) {
-    'use strict';
-
-    var typeToViewMap = {
-        0: '<div select-answer-drv></div>',
-        1: '<div free-text-answer-drv></div>'
-    };
-    angular.module('znk.infra.znkExercise').directive('answersBuilderDrv', [
-        '$compile',
-        function ($compile) {
-            return {
-                require: '^simpleQuestion',
-                link: function (scope, element, attrs, questionCtrl) {
-                    var answerType = questionCtrl.question.answerTypeId;
-                    var answerHtml = typeToViewMap[answerType];
-                    element.html(answerHtml);
-                    $compile(element.contents())(scope);
-                }
-            };
-        }
-    ]);
 })(angular);
 
 /**
@@ -1104,6 +1264,7 @@
                     function ($scope) {
                         var self = this;
                         self.question = $scope.questionGetter();
+
                     }
                 ],
                 link: {
@@ -2389,7 +2550,37 @@
 })(angular);
 
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').factory('ZnkExerciseUtilitySrv', [
+        function () {
+            var ZnkExerciseUtilitySrv = {};
+
+            ZnkExerciseUtilitySrv.bindFunctions = function(dest,src,functionToCopy){
+                functionToCopy.forEach(function(fnName){
+                    dest[fnName] = src[fnName].bind(src);
+                });
+            };
+
+            return ZnkExerciseUtilitySrv;
+        }
+    ]);
+})(angular);
+
 angular.module('znk.infra').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/znkExercise/answerTypes/templates/selectAnswerDrv.html",
+    "<div ng-repeat=\"answer in ::d.answers track by answer.id\" class=\"answer\" ng-click=\"d.tap(answer)\">\n" +
+    "    <markup class=\"content-wrapper\">\n" +
+    "        <div class=\"answer-index-wrapper\">\n" +
+    "            <i class=\"ion-ios-close-empty\"></i>\n" +
+    "            <i class=\"ion-android-done\"></i>\n" +
+    "            <span class=\"inner-circle\"></span>\n" +
+    "        </div>\n" +
+    "        <markup markup=\"answer.content\" type=\"md\" class=\"content\"></markup>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
   $templateCache.put("components/znkExercise/core/template/btnSectionDesktopTemplate.html",
     "<div class=\"btn-container left-container ng-hide\" ng-show=\"!!vm.currentQuestionIndex\">\n" +
     "    <button ng-click=\"vm.prevQuestion()\">\n" +

@@ -19,6 +19,7 @@
                     function ($scope) {
                         var self = this;
                         self.question = $scope.questionGetter();
+
                     }
                 ],
                 link: {
