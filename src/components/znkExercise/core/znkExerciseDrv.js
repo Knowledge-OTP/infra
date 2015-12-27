@@ -14,6 +14,7 @@
  *      onSlideChange
  *      initSlideIndex
  *      toolBoxWrapperClass
+ *      initSlideDirection
  *
  *  actions:
  *      setSlideIndex
@@ -54,7 +55,8 @@
                                 onDone: angular.noop,
                                 onQuestionAnswered: angular.noop,
                                 viewMode: ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
-                                onSlideChange: angular.noop
+                                onSlideChange: angular.noop,
+                                initSlideDirection: ZnkExerciseSlideDirectionEnum.ALL.enum
                             };
                             scope.settings = angular.extend(defaultSettings, scope.settings);
 
@@ -126,6 +128,7 @@
                                     scope.vm.slideDirection = newSlideDirection;
                                 }
                             };
+                            scope.actions.setSlideDirection(scope.settings.initSlideDirection);
 
                             function getCurrentQuestion() {
                                 return allQuestionWithAnswersArr[scope.vm.currentSlide];
@@ -297,18 +300,6 @@
                                 //var url = $location.url() + '/' + scope.vm.questionsWithAnswers[value].id;
                                 //$analytics.pageTrack(url);
                             });
-
-                            //scope.$watch('settings.slideDirection', function (newDirection) {
-                            //    if (newDirection === ZnkExerciseSrv.slideDirections.NONE) {
-                            //        znkExerciseDrvCtrl.questionChangeResolver(function () {
-                            //            var defer = $q.defer();
-                            //            if (znkExerciseDrvCtrl.isCurrentQuestionAnswered()) {
-                            //                defer.resolve();
-                            //            }
-                            //            return defer.promise;
-                            //        });
-                            //    }
-                            //});
 
                             scope.$on('$destroy', function () {
                                 if (toolBoxModalInstance) {
