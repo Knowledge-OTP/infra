@@ -1,10 +1,8 @@
-<div ng-repeat="answer in ::d.answers track by answer.id" class="answer" ng-click="d.tap(answer)">
-    <markup class="content-wrapper">
+<div ng-repeat="answer in ::d.answers track by answer.id" class="answer" ng-click="d.click(answer)">
+    <div class="content-wrapper">
         <div class="answer-index-wrapper">
-            <i class="ion-ios-close-empty"></i>
-            <i class="ion-android-done"></i>
-            <span class="inner-circle"></span>
+            <span class="index-char">{{::d.getIndexChar($index)}}</span>
         </div>
-        <markup markup="answer.content" type="md" class="content"></markup>
+        <markup content="answer.content" type="md" class="content"></markup>
     </div>
 </div>

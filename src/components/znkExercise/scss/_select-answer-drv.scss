@@ -1,0 +1,163 @@
+select-answer{
+    @include text-style(18px,$fcColor1,Lato);
+
+    .answer{
+        @include display-flex();
+        @include align-items(center);
+        margin-bottom: 20px;
+
+        &.wrong{
+            .content-wrapper{
+                .answer-index-wrapper{
+                    .inner-circle{
+                        display:block;
+                        border: 13px solid $bgColor1;
+                    }
+                    border-color: $bgColor1;
+                    .answer-index{
+                        color: $fcColor2;
+                    }
+                }
+
+                .content{
+                    color: $fcColor3;
+                }
+
+                .ion-ios-close-empty{
+                    display: block;
+                }
+            }
+
+        }
+
+        &.correct{
+            .answer-solution-icon-wrapper{
+                visibility: visible;
+            }
+
+            .content-wrapper{
+                .answer-index-wrapper{
+                    .inner-circle{
+                        display:block;
+                        border: 13px solid $bgColor2;
+                    }
+                    border-color: $bgColor2;
+
+                    .answer-index{
+                        color: $fcColor2;
+                    }
+                }
+
+                .content{
+                    color: $fcColor4;
+                }
+
+                .ion-android-done{
+                    display: block;
+                }
+            }
+
+        }
+
+        &.answered-incorrect{
+            .answer-solution-icon-wrapper{
+                visibility: visible;
+            }
+
+            .content-wrapper{
+                .answer-index-wrapper{
+                    .inner-circle{
+                        display:block;
+                        border: 13px solid $bgColor2;
+                    }
+                    border-color: $bcColor1;
+
+                    .answer-index{
+                        color: $fcColor4;
+                    }
+                }
+
+                .content{
+                    color: $fcColor4;
+                }
+            }
+
+            .answer-solution-icon-wrapper{
+                visibility: visible;
+            }
+        }
+
+        &.answered{
+            .content-wrapper{
+                .answer-index-wrapper{
+                    background: $bgColor3;
+                    border:{
+                        color: $bcColor2;
+                    }
+
+                    .index-char{
+                        color: $fcColor2;
+                    }
+                }
+                markup{
+                    color: $fcColor5;
+                }
+            }
+        }
+
+        .answer-solution-icon-wrapper{
+            visibility: hidden;
+            margin-right: 25px;
+            @include flex-shrink(0);
+        }
+
+        .content-wrapper{
+            @include display-flex();
+            @include align-items(center);
+            .answer-index-wrapper{
+                position: relative;
+                .inner-circle{
+                    display:none;
+                    position: absolute;
+                    top:5px;
+                    left:5px;
+                    border-radius: 50%;
+                }
+                background-color: $bgColor4;
+                border-radius: 50%;
+                @include flex-middle;
+                @include dimension(38px,38px);
+                border: 1px solid $bgColor5;
+                margin-right: 22.5px;
+                @include flex-shrink(0);
+
+            }
+
+            .content{
+                p{
+                    margin: 0;
+                }
+            }
+
+            .ion-ios-close-empty{
+                @include text-style(28px,$bgColor6);
+                font-size:30px;
+                position: absolute;
+                left: 12.5px;
+                top: 3px;
+                z-index: 1;
+                display: none;
+                @include flex-shrink(0);
+            }
+            .ion-android-done{
+                position: absolute;
+                font-size: 22px;
+                display: none;
+                z-index: 1;
+                color:$bgColor6;
+                top:8px;
+                left:9px;
+            }
+        }
+    }
+}

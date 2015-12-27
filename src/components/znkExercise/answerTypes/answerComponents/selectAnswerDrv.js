@@ -36,6 +36,11 @@
                         updateAnswersFollowingSelection(viewMode);
                     };
 
+                    scope.d.getIndexChar = function(questionIndex){
+                        var UPPER_A_ASCII_CODE = 65;
+                        return String.fromCharCode(UPPER_A_ASCII_CODE + questionIndex);
+                    };
+
                     function updateAnswersFollowingSelection(viewMode) {
                         var selectedAnswerId = ngModelCtrl.$viewValue;
                         var correctAnswerId = answerBuilder.question.correctAnswerId;

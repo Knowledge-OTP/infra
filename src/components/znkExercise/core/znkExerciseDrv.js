@@ -166,6 +166,8 @@
                             questionAnswersToOneObjectfmtr.parser = function (questionsWithAnswersArr) {
                                 scope.d.answeredCount = 0;
 
+                                var results = ngModelCtrl.$modelValue || [];
+
                                 questionsWithAnswersArr.forEach(function (questionWithAnswer, index) {
                                     if (angular.isUndefined(questionWithAnswer.__questionStatus)) {
                                         return;
@@ -187,10 +189,10 @@
                                         scope.d.answeredCount++;
                                     }
 
-                                    ngModelCtrl.$modelValue[index] = answer;
+                                    results[index] = answer;
                                 });
 
-                                return ngModelCtrl.$modelValue;
+                                return results;
                             };
                             ngModelCtrl.$parsers.push(questionAnswersToOneObjectfmtr.parser);
 

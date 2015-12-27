@@ -5,7 +5,7 @@
     <title>Title</title>
     <link rel="stylesheet" href="main.css">
 </head>
-<body ng-app="demoApp">
+<body ng-app="demoApp" ng-controller="Main">
 
     <style>
         body{
@@ -20,20 +20,7 @@
         }
     </style>
 
-    <znk-exercise ng-model="results" questions="[
-            {__type: 1, id:1, answerTypeId: 0, answers:[
-                {
-                    id:1,
-                    content: '<span>answer1</span>'
-                },
-                {id:2},
-                {id:3}
-            ]},
-            {__type: 2,id:2},
-            {__type: 3,id:3},
-            {__type: 1,id:4},
-            {__type: 2,id:5}
-        ]">
+    <znk-exercise ng-model="results" questions="questions" settings="settings" ng-model="results">
     </znk-exercise>
     <script src="angular/angular.js"></script>
     <script src="angular-touch/angular-touch.js"></script>

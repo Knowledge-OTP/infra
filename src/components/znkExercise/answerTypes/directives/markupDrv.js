@@ -97,7 +97,7 @@
                         return domElement;
                     };
 
-                    var watchDestroyer = scope.$watch(attrs.markup,function(newVal){
+                    var watchDestroyer = scope.$watch(attrs.content,function(newVal){
                         if(!!newVal){
 
                             if(_isMobile){
