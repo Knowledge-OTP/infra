@@ -85,7 +85,6 @@
                             znkExerciseDrvCtrl.addQuestionChangeResolver(questionChangeResolverForSlideDirection);
 
                             scope.vm.answeredCount = 0;
-                            scope.vm.slideDirection = ZnkExerciseSlideDirectionEnum.ALL.enum;
 
                             znkExerciseDrvCtrl.setCurrentIndex(scope.settings.initSlideIndex || 0);
 

@@ -1,9 +1,10 @@
 <div ng-transclude></div>
-<template-by-platform class="znk-carousel-container"
-                      prefix="components/znkExercise/core/template"
-                      mobile-temp="questionSwiperMobileTemplate.html"
-                      desktop-temp="questionSwiperDesktopTemplate.html">
-</template-by-platform>
+<questions-carousel class="znk-carousel-container"
+                    questions="vm.questionsWithAnswers"
+                    disable-swipe="{{vm.slideDirection !== 2}}"
+                    current-slide="vm.currentSlide"
+                    on-question-answered="vm.questionAnswered()">
+</questions-carousel>
 <znk-exercise-btn-section class="btn-section"
                           prev-question="vm.setCurrentIndexByOffset(-1)"
                           next-question="vm.setCurrentIndexByOffset(1)">
