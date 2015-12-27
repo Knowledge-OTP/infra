@@ -6,8 +6,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('questionsCarousel', [
-        'ZnkExerciseSrv', 'PlatformEnum',
-        function (ZnkExerciseSrv, PlatformEnum) {
+        'ZnkExerciseSrv', 'PlatformEnum', '$log',
+        function (ZnkExerciseSrv, PlatformEnum, $log) {
             return {
                 templateUrl: function(){
                     var templateUrl = "components/znkExercise/core/template/";

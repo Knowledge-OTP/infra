@@ -1342,6 +1342,50 @@
 
 /**
  * attrs:
+ */
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('questionsCarousel', [
+        'ZnkExerciseSrv', 'PlatformEnum', '$log',
+        function (ZnkExerciseSrv, PlatformEnum, $log) {
+            return {
+                templateUrl: function(){
+                    var templateUrl = "components/znkExercise/core/template/";
+                    var platform = ZnkExerciseSrv.getPlatform();
+                    switch (platform) {
+                        case PlatformEnum.DESKTOP.enum:
+                            templateUrl += 'questionSwiperDesktopTemplate.html';
+                            break;
+                        case PlatformEnum.MOBILE.enum:
+                            templateUrl += 'questionSwiperMobileTemplate.html';
+                            break;
+                    }
+                    if (!templateUrl) {
+                        $log.error('znkExerciseBtnSectionDrv directive: template was not defined for platform');
+                    }
+                    return templateUrl;
+                },
+                scope:{
+                    questions: '=',
+                    currentSlide: '=',
+                    onQuestionAnswered: '&'
+
+                },
+                link: function (scope, element, attrs) {
+                    attrs.$observe('disableSwipe',function(newVal){
+                        scope.isLocked = newVal === 'true' ? true : false;
+                    });
+                }
+            };
+        }
+    ]);
+})(angular);
+
+
+/**
+ * attrs:
  *  prev-question
  *  next-question
  */
@@ -1603,7 +1647,6 @@
                             znkExerciseDrvCtrl.addQuestionChangeResolver(questionChangeResolverForSlideDirection);
 
                             scope.vm.answeredCount = 0;
-                            scope.vm.slideDirection = ZnkExerciseSlideDirectionEnum.ALL.enum;
 
                             znkExerciseDrvCtrl.setCurrentIndex(scope.settings.initSlideIndex || 0);
 
@@ -2755,12 +2798,13 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "<ul class=\"znk-carousel\"\n" +
     "    rn-carousel\n" +
     "    rn-carousel-buffered\n" +
-    "    rn-carousel-index=\"vm.currentSlide\">\n" +
+    "    rn-carousel-index=\"currentSlide\"\n" +
+    "    rn-carousel-locked=\"d.lock\">\n" +
     "    <li class=\"slide\"\n" +
-    "        ng-repeat=\"question in vm.questionsWithAnswers\">\n" +
+    "        ng-repeat=\"question in questions\">\n" +
     "        <question-builder question=\"question\"\n" +
     "                          ng-model=\"question.__questionStatus.userAnswer\"\n" +
-    "                          ng-change=\"vm.questionAnswered(question)\">\n" +
+    "                          ng-change=\"onQuestionAnswered(question)\">\n" +
     "        </question-builder>\n" +
     "    </li>\n" +
     "</ul>\n" +
@@ -2778,11 +2822,12 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "");
   $templateCache.put("components/znkExercise/core/template/znkExerciseDrv.html",
     "<div ng-transclude></div>\n" +
-    "<template-by-platform class=\"znk-carousel-container\"\n" +
-    "                      prefix=\"components/znkExercise/core/template\"\n" +
-    "                      mobile-temp=\"questionSwiperMobileTemplate.html\"\n" +
-    "                      desktop-temp=\"questionSwiperDesktopTemplate.html\">\n" +
-    "</template-by-platform>\n" +
+    "<questions-carousel class=\"znk-carousel-container\"\n" +
+    "                    questions=\"vm.questionsWithAnswers\"\n" +
+    "                    disable-swipe=\"{{vm.slideDirection !== 2}}\"\n" +
+    "                    current-slide=\"vm.currentSlide\"\n" +
+    "                    on-question-answered=\"vm.questionAnswered()\">\n" +
+    "</questions-carousel>\n" +
     "<znk-exercise-btn-section class=\"btn-section\"\n" +
     "                          prev-question=\"vm.setCurrentIndexByOffset(-1)\"\n" +
     "                          next-question=\"vm.setCurrentIndexByOffset(1)\">\n" +
