@@ -286,6 +286,9 @@ znk-exercise template-by-platform {
 znk-exercise question-builder {
   display: block; }
 
+znk-exercise answer-builder {
+  display: block; }
+
 input[type=range] {
   width: 300px; }
 
@@ -440,7 +443,8 @@ znk-exercise.desktop {
 select-answer {
   font-size: 18px;
   color: #363636;
-  font-family: Lato; }
+  font-family: Lato;
+  display: block; }
   select-answer .answer {
     display: -webkit-flex;
     display: -moz-box;

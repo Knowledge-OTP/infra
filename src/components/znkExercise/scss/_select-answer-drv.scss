@@ -1,5 +1,6 @@
 select-answer{
     @include text-style(18px,$fcColor1,Lato);
+    display: block;
 
     .answer{
         @include display-flex();
