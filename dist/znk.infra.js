@@ -1884,7 +1884,8 @@
 
             self.setCurrentIndex = function (newQuestionIndex) {
                 if (angular.isDefined(newQuestionIndex)) {
-                    return canChangeQuestion().then(function () {
+                    var currIndex = self.getCurrentIndex();
+                    return canChangeQuestion(newQuestionIndex, currIndex).then(function () {
                         //minimum index limit
                         newQuestionIndex = Math.max(0, newQuestionIndex);
                         //max index limit
@@ -1948,10 +1949,10 @@
                 return questionWithAnswer && questionWithAnswer.__questionStatus && angular.isDefined(questionWithAnswer.__questionStatus.userAnswer);
             }
 
-            function canChangeQuestion(){
+            function canChangeQuestion(requiredIndex, currIndex){
                 var promArr = [];
                 changeQuestionResolvers.forEach(function(resolver){
-                    var getResolverResult = $q.when(angular.isFunction(resolver ) ? resolver() : resolver);
+                    var getResolverResult = $q.when(angular.isFunction(resolver ) ? resolver(requiredIndex, currIndex) : resolver);
                     promArr.push(getResolverResult);
                 });
                 return $q.all(promArr);

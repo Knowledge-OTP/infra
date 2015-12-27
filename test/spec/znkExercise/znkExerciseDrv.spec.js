@@ -526,7 +526,7 @@ describe('testing directive "znkExerciseDrv":', function () {
         expect(currModelValue).toEqual(expectedValue);
     });
 
-    it('when current slide direction is all then direction-left and direction-right class   should be added',
+    it('when current slide direction is all then direction-left and direction-right class should be added',
         function () {
             var scopeContent = createDirectiveHtml(undefined, undefined, {viewMode: ZnkExerciseViewModeEnum.REVIEW.enum});
             var content = scopeContent.content;
@@ -567,5 +567,83 @@ describe('testing directive "znkExerciseDrv":', function () {
         content.setCurrentIndex(4);
         var currentIndex = isolateScope.vm.getCurrentIndex();
         expect(currentIndex).toBe(expectCurrIndex);
+    });
+
+    it('given current slide direction is none when trying to set current slide to lower index then it should not be' +
+        'set', function () {
+        var scopeContent = createDirectiveHtml(undefined, undefined, {viewMode: ZnkExerciseViewModeEnum.REVIEW.enum});
+        var content = scopeContent.content;
+        var isolateScope = scopeContent.isolateScope;
+        var scope = scopeContent.scope;
+
+        content.setCurrentIndex(3);
+        var expectCurrIndex = isolateScope.vm.getCurrentIndex();
+        scope.d.actions.setSlideDirection(ZnkExerciseSlideDirectionEnum.NONE.enum);
+
+        content.setCurrentIndex(1);
+        var currentIndex = isolateScope.vm.getCurrentIndex();
+        expect(currentIndex).toBe(expectCurrIndex);
+    });
+
+    it('given current slide direction is left when trying to set current slide to higher index then it should be' +
+        'set', function () {
+        var scopeContent = createDirectiveHtml(undefined, undefined, {viewMode: ZnkExerciseViewModeEnum.REVIEW.enum});
+        var content = scopeContent.content;
+        var isolateScope = scopeContent.isolateScope;
+        var scope = scopeContent.scope;
+
+        content.setCurrentIndex(3);
+        scope.d.actions.setSlideDirection(ZnkExerciseSlideDirectionEnum.LEFT.enum);
+
+        content.setCurrentIndex(4);
+        var currentIndex = isolateScope.vm.getCurrentIndex();
+        expect(currentIndex).toBe(4);
+    });
+
+    it('given current slide direction is right when trying to set current slide to lower index then it should be' +
+        'set', function () {
+        var scopeContent = createDirectiveHtml(undefined, undefined, {viewMode: ZnkExerciseViewModeEnum.REVIEW.enum});
+        var content = scopeContent.content;
+        var isolateScope = scopeContent.isolateScope;
+        var scope = scopeContent.scope;
+
+        content.setCurrentIndex(3);
+        scope.d.actions.setSlideDirection(ZnkExerciseSlideDirectionEnum.RIGHT.enum);
+
+        content.setCurrentIndex(1);
+        var currentIndex = isolateScope.vm.getCurrentIndex();
+        expect(currentIndex).toBe(1);
+    });
+
+
+
+    it('given current slide direction is all when trying to set current slide to higher index then it should be' +
+        'set', function () {
+        var scopeContent = createDirectiveHtml(undefined, undefined, {viewMode: ZnkExerciseViewModeEnum.REVIEW.enum});
+        var content = scopeContent.content;
+        var isolateScope = scopeContent.isolateScope;
+        var scope = scopeContent.scope;
+
+        content.setCurrentIndex(3);
+        scope.d.actions.setSlideDirection(ZnkExerciseSlideDirectionEnum.ALL.enum);
+
+        content.setCurrentIndex(4);
+        var currentIndex = isolateScope.vm.getCurrentIndex();
+        expect(currentIndex).toBe(4);
+    });
+
+    it('given current slide direction is ALL when trying to set current slide to lower index then it should be' +
+        'set', function () {
+        var scopeContent = createDirectiveHtml(undefined, undefined, {viewMode: ZnkExerciseViewModeEnum.REVIEW.enum});
+        var content = scopeContent.content;
+        var isolateScope = scopeContent.isolateScope;
+        var scope = scopeContent.scope;
+
+        content.setCurrentIndex(3);
+        scope.d.actions.setSlideDirection(ZnkExerciseSlideDirectionEnum.ALL.enum);
+
+        content.setCurrentIndex(1);
+        var currentIndex = isolateScope.vm.getCurrentIndex();
+        expect(currentIndex).toBe(1);
     });
 });
