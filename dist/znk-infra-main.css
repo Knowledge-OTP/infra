@@ -408,9 +408,9 @@ znk-exercise.desktop {
     font-weight: normal;
     border-radius: 30px;
     color: white; }
-  znk-exercise.desktop.direction-right .btn-section .btn-container.right-container {
+  znk-exercise.desktop.direction-right .btn-section .btn-container.left-container {
     display: inline-flex; }
-  znk-exercise.desktop.direction-left .btn-section .btn-container.left-container {
+  znk-exercise.desktop.direction-left .btn-section .btn-container.right-container {
     display: inline-flex; }
   znk-exercise.desktop svg-icon.chevron .st0 {
     fill: none;

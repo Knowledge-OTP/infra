@@ -80,7 +80,7 @@ znk-exercise.desktop {
 
     &.direction-right{
         .btn-section{
-            .btn-container.right-container{
+            .btn-container.left-container{
                 display: inline-flex;
             }
         }
@@ -88,7 +88,7 @@ znk-exercise.desktop {
 
     &.direction-left{
         .btn-section{
-            .btn-container.left-container{
+            .btn-container.right-container{
                 display: inline-flex;
             }
         }
