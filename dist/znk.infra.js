@@ -2675,6 +2675,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkExercise/core/template/questionSwiperDesktopTemplate.html",
     "<ul class=\"znk-carousel\"\n" +
     "    rn-carousel\n" +
+    "    rn-carousel-buffered\n" +
     "    rn-carousel-index=\"d.currentSlide\">\n" +
     "    <li class=\"slide\"\n" +
     "        ng-repeat=\"question in d.questionsWithAnswers\">\n" +
@@ -2683,7 +2684,8 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "                          ng-change=\"d.questionAnswered(question)\">\n" +
     "        </question-builder>\n" +
     "    </li>\n" +
-    "</ul>");
+    "</ul>\n" +
+    "");
   $templateCache.put("components/znkExercise/core/template/questionSwiperMobileTemplate.html",
     "<ion-slide-box znk-slide=\"settings.slideDirection\" class=\"znk-carousel\"\n" +
     "               show-pager=\"false\"\n" +
