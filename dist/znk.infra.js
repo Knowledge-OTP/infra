@@ -232,6 +232,39 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.enum').factory('ExerciseTimeEnum', [
+        'EnumSrv',
+        function (EnumSrv) {
+            return new EnumSrv.BaseEnum([
+                ['5_MIN', 5, '5 min'],
+                ['10_MIN', 10, '10 min'],
+                ['15_MIN', 15, '15 min']
+            ]);
+        }
+    ]);
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.enum').factory('ExerciseTypeEnum', [
+        'EnumSrv',
+        function (EnumSrv) {
+            return new EnumSrv.BaseEnum([
+                ['TUTORIAL', 1, 'Tutorial'],
+                ['PRACTICE', 2, 'Practice'],
+                ['GAME', 3, 'Game'],
+                ['SECTION', 4, 'Section'],
+                ['DRILL', 5, 'Drill']
+            ]);
+        }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     var subjectEnum = {
         MATH: 0,
         READING: 1,
