@@ -28,24 +28,28 @@
                 return $scope.settings.slideDirection;
             };
 
-            //set resolver which control when to go to next question (if at all) when click on next button
-            self.questionChangeResolver = (function () {
-                var onNextResolver;
-                return function (_onNextResolver) {
-                    if (angular.isDefined(_onNextResolver)) {
-                        onNextResolver = _onNextResolver;
+            var changeQuestionResolvers = [];
+            self.addQuestionChangeResolver = function(resolver){
+                changeQuestionResolvers.push(resolver);
+            };
+
+            self.removeQuestionChangeResolver = function(resolver){
+                var newChangeQuestionResolvers = [];
+                changeQuestionResolvers.forEach(function(resolverItem,index){
+                    if(resolverItem !== resolver){
+                        newChangeQuestionResolvers.push(resolverItem);
                     }
-                    return $q.when(onNextResolver);
-                };
-            })();
+                });
+                changeQuestionResolvers = newChangeQuestionResolvers;
+            };
 
             self.getCurrentIndex = function () {
-                return $scope.d.currentSlide;
+                return $scope.vm.currentSlide;
             };
 
             self.setCurrentIndex = function (newQuestionIndex) {
                 if (angular.isDefined(newQuestionIndex)) {
-                    return self.questionChangeResolver().then(function () {
+                    return canChangeQuestion().then(function () {
                         //minimum index limit
                         newQuestionIndex = Math.max(0, newQuestionIndex);
                         //max index limit
@@ -53,14 +57,14 @@
                         newQuestionIndex = Math.min(newQuestionIndex, questions.length - 1);
                         //temp hack
                         $timeout(function(){
-                            $scope.d.currentSlide = newQuestionIndex;
+                            $scope.vm.currentSlide = newQuestionIndex;
                         },300);
-                        return $scope.d.currentSlide;
+                        return $scope.vm.currentSlide;
                     });
                 }else{
                     $log.debug('ZnkExerciseDrv: setCurrentIndex was invoked with undefined newQuestionIndex parameter');
                 }
-                return $q.when($scope.d.currentSlide);
+                return $q.when($scope.vm.currentSlide);
             };
 
             self.setCurrentIndexByOffset = function (offset) {
@@ -81,11 +85,11 @@
             };
 
             self.isCurrentQuestionAnswered = function () {
-                return isQuestionAnswered($scope.d.currentSlide);
+                return isQuestionAnswered($scope.vm.currentSlide);
             };
 
             self.isLastUnansweredQuestion = function(){
-                var questionsNum = ($scope.d.questionsWithAnswers || []).length;
+                var questionsNum = ($scope.vm.questionsWithAnswers || []).length;
                 var unansweredNum = 0;
                 for(var i=0; i<questionsNum; i++){
                     if(!isQuestionAnswered(i)){
@@ -100,13 +104,22 @@
 
             self.getQuestions = function(){
                 return exerciseReadyDefer.promise.then(function(){
-                    return $scope.d.questionsWithAnswers;
+                    return $scope.vm.questionsWithAnswers;
                 });
             };
 
             function isQuestionAnswered(index) {
-                var questionWithAnswer = $scope.d.questionsWithAnswers ? $scope.d.questionsWithAnswers[index] : {};
+                var questionWithAnswer = $scope.vm.questionsWithAnswers ? $scope.vm.questionsWithAnswers[index] : {};
                 return questionWithAnswer && questionWithAnswer.__questionStatus && angular.isDefined(questionWithAnswer.__questionStatus.userAnswer);
+            }
+
+            function canChangeQuestion(){
+                var promArr = [];
+                changeQuestionResolvers.forEach(function(resolver){
+                    var getResolverResult = $q.when(angular.isFunction(resolver ) ? resolver() : resolver);
+                    promArr.push(getResolverResult);
+                });
+                return $q.all(promArr);
             }
         }]);
 })(angular);

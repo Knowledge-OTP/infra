@@ -50,7 +50,7 @@ xdescribe('testing directive "znkExercisePagerDrv":', function () {
         }
 
         if (!content) {
-            var content = '<znk-exercise-pager ng-model="d.currentSlider" questions="d.questions"></znk-exercise-pager>';
+            var content = '<znk-exercise-pager ng-model="vm.currentSlider" questions="d.questions"></znk-exercise-pager>';
         }
 
         content = angular.element(content);
@@ -94,7 +94,7 @@ xdescribe('testing directive "znkExercisePagerDrv":', function () {
         var scope = scopeContent.scope;
         var content = scopeContent.content;
         //$timeout.flush();
-        scope.d.currentSlider = 3;
+        scope.vm.currentSlider = 3;
         scope.$digest();
         $timeout.flush();
         var itemsWithCurrentClass = content.getAllPagerItemsWithCurrentClass();
@@ -110,7 +110,7 @@ xdescribe('testing directive "znkExercisePagerDrv":', function () {
         content.tapOnItem(3);
         scope.$digest();
         //$timeout.flush();
-        expect(scope.d.currentSlider).toBe(3);
+        expect(scope.vm.currentSlider).toBe(3);
         var itemsWithCurrentClass = content.getAllPagerItemsWithCurrentClass();
         expect(itemsWithCurrentClass.length).toBe(1);
         expect(scope.d.questions[3].id).toBe(itemsWithCurrentClass.scope().question.id);

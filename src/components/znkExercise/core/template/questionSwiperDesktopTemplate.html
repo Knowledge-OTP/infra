@@ -1,12 +1,12 @@
 <ul class="znk-carousel"
     rn-carousel
     rn-carousel-buffered
-    rn-carousel-index="d.currentSlide">
+    rn-carousel-index="vm.currentSlide">
     <li class="slide"
-        ng-repeat="question in d.questionsWithAnswers">
+        ng-repeat="question in vm.questionsWithAnswers">
         <question-builder question="question"
                           ng-model="question.__questionStatus.userAnswer"
-                          ng-change="d.questionAnswered(question)">
+                          ng-change="vm.questionAnswered(question)">
         </question-builder>
     </li>
 </ul>

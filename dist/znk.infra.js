@@ -1628,7 +1628,7 @@
                                 onToolValueChanged: function (evt) {
                                     switch (evt.tool) {
                                         case ZnkExerciseSrv.toolBoxTools.BOOKMARK:
-                                            scope.d.bookmarkCurrentQuestion();
+                                            scope.vm.bookmarkCurrentQuestion();
                                             break;
                                     }
                                     setViewValue();
@@ -1637,12 +1637,12 @@
                             var toolBoxModalInstance = ZnkExerciseSrv.openExerciseToolBoxModal(toolboxModalSettings);
 
                             function setViewValue() {
-                                ngModelCtrl.$setViewValue(angular.copy(scope.d.questionsWithAnswers));
+                                ngModelCtrl.$setViewValue(angular.copy(scope.vm.questionsWithAnswers));
                             }
 
                             function render(viewValue) {
                                 allQuestionWithAnswersArr = viewValue;
-                                scope.d.questionsWithAnswers = allQuestionWithAnswersArr;
+                                scope.vm.questionsWithAnswers = allQuestionWithAnswersArr;
                                 znkExerciseDrvCtrl.setExerciseAsReady();
                             }
 
@@ -1714,7 +1714,7 @@
                             };
                             ngModelCtrl.$parsers.push(questionAnswersToOneObjectfmtr.parser);
 
-                            scope.d.questionAnswered = function () {
+                            scope.vm.questionAnswered = function () {
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
                                 if (scope.settings.viewMode !== ZnkExerciseViewModeEnum.REVIEW.enum) {
                                     setViewValue();
@@ -1724,7 +1724,7 @@
                                 scope.settings.slideDirection = scope.settings.slideDirectionChange;
                             };
 
-                            scope.d.bookmarkCurrentQuestion = function () {
+                            scope.vm.bookmarkCurrentQuestion = function () {
                                 var currQuestion = getCurrentQuestion();
                                 currQuestion.__questionStatus.bookmark = !currQuestion.__questionStatus.bookmark;
                                 scope.$broadcast(ZnkExerciseEvents.BOOKMARK, currQuestion);
@@ -1744,7 +1744,7 @@
                                 var currTime = Date.now();
                                 var timePassed = currTime - updateTimeSpentOnQuestion.lastTimeStamp;
                                 updateTimeSpentOnQuestion.lastTimeStamp = currTime;
-                                var question = scope.d.questionsWithAnswers[questionNum];
+                                var question = scope.vm.questionsWithAnswers[questionNum];
                                 question.__questionStatus.timeSpent = (question.__questionStatus.timeSpent || 0) + timePassed;
                             }
 
@@ -1758,7 +1758,7 @@
                                 questionAnswered = false;
                                 scope.settings.onSlideChange();
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value,prevValue);
-                                //var url = $location.url() + '/' + scope.d.questionsWithAnswers[value].id;
+                                //var url = $location.url() + '/' + scope.vm.questionsWithAnswers[value].id;
                                 //$analytics.pageTrack(url);
                             });
 
@@ -1875,7 +1875,7 @@
             };
 
             self.isLastUnansweredQuestion = function(){
-                var questionsNum = ($scope.d.questionsWithAnswers || []).length;
+                var questionsNum = ($scope.vm.questionsWithAnswers || []).length;
                 var unansweredNum = 0;
                 for(var i=0; i<questionsNum; i++){
                     if(!isQuestionAnswered(i)){
@@ -1890,12 +1890,12 @@
 
             self.getQuestions = function(){
                 return exerciseReadyDefer.promise.then(function(){
-                    return $scope.d.questionsWithAnswers;
+                    return $scope.vm.questionsWithAnswers;
                 });
             };
 
             function isQuestionAnswered(index) {
-                var questionWithAnswer = $scope.d.questionsWithAnswers ? $scope.d.questionsWithAnswers[index] : {};
+                var questionWithAnswer = $scope.vm.questionsWithAnswers ? $scope.vm.questionsWithAnswers[index] : {};
                 return questionWithAnswer && questionWithAnswer.__questionStatus && angular.isDefined(questionWithAnswer.__questionStatus.userAnswer);
             }
         }]);
@@ -2635,14 +2635,14 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkExercise/core/template/btnSectionMobileTemplate.html",
     "<div ng-class=\"{ 'next-disabled' : settings.slideDirection === d.slideDirections.NONE ||  settings.slideDirection === d.slideDirections.RIGHT }\">\n" +
     "    <div class=\"bookmark-icon-container only-tablet\"\n" +
-    "         ng-class=\"d.questionsWithAnswers[d.currentSlide].__questionStatus.bookmark ? 'bookmark-active-icon' : 'bookmark-icon'\"\n" +
+    "         ng-class=\"vm.questionsWithAnswers[d.currentSlide].__questionStatus.bookmark ? 'bookmark-active-icon' : 'bookmark-icon'\"\n" +
     "         ng-click=\"d.bookmarkCurrentQuestion()\"\n" +
     "         ng-hide=\"settings.viewMode === d.reviewModeId\"\n" +
     "         analytics-on=\"click\"\n" +
     "         analytics-event=\"click-bookmark-question\"\n" +
     "         analytics-category=\"exercise\"></div>\n" +
     "    <ng-switch\n" +
-    "            on=\"d.currentSlide !== d.questionsWithAnswers.length - 1 && d.answeredCount !== d.questionsWithAnswers.length\"\n" +
+    "            on=\"d.currentSlide !== vm.questionsWithAnswers.length - 1 && d.answeredCount !== vm.questionsWithAnswers.length\"\n" +
     "            ng-hide=\"settings.viewMode === d.reviewModeId\"\n" +
     "            class=\"ng-hide\"\n" +
     "            ng-click=\"d.next()\">\n" +
@@ -2678,7 +2678,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "    rn-carousel-buffered\n" +
     "    rn-carousel-index=\"d.currentSlide\">\n" +
     "    <li class=\"slide\"\n" +
-    "        ng-repeat=\"question in d.questionsWithAnswers\">\n" +
+    "        ng-repeat=\"question in vm.questionsWithAnswers\">\n" +
     "        <question-builder question=\"question\"\n" +
     "                          ng-model=\"question.__questionStatus.userAnswer\"\n" +
     "                          ng-change=\"d.questionAnswered(question)\">\n" +
@@ -2690,7 +2690,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "<ion-slide-box znk-slide=\"settings.slideDirection\" class=\"znk-carousel\"\n" +
     "               show-pager=\"false\"\n" +
     "               active-slide=\"d.currentSlide\">\n" +
-    "    <question-builder slide-repeat-drv=\"question in d.questionsWithAnswers\"\n" +
+    "    <question-builder slide-repeat-drv=\"question in vm.questionsWithAnswers\"\n" +
     "                      question=\"question\"\n" +
     "                      ng-model=\"question.__questionStatus.userAnswer\"\n" +
     "                      ng-change=\"d.questionAnswered(question)\">\n" +
@@ -2709,7 +2709,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "</znk-exercise-btn-section>\n" +
     "<znk-exercise-pager\n" +
     "        ng-hide=\"d.hidePager\"\n" +
-    "        questions=\"d.questionsWithAnswers\">\n" +
+    "        questions=\"vm.questionsWithAnswers\">\n" +
     "</znk-exercise-pager>\n" +
     "");
   $templateCache.put("components/znkExercise/svg/chevron-icon.svg",

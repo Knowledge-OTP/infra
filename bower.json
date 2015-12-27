@@ -18,5 +18,8 @@
   "main": "dist/znk.infra.js",
   "resolutions": {
     "angular": "1.4.x"
+  },
+  "devDependencies": {
+    "es5-shim": "~4.4.1"
   }
 }

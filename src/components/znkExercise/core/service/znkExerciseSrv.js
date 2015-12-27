@@ -41,12 +41,12 @@
                 SHOW_PAGER: 'show pager'
             };
 
-            ZnkExerciseSrv.slideDirections = {
-                NONE: 'none',
-                ALL: 'all',
-                RIGHT: 'right',
-                LEFT: 'left'
-            };
+            //ZnkExerciseSrv.slideDirections = {
+            //    NONE: 'none',
+            //    ALL: 'all',
+            //    RIGHT: 'right',
+            //    LEFT: 'left'
+            //};
 
             return ZnkExerciseSrv;
         }
