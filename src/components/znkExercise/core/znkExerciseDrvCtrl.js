@@ -35,7 +35,7 @@
 
             self.removeQuestionChangeResolver = function(resolver){
                 var newChangeQuestionResolvers = [];
-                changeQuestionResolvers.forEach(function(resolverItem,index){
+                changeQuestionResolvers.forEach(function(resolverItem){
                     if(resolverItem !== resolver){
                         newChangeQuestionResolvers.push(resolverItem);
                     }

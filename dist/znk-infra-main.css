@@ -369,7 +369,8 @@ znk-exercise.desktop {
     top: 0;
     bottom: 0;
     display: inline-flex;
-    align-items: center; }
+    align-items: center;
+    display: none; }
     znk-exercise.desktop .btn-section .btn-container.right-container {
       right: -40px; }
       znk-exercise.desktop .btn-section .btn-container.right-container button {
@@ -408,6 +409,10 @@ znk-exercise.desktop {
     font-weight: normal;
     border-radius: 30px;
     color: white; }
+  znk-exercise.desktop.direction-right .btn-section .btn-container.right-container {
+    display: block; }
+  znk-exercise.desktop.direction-left .btn-section .btn-container.left-container {
+    display: block; }
   znk-exercise.desktop svg-icon.chevron .st0 {
     fill: none;
     stroke: #231F20;

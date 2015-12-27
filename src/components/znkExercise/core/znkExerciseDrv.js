@@ -106,7 +106,7 @@
                                 if(angular.isDefined(newSlideDirection)){
                                     var isRightDirection = newSlideDirection === ZnkExerciseSlideDirectionEnum.RIGHT.enum;
                                     var isLeftDirection = newSlideDirection === ZnkExerciseSlideDirectionEnum.LEFT.enum;
-                                    var isAllDirection = newSlideDirection === ZnkExerciseSlideDirectionEnum.ALL.enum
+                                    var isAllDirection = newSlideDirection === ZnkExerciseSlideDirectionEnum.ALL.enum;
                                     var DIRECTION_CLASS_PREFIX = 'direction';
 
                                     var rightDirectionClass =DIRECTION_CLASS_PREFIX + '-' + ZnkExerciseSlideDirectionEnum.RIGHT.val;
