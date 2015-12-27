@@ -954,6 +954,11 @@
                         updateAnswersFollowingSelection(viewMode);
                     };
 
+                    scope.d.getIndexChar = function(questionIndex){
+                        var UPPER_A_ASCII_CODE = 65;
+                        return String.fromCharCode(UPPER_A_ASCII_CODE + questionIndex);
+                    };
+
                     function updateAnswersFollowingSelection(viewMode) {
                         var selectedAnswerId = ngModelCtrl.$viewValue;
                         var correctAnswerId = answerBuilder.question.correctAnswerId;
@@ -1172,7 +1177,7 @@
                         return domElement;
                     };
 
-                    var watchDestroyer = scope.$watch(attrs.markup,function(newVal){
+                    var watchDestroyer = scope.$watch(attrs.content,function(newVal){
                         if(!!newVal){
 
                             if(_isMobile){
@@ -1646,6 +1651,8 @@
                             questionAnswersToOneObjectfmtr.parser = function (questionsWithAnswersArr) {
                                 scope.d.answeredCount = 0;
 
+                                var results = ngModelCtrl.$modelValue || [];
+
                                 questionsWithAnswersArr.forEach(function (questionWithAnswer, index) {
                                     if (angular.isUndefined(questionWithAnswer.__questionStatus)) {
                                         return;
@@ -1667,10 +1674,10 @@
                                         scope.d.answeredCount++;
                                     }
 
-                                    ngModelCtrl.$modelValue[index] = answer;
+                                    results[index] = answer;
                                 });
 
-                                return ngModelCtrl.$modelValue;
+                                return results;
                             };
                             ngModelCtrl.$parsers.push(questionAnswersToOneObjectfmtr.parser);
 
@@ -2570,14 +2577,12 @@
 
 angular.module('znk.infra').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkExercise/answerTypes/templates/selectAnswerDrv.html",
-    "<div ng-repeat=\"answer in ::d.answers track by answer.id\" class=\"answer\" ng-click=\"d.tap(answer)\">\n" +
-    "    <markup class=\"content-wrapper\">\n" +
+    "<div ng-repeat=\"answer in ::d.answers track by answer.id\" class=\"answer\" ng-click=\"d.click(answer)\">\n" +
+    "    <div class=\"content-wrapper\">\n" +
     "        <div class=\"answer-index-wrapper\">\n" +
-    "            <i class=\"ion-ios-close-empty\"></i>\n" +
-    "            <i class=\"ion-android-done\"></i>\n" +
-    "            <span class=\"inner-circle\"></span>\n" +
+    "            <span class=\"index-char\">{{::d.getIndexChar($index)}}</span>\n" +
     "        </div>\n" +
-    "        <markup markup=\"answer.content\" type=\"md\" class=\"content\"></markup>\n" +
+    "        <markup content=\"answer.content\" type=\"md\" class=\"content\"></markup>\n" +
     "    </div>\n" +
     "</div>\n" +
     "");
