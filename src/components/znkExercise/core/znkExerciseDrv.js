@@ -28,8 +28,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExercise', [
-        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum',
-        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum) {
+        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout',
+        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout) {
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExerciseDrv.html',
                 restrict: 'E',
@@ -336,9 +336,11 @@
                                     var currQuestion = getCurrentQuestion();
                                     toolboxModalSettings.actions.setToolValue(ZnkExerciseSrv.toolBoxTools.BOOKMARK, !!currQuestion.__questionStatus.bookmark);
                                 }
-
-                                scope.settings.onSlideChange();
-                                scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value,prevValue);
+                                //added since the sliders current was not changed yet
+                                $timeout(function(){
+                                    scope.settings.onSlideChange();
+                                    scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value,prevValue);
+                                },0,false);
                                 //var url = $location.url() + '/' + scope.vm.questionsWithAnswers[value].id;
                                 //$analytics.pageTrack(url);
                             });
@@ -352,7 +354,7 @@
                                     toolBoxModalInstance.close();
                                 }
                             });
-                        },
+                        }
                     };
                 }
             };
