@@ -41,7 +41,10 @@
             ];
 
             $scope.settings = {
-                viewMode: 2
+                viewMode: 2,
+                onDone: function(){
+                    alert('On done was invoked');
+                }
             };
 
             $scope.addQuestion = function () {
