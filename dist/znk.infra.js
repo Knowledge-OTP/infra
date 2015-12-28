@@ -1344,14 +1344,17 @@
 
 /**
  * attrs:
+ *      disableSwipe
+ *      questions
+ *      onQuestionAnswered
  */
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('questionsCarousel', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log',
-        function (ZnkExerciseSrv, PlatformEnum, $log) {
+        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum',
+        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum) {
             return {
                 templateUrl: function(){
                     var templateUrl = "components/znkExercise/core/template/";
@@ -1386,8 +1389,28 @@
                         ngModelCtrl.$setViewValue(scope.vm.currSlideIndex);
                     };
 
-                    attrs.$observe('disableSwipe',function(newVal){
-                        scope.isLocked = newVal === 'true' ? true : false;
+
+                    attrs.$observe('slideDirection',function(newSlideDirection){
+                        var slideDirection = +newSlideDirection;
+                        if(!scope.vm.swiperActions || isNaN(slideDirection)){
+                            return;
+                        }
+
+                        switch (slideDirection){
+                            case ZnkExerciseSlideDirectionEnum.NONE.enum:
+                                scope.vm.swiperActions.lockSwipes();
+                                break;
+                            case ZnkExerciseSlideDirectionEnum.RIGHT.enum:
+                                scope.vm.swiperActions.unlockSwipeToPrev();
+                                scope.vm.swiperActions.lockSwipeToNext();
+                                break;
+                            case ZnkExerciseSlideDirectionEnum.LEFT.enum:
+                                scope.vm.swiperActions.lockSwipeToPrev();
+                                scope.vm.swiperActions.unlockSwipeToNext();
+                                break;
+                            default:
+                                scope.vm.swiperActions.unlockSwipes();
+                        }
                     });
 
                     scope.$watch('questionsGetter().length',function(newNum){
@@ -1399,6 +1422,7 @@
                         scope.vm.questions = notBindedQuestions;
                         scope.vm.swiperActions.updateFollowingSlideAddition();
                     });
+
                 }
             };
         }
@@ -1506,8 +1530,15 @@
 
 /**
  * attrs:
+ *
  *  actions:
  *      updateContainerSize
+ *      lockSwipes
+ *      lockSwipeToPrev
+ *      lockSwipeToNext
+ *      unlockSwipes
+ *      unlockSwipeToPrev
+ *      unlockSwipeToNext
  *
  */
 
@@ -1520,6 +1551,7 @@
             return {
                 templateUrl: 'components/znkExercise/core/template/znkSwiperTemplate.html',
                 replace: true,
+                restrict: 'E',
                 require: 'ngModel',
                 scope:{},
                 transclude: true,
@@ -1533,6 +1565,18 @@
                                 scope.$parent.$eval(attrs.actions + '={}');
                             }
                             var actions = scope.$parent.$eval(attrs.actions);
+
+                            var fnToBindFromSwiper = ['lockSwipes', 'lockSwipeToPrev', 'lockSwipeToNext', 'unlockSwipes',
+                                'unlockSwipeToPrev', 'unlockSwipeToNext'
+                            ];
+                            fnToBindFromSwiper.forEach(function(fnName){
+                                actions[fnName] = function(){
+                                    var fnArgs = arguments;
+                                    swiperInstanceProm.then(function(swiperInstance){
+                                        swiperInstance[fnName].apply(swiperInstance,fnArgs);
+                                    });
+                                };
+                            });
 
                             actions.updateFollowingSlideAddition = function(){
                                 return swiperInstanceProm.then(function(swiperInstance){
@@ -2022,7 +2066,7 @@
                                     toolBoxModalInstance.close();
                                 }
                             });
-                        }
+                        },
                     };
                 }
             };
@@ -2952,7 +2996,8 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "<znk-swiper class=\"znk-carousel\"\n" +
     "            ng-model=\"vm.currSlideIndex\"\n" +
     "            actions=\"vm.swiperActions\"\n" +
-    "            ng-change=\"vm.SlideChanged()\">\n" +
+    "            ng-change=\"vm.SlideChanged()\"\n" +
+    "            disable-swipe=\"{{vm.isLocked}}\">\n" +
     "    <div class=\"swiper-slide\"\n" +
     "        ng-repeat=\"question in vm.questions\">\n" +
     "        <question-builder question=\"question\"\n" +
@@ -2979,7 +3024,8 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "                    questions=\"vm.questionsWithAnswers\"\n" +
     "                    disable-swipe=\"{{vm.slideDirection !== 2}}\"\n" +
     "                    ng-model=\"vm.currentSlide\"\n" +
-    "                    on-question-answered=\"vm.questionAnswered()\">\n" +
+    "                    on-question-answered=\"vm.questionAnswered()\"\n" +
+    "                    slide-direction=\"{{vm.slideDirection}}\">\n" +
     "</questions-carousel>\n" +
     "<znk-exercise-btn-section class=\"btn-section\"\n" +
     "                          prev-question=\"vm.setCurrentIndexByOffset(-1)\"\n" +

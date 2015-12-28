@@ -6,6 +6,9 @@
  *      lockSwipes
  *      lockSwipeToPrev
  *      lockSwipeToNext
+ *      unlockSwipes
+ *      unlockSwipeToPrev
+ *      unlockSwipeToNext
  *
  */
 
