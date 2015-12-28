@@ -21,6 +21,7 @@
  *      getCurrentIndex
  *      finishExercise
  *      setSlideDirection
+ *      forceDoneBtnDisplay
  */
 
 (function (angular) {
@@ -100,7 +101,6 @@
 
                             scope.actions.finishExercise = function () {
                                 updateTimeSpentOnQuestion();
-                                setViewValue();
                             };
 
                             scope.actions.setSlideDirection = function(newSlideDirection){
@@ -141,7 +141,6 @@
                                     element.removeClass('done-btn-hide');
                                 }
                             };
-
 
                             /**
                              *  ACTIONS END
@@ -316,6 +315,7 @@
                                 updateTimeSpentOnQuestion.lastTimeStamp = currTime;
                                 var question = scope.vm.questionsWithAnswers[questionNum];
                                 question.__questionStatus.timeSpent = (question.__questionStatus.timeSpent || 0) + timePassed;
+                                setViewValue();
                             }
 
                             /**
@@ -341,6 +341,10 @@
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value,prevValue);
                                 //var url = $location.url() + '/' + scope.vm.questionsWithAnswers[value].id;
                                 //$analytics.pageTrack(url);
+                            });
+
+                            scope.$watch('vm.questionsWithAnswers.length',function(newNum,oldNum){
+                                scope.$broadcast(ZnkExerciseEvents.QUESTIONS_NUM_CHANGED,newNum,oldNum);
                             });
 
                             scope.$on('$destroy', function () {

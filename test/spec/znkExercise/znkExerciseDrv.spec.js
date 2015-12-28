@@ -5,7 +5,8 @@ describe('testing directive "znkExerciseDrv":', function () {
     beforeEach(module('znk.infra.znkExercise', 'htmlTemplates'));
 
     //get dependencies
-    var $rootScope, $compile, $timeout, $interval, ZnkExerciseSrv, $q, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum;
+    var $rootScope, $compile, $timeout, $interval, ZnkExerciseSrv, $q, ZnkExerciseViewModeEnum,
+        ZnkExerciseSlideDirectionEnum, ZnkExerciseEvents;
     beforeEach(inject([
         '$rootScope', '$compile', '$timeout', '$injector',
         function (_$rootScope, _$compile, _$timeout, $injector) {
@@ -17,6 +18,7 @@ describe('testing directive "znkExerciseDrv":', function () {
             $q = $injector.get('$q');
             ZnkExerciseViewModeEnum = $injector.get('ZnkExerciseViewModeEnum');
             ZnkExerciseSlideDirectionEnum = $injector.get('ZnkExerciseSlideDirectionEnum');
+            ZnkExerciseEvents = $injector.get('ZnkExerciseEvents');
         }
     ]));
 
@@ -683,5 +685,18 @@ describe('testing directive "znkExerciseDrv":', function () {
         expect(content.hasClass('done-btn-show')).toBeFalsy();
     });
 
+    it('when question is dynamically and relevant answer are added then questions number event should be broadcast',function(){
+        var scopeContent = createDirectiveHtml();
+        var content = scopeContent.content;
+        var isolateScope = scopeContent.isolateScope;
+        var scope = scopeContent.scope;
 
+        var currQuestionsNum = scope.d.questions.length;
+        spyOn(isolateScope,'$broadcast');
+        scope.d.answers.push({});
+        scope.d.answers = angular.copy(scope.d.answers);
+        scope.d.questions.push({});
+        scope.$digest();
+        expect(isolateScope.$broadcast).toHaveBeenCalledWith(ZnkExerciseEvents.QUESTIONS_NUM_CHANGED, currQuestionsNum+1, currQuestionsNum);
+    });
 });

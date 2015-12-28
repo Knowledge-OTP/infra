@@ -402,6 +402,10 @@ znk-exercise.desktop {
     font-weight: normal;
     border-radius: 30px;
     color: white; }
+  znk-exercise.desktop.done-btn-hide .btn-section .done-btn {
+    display: none !important; }
+  znk-exercise.desktop.done-btn-show .btn-section .done-btn {
+    display: block !important; }
   znk-exercise.desktop.direction-right .btn-section .btn-container.left-container {
     display: inline-flex; }
   znk-exercise.desktop.direction-left .btn-section .btn-container.right-container {

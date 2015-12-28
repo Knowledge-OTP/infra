@@ -42,6 +42,18 @@
                             scope.vm.currentQuestionIndex = index || 0;
                         }
 
+                        function _setDoneBtnDisplayStatus(currIndex){
+                            var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
+                            getQuestionsProm.then(function (questions) {
+                                scope.vm.maxQuestionIndex = questions.length - 1;
+                                if ((currIndex && currIndex === (questions.length - 1 )) || znkExerciseDrvCtrl.isLastUnansweredQuestion()) {
+                                    scope.vm.showDoneButton = true;
+                                } else {
+                                    scope.vm.showDoneButton = false;
+                                }
+                            });
+                        }
+
                         function init(){
                             znkExerciseDrvCtrl.getQuestions().then(function (questions) {
                                 scope.vm.maxQuestionIndex = questions.length - 1;
@@ -62,22 +74,18 @@
 
                         scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex) {
                             _setCurrentQuestionIndex(newIndex);
-
-                            var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
-                            getQuestionsProm.then(function (questions) {
-                                scope.vm.maxQuestionIndex = questions.length - 1;
-                                if ((newIndex && newIndex === (questions.length - 1 )) || znkExerciseDrvCtrl.isLastUnansweredQuestion()) {
-                                    scope.vm.showDoneButton = true;
-                                } else {
-                                    scope.vm.showDoneButton = false;
-                                }
-                            });
+                            _setDoneBtnDisplayStatus(newIndex);
                         });
 
                         scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function () {
                             if (znkExerciseDrvCtrl.isLastUnansweredQuestion()) {
                                 scope.vm.showDoneButton = true;
                             }
+                        });
+
+                        scope.$on(ZnkExerciseEvents.QUESTIONS_NUM_CHANGED, function(){
+                            var currIndex = znkExerciseDrvCtrl.getCurrentIndex();
+                            _setDoneBtnDisplayStatus(currIndex);
                         });
                     }
                 }

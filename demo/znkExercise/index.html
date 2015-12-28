@@ -20,8 +20,12 @@
         }
     </style>
 
-    <znk-exercise ng-model="results" questions="questions" settings="settings" ng-model="results">
+    <znk-exercise ng-model="results"
+                  questions="questions"
+                  settings="settings"
+                  ng-model="results">
     </znk-exercise>
+    <button ng-click="addQuestion()">Add question</button>
     <script src="angular/angular.js"></script>
     <script src="angular-touch/angular-touch.js"></script>
     <script src="angular-carousel/dist/angular-carousel.js"></script>

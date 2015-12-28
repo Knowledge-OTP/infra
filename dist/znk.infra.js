@@ -1276,7 +1276,8 @@
         BOOKMARK: 'znk exercise:bookmark',
         QUESTION_ANSWERED: 'znk exercise:question answered',
         READY: 'znk exercise: exercise ready',
-        QUESTION_CHANGED: 'znk exercise: question changed'
+        QUESTION_CHANGED: 'znk exercise: question changed',
+        QUESTIONS_NUM_CHANGED: 'znk exercise: questions num changed'
     };
     angular.module('znk.infra.znkExercise').constant('ZnkExerciseEvents', ZnkExerciseEvents);
 })(angular);
@@ -1428,6 +1429,18 @@
                             scope.vm.currentQuestionIndex = index || 0;
                         }
 
+                        function _setDoneBtnDisplayStatus(currIndex){
+                            var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
+                            getQuestionsProm.then(function (questions) {
+                                scope.vm.maxQuestionIndex = questions.length - 1;
+                                if ((currIndex && currIndex === (questions.length - 1 )) || znkExerciseDrvCtrl.isLastUnansweredQuestion()) {
+                                    scope.vm.showDoneButton = true;
+                                } else {
+                                    scope.vm.showDoneButton = false;
+                                }
+                            });
+                        }
+
                         function init(){
                             znkExerciseDrvCtrl.getQuestions().then(function (questions) {
                                 scope.vm.maxQuestionIndex = questions.length - 1;
@@ -1448,22 +1461,18 @@
 
                         scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex) {
                             _setCurrentQuestionIndex(newIndex);
-
-                            var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
-                            getQuestionsProm.then(function (questions) {
-                                scope.vm.maxQuestionIndex = questions.length - 1;
-                                if ((newIndex && newIndex === (questions.length - 1 )) || znkExerciseDrvCtrl.isLastUnansweredQuestion()) {
-                                    scope.vm.showDoneButton = true;
-                                } else {
-                                    scope.vm.showDoneButton = false;
-                                }
-                            });
+                            _setDoneBtnDisplayStatus(newIndex);
                         });
 
                         scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function () {
                             if (znkExerciseDrvCtrl.isLastUnansweredQuestion()) {
                                 scope.vm.showDoneButton = true;
                             }
+                        });
+
+                        scope.$on(ZnkExerciseEvents.QUESTIONS_NUM_CHANGED, function(){
+                            var currIndex = znkExerciseDrvCtrl.getCurrentIndex();
+                            _setDoneBtnDisplayStatus(currIndex);
                         });
                     }
                 }
@@ -1583,6 +1592,7 @@
  *      getCurrentIndex
  *      finishExercise
  *      setSlideDirection
+ *      forceDoneBtnDisplay
  */
 
 (function (angular) {
@@ -1629,8 +1639,6 @@
                                 allQuestionWithAnswersArr,
                                 isMobile = $window.innerWidth <= 567;
 
-                            var questionAnswered;
-
                             function questionChangeResolverForSlideDirection(requiredIndex, currIndex){
                                 var currSlideDirection = scope.vm.slideDirection;
                                 switch (currSlideDirection){
@@ -1649,7 +1657,9 @@
                             scope.vm.answeredCount = 0;
 
                             znkExerciseDrvCtrl.setCurrentIndex(scope.settings.initSlideIndex || 0);
-
+                            /**
+                             *  ACTIONS
+                             * */
                             scope.actions = scope.actions || {};
 
                             scope.actions.setSlideIndex = function setSlideIndex(index) {
@@ -1662,7 +1672,6 @@
 
                             scope.actions.finishExercise = function () {
                                 updateTimeSpentOnQuestion();
-                                setViewValue();
                             };
 
                             scope.actions.setSlideDirection = function(newSlideDirection){
@@ -1689,12 +1698,52 @@
                                     scope.vm.slideDirection = newSlideDirection;
                                 }
                             };
-                            scope.actions.setSlideDirection(scope.settings.initSlideDirection);
+
+                            scope.actions.forceDoneBtnDisplay = function(display){
+                                if(display === true){
+                                    element.addClass('done-btn-show');
+                                }else{
+                                    element.removeClass('done-btn-show');
+                                }
+
+                                if(display === false){
+                                    element.addClass('done-btn-hide');
+                                }else{
+                                    element.removeClass('done-btn-hide');
+                                }
+                            };
+
+                            /**
+                             *  ACTIONS END
+                             * */
+
+                            /**
+                             *  RENDER AND SET VIEW VALUE
+                             * */
+                            function render(viewValue) {
+                                allQuestionWithAnswersArr = viewValue;
+                                scope.vm.questionsWithAnswers = allQuestionWithAnswersArr;
+                                znkExerciseDrvCtrl.setExerciseAsReady();
+                            }
+
+                            ngModelCtrl.$render = function () {
+                                render(ngModelCtrl.$viewValue);
+                            };
+
+                            function setViewValue() {
+                                ngModelCtrl.$setViewValue(angular.copy(scope.vm.questionsWithAnswers));
+                            }
+                            /**
+                             *  RENDER AND SET VIEW VALUE END
+                             * */
 
                             function getCurrentQuestion() {
                                 return allQuestionWithAnswersArr[scope.vm.currentSlide];
                             }
 
+                            /**
+                             *  TOOL BOX MODAL
+                             * */
                             var toolboxModalSettings = {
                                 toolsToHide: scope.settings.toolsToHide,
                                 wrapperCls: scope.settings.toolBoxWrapperClass || ''
@@ -1733,21 +1782,13 @@
                                 }
                             };
                             var toolBoxModalInstance = ZnkExerciseSrv.openExerciseToolBoxModal(toolboxModalSettings);
+                            /**
+                             *  TOOL BOX MODAL END
+                             * */
 
-                            function setViewValue() {
-                                ngModelCtrl.$setViewValue(angular.copy(scope.vm.questionsWithAnswers));
-                            }
-
-                            function render(viewValue) {
-                                allQuestionWithAnswersArr = viewValue;
-                                scope.vm.questionsWithAnswers = allQuestionWithAnswersArr;
-                                znkExerciseDrvCtrl.setExerciseAsReady();
-                            }
-
-                            ngModelCtrl.$render = function () {
-                                render(ngModelCtrl.$viewValue);
-                            };
-
+                            /**
+                             *  FORMATTER & PARSER
+                             * */
                             questionAnswersToOneObjectfmtr.formatter = function (answers) {
                                 if (!answers) {
                                     answers = [];
@@ -1811,6 +1852,9 @@
                                 return results;
                             };
                             ngModelCtrl.$parsers.push(questionAnswersToOneObjectfmtr.parser);
+                            /**
+                             *  FORMATTER & PARSER END
+                             * */
 
                             scope.vm.questionAnswered = function () {
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
@@ -1818,7 +1862,6 @@
                                     setViewValue();
                                 }
                                 scope.settings.onQuestionAnswered(scope.vm.currentSlide);
-                                questionAnswered = true;
                             };
 
                             scope.vm.bookmarkCurrentQuestion = function () {
@@ -1843,7 +1886,16 @@
                                 updateTimeSpentOnQuestion.lastTimeStamp = currTime;
                                 var question = scope.vm.questionsWithAnswers[questionNum];
                                 question.__questionStatus.timeSpent = (question.__questionStatus.timeSpent || 0) + timePassed;
+                                setViewValue();
                             }
+
+                            /**
+                             *  INIT
+                             * */
+                            scope.actions.setSlideDirection(scope.settings.initSlideDirection);
+                            /**
+                             *  INIT END
+                             * */
 
                             scope.$watch('vm.currentSlide', function (value, prevValue) {
                                 if(angular.isUndefined(value)){
@@ -1855,11 +1907,15 @@
                                     var currQuestion = getCurrentQuestion();
                                     toolboxModalSettings.actions.setToolValue(ZnkExerciseSrv.toolBoxTools.BOOKMARK, !!currQuestion.__questionStatus.bookmark);
                                 }
-                                questionAnswered = false;
+
                                 scope.settings.onSlideChange();
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value,prevValue);
                                 //var url = $location.url() + '/' + scope.vm.questionsWithAnswers[value].id;
                                 //$analytics.pageTrack(url);
+                            });
+
+                            scope.$watch('vm.questionsWithAnswers.length',function(newNum,oldNum){
+                                scope.$broadcast(ZnkExerciseEvents.QUESTIONS_NUM_CHANGED,newNum,oldNum);
                             });
 
                             scope.$on('$destroy', function () {

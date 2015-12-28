@@ -5,7 +5,8 @@
         BOOKMARK: 'znk exercise:bookmark',
         QUESTION_ANSWERED: 'znk exercise:question answered',
         READY: 'znk exercise: exercise ready',
-        QUESTION_CHANGED: 'znk exercise: question changed'
+        QUESTION_CHANGED: 'znk exercise: question changed',
+        QUESTIONS_NUM_CHANGED: 'znk exercise: questions num changed'
     };
     angular.module('znk.infra.znkExercise').constant('ZnkExerciseEvents', ZnkExerciseEvents);
 })(angular);
