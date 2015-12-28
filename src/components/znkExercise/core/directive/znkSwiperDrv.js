@@ -1,7 +1,11 @@
 /**
  * attrs:
+ *
  *  actions:
  *      updateContainerSize
+ *      lockSwipes
+ *      lockSwipeToPrev
+ *      lockSwipeToNext
  *
  */
 
@@ -14,6 +18,7 @@
             return {
                 templateUrl: 'components/znkExercise/core/template/znkSwiperTemplate.html',
                 replace: true,
+                restrict: 'E',
                 require: 'ngModel',
                 scope:{},
                 transclude: true,
@@ -27,6 +32,18 @@
                                 scope.$parent.$eval(attrs.actions + '={}');
                             }
                             var actions = scope.$parent.$eval(attrs.actions);
+
+                            var fnToBindFromSwiper = ['lockSwipes', 'lockSwipeToPrev', 'lockSwipeToNext', 'unlockSwipes',
+                                'unlockSwipeToPrev', 'unlockSwipeToNext'
+                            ];
+                            fnToBindFromSwiper.forEach(function(fnName){
+                                actions[fnName] = function(){
+                                    var fnArgs = arguments;
+                                    swiperInstanceProm.then(function(swiperInstance){
+                                        swiperInstance[fnName].apply(swiperInstance,fnArgs);
+                                    });
+                                };
+                            });
 
                             actions.updateFollowingSlideAddition = function(){
                                 return swiperInstanceProm.then(function(swiperInstance){

@@ -352,7 +352,7 @@
                                     toolBoxModalInstance.close();
                                 }
                             });
-                        }
+                        },
                     };
                 }
             };

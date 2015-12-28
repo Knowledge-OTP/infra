@@ -1,7 +1,8 @@
 <znk-swiper class="znk-carousel"
             ng-model="vm.currSlideIndex"
             actions="vm.swiperActions"
-            ng-change="vm.SlideChanged()">
+            ng-change="vm.SlideChanged()"
+            disable-swipe="{{vm.isLocked}}">
     <div class="swiper-slide"
         ng-repeat="question in vm.questions">
         <question-builder question="question"

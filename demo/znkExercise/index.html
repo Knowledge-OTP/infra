@@ -23,9 +23,14 @@
     <znk-exercise ng-model="results"
                   questions="questions"
                   settings="settings"
+                  actions="actions"
                   ng-model="results">
     </znk-exercise>
     <button ng-click="addQuestion()">Add question</button>
+    <button ng-click="setSlideDirection(1)">set slide direction none</button>
+    <button ng-click="setSlideDirection(2)">set slide direction all</button>
+    <button ng-click="setSlideDirection(3)">set slide direction right</button>
+    <button ng-click="setSlideDirection(4)">set slide direction left</button>
     <script src="angular/angular.js"></script>
     <script src="angular-touch/angular-touch.js"></script>
     <script src="Swiper/dist/js/swiper.js"></script>

@@ -1,13 +1,16 @@
 /**
  * attrs:
+ *      disableSwipe
+ *      questions
+ *      onQuestionAnswered
  */
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('questionsCarousel', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log',
-        function (ZnkExerciseSrv, PlatformEnum, $log) {
+        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum', '$timeout',
+        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum, $timeout) {
             return {
                 templateUrl: function(){
                     var templateUrl = "components/znkExercise/core/template/";
@@ -42,8 +45,28 @@
                         ngModelCtrl.$setViewValue(scope.vm.currSlideIndex);
                     };
 
-                    attrs.$observe('disableSwipe',function(newVal){
-                        scope.isLocked = newVal === 'true' ? true : false;
+
+                    attrs.$observe('slideDirection',function(newSlideDirection){
+                        var slideDirection = +newSlideDirection;
+                        if(!scope.vm.swiperActions || isNaN(slideDirection)){
+                            return;
+                        }
+
+                        switch (slideDirection){
+                            case ZnkExerciseSlideDirectionEnum.NONE.enum:
+                                scope.vm.swiperActions.lockSwipes();
+                                break;
+                            case ZnkExerciseSlideDirectionEnum.RIGHT.enum:
+                                scope.vm.swiperActions.unlockSwipeToPrev();
+                                scope.vm.swiperActions.lockSwipeToNext();
+                                break;
+                            case ZnkExerciseSlideDirectionEnum.LEFT.enum:
+                                scope.vm.swiperActions.lockSwipeToPrev();
+                                scope.vm.swiperActions.unlockSwipeToNext();
+                                break;
+                            default:
+                                scope.vm.swiperActions.unlockSwipes();
+                        }
                     });
 
                     scope.$watch('questionsGetter().length',function(newNum){
@@ -55,6 +78,7 @@
                         scope.vm.questions = notBindedQuestions;
                         scope.vm.swiperActions.updateFollowingSlideAddition();
                     });
+
                 }
             };
         }

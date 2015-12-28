@@ -3,7 +3,8 @@
                     questions="vm.questionsWithAnswers"
                     disable-swipe="{{vm.slideDirection !== 2}}"
                     ng-model="vm.currentSlide"
-                    on-question-answered="vm.questionAnswered()">
+                    on-question-answered="vm.questionAnswered()"
+                    slide-direction="{{vm.slideDirection}}">
 </questions-carousel>
 <znk-exercise-btn-section class="btn-section"
                           prev-question="vm.setCurrentIndexByOffset(-1)"

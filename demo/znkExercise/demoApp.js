@@ -69,5 +69,9 @@
                     ]
                 });
             };
+
+            $scope.setSlideDirection = function(slideDirection){
+                $scope.actions.setSlideDirection(slideDirection);
+            };
         });
 })(angular);
