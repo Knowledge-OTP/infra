@@ -78,6 +78,22 @@ znk-exercise.desktop {
         }
     }
 
+    &.done-btn-hide{
+        .btn-section{
+            .done-btn{
+                display: none!important;
+            }
+        }
+    }
+
+    &.done-btn-show{
+        .btn-section{
+            .done-btn{
+                display: block!important;
+            }
+        }
+    }
+
     &.direction-right{
         .btn-section{
             .btn-container.left-container{

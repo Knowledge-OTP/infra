@@ -528,7 +528,7 @@ describe('testing directive "znkExerciseDrv":', function () {
 
     it('when current slide direction is all then direction-left and direction-right class should be added',
         function () {
-            var scopeContent = createDirectiveHtml(undefined, undefined, {viewMode: ZnkExerciseViewModeEnum.REVIEW.enum});
+            var scopeContent = createDirectiveHtml();
             var content = scopeContent.content;
             var scope = scopeContent.scope;
 
@@ -540,7 +540,7 @@ describe('testing directive "znkExerciseDrv":', function () {
     );
 
     it('when current slide direction is none then no direction class should be added', function () {
-        var scopeContent = createDirectiveHtml(undefined, undefined, {viewMode: ZnkExerciseViewModeEnum.REVIEW.enum});
+        var scopeContent = createDirectiveHtml();
         var content = scopeContent.content;
         var scope = scopeContent.scope;
 
@@ -555,7 +555,7 @@ describe('testing directive "znkExerciseDrv":', function () {
 
     it('given current slide direction is none when trying to set current slide to higher index then it should not be' +
         'set', function () {
-        var scopeContent = createDirectiveHtml(undefined, undefined, {viewMode: ZnkExerciseViewModeEnum.REVIEW.enum});
+        var scopeContent = createDirectiveHtml();
         var content = scopeContent.content;
         var isolateScope = scopeContent.isolateScope;
         var scope = scopeContent.scope;
@@ -571,7 +571,7 @@ describe('testing directive "znkExerciseDrv":', function () {
 
     it('given current slide direction is none when trying to set current slide to lower index then it should not be' +
         'set', function () {
-        var scopeContent = createDirectiveHtml(undefined, undefined, {viewMode: ZnkExerciseViewModeEnum.REVIEW.enum});
+        var scopeContent = createDirectiveHtml();
         var content = scopeContent.content;
         var isolateScope = scopeContent.isolateScope;
         var scope = scopeContent.scope;
@@ -587,7 +587,7 @@ describe('testing directive "znkExerciseDrv":', function () {
 
     it('given current slide direction is left when trying to set current slide to higher index then it should be' +
         'set', function () {
-        var scopeContent = createDirectiveHtml(undefined, undefined, {viewMode: ZnkExerciseViewModeEnum.REVIEW.enum});
+        var scopeContent = createDirectiveHtml();
         var content = scopeContent.content;
         var isolateScope = scopeContent.isolateScope;
         var scope = scopeContent.scope;
@@ -602,7 +602,7 @@ describe('testing directive "znkExerciseDrv":', function () {
 
     it('given current slide direction is right when trying to set current slide to lower index then it should be' +
         'set', function () {
-        var scopeContent = createDirectiveHtml(undefined, undefined, {viewMode: ZnkExerciseViewModeEnum.REVIEW.enum});
+        var scopeContent = createDirectiveHtml();
         var content = scopeContent.content;
         var isolateScope = scopeContent.isolateScope;
         var scope = scopeContent.scope;
@@ -619,7 +619,7 @@ describe('testing directive "znkExerciseDrv":', function () {
 
     it('given current slide direction is all when trying to set current slide to higher index then it should be' +
         'set', function () {
-        var scopeContent = createDirectiveHtml(undefined, undefined, {viewMode: ZnkExerciseViewModeEnum.REVIEW.enum});
+        var scopeContent = createDirectiveHtml();
         var content = scopeContent.content;
         var isolateScope = scopeContent.isolateScope;
         var scope = scopeContent.scope;
@@ -634,7 +634,7 @@ describe('testing directive "znkExerciseDrv":', function () {
 
     it('given current slide direction is ALL when trying to set current slide to lower index then it should be' +
         'set', function () {
-        var scopeContent = createDirectiveHtml(undefined, undefined, {viewMode: ZnkExerciseViewModeEnum.REVIEW.enum});
+        var scopeContent = createDirectiveHtml();
         var content = scopeContent.content;
         var isolateScope = scopeContent.isolateScope;
         var scope = scopeContent.scope;
@@ -646,4 +646,42 @@ describe('testing directive "znkExerciseDrv":', function () {
         var currentIndex = isolateScope.vm.getCurrentIndex();
         expect(currentIndex).toBe(1);
     });
+
+    it('when invoking force done button display with true parameter button then done-btn-show class should be added', function () {
+        var scopeContent = createDirectiveHtml();
+        var content = scopeContent.content;
+        var scope = scopeContent.scope;
+        scope.d.actions.forceDoneBtnDisplay(true);
+        expect(content.hasClass('done-btn-show')).toBeTruthy();
+    });
+
+    it('when invoking force done button display with false parameter button then done-btn-hide class should be added', function () {
+        var scopeContent = createDirectiveHtml();
+        var content = scopeContent.content;
+        var scope = scopeContent.scope;
+        scope.d.actions.forceDoneBtnDisplay(false);
+        expect(content.hasClass('done-btn-hide')).toBeTruthy();
+    });
+
+    it('given done-btn-hide class is added when invoking force done button display with true parameter button then done-btn-hide class should be removed', function () {
+        var scopeContent = createDirectiveHtml();
+        var content = scopeContent.content;
+        var scope = scopeContent.scope;
+        scope.d.actions.forceDoneBtnDisplay(false);
+        scope.d.actions.forceDoneBtnDisplay(true);
+        expect(content.hasClass('done-btn-hide')).toBeFalsy();
+    });
+
+    it('when invoking force done button display with null parameter after it was invoked with true and false then done-btn-hide  done-btn-show class should be removed', function () {
+        var scopeContent = createDirectiveHtml();
+        var content = scopeContent.content;
+        var scope = scopeContent.scope;
+        scope.d.actions.forceDoneBtnDisplay(false);
+        scope.d.actions.forceDoneBtnDisplay(true);
+        scope.d.actions.forceDoneBtnDisplay(null);
+        expect(content.hasClass('done-btn-hide')).toBeFalsy();
+        expect(content.hasClass('done-btn-show')).toBeFalsy();
+    });
+
+
 });
