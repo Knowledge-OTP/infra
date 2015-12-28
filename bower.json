@@ -7,7 +7,8 @@
   "dependencies": {
     "angular": "1.4.x",
     "angular-mocks": "1.4.x",
-    "angular-carousel": "~1.0.1"
+    "angular-carousel": "~1.0.1",
+    "Swiper": "swiper#~3.2.7"
   },
   "ignore": [
     ".*",

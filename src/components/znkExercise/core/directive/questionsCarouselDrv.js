@@ -25,15 +25,35 @@
                     }
                     return templateUrl;
                 },
+                require: 'ngModel',
                 scope:{
-                    questions: '=',
-                    currentSlide: '=',
+                    questionsGetter: '&questions',
                     onQuestionAnswered: '&'
 
                 },
-                link: function (scope, element, attrs) {
+                link: function (scope, element, attrs, ngModelCtrl) {
+                    scope.vm = {};
+
+                    ngModelCtrl.$render = function(){
+                        scope.vm.currSlideIndex = ngModelCtrl.$viewValue;
+                    };
+
+                    scope.vm.SlideChanged = function(){
+                        ngModelCtrl.$setViewValue(scope.vm.currSlideIndex);
+                    };
+
                     attrs.$observe('disableSwipe',function(newVal){
                         scope.isLocked = newVal === 'true' ? true : false;
+                    });
+
+                    scope.$watch('questionsGetter().length',function(newNum){
+                        var notBindedQuestions = scope.questionsGetter();
+                        if(newNum && !scope.vm.questions){
+                            scope.vm.questions = notBindedQuestions;
+                            return;
+                        }
+                        scope.vm.questions = notBindedQuestions;
+                        scope.vm.swiperActions.updateFollowingSlideAddition();
                     });
                 }
             };

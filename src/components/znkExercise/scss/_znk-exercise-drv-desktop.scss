@@ -60,6 +60,7 @@ znk-exercise.desktop {
         }
 
         .done-btn {
+            z-index: 1;
             width: 160px;
             position: absolute;
             right: 30px;
@@ -131,8 +132,7 @@ znk-exercise.desktop {
             left: 0;
 
             .znk-carousel {
-                flex-grow: 1;
-                margin: 0;
+                @include absolute-full-cover;
 
                 .slide {
                     width: 100%;

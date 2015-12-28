@@ -2,8 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('ZnkExerciseDrvCtrl', [
-        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$timeout',
-        function ($scope, $q, ZnkExerciseEvents, $log, $timeout) {
+        '$scope', '$q', 'ZnkExerciseEvents', '$log',
+        function ($scope, $q, ZnkExerciseEvents, $log) {
             var self = this;
             var exerciseReadyDefer = $q.defer();
             var isExerciseReady = false;
@@ -56,10 +56,8 @@
                         //max index limit
                         var questions = $scope.questionsGetter() || [];
                         newQuestionIndex = Math.min(newQuestionIndex, questions.length - 1);
-                        //temp hack
-                        $timeout(function(){
-                            $scope.vm.currentSlide = newQuestionIndex;
-                        },300);
+
+                        $scope.vm.currentSlide = newQuestionIndex;
                         return $scope.vm.currentSlide;
                     });
                 }else{

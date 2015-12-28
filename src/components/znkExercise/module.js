@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise', ['znk.infra.enum', 'znk.infra.svgIcon', 'angular-carousel'])
+    angular.module('znk.infra.znkExercise', ['znk.infra.enum', 'znk.infra.svgIcon'])
         .config([
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
