@@ -1402,6 +1402,7 @@
                 scope: {
                     prevQuestion: '&?',
                     nextQuestion: '&?',
+                    onDone: '&',
                     questionsGetter: '&questions'
                 },
                 require: '^znkExercise',
@@ -2808,7 +2809,8 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "        <svg-icon name=\"chevron\"></svg-icon>\n" +
     "    </button>\n" +
     "</div>\n" +
-    "<button class=\"done-btn ng-hide\" ng-show=\"vm.showDoneButton\">DONE</button>");
+    "<button class=\"done-btn ng-hide\" ng-show=\"vm.showDoneButton\" ng-click=\"onDone()\">DONE</button>\n" +
+    "");
   $templateCache.put("components/znkExercise/core/template/btnSectionMobileTemplate.html",
     "<div ng-class=\"{ 'next-disabled' : settings.slideDirection === d.slideDirections.NONE ||  settings.slideDirection === d.slideDirections.RIGHT }\">\n" +
     "    <div class=\"bookmark-icon-container only-tablet\"\n" +
@@ -2886,7 +2888,8 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "</questions-carousel>\n" +
     "<znk-exercise-btn-section class=\"btn-section\"\n" +
     "                          prev-question=\"vm.setCurrentIndexByOffset(-1)\"\n" +
-    "                          next-question=\"vm.setCurrentIndexByOffset(1)\">\n" +
+    "                          next-question=\"vm.setCurrentIndexByOffset(1)\"\n" +
+    "                          on-done=\"settings.onDone()\">\n" +
     "</znk-exercise-btn-section>\n" +
     "<znk-exercise-pager\n" +
     "        ng-hide=\"vm.hidePager\"\n" +

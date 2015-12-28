@@ -15,6 +15,7 @@
                 scope: {
                     prevQuestion: '&?',
                     nextQuestion: '&?',
+                    onDone: '&',
                     questionsGetter: '&questions'
                 },
                 require: '^znkExercise',

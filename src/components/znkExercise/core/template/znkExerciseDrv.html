@@ -7,7 +7,8 @@
 </questions-carousel>
 <znk-exercise-btn-section class="btn-section"
                           prev-question="vm.setCurrentIndexByOffset(-1)"
-                          next-question="vm.setCurrentIndexByOffset(1)">
+                          next-question="vm.setCurrentIndexByOffset(1)"
+                          on-done="settings.onDone()">
 </znk-exercise-btn-section>
 <znk-exercise-pager
         ng-hide="vm.hidePager"

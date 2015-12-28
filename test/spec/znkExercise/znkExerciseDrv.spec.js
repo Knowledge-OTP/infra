@@ -268,19 +268,6 @@ describe('testing directive "znkExerciseDrv":', function () {
         expect(scope.d.settings.onSlideChange).toHaveBeenCalled();
     });
 
-    xit('when tapping on next button on the last question then scope.d.settings.onDone function should be called', function () {
-        var scopeContent = createDirectiveHtml();
-        var scope = scopeContent.scope;
-        spyOn(scope.d.settings, 'onDone');
-        var content = scopeContent.content;
-        content.next();
-        content.next();
-        content.next();
-        content.next();
-        content.next();
-        expect(scope.d.settings.onDone).toHaveBeenCalled();
-    });
-
     it('when clicking on bookmark icon then the question should be bookmarked', function () {
         var scopeContent = createDirectiveHtml();
         var scope = scopeContent.scope;
