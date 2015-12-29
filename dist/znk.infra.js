@@ -1730,6 +1730,7 @@
  *      initSlideIndex
  *      toolBoxWrapperClass
  *      initSlideDirection
+ *      initForceDoneBtnDisplay
  *
  *  actions:
  *      setSlideIndex
@@ -1772,7 +1773,8 @@
                                 onQuestionAnswered: angular.noop,
                                 viewMode: ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
                                 onSlideChange: angular.noop,
-                                initSlideDirection: ZnkExerciseSlideDirectionEnum.ALL.enum
+                                initSlideDirection: ZnkExerciseSlideDirectionEnum.ALL.enum,
+                                initForceDoneBtnDisplay: null
                             };
                             scope.settings = angular.extend(defaultSettings, scope.settings);
 
@@ -2037,6 +2039,7 @@
                              *  INIT
                              * */
                             scope.actions.setSlideDirection(scope.settings.initSlideDirection);
+                            scope.actions.forceDoneBtnDisplay(scope.settings.initForceDoneBtnDisplay);
                             /**
                              *  INIT END
                              * */

@@ -44,7 +44,8 @@
                 viewMode: 2,
                 onDone: function(){
                     alert('On done was invoked');
-                }
+                },
+                initForceDoneBtnDisplay: true
             };
 
             $scope.addQuestion = function () {
