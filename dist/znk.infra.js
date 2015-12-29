@@ -1423,7 +1423,13 @@
                         scope.vm.questions = notBindedQuestions;
                         scope.vm.swiperActions.updateFollowingSlideAddition();
                     });
-
+                    //hack since the template url is loaded asynchronously the pre and post link not working well
+                    scope.$watch('vm.swiperActions',function(actions){
+                        if(!angular.isObject(actions)){
+                            return;
+                        }
+                        actions.enableKeyboardControl();
+                    });
                 }
             };
         }
@@ -1540,6 +1546,8 @@
  *      unlockSwipes
  *      unlockSwipeToPrev
  *      unlockSwipeToNext
+ *      enableKeyboardControl
+ *      disableKeyboardControl
  *
  */
 
@@ -1567,8 +1575,9 @@
                             }
                             var actions = scope.$parent.$eval(attrs.actions);
 
-                            var fnToBindFromSwiper = ['lockSwipes', 'lockSwipeToPrev', 'lockSwipeToNext', 'unlockSwipes',
-                                'unlockSwipeToPrev', 'unlockSwipeToNext'
+                            var fnToBindFromSwiper = [
+                                'lockSwipes', 'lockSwipeToPrev', 'lockSwipeToNext', 'unlockSwipes', 'unlockSwipeToPrev',
+                                'unlockSwipeToNext' ,'disableKeyboardControl', 'enableKeyboardControl'
                             ];
                             fnToBindFromSwiper.forEach(function(fnName){
                                 actions[fnName] = function(){
