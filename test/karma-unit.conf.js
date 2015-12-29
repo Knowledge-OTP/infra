@@ -23,9 +23,8 @@ module.exports = function (config) {
             // bower:js
             'bower_components/es5-shim/es5-shim.js',
             'bower_components/angular/angular.js',
+            'bower_components/Swiper/dist/js/swiper.js',
             'bower_components/angular-mocks/angular-mocks.js',
-            'bower_components/angular-touch/angular-touch.js',
-            'bower_components/angular-carousel/dist/angular-carousel.js',
             // endbower
 
             //html

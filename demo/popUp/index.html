@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body ng-app="demoApp" ng-controller="Main">
+
+    <style>
+        body{
+            background: #f2f2f2;
+        }
+
+        znk-exercise{
+            height: 500px;
+            width: 500px;
+            margin: 100px auto 0 auto;
+            background: #E2E2E2;
+        }
+    </style>
+    <button ng-click="showPopup('warning')">Warning pop</button>
+    <button ng-click="showPopup('error')">Warning pop</button>
+    <button ng-click="showPopup('success')">Warning pop</button>
+    <!--<button ng-click="setSlideDirection(1)">set slide direction none</button>-->
+    <!--<button ng-click="setSlideDirection(2)">set slide direction all</button>-->
+    <!--<button ng-click="setSlideDirection(3)">set slide direction right</button>-->
+    <!--<button ng-click="setSlideDirection(4)">set slide direction left</button>-->
+    <script src="angular/angular.js"></script>
+    <script src="angular-touch/angular-touch.js"></script>
+    <script src="Swiper/dist/js/swiper.js"></script>
+
+    <script src="components/enums/module.js"></script>
+    <script src="components/enums/services/enumSrv.js"></script>
+    <script src="components/enums/enums/answerTypeEnum.js"></script>
+
+    <script src="components/svgIcon/module.js"></script>
+    <script src="components/svgIcon/svgIconDrv.js"></script>
+    <script src="components/svgIcon/svgIconSrv.js"></script>
+
+    <script src="components/popUp/module.js"></script>
+    <script src="components/popUp/popUpSrv.js"></script>
+
+    <script src="demoApp.js"></script>
+</body>
+</html>
