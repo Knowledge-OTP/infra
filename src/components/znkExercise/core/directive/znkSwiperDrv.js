@@ -9,6 +9,8 @@
  *      unlockSwipes
  *      unlockSwipeToPrev
  *      unlockSwipeToNext
+ *      enableKeyboardControl
+ *      disableKeyboardControl
  *
  */
 
@@ -36,8 +38,9 @@
                             }
                             var actions = scope.$parent.$eval(attrs.actions);
 
-                            var fnToBindFromSwiper = ['lockSwipes', 'lockSwipeToPrev', 'lockSwipeToNext', 'unlockSwipes',
-                                'unlockSwipeToPrev', 'unlockSwipeToNext'
+                            var fnToBindFromSwiper = [
+                                'lockSwipes', 'lockSwipeToPrev', 'lockSwipeToNext', 'unlockSwipes', 'unlockSwipeToPrev',
+                                'unlockSwipeToNext' ,'disableKeyboardControl', 'enableKeyboardControl'
                             ];
                             fnToBindFromSwiper.forEach(function(fnName){
                                 actions[fnName] = function(){

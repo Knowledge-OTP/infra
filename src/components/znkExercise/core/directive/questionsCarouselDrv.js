@@ -78,7 +78,13 @@
                         scope.vm.questions = notBindedQuestions;
                         scope.vm.swiperActions.updateFollowingSlideAddition();
                     });
-
+                    //hack since the template url is loaded asynchronously the pre and post link not working well
+                    scope.$watch('vm.swiperActions',function(actions){
+                        if(!angular.isObject(actions)){
+                            return;
+                        }
+                        actions.enableKeyboardControl();
+                    });
                 }
             };
         }
