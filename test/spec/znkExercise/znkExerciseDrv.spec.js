@@ -604,8 +604,6 @@ describe('testing directive "znkExerciseDrv":', function () {
         expect(currentIndex).toBe(1);
     });
 
-
-
     it('given current slide direction is all when trying to set current slide to higher index then it should be' +
         'set', function () {
         var scopeContent = createDirectiveHtml();
@@ -672,7 +670,7 @@ describe('testing directive "znkExerciseDrv":', function () {
         expect(content.hasClass('done-btn-show')).toBeFalsy();
     });
 
-    it('when question is dynamically and relevant answer are added then questions number event should be broadcast',function(){
+    it('when question and relevant answer are dynamically added then questions number changed event should be broadcast',function(){
         var scopeContent = createDirectiveHtml();
         var content = scopeContent.content;
         var isolateScope = scopeContent.isolateScope;

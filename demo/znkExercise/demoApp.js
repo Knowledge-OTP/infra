@@ -42,6 +42,9 @@
 
             $scope.settings = {
                 viewMode: 2,
+                onQuestionAnswered: function(){
+                    $scope;
+                },
                 onDone: function(){
                     alert('On done was invoked');
                 }
