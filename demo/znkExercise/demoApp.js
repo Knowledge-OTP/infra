@@ -42,14 +42,18 @@
 
             $scope.settings = {
                 viewMode: 2,
+                onQuestionAnswered: function(){
+                    $scope;
+                },
                 onDone: function(){
                     alert('On done was invoked');
-                },
-                initForceDoneBtnDisplay: true
+                }
             };
 
             $scope.addQuestion = function () {
-                $scope.results = [];
+                $scope.results.push({});
+                $scope.results = angular.copy($scope.results);
+
                 $scope.questions.push({
                     __type: 1,
                     id: $scope.questions.length + 1,
@@ -69,6 +73,12 @@
                         }
                     ]
                 });
+            };
+
+            $scope.removeQuestion = function(){
+                $scope.questions.pop();
+                $scope.results.pop();
+                $scope.results = angular.copy($scope.results);
             };
 
             $scope.setSlideDirection = function(slideDirection){

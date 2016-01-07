@@ -2012,10 +2012,10 @@
                              * */
 
                             scope.vm.questionAnswered = function () {
-                                scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
                                 if (scope.settings.viewMode !== ZnkExerciseViewModeEnum.REVIEW.enum) {
-                                    setViewValue();
+                                    updateTimeSpentOnQuestion();
                                 }
+                                scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
                                 scope.settings.onQuestionAnswered(scope.vm.currentSlide);
                             };
 
