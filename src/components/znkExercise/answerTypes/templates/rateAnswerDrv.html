@@ -1,0 +1,13 @@
+<div class="rate-answer-wrapper">
+
+    <div class="checkbox-items-wrapper" >
+
+        <div class="item-repeater" ng-repeat="answer in ::d.answers track by answer.id">
+            <div class="checkbox-item" ng-click="clickHandler(answer, $index)">
+                <div class="item-index">{{ ::$index  }}</div>
+            </div>
+            <div class="correct-answer-line"></div>
+        </div>
+
+    </div>
+</div>

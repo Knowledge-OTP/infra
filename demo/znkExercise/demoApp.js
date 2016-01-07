@@ -18,23 +18,56 @@
         })
         .controller('Main', function ($scope) {
             $scope.questions = [
+                //{
+                //    __type: 1,
+                //    id: 1,
+                //    answerTypeId: 0,
+                //    answers: [
+                //        {
+                //            id: 1,
+                //            content: '<span>answer1</span>'
+                //        },
+                //        {
+                //            id: 2,
+                //            content: '<span>answer2</span>'
+                //        },
+                //        {
+                //            id: 3,
+                //            content: '<span>answer3</span>'
+                //        }
+                //    ]
+                //},
                 {
-                    __type: 1, id: 1, answerTypeId: 0, answers: [
-                    {
-                        id: 1,
-                        content: '<span>answer1</span>'
-                    },
-                    {
-                        id: 2,
-                        content: '<span>answer2</span>'
-                    },
-                    {
-                        id: 3,
-                        content: '<span>answer3</span>'
-                    }
-                ]
+                    __type: 1,
+                    id: 1,
+                    answerTypeId: 3,
+                    answers: [
+                        {
+                            id: 1,
+                            content: '<span>answer1</span>'
+                        },
+                        {
+                            id: 2,
+                            content: '<span>answer2</span>'
+                        },
+                        {
+                            id: 3,
+                            content: '<span>answer3</span>'
+                        },
+                        {
+                            id: 4,
+                            content: '<span>answer3</span>'
+                        },
+                        {
+                            id: 5,
+                            content: '<span>answer3</span>'
+                        },
+                        {
+                            id: 6,
+                            content: '<span>answer3</span>'
+                        }
+                    ]
                 },
-                {__type: 2, id: 2},
                 {__type: 3, id: 3},
                 {__type: 1, id: 4},
                 {__type: 2, id: 5}
@@ -42,10 +75,10 @@
 
             $scope.settings = {
                 viewMode: 2,
-                onQuestionAnswered: function(){
+                onQuestionAnswered: function () {
                     $scope;
                 },
-                onDone: function(){
+                onDone: function () {
                     alert('On done was invoked');
                 }
             };
@@ -75,13 +108,13 @@
                 });
             };
 
-            $scope.removeQuestion = function(){
+            $scope.removeQuestion = function () {
                 $scope.questions.pop();
                 $scope.results.pop();
                 $scope.results = angular.copy($scope.results);
             };
 
-            $scope.setSlideDirection = function(slideDirection){
+            $scope.setSlideDirection = function (slideDirection) {
                 $scope.actions.setSlideDirection(slideDirection);
             };
         });
