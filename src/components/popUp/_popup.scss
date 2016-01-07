@@ -1,0 +1,216 @@
+.znk-popup{
+    .base-popup{
+        z-index: 999999;
+        @include absolute-full-cover;
+        background: $tbgColor1;
+        text-align: center;
+
+        .znk-popup-wrapper{
+            width: 390px;
+            margin:{
+                top: 300px;
+                right: auto;
+                left: auto;
+            }
+
+            .znk-popup-header{
+                position: relative;
+                height: 33px;
+
+                .icon-wrapper{
+                    @include dimension(57px, 57px);
+                    border-radius: 50%;
+                    @include absolute-position(-12px, 50%);
+                    margin-right: -28.5px;
+                    @include flex-middle;
+                    color: $fcColor2;
+                    font:{
+                        size: 35px;
+                    }
+                }
+            }
+
+            .znk-popup-body{
+                background: $bgColor6;
+                padding: 40px 37px 32px 37px;
+
+                .title{
+                    @include text-style(55px, null, chocolate-raindrops, $mediumFontWeight);
+                    padding:{
+                        right: 10px; //(igor) added to align the text , the chocolate raindrops text is not completely wrapped by its containing element
+                    }
+                ;
+                    line-height: 55px;
+                }
+
+                .content{
+                    @include text-style(16px, $fcColor6, Lato, $regularFontWeight);
+                    margin:{
+                        top: 33px;
+                    }
+                ;
+                }
+            }
+
+            .znk-popup-buttons{
+                background: $bgColor6;
+                padding:{
+                    bottom: 45px;
+                }
+            ;
+
+                .button-wrapper{
+                    margin:{
+                        bottom: 15px;
+                    }
+
+                    &:last-child{
+                        margin-bottom: 0;
+                    }
+
+                    button.btn{
+                        width: 240px;
+                        font:{
+                            size: 18px;
+                        }
+
+                        &.btn.btn-outline{
+                            float: initial;
+                            color: $fcColor5;
+                            border-color: $fcColor5;
+                        }
+                    }
+                }
+            }
+        }
+        &.exercise-popup{
+            .znk-popup-wrapper{
+                width: 68%;
+                margin:{
+                    top: 240px;
+                }
+            ;
+
+                .znk-popup-header{
+                    height: 37px;
+
+                    .icon-wrapper{
+                        @include dimension(87px, 87px);
+                        margin-right: -43.5px;
+                        top: -25px;
+                        font:{
+                            size: 53px;
+                        }
+                    }
+                }
+
+                .znk-popup-body{
+                    padding: 82px 45px 65px 45px;
+
+                    .title{
+                        font:{
+                            size: 86px;
+                        }
+                    ;
+                    }
+                }
+            }
+        }
+    }
+}
+
+//popups style
+.znk-popup{
+    .error-popup{
+        .znk-popup-header{
+            background: $bgColor1;
+
+            .icon-wrapper{
+                background: $bgColor1;
+            }
+        }
+
+        .znk-popup-body{
+            .title{
+                color: $fcColor3;
+            }
+        }
+
+    }
+
+    .success-popup{
+        .znk-popup-wrapper{
+            .znk-popup-header{
+                background: $bgColor2;
+
+                .icon-wrapper{
+                    background: $bgColor2;
+
+                    .correct-answer-white{
+                        @include dimension(37px, 24px);
+                    }
+                }
+            }
+
+            .znk-popup-body{
+                .title{
+                    color: $fcColor7;
+                }
+
+                .content{
+                    margin:{
+                        top: 0
+                    }
+                ;
+                }
+            }
+        }
+
+        &.exercise-popup{
+            .znk-popup-wrapper{
+                .znk-popup-header{
+                    .icon-wrapper{
+                        .correct-answer-white{
+                            @include dimension(47px, 32.5px);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    .warning-popup{
+        .znk-popup-wrapper{
+            .znk-popup-header{
+                background: $bgColor3;
+
+                .icon-wrapper{
+                    background: $bgColor3;
+
+                    .warning-icon{
+                        @include dimension(8.5px, 32px);
+                    }
+                }
+            }
+
+            .znk-popup-body{
+                .title{
+                    color: $fcColor6;
+                }
+            }
+        }
+
+        &.exercise-popup{
+            .znk-popup-wrapper{
+                .znk-popup-header{
+                    .icon-wrapper{
+                        .warning-icon{
+                            @include dimension(12px, 46px);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
