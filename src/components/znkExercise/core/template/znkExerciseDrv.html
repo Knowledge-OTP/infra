@@ -1,0 +1,17 @@
+<div ng-transclude></div>
+<questions-carousel class="znk-carousel-container"
+                    questions="vm.questionsWithAnswers"
+                    disable-swipe="{{vm.slideDirection !== 2}}"
+                    ng-model="vm.currentSlide"
+                    on-question-answered="vm.questionAnswered()"
+                    slide-direction="{{vm.slideDirection}}">
+</questions-carousel>
+<znk-exercise-btn-section class="btn-section"
+                          prev-question="vm.setCurrentIndexByOffset(-1)"
+                          next-question="vm.setCurrentIndexByOffset(1)"
+                          on-done="settings.onDone()">
+</znk-exercise-btn-section>
+<znk-exercise-pager
+        ng-hide="vm.hidePager"
+        questions="vm.questionsWithAnswers">
+</znk-exercise-pager>

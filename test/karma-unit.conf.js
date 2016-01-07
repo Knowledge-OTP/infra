@@ -21,18 +21,27 @@ module.exports = function (config) {
         // list of files / patterns to load in the browser
         files: [
             // bower:js
+            'bower_components/es5-shim/es5-shim.js',
             'bower_components/angular/angular.js',
             'bower_components/angular-mocks/angular-mocks.js',
+            'bower_components/angular-touch/angular-touch.js',
+            'bower_components/angular-carousel/dist/angular-carousel.js',
             // endbower
+
+            //html
+            'src/**/*.html',
+            'src/**/*.svg',
 
             //utility
             'test/utility/**/*.*',
 
-            //mock
-            'test/mock/**/*.*',
             //src files
-            'src/core/*.*',
+            'src/core/*.js',
+            'src/components/**/module.js',
             'src/components/**/*.js',
+
+            //mock
+            'test/mock/**/*.js',
 
             //tests
             'test/spec/**/*.spec.js'
@@ -52,29 +61,42 @@ module.exports = function (config) {
         // - Safari (only Mac)
         // - PhantomJS
         // - IE (only Windows)
-        browsers: [
-            'PhantomJS'
-        ],
+        //browsers: [
+        //    'Chrome'
+        //],
 
         // Which plugins to enable
-        plugins: [
-            'karma-phantomjs-launcher',
-            'karma-chrome-launcher',
-            'karma-safari-launcher',
-            'karma-jasmine',
-            'karma-jasmine-html-reporter'
-        ],
+        //plugins: [
+        //    'karma-phantomjs-launcher',
+        //    'karma-chrome-launcher',
+        //    'karma-safari-launcher',
+        //    'karma-jasmine',
+        //    'karma-jasmine-html-reporter',
+        //    'karma-ng-html2js-preprocessor'
+        //],
 
         // Continuous Integration mode
         // if true, it capture browsers, run tests and exit
         singleRun: false,
 
         colors: true,
-        preprocessors: {},
+        preprocessors: {
+            '**/*.html': ['ng-html2js'],
+            '**/*.svg': ['ng-html2js']
+        },
         // level of logging
         // possible values: LOG_DISABLE || LOG_ERROR || LOG_WARN || LOG_INFO || LOG_DEBUG
         logLevel: config.LOG_INFO,
+
+        reporters: ['progress', 'html'],
+
         //html to js
-        reporters: ['progress', 'html']
+        ngHtml2JsPreprocessor: {
+            // strip this from the file path
+            stripPrefix: 'src/',
+            // setting this option will create only a single module that contains templates
+            // from all the files, so you can load them all with module('foo')
+            moduleName: 'htmlTemplates'
+        }
     });
 };

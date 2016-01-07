@@ -21,7 +21,7 @@
                             $log.error('svgIcon directive: name attribute was not set');
                             return;
                         }
-
+                        element.addClass(name);
                         SvgIconSrv.getSvgByName(name).then(function (svg) {
                             element.append(svg);
                         });

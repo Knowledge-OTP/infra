@@ -1,0 +1,353 @@
+//shortcuts
+//@deprecated use absolute-position/absolute-full-cover instead
+@mixin full-pos($top:0,$right:0,$bottom:0,$left:0){
+    top: $top;
+    right: $right;
+    bottom: $bottom;
+    left: $left;
+}
+
+@mixin absolute-position($top: null, $right: null, $bottom: null, $left: null){
+    position: absolute;
+    top: $top;
+    right: $right;
+    bottom: $bottom;
+    left: $left;
+}
+
+@mixin absolute-full-cover{
+    @include absolute-position(0,0,0,0);
+}
+
+@mixin dimension($width,$height: null){
+    width: $width;
+
+    @if $height == null{
+        height: $width;
+    }@else{
+        height: $height;
+    }
+}
+
+@mixin text-style($size: null,$color: null,$family: null,$weight: null,$letter-spacing:null,$text-transform: null, $style: null){
+    @if($size){
+        font-size: $size;
+    }
+
+    @if($color){
+        color: $color;
+    }
+
+
+    @if($family){
+        font-family: $family;
+    }
+
+    @if $weight{
+        font-weight: $weight;
+    }
+
+    @if $letter-spacing {
+        letter-spacing: $letter-spacing;
+    }
+
+    @if $text-transform{
+        text-transform: $text-transform;
+    }
+
+    @if $style{
+        font-style: $style;
+    }
+}
+
+@mixin responsive($max-width) {
+  @media (max-width: $max-width) {
+      @content;
+  }
+}
+
+@mixin responsive-min-width($min-width){
+    @media (min-width: $min-width) {
+        @content;
+    }
+}
+
+//@deprecated use background-image-retina mixin instead
+@mixin background-image($url,$width: inherit,$height: inherit,$mobileHeight: null,$mobileWidth: null){
+    background: {
+        image: url($url);
+        repeat: no-repeat;
+        position: center;
+    }
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    display: inline-block;
+    @include dimension($width,$height);
+
+    @if $mobileHeight and $mobileWidth {
+        @include responsive($mobile-width) {
+            @include dimension($mobileHeight,$mobileWidth);
+        }
+    }
+}
+
+@mixin full-background-image($url){
+    background: url($url) no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+//cross browser
+@mixin flex($value){
+    flex: $value;
+    -ms-flex: $value;
+    -webkit-flex: $value;
+}
+
+@mixin justify-content($value){
+    justify-content: $value;
+    -webkit-justify-content: $value;
+}
+
+@mixin display-flex {
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+}
+
+@mixin align-items($value){
+    align-items: $value;
+    -webkit-align-items: $value;
+}
+
+@mixin flex-grow($value){
+    flex-grow: $value;
+    -webkit-flex-grow: $value;
+}
+
+@mixin flex-shrink($value){
+    flex-shrink: $value;
+    -webkit-flex-shrink: $value;
+}
+
+@mixin flex-direction($value){
+    flex-direction: $value;
+    -ms-flex-direction: $value;
+    -webkit-flex-direction: $value;
+}
+
+@mixin flex-order($order){
+    -webkit-box-ordinal-group: $order;
+    -moz-box-ordinal-group: $order;
+    -ms-flex-order: $order;
+    -webkit-order: $order;
+    order: $order;
+
+}
+
+@mixin flex-wrap($value){
+    -webkit-flex-wrap: $value;
+    flex-wrap: $value;
+}
+
+@mixin transition($value){
+    -webkit-transition: $value;
+    -moz-transition: $value;
+    -ms-transition: $value;
+    -o-transition: $value;
+    transition: $value;
+}
+
+@mixin box-shadow($value){
+    -webkit-box-shadow: $value;
+    -moz-box-shadow: $value;
+    box-shadow: $value;
+}
+
+@mixin filter($value){
+    filter: $value;
+    -webkit-filter: $value;
+    -ms-filter: $value;
+}
+
+@mixin background-cover{
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+@mixin transform($value){
+    transform: $value;
+    -moz-transform: $value;
+    -webkit-transform: $value;
+}
+
+@mixin backface-visibility($value){
+    -webkit-backface-visibility: hidden;
+    -moz-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
+@mixin perspective($value){
+    perspective: $value;
+    -moz-perspective: $value;
+    -webkit-perspective: $value;
+}
+
+@mixin transform-style($value){
+    transform-style: $value;
+    -webkit-transform-style: $value;
+}
+
+@mixin transform-origin($value){
+    transform-origin: $value;
+    -webkit-transform-origin: $value;
+}
+
+@mixin border-radius($radius){
+    border-radius: $radius;
+    -webkit-border-radius: $radius;
+    -moz-border-radius: $radius;
+}
+
+@mixin border-bottom-radius($radius){
+    border-bottom-right-radius: $radius;
+    border-bottom-left-radius: $radius;
+    -moz-border-radius-bottomright: $radius;
+    -moz-border-radius-bottomleft: $radius;
+    webkit-border-bottom-right-radius: $radius;
+    -webkit-border-bottom-left-radius: $radius;
+}
+
+@mixin place-holder{
+    ::-webkit-input-placeholder{
+        @content;
+    }
+}
+
+//useful mixins
+@mixin clearfix{
+    &:after {
+        content: " ";
+        display: block;
+        height: 0;
+        clear: both;
+    }
+}
+
+@mixin flex-middle{
+    @include display-flex;
+    @include justify-content(center);
+    @include align-items(center);
+}
+
+@mixin flex-with-alignment($horizontal,$vertical){
+    @include display-flex;
+    @include justify-content($horizontal);
+    @include align-items($vertical);
+}
+
+@mixin mask-image($url){
+    -webkit-mask-image: url('#{$url}');
+    mask-image: url('#{$url}');
+}
+
+// retina
+
+/* full background image with retina */
+@mixin full-background-image-retina($imagePathWithoutExtension,$width,$height) {//@todo(igor) i think we can use the background-image-retina mixin instead
+    /*CSS for basic styling and non-retina image path:*/
+    @include background-image('#{$imagePathWithoutExtension}.png',$width,$height);
+
+    /*CSS for serving the retina image to devices with a high "device-pixel-ratio":*/
+    @media only screen and (-o-min-device-pixel-ratio: 3/2),
+    only screen and (-webkit-min-device-pixel-ratio: 1.5),
+    only screen and (min-resolution: 1.5dppx) {
+        @include background-image('#{$imagePathWithoutExtension}@2x.png',$width,$height);
+    }
+}
+
+@mixin background-image-retina($url, $width: null, $height: null, $backgroundColor: null){
+    /*CSS for basic styling and non-retina image path:*/
+    background-image: url('#{$url}.png');
+
+    /*CSS for serving the retina image to devices with a high "device-pixel-ratio":*/
+    @media only screen and (-o-min-device-pixel-ratio: 3/2),
+    only screen and (-webkit-min-device-pixel-ratio: 1.5),
+    only screen and (min-resolution: 1.5dppx) {
+        background-image: url('#{$url}@2x.png');
+    }
+
+    @if $width and $height{
+        background-size: $width $height;
+    }
+
+    @if $backgroundColor{
+        background-color: $backgroundColor;
+    }
+}
+
+@mixin svg-icon($url,$width,$height,$font-size: null,$bgColor: null){
+    width: $width;
+    height: $height;
+    display: inline-block;
+    background-size: cover;
+    background-repeat: no-repeat;
+    @include mask-image("#{$imagePath}/svg/#{$url}");
+
+    @if($bgColor){
+        background-color: $bgColor;
+    }
+
+    @if($font-size){
+        font-size: $font-size;
+    }
+}
+
+//components
+@mixin cloud-arrow($direction: up,$size: 10px,$color: $whiteBC1){
+    content: '';
+    border: $size solid transparent;
+    @if $direction == up{
+        border-bottom-color: $color;
+    }
+    @if $direction == right{
+        border-left-color: $color;
+    }
+    @if $direction == bottom{
+        border-top-color: $color;
+    }
+    @if $direction == left{
+        border-right-color: $color;
+    }
+    position: absolute;
+    top: -20px;
+    @content;
+}
+
+@mixin double-cloud-arrow($direction: up,$size: 10px,$inner-color: $whiteBC1,$outerColor: rgba(95, 84, 60, 0.18)){
+    &:before{
+        @include cloud-arrow($direction,$size + 1px,$outerColor);
+    }
+
+    &:after{
+        @include cloud-arrow($direction,$size,$inner-color){
+            left: 1px;
+            top: -18px;
+        };
+    }
+}
+
+@mixin circle-icon-wrapper($diameter,$color){
+    @include dimension($diameter,$diameter);
+    background: $color;
+    border-radius: 50%;
+    overflow: hidden;
+    @include flex-middle;
+}

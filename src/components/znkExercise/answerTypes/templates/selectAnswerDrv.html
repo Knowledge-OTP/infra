@@ -1,0 +1,8 @@
+<div ng-repeat="answer in ::d.answers track by answer.id" class="answer" ng-click="d.click(answer)">
+    <div class="content-wrapper">
+        <div class="answer-index-wrapper">
+            <span class="index-char">{{::d.getIndexChar($index)}}</span>
+        </div>
+        <markup content="answer.content" type="md" class="content"></markup>
+    </div>
+</div>

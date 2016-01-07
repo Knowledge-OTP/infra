@@ -1,0 +1,9 @@
+<ion-slide-box znk-slide="settings.slideDirection" class="znk-carousel"
+               show-pager="false"
+               active-slide="vm.currentSlide">
+    <question-builder slide-repeat-drv="question in vm.questionsWithAnswers"
+                      question="question"
+                      ng-model="question.__questionStatus.userAnswer"
+                      ng-change="vm.questionAnswered(question)">
+    </question-builder>
+</ion-slide-box>
