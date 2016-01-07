@@ -38,20 +38,21 @@
 
                 var template =
                     '<div class="%wrapperCls%">' +
-                    '<div class="znk-popup-wrapper">' +
-                    '<div class="znk-popup-header">%header%</div>' +
-                    '<div class="znk-popup-body">%body%</div>' +
-                    '<div class="znk-popup-buttons">' +
-                    '<div ng-repeat="button in ::d.buttons" class="button-wrapper">' +
-                        '<button class="btn" ' +
-                                'ng-click="d.btnClick(button)" ' +
-                                'ng-class="button.type" ' +
-                                'analytics-on="click" ' +
-                                'analytics-event="click-popup-{{button.text}}" ' +
-                                'analytics-category="popup">{{button.text}}' +
-                        '</button>' +
-                    '</div>' +
-                    '</div>' +
+                        '<div class="znk-popup-wrapper">' +
+                            '<div class="znk-popup-header">%header%</div>' +
+                            '<div class="znk-popup-body">%body%</div>' +
+                            '<div class="znk-popup-buttons">' +
+                                '<div ng-repeat="button in ::d.buttons" class="button-wrapper">' +
+                                    '<button class="btn" ' +
+                                             'ng-click="d.btnClick(button)" ' +
+                                             'ng-class="button.type" ' +
+                                             'analytics-on="click" ' +
+                                             'analytics-event="click-popup-{{button.text}}" ' +
+                                             'analytics-category="popup">{{button.text}}' +
+                                    '</button>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
                     '</div>';
 
                 wrapperCls = wrapperCls ? ' ' + wrapperCls : '';
