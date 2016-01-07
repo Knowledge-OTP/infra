@@ -2,13 +2,13 @@
 
 (function () {
     angular.module('znk.infra.popUp').factory('PopUpSrv',[
-        '$injector', '$q', '$rootScope', '$animate',
-        function ($injector, $q, $rootScope, $animate) {
+        '$injector', '$q', '$rootScope', '$animate', '$document',
+        function ($injector, $q, $rootScope, $animate, $document) {
             var PopUpSrv = {};
 
-            var $body = angular.element(document.querySelector('body'));
-            $body.append('<div class="znk-popup"></div>');
-            var popUpsPlaceHolderElement = angular.element(document.querySelector('.znk-popup'));
+            var $body = angular.element($document[0].body);
+            var popUpsPlaceHolderElement = angular.element('<div class="znk-popup"></div>');
+            $body.append(popUpsPlaceHolderElement);
 
             var popupInstance,
                 popupDefer;
@@ -42,8 +42,14 @@
                     '<div class="znk-popup-header">%header%</div>' +
                     '<div class="znk-popup-body">%body%</div>' +
                     '<div class="znk-popup-buttons">' +
-                    '<div ng-repeat="button in d.buttons" class="button-wrapper">' +
-                    '<button class="btn" ng-click="d.btnClick(button)" ng-class="button.type" analytics-on="click" analytics-event="click-popup-{{button.text}}" analytics-category="popup">{{button.text}}</button>' +
+                    '<div ng-repeat="button in ::d.buttons" class="button-wrapper">' +
+                        '<button class="btn" ' +
+                                'ng-click="d.btnClick(button)" ' +
+                                'ng-class="button.type" ' +
+                                'analytics-on="click" ' +
+                                'analytics-event="click-popup-{{button.text}}" ' +
+                                'analytics-category="popup">{{button.text}}' +
+                        '</button>' +
                     '</div>' +
                     '</div>' +
                     '</div>';
