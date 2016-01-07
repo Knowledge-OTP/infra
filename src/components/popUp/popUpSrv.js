@@ -133,7 +133,7 @@
                 }
 
                 return btn;
-            };
+            }
 
             PopUpSrv.error = function error(title,content){
                 var btn = new BaseButton('OK',null,'ok');
