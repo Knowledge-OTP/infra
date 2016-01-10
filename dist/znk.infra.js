@@ -887,17 +887,17 @@
             function StorageFirebaseAdapterSrv (endPoint){
                 var authObj = $firebaseAuth(new Firebase(endPoint)).$getAuth();
 
-                this.get = function(path){
+                function get(path){
                     var processedPath = processPath(path,authObj);
                     return $firebaseObject(new Firebase(endPoint + '/' + processedPath)).$loaded();
-                };
+                }
 
-                this.set = function(path, newEntity){
+                function set(path, newEntity){
                     if (newEntity.$save) {
                         return newEntity.$save();
                     }
 
-                    return this.get(path).then(function (sourceEntity) {
+                    return get(path).then(function (sourceEntity) {
                         if (!angular.isObject(newEntity)) {
                             var fallbackObj = {};
                             fallbackObj[newEntity] = newEntity;
@@ -906,6 +906,11 @@
                         angular.extend(sourceEntity, newEntity);
                         return sourceEntity.$save();
                     });
+                }
+
+                return {
+                    get: get,
+                    set: set
                 };
             }
 

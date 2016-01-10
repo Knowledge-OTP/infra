@@ -73,14 +73,14 @@ describe('testing service "StorageFirebaseAdapterSrv":', function () {
 
     it('when requesting for entity then the firebase path should be built correctly', function () {
         var endpoint = 'firebase.test';
-        var adapter = actions.syncAdapter(new StorageFirebaseAdapterSrv(endpoint));
+        var adapter = actions.syncAdapter(StorageFirebaseAdapterSrv(endpoint));
         var entity = adapter.get('test');
         expect(entity.path).toBe(endpoint + '/test');
     });
 
     it('when saving entity then $save function should be invoked', function () {
         var endpoint = 'firebase.test';
-        var syncedAdapter = actions.syncAdapter(new StorageFirebaseAdapterSrv(endpoint));
+        var syncedAdapter = actions.syncAdapter(StorageFirebaseAdapterSrv(endpoint));
         var entity = syncedAdapter.get('test');
         spyOn(entity, '$save');
         syncedAdapter.set('test',entity);
