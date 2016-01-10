@@ -1,4 +1,4 @@
-describe('testing service "StorageFirebaseAdapterSrv":', function () {
+describe('testing service "storageFirebaseAdapter":', function () {
     'use strict';
 
     beforeEach(function(){
@@ -40,12 +40,12 @@ describe('testing service "StorageFirebaseAdapterSrv":', function () {
         });
     }));
 
-    var $rootScope, StorageFirebaseAdapterSrv;
+    var $rootScope, storageFirebaseAdapter;
     beforeEach(inject([
         '$injector',
         function ($injector) {
             $rootScope = $injector.get('$rootScope');
-            StorageFirebaseAdapterSrv = $injector.get('StorageFirebaseAdapterSrv');
+            storageFirebaseAdapter = $injector.get('storageFirebaseAdapter');
         }])
     );
 
@@ -73,14 +73,14 @@ describe('testing service "StorageFirebaseAdapterSrv":', function () {
 
     it('when requesting for entity then the firebase path should be built correctly', function () {
         var endpoint = 'firebase.test';
-        var adapter = actions.syncAdapter(StorageFirebaseAdapterSrv(endpoint));
+        var adapter = actions.syncAdapter(storageFirebaseAdapter(endpoint));
         var entity = adapter.get('test');
         expect(entity.path).toBe(endpoint + '/test');
     });
 
     it('when saving entity then $save function should be invoked', function () {
         var endpoint = 'firebase.test';
-        var syncedAdapter = actions.syncAdapter(StorageFirebaseAdapterSrv(endpoint));
+        var syncedAdapter = actions.syncAdapter(storageFirebaseAdapter(endpoint));
         var entity = syncedAdapter.get('test');
         spyOn(entity, '$save');
         syncedAdapter.set('test',entity);

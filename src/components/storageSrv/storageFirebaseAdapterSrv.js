@@ -1,10 +1,10 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.storage').factory('StorageFirebaseAdapterSrv', [
+    angular.module('znk.infra.storage').factory('storageFirebaseAdapter', [
         '$firebaseAuth', '$firebaseObject',
         function ($firebaseAuth, $firebaseObject) {
-            function StorageFirebaseAdapterSrv (endPoint){
+            function storageFirebaseAdapter (endPoint){
                 var authObj = $firebaseAuth(new Firebase(endPoint)).$getAuth();
 
                 function get(path){
@@ -34,19 +34,19 @@
                 };
             }
 
-            StorageFirebaseAdapterSrv.variables = {
+            storageFirebaseAdapter.variables = {
                 uid: '$$uid',
                 appUserSpacePath: 'users/$$uid'
             };
 
-            var regexString = StorageFirebaseAdapterSrv.variables.uid.replace(/\$/g,'\\$');
+            var regexString = storageFirebaseAdapter.variables.uid.replace(/\$/g,'\\$');
             var UID_REGEX = new RegExp(regexString,'g');
             function processPath(path,authObj) {
                 var processedPath = path.replace(UID_REGEX, authObj.uid);
                 return processedPath;
             }
 
-            return StorageFirebaseAdapterSrv;
+            return storageFirebaseAdapter;
         }
     ]);
 })(angular);
