@@ -7,7 +7,6 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('rateAnswer', ['ZnkExerciseViewModeEnum',
-        '$timeout', 'ZnkExerciseViewModeEnum',
         function (ZnkExerciseViewModeEnum) {
             return {
                 templateUrl: 'components/znkExercise/answerTypes/templates/rateAnswerDrv.html',
@@ -17,24 +16,13 @@
                     var answerBuilder = ctrls[0];
                     var ngModelCtrl = ctrls[1];
 
-                    scope.d = {};
-
-                    scope.d.answers = answerBuilder.question.answers;
-                    scope.d.startIndex = answerBuilder.question.answers[0].id; // @todo is this the right start index ?
-
-
+                    var viewMode = answerBuilder.getViewMode();
                     var MODE_ANSWER_WITH_QUESTION = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
-                        MODE_ANSWER_ONLY = ZnkExerciseViewModeEnum.ONLY_ANSWER.enum,
-                        MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum,
-                        MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
+                        MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum;
 
-                    // ******************  mock *************////////
-
-                    var correctAnswers = [{id: 4}, {id: 5}, {id: 6}];
-                    var selectedIndex = 0;      // need to sync with ng-model
-                    var viewMode = MODE_ANSWER_WITH_QUESTION;
-
-                    // ******************  mock *************////////
+                    scope.d = {};
+                    scope.d.itemsArray = new Array(11);
+                    scope.d.answers = answerBuilder.question.correctAnswerText;
 
                     var domItemsArray;
 
@@ -49,7 +37,7 @@
 
                                 if (viewMode === MODE_REVIEW) {
                                     scope.clickHandler = angular.noop;
-                                    updateItemsByCorrectAnswers(correctAnswers);
+                                    updateItemsByCorrectAnswers(scope.d.answers);
                                 } else {
                                     scope.clickHandler = clickHandler;
                                 }
@@ -57,17 +45,17 @@
                         }
                     );
 
-                    function clickHandler(answer, index) {
+                    function clickHandler(index) {
                         if (scope.d.selectedItem) {
                             scope.d.selectedItem.removeClass('selected');
                         }
 
                         scope.d.selectedItem = angular.element(domItemsArray[index]);
                         scope.d.selectedItem.addClass('selected');
-                        ngModelCtrl.$setViewValue(answer.id);
+                        ngModelCtrl.$setViewValue(index);
 
                         if (viewMode === MODE_ANSWER_WITH_QUESTION) {
-                            updateItemsByCorrectAnswers(correctAnswers);
+                            updateItemsByCorrectAnswers(scope.d.answers);
                             scope.clickHandler = angular.noop;
                         }
                     }
@@ -78,11 +66,11 @@
                         var lastElemIndex = correctAnswersArr.length - 1;
 
                         for (var i = 0; i < lastElemIndex; i++) {
-                            angular.element(domItemsArray[correctAnswersArr[i]]).addClass('correct');
+                            angular.element(domItemsArray[correctAnswersArr[i].id]).addClass('correct');
                         }
-                        angular.element(domItemsArray[correctAnswersArr[lastElemIndex]]).addClass('correct-edge');
+                        angular.element(domItemsArray[correctAnswersArr[lastElemIndex].id]).addClass('correct-edge');
 
-                        if (selectedAnswerId) {
+                        if (angular.isNumber(selectedAnswerId)) {
                             if (selectedAnswerId >= correctAnswersArr[0].id && selectedAnswerId <= correctAnswersArr[lastElemIndex].id) {
                                 angular.element(domItemsArray[selectedAnswerId]).addClass('selected-correct');
                             } else {

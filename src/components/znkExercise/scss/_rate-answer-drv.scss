@@ -7,6 +7,26 @@
             position: relative;
             float:left;
 
+            .correct-icon, .wrong-icon{
+                display: none;
+                position: absolute;
+                z-index: 5;
+                top: 1.5px;
+                line{
+                    stroke: $bgColor6;
+                }
+            }
+
+            .correct-icon{
+                @include dimension(14px, 15px);
+                left: 4px;
+            }
+
+            .wrong-icon{
+                @include dimension(10px, 15px);
+                left: 6.4px;
+            }
+
             .checkbox-item {
                 @include dimension(22px, 22px);
                 @include flex-middle;
@@ -130,6 +150,18 @@
             .checkbox-item{
                 border: 1px solid $bgColor9;
                 box-sizing: border-box;
+            }
+        }
+
+        .item-repeater.selected-wrong{
+            .wrong-icon{
+                display: inline-block;
+            }
+        }
+
+        .item-repeater.selected-correct{
+            .correct-icon{
+                display: inline-block;
             }
         }
     }
