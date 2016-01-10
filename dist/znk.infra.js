@@ -885,8 +885,28 @@
         '$firebaseAuth', '$firebaseObject',
         function ($firebaseAuth, $firebaseObject) {
             function StorageFirebaseAdapterSrv (endPoint){
-                this.endPoint = endPoint;
-                this.authObj = $firebaseAuth(new Firebase(endPoint)).$getAuth();
+                var authObj = $firebaseAuth(new Firebase(endPoint)).$getAuth();
+
+                this.get = function(path){
+                    var processedPath = processPath(path,authObj);
+                    return $firebaseObject(new Firebase(endPoint + '/' + processedPath)).$loaded();
+                };
+
+                this.set = function(path, newEntity){
+                    if (newEntity.$save) {
+                        return newEntity.$save();
+                    }
+
+                    return this.get(path).then(function (sourceEntity) {
+                        if (!angular.isObject(newEntity)) {
+                            var fallbackObj = {};
+                            fallbackObj[newEntity] = newEntity;
+                            newEntity = fallbackObj;
+                        }
+                        angular.extend(sourceEntity, newEntity);
+                        return sourceEntity.$save();
+                    });
+                };
             }
 
             StorageFirebaseAdapterSrv.variables = {
@@ -899,27 +919,6 @@
                 var processedPath = path.replace(UID_REGEX, authObj.uid);
                 return processedPath;
             }
-
-            StorageFirebaseAdapterSrv.prototype.get = function(path){
-                var processedPath = processPath(path,this.authObj);
-                return $firebaseObject(new Firebase(this.endPoint + '/' + processedPath)).$loaded();
-            };
-
-            StorageFirebaseAdapterSrv.prototype.set = function(path, newEntity){
-                if (newEntity.$save) {
-                    return newEntity.$save();
-                }
-
-                return this.get(path).then(function (sourceEntity) {
-                    if (!angular.isObject(newEntity)) {
-                        var fallbackObj = {};
-                        fallbackObj[newEntity] = newEntity;
-                        newEntity = fallbackObj;
-                    }
-                    angular.extend(sourceEntity, newEntity);
-                    return sourceEntity.$save();
-                });
-            };
 
             return StorageFirebaseAdapterSrv;
         }
