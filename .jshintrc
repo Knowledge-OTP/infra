@@ -13,6 +13,7 @@
     "globals": {
         "angular": false,
         "ionic": false,
-        "Swiper": false
+        "Swiper": false,
+        "Firebase": false
     }
 }

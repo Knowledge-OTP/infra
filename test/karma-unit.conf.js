@@ -24,6 +24,8 @@ module.exports = function (config) {
             'bower_components/es5-shim/es5-shim.js',
             'bower_components/angular/angular.js',
             'bower_components/Swiper/dist/js/swiper.js',
+            'bower_components/firebase/firebase.js',
+            'bower_components/angularfire/dist/angularfire.js',
             'bower_components/angular-mocks/angular-mocks.js',
             // endbower
 
@@ -43,8 +45,7 @@ module.exports = function (config) {
             'test/mock/**/*.js',
 
             //tests
-            //'test/spec/**/*.spec.js'@todo
-            'test/spec/**/storageSrv.spec.js'
+            'test/spec/**/*.spec.js'
         ],
 
         // list of files / patterns to exclude
