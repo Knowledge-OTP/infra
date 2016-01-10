@@ -88,7 +88,7 @@
             ContentSrv.getContent = function(pathObj) {
 
                 if(!pathObj || !pathObj.exerciseType) {
-                    return $q.when({ error: 'Error: getContent require exerciseId and exerciseType!' });
+                    return $q.when({ error: 'Error: getContent require exerciseType!' });
                 }
 
                 var path = (pathObj.exerciseId) ? pathObj.exerciseType+pathObj.exerciseId : pathObj.exerciseType;
