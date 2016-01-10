@@ -9,7 +9,8 @@
         'znk.infra.scroll',
         'znk.infra.content',
         'znk.infra.znkExercise',
-        'znk.infra.storage'
+        'znk.infra.storage',
+        'znk.infra.utility'
     ]);
 })(angular);
 
