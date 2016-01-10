@@ -915,7 +915,8 @@
             }
 
             StorageFirebaseAdapterSrv.variables = {
-                uid: '$$uid'
+                uid: '$$uid',
+                appUserSpacePath: 'users/$$uid'
             };
 
             var regexString = StorageFirebaseAdapterSrv.variables.uid.replace(/\$/g,'\\$');
