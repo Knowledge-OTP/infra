@@ -8,9 +8,11 @@
         'znk.infra.general',
         'znk.infra.scroll',
         'znk.infra.content',
-        'znk.infra.znkExercise'
+        'znk.infra.znkExercise',
+        'znk.infra.storage'
     ]);
 })(angular);
+
 (function (angular) {
     'use strict';
 
