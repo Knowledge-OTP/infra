@@ -292,7 +292,10 @@
                                     updateTimeSpentOnQuestion();
                                 }
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
-                                scope.settings.onQuestionAnswered(scope.vm.currentSlide);
+                                //skip 1 digest cycle before triggering question answered
+                                $timeout(function(){
+                                    scope.settings.onQuestionAnswered(scope.vm.currentSlide);
+                                });
                             };
 
                             scope.vm.bookmarkCurrentQuestion = function () {
