@@ -59,6 +59,9 @@
                 compile: function(element){
                     var domElement = element[0];
                     var child = domElement.children[0];
+                    if(child){
+
+                    }
 
                     var currMousePoint;
                     var containerWidth;

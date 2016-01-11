@@ -1,5 +1,9 @@
 @import "../../../../bower_components/Swiper/dist/css/swiper";
 
+@import "select-answer-drv",
+        "znk-exercise-drv-desktop",
+        "znk-exercise-pager-drv";
+
 znk-exercise{
   question-builder, questions-carousel, answer-builder{
     display: block;
