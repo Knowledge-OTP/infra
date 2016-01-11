@@ -7,8 +7,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExercisePager', [
-        '$timeout', 'ZnkExerciseEvents',
-        function ($timeout, ZnkExerciseEvents) {
+        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum',
+        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum) {
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExercisePagerDrv.html',
                 restrict: 'E',
@@ -19,7 +19,7 @@
                         var ngModelCtrl = ctrls[0];
                         var znkExerciseCtrl = ctrls[1];
 
-                        //var currViewMode = znkExerciseCtrl.getViewMode();
+                        var currViewMode = znkExerciseCtrl.getViewMode();
 
                         var domElement = element[0];
 
@@ -46,6 +46,11 @@
                                 return;
                             }
 
+                            if(currViewMode === ZnkExerciseViewModeEnum.ONLY_ANSWER.enum){
+                                pagerItemElement.addClass('neutral');
+                                return;
+                            }
+
                             if(question.__questionStatus.isAnsweredCorrectly){
                                 pagerItemElement.addClass('correct');
                             }else{
@@ -61,9 +66,9 @@
                             setPagerItemAnswerClass(question.__questionStatus.index,question);
                         });
 
-                        var isInitilized;
+                        var isInitialized;
                         function init(){
-                            isInitilized = true;
+                            isInitialized = true;
                             //wait for the pager items to be rendered
                             $timeout(function () {
                                 ngModelCtrl.$render = function () {
@@ -98,7 +103,7 @@
                             if (questionsArr) {
                                 scope.questions = questionsArr;
 
-                                if(!isInitilized){
+                                if(!isInitialized){
                                     init();
                                 }
                             }

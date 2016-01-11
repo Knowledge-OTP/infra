@@ -41,15 +41,15 @@
             ];
 
             $scope.settings = {
-                viewMode: 2,
+                viewMode: 1,
                 onQuestionAnswered: function(){
-                    $scope;
+
                 },
                 onDone: function(){
                     alert('On done was invoked');
                 }
             };
-
+            $scope.results = [];
             $scope.addQuestion = function () {
                 $scope.results.push({});
                 $scope.results = angular.copy($scope.results);
