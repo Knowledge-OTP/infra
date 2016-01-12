@@ -34,7 +34,25 @@
                     }
                 ]
                 },
-                {__type: 2, id: 2},
+                {
+                    __type: 1,
+                    id: 1,
+                    answerTypeId: 3,
+                    correctAnswerText: [
+                        {
+                            id: 4
+
+                        },
+                        {
+                            id: 5
+
+                        },
+                        {
+                            id: 6
+
+                        }
+                    ]
+                },
                 {__type: 3, id: 3},
                 {__type: 1, id: 4},
                 {__type: 2, id: 5}

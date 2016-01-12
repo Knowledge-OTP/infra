@@ -150,11 +150,11 @@
             // { exerciseId: 10, exerciseType: 'drill' }
             ContentSrv.getContent = function(pathObj) {
 
-                if(!pathObj || !pathObj.exerciseId || !pathObj.exerciseType) {
-                    return $q.when({ error: 'Error: getContent require exerciseId and exerciseType!' });
+                if(!pathObj || !pathObj.exerciseType) {
+                    return $q.when({ error: 'Error: getContent require exerciseType!' });
                 }
 
-                var path = pathObj.exerciseType+pathObj.exerciseId;
+                var path = (pathObj.exerciseId) ? pathObj.exerciseType+pathObj.exerciseId : pathObj.exerciseType;
 
                 return contentDataFunc().get().then(function(dataObj) {
 
@@ -197,6 +197,7 @@
     angular.module('znk.infra.content').provider('ContentSrv', ContentSrv);
 
 })(angular);
+
 (function (angular) {
     'use strict';
 
