@@ -47,7 +47,8 @@
                 },
                 onDone: function(){
                     alert('On done was invoked');
-                }
+                },
+                initPagerDisplay: true
             };
             $scope.results = [];
             $scope.addQuestion = function () {
@@ -83,6 +84,12 @@
 
             $scope.setSlideDirection = function(slideDirection){
                 $scope.actions.setSlideDirection(slideDirection);
+            };
+
+
+            $scope.showOrHidePager= function(){
+                $scope.settings.initPagerDisplay = !$scope.settings.initPagerDisplay;
+                $scope.actions.pagerDisplay($scope.settings.initPagerDisplay);
             };
         });
 })(angular);
