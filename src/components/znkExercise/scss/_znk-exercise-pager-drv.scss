@@ -1,6 +1,6 @@
 znk-exercise-pager {
     //height: 44px;
-    background: $bgColor7;
+    background: $bgColor10;
     box-sizing: border-box;
     display: block;
     @include absolute-position(null, 27px, 7px, 27px);
@@ -56,13 +56,13 @@ znk-exercise-pager {
 
                 &.wrong {
                     .question-status-indicator {
-                        background: linear-gradient(to bottom right, $bgColor8 0%, $bgColor8 50%, $bgColor1 51%, $bgColor1 100%);
+                        background: linear-gradient(to bottom right, $bgColor11 0%, $bgColor11 50%, $bgColor1 51%, $bgColor1 100%);
                     }
                 }
 
                 &.correct {
                     .question-status-indicator {
-                        background: linear-gradient(to bottom right, $bgColor9 0%, $bgColor9 50%, $bgColor2 51%, $bgColor2 100%);
+                        background: linear-gradient(to bottom right, $bgColor12 0%, $bgColor12 50%, $bgColor2 51%, $bgColor2 100%);
                     }
                 }
 
