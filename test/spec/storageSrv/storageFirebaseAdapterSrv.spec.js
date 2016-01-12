@@ -2,9 +2,21 @@ describe('testing service "storageFirebaseAdapter":', function () {
     'use strict';
 
     beforeEach(function(){
+        var map = {};
         window.Firebase = function(path){
             return {
-                path: path
+                path: path,
+                once: function(type,successCB,failureCB){
+                    var snapshot = {
+                        val: function(){
+                            return map[path] || null;
+                        }
+                    };
+                    successCB(snapshot);
+                },
+                set: function(value){
+                    map[path] = value;
+                }
             };
         };
     });
@@ -74,8 +86,9 @@ describe('testing service "storageFirebaseAdapter":', function () {
     it('when requesting for entity then the firebase path should be built correctly', function () {
         var endpoint = 'firebase.test';
         var adapter = actions.syncAdapter(storageFirebaseAdapter(endpoint));
-        var entity = adapter.get('test');
-        expect(entity.path).toBe(endpoint + '/test');
+        spyOn(window,'Firebase').and.callThrough();
+        adapter.get('test');
+        expect(window.Firebase).toHaveBeenCalledWith('firebase.test/test');
     });
 
     it('when saving entity then $save function should be invoked', function () {
@@ -85,5 +98,16 @@ describe('testing service "storageFirebaseAdapter":', function () {
         spyOn(entity, '$save');
         syncedAdapter.set('test',entity);
         expect(entity.$save).toHaveBeenCalled();
+    });
+
+    it('when saving entity then all undefined and start with $ properties should be deleted', function () {
+        var endpoint = 'firebase.test';
+        var syncedAdapter = actions.syncAdapter(storageFirebaseAdapter(endpoint));
+        var entity = syncedAdapter.get('test');
+        var expectedResult = angular.copy(entity);
+        entity.prop1 = undefined;
+        entity.$prop = 'test';
+        syncedAdapter.set('test',entity);
+        expect(entity).toEqual(expectedResult);
     });
 });

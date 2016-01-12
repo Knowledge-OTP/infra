@@ -64,10 +64,6 @@
             };
 
             function StorageSrv(entityGetter, entitySetter) {
-                //var authObj = $firebaseAuth(new Firebase(ENV.fbDataEndPoint)).$getAuth();
-
-                //var applicationPath = ENV.firebaseAppScopeName;
-
                 this.EntityCommunicator = function (path, defaultValues) {
                     return new EntityCommunicator(path, defaultValues, entityGetter, entitySetter);
                 };

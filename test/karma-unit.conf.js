@@ -27,6 +27,7 @@ module.exports = function (config) {
             'bower_components/firebase/firebase.js',
             'bower_components/angularfire/dist/angularfire.js',
             'bower_components/angular-mocks/angular-mocks.js',
+            'bower_components/mockfirebase/browser/mockfirebase.js',
             // endbower
 
             //html
@@ -45,7 +46,7 @@ module.exports = function (config) {
             'test/mock/**/*.js',
 
             //tests
-            'test/spec/**/*.spec.js'
+            'test/spec/**/storageFirebaseAdapterSrv.spec.js'
         ],
 
         // list of files / patterns to exclude

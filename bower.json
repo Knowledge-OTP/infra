@@ -6,7 +6,8 @@
   ],
   "dependencies": {
     "angular": "1.4.x",
-    "Swiper": "swiper#~3.2.7"
+    "Swiper": "swiper#~3.2.7",
+    "angularfire": "~1.1.3"
   },
   "ignore": [
     ".*",
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "es5-shim": "~4.4.1",
-    "angular-mocks": "1.4.x"
+    "angular-mocks": "1.4.x",
+    "mockfirebase": "~0.11.0"
   }
 }

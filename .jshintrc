@@ -14,6 +14,7 @@
         "angular": false,
         "ionic": false,
         "Swiper": false,
-        "Firebase": false
+        "Firebase": false,
+        "MockMockFirebase": false
     }
 }
