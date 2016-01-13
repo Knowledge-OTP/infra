@@ -13,8 +13,8 @@
     'use strict';
 
     angular.module('znk.infra.general').directive('subjectIdToAttrDrv', [
-        'SubjectEnum', '$interpolate', '$log',
-        function (SubjectEnum, $interpolate, $log) {
+        'SubjectEnum',
+        function (SubjectEnum) {
             return {
                 scope: {
                     contextAttr: '@',
