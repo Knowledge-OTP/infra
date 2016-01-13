@@ -13,16 +13,18 @@
                 require: ['^answerBuilder', '^ngModel'],
                 scope: {},
                 link: function link(scope, element, attrs, ctrls) {
+                    var domElement = element[0];
+
                     var answerBuilder = ctrls[0];
                     var ngModelCtrl = ctrls[1];
 
                     var viewMode = answerBuilder.getViewMode();
-                    var MODE_ANSWER_WITH_QUESTION = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
-                        MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum;
+                    var ANSWER_WITH_RESULT_MODE = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
+                        REVIEW_MODE = ZnkExerciseViewModeEnum.REVIEW.enum;
 
                     scope.d = {};
                     scope.d.itemsArray = new Array(11);
-                    scope.d.answers = answerBuilder.question.correctAnswerText;
+                    var answers = answerBuilder.question.correctAnswerText;
 
                     var domItemsArray;
 
@@ -35,43 +37,50 @@
                                 destroyWatcher();
                                 domItemsArray = val;
 
-                                if (viewMode === MODE_REVIEW) {
+                                if (viewMode === REVIEW_MODE) {
                                     scope.clickHandler = angular.noop;
                                     updateItemsByCorrectAnswers(scope.d.answers);
                                 } else {
                                     scope.clickHandler = clickHandler;
                                 }
+
+                                ngModelCtrl.$render = function(){
+                                    updateItemsByCorrectAnswers();
+                                };
+                                ngModelCtrl.$render();
                             }
                         }
                     );
 
                     function clickHandler(index) {
-                        if (scope.d.selectedItem) {
-                            scope.d.selectedItem.removeClass('selected');
+                        if (answerBuilder.canUserAnswerBeChanged()) {
+                            return;
                         }
 
-                        scope.d.selectedItem = angular.element(domItemsArray[index]);
-                        scope.d.selectedItem.addClass('selected');
                         ngModelCtrl.$setViewValue(index);
-
-                        if (viewMode === MODE_ANSWER_WITH_QUESTION) {
-                            updateItemsByCorrectAnswers(scope.d.answers);
-                            scope.clickHandler = angular.noop;
-                        }
+                        updateItemsByCorrectAnswers();
                     }
 
-                    function updateItemsByCorrectAnswers(correctAnswersArr) {
+                    function updateItemsByCorrectAnswers() {
+                        var oldSelectedElement = angular.element(domElement.querySelector('.selected'));
+                        oldSelectedElement.removeClass('selected');
+
                         var selectedAnswerId = ngModelCtrl.$viewValue;
 
-                        var lastElemIndex = correctAnswersArr.length - 1;
+                        var newSelectedElement = angular.element(domItemsArray[selectedAnswerId]);
+                        newSelectedElement.addClass('selected');
 
-                        for (var i = 0; i < lastElemIndex; i++) {
-                            angular.element(domItemsArray[correctAnswersArr[i].id]).addClass('correct');
+                        var lastElemIndex = answers.length - 1;
+
+                        if(viewMode === ANSWER_WITH_RESULT_MODE || viewMode === REVIEW_MODE){
+                            for (var i = 0; i < lastElemIndex; i++) {
+                                angular.element(domItemsArray[answers[i].id]).addClass('correct');
+                            }
+                            angular.element(domItemsArray[answers[lastElemIndex].id]).addClass('correct-edge');
                         }
-                        angular.element(domItemsArray[correctAnswersArr[lastElemIndex].id]).addClass('correct-edge');
 
-                        if (angular.isNumber(selectedAnswerId)) {
-                            if (selectedAnswerId >= correctAnswersArr[0].id && selectedAnswerId <= correctAnswersArr[lastElemIndex].id) {
+                        if (angular.isNumber(selectedAnswerId) && (viewMode === REVIEW_MODE || viewMode === ANSWER_WITH_RESULT_MODE)) {
+                            if (selectedAnswerId >= answers[0].id && selectedAnswerId <= answers[lastElemIndex].id) {
                                 angular.element(domItemsArray[selectedAnswerId]).addClass('selected-correct');
                             } else {
                                 angular.element(domItemsArray[selectedAnswerId]).addClass('selected-wrong');

@@ -6,11 +6,11 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('questionBuilder', [
-        '$compile', 'QuestionTypesSrv', '$timeout', 'ZnkExerciseUtilitySrv',
-        function ($compile, QuestionTypesSrv, $timeout, ZnkExerciseUtilitySrv) {
+        '$compile', 'QuestionTypesSrv', '$timeout', 'ZnkExerciseUtilitySrv', 'ZnkExerciseViewModeEnum',
+        function ($compile, QuestionTypesSrv, $timeout, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum) {
             return {
                 restrict: 'E',
-                require: ['questionBuilder', '^znkExercise'],
+                require: ['questionBuilder', '^znkExercise', '^ngModel'],
                 scope: {
                     questionGetter: '&question'
                 },
@@ -18,14 +18,15 @@
                     '$scope',
                     function ($scope) {
                         var self = this;
-                        self.question = $scope.questionGetter();
 
+                        self.question = $scope.questionGetter();
                     }
                 ],
                 link: {
                     pre: function pre(scope, element, attrs, ctrls) {
                         var questionBuilderCtrl = ctrls[0];
                         var znkExerciseCtrl = ctrls[1];
+                        var ngModelCtrl = ctrls[2];
 
                         var functionsToBind = ['getViewMode','addQuestionChangeResolver','removeQuestionChangeResolver'];
                         ZnkExerciseUtilitySrv.bindFunctions(questionBuilderCtrl, znkExerciseCtrl,functionsToBind);

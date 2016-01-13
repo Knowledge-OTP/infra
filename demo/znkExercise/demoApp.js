@@ -16,7 +16,7 @@
 
             QuestionTypesSrvProvider.setQuestionTypeGetter(questionTypeGetter);
         })
-        .controller('Main', function ($scope) {
+        .controller('Main', function ($scope,$timeout) {
             $scope.questions = [
                 {
                     __type: 1, id: 1, answerTypeId: 0, answers: [
@@ -36,7 +36,7 @@
                 },
                 {
                     __type: 1,
-                    id: 1,
+                    id: 2,
                     answerTypeId: 3,
                     correctAnswerText: [
                         {
@@ -68,7 +68,14 @@
                 },
                 initPagerDisplay: true
             };
-            $scope.results = [];
+
+            $scope.results = [{
+                userAnswer: 2,
+                questionId: 1
+            },{
+                userAnswer: 2,
+                questionId: 2
+            }];
             $scope.addQuestion = function () {
                 $scope.results.push({});
                 $scope.results = angular.copy($scope.results);
@@ -103,6 +110,18 @@
             $scope.setSlideDirection = function(slideDirection){
                 $scope.actions.setSlideDirection(slideDirection);
             };
+
+            $scope.setViewMode = function(viewMode){
+                $scope.settings.viewMode = viewMode;
+                rebuildExercise();
+            };
+
+            function rebuildExercise(){
+                $scope.hideExercise = true;
+                $timeout(function(){
+                    $scope.hideExercise = false;
+                });
+            }
 
 
             $scope.showOrHidePager= function(){

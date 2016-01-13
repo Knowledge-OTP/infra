@@ -29,12 +29,18 @@
         <button ng-click="setSlideDirection(3)">set slide direction right</button>
         <button ng-click="setSlideDirection(4)">set slide direction left</button>
         <div></div>
+        <button ng-click="setViewMode(1)">ANSWER_WITH_RESULT</button>
+        <button ng-click="setViewMode(2)">ONLY_ANSWER</button>
+        <button ng-click="setViewMode(3)">REVIEW</button>
+        <button ng-click="setViewMode(4)">MUST_ANSWER</button>
+        <div></div>
         <button ng-click="showOrHidePager()">show hide pager</button>
     </div>
     <znk-exercise ng-model="results"
                   questions="questions"
                   settings="settings"
-                  actions="actions">
+                  actions="actions"
+                  ng-if="!hideExercise">
     </znk-exercise>
     <script src="angular/angular.js"></script>
     <script src="angular-touch/angular-touch.js"></script>
