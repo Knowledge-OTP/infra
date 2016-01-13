@@ -2,8 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.storage').factory('storageFirebaseAdapter', [
-        '$log', '$q', '$window',
-        function ($log, $q, $window) {
+        '$log', '$q',
+        function ($log, $q) {
             function removeIllegalProperties(source){
                 if(angular.isArray(source)){
                     source.forEach(function(item){

@@ -70,7 +70,9 @@
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    chevron: 'components/znkExercise/svg/chevron-icon.svg'
+                    chevron: 'components/znkExercise/svg/chevron-icon.svg',
+                    correct: 'components/znkExercise/svg/correct-icon.svg',
+                    wrong: 'components/znkExercise/svg/wrong-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }]);
@@ -221,7 +223,8 @@
         function (EnumSrv) {
             return new EnumSrv.BaseEnum([
                 ['SELECT_ANSWER',0 ,'select answer'],
-                ['FREE_TEXT_ANSWER',1 ,'free text answer']
+                ['FREE_TEXT_ANSWER',1 ,'free text answer'],
+                ['RATE_ANSWER',3 ,'rate answer']
             ]);
         }
     ]);
@@ -884,35 +887,84 @@
     'use strict';
 
     angular.module('znk.infra.storage').factory('storageFirebaseAdapter', [
-        '$firebaseAuth', '$firebaseObject',
-        function ($firebaseAuth, $firebaseObject) {
-            function storageFirebaseAdapter (endPoint){
-                var authObj = $firebaseAuth(new Firebase(endPoint)).$getAuth();
-
-                function get(path){
-                    var processedPath = processPath(path,authObj);
-                    return $firebaseObject(new Firebase(endPoint + '/' + processedPath)).$loaded();
+        '$log', '$q',
+        function ($log, $q) {
+            function removeIllegalProperties(source){
+                if(angular.isArray(source)){
+                    source.forEach(function(item){
+                        removeIllegalProperties(item);
+                    });
+                    return;
                 }
 
-                function set(path, newEntity){
-                    if (newEntity.$save) {
-                        return newEntity.$save();
-                    }
+                if(angular.isObject(source)){
+                    var keys = Object.keys(source);
+                    keys.forEach(function(key){
+                        var value = source[key];
 
-                    return get(path).then(function (sourceEntity) {
-                        if (!angular.isObject(newEntity)) {
-                            var fallbackObj = {};
-                            fallbackObj[newEntity] = newEntity;
-                            newEntity = fallbackObj;
+                        if(key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length)){
+                            $log.debug('storageFirebaseAdapter: illegal property was deleted before save',key);
+                            delete source[key];
+                            return;
                         }
-                        angular.extend(sourceEntity, newEntity);
-                        return sourceEntity.$save();
+
+                        removeIllegalProperties(value);
                     });
+                    return;
+                }
+            }
+
+            function storageFirebaseAdapter (endPoint){
+                var refMap = {};
+                var authObj;
+                var rootRef = new Firebase(endPoint);
+                refMap.rootRef = rootRef;
+                rootRef.onAuth(function(newAuthObj){
+                    authObj = newAuthObj;
+                });
+
+                function getRef(relativePath){
+                    var processedRelativePath = processPath(relativePath,authObj);
+                    if(!refMap[processedRelativePath]){
+                        refMap[processedRelativePath] = refMap.rootRef.child(processedRelativePath);
+                    }
+                    return refMap[processedRelativePath];
+                }
+
+                function get(relativePath){
+                    var defer = $q.defer();
+
+                    var ref = getRef(relativePath);
+                    ref.once('value',function(dataSnapshot){
+                        defer.resolve(dataSnapshot.val());
+                    },function(err){
+                        $log.debug('storageFirebaseAdapter: failed to retrieve data for the following path',relativePath,err);
+                        defer.reject(err);
+                    });
+                    return defer.promise;
+                }
+
+                function set(relativePath, newValue){
+                    var defer = $q.defer();
+                    var newValueCopy = angular.copy(newValue);
+                    removeIllegalProperties(newValueCopy);
+                    var ref = getRef(relativePath);
+                    ref.set(newValueCopy,function(err){
+                        if(err){
+                            $log.debug('storageFirebaseAdapter: failed to set data for the following path',relativePath,err);
+                            defer.reject(err);
+                        }else{
+                            defer.resolve(newValueCopy);
+                        }
+                    });
+
+                    return defer.promise;
                 }
 
                 return {
                     get: get,
-                    set: set
+                    set: set,
+                    __refMap: refMap//for testing
                 };
             }
 
@@ -927,6 +979,10 @@
                 var processedPath = path.replace(UID_REGEX, authObj.uid);
                 return processedPath;
             }
+            storageFirebaseAdapter.processPath = function (path,authObj) {
+                var processedPath = path.replace(UID_REGEX, authObj.uid);
+                return processedPath;
+            };
 
             return storageFirebaseAdapter;
         }
@@ -998,54 +1054,10 @@
                 return this.setter(this.path, entity);
             };
 
-            //function processPath(path) {
-            //    var processedPath = path.replace(/\$\$uid/, authObj.uid);
-            //    return processedPath;
-            //}
-            //
-            //function entityGetter(path) {
-            //    var processedPath = processPath(path);
-            //    return $firebaseObject(new Firebase(ENV.fbDataEndPoint + processedPath)).$loaded();
-            //}
-            //
-            //function entitySetter(path, newEntity) {
-            //    if (newEntity.$save) {
-            //        return newEntity.$save();
-            //    }
-            //    return entityGetter(path).then(function (sourceEntity) {
-            //        if (!angular.isObject(newEntity)) {
-            //            var fallbackObj = {};
-            //            fallbackObj[newEntity] = newEntity;
-            //            newEntity = fallbackObj;
-            //        }
-            //        angular.extend(sourceEntity, newEntity);
-            //        return sourceEntity.$save();
-            //    });
-            //}
-
             function StorageSrv(entityGetter, entitySetter) {
-                //var authObj = $firebaseAuth(new Firebase(ENV.fbDataEndPoint)).$getAuth();
-
-                //var applicationPath = ENV.firebaseAppScopeName;
-
                 this.EntityCommunicator = function (path, defaultValues) {
                     return new EntityCommunicator(path, defaultValues, entityGetter, entitySetter);
                 };
-
-                //this.createGuid = function () {
-                //    function s4() {
-                //        return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1); // jshint ignore:line
-                //    }
-                //
-                //    return (s4() + s4() + '-' + s4() + '-4' + s4().substr(0, 3) + '-' + s4() + '-' + s4() + s4() + s4()).toLowerCase();
-                //};
-                //
-                //this.variables = {
-                //    uid: '$$uid',
-                //    appPath: applicationPath,
-                //    appUserSpacePath: applicationPath + '/users/' + authObj.uid
-                //};
-
             }
 
             return StorageSrv;
@@ -1181,6 +1193,7 @@
 
             typeToViewMap[AnswerTypeEnum.SELECT_ANSWER.enum] = '<select-answer></select-answer>';
             typeToViewMap[AnswerTypeEnum.FREE_TEXT_ANSWER.enum] = '<select-answer></select-answer>';
+            typeToViewMap[AnswerTypeEnum.RATE_ANSWER.enum] = '<rate-answer></rate-answer>';
 
             return {
                 require: ['answerBuilder','^questionBuilder'],
@@ -1330,6 +1343,94 @@
 //    ]);
 //})(angular);
 //
+
+
+/**
+ * attrs:
+ *
+ */
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('rateAnswer', ['ZnkExerciseViewModeEnum',
+        function (ZnkExerciseViewModeEnum) {
+            return {
+                templateUrl: 'components/znkExercise/answerTypes/templates/rateAnswerDrv.html',
+                require: ['^answerBuilder', '^ngModel'],
+                scope: {},
+                link: function link(scope, element, attrs, ctrls) {
+                    var answerBuilder = ctrls[0];
+                    var ngModelCtrl = ctrls[1];
+
+                    var viewMode = answerBuilder.getViewMode();
+                    var MODE_ANSWER_WITH_QUESTION = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
+                        MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum;
+
+                    scope.d = {};
+                    scope.d.itemsArray = new Array(11);
+                    scope.d.answers = answerBuilder.question.correctAnswerText;
+
+                    var domItemsArray;
+
+                    var destroyWatcher = scope.$watch(
+                        function () {
+                            return element[0].querySelectorAll('.item-repeater');
+                        },
+                        function (val) {
+                            if (val) {
+                                destroyWatcher();
+                                domItemsArray = val;
+
+                                if (viewMode === MODE_REVIEW) {
+                                    scope.clickHandler = angular.noop;
+                                    updateItemsByCorrectAnswers(scope.d.answers);
+                                } else {
+                                    scope.clickHandler = clickHandler;
+                                }
+                            }
+                        }
+                    );
+
+                    function clickHandler(index) {
+                        if (scope.d.selectedItem) {
+                            scope.d.selectedItem.removeClass('selected');
+                        }
+
+                        scope.d.selectedItem = angular.element(domItemsArray[index]);
+                        scope.d.selectedItem.addClass('selected');
+                        ngModelCtrl.$setViewValue(index);
+
+                        if (viewMode === MODE_ANSWER_WITH_QUESTION) {
+                            updateItemsByCorrectAnswers(scope.d.answers);
+                            scope.clickHandler = angular.noop;
+                        }
+                    }
+
+                    function updateItemsByCorrectAnswers(correctAnswersArr) {
+                        var selectedAnswerId = ngModelCtrl.$viewValue;
+
+                        var lastElemIndex = correctAnswersArr.length - 1;
+
+                        for (var i = 0; i < lastElemIndex; i++) {
+                            angular.element(domItemsArray[correctAnswersArr[i].id]).addClass('correct');
+                        }
+                        angular.element(domItemsArray[correctAnswersArr[lastElemIndex].id]).addClass('correct-edge');
+
+                        if (angular.isNumber(selectedAnswerId)) {
+                            if (selectedAnswerId >= correctAnswersArr[0].id && selectedAnswerId <= correctAnswersArr[lastElemIndex].id) {
+                                angular.element(domItemsArray[selectedAnswerId]).addClass('selected-correct');
+                            } else {
+                                angular.element(domItemsArray[selectedAnswerId]).addClass('selected-wrong');
+                            }
+                        }
+                    }
+                }
+            };
+        }
+    ]);
+})(angular);
+
+
 
 /**
  * attrs:
@@ -3323,6 +3424,23 @@
 })(angular);
 
 angular.module('znk.infra').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/znkExercise/answerTypes/templates/rateAnswerDrv.html",
+    "<div class=\"rate-answer-wrapper\">\n" +
+    "\n" +
+    "    <div class=\"checkbox-items-wrapper\" >\n" +
+    "\n" +
+    "        <div class=\"item-repeater\" ng-repeat=\"item in ::d.itemsArray track by $index\">\n" +
+    "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
+    "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
+    "            <div class=\"checkbox-item\" ng-click=\"clickHandler($index)\">\n" +
+    "                <div class=\"item-index\">{{ ::($index + 2)}}</div>\n" +
+    "            </div>\n" +
+    "            <div class=\"correct-answer-line\"></div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
   $templateCache.put("components/znkExercise/answerTypes/templates/selectAnswerDrv.html",
     "<div ng-repeat=\"answer in ::d.answers track by answer.id\" class=\"answer\" ng-click=\"d.click(answer)\">\n" +
     "    <div class=\"content-wrapper\">\n" +
@@ -3444,6 +3562,34 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkExercise/svg/chevron-icon.svg",
     "<svg x=\"0px\" y=\"0px\" viewBox=\"0 0 143.5 65.5\">\n" +
     "    <polyline class=\"st0\" points=\"6,6 71.7,59.5 137.5,6 \"/>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/correct-icon.svg",
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+    "<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n" +
+    "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"0 0 188.5 129\" style=\"enable-background:new 0 0 188.5 129;\" xml:space=\"preserve\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.st0{fill:none;stroke:#231F20;stroke-width:15;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<line class=\"st0\" x1=\"7.5\" y1=\"62\" x2=\"67\" y2=\"121.5\"/>\n" +
+    "	<line class=\"st0\" x1=\"67\" y1=\"121.5\" x2=\"181\" y2=\"7.5\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/wrong-icon.svg",
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+    "<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n" +
+    "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"0 0 126.5 126.5\" style=\"enable-background:new 0 0 126.5 126.5;\" xml:space=\"preserve\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.st0{fill:none;stroke:#231F20;stroke-width:15;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<line class=\"st0\" x1=\"119\" y1=\"7.5\" x2=\"7.5\" y2=\"119\"/>\n" +
+    "	<line class=\"st0\" x1=\"7.5\" y1=\"7.5\" x2=\"119\" y2=\"119\"/>\n" +
+    "</g>\n" +
     "</svg>\n" +
     "");
 }]);
