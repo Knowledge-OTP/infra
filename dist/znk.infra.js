@@ -1021,7 +1021,7 @@
                     }
                     cacheProm = true;
                     getProm = this.getter(path).then(function (_entity) {
-                        _entity = angular.isUndefined(_entity) ? {} : _entity;
+                        _entity = angular.isUndefined(_entity) || _entity === null ? {} : _entity;
                         entityCache.put(path, _entity);
                         delete getEntityPromMap[path];
                         return _entity;
