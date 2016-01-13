@@ -66,7 +66,7 @@ describe('testing service "storageFirebaseAdapter":', function () {
         expect(entity).toEqual(expectedVal);
     });
 
-    it('when saving entity then $save function should be invoked', function () {
+    it('when calling set then it should update firebase db', function () {
         var path = 'testPath';
         var syncedAdapter = actions.syncAdapter(storageFirebaseAdapter(endpoint));
         var newEntityVal = {
@@ -77,7 +77,7 @@ describe('testing service "storageFirebaseAdapter":', function () {
         expect(currEntityVal).toEqual(newEntityVal);
     });
 
-    it('when saving entity then all undefined and start with $ properties should be deleted', function () {
+    it('when saving entity then all undefined and start with $ properties should be deleted and not stored in firebase', function () {
         var path = 'testPath';
         var syncedAdapter = actions.syncAdapter(storageFirebaseAdapter(endpoint));
         var expectedResult = {

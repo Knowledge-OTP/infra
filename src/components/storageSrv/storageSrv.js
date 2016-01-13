@@ -55,11 +55,7 @@
 
             EntityCommunicator.prototype.set = function (entity) {
                 var key = this.path;
-                if (angular.isUndefined(entity)) {
-                    entity = entityCache.get(key);
-                } else {
-                    entityCache.put(key, entity);
-                }
+                entityCache.put(key, entity);
                 return this.setter(this.path, entity);
             };
 
