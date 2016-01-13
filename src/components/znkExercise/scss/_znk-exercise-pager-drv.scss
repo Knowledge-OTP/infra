@@ -1,0 +1,138 @@
+znk-exercise-pager {
+    //height: 44px;
+    background: $bgColor10;
+    box-sizing: border-box;
+    display: block;
+    @include absolute-position(null, 27px, 7px, 27px);
+    z-index: 1;
+    overflow: hidden;
+    border-radius: 30px;
+
+    znk-scroll {
+        display: flex;
+        align-items: center;
+
+        .pager-items-wrapper {
+            height: 44px;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+
+            .pager-item {
+                vertical-align: top;
+                display: inline-block;
+                margin: {
+                    right: 9px;
+                }
+
+                position: relative;
+
+                &:first-child {
+                    margin: {
+                        left: 11px;
+                    }
+                }
+
+                .question-status-indicator {
+                    border-radius: 50%;
+                    @include dimension(25px);
+                    //background: grey;
+                    @include flex-middle;
+                    background: linear-gradient(to bottom right, rgb(207, 207, 207) 0%, rgb(207, 207, 207) 50%, rgb(215, 215, 215) 51%, rgb(215, 215, 215) 100%);
+                    position: relative;
+
+                    &:before {
+                        content: ' ';
+                        @include absolute-position(-3px, -3px, -3px, -3px);
+                        border: 1px solid transparent;
+                        border-radius: 50%;
+                        background: transparent;
+                    }
+
+                    .index {
+                        @include text-style(12px, $fcColor2, Lato, $lightFontWeight);
+                    }
+                }
+
+                &.wrong {
+                    .question-status-indicator {
+                        background: linear-gradient(to bottom right, $bgColor11 0%, $bgColor11 50%, $bgColor1 51%, $bgColor1 100%);
+                    }
+                }
+
+                &.correct {
+                    .question-status-indicator {
+                        background: linear-gradient(to bottom right, $bgColor12 0%, $bgColor12 50%, $bgColor2 51%, $bgColor2 100%);
+                    }
+                }
+
+                &.neutral {
+                    .question-status-indicator {
+                        background: $bgColor3;
+                    }
+                }
+
+                .question-bookmark-icon {
+                    position: absolute;
+                    top: 4.5px;
+                    left: 50%;
+                    margin-left: -6.5px;
+                    z-index: 1;
+                    display: none;
+                }
+
+                &.bookmark {
+                    .question-bookmark-icon {
+                        display: block;
+                    }
+                }
+
+                &.current {
+                    .question-bookmark-icon {
+                        top: -3px;
+                        z-index: 1;
+                    }
+
+                    .question-status-indicator {
+                        @include dimension(36px);
+                        margin-top: 0;
+
+                        &:before {
+                            border-color: $bcColor3;
+                        }
+
+                        .index{
+                            font-size: 16px;
+                        }
+                    }
+                    &.correct {
+                        .question-status-indicator {
+                            &:before {
+                                border-color: $bcColor1;
+                            }
+                        }
+                    }
+                    &.wrong {
+                        .question-status-indicator {
+                            &:before {
+                                border-color: $bcColor4;
+                            }
+                        }
+                    }
+                    &.neutral {
+                        .question-status-indicator {
+                            &:before {
+                                border-color: $bcColor2;
+                            }
+                        }
+                    }
+                }
+
+                &.activated {
+                    opacity: 0.6;
+                }
+            }
+        }
+
+    }
+}

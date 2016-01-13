@@ -58,11 +58,11 @@
                 restrict: 'E',
                 compile: function(element){
                     var domElement = element[0];
-                    var child = domElement.children[0];
 
                     var currMousePoint;
                     var containerWidth;
                     var childWidth;
+
                     function mouseMoveEventHandler(evt){
                         $log.debug('mouse move',evt.pageX);
                         var xOffset = evt.pageX - currMousePoint.x;
@@ -83,8 +83,13 @@
                     function mouseDownHandler(evt){
                         $log.debug('mouse down',evt.pageX);
 
+                        var child = domElement.children[0];
+                        if(!child){
+                            return;
+                        }
+
                         containerWidth = domElement.offsetWidth;
-                        childWidth = getElementWidth(domElement.children[0]);
+                        childWidth = getElementWidth(child);
 
                         currMousePoint = {
                             x: evt.pageX,
@@ -101,6 +106,7 @@
                     function moveScroll(xOffset, containerWidth, childWidth/*,yOffset*/){
                         var minTranslateX = Math.min(containerWidth - childWidth,0);
                         var maxTranslateX = 0;
+                        var child = domElement.children[0];
 
                         if(!child.style.transform){
                             setElementTranslateX(child,0,false,false,minTranslateX,maxTranslateX);
@@ -111,6 +117,7 @@
 
                     function setScrollPos(scrollX){
                         var containerWidth = domElement.offsetWidth;
+                        var child = domElement.children[0];
                         var childWidth = getElementWidth(child);
                         var minTranslateX = Math.min(containerWidth - childWidth,0);
                         var maxTranslateX = 0;
@@ -120,7 +127,9 @@
                     return {
                         pre: function(scope,element,attrs){
                             var child = domElement.children[0];
-                            setElementTranslateX(child,0);
+                            if(child){
+                                setElementTranslateX(child,0);
+                            }
 
                             var scrollOnMouseWheel = $interpolate(attrs.scrollOnMouseWheel || '')(scope) !== 'false';
                             var containerWidth,childWidth;

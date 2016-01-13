@@ -32,7 +32,11 @@ module.exports = function (config) {
             'src/**/*.svg',
 
             //utility
-            'test/utility/**/*.*',
+            'test/utility/module.js',
+            'test/utility/**/*.js',
+
+            //directive controllers mock
+            'test/mock/directiveCtrl/znkExerciseDrvCtrl.mock.js',
 
             //src files
             'src/core/*.js',
@@ -43,7 +47,7 @@ module.exports = function (config) {
             'test/mock/**/*.js',
 
             //tests
-            'test/spec/**/*.spec.js'
+            'test/spec/**/znkExercisePagerDrv.spec.js'
         ],
 
         // list of files / patterns to exclude

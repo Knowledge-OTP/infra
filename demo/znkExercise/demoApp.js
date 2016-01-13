@@ -59,15 +59,16 @@
             ];
 
             $scope.settings = {
-                viewMode: 2,
+                viewMode: 1,
                 onQuestionAnswered: function(){
-                    $scope;
+
                 },
                 onDone: function(){
                     alert('On done was invoked');
-                }
+                },
+                initPagerDisplay: true
             };
-
+            $scope.results = [];
             $scope.addQuestion = function () {
                 $scope.results.push({});
                 $scope.results = angular.copy($scope.results);
@@ -101,6 +102,12 @@
 
             $scope.setSlideDirection = function(slideDirection){
                 $scope.actions.setSlideDirection(slideDirection);
+            };
+
+
+            $scope.showOrHidePager= function(){
+                $scope.settings.initPagerDisplay = !$scope.settings.initPagerDisplay;
+                $scope.actions.pagerDisplay($scope.settings.initPagerDisplay);
             };
         });
 })(angular);

@@ -1,8 +1,8 @@
-xdescribe('testing directive "znkExercisePagerDrv":', function () {
+describe('testing directive "znkExercisePagerDrv":', function () {
     'use strict';
 
     // Load  the module, which contains the directive
-    beforeEach(module('znk.toefl', 'htmlTemplates','directiveCtrlMockModule'));
+    beforeEach(module('znk.infra.znkExercise', 'htmlTemplates','testUtility'));
 
     //get dependencies
     var $rootScope, $compile, $timeout, MockDrvCtrlSrv;
@@ -16,6 +16,7 @@ xdescribe('testing directive "znkExercisePagerDrv":', function () {
         }
     ]));
 
+    var znkExerciseDrvCtrl;
     function createDirectiveHtml($scope, content) {
         if (!$scope) {
             $scope = $rootScope.$new();
@@ -50,13 +51,13 @@ xdescribe('testing directive "znkExercisePagerDrv":', function () {
         }
 
         if (!content) {
-            var content = '<znk-exercise-pager ng-model="vm.currentSlider" questions="d.questions"></znk-exercise-pager>';
+            content = '<znk-exercise-pager ng-model="d.currentSlider" questions="d.questions"></znk-exercise-pager>';
         }
 
         content = angular.element(content);
-        angular.element('body').append(content);
+        angular.element(document.body).append(content);
 
-        MockDrvCtrlSrv.mock(content,'znkExercise');
+        znkExerciseDrvCtrl = MockDrvCtrlSrv.mock(content,'znkExercise');
 
         $compile(content)($scope);
         var contentDomElement = content[0];
@@ -66,8 +67,9 @@ xdescribe('testing directive "znkExercisePagerDrv":', function () {
         };
 
         content.tapOnItem = function(index){
-            var pagerItemDomElement = contentDomElement.querySelectorAll('.pager-item')[index];
-            ionic.EventController.trigger('tap', {target: pagerItemDomElement}, true);
+            var pagerItemElement = angular.element(contentDomElement.querySelectorAll('.pager-item')[index]);
+            var scope = pagerItemElement.scope();
+            scope.d.tap(index);
             $timeout.flush();
         };
 
@@ -94,7 +96,7 @@ xdescribe('testing directive "znkExercisePagerDrv":', function () {
         var scope = scopeContent.scope;
         var content = scopeContent.content;
         //$timeout.flush();
-        scope.vm.currentSlider = 3;
+        scope.d.currentSlider = 3;
         scope.$digest();
         $timeout.flush();
         var itemsWithCurrentClass = content.getAllPagerItemsWithCurrentClass();
@@ -102,17 +104,14 @@ xdescribe('testing directive "znkExercisePagerDrv":', function () {
         expect(scope.d.questions[3].id).toBe(itemsWithCurrentClass.scope().question.id);
     });
 
-    it('when tapping on pager item 3 then the model value should be 3 and pager item 3 should have the current class', function () {
+    it('when tapping on pager item 3 then the setCurrentIndex in znkExerciseDrv controller should be invoked', function () {
         var scopeContent = createDirectiveHtml();
         var scope = scopeContent.scope;
         var content = scopeContent.content;
-        //$timeout.flush();
+
+        spyOn(znkExerciseDrvCtrl,'setCurrentIndex');
         content.tapOnItem(3);
         scope.$digest();
-        //$timeout.flush();
-        expect(scope.vm.currentSlider).toBe(3);
-        var itemsWithCurrentClass = content.getAllPagerItemsWithCurrentClass();
-        expect(itemsWithCurrentClass.length).toBe(1);
-        expect(scope.d.questions[3].id).toBe(itemsWithCurrentClass.scope().question.id);
+        expect(znkExerciseDrvCtrl.setCurrentIndex).toHaveBeenCalledWith(3);
     });
 });
