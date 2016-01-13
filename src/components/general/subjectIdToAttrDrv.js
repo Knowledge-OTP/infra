@@ -21,7 +21,6 @@
                     znkPrefix: '@',
                     znkSuffix: '@'
                 },
-                priority: 1000,
                 link: {
                     pre: function (scope, element, attrs) {
 

@@ -2,10 +2,7 @@
     'use strict';
 
     angular.module('demoApp', ['znk.infra.general'])
-        .config(function(){
-
-        })
-        .controller('main',function($scope){
-            $scope.prefix = 'cp, np';
+        .controller('subjectIdToAttrDrvDemoCtrl',function($scope){
+            $scope.prefix = 'prefix1,prefix2';
         });
 })(angular);
