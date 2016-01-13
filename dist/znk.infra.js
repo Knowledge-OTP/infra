@@ -55,7 +55,9 @@
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    chevron: 'components/znkExercise/svg/chevron-icon.svg'
+                    chevron: 'components/znkExercise/svg/chevron-icon.svg',
+                    correct: 'components/znkExercise/svg/correct-icon.svg',
+                    wrong: 'components/znkExercise/svg/wrong-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }]);
@@ -206,7 +208,8 @@
         function (EnumSrv) {
             return new EnumSrv.BaseEnum([
                 ['SELECT_ANSWER',0 ,'select answer'],
-                ['FREE_TEXT_ANSWER',1 ,'free text answer']
+                ['FREE_TEXT_ANSWER',1 ,'free text answer'],
+                ['RATE_ANSWER',3 ,'rate answer']
             ]);
         }
     ]);
@@ -355,6 +358,77 @@
             ]);
 
             return EnumSrv;
+        }
+    ]);
+})(angular);
+
+/**
+ *  @directive subjectIdToAttrDrv
+ *  This directive is an evolution of 'subjectIdToClassDrv'
+ *  @context-attr a comma separated string of attribute names
+ *  @znk-prefix a comma separated string of prefixes to the attribute values
+ *  @znk-suffix a comma separated string of suffixes to the attribute values
+ *
+ *  In case only one prefix/suffix is provided, it will be used in all attributes
+ *  In case no @context-attr is provided, it will set the class attribute by default
+ *  No need to pass dashes ('-') to prefix or suffix, they are already appended
+ */
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.general').directive('subjectIdToAttrDrv', [
+        'SubjectEnum',
+        function (SubjectEnum) {
+            return {
+                scope: {
+                    contextAttr: '@',
+                    prefix: '@',
+                    suffix: '@'
+                },
+                link: {
+                    pre: function (scope, element, attrs) {
+
+                        var watchDestroyer = scope.$watch(attrs.subjectIdToAttrDrv,function(subjectId){
+
+                            if(angular.isUndefined(subjectId)){
+                                return;
+                            }
+                            watchDestroyer();
+
+                            var attrsArray;
+                            if (scope.contextAttr) {
+                                attrsArray = scope.contextAttr.split(',');
+                            } else {
+                                attrsArray = [];
+                                attrsArray.push('class');
+                            }
+
+                            var attrPrefixes = (scope.prefix) ? scope.prefix.split(',') : [];
+                            var attrSuffixes = (scope.suffix) ? scope.suffix.split(',') : [];
+
+                            var subjectEnumMap = SubjectEnum.getEnumMap();
+                            var subjectNameToAdd = subjectEnumMap[subjectId];
+
+                            angular.forEach(attrsArray, function(value, key){
+                                var attrVal = subjectNameToAdd;
+
+                                if(attrPrefixes.length){
+                                    attrVal = (attrPrefixes[key] || attrPrefixes[0])  + '-' + attrVal;
+                                }
+
+                                if(attrSuffixes.length){
+                                    attrVal += '-' + (attrSuffixes[key] || attrSuffixes[0]);
+                                }
+
+                                attrVal = attrVal.replace(/\s+/g,'');   // regex to clear spaces
+
+                                element.attr(value, attrVal);
+                            });
+
+                        });
+                    }
+                }
+            };
         }
     ]);
 })(angular);
@@ -965,15 +1039,16 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('answerBuilder', [
-        '$compile', 'AnswerTypeEnum', 'ZnkExerciseUtilitySrv',
-        function ($compile, AnswerTypeEnum, ZnkExerciseUtilitySrv) {
+        '$compile', 'AnswerTypeEnum', 'ZnkExerciseUtilitySrv', 'ZnkExerciseViewModeEnum',
+        function ($compile, AnswerTypeEnum, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum) {
             var typeToViewMap = {};
 
             typeToViewMap[AnswerTypeEnum.SELECT_ANSWER.enum] = '<select-answer></select-answer>';
             typeToViewMap[AnswerTypeEnum.FREE_TEXT_ANSWER.enum] = '<select-answer></select-answer>';
+            typeToViewMap[AnswerTypeEnum.RATE_ANSWER.enum] = '<rate-answer></rate-answer>';
 
             return {
-                require: ['answerBuilder','^questionBuilder'],
+                require: ['answerBuilder','^questionBuilder', '^ngModel'],
                 restrict: 'E',
                 controller:[
                     function(){
@@ -984,9 +1059,18 @@
                     pre:function (scope, element, attrs, ctrls) {
                         var answerBuilderCtrl = ctrls[0];
                         var questionBuilderCtrl = ctrls[1];
+                        var ngModelCtrl = ctrls[2];
 
                         var fnToBindFromQuestionBuilder = ['getViewMode'];
                         ZnkExerciseUtilitySrv.bindFunctions(answerBuilderCtrl,questionBuilderCtrl,fnToBindFromQuestionBuilder);
+
+                        answerBuilderCtrl.canUserAnswerBeChanged = function(){
+                            var viewMode = questionBuilderCtrl.getViewMode();
+                            var isntReviewMode = viewMode !== ZnkExerciseViewModeEnum.REVIEW.enum;
+                            var notAnswered = angular.isDefined(ngModelCtrl.$viewValue);
+                            var isAnswerWithResultViewMode = viewMode === ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum;
+                            return isntReviewMode && isAnswerWithResultViewMode && notAnswered;
+                        };
 
                         answerBuilderCtrl.question = questionBuilderCtrl.question;
 
@@ -1120,6 +1204,103 @@
 //    ]);
 //})(angular);
 //
+
+
+/**
+ * attrs:
+ *
+ */
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('rateAnswer', ['ZnkExerciseViewModeEnum',
+        function (ZnkExerciseViewModeEnum) {
+            return {
+                templateUrl: 'components/znkExercise/answerTypes/templates/rateAnswerDrv.html',
+                require: ['^answerBuilder', '^ngModel'],
+                scope: {},
+                link: function link(scope, element, attrs, ctrls) {
+                    var domElement = element[0];
+
+                    var answerBuilder = ctrls[0];
+                    var ngModelCtrl = ctrls[1];
+
+                    var viewMode = answerBuilder.getViewMode();
+                    var ANSWER_WITH_RESULT_MODE = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
+                        REVIEW_MODE = ZnkExerciseViewModeEnum.REVIEW.enum;
+
+                    scope.d = {};
+                    scope.d.itemsArray = new Array(11);
+                    var answers = answerBuilder.question.correctAnswerText;
+
+                    var domItemsArray;
+
+                    var destroyWatcher = scope.$watch(
+                        function () {
+                            return element[0].querySelectorAll('.item-repeater');
+                        },
+                        function (val) {
+                            if (val) {
+                                destroyWatcher();
+                                domItemsArray = val;
+
+                                if (viewMode === REVIEW_MODE) {
+                                    scope.clickHandler = angular.noop;
+                                    updateItemsByCorrectAnswers(scope.d.answers);
+                                } else {
+                                    scope.clickHandler = clickHandler;
+                                }
+
+                                ngModelCtrl.$render = function(){
+                                    updateItemsByCorrectAnswers();
+                                };
+                                ngModelCtrl.$render();
+                            }
+                        }
+                    );
+
+                    function clickHandler(index) {
+                        if (answerBuilder.canUserAnswerBeChanged()) {
+                            return;
+                        }
+
+                        ngModelCtrl.$setViewValue(index);
+                        updateItemsByCorrectAnswers();
+                    }
+
+                    function updateItemsByCorrectAnswers() {
+                        var oldSelectedElement = angular.element(domElement.querySelector('.selected'));
+                        oldSelectedElement.removeClass('selected');
+
+                        var selectedAnswerId = ngModelCtrl.$viewValue;
+
+                        var newSelectedElement = angular.element(domItemsArray[selectedAnswerId]);
+                        newSelectedElement.addClass('selected');
+
+                        var lastElemIndex = answers.length - 1;
+
+                        if(viewMode === ANSWER_WITH_RESULT_MODE || viewMode === REVIEW_MODE){
+                            for (var i = 0; i < lastElemIndex; i++) {
+                                angular.element(domItemsArray[answers[i].id]).addClass('correct');
+                            }
+                            angular.element(domItemsArray[answers[lastElemIndex].id]).addClass('correct-edge');
+                        }
+
+                        if (angular.isNumber(selectedAnswerId) && (viewMode === REVIEW_MODE || viewMode === ANSWER_WITH_RESULT_MODE)) {
+                            if (selectedAnswerId >= answers[0].id && selectedAnswerId <= answers[lastElemIndex].id) {
+                                angular.element(domItemsArray[selectedAnswerId]).addClass('selected-correct');
+                            } else {
+                                angular.element(domItemsArray[selectedAnswerId]).addClass('selected-wrong');
+                            }
+                        }
+                    }
+                }
+            };
+        }
+    ]);
+})(angular);
+
+
 
 /**
  * attrs:
@@ -1475,8 +1656,8 @@
                     '$scope',
                     function ($scope) {
                         var self = this;
-                        self.question = $scope.questionGetter();
 
+                        self.question = $scope.questionGetter();
                     }
                 ],
                 link: {
@@ -3113,6 +3294,23 @@
 })(angular);
 
 angular.module('znk.infra').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/znkExercise/answerTypes/templates/rateAnswerDrv.html",
+    "<div class=\"rate-answer-wrapper\">\n" +
+    "\n" +
+    "    <div class=\"checkbox-items-wrapper\" >\n" +
+    "\n" +
+    "        <div class=\"item-repeater\" ng-repeat=\"item in ::d.itemsArray track by $index\">\n" +
+    "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
+    "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
+    "            <div class=\"checkbox-item\" ng-click=\"clickHandler($index)\">\n" +
+    "                <div class=\"item-index\">{{ ::($index + 2)}}</div>\n" +
+    "            </div>\n" +
+    "            <div class=\"correct-answer-line\"></div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
   $templateCache.put("components/znkExercise/answerTypes/templates/selectAnswerDrv.html",
     "<div ng-repeat=\"answer in ::d.answers track by answer.id\" class=\"answer\" ng-click=\"d.click(answer)\">\n" +
     "    <div class=\"content-wrapper\">\n" +
@@ -3234,6 +3432,34 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkExercise/svg/chevron-icon.svg",
     "<svg x=\"0px\" y=\"0px\" viewBox=\"0 0 143.5 65.5\">\n" +
     "    <polyline class=\"st0\" points=\"6,6 71.7,59.5 137.5,6 \"/>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/correct-icon.svg",
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+    "<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n" +
+    "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"0 0 188.5 129\" style=\"enable-background:new 0 0 188.5 129;\" xml:space=\"preserve\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.st0{fill:none;stroke:#231F20;stroke-width:15;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<line class=\"st0\" x1=\"7.5\" y1=\"62\" x2=\"67\" y2=\"121.5\"/>\n" +
+    "	<line class=\"st0\" x1=\"67\" y1=\"121.5\" x2=\"181\" y2=\"7.5\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/wrong-icon.svg",
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+    "<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n" +
+    "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"0 0 126.5 126.5\" style=\"enable-background:new 0 0 126.5 126.5;\" xml:space=\"preserve\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.st0{fill:none;stroke:#231F20;stroke-width:15;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<line class=\"st0\" x1=\"119\" y1=\"7.5\" x2=\"7.5\" y2=\"119\"/>\n" +
+    "	<line class=\"st0\" x1=\"7.5\" y1=\"7.5\" x2=\"119\" y2=\"119\"/>\n" +
+    "</g>\n" +
     "</svg>\n" +
     "");
 }]);
