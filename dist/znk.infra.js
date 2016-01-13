@@ -378,6 +378,77 @@
 })(angular);
 
 /**
+ *  @directive subjectIdToAttrDrv
+ *  This directive is an evolution of 'subjectIdToClassDrv'
+ *  @context-attr a comma separated string of attribute names
+ *  @znk-prefix a comma separated string of prefixes to the attribute values
+ *  @znk-suffix a comma separated string of suffixes to the attribute values
+ *
+ *  In case only one prefix/suffix is provided, it will be used in all attributes
+ *  In case no @context-attr is provided, it will set the class attribute by default
+ *  No need to pass dashes ('-') to prefix or suffix, they are already appended
+ */
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.general').directive('subjectIdToAttrDrv', [
+        'SubjectEnum',
+        function (SubjectEnum) {
+            return {
+                scope: {
+                    contextAttr: '@',
+                    prefix: '@',
+                    suffix: '@'
+                },
+                link: {
+                    pre: function (scope, element, attrs) {
+
+                        var watchDestroyer = scope.$watch(attrs.subjectIdToAttrDrv,function(subjectId){
+
+                            if(angular.isUndefined(subjectId)){
+                                return;
+                            }
+                            watchDestroyer();
+
+                            var attrsArray;
+                            if (scope.contextAttr) {
+                                attrsArray = scope.contextAttr.split(',');
+                            } else {
+                                attrsArray = [];
+                                attrsArray.push('class');
+                            }
+
+                            var attrPrefixes = (scope.prefix) ? scope.prefix.split(',') : [];
+                            var attrSuffixes = (scope.suffix) ? scope.suffix.split(',') : [];
+
+                            var subjectEnumMap = SubjectEnum.getEnumMap();
+                            var subjectNameToAdd = subjectEnumMap[subjectId];
+
+                            angular.forEach(attrsArray, function(value, key){
+                                var attrVal = subjectNameToAdd;
+
+                                if(attrPrefixes.length){
+                                    attrVal = (attrPrefixes[key] || attrPrefixes[0])  + '-' + attrVal;
+                                }
+
+                                if(attrSuffixes.length){
+                                    attrVal += '-' + (attrSuffixes[key] || attrSuffixes[0]);
+                                }
+
+                                attrVal = attrVal.replace(/\s+/g,'');   // regex to clear spaces
+
+                                element.attr(value, attrVal);
+                            });
+
+                        });
+                    }
+                }
+            };
+        }
+    ]);
+})(angular);
+
+/**
  * attrs:
  *  subject-id-to-class-drv: expression from which subject id will be taken from.
  *  class-suffix: suffix of the added class
@@ -1183,8 +1254,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('answerBuilder', [
-        '$compile', 'AnswerTypeEnum', 'ZnkExerciseUtilitySrv',
-        function ($compile, AnswerTypeEnum, ZnkExerciseUtilitySrv) {
+        '$compile', 'AnswerTypeEnum', 'ZnkExerciseUtilitySrv', 'ZnkExerciseViewModeEnum',
+        function ($compile, AnswerTypeEnum, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum) {
             var typeToViewMap = {};
 
             typeToViewMap[AnswerTypeEnum.SELECT_ANSWER.enum] = '<select-answer></select-answer>';
@@ -1192,7 +1263,7 @@
             typeToViewMap[AnswerTypeEnum.RATE_ANSWER.enum] = '<rate-answer></rate-answer>';
 
             return {
-                require: ['answerBuilder','^questionBuilder'],
+                require: ['answerBuilder','^questionBuilder', '^ngModel'],
                 restrict: 'E',
                 controller:[
                     function(){
@@ -1203,9 +1274,18 @@
                     pre:function (scope, element, attrs, ctrls) {
                         var answerBuilderCtrl = ctrls[0];
                         var questionBuilderCtrl = ctrls[1];
+                        var ngModelCtrl = ctrls[2];
 
                         var fnToBindFromQuestionBuilder = ['getViewMode'];
                         ZnkExerciseUtilitySrv.bindFunctions(answerBuilderCtrl,questionBuilderCtrl,fnToBindFromQuestionBuilder);
+
+                        answerBuilderCtrl.canUserAnswerBeChanged = function(){
+                            var viewMode = questionBuilderCtrl.getViewMode();
+                            var isntReviewMode = viewMode !== ZnkExerciseViewModeEnum.REVIEW.enum;
+                            var notAnswered = angular.isDefined(ngModelCtrl.$viewValue);
+                            var isAnswerWithResultViewMode = viewMode === ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum;
+                            return isntReviewMode && isAnswerWithResultViewMode && notAnswered;
+                        };
 
                         answerBuilderCtrl.question = questionBuilderCtrl.question;
 
@@ -1355,16 +1435,18 @@
                 require: ['^answerBuilder', '^ngModel'],
                 scope: {},
                 link: function link(scope, element, attrs, ctrls) {
+                    var domElement = element[0];
+
                     var answerBuilder = ctrls[0];
                     var ngModelCtrl = ctrls[1];
 
                     var viewMode = answerBuilder.getViewMode();
-                    var MODE_ANSWER_WITH_QUESTION = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
-                        MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum;
+                    var ANSWER_WITH_RESULT_MODE = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
+                        REVIEW_MODE = ZnkExerciseViewModeEnum.REVIEW.enum;
 
                     scope.d = {};
                     scope.d.itemsArray = new Array(11);
-                    scope.d.answers = answerBuilder.question.correctAnswerText;
+                    var answers = answerBuilder.question.correctAnswerText;
 
                     var domItemsArray;
 
@@ -1377,43 +1459,50 @@
                                 destroyWatcher();
                                 domItemsArray = val;
 
-                                if (viewMode === MODE_REVIEW) {
+                                if (viewMode === REVIEW_MODE) {
                                     scope.clickHandler = angular.noop;
                                     updateItemsByCorrectAnswers(scope.d.answers);
                                 } else {
                                     scope.clickHandler = clickHandler;
                                 }
+
+                                ngModelCtrl.$render = function(){
+                                    updateItemsByCorrectAnswers();
+                                };
+                                ngModelCtrl.$render();
                             }
                         }
                     );
 
                     function clickHandler(index) {
-                        if (scope.d.selectedItem) {
-                            scope.d.selectedItem.removeClass('selected');
+                        if (answerBuilder.canUserAnswerBeChanged()) {
+                            return;
                         }
 
-                        scope.d.selectedItem = angular.element(domItemsArray[index]);
-                        scope.d.selectedItem.addClass('selected');
                         ngModelCtrl.$setViewValue(index);
-
-                        if (viewMode === MODE_ANSWER_WITH_QUESTION) {
-                            updateItemsByCorrectAnswers(scope.d.answers);
-                            scope.clickHandler = angular.noop;
-                        }
+                        updateItemsByCorrectAnswers();
                     }
 
-                    function updateItemsByCorrectAnswers(correctAnswersArr) {
+                    function updateItemsByCorrectAnswers() {
+                        var oldSelectedElement = angular.element(domElement.querySelector('.selected'));
+                        oldSelectedElement.removeClass('selected');
+
                         var selectedAnswerId = ngModelCtrl.$viewValue;
 
-                        var lastElemIndex = correctAnswersArr.length - 1;
+                        var newSelectedElement = angular.element(domItemsArray[selectedAnswerId]);
+                        newSelectedElement.addClass('selected');
 
-                        for (var i = 0; i < lastElemIndex; i++) {
-                            angular.element(domItemsArray[correctAnswersArr[i].id]).addClass('correct');
+                        var lastElemIndex = answers.length - 1;
+
+                        if(viewMode === ANSWER_WITH_RESULT_MODE || viewMode === REVIEW_MODE){
+                            for (var i = 0; i < lastElemIndex; i++) {
+                                angular.element(domItemsArray[answers[i].id]).addClass('correct');
+                            }
+                            angular.element(domItemsArray[answers[lastElemIndex].id]).addClass('correct-edge');
                         }
-                        angular.element(domItemsArray[correctAnswersArr[lastElemIndex].id]).addClass('correct-edge');
 
-                        if (angular.isNumber(selectedAnswerId)) {
-                            if (selectedAnswerId >= correctAnswersArr[0].id && selectedAnswerId <= correctAnswersArr[lastElemIndex].id) {
+                        if (angular.isNumber(selectedAnswerId) && (viewMode === REVIEW_MODE || viewMode === ANSWER_WITH_RESULT_MODE)) {
+                            if (selectedAnswerId >= answers[0].id && selectedAnswerId <= answers[lastElemIndex].id) {
                                 angular.element(domItemsArray[selectedAnswerId]).addClass('selected-correct');
                             } else {
                                 angular.element(domItemsArray[selectedAnswerId]).addClass('selected-wrong');
@@ -1782,8 +1871,8 @@
                     '$scope',
                     function ($scope) {
                         var self = this;
-                        self.question = $scope.questionGetter();
 
+                        self.question = $scope.questionGetter();
                     }
                 ],
                 link: {

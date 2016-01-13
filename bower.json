@@ -1,26 +1,25 @@
 {
-  "name": "infra",
-  "version": "v1.0.7",
-  "authors": [
-    "Zinkerz"
-  ],
-  "dependencies": {
-    "angular": "1.4.x",
-    "Swiper": "swiper#~3.2.7"
-  },
-  "ignore": [
-    ".*",
-    "src",
-    "test",
-    "demo"
-  ],
-  "main": "dist/znk.infra.js",
-  "resolutions": {
-    "angular": "1.4.x"
-  },
-  "devDependencies": {
-    "es5-shim": "~4.4.1",
-    "angular-mocks": "1.4.x",
-    "mockfirebase": "~0.11.0"
-  }
+    "name": "infra",
+    "version": "v1.0.8",
+    "authors": [
+        "Zinkerz"
+    ],
+    "dependencies": {
+        "angular": "1.4.x",
+        "Swiper": "swiper#~3.2.7"
+    },
+    "ignore": [
+        ".*",
+        "src",
+        "test",
+        "demo"
+    ],
+    "main": "dist/znk.infra.js",
+    "resolutions": {
+        "angular": "1.4.x"
+    },
+    "devDependencies": {
+        "es5-shim": "~4.4.1",
+        "angular-mocks": "1.4.x"
+    }
 }
