@@ -8,9 +8,12 @@
         'znk.infra.general',
         'znk.infra.scroll',
         'znk.infra.content',
-        'znk.infra.znkExercise'
+        'znk.infra.znkExercise',
+        'znk.infra.storage',
+        'znk.infra.utility'
     ]);
 })(angular);
+
 (function (angular) {
     'use strict';
 
@@ -45,8 +48,20 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.storage', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.svgIcon', []);
 })(angular);
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.utility', []);
+})(angular);
+
 (function (angular) {
     'use strict';
 
@@ -939,6 +954,184 @@
 })(angular);
 
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.storage').factory('storageFirebaseAdapter', [
+        '$log', '$q',
+        function ($log, $q) {
+            function removeIllegalProperties(source){
+                if(angular.isArray(source)){
+                    source.forEach(function(item){
+                        removeIllegalProperties(item);
+                    });
+                    return;
+                }
+
+                if(angular.isObject(source)){
+                    var keys = Object.keys(source);
+                    keys.forEach(function(key){
+                        var value = source[key];
+
+                        if(key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length)){
+                            $log.debug('storageFirebaseAdapter: illegal property was deleted before save',key);
+                            delete source[key];
+                            return;
+                        }
+
+                        removeIllegalProperties(value);
+                    });
+                    return;
+                }
+            }
+
+            function storageFirebaseAdapter (endPoint){
+                var refMap = {};
+                var authObj;
+                var rootRef = new Firebase(endPoint);
+                refMap.rootRef = rootRef;
+                rootRef.onAuth(function(newAuthObj){
+                    authObj = newAuthObj;
+                });
+
+                function getRef(relativePath){
+                    var processedRelativePath = processPath(relativePath,authObj);
+                    if(!refMap[processedRelativePath]){
+                        refMap[processedRelativePath] = refMap.rootRef.child(processedRelativePath);
+                    }
+                    return refMap[processedRelativePath];
+                }
+
+                function get(relativePath){
+                    var defer = $q.defer();
+
+                    var ref = getRef(relativePath);
+                    ref.once('value',function(dataSnapshot){
+                        defer.resolve(dataSnapshot.val());
+                    },function(err){
+                        $log.debug('storageFirebaseAdapter: failed to retrieve data for the following path',relativePath,err);
+                        defer.reject(err);
+                    });
+                    return defer.promise;
+                }
+
+                function set(relativePath, newValue){
+                    var defer = $q.defer();
+                    var newValueCopy = angular.copy(newValue);
+                    removeIllegalProperties(newValueCopy);
+                    var ref = getRef(relativePath);
+                    ref.set(newValueCopy,function(err){
+                        if(err){
+                            $log.debug('storageFirebaseAdapter: failed to set data for the following path',relativePath,err);
+                            defer.reject(err);
+                        }else{
+                            defer.resolve(newValueCopy);
+                        }
+                    });
+
+                    return defer.promise;
+                }
+
+                return {
+                    get: get,
+                    set: set,
+                    __refMap: refMap//for testing
+                };
+            }
+
+            storageFirebaseAdapter.variables = {
+                uid: '$$uid',
+                appUserSpacePath: 'users/$$uid'
+            };
+
+            var regexString = storageFirebaseAdapter.variables.uid.replace(/\$/g,'\\$');
+            var UID_REGEX = new RegExp(regexString,'g');
+            function processPath(path,authObj) {
+                var processedPath = path.replace(UID_REGEX, authObj.uid);
+                return processedPath;
+            }
+            storageFirebaseAdapter.processPath = function (path,authObj) {
+                var processedPath = path.replace(UID_REGEX, authObj.uid);
+                return processedPath;
+            };
+
+            return storageFirebaseAdapter;
+        }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.storage').factory('StorageSrv', [
+        '$cacheFactory', '$q',
+        function ($cacheFactory, $q) {
+            var getEntityPromMap = {};
+
+            var entityCache = $cacheFactory('entityCache');
+
+            function EntityCommunicator(path, defaultValue, getter, setter) {
+                this.path = path;
+                this.defaultValue = defaultValue;
+                this.getter = getter;
+                this.setter = setter;
+            }
+
+            EntityCommunicator.prototype.get = function () {
+                var path = this.path;
+                var entity = entityCache.get(path);
+                var getProm;
+                var defaultValue = this.defaultValue || {};
+                var cacheProm = false;
+
+                if (entity) {
+                    getProm = $q.when(entity);
+                } else {
+                    if (getEntityPromMap[path]) {
+                        return getEntityPromMap[path];
+                    }
+                    cacheProm = true;
+                    getProm = this.getter(path).then(function (_entity) {
+                        _entity = angular.isUndefined(_entity) || _entity === null ? {} : _entity;
+                        entityCache.put(path, _entity);
+                        delete getEntityPromMap[path];
+                        return _entity;
+                    });
+                }
+                getProm = getProm.then(function(_entity){
+                    var keys = Object.keys(defaultValue);
+                    keys.forEach(function(key){
+                        if (angular.isUndefined(_entity[key])) {
+                            _entity[key] = angular.copy(defaultValue[key]);
+                        }
+                    });
+                    return _entity;
+                });
+
+                if (cacheProm) {
+                    getEntityPromMap[path] = getProm;
+                }
+
+                return getProm;
+            };
+
+            EntityCommunicator.prototype.set = function (entity) {
+                var key = this.path;
+                entityCache.put(key, entity);
+                return this.setter(this.path, entity);
+            };
+
+            function StorageSrv(entityGetter, entitySetter) {
+                this.EntityCommunicator = function (path, defaultValues) {
+                    return new EntityCommunicator(path, defaultValues, entityGetter, entitySetter);
+                };
+            }
+
+            return StorageSrv;
+        }
+    ]);
+})(angular);
+
 /**
  * attrs:
  *  name: svg icon name
@@ -1029,6 +1222,28 @@
                 }
             ];
         }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.utility').factory('UtilitySrv', [
+        function () {
+            var UtilitySrv = {};
+
+            UtilitySrv.general = {};
+
+            UtilitySrv.general.createGuid = function(){
+                function s4() {
+                    return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1); // jshint ignore:line
+                }
+
+                return (s4() + s4() + '-' + s4() + '-4' + s4().substr(0, 3) + '-' + s4() + '-' + s4() + s4() + s4()).toLowerCase();
+            };
+
+            return UtilitySrv;
+        }
+    ]);
 })(angular);
 
 /**
