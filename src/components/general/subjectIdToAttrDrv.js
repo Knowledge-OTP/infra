@@ -18,8 +18,8 @@
             return {
                 scope: {
                     contextAttr: '@',
-                    znkPrefix: '@',
-                    znkSuffix: '@'
+                    prefix: '@',
+                    suffix: '@'
                 },
                 link: {
                     pre: function (scope, element, attrs) {
@@ -39,8 +39,8 @@
                                 attrsArray.push('class');
                             }
 
-                            var attrPrefixes = (scope.znkPrefix) ? scope.znkPrefix.split(',') : [];
-                            var attrSuffixes = (scope.znkSuffix) ? scope.znkSuffix.split(',') : [];
+                            var attrPrefixes = (scope.prefix) ? scope.prefix.split(',') : [];
+                            var attrSuffixes = (scope.suffix) ? scope.suffix.split(',') : [];
 
                             var subjectEnumMap = SubjectEnum.getEnumMap();
                             var subjectNameToAdd = subjectEnumMap[subjectId];
