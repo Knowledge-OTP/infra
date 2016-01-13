@@ -50,7 +50,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise', ['znk.infra.enum', 'znk.infra.svgIcon', 'znk.infra.scroll'])
+    angular.module('znk.infra.znkExercise', ['znk.infra.enum', 'znk.infra.svgIcon'])
         .config([
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
@@ -358,6 +358,77 @@
             ]);
 
             return EnumSrv;
+        }
+    ]);
+})(angular);
+
+/**
+ *  @directive subjectIdToAttrDrv
+ *  This directive is an evolution of 'subjectIdToClassDrv'
+ *  @context-attr a comma separated string of attribute names
+ *  @znk-prefix a comma separated string of prefixes to the attribute values
+ *  @znk-suffix a comma separated string of suffixes to the attribute values
+ *
+ *  In case only one prefix/suffix is provided, it will be used in all attributes
+ *  In case no @context-attr is provided, it will set the class attribute by default
+ *  No need to pass dashes ('-') to prefix or suffix, they are already appended
+ */
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.general').directive('subjectIdToAttrDrv', [
+        'SubjectEnum',
+        function (SubjectEnum) {
+            return {
+                scope: {
+                    contextAttr: '@',
+                    prefix: '@',
+                    suffix: '@'
+                },
+                link: {
+                    pre: function (scope, element, attrs) {
+
+                        var watchDestroyer = scope.$watch(attrs.subjectIdToAttrDrv,function(subjectId){
+
+                            if(angular.isUndefined(subjectId)){
+                                return;
+                            }
+                            watchDestroyer();
+
+                            var attrsArray;
+                            if (scope.contextAttr) {
+                                attrsArray = scope.contextAttr.split(',');
+                            } else {
+                                attrsArray = [];
+                                attrsArray.push('class');
+                            }
+
+                            var attrPrefixes = (scope.prefix) ? scope.prefix.split(',') : [];
+                            var attrSuffixes = (scope.suffix) ? scope.suffix.split(',') : [];
+
+                            var subjectEnumMap = SubjectEnum.getEnumMap();
+                            var subjectNameToAdd = subjectEnumMap[subjectId];
+
+                            angular.forEach(attrsArray, function(value, key){
+                                var attrVal = subjectNameToAdd;
+
+                                if(attrPrefixes.length){
+                                    attrVal = (attrPrefixes[key] || attrPrefixes[0])  + '-' + attrVal;
+                                }
+
+                                if(attrSuffixes.length){
+                                    attrVal += '-' + (attrSuffixes[key] || attrSuffixes[0]);
+                                }
+
+                                attrVal = attrVal.replace(/\s+/g,'');   // regex to clear spaces
+
+                                element.attr(value, attrVal);
+                            });
+
+                        });
+                    }
+                }
+            };
         }
     ]);
 })(angular);
@@ -745,11 +816,11 @@
                 restrict: 'E',
                 compile: function(element){
                     var domElement = element[0];
+                    var child = domElement.children[0];
 
                     var currMousePoint;
                     var containerWidth;
                     var childWidth;
-
                     function mouseMoveEventHandler(evt){
                         $log.debug('mouse move',evt.pageX);
                         var xOffset = evt.pageX - currMousePoint.x;
@@ -770,13 +841,8 @@
                     function mouseDownHandler(evt){
                         $log.debug('mouse down',evt.pageX);
 
-                        var child = domElement.children[0];
-                        if(!child){
-                            return;
-                        }
-
                         containerWidth = domElement.offsetWidth;
-                        childWidth = getElementWidth(child);
+                        childWidth = getElementWidth(domElement.children[0]);
 
                         currMousePoint = {
                             x: evt.pageX,
@@ -793,7 +859,6 @@
                     function moveScroll(xOffset, containerWidth, childWidth/*,yOffset*/){
                         var minTranslateX = Math.min(containerWidth - childWidth,0);
                         var maxTranslateX = 0;
-                        var child = domElement.children[0];
 
                         if(!child.style.transform){
                             setElementTranslateX(child,0,false,false,minTranslateX,maxTranslateX);
@@ -804,7 +869,6 @@
 
                     function setScrollPos(scrollX){
                         var containerWidth = domElement.offsetWidth;
-                        var child = domElement.children[0];
                         var childWidth = getElementWidth(child);
                         var minTranslateX = Math.min(containerWidth - childWidth,0);
                         var maxTranslateX = 0;
@@ -814,9 +878,7 @@
                     return {
                         pre: function(scope,element,attrs){
                             var child = domElement.children[0];
-                            if(child){
-                                setElementTranslateX(child,0);
-                            }
+                            setElementTranslateX(child,0);
 
                             var scrollOnMouseWheel = $interpolate(attrs.scrollOnMouseWheel || '')(scope) !== 'false';
                             var containerWidth,childWidth;
@@ -977,8 +1039,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('answerBuilder', [
-        '$compile', 'AnswerTypeEnum', 'ZnkExerciseUtilitySrv',
-        function ($compile, AnswerTypeEnum, ZnkExerciseUtilitySrv) {
+        '$compile', 'AnswerTypeEnum', 'ZnkExerciseUtilitySrv', 'ZnkExerciseViewModeEnum',
+        function ($compile, AnswerTypeEnum, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum) {
             var typeToViewMap = {};
 
             typeToViewMap[AnswerTypeEnum.SELECT_ANSWER.enum] = '<select-answer></select-answer>';
@@ -986,7 +1048,7 @@
             typeToViewMap[AnswerTypeEnum.RATE_ANSWER.enum] = '<rate-answer></rate-answer>';
 
             return {
-                require: ['answerBuilder','^questionBuilder'],
+                require: ['answerBuilder','^questionBuilder', '^ngModel'],
                 restrict: 'E',
                 controller:[
                     function(){
@@ -997,9 +1059,18 @@
                     pre:function (scope, element, attrs, ctrls) {
                         var answerBuilderCtrl = ctrls[0];
                         var questionBuilderCtrl = ctrls[1];
+                        var ngModelCtrl = ctrls[2];
 
                         var fnToBindFromQuestionBuilder = ['getViewMode'];
                         ZnkExerciseUtilitySrv.bindFunctions(answerBuilderCtrl,questionBuilderCtrl,fnToBindFromQuestionBuilder);
+
+                        answerBuilderCtrl.canUserAnswerBeChanged = function(){
+                            var viewMode = questionBuilderCtrl.getViewMode();
+                            var isntReviewMode = viewMode !== ZnkExerciseViewModeEnum.REVIEW.enum;
+                            var notAnswered = angular.isDefined(ngModelCtrl.$viewValue);
+                            var isAnswerWithResultViewMode = viewMode === ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum;
+                            return isntReviewMode && isAnswerWithResultViewMode && notAnswered;
+                        };
 
                         answerBuilderCtrl.question = questionBuilderCtrl.question;
 
@@ -1149,16 +1220,18 @@
                 require: ['^answerBuilder', '^ngModel'],
                 scope: {},
                 link: function link(scope, element, attrs, ctrls) {
+                    var domElement = element[0];
+
                     var answerBuilder = ctrls[0];
                     var ngModelCtrl = ctrls[1];
 
                     var viewMode = answerBuilder.getViewMode();
-                    var MODE_ANSWER_WITH_QUESTION = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
-                        MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum;
+                    var ANSWER_WITH_RESULT_MODE = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
+                        REVIEW_MODE = ZnkExerciseViewModeEnum.REVIEW.enum;
 
                     scope.d = {};
                     scope.d.itemsArray = new Array(11);
-                    scope.d.answers = answerBuilder.question.correctAnswerText;
+                    var answers = answerBuilder.question.correctAnswerText;
 
                     var domItemsArray;
 
@@ -1171,43 +1244,50 @@
                                 destroyWatcher();
                                 domItemsArray = val;
 
-                                if (viewMode === MODE_REVIEW) {
+                                if (viewMode === REVIEW_MODE) {
                                     scope.clickHandler = angular.noop;
                                     updateItemsByCorrectAnswers(scope.d.answers);
                                 } else {
                                     scope.clickHandler = clickHandler;
                                 }
+
+                                ngModelCtrl.$render = function(){
+                                    updateItemsByCorrectAnswers();
+                                };
+                                ngModelCtrl.$render();
                             }
                         }
                     );
 
                     function clickHandler(index) {
-                        if (scope.d.selectedItem) {
-                            scope.d.selectedItem.removeClass('selected');
+                        if (answerBuilder.canUserAnswerBeChanged()) {
+                            return;
                         }
 
-                        scope.d.selectedItem = angular.element(domItemsArray[index]);
-                        scope.d.selectedItem.addClass('selected');
                         ngModelCtrl.$setViewValue(index);
-
-                        if (viewMode === MODE_ANSWER_WITH_QUESTION) {
-                            updateItemsByCorrectAnswers(scope.d.answers);
-                            scope.clickHandler = angular.noop;
-                        }
+                        updateItemsByCorrectAnswers();
                     }
 
-                    function updateItemsByCorrectAnswers(correctAnswersArr) {
+                    function updateItemsByCorrectAnswers() {
+                        var oldSelectedElement = angular.element(domElement.querySelector('.selected'));
+                        oldSelectedElement.removeClass('selected');
+
                         var selectedAnswerId = ngModelCtrl.$viewValue;
 
-                        var lastElemIndex = correctAnswersArr.length - 1;
+                        var newSelectedElement = angular.element(domItemsArray[selectedAnswerId]);
+                        newSelectedElement.addClass('selected');
 
-                        for (var i = 0; i < lastElemIndex; i++) {
-                            angular.element(domItemsArray[correctAnswersArr[i].id]).addClass('correct');
+                        var lastElemIndex = answers.length - 1;
+
+                        if(viewMode === ANSWER_WITH_RESULT_MODE || viewMode === REVIEW_MODE){
+                            for (var i = 0; i < lastElemIndex; i++) {
+                                angular.element(domItemsArray[answers[i].id]).addClass('correct');
+                            }
+                            angular.element(domItemsArray[answers[lastElemIndex].id]).addClass('correct-edge');
                         }
-                        angular.element(domItemsArray[correctAnswersArr[lastElemIndex].id]).addClass('correct-edge');
 
-                        if (angular.isNumber(selectedAnswerId)) {
-                            if (selectedAnswerId >= correctAnswersArr[0].id && selectedAnswerId <= correctAnswersArr[lastElemIndex].id) {
+                        if (angular.isNumber(selectedAnswerId) && (viewMode === REVIEW_MODE || viewMode === ANSWER_WITH_RESULT_MODE)) {
+                            if (selectedAnswerId >= answers[0].id && selectedAnswerId <= answers[lastElemIndex].id) {
                                 angular.element(domItemsArray[selectedAnswerId]).addClass('selected-correct');
                             } else {
                                 angular.element(domItemsArray[selectedAnswerId]).addClass('selected-wrong');
@@ -1576,8 +1656,8 @@
                     '$scope',
                     function ($scope) {
                         var self = this;
-                        self.question = $scope.questionGetter();
 
+                        self.question = $scope.questionGetter();
                     }
                 ],
                 link: {
@@ -1967,6 +2047,13 @@
                 //return ZnkModalSrv.modal(modalOptions);
             };
 
+            //ZnkExerciseSrv.viewModeEnum = new EnumSrv.BaseEnum([
+            //    ['answerWithResult', 1, 'Answer With Result'],
+            //    ['answerOnly', 2, 'Answer Only'],
+            //    ['review', 3, 'Review'],
+            //    ['mustAnswer', 4, 'Must Answer']
+            //]);
+
             ZnkExerciseSrv.toolBoxTools = {
                 BLACKBOARD: 'blackboard',
                 MARKER: 'mar',
@@ -1974,6 +2061,13 @@
                 BOOKMARK: 'bookmark',
                 SHOW_PAGER: 'show pager'
             };
+
+            //ZnkExerciseSrv.slideDirections = {
+            //    NONE: 'none',
+            //    ALL: 'all',
+            //    RIGHT: 'right',
+            //    LEFT: 'left'
+            //};
 
             return ZnkExerciseSrv;
         }
@@ -1997,8 +2091,7 @@
  *      initSlideIndex
  *      toolBoxWrapperClass
  *      initSlideDirection
- *      initForceDoneBtnDisplay: null-default behaviour(default value), false-done button will be hidden, true-done button will be dispalyed
- *      initPagerDisplay: true- displayed(default value), false- hidden
+ *      initForceDoneBtnDisplay
  *
  *  actions:
  *      setSlideIndex
@@ -2006,7 +2099,6 @@
  *      finishExercise
  *      setSlideDirection
  *      forceDoneBtnDisplay
- *      pagerDisplay: function, if true provided than pager will be displayed other it will be hidden.
  */
 
 (function (angular) {
@@ -2043,8 +2135,7 @@
                                 viewMode: ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
                                 onSlideChange: angular.noop,
                                 initSlideDirection: ZnkExerciseSlideDirectionEnum.ALL.enum,
-                                initForceDoneBtnDisplay: null,
-                                initPagerDisplay: true
+                                initForceDoneBtnDisplay: null
                             };
                             scope.settings = angular.extend(defaultSettings, scope.settings);
 
@@ -2127,10 +2218,6 @@
                                 }else{
                                     element.removeClass('done-btn-hide');
                                 }
-                            };
-
-                            scope.actions.pagerDisplay = function(display){
-                                scope.vm.showPager = !!display;
                             };
 
                             /**
@@ -2281,10 +2368,7 @@
                                     updateTimeSpentOnQuestion();
                                 }
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
-                                //skip 1 digest cycle before triggering question answered
-                                $timeout(function(){
-                                    scope.settings.onQuestionAnswered(scope.vm.currentSlide);
-                                });
+                                scope.settings.onQuestionAnswered(scope.vm.currentSlide);
                             };
 
                             scope.vm.bookmarkCurrentQuestion = function () {
@@ -2317,7 +2401,6 @@
                              * */
                             scope.actions.setSlideDirection(scope.settings.initSlideDirection);
                             scope.actions.forceDoneBtnDisplay(scope.settings.initForceDoneBtnDisplay);
-                            scope.actions.pagerDisplay(scope.settings.initPagerDisplay);
                             /**
                              *  INIT END
                              * */
@@ -2484,123 +2567,133 @@
         }]);
 })(angular);
 
-/**
- * attrs:
- *  questions
- */
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkExercise').directive('znkExercisePager', [
-        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum',
-        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum) {
-            return {
-                templateUrl: 'components/znkExercise/core/template/znkExercisePagerDrv.html',
-                restrict: 'E',
-                require: ['ngModel', '^znkExercise'],
-                scope: {},
-                link: {
-                    pre: function (scope, element, attrs, ctrls) {
-                        var ngModelCtrl = ctrls[0];
-                        var znkExerciseCtrl = ctrls[1];
-
-                        var currViewMode = znkExerciseCtrl.getViewMode();
-
-                        var domElement = element[0];
-
-                        scope.d = {};
-
-                        scope.d.tap = function (newIndex) {
-                            znkExerciseCtrl.setCurrentIndex(newIndex);
-                        };
-
-                        function setPagerItemBookmarkStatus(index,status){
-                            var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
-                            if(status){
-                                pagerItemElement.addClass('bookmark');
-                            }else{
-                                pagerItemElement.removeClass('bookmark');
-                            }
-                        }
-
-                        function setPagerItemAnswerClass(index,question){
-                            var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
-
-                            if(angular.isUndefined(question.__questionStatus.userAnswer)){
-                                pagerItemElement.removeClass('neutral correct wrong');
-                                return;
-                            }
-
-                            if(currViewMode === ZnkExerciseViewModeEnum.ONLY_ANSWER.enum){
-                                pagerItemElement.addClass('neutral');
-                                return;
-                            }
-
-                            if(question.__questionStatus.isAnsweredCorrectly){
-                                pagerItemElement.addClass('correct');
-                            }else{
-                                pagerItemElement.addClass('wrong');
-                            }
-                        }
-
-                        scope.$on(ZnkExerciseEvents.BOOKMARK,function(evt,question){
-                            setPagerItemBookmarkStatus(question.__questionStatus.index,question.__questionStatus.bookmark);
-                        });
-
-                        scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED,function(evt,question){
-                            setPagerItemAnswerClass(question.__questionStatus.index,question);
-                        });
-
-                        var isInitialized;
-                        function init(){
-                            isInitialized = true;
-                            //wait for the pager items to be rendered
-                            $timeout(function () {
-                                ngModelCtrl.$render = function () {
-                                    var currentSlide = +ngModelCtrl.$viewValue;
-                                    if (isNaN(currentSlide)) {
-                                        return;
-                                    }
-                                    //added in order to prevent the swipe lag
-                                    $timeout(function () {
-                                        var i;
-                                        var $pagerItemWithCurrentClass = angular.element(domElement.querySelectorAll('.pager-item.current'));
-                                        for (i in $pagerItemWithCurrentClass) {
-                                            $pagerItemWithCurrentClass.eq(i).removeClass('current');
-                                        }
-                                        var pagerItemsDomElement = domElement.querySelectorAll('.pager-item');
-                                        var currentSlideDom = angular.element(pagerItemsDomElement[currentSlide]);
-                                        currentSlideDom.addClass('current');
-
-                                        for(i in scope.questions){
-                                            var question = scope.questions[i];
-                                            setPagerItemBookmarkStatus(i,question .__questionStatus.bookmark);
-                                            setPagerItemAnswerClass(i,question);
-                                        }
-                                    });
-                                };
-                                //render is not invoked for the first time
-                                ngModelCtrl.$render();
-                            },false);
-                        }
-
-                        scope.$parent.$watch(attrs.questions, function pagerQuestionsArrWatcher(questionsArr) {
-                            if (questionsArr) {
-                                scope.questions = questionsArr;
-
-                                if(!isInitialized){
-                                    init();
-                                }
-                            }
-                        });
-                    }
-                }
-            };
-        }
-    ]);
-})(angular);
-
+///**
+// * attrs:
+// *  questions
+// */
+//
+//(function (angular) {
+//    'use strict';
+//
+//    angular.module('znk.infra.znkExercise').directive('znkExercisePager', [
+//        '$timeout', 'SubjectEnum', 'QuestionUtilsSrv', 'ZnkExerciseDrvSrv', 'ZnkExerciseEvents', '$ionicScrollDelegate',
+//        function ($timeout, SubjectEnum, QuestionUtilsSrv, ZnkExerciseDrvSrv, ZnkExerciseEvents, $ionicScrollDelegate) {
+//            return {
+//                templateUrl: 'scripts/exercise/templates/znkExercisePagerDrv.html',
+//                restrict: 'E',
+//                require: ['ngModel', '^znkExercise'],
+//                scope: {},
+//                link: {
+//                    pre: function (scope, element, attrs, ctrls) {
+//                        var ngModelCtrl = ctrls[0];
+//                        var znkExerciseCtrl = ctrls[1];
+//
+//                        var currViewMode = znkExerciseCtrl.getViewMode();
+//
+//                        var domElement = element[0];
+//
+//                        scope.d = {};
+//
+//                        scope.d.tap = function (index) {
+//                            znkExerciseCtrl.__changeQuestionResolver().then(function(){
+//                                ngModelCtrl.$setViewValue(index);
+//                                ngModelCtrl.$render();
+//                            });
+//                        };
+//
+//                        function setPagerItemBookmarkStatus(index,status){
+//                            var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
+//                            if(status){
+//                                pagerItemElement.addClass('bookmark');
+//                            }else{
+//                                pagerItemElement.removeClass('bookmark');
+//                            }
+//                        }
+//
+//                        function setPagerItemAnswerClass(index,question){
+//                            var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
+//
+//                            if(angular.isUndefined(question.__questionStatus.userAnswer)){
+//                                pagerItemElement.removeClass('neutral correct wrong');
+//                                return;
+//                            }
+//
+//                            if(question.subjectId === SubjectEnum.SPEAKING.enum || question.subjectId === SubjectEnum.WRITING.enum || ZnkExerciseDrvSrv.viewModeEnum.answerOnly.enum === currViewMode){
+//                                pagerItemElement.addClass('neutral');
+//                                return;
+//                            }
+//
+//                            if(QuestionUtilsSrv.isAnswerCorrect(question,question.__questionStatus)){
+//                                pagerItemElement.addClass('correct');
+//                            }else{
+//                                pagerItemElement.addClass('wrong');
+//                            }
+//                        }
+//
+//                        function setScroll(currentSlideDom) {
+//                            var delegate = $ionicScrollDelegate.$getByHandle('znk-pager');
+//                            var domElement = currentSlideDom[0];
+//                            var parent = domElement.offsetParent;
+//                            var res = (domElement.offsetLeft + domElement.scrollWidth) - (parent) ? parent.clientWidth : 0;
+//                            if (res > 0) {
+//                                delegate.scrollTo(res + domElement.scrollWidth, 0, true);
+//                            } else {
+//                                delegate.scrollTo(0, 0, true);
+//                            }
+//                        }
+//
+//                        scope.$on(ZnkExerciseEvents.BOOKMARK,function(evt,question){
+//                            setPagerItemBookmarkStatus(question.__questionStatus.index,question.__questionStatus.bookmark);
+//                        });
+//
+//                        scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED,function(evt,question){
+//                            setPagerItemAnswerClass(question.__questionStatus.index,question);
+//                        });
+//
+//                        var watchDestroyer = scope.$parent.$watch(attrs.questions, function pagerQuestionsArrWatcher(questionsArr) {
+//                            if (questionsArr) {
+//                                watchDestroyer();
+//                                scope.questions = questionsArr;
+//
+//                                //wait for the pager items to be rendered
+//                                $timeout(function () {
+//                                    ngModelCtrl.$render = function () {
+//                                        var currentSlide = +ngModelCtrl.$viewValue;
+//                                        if (isNaN(currentSlide)) {
+//                                            return;
+//                                        }
+//                                        //added in order to prevent the swipe lag
+//                                        $timeout(function () {
+//                                            var i;
+//                                            var $pagerItemWithCurrentClass = angular.element(domElement.querySelectorAll('.pager-item.current'));
+//                                            for (i in $pagerItemWithCurrentClass) {
+//                                                $pagerItemWithCurrentClass.eq(i).removeClass('current');
+//                                            }
+//                                            var pagerItemsDomElement = domElement.querySelectorAll('.pager-item');
+//                                            var currentSlideDom = angular.element(pagerItemsDomElement[currentSlide]);
+//                                            currentSlideDom.addClass('current');
+//
+//                                            for(i in scope.questions){
+//                                                var question = scope.questions[i];
+//                                                setPagerItemBookmarkStatus(i,question .__questionStatus.bookmark);
+//                                                setPagerItemAnswerClass(i,question);
+//                                            }
+//
+//                                            setScroll(currentSlideDom);
+//                                        });
+//                                    };
+//                                    //render is not invoked for the first time
+//                                    ngModelCtrl.$render();
+//                                },false);
+//                            }
+//                        });
+//                    }
+//                }
+//            };
+//        }
+//    ]);
+//})(angular);
+//
 
 'use strict';
 
@@ -3323,27 +3416,10 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "                          next-question=\"vm.setCurrentIndexByOffset(1)\"\n" +
     "                          on-done=\"settings.onDone()\">\n" +
     "</znk-exercise-btn-section>\n" +
-    "<znk-exercise-pager class=\"ng-hide\"\n" +
-    "                    ng-show=\"vm.showPager\"\n" +
-    "                    questions=\"vm.questionsWithAnswers\"\n" +
-    "                    ng-model=\"vm.currentSlide\">\n" +
+    "<znk-exercise-pager\n" +
+    "        ng-hide=\"vm.hidePager\"\n" +
+    "        questions=\"vm.questionsWithAnswers\">\n" +
     "</znk-exercise-pager>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/znkExercisePagerDrv.html",
-    "<znk-scroll>\n" +
-    "    <div class=\"pager-items-wrapper\">\n" +
-    "        <div class=\"pager-item\"\n" +
-    "             ng-repeat=\"question in questions track by question.id\"\n" +
-    "             question-status=\"question.__questionStatus\"\n" +
-    "             question=\"question\"\n" +
-    "             ng-click=\"d.tap($index)\">\n" +
-    "            <div class=\"question-bookmark-icon\"></div>\n" +
-    "            <div class=\"question-status-indicator\">\n" +
-    "                <div class=\"index\">{{::$index + 1}}</div>\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "</znk-scroll>\n" +
     "");
   $templateCache.put("components/znkExercise/core/template/znkSwiperTemplate.html",
     "<div class=\"swiper-container\">\n" +
