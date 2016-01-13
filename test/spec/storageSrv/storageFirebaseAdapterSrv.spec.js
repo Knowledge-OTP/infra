@@ -2,55 +2,10 @@ describe('testing service "storageFirebaseAdapter":', function () {
     'use strict';
 
     beforeEach(function(){
-        var map = {};
-        window.Firebase = function(path){
-            return {
-                path: path,
-                once: function(type,successCB,failureCB){
-                    var snapshot = {
-                        val: function(){
-                            return map[path] || null;
-                        }
-                    };
-                    successCB(snapshot);
-                },
-                set: function(value){
-                    map[path] = value;
-                }
-            };
-        };
+        MockFirebase.override();
     });
 
     beforeEach(module('znk.infra.storage', 'htmlTemplates'));
-
-    beforeEach(module(function($provide) {
-        $provide.factory('$firebaseObject',function($q){
-            function $firebaseObject(fbObj){
-                return {
-                    $loaded: function(){
-                        return $q.when({
-                            path: fbObj.path,
-                            $save: angular.noop
-                        });
-                    }
-                };
-            }
-            return $firebaseObject;
-        });
-
-        $provide.factory('$firebaseAuth',function($q){
-            function $firebaseAuth(path){
-                return {
-                    $getAuth: function(){
-                        return {
-                            uid: 1
-                        };
-                    }
-                };
-            }
-            return $firebaseAuth;
-        });
-    }));
 
     var $rootScope, storageFirebaseAdapter;
     beforeEach(inject([
@@ -65,49 +20,82 @@ describe('testing service "storageFirebaseAdapter":', function () {
     var actions = {};
 
     actions.syncAdapter = function(adapter){
+        adapter.__refMap.rootRef.changeAuthState({
+            uid: 1
+            //provider: 'custom',
+            //token: 'authToken',
+            //expires: Math.floor(new Date() / 1000) + 24 * 60 * 60,
+            //auth: {
+            //    isAdmin: true
+            //}
+        });
+        adapter.__refMap.rootRef.flush();
+
         return {
             get: function(path){
                 var val;
                 adapter.get(path).then(function(_val){
                     val = _val;
                 });
+                var pathRef = adapter.__refMap[path];
+                if(pathRef){
+                    pathRef.flush();
+                }
                 $rootScope.$digest();
                 return val;
             },
             set: function(path,newEntity){
-                var val;
-                adapter.set(path, newEntity);
+                var setProm = adapter.set(path, newEntity);
                 $rootScope.$digest();
-                return val;
-            }
+                adapter.__refMap[path].flush();
+                return setProm;
+            },
+            __refMap: adapter.__refMap
         };
     };
 
+    var endpoint = 'https://znk-test.firebaseio.com';
+
     it('when requesting for entity then the firebase path should be built correctly', function () {
-        var endpoint = 'firebase.test';
+        var expectedPath = 'users/1';
         var adapter = actions.syncAdapter(storageFirebaseAdapter(endpoint));
-        spyOn(window,'Firebase').and.callThrough();
-        adapter.get('test');
-        expect(window.Firebase).toHaveBeenCalledWith('firebase.test/test');
+        var expectedVal = {key: 'val'};
+        adapter.set(expectedPath,expectedVal);
+        adapter.__refMap[expectedPath].autoFlush();
+        var entity = adapter.get(storageFirebaseAdapter.variables.appUserSpacePath);
+        expect(entity).toEqual(expectedVal);
     });
 
     it('when saving entity then $save function should be invoked', function () {
-        var endpoint = 'firebase.test';
+        var path = 'testPath';
         var syncedAdapter = actions.syncAdapter(storageFirebaseAdapter(endpoint));
-        var entity = syncedAdapter.get('test');
-        spyOn(entity, '$save');
-        syncedAdapter.set('test',entity);
-        expect(entity.$save).toHaveBeenCalled();
+        var newEntityVal = {
+            test: 'test'
+        };
+        syncedAdapter.set(path,newEntityVal);
+        var currEntityVal = syncedAdapter.get(path);
+        expect(currEntityVal).toEqual(newEntityVal);
     });
 
     it('when saving entity then all undefined and start with $ properties should be deleted', function () {
-        var endpoint = 'firebase.test';
+        var path = 'testPath';
         var syncedAdapter = actions.syncAdapter(storageFirebaseAdapter(endpoint));
-        var entity = syncedAdapter.get('test');
-        var expectedResult = angular.copy(entity);
-        entity.prop1 = undefined;
-        entity.$prop = 'test';
-        syncedAdapter.set('test',entity);
-        expect(entity).toEqual(expectedResult);
+        var expectedResult = {
+            key1: 'val',
+            key2: {
+                a: 1
+            }
+        };
+        var value = angular.copy(expectedResult);
+        value.prop1 = undefined;
+        value.$prop = 'illegal key name';
+        value.arr = [];
+        value.key2.prop1 = undefined;
+        value.key2.$prop = 'illegal key name';
+        value.key2.arr = [];
+
+        syncedAdapter.set(path,value);
+        var currValue = syncedAdapter.get(path);
+        expect(currValue).toEqual(expectedResult);
     });
 });

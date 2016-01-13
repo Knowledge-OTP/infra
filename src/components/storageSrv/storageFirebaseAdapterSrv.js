@@ -2,12 +2,12 @@
     'use strict';
 
     angular.module('znk.infra.storage').factory('storageFirebaseAdapter', [
-        '$firebaseAuth', '$log', '$q', '$window',
-        function ($firebaseAuth, $log, $q, $window) {
-            function removeIlegalProperties(source){
+        '$log', '$q', '$window',
+        function ($log, $q, $window) {
+            function removeIllegalProperties(source){
                 if(angular.isArray(source)){
                     source.forEach(function(item){
-                        removeIlegalProperties(item);
+                        removeIllegalProperties(item);
                     });
                     return;
                 }
@@ -17,58 +17,69 @@
                     keys.forEach(function(key){
                         var value = source[key];
 
-                        if(key[0] === '$' || angular.isDefined(value) || (angular.isArray(source) && !source.length)){
+                        if(key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length)){
+                            $log.debug('storageFirebaseAdapter: illegal property was deleted before save',key);
                             delete source[key];
                             return;
                         }
 
-                        removeIlegalProperties(value);
+                        removeIllegalProperties(value);
                     });
                     return;
                 }
             }
 
             function storageFirebaseAdapter (endPoint){
-                var authObj = $firebaseAuth(new Firebase(endPoint)).$getAuth();
+                var refMap = {};
+                var authObj;
+                var rootRef = new Firebase(endPoint);
+                refMap.rootRef = rootRef;
+                rootRef.onAuth(function(newAuthObj){
+                    authObj = newAuthObj;
+                });
 
-                function get(path){
-                    var defer = $q.defer();
-                    var processedPath = processPath(path,authObj);
-                    var ref = new $window.Firebase(endPoint + '/' + processedPath);
-                    ref.once('value',function(dataSnapshot){
-                        defer.resolve(dataSnapshot.val());
-                    },function(){
-
-                    });
-                    //ref.flush();
-                    return defer.promise;
-                    //return $firebaseObject().$loaded().then(function(res){
-                    //    return res;
-                    //},function(err){
-                    //    $log.debug(err.message);
-                    //    return $q.reject(err);
-                    //});
+                function getRef(relativePath){
+                    var processedRelativePath = processPath(relativePath,authObj);
+                    if(!refMap[processedRelativePath]){
+                        refMap[processedRelativePath] = refMap.rootRef.child(processedRelativePath);
+                    }
+                    return refMap[processedRelativePath];
                 }
 
-                function set(path, newEntity){
-                    if (newEntity.$save) {
-                        return newEntity.$save();
-                    }
+                function get(relativePath){
+                    var defer = $q.defer();
 
-                    return get(path).then(function (sourceEntity) {
-                        if (!angular.isObject(newEntity)) {
-                            var fallbackObj = {};
-                            fallbackObj[newEntity] = newEntity;
-                            newEntity = fallbackObj;
-                        }
-                        angular.extend(sourceEntity, newEntity);
-                        return sourceEntity.$save();
+                    var ref = getRef(relativePath);
+                    ref.once('value',function(dataSnapshot){
+                        defer.resolve(dataSnapshot.val());
+                    },function(err){
+                        $log.debug('storageFirebaseAdapter: failed to retrieve data for the following path',relativePath,err);
+                        defer.reject(err);
                     });
+                    return defer.promise;
+                }
+
+                function set(relativePath, newValue){
+                    var defer = $q.defer();
+                    var newValueCopy = angular.copy(newValue);
+                    removeIllegalProperties(newValueCopy);
+                    var ref = getRef(relativePath);
+                    ref.set(newValueCopy,function(err){
+                        if(err){
+                            $log.debug('storageFirebaseAdapter: failed to set data for the following path',relativePath,err);
+                            defer.reject(err);
+                        }else{
+                            defer.resolve(newValueCopy);
+                        }
+                    });
+
+                    return defer.promise;
                 }
 
                 return {
                     get: get,
-                    set: set
+                    set: set,
+                    __refMap: refMap//for testing
                 };
             }
 
