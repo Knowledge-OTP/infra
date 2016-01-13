@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body ng-app="demoApp" ng-controller="subjectIdToAttrDrvDemoCtrl">
+    <style>
+        div{
+            width: 100px;
+            height: 100px;
+        }
+
+        .math{
+            background: #72C9E7;
+        }
+
+        .reading{
+            background: #FFCA08;
+        }
+
+        .writing{
+            background: #FF5895;
+        }
+
+        .listening{
+            background: #8fe73d;
+        }
+
+        .speaking{
+            background: #AF89D2;
+        }
+
+        .speaking-subject{
+            border: 1px dotted #AF89D2;
+            box-sizing: border-box;
+        }
+    </style>
+
+    <div subject-id-to-attr-drv="0" context-attr="class,name" prefix="{{prefix}}" suffix="">Math</div>
+    <div subject-id-to-attr-drv="1">Reading</div>
+    <div subject-id-to-attr-drv="2">Writing</div>
+    <div subject-id-to-attr-drv="3">Listening</div>
+    <div subject-id-to-attr-drv="4">Speaking</div>
+    <div subject-id-to-attr-drv="4" suffix="subject">Speaking-subject</div>
+
+
+    <script src="angular/angular.js"></script>
+
+    <script src="components/enums/module.js"></script>
+    <script src="components/enums/services/enumSrv.js"></script>
+    <script src="components/enums/enums/subjectEnum.js"></script>
+
+    <script src="components/general/module.js"></script>
+    <script src="components/general/subjectIdToAttrDrv.js"></script>
+
+    <script src="demoApp.js"></script>
+</body>
+</html>

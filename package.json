@@ -31,6 +31,5 @@
     "node": ">=0.10.0"
   },
   "dependencies": {
-    "grunt-contrib-copy": "^0.8.2"
   }
 }
