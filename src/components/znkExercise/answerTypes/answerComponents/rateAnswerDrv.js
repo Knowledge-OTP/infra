@@ -19,6 +19,7 @@
                     var viewMode = answerBuilder.getViewMode();
                     var MODE_ANSWER_WITH_QUESTION = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
                         MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum;
+                    var INDEX_OFFSET = 2;
 
                     scope.d = {};
                     scope.d.itemsArray = new Array(11);
@@ -66,18 +67,29 @@
                         var lastElemIndex = correctAnswersArr.length - 1;
 
                         for (var i = 0; i < lastElemIndex; i++) {
-                            angular.element(domItemsArray[correctAnswersArr[i].id]).addClass('correct');
+                            angular.element(domItemsArray[correctAnswersArr[i].id - INDEX_OFFSET]).addClass('correct');
                         }
-                        angular.element(domItemsArray[correctAnswersArr[lastElemIndex].id]).addClass('correct-edge');
+                        angular.element(domItemsArray[correctAnswersArr[lastElemIndex].id - INDEX_OFFSET]).addClass('correct-edge');
 
                         if (angular.isNumber(selectedAnswerId)) {
-                            if (selectedAnswerId >= correctAnswersArr[0].id && selectedAnswerId <= correctAnswersArr[lastElemIndex].id) {
+                            if (selectedAnswerId >= correctAnswersArr[0].id - INDEX_OFFSET && selectedAnswerId <= correctAnswersArr[lastElemIndex].id - INDEX_OFFSET) {
                                 angular.element(domItemsArray[selectedAnswerId]).addClass('selected-correct');
                             } else {
                                 angular.element(domItemsArray[selectedAnswerId]).addClass('selected-wrong');
                             }
                         }
                     }
+
+                    function formatter(index) {
+                        return index + INDEX_OFFSET;
+                    }
+
+                    function parser(answer){
+                        return answer - INDEX_OFFSET;
+                    }
+
+                    ngModelCtrl.$formatters.push(parser);
+                    ngModelCtrl.$parsers.push(formatter);
                 }
             };
         }
