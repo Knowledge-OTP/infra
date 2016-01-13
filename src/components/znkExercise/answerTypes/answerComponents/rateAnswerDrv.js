@@ -21,6 +21,7 @@
                     var viewMode = answerBuilder.getViewMode();
                     var ANSWER_WITH_RESULT_MODE = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
                         REVIEW_MODE = ZnkExerciseViewModeEnum.REVIEW.enum;
+                    var INDEX_OFFSET = 2;
 
                     scope.d = {};
                     scope.d.itemsArray = new Array(11);
@@ -74,13 +75,13 @@
 
                         if(viewMode === ANSWER_WITH_RESULT_MODE || viewMode === REVIEW_MODE){
                             for (var i = 0; i < lastElemIndex; i++) {
-                                angular.element(domItemsArray[answers[i].id]).addClass('correct');
+                                angular.element(domItemsArray[answers[i].id - INDEX_OFFSET]).addClass('correct');
                             }
-                            angular.element(domItemsArray[answers[lastElemIndex].id]).addClass('correct-edge');
+                            angular.element(domItemsArray[answers[lastElemIndex].id - INDEX_OFFSET]).addClass('correct-edge');
                         }
 
                         if (angular.isNumber(selectedAnswerId) && (viewMode === REVIEW_MODE || viewMode === ANSWER_WITH_RESULT_MODE)) {
-                            if (selectedAnswerId >= answers[0].id && selectedAnswerId <= answers[lastElemIndex].id) {
+                            if (selectedAnswerId >= answers[0].id - INDEX_OFFSET && selectedAnswerId <= answers[lastElemIndex].id - INDEX_OFFSET) {
                                 angular.element(domItemsArray[selectedAnswerId]).addClass('selected-correct');
                             } else {
                                 angular.element(domItemsArray[selectedAnswerId]).addClass('selected-wrong');
