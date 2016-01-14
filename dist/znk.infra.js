@@ -8,10 +8,12 @@
         'znk.infra.general',
         'znk.infra.scroll',
         'znk.infra.content',
-        'znk.infra.znkExercise'
-
+        'znk.infra.znkExercise',
+        'znk.infra.storage',
+        'znk.infra.utility'
     ]);
 })(angular);
+
 (function (angular) {
     'use strict';
 
@@ -46,12 +48,24 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.storage', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.svgIcon', []);
 })(angular);
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise', ['znk.infra.enum', 'znk.infra.svgIcon', 'znk.infra.scroll'])
+    angular.module('znk.infra.utility', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise', ['znk.infra.enum', 'znk.infra.svgIcon'])
         .config([
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
@@ -817,11 +831,11 @@
                 restrict: 'E',
                 compile: function(element){
                     var domElement = element[0];
+                    var child = domElement.children[0];
 
                     var currMousePoint;
                     var containerWidth;
                     var childWidth;
-
                     function mouseMoveEventHandler(evt){
                         $log.debug('mouse move',evt.pageX);
                         var xOffset = evt.pageX - currMousePoint.x;
@@ -842,13 +856,8 @@
                     function mouseDownHandler(evt){
                         $log.debug('mouse down',evt.pageX);
 
-                        var child = domElement.children[0];
-                        if(!child){
-                            return;
-                        }
-
                         containerWidth = domElement.offsetWidth;
-                        childWidth = getElementWidth(child);
+                        childWidth = getElementWidth(domElement.children[0]);
 
                         currMousePoint = {
                             x: evt.pageX,
@@ -865,7 +874,6 @@
                     function moveScroll(xOffset, containerWidth, childWidth/*,yOffset*/){
                         var minTranslateX = Math.min(containerWidth - childWidth,0);
                         var maxTranslateX = 0;
-                        var child = domElement.children[0];
 
                         if(!child.style.transform){
                             setElementTranslateX(child,0,false,false,minTranslateX,maxTranslateX);
@@ -876,7 +884,6 @@
 
                     function setScrollPos(scrollX){
                         var containerWidth = domElement.offsetWidth;
-                        var child = domElement.children[0];
                         var childWidth = getElementWidth(child);
                         var minTranslateX = Math.min(containerWidth - childWidth,0);
                         var maxTranslateX = 0;
@@ -886,9 +893,7 @@
                     return {
                         pre: function(scope,element,attrs){
                             var child = domElement.children[0];
-                            if(child){
-                                setElementTranslateX(child,0);
-                            }
+                            setElementTranslateX(child,0);
 
                             var scrollOnMouseWheel = $interpolate(attrs.scrollOnMouseWheel || '')(scope) !== 'false';
                             var containerWidth,childWidth;
@@ -948,6 +953,184 @@
 
 })(angular);
 
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.storage').factory('storageFirebaseAdapter', [
+        '$log', '$q',
+        function ($log, $q) {
+            function removeIllegalProperties(source){
+                if(angular.isArray(source)){
+                    source.forEach(function(item){
+                        removeIllegalProperties(item);
+                    });
+                    return;
+                }
+
+                if(angular.isObject(source)){
+                    var keys = Object.keys(source);
+                    keys.forEach(function(key){
+                        var value = source[key];
+
+                        if(key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length)){
+                            $log.debug('storageFirebaseAdapter: illegal property was deleted before save',key);
+                            delete source[key];
+                            return;
+                        }
+
+                        removeIllegalProperties(value);
+                    });
+                    return;
+                }
+            }
+
+            function storageFirebaseAdapter (endPoint){
+                var refMap = {};
+                var authObj;
+                var rootRef = new Firebase(endPoint);
+                refMap.rootRef = rootRef;
+                rootRef.onAuth(function(newAuthObj){
+                    authObj = newAuthObj;
+                });
+
+                function getRef(relativePath){
+                    var processedRelativePath = processPath(relativePath,authObj);
+                    if(!refMap[processedRelativePath]){
+                        refMap[processedRelativePath] = refMap.rootRef.child(processedRelativePath);
+                    }
+                    return refMap[processedRelativePath];
+                }
+
+                function get(relativePath){
+                    var defer = $q.defer();
+
+                    var ref = getRef(relativePath);
+                    ref.once('value',function(dataSnapshot){
+                        defer.resolve(dataSnapshot.val());
+                    },function(err){
+                        $log.debug('storageFirebaseAdapter: failed to retrieve data for the following path',relativePath,err);
+                        defer.reject(err);
+                    });
+                    return defer.promise;
+                }
+
+                function set(relativePath, newValue){
+                    var defer = $q.defer();
+                    var newValueCopy = angular.copy(newValue);
+                    removeIllegalProperties(newValueCopy);
+                    var ref = getRef(relativePath);
+                    ref.set(newValueCopy,function(err){
+                        if(err){
+                            $log.debug('storageFirebaseAdapter: failed to set data for the following path',relativePath,err);
+                            defer.reject(err);
+                        }else{
+                            defer.resolve(newValueCopy);
+                        }
+                    });
+
+                    return defer.promise;
+                }
+
+                return {
+                    get: get,
+                    set: set,
+                    __refMap: refMap//for testing
+                };
+            }
+
+            storageFirebaseAdapter.variables = {
+                uid: '$$uid',
+                appUserSpacePath: 'users/$$uid'
+            };
+
+            var regexString = storageFirebaseAdapter.variables.uid.replace(/\$/g,'\\$');
+            var UID_REGEX = new RegExp(regexString,'g');
+            function processPath(path,authObj) {
+                var processedPath = path.replace(UID_REGEX, authObj.uid);
+                return processedPath;
+            }
+            storageFirebaseAdapter.processPath = function (path,authObj) {
+                var processedPath = path.replace(UID_REGEX, authObj.uid);
+                return processedPath;
+            };
+
+            return storageFirebaseAdapter;
+        }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.storage').factory('StorageSrv', [
+        '$cacheFactory', '$q',
+        function ($cacheFactory, $q) {
+            var getEntityPromMap = {};
+
+            var entityCache = $cacheFactory('entityCache');
+
+            function EntityCommunicator(path, defaultValue, getter, setter) {
+                this.path = path;
+                this.defaultValue = defaultValue;
+                this.getter = getter;
+                this.setter = setter;
+            }
+
+            EntityCommunicator.prototype.get = function () {
+                var path = this.path;
+                var entity = entityCache.get(path);
+                var getProm;
+                var defaultValue = this.defaultValue || {};
+                var cacheProm = false;
+
+                if (entity) {
+                    getProm = $q.when(entity);
+                } else {
+                    if (getEntityPromMap[path]) {
+                        return getEntityPromMap[path];
+                    }
+                    cacheProm = true;
+                    getProm = this.getter(path).then(function (_entity) {
+                        _entity = angular.isUndefined(_entity) || _entity === null ? {} : _entity;
+                        entityCache.put(path, _entity);
+                        delete getEntityPromMap[path];
+                        return _entity;
+                    });
+                }
+                getProm = getProm.then(function(_entity){
+                    var keys = Object.keys(defaultValue);
+                    keys.forEach(function(key){
+                        if (angular.isUndefined(_entity[key])) {
+                            _entity[key] = angular.copy(defaultValue[key]);
+                        }
+                    });
+                    return _entity;
+                });
+
+                if (cacheProm) {
+                    getEntityPromMap[path] = getProm;
+                }
+
+                return getProm;
+            };
+
+            EntityCommunicator.prototype.set = function (entity) {
+                var key = this.path;
+                entityCache.put(key, entity);
+                return this.setter(this.path, entity);
+            };
+
+            function StorageSrv(entityGetter, entitySetter) {
+                this.EntityCommunicator = function (path, defaultValues) {
+                    return new EntityCommunicator(path, defaultValues, entityGetter, entitySetter);
+                };
+            }
+
+            return StorageSrv;
+        }
+    ]);
+})(angular);
 
 /**
  * attrs:
@@ -1039,6 +1222,28 @@
                 }
             ];
         }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.utility').factory('UtilitySrv', [
+        function () {
+            var UtilitySrv = {};
+
+            UtilitySrv.general = {};
+
+            UtilitySrv.general.createGuid = function(){
+                function s4() {
+                    return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1); // jshint ignore:line
+                }
+
+                return (s4() + s4() + '-' + s4() + '-4' + s4().substr(0, 3) + '-' + s4() + '-' + s4() + s4() + s4()).toLowerCase();
+            };
+
+            return UtilitySrv;
+        }
+    ]);
 })(angular);
 
 /**
@@ -2057,6 +2262,13 @@
                 //return ZnkModalSrv.modal(modalOptions);
             };
 
+            //ZnkExerciseSrv.viewModeEnum = new EnumSrv.BaseEnum([
+            //    ['answerWithResult', 1, 'Answer With Result'],
+            //    ['answerOnly', 2, 'Answer Only'],
+            //    ['review', 3, 'Review'],
+            //    ['mustAnswer', 4, 'Must Answer']
+            //]);
+
             ZnkExerciseSrv.toolBoxTools = {
                 BLACKBOARD: 'blackboard',
                 MARKER: 'mar',
@@ -2064,6 +2276,13 @@
                 BOOKMARK: 'bookmark',
                 SHOW_PAGER: 'show pager'
             };
+
+            //ZnkExerciseSrv.slideDirections = {
+            //    NONE: 'none',
+            //    ALL: 'all',
+            //    RIGHT: 'right',
+            //    LEFT: 'left'
+            //};
 
             return ZnkExerciseSrv;
         }
@@ -2087,8 +2306,7 @@
  *      initSlideIndex
  *      toolBoxWrapperClass
  *      initSlideDirection
- *      initForceDoneBtnDisplay: null-default behaviour(default value), false-done button will be hidden, true-done button will be dispalyed
- *      initPagerDisplay: true- displayed(default value), false- hidden
+ *      initForceDoneBtnDisplay
  *
  *  actions:
  *      setSlideIndex
@@ -2096,7 +2314,6 @@
  *      finishExercise
  *      setSlideDirection
  *      forceDoneBtnDisplay
- *      pagerDisplay: function, if true provided than pager will be displayed other it will be hidden.
  */
 
 (function (angular) {
@@ -2133,8 +2350,7 @@
                                 viewMode: ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
                                 onSlideChange: angular.noop,
                                 initSlideDirection: ZnkExerciseSlideDirectionEnum.ALL.enum,
-                                initForceDoneBtnDisplay: null,
-                                initPagerDisplay: true
+                                initForceDoneBtnDisplay: null
                             };
                             scope.settings = angular.extend(defaultSettings, scope.settings);
 
@@ -2217,10 +2433,6 @@
                                 }else{
                                     element.removeClass('done-btn-hide');
                                 }
-                            };
-
-                            scope.actions.pagerDisplay = function(display){
-                                scope.vm.showPager = !!display;
                             };
 
                             /**
@@ -2371,10 +2583,7 @@
                                     updateTimeSpentOnQuestion();
                                 }
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
-                                //skip 1 digest cycle before triggering question answered
-                                $timeout(function(){
-                                    scope.settings.onQuestionAnswered(scope.vm.currentSlide);
-                                });
+                                scope.settings.onQuestionAnswered(scope.vm.currentSlide);
                             };
 
                             scope.vm.bookmarkCurrentQuestion = function () {
@@ -2407,7 +2616,6 @@
                              * */
                             scope.actions.setSlideDirection(scope.settings.initSlideDirection);
                             scope.actions.forceDoneBtnDisplay(scope.settings.initForceDoneBtnDisplay);
-                            scope.actions.pagerDisplay(scope.settings.initPagerDisplay);
                             /**
                              *  INIT END
                              * */
@@ -2574,123 +2782,133 @@
         }]);
 })(angular);
 
-/**
- * attrs:
- *  questions
- */
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkExercise').directive('znkExercisePager', [
-        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum',
-        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum) {
-            return {
-                templateUrl: 'components/znkExercise/core/template/znkExercisePagerDrv.html',
-                restrict: 'E',
-                require: ['ngModel', '^znkExercise'],
-                scope: {},
-                link: {
-                    pre: function (scope, element, attrs, ctrls) {
-                        var ngModelCtrl = ctrls[0];
-                        var znkExerciseCtrl = ctrls[1];
-
-                        var currViewMode = znkExerciseCtrl.getViewMode();
-
-                        var domElement = element[0];
-
-                        scope.d = {};
-
-                        scope.d.tap = function (newIndex) {
-                            znkExerciseCtrl.setCurrentIndex(newIndex);
-                        };
-
-                        function setPagerItemBookmarkStatus(index,status){
-                            var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
-                            if(status){
-                                pagerItemElement.addClass('bookmark');
-                            }else{
-                                pagerItemElement.removeClass('bookmark');
-                            }
-                        }
-
-                        function setPagerItemAnswerClass(index,question){
-                            var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
-
-                            if(angular.isUndefined(question.__questionStatus.userAnswer)){
-                                pagerItemElement.removeClass('neutral correct wrong');
-                                return;
-                            }
-
-                            if(currViewMode === ZnkExerciseViewModeEnum.ONLY_ANSWER.enum){
-                                pagerItemElement.addClass('neutral');
-                                return;
-                            }
-
-                            if(question.__questionStatus.isAnsweredCorrectly){
-                                pagerItemElement.addClass('correct');
-                            }else{
-                                pagerItemElement.addClass('wrong');
-                            }
-                        }
-
-                        scope.$on(ZnkExerciseEvents.BOOKMARK,function(evt,question){
-                            setPagerItemBookmarkStatus(question.__questionStatus.index,question.__questionStatus.bookmark);
-                        });
-
-                        scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED,function(evt,question){
-                            setPagerItemAnswerClass(question.__questionStatus.index,question);
-                        });
-
-                        var isInitialized;
-                        function init(){
-                            isInitialized = true;
-                            //wait for the pager items to be rendered
-                            $timeout(function () {
-                                ngModelCtrl.$render = function () {
-                                    var currentSlide = +ngModelCtrl.$viewValue;
-                                    if (isNaN(currentSlide)) {
-                                        return;
-                                    }
-                                    //added in order to prevent the swipe lag
-                                    $timeout(function () {
-                                        var i;
-                                        var $pagerItemWithCurrentClass = angular.element(domElement.querySelectorAll('.pager-item.current'));
-                                        for (i in $pagerItemWithCurrentClass) {
-                                            $pagerItemWithCurrentClass.eq(i).removeClass('current');
-                                        }
-                                        var pagerItemsDomElement = domElement.querySelectorAll('.pager-item');
-                                        var currentSlideDom = angular.element(pagerItemsDomElement[currentSlide]);
-                                        currentSlideDom.addClass('current');
-
-                                        for(i in scope.questions){
-                                            var question = scope.questions[i];
-                                            setPagerItemBookmarkStatus(i,question .__questionStatus.bookmark);
-                                            setPagerItemAnswerClass(i,question);
-                                        }
-                                    });
-                                };
-                                //render is not invoked for the first time
-                                ngModelCtrl.$render();
-                            },false);
-                        }
-
-                        scope.$parent.$watch(attrs.questions, function pagerQuestionsArrWatcher(questionsArr) {
-                            if (questionsArr) {
-                                scope.questions = questionsArr;
-
-                                if(!isInitialized){
-                                    init();
-                                }
-                            }
-                        });
-                    }
-                }
-            };
-        }
-    ]);
-})(angular);
-
+///**
+// * attrs:
+// *  questions
+// */
+//
+//(function (angular) {
+//    'use strict';
+//
+//    angular.module('znk.infra.znkExercise').directive('znkExercisePager', [
+//        '$timeout', 'SubjectEnum', 'QuestionUtilsSrv', 'ZnkExerciseDrvSrv', 'ZnkExerciseEvents', '$ionicScrollDelegate',
+//        function ($timeout, SubjectEnum, QuestionUtilsSrv, ZnkExerciseDrvSrv, ZnkExerciseEvents, $ionicScrollDelegate) {
+//            return {
+//                templateUrl: 'scripts/exercise/templates/znkExercisePagerDrv.html',
+//                restrict: 'E',
+//                require: ['ngModel', '^znkExercise'],
+//                scope: {},
+//                link: {
+//                    pre: function (scope, element, attrs, ctrls) {
+//                        var ngModelCtrl = ctrls[0];
+//                        var znkExerciseCtrl = ctrls[1];
+//
+//                        var currViewMode = znkExerciseCtrl.getViewMode();
+//
+//                        var domElement = element[0];
+//
+//                        scope.d = {};
+//
+//                        scope.d.tap = function (index) {
+//                            znkExerciseCtrl.__changeQuestionResolver().then(function(){
+//                                ngModelCtrl.$setViewValue(index);
+//                                ngModelCtrl.$render();
+//                            });
+//                        };
+//
+//                        function setPagerItemBookmarkStatus(index,status){
+//                            var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
+//                            if(status){
+//                                pagerItemElement.addClass('bookmark');
+//                            }else{
+//                                pagerItemElement.removeClass('bookmark');
+//                            }
+//                        }
+//
+//                        function setPagerItemAnswerClass(index,question){
+//                            var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
+//
+//                            if(angular.isUndefined(question.__questionStatus.userAnswer)){
+//                                pagerItemElement.removeClass('neutral correct wrong');
+//                                return;
+//                            }
+//
+//                            if(question.subjectId === SubjectEnum.SPEAKING.enum || question.subjectId === SubjectEnum.WRITING.enum || ZnkExerciseDrvSrv.viewModeEnum.answerOnly.enum === currViewMode){
+//                                pagerItemElement.addClass('neutral');
+//                                return;
+//                            }
+//
+//                            if(QuestionUtilsSrv.isAnswerCorrect(question,question.__questionStatus)){
+//                                pagerItemElement.addClass('correct');
+//                            }else{
+//                                pagerItemElement.addClass('wrong');
+//                            }
+//                        }
+//
+//                        function setScroll(currentSlideDom) {
+//                            var delegate = $ionicScrollDelegate.$getByHandle('znk-pager');
+//                            var domElement = currentSlideDom[0];
+//                            var parent = domElement.offsetParent;
+//                            var res = (domElement.offsetLeft + domElement.scrollWidth) - (parent) ? parent.clientWidth : 0;
+//                            if (res > 0) {
+//                                delegate.scrollTo(res + domElement.scrollWidth, 0, true);
+//                            } else {
+//                                delegate.scrollTo(0, 0, true);
+//                            }
+//                        }
+//
+//                        scope.$on(ZnkExerciseEvents.BOOKMARK,function(evt,question){
+//                            setPagerItemBookmarkStatus(question.__questionStatus.index,question.__questionStatus.bookmark);
+//                        });
+//
+//                        scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED,function(evt,question){
+//                            setPagerItemAnswerClass(question.__questionStatus.index,question);
+//                        });
+//
+//                        var watchDestroyer = scope.$parent.$watch(attrs.questions, function pagerQuestionsArrWatcher(questionsArr) {
+//                            if (questionsArr) {
+//                                watchDestroyer();
+//                                scope.questions = questionsArr;
+//
+//                                //wait for the pager items to be rendered
+//                                $timeout(function () {
+//                                    ngModelCtrl.$render = function () {
+//                                        var currentSlide = +ngModelCtrl.$viewValue;
+//                                        if (isNaN(currentSlide)) {
+//                                            return;
+//                                        }
+//                                        //added in order to prevent the swipe lag
+//                                        $timeout(function () {
+//                                            var i;
+//                                            var $pagerItemWithCurrentClass = angular.element(domElement.querySelectorAll('.pager-item.current'));
+//                                            for (i in $pagerItemWithCurrentClass) {
+//                                                $pagerItemWithCurrentClass.eq(i).removeClass('current');
+//                                            }
+//                                            var pagerItemsDomElement = domElement.querySelectorAll('.pager-item');
+//                                            var currentSlideDom = angular.element(pagerItemsDomElement[currentSlide]);
+//                                            currentSlideDom.addClass('current');
+//
+//                                            for(i in scope.questions){
+//                                                var question = scope.questions[i];
+//                                                setPagerItemBookmarkStatus(i,question .__questionStatus.bookmark);
+//                                                setPagerItemAnswerClass(i,question);
+//                                            }
+//
+//                                            setScroll(currentSlideDom);
+//                                        });
+//                                    };
+//                                    //render is not invoked for the first time
+//                                    ngModelCtrl.$render();
+//                                },false);
+//                            }
+//                        });
+//                    }
+//                }
+//            };
+//        }
+//    ]);
+//})(angular);
+//
 
 'use strict';
 
@@ -3413,27 +3631,10 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "                          next-question=\"vm.setCurrentIndexByOffset(1)\"\n" +
     "                          on-done=\"settings.onDone()\">\n" +
     "</znk-exercise-btn-section>\n" +
-    "<znk-exercise-pager class=\"ng-hide\"\n" +
-    "                    ng-show=\"vm.showPager\"\n" +
-    "                    questions=\"vm.questionsWithAnswers\"\n" +
-    "                    ng-model=\"vm.currentSlide\">\n" +
+    "<znk-exercise-pager\n" +
+    "        ng-hide=\"vm.hidePager\"\n" +
+    "        questions=\"vm.questionsWithAnswers\">\n" +
     "</znk-exercise-pager>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/znkExercisePagerDrv.html",
-    "<znk-scroll>\n" +
-    "    <div class=\"pager-items-wrapper\">\n" +
-    "        <div class=\"pager-item\"\n" +
-    "             ng-repeat=\"question in questions track by question.id\"\n" +
-    "             question-status=\"question.__questionStatus\"\n" +
-    "             question=\"question\"\n" +
-    "             ng-click=\"d.tap($index)\">\n" +
-    "            <div class=\"question-bookmark-icon\"></div>\n" +
-    "            <div class=\"question-status-indicator\">\n" +
-    "                <div class=\"index\">{{::$index + 1}}</div>\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "</znk-scroll>\n" +
     "");
   $templateCache.put("components/znkExercise/core/template/znkSwiperTemplate.html",
     "<div class=\"swiper-container\">\n" +
