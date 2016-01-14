@@ -83,12 +83,12 @@
                 };
             }
 
-            storageFirebaseAdapter.variables = {
+            var pathVariables= {
                 uid: '$$uid',
                 appUserSpacePath: 'users/$$uid'
             };
 
-            var regexString = storageFirebaseAdapter.variables.uid.replace(/\$/g,'\\$');
+            var regexString = pathVariables.uid.replace(/\$/g,'\\$');
             var UID_REGEX = new RegExp(regexString,'g');
             function processPath(path,authObj) {
                 var processedPath = path.replace(UID_REGEX, authObj.uid);
