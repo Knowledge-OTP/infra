@@ -392,8 +392,8 @@
     'use strict';
 
     angular.module('znk.infra.general').directive('subjectIdToAttrDrv', [
-        'SubjectEnum',
-        function (SubjectEnum) {
+        'SubjectEnum', '$interpolate',
+        function (SubjectEnum, $interpolate) {
             return {
                 scope: {
                     contextAttr: '@',
@@ -404,6 +404,9 @@
                     pre: function (scope, element, attrs) {
 
                         var watchDestroyer = scope.$watch(attrs.subjectIdToAttrDrv,function(subjectId){
+                            var contextAttr = attrs.contextAttr ? $interpolate(attrs.contextAttr)(scope) : undefined;
+                            var prefix = attrs.prefix ? $interpolate(attrs.prefix )(scope) : undefined;
+                            var suffix = attrs.suffix ? $interpolate(attrs.suffix )(scope) : undefined;
 
                             if(angular.isUndefined(subjectId)){
                                 return;
@@ -411,15 +414,15 @@
                             watchDestroyer();
 
                             var attrsArray;
-                            if (scope.contextAttr) {
-                                attrsArray = scope.contextAttr.split(',');
+                            if (contextAttr) {
+                                attrsArray = contextAttr.split(',');
                             } else {
                                 attrsArray = [];
                                 attrsArray.push('class');
                             }
 
-                            var attrPrefixes = (scope.prefix) ? scope.prefix.split(',') : [];
-                            var attrSuffixes = (scope.suffix) ? scope.suffix.split(',') : [];
+                            var attrPrefixes = (prefix) ? prefix.split(',') : [];
+                            var attrSuffixes = (suffix) ? suffix.split(',') : [];
 
                             var subjectEnumMap = SubjectEnum.getEnumMap();
                             var subjectNameToAdd = subjectEnumMap[subjectId];
@@ -1452,6 +1455,7 @@
                     var viewMode = answerBuilder.getViewMode();
                     var ANSWER_WITH_RESULT_MODE = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
                         REVIEW_MODE = ZnkExerciseViewModeEnum.REVIEW.enum;
+                    var INDEX_OFFSET = 2;
 
                     scope.d = {};
                     scope.d.itemsArray = new Array(11);
@@ -1505,19 +1509,30 @@
 
                         if(viewMode === ANSWER_WITH_RESULT_MODE || viewMode === REVIEW_MODE){
                             for (var i = 0; i < lastElemIndex; i++) {
-                                angular.element(domItemsArray[answers[i].id]).addClass('correct');
+                                angular.element(domItemsArray[answers[i].id - INDEX_OFFSET]).addClass('correct');
                             }
-                            angular.element(domItemsArray[answers[lastElemIndex].id]).addClass('correct-edge');
+                            angular.element(domItemsArray[answers[lastElemIndex].id - INDEX_OFFSET]).addClass('correct-edge');
                         }
 
                         if (angular.isNumber(selectedAnswerId) && (viewMode === REVIEW_MODE || viewMode === ANSWER_WITH_RESULT_MODE)) {
-                            if (selectedAnswerId >= answers[0].id && selectedAnswerId <= answers[lastElemIndex].id) {
+                            if (selectedAnswerId >= answers[0].id - INDEX_OFFSET && selectedAnswerId <= answers[lastElemIndex].id - INDEX_OFFSET) {
                                 angular.element(domItemsArray[selectedAnswerId]).addClass('selected-correct');
                             } else {
                                 angular.element(domItemsArray[selectedAnswerId]).addClass('selected-wrong');
                             }
                         }
                     }
+
+                    function formatter(answer) {
+                        return answer - INDEX_OFFSET;
+                    }
+
+                    function parser(index){
+                        return index + INDEX_OFFSET;
+                    }
+
+                    ngModelCtrl.$formatters.push(formatter);
+                    ngModelCtrl.$parsers.push(parser);
                 }
             };
         }
