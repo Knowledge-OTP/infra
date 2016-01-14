@@ -1,0 +1,45 @@
+@include responsive($mobile-width){
+    znk-exercise-pager{
+        height: 48px;
+        @include absolute-position(null,6px,13px,6px);
+        border: 1px solid $greyBG17;
+        border-radius: 50px;
+        padding: {
+            left: 45px;
+        };
+
+        ion-scroll.scroll-view{
+            height: 48px;
+
+            .pager-item{
+                &.current{
+                    .question-bookmark-icon{
+                        top: -5px;
+                    }
+
+                    .question-status-indicator{
+                        @include dimension(37px,37px);
+                    }
+                }
+
+                .question-bookmark-icon{
+                    top: -0.5px;
+                }
+
+                .question-status-indicator{
+                    margin-top: 1.5px;
+
+                    &:before{
+                        top: -3px;
+                        right: -3px;
+                        bottom: -3px;
+                        left: -3px;
+                        border:{
+                            width: 1px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

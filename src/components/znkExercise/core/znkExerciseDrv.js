@@ -15,7 +15,8 @@
  *      initSlideIndex
  *      toolBoxWrapperClass
  *      initSlideDirection
- *      initForceDoneBtnDisplay
+ *      initForceDoneBtnDisplay: null-default behaviour(default value), false-done button will be hidden, true-done button will be dispalyed
+ *      initPagerDisplay: true- displayed(default value), false- hidden
  *
  *  actions:
  *      setSlideIndex
@@ -23,6 +24,7 @@
  *      finishExercise
  *      setSlideDirection
  *      forceDoneBtnDisplay
+ *      pagerDisplay: function, if true provided than pager will be displayed other it will be hidden.
  */
 
 (function (angular) {
@@ -59,7 +61,8 @@
                                 viewMode: ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
                                 onSlideChange: angular.noop,
                                 initSlideDirection: ZnkExerciseSlideDirectionEnum.ALL.enum,
-                                initForceDoneBtnDisplay: null
+                                initForceDoneBtnDisplay: null,
+                                initPagerDisplay: true
                             };
                             scope.settings = angular.extend(defaultSettings, scope.settings);
 
@@ -142,6 +145,10 @@
                                 }else{
                                     element.removeClass('done-btn-hide');
                                 }
+                            };
+
+                            scope.actions.pagerDisplay = function(display){
+                                scope.vm.showPager = !!display;
                             };
 
                             /**
@@ -292,7 +299,10 @@
                                     updateTimeSpentOnQuestion();
                                 }
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
-                                scope.settings.onQuestionAnswered(scope.vm.currentSlide);
+                                //skip 1 digest cycle before triggering question answered
+                                $timeout(function(){
+                                    scope.settings.onQuestionAnswered(scope.vm.currentSlide);
+                                });
                             };
 
                             scope.vm.bookmarkCurrentQuestion = function () {
@@ -325,6 +335,7 @@
                              * */
                             scope.actions.setSlideDirection(scope.settings.initSlideDirection);
                             scope.actions.forceDoneBtnDisplay(scope.settings.initForceDoneBtnDisplay);
+                            scope.actions.pagerDisplay(scope.settings.initPagerDisplay);
                             /**
                              *  INIT END
                              * */

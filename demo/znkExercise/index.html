@@ -33,6 +33,8 @@
         <button ng-click="setViewMode(2)">ONLY_ANSWER</button>
         <button ng-click="setViewMode(3)">REVIEW</button>
         <button ng-click="setViewMode(4)">MUST_ANSWER</button>
+        <div></div>
+        <button ng-click="showOrHidePager()">show hide pager</button>
     </div>
     <znk-exercise ng-model="results"
                   questions="questions"
@@ -73,10 +75,15 @@
     <script src="components/znkExercise/core/directive/questionsCarouselDrv.js"></script>
     <script src="components/znkExercise/core/directive/znkSwiperDrv.js"></script>
 
+    <script src="components/znkExercise/pager/znkExercisePagerDrv.js"></script>
+
     <script src="components/znkExercise/answerTypes/answerBuilderDrv.js"></script>
     <script src="components/znkExercise/answerTypes/answerComponents/selectAnswerDrv.js"></script>
     <script src="components/znkExercise/answerTypes/answerComponents/rateAnswerDrv.js"></script>
     <script src="components/znkExercise/answerTypes/directives/markupDrv.js"></script>
+
+    <script src="components/scroll/module.js"></script>
+    <script src="components/scroll/znkScrollDrv.js"></script>
 
     <script src="demoApp.js"></script>
 </body>
