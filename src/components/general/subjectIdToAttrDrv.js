@@ -13,8 +13,8 @@
     'use strict';
 
     angular.module('znk.infra.general').directive('subjectIdToAttrDrv', [
-        'SubjectEnum',
-        function (SubjectEnum) {
+        'SubjectEnum', '$interpolate',
+        function (SubjectEnum, $interpolate) {
             return {
                 scope: {
                     contextAttr: '@',
@@ -25,6 +25,9 @@
                     pre: function (scope, element, attrs) {
 
                         var watchDestroyer = scope.$watch(attrs.subjectIdToAttrDrv,function(subjectId){
+                            var contextAttr = attrs.contextAttr ? $interpolate(attrs.contextAttr)(scope) : undefined;
+                            var prefix = attrs.prefix ? $interpolate(attrs.prefix )(scope) : undefined;
+                            var suffix = attrs.suffix ? $interpolate(attrs.suffix )(scope) : undefined;
 
                             if(angular.isUndefined(subjectId)){
                                 return;
@@ -32,15 +35,15 @@
                             watchDestroyer();
 
                             var attrsArray;
-                            if (scope.contextAttr) {
-                                attrsArray = scope.contextAttr.split(',');
+                            if (contextAttr) {
+                                attrsArray = contextAttr.split(',');
                             } else {
                                 attrsArray = [];
                                 attrsArray.push('class');
                             }
 
-                            var attrPrefixes = (scope.prefix) ? scope.prefix.split(',') : [];
-                            var attrSuffixes = (scope.suffix) ? scope.suffix.split(',') : [];
+                            var attrPrefixes = (prefix) ? prefix.split(',') : [];
+                            var attrSuffixes = (suffix) ? suffix.split(',') : [];
 
                             var subjectEnumMap = SubjectEnum.getEnumMap();
                             var subjectNameToAdd = subjectEnumMap[subjectId];
