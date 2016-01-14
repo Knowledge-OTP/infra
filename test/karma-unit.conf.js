@@ -34,6 +34,7 @@ module.exports = function (config) {
             'src/**/*.svg',
 
             //utility
+            'test/utility/module.js',
             'test/utility/**/*.*',
 
             //src files
@@ -45,7 +46,7 @@ module.exports = function (config) {
             'test/mock/**/*.js',
 
             //tests
-            'test/spec/**/storageFirebaseAdapterSrv.spec.js'
+            'test/spec/**/*.spec.js'
         ],
 
         // list of files / patterns to exclude

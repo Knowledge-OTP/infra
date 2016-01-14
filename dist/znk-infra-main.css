@@ -285,15 +285,15 @@ svg-icon {
 /**
  * Swiper 3.2.7
  * Most modern mobile touch slider and framework with hardware accelerated transitions
- *
+ * 
  * http://www.idangero.us/swiper/
- *
+ * 
  * Copyright 2015, Vladimir Kharlampidi
  * The iDangero.us
  * http://www.idangero.us/
- *
+ * 
  * Licensed under MIT
- *
+ * 
  * Released on: December 7, 2015
  */
 .swiper-container {
@@ -318,7 +318,6 @@ svg-icon {
   width: 100%;
   height: 100%;
   z-index: 1;
-
   display: -webkit-box;
   display: -moz-box;
   display: -ms-flexbox;
