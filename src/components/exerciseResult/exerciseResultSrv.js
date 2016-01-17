@@ -36,7 +36,7 @@
                 return storage.get(exerciseResultPath);
             }
 
-            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId) {
+            this.getExerciseResult = function (exerciseTypeId, exerciseId) {
                 return _getUserExerciseResultGuid(exerciseTypeId, exerciseId).then(function (resultGuid) {
                     var initResult = _getInitExerciseResult(exerciseTypeId,exerciseId);
                     if (angular.isObject(resultGuid)) {

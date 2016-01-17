@@ -75,7 +75,7 @@
                         var ref = getRef(relativePathOrObject);
                         ref.set(newValueCopy,function(err){
                             if(err){
-                                $log.debug('storageFirebaseAdapter: failed to set data for the following path',relativePath,err);
+                                $log.debug('storageFirebaseAdapter: failed to set data for the following path',relativePathOrObject,err);
                                 defer.reject(err);
                             }else{
                                 defer.resolve(newValueCopy);
