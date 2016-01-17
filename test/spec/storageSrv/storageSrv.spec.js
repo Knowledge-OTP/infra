@@ -58,7 +58,8 @@ describe('testing service "StorageSrv":', function () {
     it('when getting not exiting data via entity communicator then empty object should be returned', function () {
         var entityCommunicator = actions.syncEntityCommunicator();
         var val = entityCommunicator.get();
-        expect(val).toEqual(jasmine.objectContaining({}));
+        delete val.$save;
+        expect(val).toEqual({});
     });
 
     it('when requesting twice for the same object via entity communicator then same instance should be returned', function () {
