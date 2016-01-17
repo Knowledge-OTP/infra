@@ -104,7 +104,6 @@ describe('testing service "storageFirebaseAdapter":', function () {
     });
 
     it('when setting simultaneously 2 objects then firebase db should be updated accordingly', function () {
-        var path = 'testPath';
         var syncedAdapter = actions.syncAdapter(storageFirebaseAdapter(endpoint));
         var savedDataMap = {
             a: {
@@ -114,10 +113,15 @@ describe('testing service "storageFirebaseAdapter":', function () {
                 b: 2
             }
         };
+        savedDataMap[StorageSrv.variables.uid] = 5;
+
         syncedAdapter.set(angular.copy(savedDataMap));
+        syncedAdapter.__refMap.rootRef.flush();
         var aVal = syncedAdapter.get('a');
         var bVal = syncedAdapter.get('b');
+        var uidVal = syncedAdapter.get('1');
         expect(aVal).toEqual(savedDataMap.a);
         expect(bVal).toEqual(savedDataMap.b);
+        expect(uidVal).toEqual(5);
     });
 });

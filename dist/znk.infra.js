@@ -1228,8 +1228,13 @@
                     var defer = $q.defer();
 
                     if(angular.isObject(relativePathOrObject)){
-                        removeIllegalProperties(relativePathOrObject);
-                        refMap.rootRef.update(relativePathOrObject, function(err){
+                        var valuesToSet ={};
+                        angular.forEach(relativePathOrObject,function(value,key){
+                            var processedPath = processPath(key, authObj);
+                            valuesToSet[processedPath] = value;
+                        });
+                        removeIllegalProperties(valuesToSet);
+                        refMap.rootRef.update(valuesToSet, function(err){
                             if(err){
                                 defer.reject(err);
                             }
