@@ -45,6 +45,7 @@
 
             var storage = new StorageSrv(getter,setter);
             storage.db = db;
+            storage.variables = StorageSrv.variables;
 
             return storage;
         });

@@ -2,8 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.storage').factory('storageFirebaseAdapter', [
-        '$log', '$q',
-        function ($log, $q) {
+        '$log', '$q', 'StorageSrv',
+        function ($log, $q, StorageSrv) {
             function removeIllegalProperties(source){
                 if(angular.isArray(source)){
                     source.forEach(function(item){
@@ -59,19 +59,29 @@
                     return defer.promise;
                 }
 
-                function set(relativePath, newValue){
+                function set(relativePathOrObject, newValue){
                     var defer = $q.defer();
-                    var newValueCopy = angular.copy(newValue);
-                    removeIllegalProperties(newValueCopy);
-                    var ref = getRef(relativePath);
-                    ref.set(newValueCopy,function(err){
-                        if(err){
-                            $log.debug('storageFirebaseAdapter: failed to set data for the following path',relativePath,err);
-                            defer.reject(err);
-                        }else{
-                            defer.resolve(newValueCopy);
-                        }
-                    });
+
+                    if(angular.isObject(relativePathOrObject)){
+                        refMap.rootRef.update(relativePathOrObject, function(err){
+                            if(err){
+                                defer.reject(err);
+                            }
+                            defer.resolve();
+                        });
+                    }else{
+                        var newValueCopy = angular.copy(newValue);
+                        removeIllegalProperties(newValueCopy);
+                        var ref = getRef(relativePathOrObject);
+                        ref.set(newValueCopy,function(err){
+                            if(err){
+                                $log.debug('storageFirebaseAdapter: failed to set data for the following path',relativePath,err);
+                                defer.reject(err);
+                            }else{
+                                defer.resolve(newValueCopy);
+                            }
+                        });
+                    }
 
                     return defer.promise;
                 }
@@ -83,10 +93,7 @@
                 };
             }
 
-            var pathVariables= {
-                uid: '$$uid',
-                appUserSpacePath: 'users/$$uid'
-            };
+            var pathVariables= StorageSrv.variables;
 
             var regexString = pathVariables.uid.replace(/\$/g,'\\$');
             var UID_REGEX = new RegExp(regexString,'g');

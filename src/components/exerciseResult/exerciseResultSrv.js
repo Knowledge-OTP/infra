@@ -4,20 +4,30 @@
     angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
         'InfraConfigSrv', '$log', '$q', 'UtilitySrv',
         function (InfraConfigSrv, $log, $q, UtilitySrv) {
-            function _getUserExerciseResultPath(exerciseTypeId, exerciseId){
+            function _getExerciseResultGuidPath(exerciseTypeId, exerciseId) {
                 var storage = InfraConfigSrv.getStorageService();
                 var template = storage.variables.appUserSpacePath + '/exerciseResults/%exerciseType%/%exerciseId%';
                 return template.replace('%exerciseType%', exerciseTypeId).replace('%exerciseId%', exerciseId);
             }
 
-            function _getUserExerciseResultGuidPath(exerciseTypeId, exerciseId) {
+            function _getUserExerciseResultGuid(exerciseTypeId, exerciseId) {
                 var storage = InfraConfigSrv.getStorageService();
-                var exerciseResultGuidPath = _getUserExerciseResultPath(exerciseTypeId,exerciseId);
+                var exerciseResultGuidPath = _getExerciseResultGuidPath(exerciseTypeId, exerciseId);
                 return storage.get(exerciseResultGuidPath);
             }
 
-            function _getExerciseResultPath(guid){
+            function _getExerciseResultPath(guid) {
                 return 'exerciseResults/' + guid;
+            }
+
+            function _getInitExerciseResult(exerciseTypeId,exerciseId){
+                var storage = InfraConfigSrv.getStorageService();
+                return {
+                    exerciseId: exerciseId,
+                    exerciseTypeId: exerciseTypeId,
+                    startedTime: storage.variables.currTimeStamp,
+                    questionResults: []
+                };
             }
 
             function _getExerciseResultByGuid(guid) {
@@ -26,122 +36,86 @@
                 return storage.get(exerciseResultPath);
             }
 
-            function _setExerciseResult(exerciseTypeId, exerciseId, result){
-                var storage = InfraConfigSrv.getStorageService();
-                if(angular.isUndefined(result)){
-                    result = {
-                        exerciseId: exerciseId,
-                        exerciseTypeId: exerciseTypeId,
-                        startedTime: storage.variables.currTimeStamp,
-                        questionResults: []
-                    };
-                }
-                var guid = UtilitySrv.general.createGuid();
-                var setVal = {};
+            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId) {
+                return _getUserExerciseResultGuid(exerciseTypeId, exerciseId).then(function (resultGuid) {
+                    var initResult = _getInitExerciseResult(exerciseTypeId,exerciseId);
+                    if (angular.isObject(resultGuid)) {
+                        var storage = InfraConfigSrv.getStorageService();
 
-                var userExerciseResultPath = _getUserExerciseResultPath(exerciseTypeId,exerciseId);
-                setVal[userExerciseResultPath] = guid;
+                        var guid = UtilitySrv.general.createGuid();
+                        var setVal = {};
 
-                var exerciseResultPath = _getExerciseResultPath(guid);
-                setVal[exerciseResultPath] = result;
+                        var userExerciseResultPath = _getExerciseResultGuidPath(exerciseTypeId, exerciseId);
+                        setVal[userExerciseResultPath] = guid;
 
-                return storage.set(setVal).then(function(res){
-                    return res[exerciseResultPath];
-                });
-            }
+                        var exerciseResultPath = _getExerciseResultPath(guid);
+                        setVal[exerciseResultPath] = initResult;
 
-            this.getExerciseResult = function (exerciseTypeId, exerciseId) {
-                return _getUserExerciseResultGuidPath(exerciseTypeId, exerciseId).then(function (resultGuid) {
-                    if (!angular.equals({},resultGuid)) {
-                        return _getExerciseResultByGuid(resultGuid).then(function (result) {
-                            if (angular.equals(result, {})) {
-                                $log.$debug('ExerciseResultSrv: result not exits for the following exercise: ' +
-                                    'exerciseTyep', exerciseTypeId, 'Exercise id:', exerciseId);
-                                return $q.reject('Result not exits');
-                            }
-                            return result;
+                        return storage.set(setVal).then(function(res){
+                            return res[exerciseResultPath];
                         });
                     }
 
-                    return _setExerciseResult(exerciseTypeId, exerciseId);
+                    return _getExerciseResultByGuid(resultGuid).then(function(result){
+                        angular.forEach(initResult, function(value,key){
+                            if(!result.hasOwnProperty(key)){
+                                result[key] = value;
+                            }
+                        });
+                        return result;
+                    });
                 });
             };
 
-            //function ExerciseResult(resultData, key) {
-            //    angular.extend(this, resultData || {});
-            //    this.$id = key || StorageSrv.createGuid();
-            //}
-            //
-            //ExerciseResult.prototype.$save = function $save() {
-            //    var copyOfThis = angular.copy(this);
-            //    copyOfThis.uid = AuthSrv.authentication.uid;
-            //
-            //    return getResultPointer(this.exerciseTypeId, this.exerciseId).then(function(resultKey) {
-            //        var key = resultKey || copyOfThis.$id;
-            //        delete copyOfThis.$id;
-            //
-            //        var path = StorageSrv.appPath.concat(['exerciseResults', key]);
-            //
-            //        var retValue;
-            //        return StorageSrv.set(path, copyOfThis).then(function(savedResult) {
-            //            retValue = savedResult;
-            //            if (!resultKey) {
-            //                return setResultPointer(copyOfThis.exerciseTypeId, copyOfThis.exerciseId, key);
-            //            }
-            //        }).then(function() {
-            //            return retValue;
-            //        });
-            //    });
-            //};
-            //
-            //function getResultPointer(typeId, id) {
-            //    var pointersObjPath = StorageSrv.appUserSpacePath.concat(['exerciseResults']);
-            //    return StorageSrv.get(pointersObjPath).then(function(pointersObj) {
-            //        if (pointersObj && pointersObj[typeId] && pointersObj[typeId][id]) {
-            //            return pointersObj[typeId][id];
-            //        }
-            //    });
-            //}
-            //
-            //function setResultPointer(typeId, id, key) {
-            //    var pointersObjPath = StorageSrv.appUserSpacePath.concat(['exerciseResults']);
-            //    return StorageSrv.get(pointersObjPath).then(function(pointersObj) {
-            //        pointersObj = pointersObj || {};
-            //        pointersObj[typeId] = pointersObj[typeId] || {};
-            //        pointersObj[typeId][id] = key;
-            //
-            //        return StorageSrv.set(pointersObjPath, pointersObj);
-            //    });
-            //}
-            //
-            //function exists(typeId, id) {
-            //    return getResultPointer(typeId, id).then(function(key) {
-            //        return !!key;
-            //    });
-            //}
-            //
-            //function get(typeId, id) {
-            //    return getResultPointer(typeId, id).then(function(pointerKey) {
-            //        return getByKey(pointerKey);
-            //    });
-            //}
-            //
-            //function getByKey(key) {
-            //    if (!key) {
-            //        return new ExerciseResult();
-            //    }
-            //
-            //    return StorageSrv.get(StorageSrv.appPath.concat(['exerciseResults', key])).then(function(result) {
-            //        return new ExerciseResult(result, key);
-            //    });
-            //}
+            function _getExamGuidPath(examId) {
+                var storage = InfraConfigSrv.getStorageService();
+                return storage.variables.appUserSpacePath + '/examResults/' + examId;
+            }
 
-            //return {
-            //    get: get,
-            //    getByKey: getByKey,
-            //    exists: exists
-            //};
+            function _getExamResultPath(guid) {
+                return 'examResults/' + guid;
+            }
 
+            function _getExamResultByGuid(guid) {
+                var storage = InfraConfigSrv.getStorageService();
+                var path = _getExamResultPath(guid);
+                return storage.get(path);
+            }
+
+            function _getInitExamResult(examId){
+                return {
+                    isComplete: false,
+                    startedTime: '%currTimeStamp%',
+                    examId: examId
+                };
+            }
+
+            this.getExamResult = function (examId) {
+                var storage = InfraConfigSrv.getStorageService();
+                var examGuidPath = _getExamGuidPath(examId);
+                return storage.get(examGuidPath).then(function (examResultGuid) {
+                    var initExamResult = _getInitExamResult(examId);
+                    if (angular.equals(examResultGuid, {})) {
+                        var newExamResultGuid = UtilitySrv.general.createGuid();
+                        var dataToSave = {};
+                        dataToSave[examGuidPath] = newExamResultGuid;
+                        var examResultPath = _getExamResultPath(newExamResultGuid);
+                        dataToSave[examResultPath] = initExamResult;
+                        return storage.set(dataToSave).then(function (res) {
+                            return res[examResultPath];
+                        });
+                    }
+
+                    return _getExamResultByGuid(examResultGuid).then(function(result){
+                        angular.forEach(initExamResult, function(value,key){
+                            if(!result.hasOwnProperty(key)){
+                                result[key] = value;
+                            }
+                        });
+                        return result;
+                    });
+                });
+            };
         }
     ]);
 })(angular);

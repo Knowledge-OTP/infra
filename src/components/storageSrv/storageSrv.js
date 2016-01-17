@@ -86,7 +86,7 @@
                 return new EntityCommunicator(path, defaultValues, this);
             };
 
-            StorageSrv.prototype.variables = {
+            StorageSrv.variables = {
                 currTimeStamp: '%currTimeStamp%',
                 uid: '$$uid',
                 appUserSpacePath: 'users/$$uid'

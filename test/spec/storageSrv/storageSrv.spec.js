@@ -5,9 +5,22 @@ describe('testing service "StorageSrv":', function () {
 
     var $rootScope, StorageSrv, testStorage, $q;
     var entityMap = {};
+
     function entityGetter(path){
         return $q.when(entityMap[path]);
     }
+
+    function entitySetter(pathOrObject, newVal){
+        if(angular.isObject(pathOrObject)){
+            angular.forEach(pathOrObject, function(value,key){
+                entityMap[key] = value;
+            });
+            return pathOrObject;
+        }
+        entityMap[pathOrObject] = newVal;
+        return $q.when(entityMap[pathOrObject]);
+    }
+
     beforeEach(inject([
         '$injector',
         function ($injector) {
@@ -86,11 +99,7 @@ describe('testing service "StorageSrv":', function () {
     });
 
     it('when set multiple locations are save simultaneously then cache should be updated accordingly',function(){
-        var savedEntity;
-        function saveEntity(pathObj, _entity){
-            return pathObj;
-        }
-        testStorage = new StorageSrv(entityGetter, saveEntity);
+        testStorage = new StorageSrv(entityGetter, entitySetter);
 
         var expectedObj1 = {
             a:1
@@ -104,9 +113,13 @@ describe('testing service "StorageSrv":', function () {
             path2: expectedObj2
         });
 
-        //var obj1 = testStorage.get('path1');
-        //expect(obj1).toEqual(expectedObj1);
-        //expect(obj1.$save).toBeDefined();
+        var obj1;
+        testStorage.get('path1').then(function(res){
+            obj1 = res;
+        });
+        $rootScope.$digest();
+        expect(obj1).toEqual(jasmine.objectContaining(expectedObj1));
+        expect(obj1.$save).toBeDefined();
 
         var obj2;
         testStorage.get('path2').then(function(res){
@@ -114,6 +127,6 @@ describe('testing service "StorageSrv":', function () {
         });
         $rootScope.$digest();
         expect(obj2).toEqual(jasmine.objectContaining(expectedObj2));
-        expect(obj1.$save).toBeDefined();
+        expect(obj2.$save).toBeDefined();
     });
 });
