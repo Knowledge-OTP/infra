@@ -1228,6 +1228,7 @@
                     var defer = $q.defer();
 
                     if(angular.isObject(relativePathOrObject)){
+                        removeIllegalProperties(relativePathOrObject);
                         refMap.rootRef.update(relativePathOrObject, function(err){
                             if(err){
                                 defer.reject(err);
