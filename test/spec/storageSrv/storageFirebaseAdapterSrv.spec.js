@@ -7,12 +7,13 @@ describe('testing service "storageFirebaseAdapter":', function () {
 
     beforeEach(module('znk.infra.storage', 'htmlTemplates'));
 
-    var $rootScope, storageFirebaseAdapter;
+    var $rootScope, storageFirebaseAdapter, StorageSrv;
     beforeEach(inject([
         '$injector',
         function ($injector) {
             $rootScope = $injector.get('$rootScope');
             storageFirebaseAdapter = $injector.get('storageFirebaseAdapter');
+            StorageSrv = $injector.get('StorageSrv');
         }])
     );
 
@@ -47,7 +48,10 @@ describe('testing service "storageFirebaseAdapter":', function () {
             set: function(path,newEntity){
                 var setProm = adapter.set(path, newEntity);
                 $rootScope.$digest();
-                adapter.__refMap[path].flush();
+                var pathRef = adapter.__refMap[path];
+                if(pathRef){
+                    pathRef.flush();
+                }
                 return setProm;
             },
             __refMap: adapter.__refMap
@@ -62,7 +66,7 @@ describe('testing service "storageFirebaseAdapter":', function () {
         var expectedVal = {key: 'val'};
         adapter.set(expectedPath,expectedVal);
         adapter.__refMap[expectedPath].autoFlush();
-        var entity = adapter.get(storageFirebaseAdapter.variables.appUserSpacePath);
+        var entity = adapter.get(StorageSrv.variables.appUserSpacePath);
         expect(entity).toEqual(expectedVal);
     });
 
@@ -97,5 +101,23 @@ describe('testing service "storageFirebaseAdapter":', function () {
         syncedAdapter.set(path,value);
         var currValue = syncedAdapter.get(path);
         expect(currValue).toEqual(expectedResult);
+    });
+
+    it('when setting simultaneously 2 objects then firebase db should be updated accordingly', function () {
+        var path = 'testPath';
+        var syncedAdapter = actions.syncAdapter(storageFirebaseAdapter(endpoint));
+        var savedDataMap = {
+            a: {
+                a: 1
+            },
+            b: {
+                b: 2
+            }
+        };
+        syncedAdapter.set(angular.copy(savedDataMap));
+        var aVal = syncedAdapter.get('a');
+        var bVal = syncedAdapter.get('b');
+        expect(aVal).toEqual(savedDataMap.a);
+        expect(bVal).toEqual(savedDataMap.b);
     });
 });

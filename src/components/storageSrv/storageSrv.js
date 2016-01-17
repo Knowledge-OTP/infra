@@ -8,18 +8,21 @@
 
             var entityCache = $cacheFactory('entityCache');
 
-            function EntityCommunicator(path, defaultValue, getter, setter) {
-                this.path = path;
-                this.defaultValue = defaultValue;
-                this.getter = getter;
-                this.setter = setter;
+            function StorageSrv(entityGetter, entitySetter) {
+                this.getter = function(path){
+                    return $q.when(entityGetter(path));
+                };
+
+                this.setter = function(path, newVal){
+                    return $q.when(entitySetter(path,newVal));
+                };
             }
 
-            EntityCommunicator.prototype.get = function () {
-                var path = this.path;
+            StorageSrv.prototype.get = function(path, defaultValue){
+                var self = this;
                 var entity = entityCache.get(path);
                 var getProm;
-                var defaultValue = this.defaultValue || {};
+                defaultValue = defaultValue || {};
                 var cacheProm = false;
 
                 if (entity) {
@@ -43,6 +46,9 @@
                             _entity[key] = angular.copy(defaultValue[key]);
                         }
                     });
+                    if(angular.isObject(_entity)){
+                        _entity.$save = self.set.bind(self,path,_entity);
+                    }
                     return _entity;
                 });
 
@@ -53,17 +59,52 @@
                 return getProm;
             };
 
-            EntityCommunicator.prototype.set = function (entity) {
-                var key = this.path;
-                entityCache.put(key, entity);
-                return this.setter(this.path, entity);
+            StorageSrv.prototype.set = function(pathStrOrObj, newValue){
+                var self = this;
+                return this.setter(pathStrOrObj, newValue).then(function(res){
+                    if(!angular.isObject(pathStrOrObj)){
+                        var temp = res;
+                        res = {};
+                        res[pathStrOrObj] = temp;
+                    }
+                    var promArr = [];
+                    var retVal = {};
+                    angular.forEach(res,function(val,key){
+                        entityCache.put(key,val);
+                        var prom = self.get(key).then(function(cachedVal){
+                            retVal[key] = cachedVal;
+                        });
+                        promArr.push(prom);
+                    });
+                    return $q.all(promArr).then(function(){
+                        return retVal;
+                    });
+                });
             };
 
-            function StorageSrv(entityGetter, entitySetter) {
-                this.EntityCommunicator = function (path, defaultValues) {
-                    return new EntityCommunicator(path, defaultValues, entityGetter, entitySetter);
-                };
+            StorageSrv.prototype.EntityCommunicator = function (path, defaultValues) {
+                return new EntityCommunicator(path, defaultValues, this);
+            };
+
+            StorageSrv.variables = {
+                currTimeStamp: '%currTimeStamp%',
+                uid: '$$uid',
+                appUserSpacePath: 'users/$$uid'
+            };
+
+            function EntityCommunicator(path, defaultValue, storage) {
+                this.path = path;
+                this.defaultValue = defaultValue;
+                this.storage = storage;
             }
+
+            EntityCommunicator.prototype.get = function () {
+                return this.storage.get(this.path);
+            };
+
+            EntityCommunicator.prototype.set = function (newVal) {
+                return this.storage.set(this.path, newVal);
+            };
 
             return StorageSrv;
         }
