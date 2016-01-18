@@ -35,7 +35,7 @@ describe('testing service "StorageSrv":', function () {
     var actions = {};
 
     actions.syncEntityCommunicator = function(){
-        var entityCommunicator = testStorage.EntityCommunicator('test');
+        var entityCommunicator = testStorage.entityCommunicator('test');
         var syncCommunicator = {};
         syncCommunicator.get = function(){
             var res;
