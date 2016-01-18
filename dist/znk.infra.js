@@ -1346,15 +1346,15 @@
 
             StorageSrv.prototype.set = function(pathStrOrObj, newValue){
                 var self = this;
-                return this.setter(pathStrOrObj, newValue).then(function(res){
+                return this.setter(pathStrOrObj, newValue).then(function(){
+                    var dataToGetFromCache = {};
                     if(!angular.isObject(pathStrOrObj)){
-                        var temp = res;
-                        res = {};
-                        res[pathStrOrObj] = temp;
+                        dataToGetFromCache[pathStrOrObj] = newValue;
                     }
+                    dataToGetFromCache = angular.copy(pathStrOrObj);
                     var promArr = [];
                     var retVal = {};
-                    angular.forEach(res,function(val,key){
+                    angular.forEach(dataToGetFromCache, function(val,key){
                         entityCache.put(key,val);
                         var prom = self.get(key).then(function(cachedVal){
                             retVal[key] = cachedVal;
@@ -1362,7 +1362,7 @@
                         promArr.push(prom);
                     });
                     return $q.all(promArr).then(function(){
-                        return retVal;
+                        return angular.isObject(pathStrOrObj) ? retVal : retVal[pathStrOrObj];
                     });
                 });
             };
