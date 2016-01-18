@@ -68,7 +68,7 @@
                         var setProm;
                         if(getExamResultProm){
                             setProm = getExamResultProm.then(function(examResult){
-                                if(examResult.sectionResults){
+                                if(!examResult.sectionResults){
                                     examResult.sectionResults = {};
                                 }
                                 examResult.sectionResults[exerciseId] = newGuid;
