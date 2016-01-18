@@ -1367,7 +1367,7 @@
                 });
             };
 
-            StorageSrv.prototype.EntityCommunicator = function (path, defaultValues) {
+            StorageSrv.prototype.entityCommunicator = function (path, defaultValues) {
                 return new EntityCommunicator(path, defaultValues, this);
             };
 
