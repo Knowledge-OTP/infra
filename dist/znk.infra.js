@@ -489,11 +489,13 @@
 
             function _getExamResultByGuid(guid,examId) {
                 var storage = InfraConfigSrv.getStorageService();
-                return storage.get(EXAM_RESULTS_PATH).then(function(examResults){
-                    if(!examResults[guid]){
-                        examResults[guid] = _getInitExamResult(examId, guid);
+                var path = _getExamResultPath(guid);
+                return storage.get(path).then(function(examResult){
+                    if(!examResult[guid]){
+                        var initResult = _getInitExamResult(examId, guid);
+                        angular.extend(examResult,initResult);
                     }
-                    return examResults[guid];
+                    return examResult;
                 });
             }
 
