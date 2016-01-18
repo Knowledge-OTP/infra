@@ -94,17 +94,22 @@
                 return EXAM_RESULTS_PATH + '/' + guid;
             }
 
-            function _getExamResultByGuid(guid) {
+            function _getExamResultByGuid(guid,examId) {
                 var storage = InfraConfigSrv.getStorageService();
-                var path = _getExamResultPath(guid);
-                return storage.get(path);
+                return storage.get(EXAM_RESULTS_PATH).then(function(examResults){
+                    if(!examResults[guid]){
+                        examResults[guid] = _getInitExamResult(examId, guid);
+                    }
+                    return examResults[guid];
+                });
             }
 
-            function _getInitExamResult(examId){
+            function _getInitExamResult(examId, guid){
                 return {
                     isComplete: false,
                     startedTime: '%currTimeStamp%',
-                    examId: examId
+                    examId: examId,
+                    guid: guid
                 };
             }
 
@@ -116,7 +121,6 @@
             this.getExamResult = function (examId) {
                 var storage = InfraConfigSrv.getStorageService();
                 return _getExamResultsGuids().then(function (examResultsGuids) {
-                    var initExamResult = _getInitExamResult(examId);
                     var examResultGuid = examResultsGuids[examId];
                     if (!examResultGuid) {
                         var dataToSave = {};
@@ -126,7 +130,7 @@
                         dataToSave[EXAM_RESULTS_GUID_PATH] = examResultsGuids;
 
                         var examResultPath = _getExamResultPath(newExamResultGuid);
-                        initExamResult.guid = newExamResultGuid;
+                        var initExamResult = _getInitExamResult(examId, newExamResultGuid);
                         dataToSave[examResultPath] = initExamResult;
 
                         return storage.set(dataToSave).then(function (res) {
@@ -134,14 +138,7 @@
                         });
                     }
 
-                    return _getExamResultByGuid(examResultGuid).then(function(result){
-                        angular.forEach(initExamResult, function(value,key){
-                            if(!result.hasOwnProperty(key)){
-                                result[key] = value;
-                            }
-                        });
-                        return result;
-                    });
+                    return _getExamResultByGuid(examResultGuid, examId);
                 });
             };
         }
