@@ -2,6 +2,7 @@
     'use strict';
 
     angular.module('znk.infra', [
+        'znk.infra.config',
         'znk.infra.pngSequence',
         'znk.infra.enum',
         'znk.infra.svgIcon',
@@ -10,7 +11,8 @@
         'znk.infra.content',
         'znk.infra.znkExercise',
         'znk.infra.storage',
-        'znk.infra.utility'
+        'znk.infra.utility',
+        'znk.infra.exerciseResult'
     ]);
 })(angular);
 
@@ -27,8 +29,20 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.exerciseResult', ['znk.infra.config','znk.infra.utility']);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.general', ['znk.infra.enum']);
 })(angular);
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.config', []);
+})(angular);
+
 (function (angular) {
     'use strict';
 
@@ -168,7 +182,7 @@
             ContentSrv.getContent = function(pathObj) {
 
                 if(!pathObj || !pathObj.exerciseType) {
-                    return $q.when({ error: 'Error: getContent require exerciseType!' });
+                    return $q.reject({ error: 'Error: getContent require exerciseType!' });
                 }
 
                 var path = (pathObj.exerciseId) ? pathObj.exerciseType+pathObj.exerciseId : pathObj.exerciseType;
@@ -377,6 +391,159 @@
     ]);
 })(angular);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
+        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum',
+        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum) {
+            var ExerciseResultSrv = this;
+
+            function _getExerciseResultGuidPath(exerciseTypeId, exerciseId) {
+                var storage = InfraConfigSrv.getStorageService();
+                var template = storage.variables.appUserSpacePath + '/exerciseResults/%exerciseType%/%exerciseId%';
+                return template.replace('%exerciseType%', exerciseTypeId).replace('%exerciseId%', exerciseId);
+            }
+
+            function _getUserExerciseResultGuid(exerciseTypeId, exerciseId) {
+                var storage = InfraConfigSrv.getStorageService();
+                var exerciseResultGuidPath = _getExerciseResultGuidPath(exerciseTypeId, exerciseId);
+                return storage.get(exerciseResultGuidPath);
+            }
+
+            function _getExerciseResultPath(guid) {
+                return 'exerciseResults/' + guid;
+            }
+
+            function _getInitExerciseResult(exerciseTypeId,exerciseId){
+                var storage = InfraConfigSrv.getStorageService();
+                return {
+                    exerciseId: exerciseId,
+                    exerciseTypeId: exerciseTypeId,
+                    startedTime: storage.variables.currTimeStamp,
+                    questionResults: []
+                };
+            }
+
+            function _getExerciseResultByGuid(guid) {
+                var exerciseResultPath = _getExerciseResultPath(guid);
+                var storage = InfraConfigSrv.getStorageService();
+                return storage.get(exerciseResultPath);
+            }
+
+            function _getSectionResultGuidPathInExamResult(examId,sectionId){
+                return ExerciseResultSrv.getExamResult(examId).then(function(examResult){
+                    return _getExamResultPath(examResult.guid) + '/sectionResults/' + sectionId;
+                });
+            }
+
+            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId) {
+                var getSectionResultGuidPathInExamResultProm = exerciseTypeId === ExerciseTypeEnum.SECTION.enum ?
+                    _getSectionResultGuidPathInExamResult(examId, exerciseId) : null;
+
+                return _getUserExerciseResultGuid(exerciseTypeId, exerciseId).then(function (resultGuid) {
+                    var initResult = _getInitExerciseResult(exerciseTypeId,exerciseId);
+                    if (angular.isObject(resultGuid)) {
+                        var storage = InfraConfigSrv.getStorageService();
+
+                        var guid = UtilitySrv.general.createGuid();
+                        var setVal = {};
+
+                        var userExerciseResultPath = _getExerciseResultGuidPath(exerciseTypeId, exerciseId);
+                        setVal[userExerciseResultPath] = guid;
+
+                        var exerciseResultPath = _getExerciseResultPath(guid);
+                        setVal[exerciseResultPath] = initResult;
+
+                        var setProm;
+                        if(getSectionResultGuidPathInExamResultProm){
+                            setProm = getSectionResultGuidPathInExamResultProm.then(function(sectionResultInExamResultPath){
+                                setVal[sectionResultInExamResultPath] = guid;
+                                return storage.set(setVal);
+                            });
+                        }else{
+                            setProm = storage.set(setVal);
+                        }
+
+                        return setProm.then(function(res){
+                            return res[exerciseResultPath];
+                        });
+                    }
+
+                    return _getExerciseResultByGuid(resultGuid).then(function(result){
+                        angular.forEach(initResult, function(value,key){
+                            if(!result.hasOwnProperty(key)){
+                                result[key] = value;
+                            }
+                        });
+                        return result;
+                    });
+                });
+            };
+
+            function _getExamResultGuidPath(examId) {
+                var storage = InfraConfigSrv.getStorageService();
+                return storage.variables.appUserSpacePath + '/examResults/' + examId;
+            }
+
+            function _getExamResultPath(guid) {
+                return 'examResults/' + guid;
+            }
+
+            function _getExamResultByGuid(guid) {
+                var storage = InfraConfigSrv.getStorageService();
+                var path = _getExamResultPath(guid);
+                return storage.get(path);
+            }
+
+            function _getInitExamResult(examId){
+                return {
+                    isComplete: false,
+                    startedTime: '%currTimeStamp%',
+                    examId: examId
+                };
+            }
+
+            function _getExamResultGuid(examId){
+                var storage = InfraConfigSrv.getStorageService();
+                var examGuidPath = _getExamResultGuidPath(examId);
+                return storage.get(examGuidPath);
+            }
+
+            this.getExamResult = function (examId) {
+                var storage = InfraConfigSrv.getStorageService();
+                return _getExamResultGuid(examId).then(function (examResultGuid) {
+                    var initExamResult = _getInitExamResult(examId);
+                    if (angular.equals(examResultGuid, {})) {
+                        var dataToSave = {};
+
+                        var newExamResultGuid = UtilitySrv.general.createGuid();
+                        var examGuidPath = _getExamResultGuidPath(examId);
+                        dataToSave[examGuidPath] = newExamResultGuid;
+
+                        var examResultPath = _getExamResultPath(newExamResultGuid);
+                        initExamResult.guid = newExamResultGuid;
+                        dataToSave[examResultPath] = initExamResult;
+
+                        return storage.set(dataToSave).then(function (res) {
+                            return res[examResultPath];
+                        });
+                    }
+
+                    return _getExamResultByGuid(examResultGuid).then(function(result){
+                        angular.forEach(initExamResult, function(value,key){
+                            if(!result.hasOwnProperty(key)){
+                                result[key] = value;
+                            }
+                        });
+                        return result;
+                    });
+                });
+            };
+        }
+    ]);
+})(angular);
+
 /**
  *  @directive subjectIdToAttrDrv
  *  This directive is an evolution of 'subjectIdToClassDrv'
@@ -494,6 +661,36 @@
     ]);
 })(angular);
 
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.config').provider('InfraConfigSrv', [
+        function () {
+            var storageServiceName;
+            this.setStorageServiceName = function(_storageServiceName){
+                storageServiceName = _storageServiceName;
+            };
+
+            this.$get = [
+                '$injector', '$log',
+                function ($injector, $log) {
+                    var InfraConfigSrv = {};
+
+                    InfraConfigSrv.getStorageService = function(){
+                        if(!storageServiceName){
+                            $log.$debug('InfraConfigSrv: storage service name was not defined');
+                            return;
+                        }
+                        return $injector.get(storageServiceName);
+                    };
+
+                    return InfraConfigSrv;
+                }
+            ];
+        }
+    ]);
+})(angular);
 
 /**
  * Created by Igor on 8/19/2015.
@@ -970,8 +1167,8 @@
     'use strict';
 
     angular.module('znk.infra.storage').factory('storageFirebaseAdapter', [
-        '$log', '$q',
-        function ($log, $q) {
+        '$log', '$q', 'StorageSrv',
+        function ($log, $q, StorageSrv) {
             function removeIllegalProperties(source){
                 if(angular.isArray(source)){
                     source.forEach(function(item){
@@ -1027,19 +1224,35 @@
                     return defer.promise;
                 }
 
-                function set(relativePath, newValue){
+                function set(relativePathOrObject, newValue){
                     var defer = $q.defer();
-                    var newValueCopy = angular.copy(newValue);
-                    removeIllegalProperties(newValueCopy);
-                    var ref = getRef(relativePath);
-                    ref.set(newValueCopy,function(err){
-                        if(err){
-                            $log.debug('storageFirebaseAdapter: failed to set data for the following path',relativePath,err);
-                            defer.reject(err);
-                        }else{
-                            defer.resolve(newValueCopy);
-                        }
-                    });
+
+                    if(angular.isObject(relativePathOrObject)){
+                        var valuesToSet ={};
+                        angular.forEach(relativePathOrObject,function(value,key){
+                            var processedPath = processPath(key, authObj);
+                            valuesToSet[processedPath] = value;
+                        });
+                        removeIllegalProperties(valuesToSet);
+                        refMap.rootRef.update(valuesToSet, function(err){
+                            if(err){
+                                defer.reject(err);
+                            }
+                            defer.resolve();
+                        });
+                    }else{
+                        var newValueCopy = angular.copy(newValue);
+                        removeIllegalProperties(newValueCopy);
+                        var ref = getRef(relativePathOrObject);
+                        ref.set(newValueCopy,function(err){
+                            if(err){
+                                $log.debug('storageFirebaseAdapter: failed to set data for the following path',relativePathOrObject,err);
+                                defer.reject(err);
+                            }else{
+                                defer.resolve(newValueCopy);
+                            }
+                        });
+                    }
 
                     return defer.promise;
                 }
@@ -1051,12 +1264,9 @@
                 };
             }
 
-            storageFirebaseAdapter.variables = {
-                uid: '$$uid',
-                appUserSpacePath: 'users/$$uid'
-            };
+            var pathVariables= StorageSrv.variables;
 
-            var regexString = storageFirebaseAdapter.variables.uid.replace(/\$/g,'\\$');
+            var regexString = pathVariables.uid.replace(/\$/g,'\\$');
             var UID_REGEX = new RegExp(regexString,'g');
             function processPath(path,authObj) {
                 var processedPath = path.replace(UID_REGEX, authObj.uid);
@@ -1082,18 +1292,21 @@
 
             var entityCache = $cacheFactory('entityCache');
 
-            function EntityCommunicator(path, defaultValue, getter, setter) {
-                this.path = path;
-                this.defaultValue = defaultValue;
-                this.getter = getter;
-                this.setter = setter;
+            function StorageSrv(entityGetter, entitySetter) {
+                this.getter = function(path){
+                    return $q.when(entityGetter(path));
+                };
+
+                this.setter = function(path, newVal){
+                    return $q.when(entitySetter(path,newVal));
+                };
             }
 
-            EntityCommunicator.prototype.get = function () {
-                var path = this.path;
+            StorageSrv.prototype.get = function(path, defaultValue){
+                var self = this;
                 var entity = entityCache.get(path);
                 var getProm;
-                var defaultValue = this.defaultValue || {};
+                defaultValue = defaultValue || {};
                 var cacheProm = false;
 
                 if (entity) {
@@ -1117,6 +1330,9 @@
                             _entity[key] = angular.copy(defaultValue[key]);
                         }
                     });
+                    if(angular.isObject(_entity)){
+                        _entity.$save = self.set.bind(self,path,_entity);
+                    }
                     return _entity;
                 });
 
@@ -1127,17 +1343,52 @@
                 return getProm;
             };
 
-            EntityCommunicator.prototype.set = function (entity) {
-                var key = this.path;
-                entityCache.put(key, entity);
-                return this.setter(this.path, entity);
+            StorageSrv.prototype.set = function(pathStrOrObj, newValue){
+                var self = this;
+                return this.setter(pathStrOrObj, newValue).then(function(res){
+                    if(!angular.isObject(pathStrOrObj)){
+                        var temp = res;
+                        res = {};
+                        res[pathStrOrObj] = temp;
+                    }
+                    var promArr = [];
+                    var retVal = {};
+                    angular.forEach(res,function(val,key){
+                        entityCache.put(key,val);
+                        var prom = self.get(key).then(function(cachedVal){
+                            retVal[key] = cachedVal;
+                        });
+                        promArr.push(prom);
+                    });
+                    return $q.all(promArr).then(function(){
+                        return retVal;
+                    });
+                });
             };
 
-            function StorageSrv(entityGetter, entitySetter) {
-                this.EntityCommunicator = function (path, defaultValues) {
-                    return new EntityCommunicator(path, defaultValues, entityGetter, entitySetter);
-                };
+            StorageSrv.prototype.EntityCommunicator = function (path, defaultValues) {
+                return new EntityCommunicator(path, defaultValues, this);
+            };
+
+            StorageSrv.variables = StorageSrv.prototype.variables = {
+                currTimeStamp: '%currTimeStamp%',
+                uid: '$$uid',
+                appUserSpacePath: 'users/$$uid'
+            };
+
+            function EntityCommunicator(path, defaultValue, storage) {
+                this.path = path;
+                this.defaultValue = defaultValue;
+                this.storage = storage;
             }
+
+            EntityCommunicator.prototype.get = function () {
+                return this.storage.get(this.path);
+            };
+
+            EntityCommunicator.prototype.set = function (newVal) {
+                return this.storage.set(this.path, newVal);
+            };
 
             return StorageSrv;
         }

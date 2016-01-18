@@ -28,7 +28,7 @@ describe('testing service "ExerciseResult":', function () {
         };
     });
 
-    xdescribe('testing get exercise result', function(){
+    describe('testing exercise result', function(){
         it('when requesting for a not exiting result then a new initialized result should be returned', function () {
             var exerciseId = 1;
             var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseId);
@@ -97,7 +97,7 @@ describe('testing service "ExerciseResult":', function () {
         });
     });
 
-    describe('test get exam result', function(){
+    describe('test exam result', function(){
         it('when requesting for not existing exam result then initialized result should be returned', function(){
             var examId = 1;
 
@@ -161,5 +161,17 @@ describe('testing service "ExerciseResult":', function () {
             };
             expect(examResult).toEqual(jasmine.objectContaining(expectedExamResult));
         });
+    });
+
+    describe('test section result',function(){
+       it('when retrieving not exiting section result then this section should be added to relevant exam result',function(){
+           var sectionId = 10;
+           var examId = 1;
+           actions.getExerciseResult(ExerciseTypeEnum.SECTION.enum, sectionId, examId);
+           var examResultGuid = testStorage.db.users.$$uid.examResults[1];
+           var examResult = testStorage.db.examResults[examResultGuid];
+           var sectionResultGuid = testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.SECTION.enum][sectionId];
+           expect(examResult.sectionResults[sectionId]).toBe(sectionResultGuid);
+       });
     });
 });

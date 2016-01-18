@@ -2,8 +2,10 @@
     'use strict';
 
     angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv',
-        function (InfraConfigSrv, $log, $q, UtilitySrv) {
+        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum',
+        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum) {
+            var ExerciseResultSrv = this;
+
             function _getExerciseResultGuidPath(exerciseTypeId, exerciseId) {
                 var storage = InfraConfigSrv.getStorageService();
                 var template = storage.variables.appUserSpacePath + '/exerciseResults/%exerciseType%/%exerciseId%';
@@ -36,7 +38,16 @@
                 return storage.get(exerciseResultPath);
             }
 
-            this.getExerciseResult = function (exerciseTypeId, exerciseId) {
+            function _getSectionResultGuidPathInExamResult(examId,sectionId){
+                return ExerciseResultSrv.getExamResult(examId).then(function(examResult){
+                    return _getExamResultPath(examResult.guid) + '/sectionResults/' + sectionId;
+                });
+            }
+
+            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId) {
+                var getSectionResultGuidPathInExamResultProm = exerciseTypeId === ExerciseTypeEnum.SECTION.enum ?
+                    _getSectionResultGuidPathInExamResult(examId, exerciseId) : null;
+
                 return _getUserExerciseResultGuid(exerciseTypeId, exerciseId).then(function (resultGuid) {
                     var initResult = _getInitExerciseResult(exerciseTypeId,exerciseId);
                     if (angular.isObject(resultGuid)) {
@@ -51,7 +62,17 @@
                         var exerciseResultPath = _getExerciseResultPath(guid);
                         setVal[exerciseResultPath] = initResult;
 
-                        return storage.set(setVal).then(function(res){
+                        var setProm;
+                        if(getSectionResultGuidPathInExamResultProm){
+                            setProm = getSectionResultGuidPathInExamResultProm.then(function(sectionResultInExamResultPath){
+                                setVal[sectionResultInExamResultPath] = guid;
+                                return storage.set(setVal);
+                            });
+                        }else{
+                            setProm = storage.set(setVal);
+                        }
+
+                        return setProm.then(function(res){
                             return res[exerciseResultPath];
                         });
                     }
@@ -67,7 +88,7 @@
                 });
             };
 
-            function _getExamGuidPath(examId) {
+            function _getExamResultGuidPath(examId) {
                 var storage = InfraConfigSrv.getStorageService();
                 return storage.variables.appUserSpacePath + '/examResults/' + examId;
             }
@@ -90,17 +111,27 @@
                 };
             }
 
+            function _getExamResultGuid(examId){
+                var storage = InfraConfigSrv.getStorageService();
+                var examGuidPath = _getExamResultGuidPath(examId);
+                return storage.get(examGuidPath);
+            }
+
             this.getExamResult = function (examId) {
                 var storage = InfraConfigSrv.getStorageService();
-                var examGuidPath = _getExamGuidPath(examId);
-                return storage.get(examGuidPath).then(function (examResultGuid) {
+                return _getExamResultGuid(examId).then(function (examResultGuid) {
                     var initExamResult = _getInitExamResult(examId);
                     if (angular.equals(examResultGuid, {})) {
-                        var newExamResultGuid = UtilitySrv.general.createGuid();
                         var dataToSave = {};
+
+                        var newExamResultGuid = UtilitySrv.general.createGuid();
+                        var examGuidPath = _getExamResultGuidPath(examId);
                         dataToSave[examGuidPath] = newExamResultGuid;
+
                         var examResultPath = _getExamResultPath(newExamResultGuid);
+                        initExamResult.guid = newExamResultGuid;
                         dataToSave[examResultPath] = initExamResult;
+
                         return storage.set(dataToSave).then(function (res) {
                             return res[examResultPath];
                         });
