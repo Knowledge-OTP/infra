@@ -85,8 +85,8 @@
                     }
 
                     return _getExerciseResultByGuid(resultGuid).then(function(result){
-                        if(!result.guid){
-                            var initResult = _getInitExerciseResult(exerciseTypeId,exerciseId,newGuid);
+                        if(result.guid !== resultGuid){
+                            var initResult = _getInitExerciseResult(exerciseTypeId,exerciseId,resultGuid);
                             angular.extend(result,initResult);
                         }
                         return result;
@@ -102,7 +102,7 @@
                 var storage = InfraConfigSrv.getStorageService();
                 var path = _getExamResultPath(guid);
                 return storage.get(path).then(function(examResult){
-                    if(!examResult[guid]){
+                    if(examResult.guid !== guid){
                         var initResult = _getInitExamResult(examId, guid);
                         angular.extend(examResult,initResult);
                     }
