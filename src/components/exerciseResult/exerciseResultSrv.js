@@ -13,18 +13,6 @@
             var EXAM_RESULTS_PATH = 'examResults';
             var EXAM_RESULTS_GUIDS_PATH = StorageSrv.variables.appUserSpacePath + '/examResults';
 
-
-            //function _getExerciseResultGuidPath(exerciseTypeId, exerciseId) {
-            //    var template = EXERCISE_RESULTS_GUIDS_PATH + '/%exerciseType%/%exerciseId%';
-            //    return template.replace('%exerciseType%', exerciseTypeId).replace('%exerciseId%', exerciseId);
-            //}
-
-            //function _getUserExerciseResultGuid(exerciseTypeId, exerciseId) {
-            //    var storage = InfraConfigSrv.getStorageService();
-            //    var exerciseResultGuidPath = _getExerciseResultGuidPath(exerciseTypeId, exerciseId);
-            //    return storage.get(exerciseResultGuidPath);
-            //}
-
             function _getExerciseResultPath(guid) {
                 return EXERCISE_RESULTS_PATH + '/' + guid;
             }
@@ -45,12 +33,6 @@
                 var storage = InfraConfigSrv.getStorageService();
                 return storage.get(exerciseResultPath);
             }
-
-            //function _getSectionResultGuidPathInExamResult(examId,sectionId){
-            //    return ExerciseResultSrv.getExamResult(examId).then(function(examResult){
-            //        return _getExamResultPath(examResult.guid) + '/sectionResults/' + sectionId;
-            //    });
-            //}
 
             function _getExerciseResultsGuids(){
                 var storage = InfraConfigSrv.getStorageService();
