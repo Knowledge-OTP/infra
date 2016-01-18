@@ -483,11 +483,6 @@
                 });
             };
 
-            function _getExamResultGuidPath(examId) {
-                var storage = InfraConfigSrv.getStorageService();
-                return storage.variables.appUserSpacePath + '/examResults/' + examId;
-            }
-
             function _getExamResultPath(guid) {
                 return EXAM_RESULTS_PATH + '/' + guid;
             }
@@ -506,23 +501,22 @@
                 };
             }
 
-            function _getExamResultGuid(examId){
+            function _getExamResultsGuids(){
                 var storage = InfraConfigSrv.getStorageService();
-                return storage.get(EXAM_RESULTS_GUID_PATH).then(function(examResults){
-                    return examResults[examId];
-                });
+                return storage.get(EXAM_RESULTS_GUID_PATH);
             }
 
             this.getExamResult = function (examId) {
                 var storage = InfraConfigSrv.getStorageService();
-                return _getExamResultGuid(examId).then(function (examResultGuid) {
+                return _getExamResultsGuids().then(function (examResultsGuids) {
                     var initExamResult = _getInitExamResult(examId);
-                    if (angular.equals(examResultGuid, {})) {
+                    var examResultGuid = examResultsGuids[examId];
+                    if (!examResultGuid) {
                         var dataToSave = {};
 
                         var newExamResultGuid = UtilitySrv.general.createGuid();
-                        var examGuidPath = _getExamResultGuidPath(examId);
-                        dataToSave[examGuidPath] = newExamResultGuid;
+                        examResultsGuids[examId] = newExamResultGuid;
+                        dataToSave[EXAM_RESULTS_GUID_PATH] = examResultsGuids;
 
                         var examResultPath = _getExamResultPath(newExamResultGuid);
                         initExamResult.guid = newExamResultGuid;
