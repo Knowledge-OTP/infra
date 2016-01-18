@@ -30,7 +30,7 @@ describe('testing service "ExerciseResult":', function () {
 
     describe('testing exercise result', function(){
         it('when requesting for a not exiting result then a new initialized result should be returned', function () {
-            var exerciseId = 1;
+            var exerciseId = 20;
             var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseId);
             var expectedExerciseResult = {
                 exerciseId: exerciseId,
@@ -42,7 +42,7 @@ describe('testing service "ExerciseResult":', function () {
         });
 
         it('when requesting for a not exiting result then a new initialized result should be saved in db', function () {
-            var exerciseId = 1;
+            var exerciseId = 10;
             actions.getExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseId);
             var expectedResultGuid = Object.keys(testStorage.db.exerciseResults)[0];
             var exerciseResultGuid = testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum][exerciseId];
@@ -50,7 +50,7 @@ describe('testing service "ExerciseResult":', function () {
         });
 
         it('when requesting for an exiting result then it should be returned', function () {
-            var exerciseId = 1;
+            var exerciseId = 10;
             var expectedExerciseResult = {
                 exerciseId: exerciseId,
                 exerciseTypeId: ExerciseTypeEnum.TUTORIAL.enum,
@@ -67,7 +67,7 @@ describe('testing service "ExerciseResult":', function () {
         });
 
         it('when saving result then it should be saved in db', function () {
-            var exerciseId = 1;
+            var exerciseId = 10;
             var expectedResult = actions.getExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseId);
             expectedResult.questionResults.push({userAnswer: 2});
             expectedResult.$save();
@@ -81,7 +81,7 @@ describe('testing service "ExerciseResult":', function () {
         });
 
         it('when requesting for result by guid and it not exist then it should be set to init result', function () {
-            var exerciseId = 1;
+            var exerciseId = 10;
 
             testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum] = {};
             testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum][exerciseId] = 123;
