@@ -66,7 +66,7 @@
                         var valuesToSet ={};
                         angular.forEach(relativePathOrObject,function(value,key){
                             var processedPath = processPath(key, authObj);
-                            valuesToSet[processedPath] = value;
+                            valuesToSet[processedPath] = angular.copy(value);
                         });
                         removeIllegalProperties(valuesToSet);
                         refMap.rootRef.update(valuesToSet, function(err){
