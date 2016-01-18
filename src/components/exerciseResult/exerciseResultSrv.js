@@ -2,10 +2,12 @@
     'use strict';
 
     angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum',
-        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum) {
+        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv',
+        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv) {
             var ExerciseResultSrv = this;
 
+            var EXAM_RESULTS_PATH = 'examResults';
+            var EXAM_RESULTS_GUID_PATH = StorageSrv.variables.appUserSpacePath + '/examResults';
             function _getExerciseResultGuidPath(exerciseTypeId, exerciseId) {
                 var storage = InfraConfigSrv.getStorageService();
                 var template = storage.variables.appUserSpacePath + '/exerciseResults/%exerciseType%/%exerciseId%';
@@ -94,7 +96,7 @@
             }
 
             function _getExamResultPath(guid) {
-                return 'examResults/' + guid;
+                return EXAM_RESULTS_PATH + '/' + guid;
             }
 
             function _getExamResultByGuid(guid) {
@@ -113,8 +115,9 @@
 
             function _getExamResultGuid(examId){
                 var storage = InfraConfigSrv.getStorageService();
-                var examGuidPath = _getExamResultGuidPath(examId);
-                return storage.get(examGuidPath);
+                return storage.get(EXAM_RESULTS_GUID_PATH).then(function(examResults){
+                    return examResults[examId];
+                });
             }
 
             this.getExamResult = function (examId) {
