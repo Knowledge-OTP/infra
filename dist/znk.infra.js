@@ -478,9 +478,11 @@
                     }
 
                     return _getExerciseResultByGuid(resultGuid).then(function(result){
+                        var initResult = _getInitExerciseResult(exerciseTypeId,exerciseId,resultGuid);
                         if(result.guid !== resultGuid){
-                            var initResult = _getInitExerciseResult(exerciseTypeId,exerciseId,resultGuid);
                             angular.extend(result,initResult);
+                        }else{
+                            UtilitySrv.object.extendWithoutOverride(result, initResult);
                         }
                         return result;
                     });
@@ -495,9 +497,11 @@
                 var storage = InfraConfigSrv.getStorageService();
                 var path = _getExamResultPath(guid);
                 return storage.get(path).then(function(examResult){
+                    var initResult = _getInitExamResult(examId, guid);
                     if(examResult.guid !== guid){
-                        var initResult = _getInitExamResult(examId, guid);
                         angular.extend(examResult,initResult);
+                    }else{
+                        UtilitySrv.object.extendWithoutOverride(examResult,initResult);
                     }
                     return examResult;
                 });
@@ -1495,6 +1499,7 @@
         function () {
             var UtilitySrv = {};
 
+            //general utility functions
             UtilitySrv.general = {};
 
             UtilitySrv.general.createGuid = function(){
@@ -1503,6 +1508,17 @@
                 }
 
                 return (s4() + s4() + '-' + s4() + '-4' + s4().substr(0, 3) + '-' + s4() + '-' + s4() + s4() + s4()).toLowerCase();
+            };
+
+            // object utility function
+            UtilitySrv.object = {};
+
+            UtilitySrv.object.extendWithoutOverride = function(dest, src){
+                angular.forEach(src, function(val,key){
+                    if(!dest.hasOwnProperty(key)){
+                        dest[key] = val;
+                    }
+                });
             };
 
             return UtilitySrv;
