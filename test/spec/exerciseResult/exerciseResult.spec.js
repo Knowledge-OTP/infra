@@ -51,19 +51,48 @@ describe('testing service "ExerciseResult":', function () {
 
         it('when requesting for an exiting result then it should be returned', function () {
             var exerciseId = 10;
-            var expectedExerciseResult = {
+            var questionGuid = 123;
+
+            var result = {
                 exerciseId: exerciseId,
                 exerciseTypeId: ExerciseTypeEnum.TUTORIAL.enum,
                 startedTime: '%currTimeStamp%',
-                questionResults: [{userAnswer: 1}]
+                guid: questionGuid
             };
 
-            testStorage.db.exerciseResults[123] = expectedExerciseResult;
+            var expectedResult = angular.copy(result);
+            expectedResult.questionResults = [];
+
+            testStorage.db.exerciseResults[questionGuid] = result;
             testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum] = {};
-            testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum][exerciseId] = 123;
+            testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum][exerciseId] = questionGuid;
 
             var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseId);
-            expect(exerciseResult).toEqual(expectedExerciseResult);
+            expect(exerciseResult).toEqual(jasmine.objectContaining(expectedResult));
+        });
+
+        it('when requesting for an exiting result which has user answers then it should be returned', function () {
+            var exerciseId = 10;
+            var questionGuid = 123;
+
+            var result = {
+                exerciseId: exerciseId,
+                exerciseTypeId: ExerciseTypeEnum.TUTORIAL.enum,
+                startedTime: '%currTimeStamp%',
+                guid: questionGuid,
+                questionResults: [{
+                    userAnswer: 1
+                }]
+            };
+
+            var expectedResult = angular.copy(result);
+
+            testStorage.db.exerciseResults[questionGuid] = result;
+            testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum] = {};
+            testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum][exerciseId] = questionGuid;
+
+            var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseId);
+            expect(exerciseResult).toEqual(jasmine.objectContaining(expectedResult));
         });
 
         it('when saving result then it should be saved in db', function () {
@@ -119,6 +148,28 @@ describe('testing service "ExerciseResult":', function () {
         });
 
         it('when requesting for existing result then it should be returned',function(){
+            var examId = 1;
+            var guid = 123;
+
+            testStorage.db.users.$$uid.examResults[examId] = 'guid';
+            var result = {
+                isComplete: false,
+                startedTime: '%currTimeStamp%',
+                examId: examId,
+                guid: guid
+            };
+            testStorage.db.users.$$uid.examResults[examId] = guid;
+            testStorage.db.examResults[guid] = result;
+
+            var expectedResult = angular.copy(result);
+            expectedResult.sectionResults = {};
+
+            var examResult = actions.getExamResult(examId);
+
+            expect(examResult).toEqual(jasmine.objectContaining(expectedResult));
+        });
+
+        it('when requesting for existing result which has sectionResults then it should be returned',function(){
             var examId = 1;
             testStorage.db.users.$$uid.examResults[examId] = 'guid';
             var expectedResult = {
