@@ -2,7 +2,7 @@
 
 (function () {
     angular.module('znk.infra.popUp').factory('PopUpSrv',[
-        '$injector', '$q', '$rootScope', '$animate', '$document', '$compile',
+        '$injector', '$q', '$rootScope', '$animate', '$document',
         function ($injector, $q, $rootScope, $animate, $document) {
             var PopUpSrv = {};
 
