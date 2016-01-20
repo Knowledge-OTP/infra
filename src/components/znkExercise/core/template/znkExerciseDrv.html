@@ -11,7 +11,8 @@
                           next-question="vm.setCurrentIndexByOffset(1)"
                           on-done="settings.onDone()">
 </znk-exercise-btn-section>
-<znk-exercise-pager
-        ng-hide="vm.hidePager"
-        questions="vm.questionsWithAnswers">
+<znk-exercise-pager class="ng-hide"
+                    ng-show="vm.showPager"
+                    questions="vm.questionsWithAnswers"
+                    ng-model="vm.currentSlide">
 </znk-exercise-pager>

@@ -16,7 +16,7 @@
 
             QuestionTypesSrvProvider.setQuestionTypeGetter(questionTypeGetter);
         })
-        .controller('Main', function ($scope) {
+        .controller('Main', function ($scope,$timeout) {
             $scope.questions = [
                 {
                     __type: 1, id: 1, answerTypeId: 0, answers: [
@@ -36,7 +36,7 @@
                 },
                 {
                     __type: 1,
-                    id: 1,
+                    id: 2,
                     answerTypeId: 3,
                     correctAnswerText: [
                         {
@@ -59,15 +59,23 @@
             ];
 
             $scope.settings = {
-                viewMode: 2,
+                viewMode: 1,
                 onQuestionAnswered: function(){
-                    $scope;
+
                 },
                 onDone: function(){
                     alert('On done was invoked');
-                }
+                },
+                initPagerDisplay: true
             };
 
+            $scope.results = [{
+                userAnswer: 2,
+                questionId: 1
+            },{
+                userAnswer: 2,
+                questionId: 2
+            }];
             $scope.addQuestion = function () {
                 $scope.results.push({});
                 $scope.results = angular.copy($scope.results);
@@ -101,6 +109,24 @@
 
             $scope.setSlideDirection = function(slideDirection){
                 $scope.actions.setSlideDirection(slideDirection);
+            };
+
+            $scope.setViewMode = function(viewMode){
+                $scope.settings.viewMode = viewMode;
+                rebuildExercise();
+            };
+
+            function rebuildExercise(){
+                $scope.hideExercise = true;
+                $timeout(function(){
+                    $scope.hideExercise = false;
+                });
+            }
+
+
+            $scope.showOrHidePager= function(){
+                $scope.settings.initPagerDisplay = !$scope.settings.initPagerDisplay;
+                $scope.actions.pagerDisplay($scope.settings.initPagerDisplay);
             };
         });
 })(angular);

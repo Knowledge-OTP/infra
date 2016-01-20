@@ -122,6 +122,11 @@ module.exports = function (grunt) {
                 ],
                 configFile: 'test/karma-unit.conf.js'
             },
+            ci: {
+                configFile: 'test/karma-unit.conf.js',
+                singleRun: true,
+                browsers: ['PhantomJS']
+            },
             build: {
                 configFile: 'test/karma-unit.conf.js',
                 singleRun: true,
@@ -201,7 +206,7 @@ module.exports = function (grunt) {
     grunt.registerTask('build', [
         'clean:dist',
         'jshint:all',
-        //'karma:build',
+        'karma:build',
         'sass',
         'html2js',
         'copy:dist',
@@ -213,6 +218,13 @@ module.exports = function (grunt) {
     grunt.registerTask('default', [
         'build'
     ]);
+
+    grunt.registerTask('ci',function(){
+      grunt.task.run([
+        'jshint:all',
+        'karma:ci'
+      ]);
+  });
 
     grunt.registerTask('serve', function (component) {
         if (component) {

@@ -1,0 +1,14 @@
+<znk-scroll>
+    <div class="pager-items-wrapper">
+        <div class="pager-item"
+             ng-repeat="question in questions track by question.id"
+             question-status="question.__questionStatus"
+             question="question"
+             ng-click="d.tap($index)">
+            <div class="question-bookmark-icon"></div>
+            <div class="question-status-indicator">
+                <div class="index">{{::$index + 1}}</div>
+            </div>
+        </div>
+    </div>
+</znk-scroll>

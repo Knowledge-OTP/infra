@@ -18,8 +18,8 @@
                     '$scope',
                     function ($scope) {
                         var self = this;
-                        self.question = $scope.questionGetter();
 
+                        self.question = $scope.questionGetter();
                     }
                 ],
                 link: {
