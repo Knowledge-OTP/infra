@@ -108,7 +108,7 @@
                 wrapperCls = wrapperCls ? wrapperCls + ' base-popup show-hide-animation' : 'base-popup show-hide-animation';
 
                 headerIcon = headerIcon || '';
-                var header = '<div class="icon-wrapper"><svg-icon name=' + headerIcon + '></svg-icon></div>';
+                var header = '<div class="icon-wrapper"><svg-icon name="%headerIcon%"></svg-icon></div>';
                 header = header.replace('%headerIcon%',headerIcon);
 
                 var body = '<div class="title responsive-title">%title%</div><div class="content">%content%</div>';
