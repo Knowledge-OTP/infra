@@ -16,6 +16,7 @@
             .znk-popup-header{
                 position: relative;
                 height: 33px;
+                border-radius: 15px 15px 0px 0px;
 
                 .icon-wrapper{
                     @include dimension(57px, 57px);
@@ -23,9 +24,15 @@
                     @include absolute-position(-12px, 50%);
                     margin-right: -28.5px;
                     @include flex-middle;
-                    color: $fcColor2;
-                    font:{
-                        size: 35px;
+
+                    .exclamation-mark{
+                        svg{
+                            width: 8px;
+
+                            path{
+                                fill: $bgColor6;
+                            }
+                        }
                     }
                 }
             }
@@ -35,50 +42,44 @@
                 padding: 40px 37px 32px 37px;
 
                 .title{
-                    @include text-style(55px, null, chocolate-raindrops, $mediumFontWeight);
+                    @include text-style(27px, null, Quicksand, $boldFontWeight);
                     padding:{
                         right: 10px; //(igor) added to align the text , the chocolate raindrops text is not completely wrapped by its containing element
-                    }
-                ;
+                    };
                     line-height: 55px;
                 }
 
                 .content{
                     @include text-style(16px, $fcColor6, Lato, $regularFontWeight);
                     margin:{
-                        top: 33px;
-                    }
-                ;
+                        top: 6px;
+                    };
                 }
             }
 
             .znk-popup-buttons{
+                @include display-flex;
+                @include justify-content(center);
+                border-radius: 0px 0px 15px 15px;
                 background: $bgColor6;
                 padding:{
-                    bottom: 45px;
-                }
-            ;
+                    bottom: 50px;
+                };
 
                 .button-wrapper{
-                    margin:{
-                        bottom: 15px;
+                    @include text-style(14px, $fcColor5, Lato, $regularFontWeight);
+                    border: 1px solid $bgColor3;
+                    border-radius: 20px;
+
+                    .btn{
+                        @include flex-middle;
+                        @include dimension(150px, 34px);
                     }
 
-                    &:last-child{
-                        margin-bottom: 0;
-                    }
-
-                    button.btn{
-                        width: 240px;
-                        font:{
-                            size: 18px;
-                        }
-
-                        &.btn.btn-outline{
-                            float: initial;
-                            color: $fcColor5;
-                            border-color: $fcColor5;
-                        }
+                    &:nth-child(2){
+                        color: $fcColor2;
+                        margin-left: 10px;
+                        background-color: $bgColor3;
                     }
                 }
             }
@@ -93,15 +94,6 @@
 
                 .znk-popup-header{
                     height: 37px;
-
-                    .icon-wrapper{
-                        @include dimension(87px, 87px);
-                        margin-right: -43.5px;
-                        top: -25px;
-                        font:{
-                            size: 53px;
-                        }
-                    }
                 }
 
                 .znk-popup-body{
@@ -196,7 +188,13 @@
 
             .znk-popup-body{
                 .title{
-                    color: $fcColor6;
+                    @include text-style(27px, $fcColor6, Quicksand, $boldFontWeight);
+
+                }
+            }
+
+            .znk-popup-buttons{
+                .button-wrapper {
                 }
             }
         }

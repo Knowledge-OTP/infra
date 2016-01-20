@@ -11,7 +11,10 @@
                         PopUpSrv.warning('Warning', 'Bla Bla Bla', 'Accept', 'Cancel');
                         break;
                     case 'error':
-                        PopUpSrv.error('Warning', 'Bla Bla Bla');
+                        PopUpSrv.error('Error', 'Bla Bla Bla', 'Accept', 'Cancel');
+                        break;
+                    case 'error conformation':
+                        PopUpSrv.ErrorConfirmation('Error Conformation', 'Bla Bla Bla', 'Accept', 'Cancel');
                         break;
                     case 'success':
                         PopUpSrv.success('Success', 'Bla Bla Bla');

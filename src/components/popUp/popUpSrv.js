@@ -2,7 +2,7 @@
 
 (function () {
     angular.module('znk.infra.popUp').factory('PopUpSrv',[
-        '$injector', '$q', '$rootScope', '$animate', '$document',
+        '$injector', '$q', '$rootScope', '$animate', '$document', '$compile',
         function ($injector, $q, $rootScope, $animate, $document) {
             var PopUpSrv = {};
 
@@ -43,13 +43,13 @@
                             '<div class="znk-popup-body">%body%</div>' +
                             '<div class="znk-popup-buttons">' +
                                 '<div ng-repeat="button in ::d.buttons" class="button-wrapper">' +
-                                    '<button class="btn" ' +
+                                    '<div class="btn" ' +
                                              'ng-click="d.btnClick(button)" ' +
                                              'ng-class="button.type" ' +
                                              'analytics-on="click" ' +
                                              'analytics-event="click-popup-{{button.text}}" ' +
                                              'analytics-category="popup">{{button.text}}' +
-                                    '</button>' +
+                                    '</div>' +
                                 '</div>' +
                             '</div>' +
                         '</div>' +
@@ -108,7 +108,7 @@
                 wrapperCls = wrapperCls ? wrapperCls + ' base-popup show-hide-animation' : 'base-popup show-hide-animation';
 
                 headerIcon = headerIcon || '';
-                var header = '<div class="icon-wrapper"><i class="%headerIcon%"></i></div>';
+                var header = '<div class="icon-wrapper"><svg-icon name="exclamation-mark"></svg-icon></div>';
                 header = header.replace('%headerIcon%',headerIcon);
 
                 var body = '<div class="title responsive-title">%title%</div><div class="content">%content%</div>';
@@ -138,6 +138,15 @@
             PopUpSrv.error = function error(title,content){
                 var btn = new BaseButton('OK',null,'ok');
                 return basePopup('error-popup','ion-close-round',title || 'OOOPS...',content,[btn]);
+            };
+
+
+            PopUpSrv.ErrorConfirmation = function error(title, content, acceptBtnTitle,cancelBtnTitle){
+                var buttons = [
+                    new BaseButton(acceptBtnTitle,null,acceptBtnTitle),
+                    new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle)
+                ];
+                return basePopup('error-popup','warning-icon',title,content,buttons);
             };
 
             PopUpSrv.success = function success(title,content){
