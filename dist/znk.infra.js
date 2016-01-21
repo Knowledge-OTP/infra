@@ -1349,7 +1349,7 @@
                             _entity[key] = angular.copy(defaultValue[key]);
                         }
                     });
-                    if(angular.isObject(_entity)){
+                    if(angular.isObject(_entity) && !_entity.$save){
                         _entity.$save = self.set.bind(self,path,_entity);
                     }
                     return _entity;
@@ -1365,23 +1365,22 @@
             StorageSrv.prototype.set = function(pathStrOrObj, newValue){
                 var self = this;
                 return this.setter(pathStrOrObj, newValue).then(function(){
-                    var dataToGetFromCache = {};
+                    var dataToSaveInCache = {};
+
                     if(!angular.isObject(pathStrOrObj)){
-                        dataToGetFromCache[pathStrOrObj] = newValue;
+                        dataToSaveInCache[pathStrOrObj] = newValue;
+                    }else{
+                        dataToSaveInCache = pathStrOrObj;
                     }
-                    dataToGetFromCache = angular.copy(pathStrOrObj);
-                    var promArr = [];
-                    var retVal = {};
-                    angular.forEach(dataToGetFromCache, function(val,key){
-                        entityCache.put(key,val);
-                        var prom = self.get(key).then(function(cachedVal){
-                            retVal[key] = cachedVal;
-                        });
-                        promArr.push(prom);
+
+                    angular.forEach(dataToSaveInCache, function(value,path){
+                        entityCache.put(path,value);
+                        if(angular.isObject(value) && !value.$save){
+                            value.$save = self.set.bind(self,path,value);
+                        }
                     });
-                    return $q.all(promArr).then(function(){
-                        return angular.isObject(pathStrOrObj) ? retVal : retVal[pathStrOrObj];
-                    });
+
+                    return angular.isObject(pathStrOrObj) ? dataToSaveInCache : dataToSaveInCache[pathStrOrObj];
                 });
             };
 
