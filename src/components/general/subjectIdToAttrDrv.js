@@ -16,11 +16,6 @@
         'SubjectEnum', '$interpolate',
         function (SubjectEnum, $interpolate) {
             return {
-                scope: {
-                    contextAttr: '@',
-                    prefix: '@',
-                    suffix: '@'
-                },
                 link: {
                     pre: function (scope, element, attrs) {
 
