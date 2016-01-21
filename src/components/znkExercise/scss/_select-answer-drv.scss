@@ -7,9 +7,15 @@ select-answer{
         @include align-items(center);
         margin-bottom: 20px;
 
+        .correct-icon-drv, .wrong-icon-drv{
+            display: none;
+        }
+
         &.wrong{
             .content-wrapper{
                 .answer-index-wrapper{
+                    background-color: $bgColor1;
+                    color: $fcColor2;
                     .inner-circle{
                         display:block;
                         border: 13px solid $bgColor1;
@@ -27,6 +33,18 @@ select-answer{
                 .ion-ios-close-empty{
                     display: block;
                 }
+
+                .wrong-icon-drv{
+                    @include dimension(13px, 100%);
+                    margin-left: 17px;
+                    display: block;
+
+                    svg{
+                        line{
+                            stroke: $bgColor1
+                        }
+                    }
+                }
             }
 
         }
@@ -38,6 +56,8 @@ select-answer{
 
             .content-wrapper{
                 .answer-index-wrapper{
+                    background-color: $bgColor2;
+                    color: $fcColor2;
                     .inner-circle{
                         display:block;
                         border: 13px solid $bgColor2;
@@ -50,11 +70,23 @@ select-answer{
                 }
 
                 .content{
-                    color: $fcColor4;
+                    color: $fcColor7;
                 }
 
                 .ion-android-done{
                     display: block;
+                }
+
+                .correct-icon-drv{
+                    @include dimension(23px, 100%);
+                    margin-left: 17px;
+                    display: block;
+
+                    svg{
+                        line{
+                            stroke: $bgColor2
+                        }
+                    }
                 }
             }
 
@@ -67,6 +99,8 @@ select-answer{
 
             .content-wrapper{
                 .answer-index-wrapper{
+                    background-color: $bgColor6;
+                    color: $fcColor7;
                     .inner-circle{
                         display:block;
                         border: 13px solid $bgColor2;
@@ -79,7 +113,7 @@ select-answer{
                 }
 
                 .content{
-                    color: $fcColor4;
+                    color: $fcColor7;
                 }
             }
 
