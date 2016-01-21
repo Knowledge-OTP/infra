@@ -13,11 +13,11 @@ describe('testing service "StorageSrv":', function () {
     function entitySetter(pathOrObject, newVal){
         if(angular.isObject(pathOrObject)){
             angular.forEach(pathOrObject, function(value,key){
-                entityMap[key] = value;
+                entityMap[key] = angular.copy(value);
             });
             return pathOrObject;
         }
-        entityMap[pathOrObject] = newVal;
+        entityMap[pathOrObject] = angular.copy(newVal);
         return $q.when(entityMap[pathOrObject]);
     }
 
@@ -47,7 +47,10 @@ describe('testing service "StorageSrv":', function () {
         };
 
         syncCommunicator.set = function(newEntity){
-            var res = entityCommunicator.set(newEntity);
+            var res;
+            entityCommunicator.set(newEntity).then(function(_res){
+                res = _res;
+            });
             $rootScope.$digest();
             return res;
         };
@@ -79,9 +82,10 @@ describe('testing service "StorageSrv":', function () {
         var entityCommunicator = actions.syncEntityCommunicator();
         var entity = entityCommunicator.get();
         entity.newProp = 'new prop';
-        entityCommunicator.set(entity);
+        var returnedEntity = entityCommunicator.set(entity);
 
         expect(savedEntity).toEqual(entity);
+        expect(returnedEntity).toEqual(entity);
     });
 
     it('when invoking $save of received entity then save entity function should be invoked',function(){
@@ -110,8 +114,8 @@ describe('testing service "StorageSrv":', function () {
         };
 
         testStorage.set({
-            path1: expectedObj1,
-            path2: expectedObj2
+            path1: angular.copy(expectedObj1),
+            path2: angular.copy(expectedObj2)
         });
 
         var obj1;
