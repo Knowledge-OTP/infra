@@ -33,12 +33,9 @@
                         });
                         isCorrect = answersIdsMap.indexOf(answer) !== -1;
                         break;
-                    default:
-                        isCorrect = void(0);
-                        answer = void(0);
                 }
 
-                return isCorrect;
+                return !!isCorrect;
             };
             return ZnkExerciseUtilitySrv;
         }
