@@ -16,14 +16,8 @@
         'SubjectEnum', '$interpolate',
         function (SubjectEnum, $interpolate) {
             return {
-                scope: {
-                    contextAttr: '@',
-                    prefix: '@',
-                    suffix: '@'
-                },
                 link: {
                     pre: function (scope, element, attrs) {
-
                         var watchDestroyer = scope.$watch(attrs.subjectIdToAttrDrv,function(subjectId){
                             var contextAttr = attrs.contextAttr ? $interpolate(attrs.contextAttr)(scope) : undefined;
                             var prefix = attrs.prefix ? $interpolate(attrs.prefix )(scope) : undefined;

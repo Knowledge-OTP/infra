@@ -16,14 +16,14 @@
                 },
                 link: {
                     pre: function (scope, element) {
-                        var name = scope.name;
-                        if (!name) {
-                            $log.error('svgIcon directive: name attribute was not set');
-                            return;
-                        }
-                        element.addClass(name);
-                        SvgIconSrv.getSvgByName(name).then(function (svg) {
-                            element.append(svg);
+                        scope.$watch(function(){
+                            return element.attr('name');
+                        }, function () {
+                            var name = element.attr('name');
+                            element.addClass(name);
+                            SvgIconSrv.getSvgByName(name).then(function (svg) {
+                                element.append(svg);
+                            });
                         });
                     }
                 }
@@ -31,4 +31,3 @@
         }
     ]);
 })(angular);
-
