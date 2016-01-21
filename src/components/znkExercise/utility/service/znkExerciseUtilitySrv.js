@@ -11,6 +11,7 @@
                 });
             };
 
+            var answersIdsMap;
             ZnkExerciseUtilitySrv.isAnswerCorrect = function isAnswerCorrect(question, userAnswer) {
                 var isCorrect, answer;
                 switch (question.answerTypeId) {
@@ -20,14 +21,14 @@
                         break;
                     case AnswerTypeEnum.FREE_TEXT_ANSWER.enum:
                         answer = '' + userAnswer;
-                        var answersIdsMap = question.correctAnswerText.map(function (answerMap) {
+                         answersIdsMap = question.correctAnswerText.map(function (answerMap) {
                             return '' + answerMap.content;
                         });
                         isCorrect = answersIdsMap.indexOf(answer) !== -1;
                         break;
                     case AnswerTypeEnum.RATE_ANSWER.enum:
                         answer = '' + userAnswer;
-                        var answersIdsMap = question.correctAnswerText.map(function (answerMap) {
+                         answersIdsMap = question.correctAnswerText.map(function (answerMap) {
                             return '' + answerMap.id;
                         });
                         isCorrect = answersIdsMap.indexOf(answer) !== -1;
