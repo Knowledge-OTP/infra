@@ -73,7 +73,7 @@
 
                         var lastElemIndex = answers.length - 1;
 
-                        if(viewMode === ANSWER_WITH_RESULT_MODE || viewMode === REVIEW_MODE){
+                        if((viewMode === ANSWER_WITH_RESULT_MODE && angular.isNumber(selectedAnswerId))|| viewMode === REVIEW_MODE){
                             for (var i = 0; i < lastElemIndex; i++) {
                                 angular.element(domItemsArray[answers[i].id - INDEX_OFFSET]).addClass('correct');
                             }

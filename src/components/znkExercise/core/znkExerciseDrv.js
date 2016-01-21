@@ -31,8 +31,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExercise', [
-        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout',
-        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout) {
+        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ZnkExerciseUtilitySrv',
+        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout, ZnkExerciseUtilitySrv) {
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExerciseDrv.html',
                 restrict: 'E',
@@ -297,6 +297,10 @@
                             scope.vm.questionAnswered = function () {
                                 if (scope.settings.viewMode !== ZnkExerciseViewModeEnum.REVIEW.enum) {
                                     updateTimeSpentOnQuestion();
+                                    var currQuestion = getCurrentQuestion();
+                                    var userAnswer = currQuestion.__questionStatus.userAnswer;
+
+                                    currQuestion.__questionStatus.isAnsweredCorrectly = ZnkExerciseUtilitySrv.isAnswerCorrect(currQuestion,userAnswer);
                                 }
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
                                 //skip 1 digest cycle before triggering question answered
