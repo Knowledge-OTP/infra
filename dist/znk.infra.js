@@ -12,7 +12,8 @@
         'znk.infra.znkExercise',
         'znk.infra.storage',
         'znk.infra.utility',
-        'znk.infra.exerciseResult'
+        'znk.infra.exerciseResult',
+        'znk.infra.popUp'
     ]);
 })(angular);
 

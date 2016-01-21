@@ -43,13 +43,13 @@
                             '<div class="znk-popup-body">%body%</div>' +
                             '<div class="znk-popup-buttons">' +
                                 '<div ng-repeat="button in ::d.buttons" class="button-wrapper">' +
-                                    '<button class="btn" ' +
+                                    '<div class="btn" ' +
                                              'ng-click="d.btnClick(button)" ' +
                                              'ng-class="button.type" ' +
                                              'analytics-on="click" ' +
                                              'analytics-event="click-popup-{{button.text}}" ' +
                                              'analytics-category="popup">{{button.text}}' +
-                                    '</button>' +
+                                    '</div>' +
                                 '</div>' +
                             '</div>' +
                         '</div>' +
@@ -108,7 +108,7 @@
                 wrapperCls = wrapperCls ? wrapperCls + ' base-popup show-hide-animation' : 'base-popup show-hide-animation';
 
                 headerIcon = headerIcon || '';
-                var header = '<div class="icon-wrapper"><i class="%headerIcon%"></i></div>';
+                var header = '<div class="icon-wrapper"><svg-icon name="%headerIcon%"></svg-icon></div>';
                 header = header.replace('%headerIcon%',headerIcon);
 
                 var body = '<div class="title responsive-title">%title%</div><div class="content">%content%</div>';
@@ -137,12 +137,21 @@
 
             PopUpSrv.error = function error(title,content){
                 var btn = new BaseButton('OK',null,'ok');
-                return basePopup('error-popup','ion-close-round',title || 'OOOPS...',content,[btn]);
+                return basePopup('error-popup','exclamation-mark',title || 'OOOPS...',content,[btn]);
+            };
+
+
+            PopUpSrv.ErrorConfirmation = function error(title, content, acceptBtnTitle,cancelBtnTitle){
+                var buttons = [
+                    new BaseButton(acceptBtnTitle,null,acceptBtnTitle),
+                    new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle)
+                ];
+                return basePopup('error-popup','exclamation-mark',title,content,buttons);
             };
 
             PopUpSrv.success = function success(title,content){
                 var btn = new BaseButton('OK',null,'ok');
-                return basePopup('success-popup','correct-answer-white',title || '',content,[btn]);
+                return basePopup('success-popup','exclamation-mark',title || '',content,[btn]);
             };
 
             PopUpSrv.warning = function warning(title,content,acceptBtnTitle,cancelBtnTitle){
@@ -150,7 +159,7 @@
                     new BaseButton(acceptBtnTitle,null,acceptBtnTitle),
                     new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle)
                 ];
-                return basePopup('warning-popup','warning-icon',title,content,buttons);
+                return basePopup('warning-popup','exclamation-mark',title,content,buttons);
             };
 
             PopUpSrv.isPopupOpen = function(){
