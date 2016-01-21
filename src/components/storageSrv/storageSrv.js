@@ -46,7 +46,7 @@
                             _entity[key] = angular.copy(defaultValue[key]);
                         }
                     });
-                    if(!_entity.$save){
+                    if(angular.isObject(_entity) && !_entity.$save){
                         _entity.$save = self.set.bind(self,path,_entity);
                     }
                     return _entity;
@@ -72,7 +72,7 @@
 
                     angular.forEach(dataToSaveInCache, function(value,path){
                         entityCache.put(path,value);
-                        if(!value.$save){
+                        if(angular.isObject(value) && !value.$save){
                             value.$save = self.set.bind(self,path,value);
                         }
                     });
