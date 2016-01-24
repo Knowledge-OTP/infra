@@ -229,6 +229,18 @@
                 });
             };
 
+            ContentSrv.getAllIdsByKey = function(key) {
+                var idsByKeys;
+                var arrayOfKeys;
+                return contentDataFunc().get().then(function(dataObj) {
+                    idsByKeys = Object.keys(dataObj.latestRevisions);
+                    arrayOfKeys = idsByKeys.filter(function(keyValue) {
+                        return keyValue.indexOf(key) !== -1;
+                    });
+                    return arrayOfKeys;
+                });
+            };
+
             return ContentSrv;
         }];
     }
