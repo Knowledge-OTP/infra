@@ -127,14 +127,14 @@
                 });
             };
 
-            ContentSrv.getAllIdsByKey = function(key) {
-                var idsByKeys;
+            ContentSrv.getAllContentIdsByKey = function(key) {
                 var arrayOfKeys;
                 return contentDataFunc().get().then(function(dataObj) {
-                    idsByKeys = Object.keys(dataObj.latestRevisions);
-                    arrayOfKeys = idsByKeys.filter(function(keyValue) {
-                        return keyValue.indexOf(key) !== -1;
-                    });
+                    for(var objKey in dataObj.latestRevisions) {
+                       if(dataObj.latestRevisions[objKey].indexOf(key) !== -1) {
+                           arrayOfKeys.push(objKey);
+                       }
+                    }
                     return arrayOfKeys;
                 });
             };
