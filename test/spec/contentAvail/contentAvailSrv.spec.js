@@ -125,9 +125,9 @@ describe('testing service "ContentAvailSrv":', function () {
 
     it('given user purchased daily bundle and free daily is 1 when checking if daily available then only purchased or free dailies should be available',function(){
         actions.setFreeDaily(1);
+        expect(actions.isDailyAvail(2)).toBeFalsy();
         actions.purchaseDaily(4);
         expect(actions.isDailyAvail(1)).toBeTruthy();
-        expect(actions.isDailyAvail(4)).toBeTruthy();
         expect(actions.isDailyAvail(5)).toBeTruthy();
         expect(actions.isDailyAvail(6)).toBeFalsy();
     });

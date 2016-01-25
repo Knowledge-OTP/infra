@@ -313,6 +313,9 @@
             };
 
             this.isDailyAvail = function(dailyOrder){
+                if(!angular.isNumber(dailyOrder) || isNaN(dailyOrder)){
+                    return $q.reject('daily order should be a number');
+                }
                 return _baseIsEntityAvail().then(function(res){
                     if(res === true){
                         return true;
