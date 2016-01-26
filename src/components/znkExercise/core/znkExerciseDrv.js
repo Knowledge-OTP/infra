@@ -356,7 +356,8 @@
                                 }
                                 //added since the sliders current was not changed yet
                                 $timeout(function(){
-                                    scope.settings.onSlideChange();
+                                    var currentIndex = znkExerciseDrvCtrl.getCurrentIndex();
+                                    scope.settings.onSlideChange(currentIndex);
                                     scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value,prevValue);
                                 },0,false);
                                 //var url = $location.url() + '/' + scope.vm.questionsWithAnswers[value].id;
