@@ -236,6 +236,18 @@
                 });
             };
 
+            ContentSrv.getAllContentIdsByKey = function(key) {
+                var arrayOfKeys = [];
+                return contentDataFunc().get().then(function(dataObj) {
+                    for(var objKey in dataObj.latestRevisions) {
+                       if(objKey.indexOf(key) !== -1) {
+                           arrayOfKeys.push(objKey);
+                       }
+                    }
+                    return arrayOfKeys;
+                });
+            };
+
             return ContentSrv;
         }];
     }
