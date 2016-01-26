@@ -3,14 +3,12 @@
 
     var mockStorageServiceName = 'testStorage';
 
-    angular.module('storage.mock', ['znk.infra.config'])
+    angular.module('storage.mock', ['znk.infra.config', 'znk.infra.storage'])
         .config(function(InfraConfigSrvProvider){
             InfraConfigSrvProvider.setStorageServiceName(mockStorageServiceName );
         })
         .service(mockStorageServiceName, function(StorageSrv, $parse){
-            var db = {
-
-            };
+            var db = {};
 
             function keyInDb(path){
                 var pathArr = path.split('/');
@@ -46,6 +44,8 @@
             var storage = new StorageSrv(getter,setter);
             storage.db = db;
             storage.variables = StorageSrv.variables;
+
+            setInDb(storage.variables.appUserSpacePath,{});
 
             return storage;
         });

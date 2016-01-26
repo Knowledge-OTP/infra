@@ -922,12 +922,12 @@ znk-exercise.desktop {
         znk-exercise.desktop .btn-section .btn-container button svg-icon.chevron .st0 {
           stroke: #0a9bad; }
   znk-exercise.desktop .btn-section .done-btn {
-    z-index: 1;
+    z-index: 2;
     width: 160px;
     position: absolute;
     right: 30px;
     bottom: 10px;
-    height: 35px;
+    height: 37px;
     background: #ff931e;
     font-family: Lato;
     font-size: 13px;

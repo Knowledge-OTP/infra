@@ -70,7 +70,8 @@
                 onDone: function () {
                     alert('On done was invoked');
                 },
-                initPagerDisplay: true
+                initPagerDisplay: true,
+                initForceDoneBtnDisplay: true
             };
 
             $scope.results = [{
