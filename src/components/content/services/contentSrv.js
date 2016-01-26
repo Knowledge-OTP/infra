@@ -128,10 +128,10 @@
             };
 
             ContentSrv.getAllContentIdsByKey = function(key) {
-                var arrayOfKeys;
+                var arrayOfKeys = [];
                 return contentDataFunc().get().then(function(dataObj) {
                     for(var objKey in dataObj.latestRevisions) {
-                       if(dataObj.latestRevisions[objKey].indexOf(key) !== -1) {
+                       if(objKey.indexOf(key) !== -1) {
                            arrayOfKeys.push(objKey);
                        }
                     }
