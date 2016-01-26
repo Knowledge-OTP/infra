@@ -56,7 +56,7 @@
                                 attrVal = attrVal.replace(/\s+/g,'');   // regex to clear spaces
                                 value = value.replace(/\s+/g,'');   // regex to clear spaces
 
-                                if (value == 'class') {
+                                if (value === 'class') {
                                     element.addClass(attrVal);
                                 } else {
                                     element.attr(value, attrVal);
