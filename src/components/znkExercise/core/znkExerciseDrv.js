@@ -349,14 +349,15 @@
                                     return;
                                 }
 
+                                var currQuestion = getCurrentQuestion();
+
                                 updateTimeSpentOnQuestion(prevValue);
                                 if (toolboxModalSettings.actions && toolboxModalSettings.actions.setToolValue) {
-                                    var currQuestion = getCurrentQuestion();
                                     toolboxModalSettings.actions.setToolValue(ZnkExerciseSrv.toolBoxTools.BOOKMARK, !!currQuestion.__questionStatus.bookmark);
                                 }
                                 //added since the sliders current was not changed yet
                                 $timeout(function(){
-                                    scope.settings.onSlideChange();
+                                    scope.settings.onSlideChange(currQuestion, value);
                                     scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value,prevValue);
                                 },0,false);
                                 //var url = $location.url() + '/' + scope.vm.questionsWithAnswers[value].id;
