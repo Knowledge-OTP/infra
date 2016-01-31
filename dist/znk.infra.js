@@ -52,7 +52,15 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.popUp', []);
+    angular.module('znk.infra.popUp', ['znk.infra.svgIcon'])
+        .config([
+            'SvgIconSrvProvider',
+            function (SvgIconSrvProvider) {
+                var svgMap = {
+                    'exclamation-mark': 'components/popUp/svg/exclamation-mark-icon.svg'
+                };
+                SvgIconSrvProvider.registerSvgSources(svgMap);
+            }]);
 })(angular);
 
 (function (angular) {
@@ -872,13 +880,13 @@
                             '<div class="znk-popup-body">%body%</div>' +
                             '<div class="znk-popup-buttons">' +
                                 '<div ng-repeat="button in ::d.buttons" class="button-wrapper">' +
-                                    '<button class="btn" ' +
+                                    '<div class="btn" ' +
                                              'ng-click="d.btnClick(button)" ' +
                                              'ng-class="button.type" ' +
                                              'analytics-on="click" ' +
                                              'analytics-event="click-popup-{{button.text}}" ' +
                                              'analytics-category="popup">{{button.text}}' +
-                                    '</button>' +
+                                    '</div>' +
                                 '</div>' +
                             '</div>' +
                         '</div>' +
@@ -937,7 +945,7 @@
                 wrapperCls = wrapperCls ? wrapperCls + ' base-popup show-hide-animation' : 'base-popup show-hide-animation';
 
                 headerIcon = headerIcon || '';
-                var header = '<div class="icon-wrapper"><i class="%headerIcon%"></i></div>';
+                var header = '<div class="icon-wrapper"><svg-icon name="%headerIcon%"></svg-icon></div>';
                 header = header.replace('%headerIcon%',headerIcon);
 
                 var body = '<div class="title responsive-title">%title%</div><div class="content">%content%</div>';
@@ -966,12 +974,21 @@
 
             PopUpSrv.error = function error(title,content){
                 var btn = new BaseButton('OK',null,'ok');
-                return basePopup('error-popup','ion-close-round',title || 'OOOPS...',content,[btn]);
+                return basePopup('error-popup','exclamation-mark',title || 'OOOPS...',content,[btn]);
+            };
+
+
+            PopUpSrv.ErrorConfirmation = function error(title, content, acceptBtnTitle,cancelBtnTitle){
+                var buttons = [
+                    new BaseButton(acceptBtnTitle,null,acceptBtnTitle),
+                    new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle)
+                ];
+                return basePopup('error-popup','exclamation-mark',title,content,buttons);
             };
 
             PopUpSrv.success = function success(title,content){
                 var btn = new BaseButton('OK',null,'ok');
-                return basePopup('success-popup','correct-answer-white',title || '',content,[btn]);
+                return basePopup('success-popup','exclamation-mark',title || '',content,[btn]);
             };
 
             PopUpSrv.warning = function warning(title,content,acceptBtnTitle,cancelBtnTitle){
@@ -979,7 +996,7 @@
                     new BaseButton(acceptBtnTitle,null,acceptBtnTitle),
                     new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle)
                 ];
-                return basePopup('warning-popup','warning-icon',title,content,buttons);
+                return basePopup('warning-popup','exclamation-mark',title,content,buttons);
             };
 
             PopUpSrv.isPopupOpen = function(){
@@ -3953,6 +3970,24 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "        <!-- Slides -->\n" +
     "    </div>\n" +
     "</div>\n" +
+    "");
+  $templateCache.put("components/popUp/svg/exclamation-mark-icon.svg",
+    "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"-556.8 363.3 50.8 197.2\" style=\"enable-background:new -556.8 363.3 50.8 197.2;\" xml:space=\"preserve\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.exclamation-mark-icon .st0 {\n" +
+    "        fill: none;\n" +
+    "        enable-background: new;\n" +
+    "    }\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<path d=\"M-505.9,401.6c-0.4,19.5-5.2,38.2-8.7,57.1c-2.8,15.5-4.7,31.2-6.7,46.8c-0.3,2.6-1.1,4-3.7,4.3c-1.5,0.2-2.9,0.6-4.4,0.7\n" +
+    "		c-9.2,0.7-9.6,0.4-10.7-8.7c-3.4-29.6-8-58.9-14.6-87.9c-2.3-10.1-3.2-20.4-0.5-30.7c3.7-14.1,17.2-22.3,31.5-19.3\n" +
+    "		c9.2,1.9,14.7,8.8,16.2,20.9C-506.7,390.3-506.4,396-505.9,401.6z\"/>\n" +
+    "	<path d=\"M-528.9,525.7c10.9,0,16.8,5.3,16.9,15.2c0.1,11-9.3,19.7-21.4,19.6c-8.8,0-14.7-7-14.7-17.7\n" +
+    "		C-548.2,530.9-542.4,525.7-528.9,525.7z\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
     "");
   $templateCache.put("components/znkExercise/svg/chevron-icon.svg",
     "<svg x=\"0px\" y=\"0px\" viewBox=\"0 0 143.5 65.5\">\n" +
