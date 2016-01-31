@@ -13,7 +13,7 @@
         'znk.infra.storage',
         'znk.infra.utility',
         'znk.infra.exerciseResult',
-        'znk.infra.popUp'
+        'znk.infra.contentAvail'
     ]);
 })(angular);
 
@@ -22,6 +22,12 @@
 
     angular.module('znk.infra.content', []);
 })(angular);
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.contentAvail', ['znk.infra.config']);
+})(angular);
+
 (function (angular) {
     'use strict';
 
@@ -230,12 +236,159 @@
                 });
             };
 
+            ContentSrv.getAllContentIdsByKey = function(key) {
+                var arrayOfKeys = [];
+                return contentDataFunc().get().then(function(dataObj) {
+                    for(var objKey in dataObj.latestRevisions) {
+                       if(objKey.indexOf(key) !== -1) {
+                           arrayOfKeys.push(objKey);
+                       }
+                    }
+                    return arrayOfKeys;
+                });
+            };
+
             return ContentSrv;
         }];
     }
 
     angular.module('znk.infra.content').provider('ContentSrv', ContentSrv);
 
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.contentAvail').service('ContentAvailSrv', [
+        '$q', '$parse', 'InfraConfigSrv',
+        function ($q, $parse, InfraConfigSrv) {
+            var PURCHASED_ALL = 'all';
+
+            function getUserPurchaseData(){
+                var StorageService = InfraConfigSrv.getStorageService();
+                var purchaseDataPath = StorageService.variables.appUserSpacePath + '/purchase';
+                var defValues = {
+                    daily: 0,
+                    exam: {},
+                    tutorial: {},
+                    subscription: {}
+                };
+                return StorageService.get(purchaseDataPath,defValues);
+            }
+
+            function getFreeContentData(){
+                var StorageService = InfraConfigSrv.getStorageService();
+                var freeContentPath = 'freeContent';
+                var defValues = {
+                    daily: 0,
+                    exam: {},
+                    tutorial: {}
+                };
+                return StorageService.get(freeContentPath,defValues);
+            }
+
+            function idToKeyInStorage(id){
+                return 'id_' + id;
+            }
+
+            function _hasSubscription(subscriptionObj){
+                return subscriptionObj && subscriptionObj.expiryDate && subscriptionObj.expiryDate > Date.now();
+            }
+
+            function _baseIsEntityAvail(){
+                return $q.all([getUserPurchaseData(),getFreeContentData()]).then(function(res){
+                    var purchaseData = res[0];
+                    var hasSubscription = _hasSubscription(purchaseData.subscription);
+                    if(hasSubscription){
+                        return true;
+                    }else{
+                        return res;
+                    }
+                });
+            }
+
+            function _isExamPurchased(purchaseData,examId){
+                var examKeyProp = idToKeyInStorage(examId);
+                return !!(purchaseData.exam === PURCHASED_ALL  || purchaseData.exam[examKeyProp]);
+            }
+
+            function _isFreeContent(freeContentData,pathArr){
+                var fullPath = pathArr.join('.');
+                var isFreeGetter = $parse(fullPath);
+                return !!isFreeGetter(freeContentData);
+            }
+
+            this.hasSubscription = function(){
+                return getUserPurchaseData().then(function(purchaseData){
+                    return _hasSubscription(purchaseData.subscription);
+                });
+            };
+
+            this.isDailyAvail = function(dailyOrder){
+                if(!angular.isNumber(dailyOrder) || isNaN(dailyOrder)){
+                    return $q.reject('daily order should be a number');
+                }
+                return _baseIsEntityAvail().then(function(res){
+                    if(res === true){
+                        return true;
+                    }
+
+                    var purchaseData = res[0];
+                    var freeContent = res[1];
+
+                    if(freeContent.daily >= dailyOrder){
+                        return true;
+                    }
+
+                    if(angular.isString(purchaseData.daily)){
+                        return purchaseData.daily === PURCHASED_ALL;
+                    }else{
+                        var maxAvailDailyOrder = (purchaseData.daily || 0) + (freeContent.daily || 0);
+                        return dailyOrder <= maxAvailDailyOrder;
+                    }
+                });
+            };
+
+            this.isExamAvail = function(examId){
+                return _baseIsEntityAvail().then(function(res){
+                    if(res === true){
+                        return true;
+                    }
+
+                    var purchaseData = res[0];
+                    var freeContent = res[1];
+
+                    var isPurchased = _isExamPurchased(purchaseData,examId);
+                    if(isPurchased){
+                        return true;
+                    }
+
+                    return _isFreeContent(freeContent,['exam',idToKeyInStorage(examId)]);
+                });
+            };
+
+            this.isSectionAvail = function(examId,sectionId){
+                return _baseIsEntityAvail().then(function(res){
+                    if(res === true){
+                        return true;
+                    }
+
+                    var purchaseData = res[0];
+                    var freeContent = res[1];
+
+                    var examKeyProp = idToKeyInStorage(examId);
+                    var sectionKeyProp = idToKeyInStorage(sectionId);
+
+                    var isExamPurchased = _isExamPurchased(purchaseData,examId);
+                    if(isExamPurchased ){
+                        return true;
+                    }
+
+                    return _isFreeContent(freeContent,['exam',examKeyProp,'sections',sectionKeyProp]);
+                });
+            };
+        }
+    ]);
 })(angular);
 
 (function (angular) {
@@ -576,8 +729,8 @@
  *  @directive subjectIdToAttrDrv
  *  This directive is an evolution of 'subjectIdToClassDrv'
  *  @context-attr a comma separated string of attribute names
- *  @znk-prefix a comma separated string of prefixes to the attribute values
- *  @znk-suffix a comma separated string of suffixes to the attribute values
+ *  @prefix a comma separated string of prefixes to the attribute values
+ *  @suffix a comma separated string of suffixes to the attribute values
  *
  *  In case only one prefix/suffix is provided, it will be used in all attributes
  *  In case no @context-attr is provided, it will set the class attribute by default
@@ -590,14 +743,8 @@
         'SubjectEnum', '$interpolate',
         function (SubjectEnum, $interpolate) {
             return {
-                scope: {
-                    contextAttr: '@',
-                    prefix: '@',
-                    suffix: '@'
-                },
                 link: {
                     pre: function (scope, element, attrs) {
-
                         var watchDestroyer = scope.$watch(attrs.subjectIdToAttrDrv,function(subjectId){
                             var contextAttr = attrs.contextAttr ? $interpolate(attrs.contextAttr)(scope) : undefined;
                             var prefix = attrs.prefix ? $interpolate(attrs.prefix )(scope) : undefined;
@@ -634,8 +781,13 @@
                                 }
 
                                 attrVal = attrVal.replace(/\s+/g,'');   // regex to clear spaces
+                                value = value.replace(/\s+/g,'');   // regex to clear spaces
 
-                                element.attr(value, attrVal);
+                                if (value === 'class') {
+                                    element.addClass(attrVal);
+                                } else {
+                                    element.attr(value, attrVal);
+                                }
                             });
 
                         });
@@ -1449,14 +1601,14 @@
                 },
                 link: {
                     pre: function (scope, element) {
-                        var name = scope.name;
-                        if (!name) {
-                            $log.error('svgIcon directive: name attribute was not set');
-                            return;
-                        }
-                        element.addClass(name);
-                        SvgIconSrv.getSvgByName(name).then(function (svg) {
-                            element.append(svg);
+                        scope.$watch(function(){
+                            return element.attr('name');
+                        }, function () {
+                            var name = element.attr('name');
+                            element.addClass(name);
+                            SvgIconSrv.getSvgByName(name).then(function (svg) {
+                                element.append(svg);
+                            });
                         });
                     }
                 }
@@ -1464,7 +1616,6 @@
         }
     ]);
 })(angular);
-
 
 (function (angular) {
     'use strict';
@@ -1806,7 +1957,7 @@
 
                         var lastElemIndex = answers.length - 1;
 
-                        if(viewMode === ANSWER_WITH_RESULT_MODE || viewMode === REVIEW_MODE){
+                        if((viewMode === ANSWER_WITH_RESULT_MODE && angular.isNumber(selectedAnswerId))|| viewMode === REVIEW_MODE){
                             for (var i = 0; i < lastElemIndex; i++) {
                                 angular.element(domItemsArray[answers[i].id - INDEX_OFFSET]).addClass('correct');
                             }
@@ -2631,8 +2782,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExercise', [
-        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout',
-        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout) {
+        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ZnkExerciseUtilitySrv',
+        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout, ZnkExerciseUtilitySrv) {
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExerciseDrv.html',
                 restrict: 'E',
@@ -2897,6 +3048,10 @@
                             scope.vm.questionAnswered = function () {
                                 if (scope.settings.viewMode !== ZnkExerciseViewModeEnum.REVIEW.enum) {
                                     updateTimeSpentOnQuestion();
+                                    var currQuestion = getCurrentQuestion();
+                                    var userAnswer = currQuestion.__questionStatus.userAnswer;
+
+                                    currQuestion.__questionStatus.isAnsweredCorrectly = ZnkExerciseUtilitySrv.isAnswerCorrect(currQuestion,userAnswer);
                                 }
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
                                 //skip 1 digest cycle before triggering question answered
@@ -2945,14 +3100,15 @@
                                     return;
                                 }
 
+                                var currQuestion = getCurrentQuestion();
+
                                 updateTimeSpentOnQuestion(prevValue);
                                 if (toolboxModalSettings.actions && toolboxModalSettings.actions.setToolValue) {
-                                    var currQuestion = getCurrentQuestion();
                                     toolboxModalSettings.actions.setToolValue(ZnkExerciseSrv.toolBoxTools.BOOKMARK, !!currQuestion.__questionStatus.bookmark);
                                 }
                                 //added since the sliders current was not changed yet
                                 $timeout(function(){
-                                    scope.settings.onSlideChange();
+                                    scope.settings.onSlideChange(currQuestion, value);
                                     scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value,prevValue);
                                 },0,false);
                                 //var url = $location.url() + '/' + scope.vm.questionsWithAnswers[value].id;
@@ -3803,16 +3959,42 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').factory('ZnkExerciseUtilitySrv', [
-        function () {
+    angular.module('znk.infra.znkExercise').factory('ZnkExerciseUtilitySrv', ['AnswerTypeEnum',
+        function (AnswerTypeEnum) {
             var ZnkExerciseUtilitySrv = {};
-
+            //@todo(igor) move to utility service
             ZnkExerciseUtilitySrv.bindFunctions = function(dest,src,functionToCopy){
                 functionToCopy.forEach(function(fnName){
                     dest[fnName] = src[fnName].bind(src);
                 });
             };
 
+            var answersIdsMap;
+            ZnkExerciseUtilitySrv.isAnswerCorrect = function isAnswerCorrect(question, userAnswer) {
+                var isCorrect, answer;
+                switch (question.answerTypeId) {
+                    case AnswerTypeEnum.SELECT_ANSWER.enum:
+                        answer = '' + userAnswer;
+                        isCorrect = ('' + question.correctAnswerId) === answer;
+                        break;
+                    case AnswerTypeEnum.FREE_TEXT_ANSWER.enum:
+                        answer = '' + userAnswer;
+                         answersIdsMap = question.correctAnswerText.map(function (answerMap) {
+                            return '' + answerMap.content;
+                        });
+                        isCorrect = answersIdsMap.indexOf(answer) !== -1;
+                        break;
+                    case AnswerTypeEnum.RATE_ANSWER.enum:
+                        answer = '' + userAnswer;
+                         answersIdsMap = question.correctAnswerText.map(function (answerMap) {
+                            return '' + answerMap.id;
+                        });
+                        isCorrect = answersIdsMap.indexOf(answer) !== -1;
+                        break;
+                }
+
+                return !!isCorrect;
+            };
             return ZnkExerciseUtilitySrv;
         }
     ]);
@@ -3843,6 +4025,8 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "            <span class=\"index-char\">{{::d.getIndexChar($index)}}</span>\n" +
     "        </div>\n" +
     "        <markup content=\"answer.content\" type=\"md\" class=\"content\"></markup>\n" +
+    "        <svg-icon class=\"correct-icon-drv\" name=\"correct\"></svg-icon>\n" +
+    "        <svg-icon class=\"wrong-icon-drv\" name=\"wrong\"></svg-icon>\n" +
     "    </div>\n" +
     "</div>\n" +
     "");

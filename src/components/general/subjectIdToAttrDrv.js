@@ -2,8 +2,8 @@
  *  @directive subjectIdToAttrDrv
  *  This directive is an evolution of 'subjectIdToClassDrv'
  *  @context-attr a comma separated string of attribute names
- *  @znk-prefix a comma separated string of prefixes to the attribute values
- *  @znk-suffix a comma separated string of suffixes to the attribute values
+ *  @prefix a comma separated string of prefixes to the attribute values
+ *  @suffix a comma separated string of suffixes to the attribute values
  *
  *  In case only one prefix/suffix is provided, it will be used in all attributes
  *  In case no @context-attr is provided, it will set the class attribute by default
@@ -16,14 +16,8 @@
         'SubjectEnum', '$interpolate',
         function (SubjectEnum, $interpolate) {
             return {
-                scope: {
-                    contextAttr: '@',
-                    prefix: '@',
-                    suffix: '@'
-                },
                 link: {
                     pre: function (scope, element, attrs) {
-
                         var watchDestroyer = scope.$watch(attrs.subjectIdToAttrDrv,function(subjectId){
                             var contextAttr = attrs.contextAttr ? $interpolate(attrs.contextAttr)(scope) : undefined;
                             var prefix = attrs.prefix ? $interpolate(attrs.prefix )(scope) : undefined;
@@ -60,8 +54,13 @@
                                 }
 
                                 attrVal = attrVal.replace(/\s+/g,'');   // regex to clear spaces
+                                value = value.replace(/\s+/g,'');   // regex to clear spaces
 
-                                element.attr(value, attrVal);
+                                if (value === 'class') {
+                                    element.addClass(attrVal);
+                                } else {
+                                    element.attr(value, attrVal);
+                                }
                             });
 
                         });
