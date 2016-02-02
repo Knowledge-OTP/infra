@@ -39,6 +39,8 @@ describe('testing directive "compileDrv":', function() {
         var element = compileHtmlStr($scope,"<div compile='content'></div>");
         // fire all the watches, so the scope expressions will be evaluated
         $scope.$digest();
+        // in advanced angular version, 'ng-scope' class added to element class list, need to remove to support old version
+        element.find('div').removeClass('ng-scope');
         // Check that the compiled element contains the templated content
         expect(element.html()).toContain('<div class="ng-binding">inner content</div>');
     });
