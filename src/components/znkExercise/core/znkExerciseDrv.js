@@ -148,6 +148,12 @@
                             };
 
                             scope.actions.pagerDisplay = function(display){
+                                var showPager = !!display;
+                                if(showPager){
+                                    element.addClass('pager-displayed');
+                                }else{
+                                    element.removeClass('pager-displayed');
+                                }
                                 scope.vm.showPager = !!display;
                             };
 
