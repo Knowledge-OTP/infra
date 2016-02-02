@@ -236,6 +236,18 @@
                 });
             };
 
+            ContentSrv.getAllContentIdsByKey = function(key) {
+                var arrayOfKeys = [];
+                return contentDataFunc().get().then(function(dataObj) {
+                    for(var objKey in dataObj.latestRevisions) {
+                       if(objKey.indexOf(key) !== -1) {
+                           arrayOfKeys.push(objKey);
+                       }
+                    }
+                    return arrayOfKeys;
+                });
+            };
+
             return ContentSrv;
         }];
     }
@@ -717,8 +729,8 @@
  *  @directive subjectIdToAttrDrv
  *  This directive is an evolution of 'subjectIdToClassDrv'
  *  @context-attr a comma separated string of attribute names
- *  @znk-prefix a comma separated string of prefixes to the attribute values
- *  @znk-suffix a comma separated string of suffixes to the attribute values
+ *  @prefix a comma separated string of prefixes to the attribute values
+ *  @suffix a comma separated string of suffixes to the attribute values
  *
  *  In case only one prefix/suffix is provided, it will be used in all attributes
  *  In case no @context-attr is provided, it will set the class attribute by default
@@ -769,8 +781,13 @@
                                 }
 
                                 attrVal = attrVal.replace(/\s+/g,'');   // regex to clear spaces
+                                value = value.replace(/\s+/g,'');   // regex to clear spaces
 
-                                element.attr(value, attrVal);
+                                if (value === 'class') {
+                                    element.addClass(attrVal);
+                                } else {
+                                    element.attr(value, attrVal);
+                                }
                             });
 
                         });
@@ -3089,14 +3106,15 @@
                                     return;
                                 }
 
+                                var currQuestion = getCurrentQuestion();
+
                                 updateTimeSpentOnQuestion(prevValue);
                                 if (toolboxModalSettings.actions && toolboxModalSettings.actions.setToolValue) {
-                                    var currQuestion = getCurrentQuestion();
                                     toolboxModalSettings.actions.setToolValue(ZnkExerciseSrv.toolBoxTools.BOOKMARK, !!currQuestion.__questionStatus.bookmark);
                                 }
                                 //added since the sliders current was not changed yet
                                 $timeout(function(){
-                                    scope.settings.onSlideChange();
+                                    scope.settings.onSlideChange(currQuestion, value);
                                     scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value,prevValue);
                                 },0,false);
                                 //var url = $location.url() + '/' + scope.vm.questionsWithAnswers[value].id;
