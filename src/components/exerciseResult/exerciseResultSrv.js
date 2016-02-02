@@ -147,13 +147,9 @@
                             exercisesStatusData[exerciseResult.exerciseTypeId] = {};
                         }
 
-                        if(!exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId]){
-                            exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId] = {};
-                        }
-
                         var exerciseNewStatus = exerciseResult.isComplete ?
                             ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
-                        exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId].status = exerciseNewStatus;
+                        exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId] = new ExerciseStatus(exerciseNewStatus);
 
                         dataToSave[EXERCISES_STATUS_PATH] = exercisesStatusData;
 
@@ -193,6 +189,19 @@
                     return _getExamResultByGuid(examResultGuid, examId);
                 });
             };
+
+            this.getExerciseStatus = function(exerciseType, exerciseId){
+                return _getExercisesStatusData().then(function(exercisesStatusData){
+                    if(!exercisesStatusData[exerciseType] || !exercisesStatusData[exerciseType][exerciseId]){
+                        return new ExerciseStatus(ExerciseStatusEnum.NEW.enum);
+                    }
+                    return exercisesStatusData[exerciseType][exerciseId];
+                });
+            };
+
+            function ExerciseStatus(status){
+                this.status = status;
+            }
         }
     ]);
 })(angular);
