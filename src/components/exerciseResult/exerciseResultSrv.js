@@ -201,7 +201,7 @@
 
             function ExerciseStatus(status){
                 this.status = status;
-            };
+            }
         }
     ]);
 })(angular);
