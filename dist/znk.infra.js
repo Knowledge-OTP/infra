@@ -13,7 +13,8 @@
         'znk.infra.storage',
         'znk.infra.utility',
         'znk.infra.exerciseResult',
-        'znk.infra.contentAvail'
+        'znk.infra.contentAvail',
+        'znk.infra.popUp'
     ]);
 })(angular);
 
@@ -716,13 +717,9 @@
                             exercisesStatusData[exerciseResult.exerciseTypeId] = {};
                         }
 
-                        if(!exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId]){
-                            exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId] = {};
-                        }
-
                         var exerciseNewStatus = exerciseResult.isComplete ?
                             ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
-                        exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId].status = exerciseNewStatus;
+                        exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId] = new ExerciseStatus(exerciseNewStatus);
 
                         dataToSave[EXERCISES_STATUS_PATH] = exercisesStatusData;
 
@@ -762,8 +759,80 @@
                     return _getExamResultByGuid(examResultGuid, examId);
                 });
             };
+
+            this.getExerciseStatus = function(exerciseType, exerciseId){
+                return _getExercisesStatusData().then(function(exercisesStatusData){
+                    if(!exercisesStatusData[exerciseType] || !exercisesStatusData[exerciseType][exerciseId]){
+                        return new ExerciseStatus(ExerciseStatusEnum.NEW.enum);
+                    }
+                    return exercisesStatusData[exerciseType][exerciseId];
+                });
+            };
+
+            function ExerciseStatus(status){
+                this.status = status;
+            }
         }
     ]);
+})(angular);
+
+/**
+ * evaluates content , then it appended it to the DOM , and finally it compiles it with scope which was created out of the directive scope.
+ * attrs-
+ *  compile-drv: expression which be evaluated and then appended to the dom.
+ *  bind-once: angular expression which evaluated by the scope , if it true then the watcher will be killed after the first time content was added to the dom
+ */
+
+'use strict';
+
+(function (angular) {
+    angular.module('znk.infra.general').directive('compile', [
+        '$compile','$animate',
+        function($compile,$animate) {
+            return {
+            link: function(scope,element,attrs){
+                var _childScope;
+
+                var watchDestroyer = scope.$watch(attrs.compile,function(newVal){
+                    if(_childScope){
+                        _childScope.$destroy();
+                        _childScope = null;
+                    }
+
+                    $animate.leave(element.children());
+                    element.empty();
+
+                    if(typeof newVal === 'undefined'){
+                        return;
+                    }
+
+                    if(scope.$eval(attrs.bindOnce)){
+                        watchDestroyer();
+                    }
+
+                    if(typeof newVal !== 'string'){
+                        if(newVal === null){
+                            newVal = '';
+                        }
+                        newVal = '' + newVal;
+                    }
+
+                    var _htmlStrRegex = /^<(\w+)( .*|)>(.|\n)*(<\/\1>|)$/;
+                    /**
+                     * check if html string , if true create jq lite element of it and append with animation otherwise just append to the dom
+                     */
+                    if(_htmlStrRegex.test(newVal)){
+                        _childScope = scope.$new();
+                        var $content = angular.element(newVal);
+                        $animate.enter($content,element);
+                        $compile(element.children())(_childScope);
+                    }else{
+                        element.append(newVal);
+                    }
+                });
+            }
+        };
+    }]);
 })(angular);
 
 /**
