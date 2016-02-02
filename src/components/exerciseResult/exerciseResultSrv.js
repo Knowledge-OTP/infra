@@ -2,8 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv',
-        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv) {
+        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum',
+        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum) {
             var ExerciseResultSrv = this;
 
             var EXERCISE_RESULTS_PATH = 'exerciseResults';
@@ -12,6 +12,8 @@
 
             var EXAM_RESULTS_PATH = 'examResults';
             var EXAM_RESULTS_GUIDS_PATH = StorageSrv.variables.appUserSpacePath + '/examResults';
+
+            var EXERCISES_STATUS_PATH = StorageSrv.variables.appUserSpacePath + '/exercisesStatus';
 
             function _getExerciseResultPath(guid) {
                 return EXERCISE_RESULTS_PATH + '/' + guid;
@@ -93,6 +95,9 @@
                         }
                         return result;
                     });
+                }).then(function(exerciseResult){
+                    _setSaveFn(exerciseResult);
+                    return exerciseResult;
                 });
             };
 
@@ -127,6 +132,42 @@
             function _getExamResultsGuids(){
                 var storage = InfraConfigSrv.getStorageService();
                 return storage.get(EXAM_RESULTS_GUIDS_PATH);
+            }
+
+            function _setSaveFn(exerciseResult){
+                exerciseResult.$save = function(){
+                    var getExercisesStatusDataProm = _getExercisesStatusData();
+                    var dataToSave = {};
+
+                    var exerciseResultPath = _getExerciseResultPath(exerciseResult.guid);
+                    dataToSave[exerciseResultPath] = exerciseResult;
+
+                    return getExercisesStatusDataProm.then(function(exercisesStatusData){
+                        if(!exercisesStatusData[exerciseResult.exerciseTypeId]){
+                            exercisesStatusData[exerciseResult.exerciseTypeId] = {};
+                        }
+
+                        if(!exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId]){
+                            exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId] = {};
+                        }
+
+                        var exerciseNewStatus = exerciseResult.isComplete ?
+                            ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
+                        exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId].status = exerciseNewStatus;
+
+                        dataToSave[EXERCISES_STATUS_PATH] = exercisesStatusData;
+
+                        var storage = InfraConfigSrv.getStorageService();
+                        storage.set(dataToSave);
+
+                        return exerciseResult;
+                    });
+                };
+            }
+
+            function _getExercisesStatusData(){
+                var storage = InfraConfigSrv.getStorageService();
+                return storage.get(EXERCISES_STATUS_PATH);
             }
 
             this.getExamResult = function (examId) {

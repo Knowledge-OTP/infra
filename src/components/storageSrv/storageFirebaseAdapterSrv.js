@@ -4,10 +4,10 @@
     angular.module('znk.infra.storage').factory('storageFirebaseAdapter', [
         '$log', '$q', 'StorageSrv',
         function ($log, $q, StorageSrv) {
-            function removeIllegalProperties(source){
+            function processValuesToSet(source){
                 if(angular.isArray(source)){
                     source.forEach(function(item){
-                        removeIllegalProperties(item);
+                        processValuesToSet(item);
                     });
                     return;
                 }
@@ -23,7 +23,11 @@
                             return;
                         }
 
-                        removeIllegalProperties(value);
+                        if(angular.isString(value)){
+                            source[key] = processValue(value);
+                        }
+
+                        processValuesToSet(value);
                     });
                     return;
                 }
@@ -68,7 +72,7 @@
                             var processedPath = processPath(key, authObj);
                             valuesToSet[processedPath] = angular.copy(value);
                         });
-                        removeIllegalProperties(valuesToSet);
+                        processValuesToSet(valuesToSet);
                         refMap.rootRef.update(valuesToSet, function(err){
                             if(err){
                                 defer.reject(err);
@@ -77,7 +81,7 @@
                         });
                     }else{
                         var newValueCopy = angular.copy(newValue);
-                        removeIllegalProperties(newValueCopy);
+                        processValuesToSet(newValueCopy);
                         var ref = getRef(relativePathOrObject);
                         ref.set(newValueCopy,function(err){
                             if(err){
@@ -111,6 +115,13 @@
                 var processedPath = path.replace(UID_REGEX, authObj.uid);
                 return processedPath;
             };
+
+            function processValue(value){
+                if(value === StorageSrv.variables.currTimeStamp){
+                    return Firebase.ServerValue.TIMESTAMP;
+                }
+                return value;
+            }
 
             return storageFirebaseAdapter;
         }

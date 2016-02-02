@@ -124,4 +124,18 @@ describe('testing service "storageFirebaseAdapter":', function () {
         expect(bVal).toEqual(savedDataMap.b);
         expect(uidVal).toEqual(5);
     });
+
+    it('when value has a storageSrv time stamp variable then it should be changed to firebase time stamp', function () {
+        var syncedAdapter = actions.syncAdapter(storageFirebaseAdapter(endpoint));
+        var savedDataMap = {
+            a: StorageSrv.variables.currTimeStamp
+        };
+
+        syncedAdapter.set(angular.copy(savedDataMap));
+        syncedAdapter.__refMap.rootRef.flush();
+
+        var aVal = syncedAdapter.get('a');
+
+        expect(aVal).toEqual(jasmine.any(Number));
+    });
 });
