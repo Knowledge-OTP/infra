@@ -18,18 +18,19 @@ describe('testing service "ExerciseResult":', function () {
             actions = TestUtilitySrv.general.convertAllAsyncToSync(ExerciseResultSrv);
         }]));
 
-    beforeEach(function(){
+    beforeEach(function () {
         testStorage.db.exerciseResults = {};
         testStorage.db.examResults = {};
         testStorage.db.users = {
-            '$$uid':{
+            '$$uid': {
                 exerciseResults: {},
-                examResults: {}
+                examResults: {},
+                exercisesStatus:{}
             }
         };
     });
 
-    describe('testing exercise result', function(){
+    describe('testing exercise result', function () {
         it('when requesting for a not exiting result then a new initialized result should be returned', function () {
             var exerciseId = 20;
             var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseId);
@@ -128,8 +129,8 @@ describe('testing service "ExerciseResult":', function () {
         });
     });
 
-    describe('test exam result', function(){
-        it('when requesting for not existing exam result then initialized result should be returned', function(){
+    describe('test exam result', function () {
+        it('when requesting for not existing exam result then initialized result should be returned', function () {
             var examId = 1;
 
             var examResult = actions.getExamResult(examId);
@@ -141,7 +142,7 @@ describe('testing service "ExerciseResult":', function () {
             expect(examResult).toEqual(jasmine.objectContaining(expectedExamResult));
         });
 
-        it('when requesting for not existing exam result then initialized result should be saved in db', function(){
+        it('when requesting for not existing exam result then initialized result should be saved in db', function () {
             var examId = 1;
             actions.getExamResult(examId);
             var examResultKeys = Object.keys(testStorage.db.examResults);
@@ -149,7 +150,7 @@ describe('testing service "ExerciseResult":', function () {
             expect(testStorage.db.users.$$uid.examResults[examId]).toBe(examResultGuid);
         });
 
-        it('when requesting for existing result then it should be returned',function(){
+        it('when requesting for existing result then it should be returned', function () {
             var examId = 1;
             var guid = 123;
 
@@ -171,7 +172,7 @@ describe('testing service "ExerciseResult":', function () {
             expect(examResult).toEqual(jasmine.objectContaining(expectedResult));
         });
 
-        it('when requesting for existing result which has sectionResults then it should be returned',function(){
+        it('when requesting for existing result which has sectionResults then it should be returned', function () {
             var examId = 1;
             testStorage.db.users.$$uid.examResults[examId] = 'guid';
             var expectedResult = {
@@ -188,7 +189,7 @@ describe('testing service "ExerciseResult":', function () {
             expect(examResult).toEqual(jasmine.objectContaining(expectedResult));
         });
 
-        it('when changing not exiting result data and saving then it should be saved it db',function(){
+        it('when changing not exiting result data and saving then it should be saved it db', function () {
             var examId = 1;
             var expectedResult = actions.getExamResult(examId);
             expectedResult.newProp = 'new value';
@@ -216,35 +217,110 @@ describe('testing service "ExerciseResult":', function () {
         });
     });
 
-    describe('test section result',function(){
-       it('when retrieving not exiting section result then this section should be added to relevant exam result',function(){
-           var sectionId = 10;
-           var examId = 1;
-           actions.getExerciseResult(ExerciseTypeEnum.SECTION.enum, sectionId, examId);
-           var examResultGuid = testStorage.db.users.$$uid.examResults[1];
-           var examResult = testStorage.db.examResults[examResultGuid];
-           var sectionResultGuid = testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.SECTION.enum][sectionId];
-           expect(examResult.sectionResults[sectionId]).toBe(sectionResultGuid);
-       });
+    describe('test section result', function () {
+        it('when retrieving not exiting section result then this section should be added to relevant exam result', function () {
+            var sectionId = 10;
+            var examId = 1;
+            actions.getExerciseResult(ExerciseTypeEnum.SECTION.enum, sectionId, examId);
+            var examResultGuid = testStorage.db.users.$$uid.examResults[1];
+            var examResult = testStorage.db.examResults[examResultGuid];
+            var sectionResultGuid = testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.SECTION.enum][sectionId];
+            expect(examResult.sectionResults[sectionId]).toBe(sectionResultGuid);
+        });
     });
 
-    describe('test exercise status update following save action',function(){
-       it('given exercise is not completed when saving exercise result then it status should be saved',function(){
+    describe('test exercise status', function () {
+        it('given exercise is not completed when saving exercise result then it status should be saved', function () {
             //isComplete
-           var exerciseId = 10;
-           var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.DRILL.enum,exerciseId);
-           exerciseResult.$save();
-           $rootScope.$digest();
+            var exerciseId = 10;
+            var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.DRILL.enum, exerciseId);
+            exerciseResult.$save();
+            $rootScope.$digest();
 
-           var expectedExercisesStatusData = {};
-           expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum] = {};
-           expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum][exerciseId] ={
-               status:  ExerciseStatusEnum.ACTIVE.enum
-           };
+            var expectedExercisesStatusData = {};
+            expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum] = {};
+            expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum][exerciseId] = {
+                status: ExerciseStatusEnum.ACTIVE.enum
+            };
 
-           var exercisesStatusData = testStorage.db.users.$$uid.exercisesStatus;
+            var exercisesStatusData = testStorage.db.users.$$uid.exercisesStatus;
 
-           expect(exercisesStatusData).toEqual(expectedExercisesStatusData);
-       });
+            expect(exercisesStatusData).toEqual(expectedExercisesStatusData);
+        });
+
+        it('given exercise is completed when saving exercise result then it status should be saved', function () {
+            //isComplete
+            var exerciseId = 10;
+            var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.DRILL.enum, exerciseId);
+            exerciseResult.isComplete = true;
+            exerciseResult.$save();
+            $rootScope.$digest();
+
+            var expectedExercisesStatusData = {};
+            expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum] = {};
+            expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum][exerciseId] = {
+                status: ExerciseStatusEnum.COMPLETED.enum
+            };
+
+            var exercisesStatusData = testStorage.db.users.$$uid.exercisesStatus;
+
+            expect(exercisesStatusData).toEqual(expectedExercisesStatusData);
+        });
+
+        it('given exercise is completed when saving exercise result then it status should be saved', function () {
+            //isComplete
+            var exerciseId = 10;
+            var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.DRILL.enum, exerciseId);
+            exerciseResult.isComplete = true;
+            exerciseResult.$save();
+            $rootScope.$digest();
+
+            var expectedExercisesStatusData = {};
+            expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum] = {};
+            expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum][exerciseId] = {
+                status: ExerciseStatusEnum.COMPLETED.enum
+            };
+
+            var exercisesStatusData = testStorage.db.users.$$uid.exercisesStatus;
+
+            expect(exercisesStatusData).toEqual(expectedExercisesStatusData);
+        });
+
+        it('when requesting for not started exercise status then new status should be returned',function(){
+            var expectedStatus = {
+                status: ExerciseStatusEnum.NEW.enum
+            };
+            var exerciseStatus = actions.getExerciseStatus(ExerciseTypeEnum.TUTORIAL.enum, 10);
+            expect(exerciseStatus).toEqual(jasmine.objectContaining(expectedStatus));
+        });
+
+        it('when requesting for an active exercise then an active status should be returned',function(){
+            var exerciseId = 5;
+            testStorage.db.users.$$uid.exercisesStatus[ExerciseTypeEnum.DRILL.enum] = {};
+            testStorage.db.users.$$uid.exercisesStatus[ExerciseTypeEnum.DRILL.enum][exerciseId] = {
+                status: ExerciseStatusEnum.ACTIVE.enum
+            };
+
+            var expectedStatus = {
+                status: ExerciseStatusEnum.ACTIVE.enum
+            };
+            var exerciseStatus = actions.getExerciseStatus(ExerciseTypeEnum.DRILL.enum,exerciseId);
+            expect(exerciseStatus).toEqual(jasmine.objectContaining(expectedStatus));
+        });
+
+        it('when requesting for a completed exercise then an completed status should be returned',function(){
+            var exerciseId = 5;
+            testStorage.db.users.$$uid.exercisesStatus[ExerciseTypeEnum.DRILL.enum] = {};
+            testStorage.db.users.$$uid.exercisesStatus[ExerciseTypeEnum.DRILL.enum][exerciseId] = {
+                status: ExerciseStatusEnum.COMPLETED.enum
+            };
+
+            var expectedStatus = {
+                status: ExerciseStatusEnum.COMPLETED.enum
+            };
+            var exerciseStatus = actions.getExerciseStatus(ExerciseTypeEnum.DRILL.enum,exerciseId);
+            expect(exerciseStatus).toEqual(jasmine.objectContaining(expectedStatus));
+        });
     });
+
 });
