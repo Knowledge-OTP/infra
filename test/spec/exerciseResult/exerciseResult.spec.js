@@ -4,7 +4,7 @@ describe('testing service "ExerciseResult":', function () {
     beforeEach(module('znk.infra.exerciseResult', 'znk.infra.storage', 'znk.infra.enum',
         'htmlTemplates', 'testUtility', 'storage.mock'));
 
-    var $rootScope, ExerciseResultSrv, ExerciseTypeEnum, actions, testStorage;
+    var $rootScope, ExerciseResultSrv, ExerciseTypeEnum, actions, testStorage, ExerciseStatusEnum;
     beforeEach(inject([
         '$injector',
         function ($injector) {
@@ -12,6 +12,7 @@ describe('testing service "ExerciseResult":', function () {
             ExerciseResultSrv = $injector.get('ExerciseResultSrv');
             ExerciseTypeEnum = $injector.get('ExerciseTypeEnum');
             testStorage = $injector.get('testStorage');
+            ExerciseStatusEnum = $injector.get('ExerciseStatusEnum');
 
             var TestUtilitySrv = $injector.get('TestUtilitySrv');
             actions = TestUtilitySrv.general.convertAllAsyncToSync(ExerciseResultSrv);
@@ -100,6 +101,7 @@ describe('testing service "ExerciseResult":', function () {
             var expectedResult = actions.getExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseId);
             expectedResult.questionResults.push({userAnswer: 2});
             expectedResult.$save();
+            $rootScope.$digest();
 
             var guid = testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum][exerciseId];
             var exerciseResult = testStorage.db.exerciseResults[guid];
@@ -223,6 +225,26 @@ describe('testing service "ExerciseResult":', function () {
            var examResult = testStorage.db.examResults[examResultGuid];
            var sectionResultGuid = testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.SECTION.enum][sectionId];
            expect(examResult.sectionResults[sectionId]).toBe(sectionResultGuid);
+       });
+    });
+
+    describe('test exercise status update following save action',function(){
+       it('given exercise is not completed when saving exercise result then it status should be saved',function(){
+            //isComplete
+           var exerciseId = 10;
+           var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.DRILL.enum,exerciseId);
+           exerciseResult.$save();
+           $rootScope.$digest();
+
+           var expectedExercisesStatusData = {};
+           expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum] = {};
+           expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum][exerciseId] ={
+               status:  ExerciseStatusEnum.ACTIVE.enum
+           };
+
+           var exercisesStatusData = testStorage.db.users.$$uid.exercisesStatus;
+
+           expect(exercisesStatusData).toEqual(expectedExercisesStatusData);
        });
     });
 });
