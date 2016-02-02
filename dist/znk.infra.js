@@ -2951,6 +2951,12 @@
                             };
 
                             scope.actions.pagerDisplay = function(display){
+                                var showPager = !!display;
+                                if(showPager){
+                                    element.addClass('pager-displayed');
+                                }else{
+                                    element.removeClass('pager-displayed');
+                                }
                                 scope.vm.showPager = !!display;
                             };
 
@@ -4094,7 +4100,9 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "        <svg-icon name=\"chevron\"></svg-icon>\n" +
     "    </button>\n" +
     "</div>\n" +
-    "<button class=\"done-btn ng-hide\" ng-show=\"vm.showDoneButton\" ng-click=\"onDone()\">DONE</button>\n" +
+    "<div class=\"done-btn-wrap\">\n" +
+    "    <button class=\"done-btn ng-hide\" ng-show=\"vm.showDoneButton\" ng-click=\"onDone()\">DONE</button>\n" +
+    "</div>\n" +
     "");
   $templateCache.put("components/znkExercise/core/template/btnSectionMobileTemplate.html",
     "<div ng-class=\"{ 'next-disabled' : settings.slideDirection === d.slideDirections.NONE ||  settings.slideDirection === d.slideDirections.RIGHT }\">\n" +

@@ -17,6 +17,7 @@
             QuestionTypesSrvProvider.setQuestionTypeGetter(questionTypeGetter);
         })
         .controller('Main', function ($scope, $timeout) {
+            $scope.d = {};
             $scope.questions = [
                 {
                     __type: 1,
@@ -111,7 +112,7 @@
             };
 
             $scope.setSlideDirection = function (slideDirection) {
-                $scope.actions.setSlideDirection(slideDirection);
+                $scope.d.actions.setSlideDirection(slideDirection);
             };
 
             $scope.setViewMode = function (viewMode) {
@@ -129,7 +130,7 @@
 
             $scope.showOrHidePager = function () {
                 $scope.settings.initPagerDisplay = !$scope.settings.initPagerDisplay;
-                $scope.actions.pagerDisplay($scope.settings.initPagerDisplay);
+                $scope.d.actions.pagerDisplay($scope.settings.initPagerDisplay);
             };
         });
 })(angular);
