@@ -64,7 +64,6 @@
 
                         init();
 
-
                         scope.vm.prevQuestion = function () {
                             scope.prevQuestion();
                         };
@@ -95,10 +94,10 @@
 
                             switch(e.keyCode){
                                 case LEFT_ARROW_KEY:
-                                    scope.vm.nextQuestion();
+                                    scope.vm.prevQuestion();
                                     break;
                                 case RIGHT_ARROW_KEY:
-                                    scope.vm.prevQuestion();
+                                    scope.vm.nextQuestion();
                                     break;
                             }
                         }

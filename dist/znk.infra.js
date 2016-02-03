@@ -2664,7 +2664,6 @@
 
                         init();
 
-
                         scope.vm.prevQuestion = function () {
                             scope.prevQuestion();
                         };
@@ -2695,10 +2694,10 @@
 
                             switch(e.keyCode){
                                 case LEFT_ARROW_KEY:
-                                    scope.vm.nextQuestion();
+                                    scope.vm.prevQuestion();
                                     break;
                                 case RIGHT_ARROW_KEY:
-                                    scope.vm.prevQuestion();
+                                    scope.vm.nextQuestion();
                                     break;
                             }
                         }
@@ -3235,7 +3234,15 @@
                              *  INIT
                              * */
                             scope.actions.setSlideDirection(scope.settings.initSlideDirection);
-                            scope.actions.forceDoneBtnDisplay(scope.settings.initForceDoneBtnDisplay);
+                            if(scope.settings.initForceDoneBtnDisplay === null){
+                                if(scope.settings.viewMode === ZnkExerciseViewModeEnum.REVIEW.enum){
+                                    scope.actions.forceDoneBtnDisplay(false);
+                                }else{
+                                    scope.actions.forceDoneBtnDisplay(scope.settings.initForceDoneBtnDisplay);
+                                }
+                            }else{
+                                scope.actions.forceDoneBtnDisplay(scope.settings.initForceDoneBtnDisplay);
+                            }
                             scope.actions.pagerDisplay(scope.settings.initPagerDisplay);
                             /**
                              *  INIT END
