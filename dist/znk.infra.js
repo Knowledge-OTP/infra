@@ -4486,22 +4486,20 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "</div>\n" +
     "");
   $templateCache.put("components/general/svg/clock-icon.svg",
-    "<svg version=\"1.1\"\n" +
+    "<svg version=\"1.1\" class=\"clock-icon-svg\"\n" +
     "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
     "     x=\"0px\"\n" +
     "     y=\"0px\"\n" +
     "     viewBox=\"0 0 183 208.5\">\n" +
     "    <style>\n" +
-    "\n" +
-    "\n" +
-    "        .clock-icon .st0 {\n" +
+    "        .clock-icon-svg .st0 {\n" +
     "            fill: none;\n" +
     "            stroke: #757A83;\n" +
     "            stroke-width: 10.5417;\n" +
     "            stroke-miterlimit: 10;\n" +
     "        }\n" +
     "\n" +
-    "        .clock-icon .st1 {\n" +
+    "        .clock-icon-svg .st1 {\n" +
     "            fill: none;\n" +
     "            stroke: #757A83;\n" +
     "            stroke-width: 12.3467;\n" +
@@ -4509,7 +4507,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "            stroke-miterlimit: 10;\n" +
     "        }\n" +
     "\n" +
-    "        .clock-icon .st2 {\n" +
+    "        .clock-icon-svg .st2 {\n" +
     "            fill: none;\n" +
     "            stroke: #757A83;\n" +
     "            stroke-width: 11.8313;\n" +
@@ -4517,14 +4515,14 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "            stroke-miterlimit: 10;\n" +
     "        }\n" +
     "\n" +
-    "        .clock-icon .st3 {\n" +
+    "        .clock-icon-svg .st3 {\n" +
     "            fill: none;\n" +
     "            stroke: #757A83;\n" +
     "            stroke-width: 22.9416;\n" +
     "            stroke-miterlimit: 10;\n" +
     "        }\n" +
     "\n" +
-    "        .clock-icon .st4 {\n" +
+    "        .clock-icon-svg .st4 {\n" +
     "            fill: none;\n" +
     "            stroke: #757A83;\n" +
     "            stroke-width: 14;\n" +
@@ -4532,7 +4530,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "            stroke-miterlimit: 10;\n" +
     "        }\n" +
     "\n" +
-    "        .clock-icon .st5 {\n" +
+    "        .clock-icon-svg .st5 {\n" +
     "            fill: none;\n" +
     "            stroke: #757A83;\n" +
     "            stroke-width: 18;\n" +
