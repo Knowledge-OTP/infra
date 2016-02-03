@@ -43,8 +43,18 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.general', ['znk.infra.enum']);
+    angular.module('znk.infra.general', ['znk.infra.enum', 'znk.infra.svgIcon'])
+        .config([
+        'SvgIconSrvProvider',
+        function (SvgIconSrvProvider) {
+            var svgMap = {
+                'clock-icon': 'components/general/svg/clock-icon.svg'
+            };
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+        }]);
+
 })(angular);
+
 (function (angular) {
     'use strict';
 
@@ -4274,7 +4284,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/general/templates/timerDrv.html",
     "<div ng-switch=\"type\" class=\"timer-drv\">\n" +
     "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +
-    "        <i class=\"ion-android-stopwatch\"></i>\n" +
+    "        <svg-icon class=\"icon-wrapper\" name=\"clock-icon\"></svg-icon>\n" +
     "        <div class=\"timer-view\"></div>\n" +
     "    </div>\n" +
     "    <div ng-switch-when=\"2\" class=\"timer-type2\">\n" +
@@ -4448,6 +4458,73 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "        <!-- Slides -->\n" +
     "    </div>\n" +
     "</div>\n" +
+    "");
+  $templateCache.put("components/general/svg/clock-icon.svg",
+    "<svg version=\"1.1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "     viewBox=\"0 0 183 208.5\">\n" +
+    "    <style>\n" +
+    "\n" +
+    "\n" +
+    "        .clock-icon .st0 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 10.5417;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon .st1 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 12.3467;\n" +
+    "            stroke-linecap: round;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon .st2 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 11.8313;\n" +
+    "            stroke-linecap: round;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon .st3 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 22.9416;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon .st4 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 14;\n" +
+    "            stroke-linecap: round;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon .st5 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 18;\n" +
+    "            stroke-linejoin: round;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "\n" +
+    "    </style>\n" +
+    "    <g>\n" +
+    "        <circle class=\"st0\" cx=\"91.5\" cy=\"117\" r=\"86.2\"/>\n" +
+    "        <line class=\"st1\" x1=\"92.1\" y1=\"121.5\" x2=\"92.1\" y2=\"61\"/>\n" +
+    "        <line class=\"st2\" x1=\"92.1\" y1=\"121.5\" x2=\"131.4\" y2=\"121.5\"/>\n" +
+    "        <line class=\"st3\" x1=\"78.2\" y1=\"18.2\" x2=\"104.9\" y2=\"18.2\"/>\n" +
+    "        <line class=\"st4\" x1=\"61.4\" y1=\"7\" x2=\"121.7\" y2=\"7\"/>\n" +
+    "        <line class=\"st5\" x1=\"156.1\" y1=\"43\" x2=\"171.3\" y2=\"61\"/>\n" +
+    "    </g>\n" +
+    "</svg>\n" +
     "");
   $templateCache.put("components/popUp/svg/exclamation-mark-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
