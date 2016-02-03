@@ -1,0 +1,20 @@
+<div ng-switch="type" class="timer-drv">
+    <div ng-switch-when="1" class="timer-type1">
+        <i class="ion-android-stopwatch"></i>
+        <div class="timer-view"></div>
+    </div>
+    <div ng-switch-when="2" class="timer-type2">
+        <div class="timer-display-wrapper">
+            <span class="timer-display"></span>
+        </div>
+        <div round-progress
+             current="ngModelCtrl.$viewValue"
+             max="config.max"
+             color="{{config.color}}"
+             bgcolor="{{config.bgcolor}}"
+             stroke="{{config.stroke}}"
+             radius="{{config.radius}}"
+             clockwise="config.clockwise">
+        </div>
+    </div>
+</div>

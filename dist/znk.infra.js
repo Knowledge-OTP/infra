@@ -990,7 +990,7 @@
                 },
                 require: '?ngModel',
                 replace: true,
-                templateUrl: 'scripts/exercise/templates/timerDrv.html',
+                templateUrl: 'components/general/templates/timerDrv.html',
                 link: function link(scope, element, attrs, ngModelCtrl) {
                     var domElement = element[0];
 
@@ -4271,6 +4271,28 @@
 })(angular);
 
 angular.module('znk.infra').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/general/templates/timerDrv.html",
+    "<div ng-switch=\"type\" class=\"timer-drv\">\n" +
+    "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +
+    "        <i class=\"ion-android-stopwatch\"></i>\n" +
+    "        <div class=\"timer-view\"></div>\n" +
+    "    </div>\n" +
+    "    <div ng-switch-when=\"2\" class=\"timer-type2\">\n" +
+    "        <div class=\"timer-display-wrapper\">\n" +
+    "            <span class=\"timer-display\"></span>\n" +
+    "        </div>\n" +
+    "        <div round-progress\n" +
+    "             current=\"ngModelCtrl.$viewValue\"\n" +
+    "             max=\"config.max\"\n" +
+    "             color=\"{{config.color}}\"\n" +
+    "             bgcolor=\"{{config.bgcolor}}\"\n" +
+    "             stroke=\"{{config.stroke}}\"\n" +
+    "             radius=\"{{config.radius}}\"\n" +
+    "             clockwise=\"config.clockwise\">\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
   $templateCache.put("components/znkExercise/answerTypes/templates/rateAnswerDrv.html",
     "<div class=\"rate-answer-wrapper\">\n" +
     "\n" +

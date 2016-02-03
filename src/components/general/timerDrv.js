@@ -36,7 +36,7 @@
                 },
                 require: '?ngModel',
                 replace: true,
-                templateUrl: 'scripts/exercise/templates/timerDrv.html',
+                templateUrl: 'components/general/templates/timerDrv.html',
                 link: function link(scope, element, attrs, ngModelCtrl) {
                     var domElement = element[0];
 
