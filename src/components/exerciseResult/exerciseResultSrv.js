@@ -96,7 +96,7 @@
                         return result;
                     });
                 }).then(function(exerciseResult){
-                    _setSaveFn(exerciseResult);
+                    exerciseResult.$save = exerciseSaveFn;
                     return exerciseResult;
                 });
             };
@@ -134,31 +134,37 @@
                 return storage.get(EXAM_RESULTS_GUIDS_PATH);
             }
 
-            function _setSaveFn(exerciseResult){
-                exerciseResult.$save = function(){
-                    var getExercisesStatusDataProm = _getExercisesStatusData();
-                    var dataToSave = {};
+            function exerciseSaveFn(){
+                /* jshint validthis: true */
+                var exerciseResult = this;
+                var getExercisesStatusDataProm = _getExercisesStatusData();
+                var dataToSave = {};
 
-                    var exerciseResultPath = _getExerciseResultPath(exerciseResult.guid);
-                    dataToSave[exerciseResultPath] = exerciseResult;
+                var totalTimeSpentOnQuestions = exerciseResult.questionResults.reduce(function(previousValue, currResult) {
+                    return previousValue + (currResult.timeSpent || 0);
+                },0);
+                var numOfAnsweredQuestions = exerciseResult.questionResults.length;
+                exerciseResult.avgTimePerQuestion = numOfAnsweredQuestions ? Math.round(totalTimeSpentOnQuestions / numOfAnsweredQuestions) : 0;
+                var exerciseResultPath = _getExerciseResultPath(exerciseResult.guid);
+                dataToSave[exerciseResultPath] = exerciseResult;
 
-                    return getExercisesStatusDataProm.then(function(exercisesStatusData){
-                        if(!exercisesStatusData[exerciseResult.exerciseTypeId]){
-                            exercisesStatusData[exerciseResult.exerciseTypeId] = {};
-                        }
+                return getExercisesStatusDataProm.then(function(exercisesStatusData){
+                    if(!exercisesStatusData[exerciseResult.exerciseTypeId]){
+                        exercisesStatusData[exerciseResult.exerciseTypeId] = {};
+                    }
 
-                        var exerciseNewStatus = exerciseResult.isComplete ?
-                            ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
-                        exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId] = new ExerciseStatus(exerciseNewStatus);
+                    var exerciseNewStatus = exerciseResult.isComplete ?
+                        ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
+                    exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId] = new ExerciseStatus(exerciseNewStatus);
 
-                        dataToSave[EXERCISES_STATUS_PATH] = exercisesStatusData;
+                    dataToSave[EXERCISES_STATUS_PATH] = exercisesStatusData;
 
-                        var storage = InfraConfigSrv.getStorageService();
-                        storage.set(dataToSave);
+                    var storage = InfraConfigSrv.getStorageService();
+                    storage.set(dataToSave);
 
-                        return exerciseResult;
-                    });
-                };
+                    return exerciseResult;
+                });
+
             }
 
             function _getExercisesStatusData(){

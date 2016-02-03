@@ -670,6 +670,37 @@ describe('testing directive "znkExerciseDrv":', function () {
         expect(content.hasClass('done-btn-show')).toBeFalsy();
     });
 
+    it('given view mode is not review then done-btn-show done-btn-hide class should not be added',function(){
+        var scopeSettings = {
+            viewMode: ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum
+        };
+        var content = createDirectiveHtml(undefined, undefined, scopeSettings).content;
+
+        expect(content.hasClass('done-btn-hide')).toBeFalsy();
+        expect(content.hasClass('done-btn-show')).toBeFalsy();
+    });
+
+    it('given view mode is review then only done-btn-hide class should be added',function(){
+        var scopeSettings = {
+            viewMode: ZnkExerciseViewModeEnum.REVIEW.enum
+        };
+        var content = createDirectiveHtml(undefined, undefined, scopeSettings).content;
+
+        expect(content.hasClass('done-btn-hide')).toBeTruthy();
+        expect(content.hasClass('done-btn-show')).toBeFalsy();
+    });
+
+    it('given view mode is review and initForceDoneBtnDisplay is true then only done-btn-show class should be added',function(){
+        var scopeSettings = {
+            viewMode: ZnkExerciseViewModeEnum.REVIEW.enum,
+            initForceDoneBtnDisplay: true
+        };
+        var content = createDirectiveHtml(undefined, undefined, scopeSettings).content;
+
+        expect(content.hasClass('done-btn-hide')).toBeFalsy();
+        expect(content.hasClass('done-btn-show')).toBeTruthy();
+    });
+
     it('when question and relevant answer are dynamically added then questions number changed event should be broadcast',function(){
         var scopeContent = createDirectiveHtml();
         var content = scopeContent.content;

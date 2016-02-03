@@ -64,7 +64,6 @@
 
                         init();
 
-
                         scope.vm.prevQuestion = function () {
                             scope.prevQuestion();
                         };
@@ -87,6 +86,26 @@
                         scope.$on(ZnkExerciseEvents.QUESTIONS_NUM_CHANGED, function(){
                             var currIndex = znkExerciseDrvCtrl.getCurrentIndex();
                             _setDoneBtnDisplayStatus(currIndex);
+                        });
+
+                        function keyboardClickCB(e){
+                            var LEFT_ARROW_KEY = 37;
+                            var RIGHT_ARROW_KEY = 39;
+
+                            switch(e.keyCode){
+                                case LEFT_ARROW_KEY:
+                                    scope.vm.prevQuestion();
+                                    break;
+                                case RIGHT_ARROW_KEY:
+                                    scope.vm.nextQuestion();
+                                    break;
+                            }
+                        }
+                        var body = document.body;
+                        body.addEventListener('keydown',keyboardClickCB);
+
+                        scope.$on('$destroy',function(){
+                            body.removeEventListener('keydown',keyboardClickCB);
                         });
                     }
                 }

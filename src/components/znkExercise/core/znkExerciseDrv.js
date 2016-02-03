@@ -344,7 +344,15 @@
                              *  INIT
                              * */
                             scope.actions.setSlideDirection(scope.settings.initSlideDirection);
-                            scope.actions.forceDoneBtnDisplay(scope.settings.initForceDoneBtnDisplay);
+                            if(scope.settings.initForceDoneBtnDisplay === null){
+                                if(scope.settings.viewMode === ZnkExerciseViewModeEnum.REVIEW.enum){
+                                    scope.actions.forceDoneBtnDisplay(false);
+                                }else{
+                                    scope.actions.forceDoneBtnDisplay(scope.settings.initForceDoneBtnDisplay);
+                                }
+                            }else{
+                                scope.actions.forceDoneBtnDisplay(scope.settings.initForceDoneBtnDisplay);
+                            }
                             scope.actions.pagerDisplay(scope.settings.initPagerDisplay);
                             /**
                              *  INIT END
