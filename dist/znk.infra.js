@@ -43,8 +43,18 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.general', ['znk.infra.enum']);
+    angular.module('znk.infra.general', ['znk.infra.enum', 'znk.infra.svgIcon'])
+        .config([
+        'SvgIconSrvProvider',
+        function (SvgIconSrvProvider) {
+            var svgMap = {
+                'clock-icon': 'components/general/svg/clock-icon.svg'
+            };
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+        }]);
+
 })(angular);
+
 (function (angular) {
     'use strict';
 
@@ -957,6 +967,149 @@
     ]);
 })(angular);
 
+
+/**
+ * attrs -
+ *      ng-model
+ *      play
+ *      type:
+ *          1: timer with displayed time.
+ *          2: timer with round progress bar
+ *      config:
+ *          countDown
+ *          format: defaulted to mm:ss
+ *          only for type 2:
+ *              stroke
+ *              bgcolor
+ *              color
+ *              radius
+ *              max
+ *              clockwise
+ */
+'use strict';
+
+(function (angular) {
+
+    angular.module('znk.infra.general').directive('timer', [
+        '$interval',
+        function ($interval) {
+            var timerTypes = {
+                'REGULAR': 1,
+                'ROUND_PROGRESSBAR': 2
+            };
+
+            return {
+                scope: {
+                    play: '&',
+                    typeGetter: '&?type',
+                    configGetter: '&?config'
+                },
+                require: '?ngModel',
+                replace: true,
+                templateUrl: 'components/general/templates/timerDrv.html',
+                link: function link(scope, element, attrs, ngModelCtrl) {
+                    var domElement = element[0];
+
+                    scope.ngModelCtrl = ngModelCtrl;
+
+                    function padNum(num){
+                        if(('' + Math.abs(+num)).length < 2){
+                            return (num < 0 ? '-' : '') + '0' + Math.abs(+num);
+                        }else{
+                            return num;
+                        }
+                    }
+
+                    function getDisplayedTime(currentTime,format){
+                        var totalSeconds = currentTime / 1000;
+                        var seconds = Math.floor(totalSeconds % 60);
+                        var minutes = Math.floor(Math.abs(totalSeconds) / 60) * (totalSeconds < 0 ? -1 : 1);
+                        var paddedSeconds = padNum(seconds);
+                        var paddedMinutes = padNum(minutes);
+
+                        return format
+                            .replace('tss',totalSeconds)
+                            .replace('ss',paddedSeconds)
+                            .replace('mm',paddedMinutes);
+
+                    }
+
+                    function updateTime(currentTime) {
+                        var displayedTime = getDisplayedTime(currentTime,scope.config.format);
+                        var timeDisplayDomElem;
+                        switch(scope.type){
+                            case 1:
+                                timeDisplayDomElem = domElement.querySelector('.timer-view');
+                                break;
+                            case 2:
+                                timeDisplayDomElem = domElement.querySelector('.timer-display');
+                                break;
+                        }
+                        if(timeDisplayDomElem){
+                            timeDisplayDomElem.innerText = displayedTime;
+                        }
+                    }
+
+                    var intervalHandler;
+                    var INTERVAL_TIME = 1000;
+
+                    scope.type = scope.typeGetter() || 1;
+                    scope.config = scope.configGetter() || {};
+                    var configDefaults = {
+                        format: 'mm:ss'
+                    };
+                    scope.config = angular.extend(configDefaults, scope.config);
+
+                    switch (scope.type) {
+                        case timerTypes.ROUND_PROGRESSBAR:
+                        {
+                            var roundProgressBarConfigDefults = {
+                                stroke: 3,
+                                bgcolor: '#0a9bad',
+                                color: '#e1e1e1'
+                            };
+                            scope.config = angular.extend(roundProgressBarConfigDefults, scope.config);
+                            scope.config.radius = scope.config.radius || Math.floor(element[0].offsetHeight / 2) || 45;
+                            break;
+                        }
+                    }
+
+                    function tick() {
+                        var currentTime = ngModelCtrl.$viewValue;
+                        if (angular.isUndefined(currentTime)) {
+                            return;
+                        }
+                        currentTime += scope.config.countDown ? -INTERVAL_TIME : INTERVAL_TIME;
+                        updateTime(currentTime);
+                        ngModelCtrl.$setViewValue(currentTime);
+                    }
+
+                    ngModelCtrl.$render = function () {
+                        var currentTime = ngModelCtrl.$viewValue;
+                        if (angular.isUndefined(currentTime)) {
+                            return;
+                        }
+                        updateTime(currentTime);
+                    };
+
+                    scope.$watch('play()', function (play) {
+                        if (intervalHandler) {
+                            $interval.cancel(intervalHandler);
+                        }
+
+                        if (play) {
+                            intervalHandler = $interval(tick, INTERVAL_TIME, 0, false);
+                        }
+                    });
+
+                    scope.$on('$destroy', function () {
+                        $interval.cancel(intervalHandler);
+                    });
+                }
+            };
+        }]);
+
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -4154,6 +4307,28 @@
 })(angular);
 
 angular.module('znk.infra').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/general/templates/timerDrv.html",
+    "<div ng-switch=\"type\" class=\"timer-drv\">\n" +
+    "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +
+    "        <svg-icon class=\"icon-wrapper\" name=\"clock-icon\"></svg-icon>\n" +
+    "        <div class=\"timer-view\"></div>\n" +
+    "    </div>\n" +
+    "    <div ng-switch-when=\"2\" class=\"timer-type2\">\n" +
+    "        <div class=\"timer-display-wrapper\">\n" +
+    "            <span class=\"timer-display\"></span>\n" +
+    "        </div>\n" +
+    "        <div round-progress\n" +
+    "             current=\"ngModelCtrl.$viewValue\"\n" +
+    "             max=\"config.max\"\n" +
+    "             color=\"{{config.color}}\"\n" +
+    "             bgcolor=\"{{config.bgcolor}}\"\n" +
+    "             stroke=\"{{config.stroke}}\"\n" +
+    "             radius=\"{{config.radius}}\"\n" +
+    "             clockwise=\"config.clockwise\">\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
   $templateCache.put("components/znkExercise/answerTypes/templates/rateAnswerDrv.html",
     "<div class=\"rate-answer-wrapper\">\n" +
     "\n" +
@@ -4309,6 +4484,73 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "        <!-- Slides -->\n" +
     "    </div>\n" +
     "</div>\n" +
+    "");
+  $templateCache.put("components/general/svg/clock-icon.svg",
+    "<svg version=\"1.1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "     viewBox=\"0 0 183 208.5\">\n" +
+    "    <style>\n" +
+    "\n" +
+    "\n" +
+    "        .clock-icon .st0 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 10.5417;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon .st1 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 12.3467;\n" +
+    "            stroke-linecap: round;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon .st2 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 11.8313;\n" +
+    "            stroke-linecap: round;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon .st3 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 22.9416;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon .st4 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 14;\n" +
+    "            stroke-linecap: round;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon .st5 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 18;\n" +
+    "            stroke-linejoin: round;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "\n" +
+    "    </style>\n" +
+    "    <g>\n" +
+    "        <circle class=\"st0\" cx=\"91.5\" cy=\"117\" r=\"86.2\"/>\n" +
+    "        <line class=\"st1\" x1=\"92.1\" y1=\"121.5\" x2=\"92.1\" y2=\"61\"/>\n" +
+    "        <line class=\"st2\" x1=\"92.1\" y1=\"121.5\" x2=\"131.4\" y2=\"121.5\"/>\n" +
+    "        <line class=\"st3\" x1=\"78.2\" y1=\"18.2\" x2=\"104.9\" y2=\"18.2\"/>\n" +
+    "        <line class=\"st4\" x1=\"61.4\" y1=\"7\" x2=\"121.7\" y2=\"7\"/>\n" +
+    "        <line class=\"st5\" x1=\"156.1\" y1=\"43\" x2=\"171.3\" y2=\"61\"/>\n" +
+    "    </g>\n" +
+    "</svg>\n" +
     "");
   $templateCache.put("components/popUp/svg/exclamation-mark-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
