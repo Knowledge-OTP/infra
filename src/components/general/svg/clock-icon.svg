@@ -1,0 +1,65 @@
+<svg version="1.1"
+     xmlns="http://www.w3.org/2000/svg"
+     x="0px"
+     y="0px"
+     viewBox="0 0 183 208.5">
+    <style>
+
+
+        .clock-icon .st0 {
+            fill: none;
+            stroke: #757A83;
+            stroke-width: 10.5417;
+            stroke-miterlimit: 10;
+        }
+
+        .clock-icon .st1 {
+            fill: none;
+            stroke: #757A83;
+            stroke-width: 12.3467;
+            stroke-linecap: round;
+            stroke-miterlimit: 10;
+        }
+
+        .clock-icon .st2 {
+            fill: none;
+            stroke: #757A83;
+            stroke-width: 11.8313;
+            stroke-linecap: round;
+            stroke-miterlimit: 10;
+        }
+
+        .clock-icon .st3 {
+            fill: none;
+            stroke: #757A83;
+            stroke-width: 22.9416;
+            stroke-miterlimit: 10;
+        }
+
+        .clock-icon .st4 {
+            fill: none;
+            stroke: #757A83;
+            stroke-width: 14;
+            stroke-linecap: round;
+            stroke-miterlimit: 10;
+        }
+
+        .clock-icon .st5 {
+            fill: none;
+            stroke: #757A83;
+            stroke-width: 18;
+            stroke-linejoin: round;
+            stroke-miterlimit: 10;
+        }
+
+
+    </style>
+    <g>
+        <circle class="st0" cx="91.5" cy="117" r="86.2"/>
+        <line class="st1" x1="92.1" y1="121.5" x2="92.1" y2="61"/>
+        <line class="st2" x1="92.1" y1="121.5" x2="131.4" y2="121.5"/>
+        <line class="st3" x1="78.2" y1="18.2" x2="104.9" y2="18.2"/>
+        <line class="st4" x1="61.4" y1="7" x2="121.7" y2="7"/>
+        <line class="st5" x1="156.1" y1="43" x2="171.3" y2="61"/>
+    </g>
+</svg>
