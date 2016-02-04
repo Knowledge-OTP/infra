@@ -1114,7 +1114,7 @@
 'use strict';
 angular.module('znk.infra.general')
        .directive('videoActivationButtonDrv',
-           ['$window', '$http', '$log', function ($window, $http, $log) {   //  TODO:  add this , 'NetworkSrv' , 'PopUpSrv' , 'ErrorHandlerSrv'
+           ['$window', '$http', '$log', function ($window, $http, $log) {
                return {
                    restrict: 'E', scope: {
                        playVideo: '&ngClick'
@@ -1126,7 +1126,9 @@ angular.module('znk.infra.general')
                        scope.analyticsLabel = '';
                        scope.isLoading = true;
                        scope.isAvail = true;
-                       scope.pathFull = 'http://d1qqqwawt7o27r.cloudfront.net/';
+                       scope.pathFull =
+                           (angular.isDefined(attrs.vidLib) && attrs.vidLib !== '') ?
+                               attrs.vidLib : 'http://d1qqqwawt7o27r.cloudfront.net/';
                        function videoIsMissing() {
                            scope.label = 'Video is not available';
                            // the assignment to scope.label happend too late and the ui is not
@@ -1134,27 +1136,22 @@ angular.module('znk.infra.general')
                            scope.isLoading = false;
                            scope.isAvail = false;
                        }
-
-                       //  validates the plugin
                        function isPluginsValid() {
                            if (!$window.cordova) {  //  PC
                                return true;
                            }
                            return !!$window.plugins && $window.plugins.streamingMedia;
                        }
-
                        function getVideoUrl() {
-                           var result ;
+                           var result;
                            var urlTypePart = '';
                            //  read videos end-point
-                           //  @todo: replace to real url from env object
                            var videosEndPoint = scope.pathFull;
                            if (videosEndPoint.lastIndexOf('/', videosEndPoint.length - 1) !==
                                videosEndPoint.length - 1) {
                                videosEndPoint += '/';
                            }
                            switch (attrs.videoType) {
-                               //  TODO: work with EnumSrv values
                                case 'tutorials':   // EnumSrv.exerciseType.tutorial.enum:
                                    urlTypePart = 'tutorials';
                                    scope.label = 'Video Tutorial';
@@ -1172,16 +1169,11 @@ angular.module('znk.infra.general')
                                    '.mp4';
                                scope.analyticsLabel = urlTypePart + '-' + attrs.contentId;
                            }
-
                            return result;
                        }
-
                        if (isPluginsValid()) {
                            var videoUrl = getVideoUrl();
-
-                           //  verify that the videoUrl has value
                            if (angular.isDefined(videoUrl)) {
-                               // check if video url exits by sending HEAD request
                                $http({
                                    method: 'HEAD', url: videoUrl //  append videos end-point to the
                                                                  // url to get the full url
@@ -1203,7 +1195,6 @@ angular.module('znk.infra.general')
                            // PC Only
                            videoIsMissing();
                        }
-
                    }, templateUrl: function (elem, attrs) {
                        return attrs.templateUrl;
                    }
