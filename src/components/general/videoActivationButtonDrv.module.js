@@ -1,4 +1,4 @@
-angular.module('actWebApp')
+angular.module('znk.infra.general')
        .directive('videoActivationButtonDrv',
            ['$window', '$http', '$log', function ($window, $http, $log) {   //  TODO:  add this , 'NetworkSrv' , 'PopUpSrv' , 'ErrorHandlerSrv'
                return {
