@@ -1,3 +1,4 @@
+'use strict';
 angular.module('znk.infra.general')
        .directive('videoActivationButtonDrv',
            ['$window', '$http', '$log', function ($window, $http, $log) {   //  TODO:  add this , 'NetworkSrv' , 'PopUpSrv' , 'ErrorHandlerSrv'
@@ -30,7 +31,7 @@ angular.module('znk.infra.general')
                        }
 
                        function getVideoUrl() {
-                           var result = undefined;
+                           var result ;
                            var urlTypePart = '';
                            //  read videos end-point
                            //  @todo: replace to real url from env object
