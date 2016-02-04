@@ -13,6 +13,15 @@ znk-exercise.desktop {
             &.right-container {
                 right: -40px;
 
+                &.question-answered{
+                    button{
+                        background: $bgColor3;
+                        svg-icon.chevron .st0{
+                            stroke: $bgColor6;
+                        }
+                    }
+                }
+
                 button {
                     border-top-right-radius: 42px;
                     border-bottom-right-radius: 42px;
