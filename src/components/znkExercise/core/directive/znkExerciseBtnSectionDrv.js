@@ -8,8 +8,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseBtnSection', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseEvents',
-        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseEvents) {
+        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum',
+        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseEvents, ZnkExerciseViewModeEnum) {
             return {
                 restrict: 'E',
                 scope: {
@@ -37,6 +37,8 @@
                 },
                 link: {
                     pre: function (scope, element, attrs, znkExerciseDrvCtrl) {
+                        var viewMode = znkExerciseDrvCtrl.getViewMode();
+
                         scope.vm = {};
 
                         function _setCurrentQuestionIndex(index){
@@ -107,6 +109,16 @@
                         scope.$on('$destroy',function(){
                             body.removeEventListener('keydown',keyboardClickCB);
                         });
+
+                        var currentQuestionAnsweredWatchFn;
+                        if(viewMode !== ZnkExerciseViewModeEnum.REVIEW.enum){
+                            currentQuestionAnsweredWatchFn = function(){
+                                return znkExerciseDrvCtrl.isCurrentQuestionAnswered();
+                            };
+                            scope.$watch(currentQuestionAnsweredWatchFn,function(isAnswered){
+                                scope.vm.isCurrentQuestionAnswered = !!isAnswered;
+                            });
+                        }
                     }
                 }
             };

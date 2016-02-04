@@ -22,7 +22,7 @@ describe('testing directive "znkExerciseDrv":', function () {
         }
     ]));
 
-    function createDirectiveHtml($scope, content, scopeSettings) {
+    function createDirectiveHtml($scope, content, scopeSettings, scopeAnswers) {
         if (!$scope) {
             $scope = $rootScope.$new();
             $scope.d = {
@@ -54,7 +54,7 @@ describe('testing directive "znkExerciseDrv":', function () {
                         }, {id: 4, content: 'answer 4'}]
                     }
                 ],
-                answers: [
+                answers: scopeAnswers || [
                     {
                         questionId: 1,
                         userAnswer: 3,
@@ -112,6 +112,11 @@ describe('testing directive "znkExerciseDrv":', function () {
             isolateScope.vm.setCurrentIndexByOffset(offset);
             isolateScope.$digest();
             $timeout.flush(300);
+        };
+
+        content.getNextQuestionBtnContainer = function(){
+            var domElement = content[0];
+            return angular.element(domElement.querySelector('.btn-container.right-container'));
         };
         //wait for the slide box to compile the questions
         $scope.$digest();
@@ -714,5 +719,37 @@ describe('testing directive "znkExerciseDrv":', function () {
         scope.d.questions.push({});
         scope.$digest();
         expect(isolateScope.$broadcast).toHaveBeenCalledWith(ZnkExerciseEvents.QUESTIONS_NUM_CHANGED, currQuestionsNum+1, currQuestionsNum);
+    });
+
+    it('when current question is unanswered then right arrow button (next question) ' +
+        'should not have question-answered class',function(){
+
+        var scopeContent = createDirectiveHtml(undefined,undefined,undefined, [{},{},{},{},{}]);
+        var content = scopeContent.content;
+        var scope = scopeContent.scope;
+
+        var nextBtnContainerElement = content.getNextQuestionBtnContainer();
+        expect(nextBtnContainerElement.hasClass('question-answered')).toBeFalsy();
+    });
+
+    it('when current question is answered then right arrow button (next question) ' +
+        'should have question-answered class',function(){
+        var scopeContent = createDirectiveHtml();
+        var content = scopeContent.content;
+
+        var nextBtnContainerElement = content.getNextQuestionBtnContainer();
+        expect(nextBtnContainerElement.hasClass('question-answered')).toBeTruthy();
+    });
+
+    it('when current question is answered and view mode is review then right arrow button (next question) ' +
+        'should not have question-answered class',function(){
+        var settings = {
+            viewMode: ZnkExerciseViewModeEnum.REVIEW.enum
+        };
+        var scopeContent = createDirectiveHtml(undefined,undefined,settings);
+        var content = scopeContent.content;
+
+        var nextBtnContainerElement = content.getNextQuestionBtnContainer();
+        expect(nextBtnContainerElement.hasClass('question-answered')).toBeFalsy();
     });
 });

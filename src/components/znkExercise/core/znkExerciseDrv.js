@@ -372,7 +372,7 @@
                                 //added since the sliders current was not changed yet
                                 $timeout(function(){
                                     scope.settings.onSlideChange(currQuestion, value);
-                                    scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value,prevValue);
+                                    scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value ,prevValue ,currQuestion);
                                 },0,false);
                                 //var url = $location.url() + '/' + scope.vm.questionsWithAnswers[value].id;
                                 //$analytics.pageTrack(url);
