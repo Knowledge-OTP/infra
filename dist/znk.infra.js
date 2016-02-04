@@ -2761,8 +2761,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseBtnSection', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseEvents',
-        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseEvents) {
+        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum',
+        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseEvents, ZnkExerciseViewModeEnum) {
             return {
                 restrict: 'E',
                 scope: {
@@ -2790,6 +2790,8 @@
                 },
                 link: {
                     pre: function (scope, element, attrs, znkExerciseDrvCtrl) {
+                        var viewMode = znkExerciseDrvCtrl.getViewMode();
+
                         scope.vm = {};
 
                         function _setCurrentQuestionIndex(index){
@@ -2860,6 +2862,16 @@
                         scope.$on('$destroy',function(){
                             body.removeEventListener('keydown',keyboardClickCB);
                         });
+
+                        var currentQuestionAnsweredWatchFn;
+                        if(viewMode !== ZnkExerciseViewModeEnum.REVIEW.enum){
+                            currentQuestionAnsweredWatchFn = function(){
+                                return znkExerciseDrvCtrl.isCurrentQuestionAnswered();
+                            };
+                            scope.$watch(currentQuestionAnsweredWatchFn,function(isAnswered){
+                                scope.vm.isCurrentQuestionAnswered = !!isAnswered;
+                            });
+                        }
                     }
                 }
             };
@@ -3415,7 +3427,7 @@
                                 //added since the sliders current was not changed yet
                                 $timeout(function(){
                                     scope.settings.onSlideChange(currQuestion, value);
-                                    scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value,prevValue);
+                                    scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value ,prevValue ,currQuestion);
                                 },0,false);
                                 //var url = $location.url() + '/' + scope.vm.questionsWithAnswers[value].id;
                                 //$analytics.pageTrack(url);
@@ -4365,13 +4377,17 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "    </button>\n" +
     "</div>\n" +
     "<div class=\"btn-container right-container ng-hide\"\n" +
-    "     ng-show=\"vm.maxQuestionIndex !== vm.currentQuestionIndex\">\n" +
+    "     ng-show=\"vm.maxQuestionIndex !== vm.currentQuestionIndex\"\n" +
+    "     ng-class=\"{'question-answered': vm.isCurrentQuestionAnswered}\">\n" +
     "    <button ng-click=\"vm.nextQuestion()\">\n" +
     "        <svg-icon name=\"chevron\"></svg-icon>\n" +
     "    </button>\n" +
     "</div>\n" +
     "<div class=\"done-btn-wrap\">\n" +
-    "    <button class=\"done-btn ng-hide\" ng-show=\"vm.showDoneButton\" ng-click=\"onDone()\">DONE</button>\n" +
+    "    <button class=\"done-btn ng-hide\"\n" +
+    "            ng-show=\"vm.showDoneButton\"\n" +
+    "            ng-click=\"onDone()\">DONE\n" +
+    "    </button>\n" +
     "</div>\n" +
     "");
   $templateCache.put("components/znkExercise/core/template/btnSectionMobileTemplate.html",

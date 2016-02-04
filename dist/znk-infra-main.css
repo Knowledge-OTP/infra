@@ -897,6 +897,10 @@ znk-exercise.desktop {
     display: none; }
     znk-exercise.desktop .btn-section .btn-container.right-container {
       right: -40px; }
+      znk-exercise.desktop .btn-section .btn-container.right-container.question-answered button {
+        background: #0a9bad; }
+        znk-exercise.desktop .btn-section .btn-container.right-container.question-answered button svg-icon.chevron .st0 {
+          stroke: #fff; }
       znk-exercise.desktop .btn-section .btn-container.right-container button {
         border-top-right-radius: 42px;
         border-bottom-right-radius: 42px;
