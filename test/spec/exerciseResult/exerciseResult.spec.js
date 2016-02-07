@@ -353,4 +353,55 @@ describe('testing service "ExerciseResult":', function () {
             expect(exerciseResult.avgTimePerQuestion).toBe(expectedResult);
         });
     });
+
+    describe('test save exam isCompleted when all sections are completed',function(){
+
+        it('when getExerciseResult called with examSectionsNum as the forth param, then it should add examSectionsNum and examId on exerciseResult', function(){
+            var exerciseId = 4;
+            var examSectionsNum = 5;
+            var examId = 45;
+            var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.SECTION.enum, exerciseId, examId, examSectionsNum);
+            exerciseResult.$save();
+            $rootScope.$digest();
+            var examResult = actions.getExamResult(examId);
+            expect(exerciseResult.examId).toEqual(examId);
+            expect(examResult.examSectionsNum).toEqual(examSectionsNum);
+        });
+
+        it('when _saveExamWhenAllSectionsCompleted with exerciseNewStatus that is not 2, then getExamResult shouldn\'t been called inside the _saveExamWhenAllSectionsCompleted, total calls 1', function(){
+             spyOn(ExerciseResultSrv, 'getExamResult').and.callThrough();
+            var exerciseId = 4;
+            var examSectionsNum = 5;
+            var examId = 45;
+            var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.SECTION.enum, exerciseId, examId, examSectionsNum);
+            exerciseResult.$save();
+            $rootScope.$digest();
+            expect(ExerciseResultSrv.getExamResult.calls.count()).toEqual(1);
+        });
+
+        it('when getExerciseResult is in type SECTION, total calls 2. (with or without examSectionsNum)', function(){
+            spyOn(ExerciseResultSrv, 'getExamResult').and.callThrough();
+            var exerciseId = 4;
+            var examSectionsNum = 5;
+            var examId = 45;
+            var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.SECTION.enum, exerciseId, examId, examSectionsNum);
+            exerciseResult.isComplete = true;
+            exerciseResult.$save();
+            $rootScope.$digest();
+            expect(ExerciseResultSrv.getExamResult.calls.count()).toEqual(2);
+        });
+
+        it('when getExerciseResult is not type SECTION, total calls 0. (with or without examSectionsNum)', function(){
+            spyOn(ExerciseResultSrv, 'getExamResult').and.callThrough();
+            var exerciseId = 4;
+            var examSectionsNum = 5;
+            var examId = 45;
+            var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.DRILL.enum, exerciseId, examId, examSectionsNum);
+            exerciseResult.isComplete = true;
+            exerciseResult.$save();
+            $rootScope.$digest();
+            expect(ExerciseResultSrv.getExamResult.calls.count()).toEqual(0);
+        });
+
+    });
 });

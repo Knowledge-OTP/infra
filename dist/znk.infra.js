@@ -621,7 +621,7 @@
                 return storage.get(EXERCISE_RESULTS_GUIDS_PATH);
             }
 
-            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId) {
+            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum) {
                 var getExamResultProm;
                 if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
                     getExamResultProm = ExerciseResultSrv.getExamResult(examId);
@@ -645,6 +645,9 @@
 
                         var exerciseResultPath = _getExerciseResultPath(newGuid);
                         var initResult = _getInitExerciseResult(exerciseTypeId,exerciseId,newGuid);
+                        if(examSectionsNum) {
+                            initResult.examId = examId;
+                        }
                         dataToSave[exerciseResultPath] = initResult;
 
                         var setProm;
@@ -652,6 +655,9 @@
                             setProm = getExamResultProm.then(function(examResult){
                                 if(!examResult.sectionResults){
                                     examResult.sectionResults = {};
+                                }
+                                if(examSectionsNum && !examResult.examSectionsNum) {
+                                    examResult.examSectionsNum = examSectionsNum;
                                 }
                                 examResult.sectionResults[exerciseId] = newGuid;
                                 var examResultPath = _getExamResultPath(examResult.guid);
@@ -737,6 +743,8 @@
                         ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
                     exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId] = new ExerciseStatus(exerciseNewStatus);
 
+                    _saveExamWhenAllSectionsCompleted(exerciseNewStatus, exerciseResult, exercisesStatusData);
+
                     dataToSave[EXERCISES_STATUS_PATH] = exercisesStatusData;
 
                     var storage = InfraConfigSrv.getStorageService();
@@ -745,6 +753,29 @@
                     return exerciseResult;
                 });
 
+            }
+
+            function _saveExamWhenAllSectionsCompleted(exerciseNewStatus, exerciseResult, exercisesStatusData) {
+                if(exerciseNewStatus === ExerciseStatusEnum.COMPLETED.enum && exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
+                    ExerciseResultSrv.getExamResult(exerciseResult.examId).then(function(examResults) {
+                        var exercisesStatusDataPerExerciseTypeId = exercisesStatusData[exerciseResult.exerciseTypeId];
+                        var sectionResultsToArr = Object.keys(examResults.sectionResults);
+                        var isExamComplete = true;
+                        if(examResults.examSectionsNum && sectionResultsToArr.length === +examResults.examSectionsNum) {
+                            for(var i = 0, ii = sectionResultsToArr.length; i < ii; i++) {
+                                if(exercisesStatusDataPerExerciseTypeId[sectionResultsToArr[i]].status !== ExerciseStatusEnum.COMPLETED.enum) {
+                                    isExamComplete = false;
+                                    break;
+                                }
+                            }
+                            if(isExamComplete) {
+                                examResults.isComplete = true;
+                                examResults.endedTime = Date.now();
+                                examResults.$save();
+                            }
+                        }
+                    });
+                }
             }
 
             function _getExercisesStatusData(){
