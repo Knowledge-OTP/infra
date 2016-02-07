@@ -38,13 +38,11 @@
                 return !!isCorrect;
             };
 
-            ZnkExerciseUtilitySrv.setQuestionsGroupData = function (questions, groupData, playedAudioArticles) {
+            ZnkExerciseUtilitySrv.setQuestionsGroupData = function (questions, groupData) {
                 var groupDataMap = {};
-                playedAudioArticles = playedAudioArticles || [];
 
                 angular.forEach(groupData, function (group) {
                     groupDataMap[group.id] = group;
-                    group.__playedThrough = (playedAudioArticles.indexOf(group.id) !== -1);
                 });
 
                 angular.forEach(questions, function (question) {
