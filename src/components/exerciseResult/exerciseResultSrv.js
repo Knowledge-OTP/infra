@@ -2,8 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum', '$window',
-        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum, $window) {
+        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum',
+        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum) {
             var ExerciseResultSrv = this;
 
             var EXERCISE_RESULTS_PATH = 'exerciseResults';
@@ -163,8 +163,7 @@
                     dataToSave[EXERCISES_STATUS_PATH] = exercisesStatusData;
 
                     var checkIfALlSectionsDoneProm = $q.when();
-                    if(exerciseNewStatus === ExerciseStatusEnum.COMPLETED.enum
-                        && exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
+                    if(exerciseNewStatus === ExerciseStatusEnum.COMPLETED.enum && exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
                         checkIfALlSectionsDoneProm = ExerciseResultSrv.getExamResult(exerciseResult.examId).then(function(examResult) {
                             if(areAllSectionCompleted(examResult,exercisesStatusData)){
                                 examResult.isComplete = true;
