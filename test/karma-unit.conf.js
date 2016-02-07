@@ -20,6 +20,7 @@ module.exports = function (config) {
 
         // list of files / patterns to load in the browser
         files: [
+            'test/crossBrowserSupport/*',
             // bower:js
             'bower_components/es5-shim/es5-shim.js',
             'bower_components/angular/angular.js',
