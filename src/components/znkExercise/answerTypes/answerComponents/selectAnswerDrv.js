@@ -6,8 +6,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('selectAnswer', [
-        '$timeout', 'ZnkExerciseViewModeEnum',
-        function ($timeout, ZnkExerciseViewModeEnum) {
+        '$timeout', 'ZnkExerciseViewModeEnum', 'ZnkExerciseAnswersSrv',
+        function ($timeout, ZnkExerciseViewModeEnum, ZnkExerciseAnswersSrv) {
             return {
                 templateUrl: 'components/znkExercise/answerTypes/templates/selectAnswerDrv.html',
                 require: ['^answerBuilder', '^ngModel'],
@@ -36,9 +36,10 @@
                         updateAnswersFollowingSelection(viewMode);
                     };
 
-                    scope.d.getIndexChar = function(questionIndex){
-                        var UPPER_A_ASCII_CODE = 65;
-                        return String.fromCharCode(UPPER_A_ASCII_CODE + questionIndex);
+                    scope.d.getIndexChar = function(answerIndex){
+                        return ZnkExerciseAnswersSrv.selectAnswer.getAnswerIndex(answerIndex,answerBuilder.question);
+                        //var UPPER_A_ASCII_CODE = 65;
+                        //return String.fromCharCode(UPPER_A_ASCII_CODE + answerIndex);
                     };
 
                     function updateAnswersFollowingSelection(viewMode) {
@@ -94,9 +95,6 @@
                             updateAnswersFollowingSelection();
                         });
                     };
-                    //ng model controller render function not triggered in case render function was set
-                    // after the model value was changed
-                    ngModelCtrl.$render();
 
                     scope.$on('exercise:viewModeChanged', function () {
                         ngModelCtrl.$render();
