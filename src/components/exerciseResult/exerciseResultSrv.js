@@ -41,7 +41,7 @@
                 return storage.get(EXERCISE_RESULTS_GUIDS_PATH);
             }
 
-            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId) {
+            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum) {
                 var getExamResultProm;
                 if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
                     getExamResultProm = ExerciseResultSrv.getExamResult(examId);
@@ -72,6 +72,9 @@
                             setProm = getExamResultProm.then(function(examResult){
                                 if(!examResult.sectionResults){
                                     examResult.sectionResults = {};
+                                }
+                                if(!examResult.examSectionsNum) {
+                                    examResult.examSectionsNum = examSectionsNum;
                                 }
                                 examResult.sectionResults[exerciseId] = newGuid;
                                 var examResultPath = _getExamResultPath(examResult.guid);
