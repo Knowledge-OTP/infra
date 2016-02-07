@@ -38,8 +38,6 @@
 
                     scope.d.getIndexChar = function(answerIndex){
                         return ZnkExerciseAnswersSrv.selectAnswer.getAnswerIndex(answerIndex,answerBuilder.question);
-                        //var UPPER_A_ASCII_CODE = 65;
-                        //return String.fromCharCode(UPPER_A_ASCII_CODE + answerIndex);
                     };
 
                     function updateAnswersFollowingSelection(viewMode) {
@@ -95,6 +93,9 @@
                             updateAnswersFollowingSelection();
                         });
                     };
+                    //ng model controller render function not triggered in case render function was set
+                    // after the model value was changed
+                    ngModelCtrl.$render();
 
                     scope.$on('exercise:viewModeChanged', function () {
                         ngModelCtrl.$render();
