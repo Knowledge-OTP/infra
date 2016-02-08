@@ -4308,8 +4308,8 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').factory('ZnkExerciseUtilitySrv', ['AnswerTypeEnum',
-        function (AnswerTypeEnum) {
+    angular.module('znk.infra.znkExercise').factory('ZnkExerciseUtilitySrv', ['AnswerTypeEnum', '$log',
+        function (AnswerTypeEnum, $log) {
             var ZnkExerciseUtilitySrv = {};
             //@todo(igor) move to utility service
             ZnkExerciseUtilitySrv.bindFunctions = function(dest,src,functionToCopy){
@@ -4344,6 +4344,25 @@
 
                 return !!isCorrect;
             };
+
+            ZnkExerciseUtilitySrv.setQuestionsGroupData = function (questions, groupData, playedAudioArticles) {
+                var groupDataMap = {};
+                playedAudioArticles = playedAudioArticles || [];
+
+                angular.forEach(groupData, function (group) {
+                    groupDataMap[group.id] = group;
+                    group.__playedThrough = (playedAudioArticles.indexOf(group.id) !== -1);
+                });
+
+                angular.forEach(questions, function (question) {
+                    if (!groupDataMap[question.groupDataId]) {
+                        $log.debug('Group data is missing for the following question id ' + question.id);
+                    }
+
+                    question.groupData = groupDataMap[question.groupDataId] || {};
+                });
+            };
+
             return ZnkExerciseUtilitySrv;
         }
     ]);
