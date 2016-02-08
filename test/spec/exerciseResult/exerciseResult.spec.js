@@ -441,7 +441,6 @@ describe('testing service "ExerciseResult":', function () {
             examResult = actions.getExamResult(examId);
             examResult.sectionResults = sectionResultsObj;
             examResult.$save();
-            $rootScope.$digest();
             examResult = actions.getExamResult(examId);
             expect(examResult.isComplete).toEqual(true);
         });
