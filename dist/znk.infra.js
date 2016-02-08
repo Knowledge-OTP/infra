@@ -2310,8 +2310,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('selectAnswer', [
-        '$timeout', 'ZnkExerciseViewModeEnum',
-        function ($timeout, ZnkExerciseViewModeEnum) {
+        '$timeout', 'ZnkExerciseViewModeEnum', 'ZnkExerciseAnswersSrv',
+        function ($timeout, ZnkExerciseViewModeEnum, ZnkExerciseAnswersSrv) {
             return {
                 templateUrl: 'components/znkExercise/answerTypes/templates/selectAnswerDrv.html',
                 require: ['^answerBuilder', '^ngModel'],
@@ -2340,9 +2340,10 @@
                         updateAnswersFollowingSelection(viewMode);
                     };
 
-                    scope.d.getIndexChar = function(questionIndex){
-                        var UPPER_A_ASCII_CODE = 65;
-                        return String.fromCharCode(UPPER_A_ASCII_CODE + questionIndex);
+                    scope.d.getIndexChar = function(answerIndex){
+                        return ZnkExerciseAnswersSrv.selectAnswer.getAnswerIndex(answerIndex,answerBuilder.question);
+                        //var UPPER_A_ASCII_CODE = 65;
+                        //return String.fromCharCode(UPPER_A_ASCII_CODE + answerIndex);
                     };
 
                     function updateAnswersFollowingSelection(viewMode) {
@@ -2398,9 +2399,6 @@
                             updateAnswersFollowingSelection();
                         });
                     };
-                    //ng model controller render function not triggered in case render function was set
-                    // after the model value was changed
-                    ngModelCtrl.$render();
 
                     scope.$on('exercise:viewModeChanged', function () {
                         ngModelCtrl.$render();
@@ -2412,6 +2410,47 @@
 })(angular);
 
 
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').provider('ZnkExerciseAnswersSrv', function () {
+        this.config = {
+            selectAnswer:{}
+        };
+
+        var selectAnswer = {};
+
+        this.config.selectAnswer.setAnswerIndexFormatter = function(fn){
+            selectAnswer.answerIndexFormatter = fn;
+        };
+
+        this.$get = [
+            function () {
+                var ZnkExerciseAnswersSrv = {
+                    selectAnswer: {}
+                };
+
+                ZnkExerciseAnswersSrv.selectAnswer.getAnswerIndex = function(answerIndex){
+                    var formattedAnswerIndex;
+
+                    if(selectAnswer.answerIndexFormatter){
+                        formattedAnswerIndex = selectAnswer.answerIndexFormatter.apply(this,arguments);
+                    }
+
+                    if(angular.isUndefined(formattedAnswerIndex)){
+                        var UPPER_A_ASCII_CODE = 65;
+                        formattedAnswerIndex  = String.fromCharCode(UPPER_A_ASCII_CODE + answerIndex);
+                    }
+
+                    return formattedAnswerIndex;
+                };
+
+                return ZnkExerciseAnswersSrv;
+            }
+        ];
+    });
+})(angular);
 
 (function (angular) {
     'use strict';
