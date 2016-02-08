@@ -621,7 +621,7 @@
                 return storage.get(EXERCISE_RESULTS_GUIDS_PATH);
             }
 
-            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId) {
+            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum) {
                 var getExamResultProm;
                 if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
                     getExamResultProm = ExerciseResultSrv.getExamResult(examId);
@@ -649,9 +649,13 @@
 
                         var setProm;
                         if(getExamResultProm){
+                            initResult.examId = examId;
                             setProm = getExamResultProm.then(function(examResult){
                                 if(!examResult.sectionResults){
                                     examResult.sectionResults = {};
+                                }
+                                if(examSectionsNum && !examResult.examSectionsNum) {
+                                    examResult.examSectionsNum = examSectionsNum;
                                 }
                                 examResult.sectionResults[exerciseId] = newGuid;
                                 var examResultPath = _getExamResultPath(examResult.guid);
@@ -736,15 +740,47 @@
                     var exerciseNewStatus = exerciseResult.isComplete ?
                         ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
                     exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId] = new ExerciseStatus(exerciseNewStatus);
-
                     dataToSave[EXERCISES_STATUS_PATH] = exercisesStatusData;
 
-                    var storage = InfraConfigSrv.getStorageService();
-                    storage.set(dataToSave);
+                    var checkIfALlSectionsDoneProm = $q.when();
+                    if(exerciseNewStatus === ExerciseStatusEnum.COMPLETED.enum && exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
+                        checkIfALlSectionsDoneProm = ExerciseResultSrv.getExamResult(exerciseResult.examId).then(function(examResult) {
+                            if(areAllSectionCompleted(examResult,exercisesStatusData)){
+                                examResult.isComplete = true;
+                                examResult.endedTime = StorageSrv.variables.currTimeStamp;
+                                var examResultPath = _getExamResultPath(examResult.guid);
+                                dataToSave[examResultPath] = examResult;
+                            }
+                        });
+                    }
 
-                    return exerciseResult;
+                    return checkIfALlSectionsDoneProm.then(function() {
+                        var storage = InfraConfigSrv.getStorageService();
+                        storage.set(dataToSave);
+
+                        return exerciseResult;
+                    });
+
                 });
+            }
 
+            function areAllSectionCompleted(examResult, exercisesStatusData) {
+                var sectionExercisesStatus = exercisesStatusData[ExerciseTypeEnum.SECTION.enum];
+                var sectionResultsToArr = Object.keys(examResult.sectionResults);
+
+                if(sectionResultsToArr.length !== +examResult.examSectionsNum) {
+                    return false;
+                }
+
+                for(var i = 0, ii = sectionResultsToArr.length; i < ii; i++) {
+                    var sectionId = sectionResultsToArr[i];
+                    var isSectionComplete = sectionExercisesStatus[sectionId].status === ExerciseStatusEnum.COMPLETED.enum;
+                    if(!isSectionComplete){
+                        return false;
+                    }
+                }
+
+                return true;
             }
 
             function _getExercisesStatusData(){
@@ -2311,8 +2347,6 @@
 
                     scope.d.getIndexChar = function(answerIndex){
                         return ZnkExerciseAnswersSrv.selectAnswer.getAnswerIndex(answerIndex,answerBuilder.question);
-                        //var UPPER_A_ASCII_CODE = 65;
-                        //return String.fromCharCode(UPPER_A_ASCII_CODE + answerIndex);
                     };
 
                     function updateAnswersFollowingSelection(viewMode) {
@@ -2368,6 +2402,9 @@
                             updateAnswersFollowingSelection();
                         });
                     };
+                    //ng model controller render function not triggered in case render function was set
+                    // after the model value was changed
+                    ngModelCtrl.$render();
 
                     scope.$on('exercise:viewModeChanged', function () {
                         ngModelCtrl.$render();
@@ -4353,13 +4390,11 @@
                 return !!isCorrect;
             };
 
-            ZnkExerciseUtilitySrv.setQuestionsGroupData = function (questions, groupData, playedAudioArticles) {
+            ZnkExerciseUtilitySrv.setQuestionsGroupData = function (questions, groupData) {
                 var groupDataMap = {};
-                playedAudioArticles = playedAudioArticles || [];
 
                 angular.forEach(groupData, function (group) {
                     groupDataMap[group.id] = group;
-                    group.__playedThrough = (playedAudioArticles.indexOf(group.id) !== -1);
                 });
 
                 angular.forEach(questions, function (question) {
