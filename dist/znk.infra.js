@@ -905,16 +905,6 @@
                     });
                 }
 
-                function _getSubjectDelta(estimatedScoreData, subjectId) {
-                    var estimatedScore = estimatedScoreData.estimatedScores[subjectId];
-                    var scoresNum = estimatedScore.length;
-                    var subjectDelta = {
-                        scoresNum: scoresNum
-                    };
-                    subjectDelta.delta = scoresNum >= 2 ? estimatedScore[scoresNum - 1].score - estimatedScore[scoresNum - 2].score : 0;
-                    return subjectDelta;
-                }
-
                 function _calculateNormalizedRawScore(sectionSubjectRawScores, exerciseSubjectRawScore, subjectId) {
                     var sectionsWithWeightTotalPoints = 0;
                     var sectionsWithWeightEarnedPoints = 0;
@@ -1004,16 +994,19 @@
 
                 EstimatedScoreSrv.getExercisesRawScore = _baseGetter.bind(this, 'exercisesRawScores');
 
-                EstimatedScoreSrv.getSubjectsDelta = function (subjectId) {
-                    return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScoreData) {
-                        if (angular.isUndefined(subjectId)) {
-                            var subjectsDelta = {};
-                            for (var _subjectId in estimatedScoreData.estimatedScores) {
-                                subjectsDelta[_subjectId] = _getSubjectDelta(estimatedScoreData, _subjectId);
+                EstimatedScoreSrv.getLatestEstimatedScore = function(subjectId){
+                    return _baseGetter('estimatedScores',subjectId).then(function(allScoresOrScoreForSubject){
+                        if(angular.isDefined(subjectId)){
+                            if(!allScoresOrScoreForSubject.length){
+                                return {};
                             }
-                            return subjectsDelta;
+                            return allScoresOrScoreForSubject[allScoresOrScoreForSubject.length - 1];
                         }
-                        return _getSubjectDelta(estimatedScoreData, subjectId);
+                        var latestScoresPerSubject = {};
+                        angular.forEach(allScoresOrScoreForSubject,function(scoresForSubject,subjectId){
+                            latestScoresPerSubject[subjectId] = scoresForSubject.length ? {} : scoresForSubject[scoresForSubject.length -1];
+                        });
+                        return latestScoresPerSubject;
                     });
                 };
 
@@ -1077,34 +1070,6 @@
                         return estimatedScoreData;
                     }).then(function (estimatedScoreData) {
                         return EstimatedScoreHelperSrv.setEstimateScoreData(estimatedScoreData);
-                    });
-                };
-
-                EstimatedScoreSrv.getDiagnosticSummary = function () {
-                    return EstimatedScoreSrv.getEstimatedScores().then(function (estimatedScore) {
-                        var mathScore = estimatedScore[SubjectEnum.math.enum][0].score;
-                        var readScore = estimatedScore[SubjectEnum.reading.enum][0].score;
-                        var writeScore = estimatedScore[SubjectEnum.writing.enum][0].score;
-                        var total = mathScore + readScore + writeScore;
-                        return {
-                            math: {
-                                min: mathScore - 30,
-                                max: mathScore + 30
-                            },
-                            read: {
-                                min: readScore - 30,
-                                max: readScore + 30
-                            },
-                            write: {
-                                min: writeScore - 30,
-                                max: writeScore + 30
-                            },
-                            total: {
-                                min: total - 30,
-                                max: total + 30,
-                                avg: ((total - 30) + (total + 30)) / 2
-                            }
-                        };
                     });
                 };
 
