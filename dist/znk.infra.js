@@ -717,7 +717,7 @@
 
                 function calculateRawScore(exerciseType, exerciseResult, allowedTime) {
                     if(!exercisesRawScoring[exerciseType]){
-                        $log.debug('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: '+ exerciseType);
+                        $log.error('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: '+ exerciseType);
                     }
 
                     var questionResults = exerciseResult.questionResults;
@@ -729,7 +729,7 @@
 
                     var allowedTimeForExercise = angular.isDefined(allowedTime) ? allowedTime : allowedTimeForExercisesMap[exerciseType];
                     if(angular.isUndefined(allowedTimeForExercise)){
-                        $log.debug('EstimatedScoreEventsHandlerSrv: allowed time missing for the following exercise type: ' + exerciseType);
+                        $log.error('EstimatedScoreEventsHandlerSrv: allowed time missing for the following exercise type: ' + exerciseType);
                     }
                     var withinAllowedTime = allowedTimeForExercise >= exerciseResult.duration;
                     questionResults.forEach(function (result) {
@@ -873,11 +873,11 @@
             'EstimatedScoreHelperSrv', 'ExerciseTypeEnum', '$injector', '$q', 'SubjectEnum', '$log',
             function (EstimatedScoreHelperSrv, ExerciseTypeEnum, $injector, $q, SubjectEnum, $log) {
                 if(!subjectsRawScoreEdges){
-                    $log.debug('EstimatedScoreSrv: subjectsRawScoreEdges was not set');
+                    $log.error('EstimatedScoreSrv: subjectsRawScoreEdges was not set');
                 }
 
                 if(!rawScoreToScoreFnGetter){
-                    $log.debug('EstimatedScoreSrv: rawScoreToScoreFnGetter was not set !!!');
+                    $log.error('EstimatedScoreSrv: rawScoreToScoreFnGetter was not set !!!');
                 }
 
                 var EstimatedScoreSrv = {};
@@ -923,7 +923,7 @@
                     var maxRawScore = (2 / 3) * combinedSectionRawScore.total + (1 / 3) * exerciseSubjectRawScore.total;
                     var subjectRawScoreEdges = subjectsRawScoreEdges[subjectId];
                     if(angular.isUndefined(subjectRawScoreEdges)){
-                        $log.debug('EstimatedScoreSrv: subjectRawScoreEdges was not defined for the following subject: ' + subjectId);
+                        $log.error('EstimatedScoreSrv: subjectRawScoreEdges was not defined for the following subject: ' + subjectId);
                     }
                     var normalizedScore = subjectRawScoreEdges.max * rawScore / maxRawScore;
                     return Math.max(normalizedScore, subjectRawScoreEdges.min);//verify result is higher than min

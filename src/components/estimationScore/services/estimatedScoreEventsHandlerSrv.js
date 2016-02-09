@@ -112,7 +112,7 @@
 
                 function calculateRawScore(exerciseType, exerciseResult, allowedTime) {
                     if(!exercisesRawScoring[exerciseType]){
-                        $log.debug('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: '+ exerciseType);
+                        $log.error('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: '+ exerciseType);
                     }
 
                     var questionResults = exerciseResult.questionResults;
@@ -124,7 +124,7 @@
 
                     var allowedTimeForExercise = angular.isDefined(allowedTime) ? allowedTime : allowedTimeForExercisesMap[exerciseType];
                     if(angular.isUndefined(allowedTimeForExercise)){
-                        $log.debug('EstimatedScoreEventsHandlerSrv: allowed time missing for the following exercise type: ' + exerciseType);
+                        $log.error('EstimatedScoreEventsHandlerSrv: allowed time missing for the following exercise type: ' + exerciseType);
                     }
                     var withinAllowedTime = allowedTimeForExercise >= exerciseResult.duration;
                     questionResults.forEach(function (result) {
