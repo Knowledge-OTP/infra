@@ -6,7 +6,10 @@
         function ($log, $q, StorageSrv) {
             function processValuesToSet(source){
                 if(angular.isArray(source)){
-                    source.forEach(function(item){
+                    source.forEach(function(item, index){
+                        if(angular.isUndefined(item)){
+                            source[index] = null;
+                        }
                         processValuesToSet(item);
                     });
                     return;
