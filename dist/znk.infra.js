@@ -1262,9 +1262,13 @@
                 var totalTimeSpentOnQuestions = exerciseResult.questionResults.reduce(function(previousValue, currResult) {
                     return previousValue + (currResult.timeSpent || 0);
                 },0);
+
+                exerciseResult.duration = totalTimeSpentOnQuestions;
+
                 var numOfAnsweredQuestions = exerciseResult.questionResults.length;
                 exerciseResult.avgTimePerQuestion = numOfAnsweredQuestions ? Math.round(totalTimeSpentOnQuestions / numOfAnsweredQuestions) : 0;
                 var exerciseResultPath = _getExerciseResultPath(exerciseResult.guid);
+
                 dataToSave[exerciseResultPath] = exerciseResult;
 
                 return getExercisesStatusDataProm.then(function(exercisesStatusData){
