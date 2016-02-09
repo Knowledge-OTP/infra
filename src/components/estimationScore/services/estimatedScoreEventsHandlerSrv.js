@@ -49,15 +49,15 @@
             '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum','ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log',
             function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum,ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log) {
                 if(angular.equals({},diagnosticScoring)){
-                    $log.debug('EstimatedScoreEventsHandlerSrv: diagnosticScoring was not set !!!');
+                    $log.error('EstimatedScoreEventsHandlerSrv: diagnosticScoring was not set !!!');
                 }
 
                 if(angular.equals({},exercisesRawScoring)){
-                    $log.debug('EstimatedScoreEventsHandlerSrv: diagnosticScoring was not set !!!');
+                    $log.error('EstimatedScoreEventsHandlerSrv: diagnosticScoring was not set !!!');
                 }
 
                 if(!allowedTimeForExercisesMap){
-                    $log.debug('EstimatedScoreEventsHandlerSrv: allowedTimeForExercisesMap was not set !!!');
+                    $log.error('EstimatedScoreEventsHandlerSrv: allowedTimeForExercisesMap was not set !!!');
                 }
 
                 var EstimatedScoreEventsHandlerSrv = {};
