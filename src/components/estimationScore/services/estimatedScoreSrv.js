@@ -155,7 +155,7 @@
                         }
                         var latestScoresPerSubject = {};
                         angular.forEach(allScoresOrScoreForSubject,function(scoresForSubject,subjectId){
-                            latestScoresPerSubject[subjectId] = scoresForSubject.length ? {} : scoresForSubject[scoresForSubject.length -1];
+                            latestScoresPerSubject[subjectId] = scoresForSubject.length ? scoresForSubject[scoresForSubject.length -1] : {};
                         });
                         return latestScoresPerSubject;
                     });
