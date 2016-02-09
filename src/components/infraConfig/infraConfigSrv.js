@@ -15,7 +15,7 @@
 
                     InfraConfigSrv.getStorageService = function(){
                         if(!storageServiceName){
-                            $log.$debug('InfraConfigSrv: storage service name was not defined');
+                            $log.debug('InfraConfigSrv: storage service name was not defined');
                             return;
                         }
                         return $injector.get(storageServiceName);

@@ -22,6 +22,7 @@
   "devDependencies": {
     "es5-shim": "~4.4.1",
     "angular-mocks": "1.4.x",
-    "mockfirebase": "~0.11.0"
+    "mockfirebase": "~0.11.0",
+    "jasmine-jquery": "^2.1.1"
   }
 }
