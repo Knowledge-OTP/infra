@@ -2501,6 +2501,66 @@
                     });
                 };
 
+                StatsSrv.getPerformanceData = function () {
+                    return StatsSrv.getStats().then(function (stats) {
+                        var subjectsStats = stats.subjectStats;
+                        var generalCategoriesStats = stats.generalCategoryStats;
+
+                        var performanceData = {};
+
+                        var generalCategoriesBySubject = {};
+                        var generalCategoryStatsKeys = Object.keys(generalCategoriesStats);
+                        var weakestGeneralCategoryBySubject = {};
+                        generalCategoryStatsKeys.forEach(function (key) {
+                            var generalCategoryStats = generalCategoriesStats[key];
+
+                            if (!generalCategoryStats) {
+                                $log.error('StatsSrv: getPerformanceData: null general category stat was received for the following key: ', key);
+                                return;
+                            }
+
+                            if (!generalCategoriesBySubject[generalCategoryStats.subjectId]) {
+                                generalCategoriesBySubject[generalCategoryStats.subjectId] = [];
+                            }
+                            var processedGeneralCategory = {
+                                id: generalCategoryStats.id,
+                                levelProgress: generalCategoryStats.totalQuestions ? Math.round(generalCategoryStats.correct / generalCategoryStats.totalQuestions * 100) : 0,
+                                avgTime: generalCategoryStats.totalTime ? Math.round(generalCategoryStats.totalTime / generalCategoryStats.totalQuestions / 1000) : 0,
+                                answeredQuestions: generalCategoryStats.totalQuestions
+                            };
+                            generalCategoriesBySubject[generalCategoryStats.subjectId].push(processedGeneralCategory);
+
+                            var weakestGeneralCategoryForSubject = weakestGeneralCategoryBySubject[generalCategoryStats.subjectId];
+                            if (!weakestGeneralCategoryForSubject || (weakestGeneralCategoryForSubject.successRate > processedGeneralCategory.levelProgress)) {
+                                weakestGeneralCategoryBySubject[generalCategoryStats.subjectId] = {
+                                    id: processedGeneralCategory.id,
+                                    successRate: processedGeneralCategory.levelProgress
+                                };
+                            }
+                        });
+
+                        SubjectEnum.getEnumArr().forEach(function (subject) {
+                            var subjectId = subject.enum;
+
+                            var performanceDataForSubject = performanceData[subjectId] = {};
+
+                            performanceDataForSubject.category = generalCategoriesBySubject[subjectId];
+                            performanceDataForSubject.weakestCategory = weakestGeneralCategoryBySubject[subjectId];
+
+                            var subjectStats = subjectsStats[subjectId];
+                            if (subjectStats) {
+                                performanceDataForSubject.overall = {
+                                    value: subjectStats.totalQuestions ? Math.round(subjectStats.correct / subjectStats.totalQuestions * 100) : 0,
+                                    avgTime: subjectStats.totalTime ? Math.round(subjectStats.totalTime / subjectStats.totalQuestions / 1000) : 0
+                                };
+                            }
+
+                        });
+
+                        return performanceData;
+                    });
+                };
+
                 return StatsSrv;
             }
         ];
