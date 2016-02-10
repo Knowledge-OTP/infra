@@ -27,6 +27,20 @@
                 });
             };
 
+            //array utility srv
+            UtilitySrv.array = {};
+
+            UtilitySrv.array.convertToMap = function(arr, keyProp){
+                if(angular.isUndefined(keyProp)){
+                    keyProp = 'id';
+                }
+                var map = {};
+                arr.forEach(function(item){
+                    map[item[keyProp]] = item;
+                });
+                return map;
+            };
+
             return UtilitySrv;
         }
     ]);
