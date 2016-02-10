@@ -787,14 +787,9 @@
         function (SubjectEnum, InfraConfigSrv) {
             var EstimatedScoreHelperSrv = this;
 
-            function _getStorageService(){
-                return InfraConfigSrv.getStorageService();
-            }
+            var StorageSrv = InfraConfigSrv.getStorageService();
 
-            function _getEstimateScorePath(){
-                var StorageSrv = _getStorageService();
-                return StorageSrv.variables.appUserSpacePath + '/estimatedScore';
-            }
+            var ESTIMATE_SCORE_PATH = StorageSrv.variables.appUserSpacePath + '/estimatedScore';
 
             function _SetSubjectInitialVal(obj,initValue){
                 var subjectKeys = Object.keys(SubjectEnum);
@@ -805,8 +800,6 @@
             }
 
             EstimatedScoreHelperSrv.getEstimatedScoreData = function(){
-                var StorageSrv = _getStorageService();
-                var ESTIMATE_SCORE_PATH = _getEstimateScorePath();
                 if(!EstimatedScoreHelperSrv.getEstimatedScoreData.prom){
                     EstimatedScoreHelperSrv.getEstimatedScoreData.prom = StorageSrv.get(ESTIMATE_SCORE_PATH).then(function(estimatedScore){
                         var defaultValues = {
@@ -848,8 +841,6 @@
             };
 
             EstimatedScoreHelperSrv.setEstimateScoreData = function (newEstimateScoreData){
-                var StorageSrv = _getStorageService();
-                var ESTIMATE_SCORE_PATH = _getEstimateScorePath();
                 return StorageSrv.set(ESTIMATE_SCORE_PATH,newEstimateScoreData);
             };
         }
