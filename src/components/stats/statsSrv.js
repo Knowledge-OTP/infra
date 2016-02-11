@@ -67,25 +67,25 @@
                     return StorageSrv.set(STATS_PATH, newStats);
                 }
 
-                function _baseStatsGetter(name) {
-                    return getStats().then(function (dailyPersonalization) {
-                        return dailyPersonalization[name + 'Stats'];
-                    });
-                }
-
-                function _getCategoryWeakness(category) {
-                    if (!category.totalQuestions) {
-                        return -Infinity;
-                    }
-                    return (category.totalQuestions - category.correct) / (category.totalQuestions);
-                }
-
-                function _getSpecificCategoryWeakness(specificCategory) {
-                    if (!specificCategory.totalQuestions) {
-                        return -Infinity;
-                    }
-                    return (specificCategory.totalQuestions - specificCategory.correct) / (specificCategory.totalQuestions);
-                }
+                //function _baseStatsGetter(name) {
+                //    return getStats().then(function (dailyPersonalization) {
+                //        return dailyPersonalization[name + 'Stats'];
+                //    });
+                //}
+                //
+                //function _getCategoryWeakness(category) {
+                //    if (!category.totalQuestions) {
+                //        return -Infinity;
+                //    }
+                //    return (category.totalQuestions - category.correct) / (category.totalQuestions);
+                //}
+                //
+                //function _getSpecificCategoryWeakness(specificCategory) {
+                //    if (!specificCategory.totalQuestions) {
+                //        return -Infinity;
+                //    }
+                //    return (specificCategory.totalQuestions - specificCategory.correct) / (specificCategory.totalQuestions);
+                //}
 
                 function _baseStatsUpdater(currStat, newStat) {
                     currStat.totalQuestions += newStat.totalQuestions;
@@ -99,25 +99,25 @@
                     return lookUp[categoryId] ? lookUp[categoryId].parentId : lookUp[categoryId];
                 }
 
-                function _weakestSpecificCategory(specificCategoriesForGeneralCategory, allSpecificCategory, specificCategoryDataArr, subjectId, generalCategoryId) {
-                    specificCategoriesForGeneralCategory.forEach(function (specificCategoryId) {
-                        var optionalSpecificCategoryData = allSpecificCategory[specificCategoryId];
-                        if (!optionalSpecificCategoryData) {
-                            optionalSpecificCategoryData = new BaseStats(specificCategoryId, subjectId, generalCategoryId);
-                        }
-                        specificCategoryDataArr.push(optionalSpecificCategoryData);
-                    });
-                }
-
-                function _weakestGeneralCategory(gcForSubject, allGeneralCategory, generalCategoryDataArr, subjectId) {
-                    gcForSubject.forEach(function (generalCategoryId) {
-                        var optionalGeneralCategoryData = allGeneralCategory[generalCategoryId];
-                        if (!optionalGeneralCategoryData) {
-                            optionalGeneralCategoryData = new BaseStats(generalCategoryId, subjectId);
-                        }
-                        generalCategoryDataArr.push(optionalGeneralCategoryData);
-                    });
-                }
+                //function _weakestSpecificCategory(specificCategoriesForGeneralCategory, allSpecificCategory, specificCategoryDataArr, subjectId, generalCategoryId) {
+                //    specificCategoriesForGeneralCategory.forEach(function (specificCategoryId) {
+                //        var optionalSpecificCategoryData = allSpecificCategory[specificCategoryId];
+                //        if (!optionalSpecificCategoryData) {
+                //            optionalSpecificCategoryData = new BaseStats(specificCategoryId, subjectId, generalCategoryId);
+                //        }
+                //        specificCategoryDataArr.push(optionalSpecificCategoryData);
+                //    });
+                //}
+                //
+                //function _weakestGeneralCategory(gcForSubject, allGeneralCategory, generalCategoryDataArr, subjectId) {
+                //    gcForSubject.forEach(function (generalCategoryId) {
+                //        var optionalGeneralCategoryData = allGeneralCategory[generalCategoryId];
+                //        if (!optionalGeneralCategoryData) {
+                //            optionalGeneralCategoryData = new BaseStats(generalCategoryId, subjectId);
+                //        }
+                //        generalCategoryDataArr.push(optionalGeneralCategoryData);
+                //    });
+                //}
 
                 function _getLevelKey(level) {
                     return 'level' + level + 'Categories';
@@ -177,7 +177,7 @@
                                         categoryStats.parentsIds = parentsIds;
                                     }
 
-                                    levelStats[categoryKey] = categoryStats
+                                    levelStats[categoryKey] = categoryStats;
                                 }
 
                                 _baseStatsUpdater(categoryStats,newStat);
