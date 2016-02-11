@@ -9,7 +9,7 @@
             var childScope = $rootScope.$new(true);
 
             function _eventHandler(exerciseType, evt, exercise, results){
-                return StatsSrv.isExerciseStatsRecorded().then(function(isRecorded){
+                return StatsSrv.isExerciseStatsRecorded(exerciseType, exercise.id).then(function(isRecorded){
                     if(isRecorded){
                         return;
                     }
