@@ -1,26 +1,26 @@
-describe('testing service "StatsSrv":', function () {
+xdescribe('testing service "StatsQuerySrv":', function () {
     'use strict';
 
     beforeEach(module('znk.infra.stats', 'htmlTemplates','storage.mock', 'testUtility'));
 
-    beforeEach(module(function(StatsSrvProvider) {
+    beforeEach(module(function(StatsQuerySrvProvider) {
         function getCategoryLookup($q) {
             return $q.when([]);
         }
 
-        StatsSrvProvider.setCategoryLookup(getCategoryLookup);
+        StatsQuerySrvProvider.setCategoryLookup(getCategoryLookup);
     }));
 
-    var $rootScope, StatsSrv,SubjectEnum;
+    var $rootScope, StatsQuerySrv, SubjectEnum;
     beforeEach(inject([
         '$injector',
         function ($injector) {
             $rootScope = $injector.get('$rootScope');
-            StatsSrv = $injector.get('StatsSrv');
+            StatsQuerySrv = $injector.get('StatsQuerySrv');
             SubjectEnum = $injector.get('SubjectEnum');
 
-            var subjectStats = {
-                0:{//weakness: 0.24
+            var level1 = {
+                id_0:{//weakness: 0.24
                     id: 0,
                     totalQuestions: 25,
                     correct: 15,
@@ -28,7 +28,7 @@ describe('testing service "StatsSrv":', function () {
                     wrong: 6,
                     totalTime: 0
                 },
-                1:{//weakness: 0.24
+                id_1:{//weakness: 0.24
                     id: 1,
                     totalQuestions: 79,
                     correct: 65,
@@ -36,7 +36,7 @@ describe('testing service "StatsSrv":', function () {
                     wrong: 9,
                     totalTime: 0
                 },
-                2:{
+                id_2:{
                     totalQuestions: 29,
                     correct: 14,
                     unanswered: 3,
@@ -45,8 +45,8 @@ describe('testing service "StatsSrv":', function () {
                 }
             };
 
-            var generalCategoryStats = {
-                4:{//weakness: 0.24
+            var level2 = {
+                id_4:{//weakness: 0.24
                     id: 4,
                     subjectId: 0,
                     totalQuestions: 25,
@@ -55,7 +55,7 @@ describe('testing service "StatsSrv":', function () {
                     wrong: 6,
                     totalTime: 0
                 },
-                8:{//weakness 0.076
+                id_8:{//weakness 0.076
                     id: 8,
                     subjectId: 1,
                     totalQuestions: 66,
@@ -64,7 +64,7 @@ describe('testing service "StatsSrv":', function () {
                     wrong: 5,
                     totalTime: 0
                 },
-                11:{//weakness 0.385
+                id_11:{//weakness 0.385
                     id: 11,
                     subjectId: 1,
                     totalQuestions: 13,
@@ -73,7 +73,7 @@ describe('testing service "StatsSrv":', function () {
                     wrong: 4,
                     totalTime: 0
                 },
-                12:{//weakness 0.517
+                id_12:{//weakness 0.517
                     id: 12,
                     subjectId: 2,
                     totalQuestions: 29,
@@ -84,8 +84,8 @@ describe('testing service "StatsSrv":', function () {
                 }
             };
 
-            var specificCategoryStats = {
-                20:{//weakness 0.6
+            var level3 = {
+                id_20:{//weakness 0.6
                     id: 20,
                     generalCategoryId: 4,
                     subjectId: 0,
@@ -95,7 +95,7 @@ describe('testing service "StatsSrv":', function () {
                     wrong: 4,
                     totalTime: 0
                 },
-                23:{//weakness 0.266
+                id_23:{//weakness 0.266
                     id: 23,
                     generalCategoryId: 4,
                     subjectId: 0,
@@ -105,7 +105,7 @@ describe('testing service "StatsSrv":', function () {
                     wrong: 2,
                     totalTime: 0
                 },
-                75:{//weakness 0.121
+                id_75:{//weakness 0.121
                     id: 75,
                     generalCategoryId: 8,
                     subjectId: 1,
@@ -115,7 +115,7 @@ describe('testing service "StatsSrv":', function () {
                     wrong: 2,
                     totalTime: 0
                 },
-                76:{//weakness 0.091
+                id_76:{//weakness 0.091
                     id: 76,
                     generalCategoryId: 8,
                     subjectId: 1,
@@ -125,7 +125,7 @@ describe('testing service "StatsSrv":', function () {
                     wrong: 3,
                     totalTime: 0
                 },
-                85:{//weakness 0.385
+                id_85:{//weakness 0.385
                     id: 85,
                     generalCategoryId: 11,
                     subjectId: 1,
@@ -135,7 +135,7 @@ describe('testing service "StatsSrv":', function () {
                     wrong: 4,
                     totalTime: 0
                 },
-                93:{//weakness 0.517
+                id_93:{//weakness 0.517
                     id: 93,
                     generalCategoryId: 12,
                     subjectId: 2,
@@ -146,11 +146,12 @@ describe('testing service "StatsSrv":', function () {
                     totalTime: 0
                 }
             };
+
             var StorageSrv = $injector.get('testStorage');
             StorageSrv.db.users.$$uid.stats = {
-                subjectStats: subjectStats,
-                generalCategoryStats: generalCategoryStats,
-                specificCategoryStats: specificCategoryStats,
+                level1Categories: level1,
+                level2Categories: level2,
+                level3Categories: level3,
                 usedExercises: []
             };
 
@@ -176,7 +177,7 @@ describe('testing service "StatsSrv":', function () {
     ];
     actions.init = function () {
         convertFnToSync.forEach(function (fnName) {
-            actions[fnName] = convertAsyncToSync(StatsSrv, fnName);
+            actions[fnName] = convertAsyncToSync(StatsQuerySrv, fnName);
         });
     };
     beforeEach(function () {

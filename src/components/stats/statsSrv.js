@@ -1,16 +1,16 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.stats').provider('StatsSrv', function(){
+    angular.module('znk.infra.stats').provider('StatsSrv', function () {
         var getCategoryLookup;
-        this.setCategoryLookup = function(_getCategoryLookup){
+        this.setCategoryLookup = function (_getCategoryLookup) {
             getCategoryLookup = _getCategoryLookup;
         };
 
         this.$get = [
             'InfraConfigSrv', '$q', 'SubjectEnum', '$log', '$injector',
             function (InfraConfigSrv, $q, SubjectEnum, $log, $injector) {
-                if(!getCategoryLookup){
+                if (!getCategoryLookup) {
                     $log.error('StatsSrv: getCategoryLookup was not set !!!!');
                 }
 
@@ -19,38 +19,48 @@
 
                 var StatsSrv = {};
 
-                function _getCategoryLookup(){
+                function _getCategoryLookup() {
                     return $injector.invoke(getCategoryLookup);
                 }
 
-                function BaseStats(id, subjectId, generalCategoryId) {
+                function BaseStats(id, addInitOffset) {
                     if (angular.isDefined(id)) {
                         this.id = +id;
                     }
 
-                    if (angular.isDefined(subjectId)) {
-                        this.subjectId = +subjectId;
+                    var totalQuestions;
+                    var correct;
+                    var unanswered;
+                    var wrong;
+                    var totalTime;
+
+
+                    if (addInitOffset) {
+                        totalQuestions = 5;
+                        correct = 1;
+                        unanswered = 0;
+                        wrong = 4;
+                        totalTime = 0;
+                    } else {
+                        totalQuestions = 0;
+                        correct = 0;
+                        unanswered = 0;
+                        wrong = 0;
+                        totalTime = 0;
                     }
 
-                    if (angular.isDefined(generalCategoryId)) {
-                        this.generalCategoryId = +generalCategoryId;
-                    }
-
-                    this.totalQuestions = 0;
-                    this.correct = 0;
-                    this.unanswered = 0;
-                    this.wrong = 0;
-                    this.totalTime = 0;
+                    this.totalQuestions = totalQuestions;
+                    this.correct = correct;
+                    this.unanswered = unanswered;
+                    this.wrong = wrong;
+                    this.totalTime = totalTime;
                 }
 
-
                 function getStats() {
-                    var defaultValues = {
-                        subjectStats: {},
-                        generalCategoryStats: {},
-                        specificCategoryStats: {}
+                    var defaults = {
+                        processedExercises:{}
                     };
-                    return StorageSrv.get(STATS_PATH, defaultValues);
+                    return StorageSrv.get(STATS_PATH, defaults);
                 }
 
                 function setStats(newStats) {
@@ -89,17 +99,15 @@
                     return lookUp[categoryId] ? lookUp[categoryId].parentId : lookUp[categoryId];
                 }
 
-                StatsSrv.getStats = getStats;
-
-                StatsSrv.BaseStats = BaseStats;
-
-                StatsSrv.getGeneralCategoryStats = function () {
-                    return _baseStatsGetter('generalCategory');
-                };
-
-                StatsSrv.getSpecificCategoryStats = function () {
-                    return _baseStatsGetter('specificCategory');
-                };
+                function _weakestSpecificCategory(specificCategoriesForGeneralCategory, allSpecificCategory, specificCategoryDataArr, subjectId, generalCategoryId) {
+                    specificCategoriesForGeneralCategory.forEach(function (specificCategoryId) {
+                        var optionalSpecificCategoryData = allSpecificCategory[specificCategoryId];
+                        if (!optionalSpecificCategoryData) {
+                            optionalSpecificCategoryData = new BaseStats(specificCategoryId, subjectId, generalCategoryId);
+                        }
+                        specificCategoryDataArr.push(optionalSpecificCategoryData);
+                    });
+                }
 
                 function _weakestGeneralCategory(gcForSubject, allGeneralCategory, generalCategoryDataArr, subjectId) {
                     gcForSubject.forEach(function (generalCategoryId) {
@@ -111,110 +119,123 @@
                     });
                 }
 
-                StatsSrv.getWeakestGeneralCategory = function (optionalGeneralCategories) {
-                    return StatsSrv.getGeneralCategoryStats().then(function (allGeneralCategoryStats) {
-                        var optionalGeneralCategoryDataArr = [];
-                        for (var subjectId in optionalGeneralCategories) {
-                            var optionalGeneralCategoriesForSubject = optionalGeneralCategories[subjectId];
-                            _weakestGeneralCategory(optionalGeneralCategoriesForSubject, allGeneralCategoryStats, optionalGeneralCategoryDataArr, subjectId);
-                        }
-                        optionalGeneralCategoryDataArr.sort(function (generalCategory1, generalCategory2) {
-                            return _getCategoryWeakness(generalCategory2) - _getCategoryWeakness(generalCategory1);
-                        });
-                        $log.debug('weakest general categories array', JSON.stringify(optionalGeneralCategoryDataArr));
-                        return optionalGeneralCategoryDataArr[0];
-                    });
-                };
-
-                function _weakestSpecificCategory(specificCategoriesForGeneralCategory, allSpecificCategory, specificCategoryDataArr, subjectId, generalCategoryId) {
-                    specificCategoriesForGeneralCategory.forEach(function (specificCategoryId) {
-                        var optionalSpecificCategoryData = allSpecificCategory[specificCategoryId];
-                        if (!optionalSpecificCategoryData) {
-                            optionalSpecificCategoryData = new BaseStats(specificCategoryId, subjectId, generalCategoryId);
-                        }
-                        specificCategoryDataArr.push(optionalSpecificCategoryData);
-                    });
+                function _getLevelKey(level) {
+                    return 'level' + level + 'Categories';
                 }
 
-                StatsSrv.getWeakestSpecificCategory = function (optionalSpecificCategories) {
-                    $log.debug('calculating weakest specific category for exercise type ', JSON.stringify(optionalSpecificCategories));
-                    return StatsSrv.getSpecificCategoryStats().then(function (allSpecificCategoryStats) {
-                        var optionalSpecificCategoryDataArr = [];
-                        for (var subjectId in optionalSpecificCategories) {
-                            var optionalSpecificCategoriesForSubject = optionalSpecificCategories[subjectId];
-                            for (var generalCategoryId in optionalSpecificCategoriesForSubject) {
-                                var optionalSpecificCategoriesForGeneralCategory = optionalSpecificCategoriesForSubject[generalCategoryId];
-                                _weakestSpecificCategory(optionalSpecificCategoriesForGeneralCategory, allSpecificCategoryStats, optionalSpecificCategoryDataArr, subjectId, generalCategoryId);
-                            }
-                        }
-                        optionalSpecificCategoryDataArr.sort(function (specificCategory1, specificCategory2) {
-                            return _getSpecificCategoryWeakness(specificCategory2) - _getSpecificCategoryWeakness(specificCategory1);
-                        });
-                        $log.debug('weakest specific categories array', JSON.stringify(optionalSpecificCategoryDataArr));
-                        return optionalSpecificCategoryDataArr[0];
-                    });
-                };
+                function _getCategoryKey(categoryId){
+                    return 'id_' + categoryId;
+                }
 
-                StatsSrv.updateStats = function (exerciseType, newStats) {
+                function _getProcessedExerciseKey(exerciseType, exerciseId){
+                    return exerciseType + '_' + exerciseId;
+                }
+
+                StatsSrv.getStats = getStats;
+
+                StatsSrv.BaseStats = BaseStats;
+
+                StatsSrv.updateStats = function (newStats, exerciseType, exerciseId) {
                     var getCategoryLookupProm = _getCategoryLookup();
                     var getStatsProm = getStats();
+                    var processedExerciseKey = _getProcessedExerciseKey(exerciseType, exerciseId);
                     return $q.all([getCategoryLookupProm, getStatsProm]).then(function (res) {
                         var categoryLookUp = res[0];
                         var stats = res[1];
-                        var subjectStats = stats.subjectStats;
-                        var generalCategoryStats = stats.generalCategoryStats;
-                        var specificCategoryStats = stats.specificCategoryStats;
 
-                        for (var categoryId in newStats) {
-                            var newStat = newStats[categoryId];
-                            var categoriesToUpdate = [+categoryId];
-
-                            var parentCategoryId = _getParentCategoryId(categoryLookUp, categoryId);
-                            if (angular.isDefined(parentCategoryId)) {
-                                categoriesToUpdate.unshift(parentCategoryId);
-                            }
-
-                            parentCategoryId = _getParentCategoryId(categoryLookUp, parentCategoryId);
-                            if (parentCategoryId !== null) {
-                                categoriesToUpdate.unshift(parentCategoryId);
-                            }
-
-                            var subjectId = categoriesToUpdate[0];
-                            var generalCategoryId = categoriesToUpdate[1];
-                            var specificCategoryId = categoriesToUpdate[2];
-
-
-                            if (!subjectStats[subjectId]) {
-                                subjectStats[subjectId] = new BaseStats(subjectId);
-                                //initial stats set to 4 wrong answer and 1 correct answer
-                                subjectStats[subjectId].totalQuestions += 5;
-                                subjectStats[subjectId].correct += 1;
-                                subjectStats[subjectId].wrong += 4;
-                            }
-                            _baseStatsUpdater(subjectStats[subjectId], newStat);
-
-                            if (!generalCategoryStats[generalCategoryId]) {
-                                generalCategoryStats[generalCategoryId] = new BaseStats(generalCategoryId, subjectId);
-                                generalCategoryStats[generalCategoryId].totalQuestions += 5;
-                                generalCategoryStats[generalCategoryId].correct += 1;
-                                generalCategoryStats[generalCategoryId].wrong += 4;
-                            }
-                            _baseStatsUpdater(generalCategoryStats[generalCategoryId], newStat);
-
-                            if (specificCategoryId) {
-                                if (!specificCategoryStats[specificCategoryId]) {
-                                    specificCategoryStats[specificCategoryId] = new BaseStats(specificCategoryId, subjectId, generalCategoryId);
-                                    specificCategoryStats[specificCategoryId].totalQuestions += 5;
-                                    specificCategoryStats[specificCategoryId].correct += 1;
-                                    specificCategoryStats[specificCategoryId].wrong += 4;
-                                }
-                                _baseStatsUpdater(specificCategoryStats[specificCategoryId], newStat);
-                            }
+                        var isExerciseRecorded = stats.processedExercises[processedExerciseKey];
+                        if(isExerciseRecorded){
+                            return;
                         }
 
+                        angular.forEach(newStats, function (newStat, categoryId) {
+                            var categoriesToUpdate = [];
+                            var categoryIdToAdd = +categoryId;
+                            while (categoryIdToAdd !== null && angular.isDefined(categoryIdToAdd)) {
+                                categoriesToUpdate.unshift(categoryIdToAdd);
+                                categoryIdToAdd = _getParentCategoryId(categoryLookUp, categoryIdToAdd);
+                            }
+
+                            categoriesToUpdate.forEach(function (categoryId, index) {
+                                var level = index + 1;
+                                var levelKey = _getLevelKey(level);
+                                var levelStats = stats[levelKey];
+                                if (!levelStats) {
+                                    levelStats = {};
+
+                                    stats[levelKey] = levelStats;
+                                }
+
+                                var categoryKey = _getCategoryKey(categoryId);
+                                var categoryStats = levelStats[categoryKey];
+                                if(!categoryStats){
+                                    categoryStats = new BaseStats(categoryId,true);
+
+                                    var parentsIds = categoriesToUpdate.slice(0,index);
+                                    if(parentsIds.length){
+                                        parentsIds.reverse();//parent ids order should be from the bottom to the top
+                                        categoryStats.parentsIds = parentsIds;
+                                    }
+
+                                    levelStats[categoryKey] = categoryStats
+                                }
+
+                                _baseStatsUpdater(categoryStats,newStat);
+                            });
+                        });
+                        stats.processedExercises[processedExerciseKey] = true;
                         return setStats(stats);
                     });
+
                 };
+
+                StatsSrv.isExerciseStatsRecorded = function(exerciseType, exerciseId){
+                    return StatsSrv.getStats().then(function(stats){
+                        var processedExerciseKey = _getProcessedExerciseKey(exerciseType, exerciseId);
+                        return !!stats.processedExercises[processedExerciseKey];
+                    });
+                };
+                //StatsSrv.getGeneralCategoryStats = function () {
+                //    return _baseStatsGetter('generalCategory');
+                //};
+
+                //StatsSrv.getSpecificCategoryStats = function () {
+                //    return _baseStatsGetter('specificCategory');
+                //};
+
+                //StatsSrv.getWeakestGeneralCategory = function (optionalGeneralCategories) {
+                //    return StatsSrv.getGeneralCategoryStats().then(function (allGeneralCategoryStats) {
+                //        var optionalGeneralCategoryDataArr = [];
+                //        for (var subjectId in optionalGeneralCategories) {
+                //            var optionalGeneralCategoriesForSubject = optionalGeneralCategories[subjectId];
+                //            _weakestGeneralCategory(optionalGeneralCategoriesForSubject, allGeneralCategoryStats, optionalGeneralCategoryDataArr, subjectId);
+                //        }
+                //        optionalGeneralCategoryDataArr.sort(function (generalCategory1, generalCategory2) {
+                //            return _getCategoryWeakness(generalCategory2) - _getCategoryWeakness(generalCategory1);
+                //        });
+                //        $log.debug('weakest general categories array', JSON.stringify(optionalGeneralCategoryDataArr));
+                //        return optionalGeneralCategoryDataArr[0];
+                //    });
+                //};
+
+                //StatsSrv.getWeakestSpecificCategory = function (optionalSpecificCategories) {
+                //    $log.debug('calculating weakest specific category for exercise type ', JSON.stringify(optionalSpecificCategories));
+                //    return StatsSrv.getSpecificCategoryStats().then(function (allSpecificCategoryStats) {
+                //        var optionalSpecificCategoryDataArr = [];
+                //        for (var subjectId in optionalSpecificCategories) {
+                //            var optionalSpecificCategoriesForSubject = optionalSpecificCategories[subjectId];
+                //            for (var generalCategoryId in optionalSpecificCategoriesForSubject) {
+                //                var optionalSpecificCategoriesForGeneralCategory = optionalSpecificCategoriesForSubject[generalCategoryId];
+                //                _weakestSpecificCategory(optionalSpecificCategoriesForGeneralCategory, allSpecificCategoryStats, optionalSpecificCategoryDataArr, subjectId, generalCategoryId);
+                //            }
+                //        }
+                //        optionalSpecificCategoryDataArr.sort(function (specificCategory1, specificCategory2) {
+                //            return _getSpecificCategoryWeakness(specificCategory2) - _getSpecificCategoryWeakness(specificCategory1);
+                //        });
+                //        $log.debug('weakest specific categories array', JSON.stringify(optionalSpecificCategoryDataArr));
+                //        return optionalSpecificCategoryDataArr[0];
+                //    });
+                //};
 
                 StatsSrv.getPerformanceData = function () {
                     return StatsSrv.getStats().then(function (stats) {

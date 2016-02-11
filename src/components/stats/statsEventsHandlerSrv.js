@@ -9,41 +9,47 @@
             var childScope = $rootScope.$new(true);
 
             function _eventHandler(exerciseType, evt, exercise, results){
-                var newStats  = {};
-
-                results.questionResults.forEach(function(result,index){
-                    var question = exercise.questions[index];
-                    var categoryId = question.categoryId;
-
-                    //if writing question then only standard format should be recorded
-                    if(question.subjectId === SubjectEnum.WRITING.enum && question.questionFormatId !== QuestionFormatEnum.STANDARD.enum){
+                return StatsSrv.isExerciseStatsRecorded().then(function(isRecorded){
+                    if(isRecorded){
                         return;
                     }
 
-                    if(isNaN(+categoryId) || categoryId === null){
-                        $log.error('StatsEventsHandlerSrv: _eventHandler: bad category id for the following question: ',question.id,categoryId);
-                        return;
-                    }
+                    var newStats  = {};
 
-                    if(!newStats[categoryId]){
-                        newStats[categoryId] = new StatsSrv.BaseStats();
-                    }
-                    var newStat = newStats[categoryId];
+                    results.questionResults.forEach(function(result,index){
+                        var question = exercise.questions[index];
+                        var categoryId = question.categoryId;
 
-                    newStat.totalQuestions++;
+                        //if writing question then only standard format should be recorded
+                        if(question.subjectId === SubjectEnum.WRITING.enum && question.questionFormatId !== QuestionFormatEnum.STANDARD.enum){
+                            return;
+                        }
 
-                    newStat.totalTime += result.timeSpent || 0;
+                        if(isNaN(+categoryId) || categoryId === null){
+                            $log.error('StatsEventsHandlerSrv: _eventHandler: bad category id for the following question: ',question.id,categoryId);
+                            return;
+                        }
 
-                    if(angular.isUndefined(result.userAnswer)){
-                        newStat.unanswered++;
-                    }else if(result.isAnsweredCorrectly){
-                        newStat.correct++;
-                    }else{
-                        newStat.wrong++;
-                    }
+                        if(!newStats[categoryId]){
+                            newStats[categoryId] = new StatsSrv.BaseStats();
+                        }
+                        var newStat = newStats[categoryId];
+
+                        newStat.totalQuestions++;
+
+                        newStat.totalTime += result.timeSpent || 0;
+
+                        if(angular.isUndefined(result.userAnswer)){
+                            newStat.unanswered++;
+                        }else if(result.isAnsweredCorrectly){
+                            newStat.correct++;
+                        }else{
+                            newStat.wrong++;
+                        }
+                    });
+
+                    return StatsSrv.updateStats(newStats, exerciseType, exercise.id);
                 });
-
-                StatsSrv.updateStats(exerciseType,newStats);
             }
 
             var eventsToRegister = [];
@@ -55,24 +61,7 @@
                     exerciseType: enumObj.enum
                 });
             });
-            //var eventsToRegister = [
-            //    {
-            //        evt: exerciseEventsConst.practice.FINISH,
-            //        exerciseType: ExerciseTypeEnum.PRACTICE.enum
-            //    },
-            //    //{
-            //    //    evt: exerciseEventsConst.game.FINISH,
-            //    //    exerciseType: ExerciseTypeEnum.GAME.enum
-            //    //},
-            //    {
-            //        evt: exerciseEventsConst.drill.FINISH,
-            //        exerciseType: ExerciseTypeEnum.DRILL.enum
-            //    },
-            //    {
-            //        evt: exerciseEventsConst.section.FINISH,
-            //        exerciseType: ExerciseTypeEnum.SECTION.enum
-            //    }
-            //];
+
             eventsToRegister.forEach(function(evtConfig){
                 childScope.$on(evtConfig.evt,_eventHandler.bind(StatsEventsHandlerSrv,evtConfig.exerciseType));
             });
