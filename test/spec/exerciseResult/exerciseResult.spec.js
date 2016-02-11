@@ -353,4 +353,97 @@ describe('testing service "ExerciseResult":', function () {
             expect(exerciseResult.avgTimePerQuestion).toBe(expectedResult);
         });
     });
+
+    describe('test save exam isCompleted when all sections are completed',function(){
+
+        it('when section is not complete, then examResult.isComplete = false', function(){
+            var exerciseId = 4;
+            var examSectionsNum = 5;
+            var examId = 45;
+            var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.SECTION.enum, exerciseId, examId, examSectionsNum);
+            exerciseResult.$save();
+            $rootScope.$digest();
+            var examResult = actions.getExamResult(examId);
+            expect(examResult.isComplete).toEqual(false);
+        });
+
+        it('when section is complete, but other section not started, then examResult.isComplete = false', function(){
+            var exerciseId = 4;
+            var examSectionsNum = 5;
+            var examId = 45;
+            var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.SECTION.enum, exerciseId, examId, examSectionsNum);
+            exerciseResult.isComplete = true;
+            exerciseResult.$save();
+            $rootScope.$digest();
+            var examResult = actions.getExamResult(examId);
+            expect(examResult.isComplete).toEqual(false);
+        });
+
+        it('when section is complete, and other section are started but not completed, then examResult.isComplete = false', function(){
+            var exerciseId = 4;
+            var examSectionsNum = 5;
+            var examId = 45;
+            var sectionResultsObj = {
+                1: '111',
+                2: '111',
+                3: '111',
+                4: '111',
+                5: '111'
+            };
+            var expectedExercisesStatusData =  testStorage.db.users.$$uid.exercisesStatus;
+            expectedExercisesStatusData[ExerciseTypeEnum.SECTION.enum] = {};
+            for(var key in sectionResultsObj) {
+                expectedExercisesStatusData[ExerciseTypeEnum.SECTION.enum][key] = {
+                    status: ExerciseStatusEnum.ACTIVE.enum
+                };
+            }
+            var examResult = actions.getExamResult(examId);
+            examResult.sectionResults = sectionResultsObj;
+            examResult.$save();
+            $rootScope.$digest();
+            var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.SECTION.enum, exerciseId, examId, examSectionsNum);
+            exerciseResult.isComplete = true;
+            exerciseResult.$save();
+            $rootScope.$digest();
+            examResult = actions.getExamResult(examId);
+            examResult.sectionResults = sectionResultsObj;
+            examResult.$save();
+            examResult = actions.getExamResult(examId);
+            expect(examResult.isComplete).toEqual(false);
+        });
+
+        it('when section is complete, and other section are also completed, then examResult.isComplete = true', function(){
+            var exerciseId = 4;
+            var examSectionsNum = 5;
+            var examId = 45;
+            var sectionResultsObj = {
+                1: '111',
+                2: '111',
+                3: '111',
+                4: '111',
+                5: '111'
+            };
+            var expectedExercisesStatusData =  testStorage.db.users.$$uid.exercisesStatus;
+            expectedExercisesStatusData[ExerciseTypeEnum.SECTION.enum] = {};
+            for(var key in sectionResultsObj) {
+                expectedExercisesStatusData[ExerciseTypeEnum.SECTION.enum][key] = {
+                    status: ExerciseStatusEnum.COMPLETED.enum
+                };
+            }
+            var examResult = actions.getExamResult(examId);
+            examResult.sectionResults = sectionResultsObj;
+            examResult.$save();
+            $rootScope.$digest();
+            var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.SECTION.enum, exerciseId, examId, examSectionsNum);
+            exerciseResult.isComplete = true;
+            exerciseResult.$save();
+            $rootScope.$digest();
+            examResult = actions.getExamResult(examId);
+            examResult.sectionResults = sectionResultsObj;
+            examResult.$save();
+            examResult = actions.getExamResult(examId);
+            expect(examResult.isComplete).toEqual(true);
+        });
+
+    });
 });
