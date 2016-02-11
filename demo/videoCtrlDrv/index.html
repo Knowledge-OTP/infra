@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang = "en">
+<head>
+    <meta charset = "UTF-8">
+    <title>Title</title>
+<link rel = "stylesheet" href = "main.css">
+</head>
+<body ng-app = "demoApp">
+<style>
+                video, .video_not_available
+                {
+	                margin-left : 10px;
+                }
+
+                video
+                {
+	                width       : 454px;
+	                height      : 254px;
+	                padding-top : 50px;
+	                visibility: hidden;
+                }
+
+                .video_not_available
+                {
+	                margin-top : 50px;
+	                background-color: #0a9bad;
+	                width       : 454px;
+	                height      : 254px;
+                }
+
+</style>
+
+
+ <video controls video-ctrl-drv = ""   preload="metadata" poster="http://corrupt-system.de/assets/media/sintel/sintel-trailer.jpg">
+	 <source src = "http://d1qqqwawt7o27r.cloudfront.net/videos/questions/176.mp4" type = "video/mp4"/>
+ </video>
+
+
+<script src = "angular/angular.js"></script>
+<script src = "components/general/moduleMutual.js"></script>
+<script src = "components/general/videoCtrlDrv.js"></script>
+<script src = "demoApp.js"></script>
+</body>
+</html>
