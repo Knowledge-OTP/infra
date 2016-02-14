@@ -43,6 +43,21 @@
                 return enumArr;
             };
 
+            BaseEnum.prototype.getValByEnum = function getValByEnum(id) {
+                var enumsObj = this;
+                var val;
+                for (var prop in enumsObj) {
+                  if (enumsObj.hasOwnProperty(prop)) {
+                      var enumObj = enumsObj[prop];
+                      if (enumObj.enum === id) {
+                          val = enumObj.val;
+                          break;
+                      }
+                  }
+                }
+                return val;
+            };
+
             EnumSrv.flashcardStatus = new BaseEnum([
                 ['keep', 0, 'Keep'],
                 ['remove', 1, 'Remove']
