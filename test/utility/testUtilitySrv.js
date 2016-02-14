@@ -34,24 +34,28 @@
                     return;
                 }
                 this.enable = true;
-                function printLog(log){
+                function printLog(log,logType){
                     log.forEach(function(msg){
-                        console.log(msg);
+                        console[logType](msg);
                     });
                 }
-                var currLogs = $log.debug.logs;
-                currLogs.forEach(function(log){
-                    printLog(log);
+                var logsToPrint = ['debug','error'];
+                logsToPrint.forEach(function(logType){
+                    var currLogs = $log[logType].logs;
+                    currLogs.forEach(function(log){
+                        printLog(log,logType);
+                    });
+                    $log[logType] = function(){
+                        var newLogs = [];
+                        for(var i=0; i<arguments.length; i++){
+                            newLogs.push(arguments[i]);
+                        }
+                        $log[logType].logs.push(newLogs);
+                        printLog(newLogs,logType);
+                    };
+                    $log[logType].logs = currLogs;
+
                 });
-                $log.debug = function(){
-                    var newLogs = [];
-                    for(var i=0; i<arguments.length; i++){
-                        newLogs.push(arguments[i]);
-                    }
-                    $log.debug.logs.push(newLogs);
-                    printLog(newLogs);
-                };
-                $log.debug.logs = currLogs;
             };
 
             TestUtilitySrv.exercise = {};
