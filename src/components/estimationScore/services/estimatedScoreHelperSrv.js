@@ -36,22 +36,20 @@
                         };
                         _SetSubjectInitialVal(defaultValues.exercisesRawScores,rawScoreInitialObject);
 
-                        for(var prop in defaultValues){
-                            var defaultVal = defaultValues[prop];
-
-                            if(angular.isUndefined(estimatedScore[prop])){
-                                estimatedScore[prop] = defaultVal ;
+                        angular.forEach(defaultValues, function(defaultVal, defaultValKey){
+                            if(angular.isUndefined(estimatedScore[defaultValKey])){
+                                estimatedScore[defaultValKey] = defaultVal ;
                             }
 
-                            if(estimatedScore[prop] !== defaultVal && angular.isObject(defaultValues[prop])){
-                                var currVal = estimatedScore[prop];
-                                for(var prop1 in defaultVal){
-                                    if(angular.isUndefined(currVal[prop1])){
-                                        currVal[prop1] = defaultVal[prop1] ;
+                            if(estimatedScore[defaultValKey] !== defaultVal && angular.isObject(defaultVal)){
+                                var currVal = estimatedScore[defaultValKey];
+                                angular.forEach(defaultVal, function(innerDefaultVal, innerDefaultValueKey){
+                                    if(angular.isUndefined(currVal[innerDefaultValueKey])){
+                                        currVal[innerDefaultValueKey] = innerDefaultVal;
                                     }
-                                }
+                                });
                             }
-                        }
+                        });
 
                         return estimatedScore;
                     });

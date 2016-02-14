@@ -33,20 +33,6 @@
 
                 var EstimatedScoreSrv = {};
 
-                var ESTIMATED_SCORE_RANGE = 30;
-                var MIN_SUBJECT_SCORE = 200;
-                var MAX_SUBJECT_SCORE = 800;
-
-                function _getEstimatedScoreRange(estimatedScore, isTotal) {
-                    var multBy = isTotal ? 3 : 1;//if exam then the score is the sum of all subjects
-                    var minVal = MIN_SUBJECT_SCORE * multBy;
-                    var maxVal = MAX_SUBJECT_SCORE * multBy;
-                    return {
-                        min: Math.max(estimatedScore.score - ESTIMATED_SCORE_RANGE, minVal),
-                        max: Math.min(estimatedScore.score + ESTIMATED_SCORE_RANGE, maxVal)
-                    };
-                }
-
                 function _baseGetter(key, subjectId) {
                     return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScore) {
                         if (angular.isUndefined(subjectId)) {
@@ -107,37 +93,6 @@
                         return $q.when(rawScoreToScoreFn(subjectId,normalizedRawScore));
                     };
                 })();
-
-                EstimatedScoreSrv.getEstimatedScoreRanges = function () {
-                    return EstimatedScoreSrv.getEstimatedScores().then(function (estimatedScores) {
-                        var ret = {};
-                        var totalEstimatedScore = 0;
-
-                        var subjectEnumArr = SubjectEnum.getEnumArr().map(function (item) {
-                            return item.enum;
-                        });
-
-                        subjectEnumArr.forEach(function (subjectId) {
-                            ret[subjectId] = {};
-
-                            var estimatedScoreForSubject;
-                            if (estimatedScores[subjectId]) {
-                                estimatedScoreForSubject = estimatedScores[subjectId][estimatedScores[subjectId].length - 1];
-                            }
-
-                            if (estimatedScoreForSubject) {
-                                totalEstimatedScore += estimatedScoreForSubject.score;
-                                ret[subjectId] = _getEstimatedScoreRange(estimatedScoreForSubject);
-                            }
-                        });
-
-                        if (totalEstimatedScore) {
-                            ret.total = _getEstimatedScoreRange({score: totalEstimatedScore}, true);
-                        }
-
-                        return ret;
-                    });
-                };
 
                 EstimatedScoreSrv.getEstimatedScores = _baseGetter.bind(this, 'estimatedScores');
 
