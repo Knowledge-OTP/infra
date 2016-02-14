@@ -47,11 +47,13 @@
                 var enumsObj = this;
                 var val;
                 for (var prop in enumsObj) {
-                    var enumObj = enumsObj[prop];
-                    if (enumObj.enum === id) {
-                        val = enumObj.val;
-                        break;
-                    }
+                  if (enumsObj.hasOwnProperty(prop)) {
+                      var enumObj = enumsObj[prop];
+                      if (enumObj.enum === id) {
+                          val = enumObj.val;
+                          break;
+                      }
+                  }
                 }
                 return val;
             };
