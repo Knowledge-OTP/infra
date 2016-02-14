@@ -161,8 +161,9 @@
                         type: ExerciseTypeEnum.GAME.enum
                     }
                 ];
+
                 exercisesHandledByBaseExerciseFinishHandler.forEach(function (evt) {
-                    $rootScope.$on(evt.name, _baseExerciseFinishHandler.bind(EstimatedScoreEventsHandlerSrv, evt.type));
+                    childScope.$on(evt.name, _baseExerciseFinishHandler.bind(EstimatedScoreEventsHandlerSrv, evt.type));
                 });
 
                 EstimatedScoreEventsHandlerSrv.init = angular.noop;
