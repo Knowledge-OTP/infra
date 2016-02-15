@@ -36,16 +36,21 @@
                         return $q.when(hintData.determineWhetherToTrigger(hintLastVal)).then(function(shouldBeTriggered){
                             if(shouldBeTriggered){
                                 return $q.when(hintData.action()).then(function(result){
-                                    hintsStatus[hintName] = {
-                                        name: hintName,
-                                        history: [{
-                                            value: angular.isUndefined(result) ? true : result,
-                                            date: StorageSrv.variables.currTimeStamp
-                                        }]
-                                    };
+
+                                    if(!hintsStatus[hintName]){
+                                        hintsStatus[hintName] = {
+                                            name: hintName,
+                                            history: []
+                                        };
+                                    }
+
+                                    hintsStatus[hintName].history.push({
+                                        value: angular.isUndefined(result) ? true : result,
+                                        date: StorageSrv.variables.currTimeStamp
+                                    });
+
                                     hints.hintsStatus = hintsStatus;
                                     saveHints(hints);
-
                                     return result;
                                 });
                             }

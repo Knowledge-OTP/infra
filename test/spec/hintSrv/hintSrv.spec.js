@@ -17,8 +17,9 @@ describe('testing service "HintSrv":', function () {
         HINT_NAME: 'demoHint_2',
         hintAction: angular.noop,
         counter: 0,
-            triggerFn: function(hintVal){
-                hintSettings_2.counter++;
+        triggerFn: function(hintVal){
+            hintSettings_2.counter++;
+            return hintSettings_2.counter <=5;
         }
     };
 
@@ -86,18 +87,10 @@ describe('testing service "HintSrv":', function () {
     });
 
     it('given determineWhetherToTriggerFn was defined and hint status is true when triggering hint then it should triggered', function () {
-        testStorage.db.users.$$uid.hint.hintsStatus[hintSettings_2.HINT_NAME] = {
-            name: hintSettings_2.HINT_NAME,
-            history: [{
-                value: true,
-                date: testStorage.variables.currTimeStamp
-            }]
-        };
-
-        var testCounter = 5;
-        for(var i=0; i<testCounter; i++){
+        for(var i=0; i<10; i++){
             syncHintSrvActions.triggerHint(hintSettings_2.HINT_NAME);
         }
-        expect(hintSettings_2.counter).toBe(testCounter);
+        var historyItemCount = testStorage.db.users.$$uid.hint.hintsStatus[hintSettings_2.HINT_NAME].history.length;
+        expect(historyItemCount).toBe(5);
     });
 });
