@@ -14,7 +14,7 @@ angular.module('znk.infra.general')
                    var vidElm = element[0];
                    var sources = vidElm.querySelectorAll('source');
                    var vidNotAvail = (angular.isDefined(attrs.videoNotAvail)) ?
-                       attrs.videoNotAvail : '<div class=&quot;video_not_available&quot; ></div>';
+                       attrs.videoNotAvail : '<div class=\'video_not_available\'></div>';
                    var setVid = function (videoTag) {
                        videoTag.poster =
                            (angular.isDefined(attrs.defaultPoster)) ? attrs.defaultPoster :
