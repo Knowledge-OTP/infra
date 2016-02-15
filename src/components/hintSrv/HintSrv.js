@@ -1,4 +1,6 @@
 (function (angular) {
+    'use strict';
+
     angular.module('znk.infra.hint').provider('HintSrv',function(){
 
         var registeredHints = {};
@@ -12,13 +14,13 @@
                     name: hintName,
                     action: hintAction,
                     determineWhetherToTrigger: determineWhetherToTriggerFn || defaultDetermineWhetherToTriggerFn
-                }
+                };
             }
         };
 
         this.$get = [
-            'InfraConfigSrv', '$q',
-            function (InfraConfigSrv, $q) {
+            'InfraConfigSrv', '$q', '$log',
+            function (InfraConfigSrv, $q, $log) {
                 var HintSrv = {};
                 var StorageSrv = InfraConfigSrv.getStorageService();
                 var hintPath = StorageSrv.variables.appUserSpacePath + '/hint';
