@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkTimeline').directive('znkTimeline',['$window', function($window) {
+    angular.module('znk.infra.znkTimeline').directive('znkTimeline',['$window', '$templateCache', function($window, $templateCache) {
         var directive = {
             restrict: 'A',
             scope: {
@@ -211,11 +211,14 @@
                             src = settings.images[data.exerciseType].icon;
                         }
 
-                        imageObj.src = src;
+                        var svg = $templateCache.get(src);
+                        var mySrc = 'data:image/svg+xml;base64,'+$window.btoa(svg);
 
                         imageObj.onload = function() {
                             ctx.drawImage(imageObj, locationImgX, locationImgY, img, img);
                         };
+
+                        imageObj.src = mySrc;
                     }
 
                 }
