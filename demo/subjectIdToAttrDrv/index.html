@@ -37,12 +37,18 @@
         }
     </style>
 
-    <div subject-id-to-attr-drv="0" class="myClass" context-attr="class,class" prefix="1,2" suffix="1,2">Test</div>
+    <div subject-id-to-attr-drv="0"
+         class="myClass"
+         context-attr="class,class"
+         prefix="1,2"
+         suffix="1,2">Test</div>
     <div subject-id-to-attr-drv="1">Reading</div>
     <div subject-id-to-attr-drv="2">Writing</div>
     <div subject-id-to-attr-drv="3">Listening</div>
     <div subject-id-to-attr-drv="4">Speaking</div>
-    <div subject-id-to-attr-drv="4">Speaking-subject</div>
+    <div></div>
+    <div subject-id-to-attr-drv="currentSubject" context-attr="class,class" prefix=",5">current subject {{currentSubject}}</div>
+    <button ng-click="currentSubject = (currentSubject % 2) + 1">Change Subject</button>
 
 
     <script src="angular/angular.js"></script>
@@ -50,6 +56,10 @@
     <script src="components/enums/module.js"></script>
     <script src="components/enums/services/enumSrv.js"></script>
     <script src="components/enums/enums/subjectEnum.js"></script>
+
+    <script src="components/svgIcon/module.js"></script>
+    <script src="components/svgIcon/svgIconDrv.js"></script>
+    <script src="components/svgIcon/svgIconSrv.js"></script>
 
     <script src="components/general/module.js"></script>
     <script src="components/general/subjectIdToAttrDrv.js"></script>
