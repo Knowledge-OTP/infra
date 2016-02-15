@@ -2,6 +2,7 @@
  * attrs -
  *      videoNotAvail:
  *         the message to display when video is not available
+ *         example : video-not-avail="<div class=&quot;video_not_available&quot; ></div>">
  *      defaultPoster:
  *          the default poster to display when poster is unavailable or is empty
  */
@@ -13,7 +14,7 @@ angular.module('znk.infra.general')
                    var vidElm = element[0];
                    var sources = vidElm.querySelectorAll('source');
                    var vidNotAvail = (angular.isDefined(attrs.videoNotAvail)) ?
-                       attrs.videoNotAvail : '<div class="video_not_available" ></div>';
+                       attrs.videoNotAvail : '<div class=&quot;video_not_available&quot; ></div>';
                    var setVid = function (videoTag) {
                        videoTag.poster =
                            (angular.isDefined(attrs.defaultPoster)) ? attrs.defaultPoster :
