@@ -5451,7 +5451,9 @@
                     if(angular.isDefined(val)) {
                         if(val !== oldVal) {
                             ctx.clearRect(0, 0, canvasElem.width, canvasElem.height);
-                            start(val);
+                            if(val.data.length) {
+                                start(val);
+                            }
                         } else {
                             start(val);
                         }
@@ -5459,6 +5461,8 @@
                 });
 
                 function start(timelineData) {
+
+                    var width = settings.width;
 
                     dataObj = {
                         lastLine: [],
@@ -5469,7 +5473,7 @@
 
                     if(settings.type === 'multi') {
                         var distance = settings.distance * (timelineData.data.length + 2);
-                        settings.width = (distance < $window.innerWidth) ? $window.innerWidth : distance;
+                        width = (distance < settings.width) ? settings.width : distance;
                     }
 
                     if(settings.isMax) {
@@ -5481,10 +5485,10 @@
                         });
                     }
 
-                    canvasElem.width = settings.width * 2;
+                    canvasElem.width = width * 2;
                     canvasElem.height = settings.height * 2;
 
-                    canvasElem.style.width = settings.width+'px';
+                    canvasElem.style.width = width+'px';
                     canvasElem.style.height = settings.height+'px';
 
                     ctx.scale(2,2);
@@ -5588,14 +5592,14 @@
                         if(settings.isSummery === data.exerciseId) {
                             dataObj.summeryScore = { score: data.score, lineTo: data.lineTo,
                                 prev: dataObj.lastLine[dataObj.lastLine.length - 2] };
-                            arc = arc * 2;
-                            img = img + 15;
+                            arc = arc * 1.5;
+                            img = img + 5;
                             subLocation = img / 2;
                             imgBig = true;
                         }
                     } else if(isLast) {
-                        arc = arc * 2;
-                        img = img + 15;
+                        arc = arc * 1.5;
+                        img = img + 5;
                         subLocation = img / 2;
                         imgBig = true;
                     }
@@ -5634,7 +5638,7 @@
                         }
 
                         var svg = $templateCache.get(src);
-                        var mySrc = 'data:image/svg+xml;base64,'+$window.btoa(svg);
+                        var mySrc = (svg) ? 'data:image/svg+xml;base64,'+$window.btoa(svg) : src;
 
                         imageObj.onload = function() {
                             ctx.drawImage(imageObj, locationImgX, locationImgY, img, img);
