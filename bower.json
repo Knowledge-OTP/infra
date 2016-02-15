@@ -1,6 +1,6 @@
 {
   "name": "infra",
-  "version": "v1.0.15",
+  "version": "v1.0.17",
   "authors": [
     "Zinkerz"
   ],
@@ -22,6 +22,7 @@
   "devDependencies": {
     "es5-shim": "~4.4.1",
     "angular-mocks": "1.4.x",
-    "mockfirebase": "~0.11.0"
+    "mockfirebase": "~0.11.0",
+    "jasmine-jquery": "^2.1.1"
   }
 }

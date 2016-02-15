@@ -14,6 +14,8 @@
         'znk.infra.utility',
         'znk.infra.exerciseResult',
         'znk.infra.contentAvail',
-        'znk.infra.popUp'
+        'znk.infra.popUp',
+        'znk.infra.estimatedScore',
+        'znk.infra.stats'
     ]);
 })(angular);

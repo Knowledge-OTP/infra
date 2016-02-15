@@ -14,7 +14,9 @@
         'znk.infra.utility',
         'znk.infra.exerciseResult',
         'znk.infra.contentAvail',
-        'znk.infra.popUp'
+        'znk.infra.popUp',
+        'znk.infra.estimatedScore',
+        'znk.infra.stats'
     ]);
 })(angular);
 
@@ -34,6 +36,18 @@
 
     angular.module('znk.infra.enum', []);
 })(angular);
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.estimatedScore', ['znk.infra.config','znk.infra.znkExercise'])
+        .run([
+            'EstimatedScoreEventsHandlerSrv',
+            function(EstimatedScoreEventsHandlerSrv){
+                EstimatedScoreEventsHandlerSrv.init();
+            }
+        ]);
+})(angular);
+
 (function (angular) {
     'use strict';
 
@@ -85,6 +99,18 @@
 
     angular.module('znk.infra.scroll', []);
 })(angular);
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.stats', ['znk.infra.enum','znk.infra.znkExercise'])
+        .run([
+            'StatsEventsHandlerSrv',
+            function(StatsEventsHandlerSrv){
+                StatsEventsHandlerSrv.init();
+            }
+        ]);
+})(angular);
+
 (function (angular) {
     'use strict';
 
@@ -426,7 +452,9 @@
         function (EnumSrv) {
             return new EnumSrv.BaseEnum([
                 ['FULL TEST', 0, 'test'],
-                ['MINI TEST', 1, 'miniTest']]);
+                ['MINI TEST', 1, 'miniTest'],
+                ['DIAGNOSTIC', 2, 'diagnostic']
+            ]);
         }
     ]);
 })(angular);
@@ -475,16 +503,49 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.enum').factory('ExerciseTypeEnum', [
+    var exerciseTypeConst = {
+        TUTORIAL: 1,
+        PRACTICE: 2,
+        GAME: 3,
+        SECTION: 4,
+        DRILL: 5
+    };
+
+    angular.module('znk.infra.enum')
+        .constant('exerciseTypeConst', exerciseTypeConst)
+        .factory('ExerciseTypeEnum', [
+            'EnumSrv',
+            function (EnumSrv) {
+                return new EnumSrv.BaseEnum([
+                    ['TUTORIAL', 1, 'Tutorial'],
+                    ['PRACTICE', 2, 'Practice'],
+                    ['GAME', 3, 'Game'],
+                    ['SECTION', 4, 'Section'],
+                    ['DRILL', 5, 'Drill']
+                ]);
+            }
+        ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.enum').factory('QuestionFormatEnum', [
         'EnumSrv',
         function (EnumSrv) {
-            return new EnumSrv.BaseEnum([
-                ['TUTORIAL', 1, 'Tutorial'],
-                ['PRACTICE', 2, 'Practice'],
-                ['GAME', 3, 'Game'],
-                ['SECTION', 4, 'Section'],
-                ['DRILL', 5, 'Drill']
+
+            var QuestionFormatEnum = new EnumSrv.BaseEnum([
+                ['TEXT',1,'text'],
+                ['AUDIO',2, 'audio'],
+                ['TEXT_AUDIO', 3, 'text audio'],
+                ['PROSE_SUMMARY', 4, 'prose Summary'],
+                ['FILL_IN_TABLE', 5, 'fill in a table'],
+                ['CONNECTING_CONTENT', 6, 'connecting content'],
+                ['INDEPENDENT', 7, 'independent'],
+                ['STANDARD', 8, 'standard']
             ]);
+
+            return QuestionFormatEnum;
         }
     ]);
 })(angular);
@@ -568,6 +629,21 @@
                 return enumArr;
             };
 
+            BaseEnum.prototype.getValByEnum = function getValByEnum(id) {
+                var enumsObj = this;
+                var val;
+                for (var prop in enumsObj) {
+                  if (enumsObj.hasOwnProperty(prop)) {
+                      var enumObj = enumsObj[prop];
+                      if (enumObj.enum === id) {
+                          val = enumObj.val;
+                          break;
+                      }
+                  }
+                }
+                return val;
+            };
+
             EnumSrv.flashcardStatus = new BaseEnum([
                 ['keep', 0, 'Keep'],
                 ['remove', 1, 'Remove']
@@ -576,6 +652,435 @@
             return EnumSrv;
         }
     ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.estimatedScore').provider('EstimatedScoreEventsHandlerSrv', function EstimatedScoreEventsHandler() {
+        function pointsMap(correctWithinAllowedTimeFrame, correctAfterAllowedTimeFrame, wrongWithinAllowedTimeFrame, wrongAfterAllowedTimeFrame) {
+            var ret = {};
+
+            if (angular.isDefined(correctWithinAllowedTimeFrame)) {
+                ret.correctWithin = correctWithinAllowedTimeFrame;
+            }
+
+            if (angular.isDefined(correctAfterAllowedTimeFrame)) {
+                ret.correctAfter = correctAfterAllowedTimeFrame;
+            }
+
+            if (angular.isDefined(wrongWithinAllowedTimeFrame)) {
+                ret.wrongWithin = wrongWithinAllowedTimeFrame;
+            }
+
+            if (angular.isDefined(wrongAfterAllowedTimeFrame)) {
+                ret.wrongAfter = wrongAfterAllowedTimeFrame;
+            }
+
+            ret.unanswered = 0;
+
+            return ret;
+        }
+
+        var diagnosticScoring = {};
+        this.setDiagnosticScoring = function (diagnosticScoringData) {
+            var keys = Object.keys(diagnosticScoringData);
+            keys.forEach(function(questionDifficulty){
+                var scoringDataArr = diagnosticScoringData[questionDifficulty];
+                diagnosticScoring[questionDifficulty] = pointsMap.apply(this,scoringDataArr);
+            });
+        };
+
+        var exercisesRawScoring = {};
+        this.setExerciseRawPoints = function(exerciseType,scoringData){
+            exercisesRawScoring[exerciseType] = pointsMap.apply(this,scoringData);
+        };
+
+        var allowedTimeForExercisesMap;
+        this.setAllowedTimeForExercises = function(_allowedTimeForExercisesMap){
+            allowedTimeForExercisesMap = _allowedTimeForExercisesMap;
+        };
+
+        this.$get = [
+            '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum','ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log',
+            function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum,ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log) {
+                if(angular.equals({},diagnosticScoring)){
+                    $log.error('EstimatedScoreEventsHandlerSrv: diagnosticScoring was not set !!!');
+                }
+
+                if(angular.equals({},exercisesRawScoring)){
+                    $log.error('EstimatedScoreEventsHandlerSrv: diagnosticScoring was not set !!!');
+                }
+
+                if(!allowedTimeForExercisesMap){
+                    $log.error('EstimatedScoreEventsHandlerSrv: allowedTimeForExercisesMap was not set !!!');
+                }
+
+                var EstimatedScoreEventsHandlerSrv = {};
+
+                var childScope = $rootScope.$new(true);
+
+                function _basePointsGetter(pointsMap, answerStatus, withinAllowTime) {
+                    var key;
+                    if (answerStatus === ExerciseAnswerStatusEnum.unanswered.enum) {
+                        key = 'unanswered';
+                    } else {
+                        key = answerStatus === ExerciseAnswerStatusEnum.correct.enum ? 'correct' : 'wrong';
+                        key += withinAllowTime ? 'Within' : 'After';
+                    }
+                    return pointsMap[key];
+                }
+
+                function _getDiagnosticQuestionPoints(question, result) {
+                    var pointsMap = diagnosticScoring[question.difficulty];
+                    var answerStatus = result.isAnsweredCorrectly ? ExerciseAnswerStatusEnum.correct.enum : ExerciseAnswerStatusEnum.wrong.enum;
+                    return _basePointsGetter(pointsMap, answerStatus, true);
+                }
+
+                function diagnosticSectionCompleteHandler(section, sectionResult) {
+                    var score = 0;
+
+                    var questions = section.questions;
+                    for (var i in sectionResult.questionResults) {
+                        var question = questions[i];
+                        var result = sectionResult.questionResults[i];
+                        score += _getDiagnosticQuestionPoints(question, result);
+                    }
+                    EstimatedScoreSrv.setDiagnosticSectionScore(score, ExerciseTypeEnum.SECTION.enum, section.subjectId, section.id);
+                }
+
+                function _getQuestionRawPoints(exerciseType, result) {
+                    var isAnsweredWithinAllowedTime;
+                    var answerStatus;
+
+                    //answered after allowed time
+                    if (angular.isDefined(result.answerAfterTime)) {
+                        isAnsweredWithinAllowedTime = false;
+                        answerStatus = result.answerAfterTime;
+                    } else {//answered within allowed time
+                        isAnsweredWithinAllowedTime = true;
+                        answerStatus = ExerciseAnswerStatusEnum.convertSimpleAnswerToAnswerStatusEnum(result.isAnsweredCorrectly);
+                    }
+
+                    var rawPointsMap = exercisesRawScoring[exerciseType];
+                    return _basePointsGetter(rawPointsMap, answerStatus, isAnsweredWithinAllowedTime);
+                }
+
+                function calculateRawScore(exerciseType, exerciseResult, allowedTime) {
+                    if(!exercisesRawScoring[exerciseType]){
+                        $log.error('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: '+ exerciseType);
+                    }
+
+                    var questionResults = exerciseResult.questionResults;
+
+                    var rawPoints = {
+                        total: questionResults.length * exercisesRawScoring[exerciseType].correctWithin,
+                        earned: 0
+                    };
+
+                    var allowedTimeForExercise = angular.isDefined(allowedTime) ? allowedTime : allowedTimeForExercisesMap[exerciseType];
+                    if(angular.isUndefined(allowedTimeForExercise)){
+                        $log.error('EstimatedScoreEventsHandlerSrv: allowed time missing for the following exercise type: ' + exerciseType);
+                    }
+                    var withinAllowedTime = allowedTimeForExercise >= exerciseResult.duration;
+                    questionResults.forEach(function (result) {
+                        rawPoints.earned += _getQuestionRawPoints(exerciseType, result, withinAllowedTime);
+                    });
+                    return rawPoints;
+                }
+
+                childScope.$on(exerciseEventsConst.section.FINISH, function (evt, section, sectionResult, exam) {
+                    var isDiagnostic = exam.typeId === ExamTypeEnum.DIAGNOSTIC.enum;
+                    if (isDiagnostic) {
+                        diagnosticSectionCompleteHandler(section, sectionResult);
+                    }
+                    var rawScore = calculateRawScore(ExerciseTypeEnum.SECTION.enum, sectionResult, section.time);
+                    EstimatedScoreSrv.addRawScore(rawScore, ExerciseTypeEnum.SECTION.enum, section.subjectId, section.id, isDiagnostic);
+                });
+
+                function _baseExerciseFinishHandler(exerciseType, evt, exercise, exerciseResult) {
+                    var rawScore = calculateRawScore(exerciseType, exerciseResult);
+                    EstimatedScoreSrv.addRawScore(rawScore, exerciseType, exercise.subjectId, exercise.id);
+                }
+
+                var exercisesHandledByBaseExerciseFinishHandler = [
+                    {
+                        name: exerciseEventsConst.drill.FINISH,
+                        type: ExerciseTypeEnum.DRILL.enum
+                    },
+                    {
+                        name: exerciseEventsConst.tutorial.FINISH,
+                        type: ExerciseTypeEnum.TUTORIAL.enum
+                    },
+                    {
+                        name: exerciseEventsConst.game.FINISH,
+                        type: ExerciseTypeEnum.GAME.enum
+                    }
+                ];
+
+                exercisesHandledByBaseExerciseFinishHandler.forEach(function (evt) {
+                    childScope.$on(evt.name, _baseExerciseFinishHandler.bind(EstimatedScoreEventsHandlerSrv, evt.type));
+                });
+
+                EstimatedScoreEventsHandlerSrv.init = angular.noop;
+
+                return EstimatedScoreEventsHandlerSrv;
+            }
+        ];
+
+    });
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.estimatedScore').service('EstimatedScoreHelperSrv', [
+        'SubjectEnum', 'InfraConfigSrv',
+        function (SubjectEnum, InfraConfigSrv) {
+            var EstimatedScoreHelperSrv = this;
+
+            var StorageSrv = InfraConfigSrv.getStorageService();
+
+            var ESTIMATE_SCORE_PATH = StorageSrv.variables.appUserSpacePath + '/estimatedScore';
+
+            function _SetSubjectInitialVal(obj,initValue){
+                var subjectKeys = Object.keys(SubjectEnum);
+                for(var i in subjectKeys){
+                    var subjectEnum = SubjectEnum[subjectKeys[i]];
+                    obj[subjectEnum.enum] = angular.copy(initValue);
+                }
+            }
+
+            EstimatedScoreHelperSrv.getEstimatedScoreData = function(){
+                if(!EstimatedScoreHelperSrv.getEstimatedScoreData.prom){
+                    EstimatedScoreHelperSrv.getEstimatedScoreData.prom = StorageSrv.get(ESTIMATE_SCORE_PATH).then(function(estimatedScore){
+                        var defaultValues = {
+                            estimatedScores: {},
+                            sectionsRawScores:{},
+                            exercisesRawScores: {},
+                            processedExercises: []
+                        };
+
+                        _SetSubjectInitialVal(defaultValues.estimatedScores,[]);
+                        _SetSubjectInitialVal(defaultValues.sectionsRawScores,[]);
+                        var rawScoreInitialObject = {
+                            total: 0,
+                            earned: 0
+                        };
+                        _SetSubjectInitialVal(defaultValues.exercisesRawScores,rawScoreInitialObject);
+
+                        angular.forEach(defaultValues, function(defaultVal, defaultValKey){
+                            if(angular.isUndefined(estimatedScore[defaultValKey])){
+                                estimatedScore[defaultValKey] = defaultVal ;
+                            }
+
+                            if(estimatedScore[defaultValKey] !== defaultVal && angular.isObject(defaultVal)){
+                                var currVal = estimatedScore[defaultValKey];
+                                angular.forEach(defaultVal, function(innerDefaultVal, innerDefaultValueKey){
+                                    if(angular.isUndefined(currVal[innerDefaultValueKey])){
+                                        currVal[innerDefaultValueKey] = innerDefaultVal;
+                                    }
+                                });
+                            }
+                        });
+
+                        return estimatedScore;
+                    });
+                }
+                return EstimatedScoreHelperSrv.getEstimatedScoreData.prom;
+            };
+
+            EstimatedScoreHelperSrv.setEstimateScoreData = function (newEstimateScoreData){
+                return StorageSrv.set(ESTIMATE_SCORE_PATH,newEstimateScoreData);
+            };
+        }
+    ]);
+})(angular);
+
+'use strict';
+
+(function (angular) {
+    angular.module('znk.infra.estimatedScore').provider('EstimatedScoreSrv',function(){
+
+        var subjectsRawScoreEdges;
+        this.setSubjectsRawScoreEdges = function(_subjectsRawScoreEdges){
+            subjectsRawScoreEdges = _subjectsRawScoreEdges;
+        };
+
+        var rawScoreToScoreFnGetter;
+        this.setRawScoreToRealScoreFn = function(_rawScoreToScoreFnGetter){
+            rawScoreToScoreFnGetter = _rawScoreToScoreFnGetter;
+        };
+
+        var minDiagnosticScore;
+        var maxDiagnosticScore;
+        this.setMinMaxDiagnosticScore = function(minScore, maxScore){
+            minDiagnosticScore = minScore;
+            maxDiagnosticScore = maxScore;
+        };
+
+        this.$get = [
+            'EstimatedScoreHelperSrv', 'ExerciseTypeEnum', '$injector', '$q', 'SubjectEnum', '$log',
+            function (EstimatedScoreHelperSrv, ExerciseTypeEnum, $injector, $q, SubjectEnum, $log) {
+                if(!subjectsRawScoreEdges){
+                    $log.error('EstimatedScoreSrv: subjectsRawScoreEdges was not set');
+                }
+
+                if(!rawScoreToScoreFnGetter){
+                    $log.error('EstimatedScoreSrv: rawScoreToScoreFnGetter was not set !!!');
+                }
+
+                var EstimatedScoreSrv = {};
+
+                function _baseGetter(key, subjectId) {
+                    return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScore) {
+                        if (angular.isUndefined(subjectId)) {
+                            return estimatedScore[key];
+                        }
+                        return estimatedScore[key][subjectId];
+                    });
+                }
+
+                function _calculateNormalizedRawScore(sectionSubjectRawScores, exerciseSubjectRawScore, subjectId) {
+                    var sectionsWithWeightTotalPoints = 0;
+                    var sectionsWithWeightEarnedPoints = 0;
+                    var sectionsTotalPoints = 0;
+                    sectionSubjectRawScores.forEach(function (sectionRawScore, index) {
+                        sectionsTotalPoints += sectionRawScore.total;
+                        var multiBy = +index + 1;
+                        sectionsWithWeightTotalPoints += sectionRawScore.total * multiBy;
+                        sectionsWithWeightEarnedPoints += sectionRawScore.earned * multiBy;
+                    });
+                    var combinedSectionRawScore = {
+                        total: sectionsTotalPoints,
+                        earned: sectionsTotalPoints * sectionsWithWeightEarnedPoints / sectionsWithWeightTotalPoints
+                    };
+                    var rawScore = (2 / 3) * combinedSectionRawScore.earned + (1 / 3) * exerciseSubjectRawScore.earned;
+                    var maxRawScore = (2 / 3) * combinedSectionRawScore.total + (1 / 3) * exerciseSubjectRawScore.total;
+                    var subjectRawScoreEdges = subjectsRawScoreEdges[subjectId];
+                    if(angular.isUndefined(subjectRawScoreEdges)){
+                        $log.error('EstimatedScoreSrv: subjectRawScoreEdges was not defined for the following subject: ' + subjectId);
+                    }
+                    var normalizedScore = subjectRawScoreEdges.max * rawScore / maxRawScore;
+                    return Math.max(normalizedScore, subjectRawScoreEdges.min);//verify result is higher than min
+                }
+
+                function _calculateNewEstimatedScore(subjectId, normalizedRawScore, currEstimatedScore, addLimitToNewEstimatedScore) {
+                    return _getScoreByRawScore(subjectId, normalizedRawScore).then(function (newEstimatedScore) {
+                        if (!currEstimatedScore) {
+                            return newEstimatedScore;
+                        }
+
+                        if (addLimitToNewEstimatedScore && Math.abs(newEstimatedScore - currEstimatedScore) > (newEstimatedScore * 0.05)) {
+                            return currEstimatedScore + (newEstimatedScore - currEstimatedScore > 0 ? 1 : -1) * newEstimatedScore * 0.05;
+                        }
+                        return +newEstimatedScore.toFixed(2);
+                    });
+                }
+
+                function _isExerciseAlreadyProcessed(estimatedScoreData, exerciseType, exerciseId) {
+                    var exerciseKey = exerciseType + '_' + exerciseId;
+                    if (estimatedScoreData.processedExercises.indexOf(exerciseKey) !== -1) {
+                        return true;
+                    }
+                    estimatedScoreData.processedExercises.push(exerciseKey);
+                }
+
+                var _getScoreByRawScore = (function (){
+                    var rawScoreToScoreFn = $injector.invoke(rawScoreToScoreFnGetter);
+                    return function(subjectId, normalizedRawScore){
+                        return $q.when(rawScoreToScoreFn(subjectId,normalizedRawScore));
+                    };
+                })();
+
+                EstimatedScoreSrv.getEstimatedScores = _baseGetter.bind(this, 'estimatedScores');
+
+                EstimatedScoreSrv.getSectionsRawScores = _baseGetter.bind(this, 'sectionsRawScores');
+
+                EstimatedScoreSrv.getExercisesRawScore = _baseGetter.bind(this, 'exercisesRawScores');
+
+                EstimatedScoreSrv.getLatestEstimatedScore = function(subjectId){
+                    return _baseGetter('estimatedScores',subjectId).then(function(allScoresOrScoreForSubject){
+                        if(angular.isDefined(subjectId)){
+                            if(!allScoresOrScoreForSubject.length){
+                                return {};
+                            }
+                            return allScoresOrScoreForSubject[allScoresOrScoreForSubject.length - 1];
+                        }
+                        var latestScoresPerSubject = {};
+                        angular.forEach(allScoresOrScoreForSubject,function(scoresForSubject,subjectId){
+                            latestScoresPerSubject[subjectId] = scoresForSubject.length ? scoresForSubject[scoresForSubject.length -1] : {};
+                        });
+                        return latestScoresPerSubject;
+                    });
+                };
+
+                EstimatedScoreSrv.setDiagnosticSectionScore = function (score, exerciseType, subjectId, exerciseId) {
+                    return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScoreData) {
+                        //score was already set
+                        if (estimatedScoreData.estimatedScores[subjectId].length) {
+                            return $q.reject('Exercise already processed ' + 'type ' + exerciseType + ' id ' + exerciseId);
+                        }
+
+                        score = Math.max(minDiagnosticScore, Math.min(maxDiagnosticScore, score));
+                        estimatedScoreData.estimatedScores[subjectId].push({
+                            exerciseType: exerciseType,
+                            exerciseId: exerciseId,
+                            score: score,
+                            time: Date.now()
+                        });
+                        return EstimatedScoreHelperSrv.setEstimateScoreData(estimatedScoreData).then(function () {
+                            return estimatedScoreData.estimatedScores[subjectId][estimatedScoreData.estimatedScores[subjectId].length - 1];
+                        });
+                    });
+                };
+
+                EstimatedScoreSrv.addRawScore = function (rawScore, exerciseType, subjectId, exerciseId, isDiagnostic) {
+                    return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScoreData) {
+                        if (_isExerciseAlreadyProcessed(estimatedScoreData, exerciseType, exerciseId)) {
+                            return $q.reject('Exercise already processed ' + 'type ' + exerciseType + ' id ' + exerciseId);
+                        }
+                        if (exerciseType === ExerciseTypeEnum.SECTION.enum) {
+                            var sectionSubjectRowScores = estimatedScoreData.sectionsRawScores[subjectId];
+                            var newSectionSubjectRawScore = {
+                                exerciseType: exerciseType,
+                                exerciseId: exerciseId,
+                                time: Date.now()
+                            };
+                            angular.extend(newSectionSubjectRawScore, rawScore);
+                            sectionSubjectRowScores.push(newSectionSubjectRawScore);
+                        } else {
+                            var exerciseSubjectRawScore = estimatedScoreData.exercisesRawScores[subjectId];
+                            exerciseSubjectRawScore.exerciseType = exerciseType;
+                            exerciseSubjectRawScore.exerciseId = exerciseId;
+                            exerciseSubjectRawScore.time = Date.now();
+                            exerciseSubjectRawScore.total += rawScore.total;
+                            exerciseSubjectRawScore.earned += rawScore.earned;
+                        }
+
+                        if (!isDiagnostic) {
+                            var normalizedRawScore = _calculateNormalizedRawScore(estimatedScoreData.sectionsRawScores[subjectId], estimatedScoreData.exercisesRawScores[subjectId], subjectId);
+                            var estimatedScoresForSpecificSubject = estimatedScoreData.estimatedScores[subjectId];
+                            var currEstimatedScore = estimatedScoresForSpecificSubject[estimatedScoresForSpecificSubject.length - 1] || {};
+                            return _calculateNewEstimatedScore(subjectId, normalizedRawScore, currEstimatedScore.score, exerciseType !== ExerciseTypeEnum.SECTION.enum).then(function (newEstimatedScore) {
+                                estimatedScoreData.estimatedScores[subjectId].push({
+                                    exerciseType: exerciseType,
+                                    exerciseId: exerciseId,
+                                    score: newEstimatedScore,
+                                    time: Date.now()
+                                });
+                                return estimatedScoreData;
+                            });
+                        }
+                        return estimatedScoreData;
+                    }).then(function (estimatedScoreData) {
+                        return EstimatedScoreHelperSrv.setEstimateScoreData(estimatedScoreData);
+                    });
+                };
+
+                return EstimatedScoreSrv;
+            }];
+    });
 })(angular);
 
 (function (angular) {
@@ -727,9 +1232,13 @@
                 var totalTimeSpentOnQuestions = exerciseResult.questionResults.reduce(function(previousValue, currResult) {
                     return previousValue + (currResult.timeSpent || 0);
                 },0);
+
+                exerciseResult.duration = totalTimeSpentOnQuestions;
+
                 var numOfAnsweredQuestions = exerciseResult.questionResults.length;
                 exerciseResult.avgTimePerQuestion = numOfAnsweredQuestions ? Math.round(totalTimeSpentOnQuestions / numOfAnsweredQuestions) : 0;
                 var exerciseResultPath = _getExerciseResultPath(exerciseResult.guid);
+
                 dataToSave[exerciseResultPath] = exerciseResult;
 
                 return getExercisesStatusDataProm.then(function(exercisesStatusData){
@@ -1254,7 +1763,7 @@ angular.module('znk.infra.general')
 
                     InfraConfigSrv.getStorageService = function(){
                         if(!storageServiceName){
-                            $log.$debug('InfraConfigSrv: storage service name was not defined');
+                            $log.debug('InfraConfigSrv: storage service name was not defined');
                             return;
                         }
                         return $injector.get(storageServiceName);
@@ -1750,12 +2259,407 @@ angular.module('znk.infra.general')
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.stats').factory('StatsEventsHandlerSrv', [
+        '$rootScope','exerciseEventsConst', 'StatsSrv', 'ExerciseTypeEnum', '$log', 'SubjectEnum', 'QuestionFormatEnum',
+        function ($rootScope, exerciseEventsConst, StatsSrv, ExerciseTypeEnum, $log, SubjectEnum, QuestionFormatEnum) {
+            var StatsEventsHandlerSrv = {};
+
+            var childScope = $rootScope.$new(true);
+
+            function _eventHandler(exerciseType, evt, exercise, results){
+                return StatsSrv.isExerciseStatsRecorded(exerciseType, exercise.id).then(function(isRecorded){
+                    if(isRecorded){
+                        return;
+                    }
+
+                    var newStats  = {};
+
+                    results.questionResults.forEach(function(result,index){
+                        var question = exercise.questions[index];
+                        var categoryId = question.categoryId;
+
+                        //if writing question then only standard format should be recorded
+                        if(question.subjectId === SubjectEnum.WRITING.enum && question.questionFormatId !== QuestionFormatEnum.STANDARD.enum){
+                            return;
+                        }
+
+                        if(isNaN(+categoryId) || categoryId === null){
+                            $log.error('StatsEventsHandlerSrv: _eventHandler: bad category id for the following question: ',question.id,categoryId);
+                            return;
+                        }
+
+                        if(!newStats[categoryId]){
+                            newStats[categoryId] = new StatsSrv.BaseStats();
+                        }
+                        var newStat = newStats[categoryId];
+
+                        newStat.totalQuestions++;
+
+                        newStat.totalTime += result.timeSpent || 0;
+
+                        if(angular.isUndefined(result.userAnswer)){
+                            newStat.unanswered++;
+                        }else if(result.isAnsweredCorrectly){
+                            newStat.correct++;
+                        }else{
+                            newStat.wrong++;
+                        }
+                    });
+
+                    return StatsSrv.updateStats(newStats, exerciseType, exercise.id);
+                });
+            }
+
+            var eventsToRegister = [];
+            var exerciseTypeEnumArr = ExerciseTypeEnum.getEnumArr();
+            exerciseTypeEnumArr.forEach(function(enumObj){
+                var exerciseNameLowerCase = enumObj.val.toLowerCase();
+                eventsToRegister.push({
+                    evt: exerciseEventsConst[exerciseNameLowerCase].FINISH,
+                    exerciseType: enumObj.enum
+                });
+            });
+
+            eventsToRegister.forEach(function(evtConfig){
+                childScope.$on(evtConfig.evt,_eventHandler.bind(StatsEventsHandlerSrv,evtConfig.exerciseType));
+            });
+            //added in order to load the service
+            StatsEventsHandlerSrv.init = angular.noop;
+
+            return StatsEventsHandlerSrv;
+        }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.stats').factory('StatsQuerySrv', [
+        function () {
+            var StatsQuerySrv = {};
+
+            return StatsQuerySrv;
+        }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.stats').provider('StatsSrv', function () {
+        var getCategoryLookup;
+        this.setCategoryLookup = function (_getCategoryLookup) {
+            getCategoryLookup = _getCategoryLookup;
+        };
+
+        this.$get = [
+            'InfraConfigSrv', '$q', 'SubjectEnum', '$log', '$injector',
+            function (InfraConfigSrv, $q, SubjectEnum, $log, $injector) {
+                if (!getCategoryLookup) {
+                    $log.error('StatsSrv: getCategoryLookup was not set !!!!');
+                }
+
+                var StorageSrv = InfraConfigSrv.getStorageService();
+                var STATS_PATH = StorageSrv.variables.appUserSpacePath + '/stats';
+
+                var StatsSrv = {};
+
+                function _getCategoryLookup() {
+                    return $injector.invoke(getCategoryLookup);
+                }
+
+                function BaseStats(id, addInitOffset) {
+                    if (angular.isDefined(id)) {
+                        this.id = +id;
+                    }
+
+                    var totalQuestions;
+                    var correct;
+                    var unanswered;
+                    var wrong;
+                    var totalTime;
+
+
+                    if (addInitOffset) {
+                        totalQuestions = 5;
+                        correct = 1;
+                        unanswered = 0;
+                        wrong = 4;
+                        totalTime = 0;
+                    } else {
+                        totalQuestions = 0;
+                        correct = 0;
+                        unanswered = 0;
+                        wrong = 0;
+                        totalTime = 0;
+                    }
+
+                    this.totalQuestions = totalQuestions;
+                    this.correct = correct;
+                    this.unanswered = unanswered;
+                    this.wrong = wrong;
+                    this.totalTime = totalTime;
+                }
+
+                function getStats() {
+                    var defaults = {
+                        processedExercises:{}
+                    };
+                    return StorageSrv.get(STATS_PATH, defaults);
+                }
+
+                function setStats(newStats) {
+                    return StorageSrv.set(STATS_PATH, newStats);
+                }
+
+                //function _baseStatsGetter(name) {
+                //    return getStats().then(function (dailyPersonalization) {
+                //        return dailyPersonalization[name + 'Stats'];
+                //    });
+                //}
+                //
+                //function _getCategoryWeakness(category) {
+                //    if (!category.totalQuestions) {
+                //        return -Infinity;
+                //    }
+                //    return (category.totalQuestions - category.correct) / (category.totalQuestions);
+                //}
+                //
+                //function _getSpecificCategoryWeakness(specificCategory) {
+                //    if (!specificCategory.totalQuestions) {
+                //        return -Infinity;
+                //    }
+                //    return (specificCategory.totalQuestions - specificCategory.correct) / (specificCategory.totalQuestions);
+                //}
+
+                function _baseStatsUpdater(currStat, newStat) {
+                    currStat.totalQuestions += newStat.totalQuestions;
+                    currStat.correct += newStat.correct;
+                    currStat.unanswered += newStat.unanswered;
+                    currStat.wrong += newStat.wrong;
+                    currStat.totalTime += newStat.totalTime;
+                }
+
+                function _getParentCategoryId(lookUp, categoryId) {
+                    return lookUp[categoryId] ? lookUp[categoryId].parentId : lookUp[categoryId];
+                }
+
+                //function _weakestSpecificCategory(specificCategoriesForGeneralCategory, allSpecificCategory, specificCategoryDataArr, subjectId, generalCategoryId) {
+                //    specificCategoriesForGeneralCategory.forEach(function (specificCategoryId) {
+                //        var optionalSpecificCategoryData = allSpecificCategory[specificCategoryId];
+                //        if (!optionalSpecificCategoryData) {
+                //            optionalSpecificCategoryData = new BaseStats(specificCategoryId, subjectId, generalCategoryId);
+                //        }
+                //        specificCategoryDataArr.push(optionalSpecificCategoryData);
+                //    });
+                //}
+                //
+                //function _weakestGeneralCategory(gcForSubject, allGeneralCategory, generalCategoryDataArr, subjectId) {
+                //    gcForSubject.forEach(function (generalCategoryId) {
+                //        var optionalGeneralCategoryData = allGeneralCategory[generalCategoryId];
+                //        if (!optionalGeneralCategoryData) {
+                //            optionalGeneralCategoryData = new BaseStats(generalCategoryId, subjectId);
+                //        }
+                //        generalCategoryDataArr.push(optionalGeneralCategoryData);
+                //    });
+                //}
+
+                function _getLevelKey(level) {
+                    return 'level' + level + 'Categories';
+                }
+
+                function _getCategoryKey(categoryId){
+                    return 'id_' + categoryId;
+                }
+
+                function _getProcessedExerciseKey(exerciseType, exerciseId){
+                    return exerciseType + '_' + exerciseId;
+                }
+
+                StatsSrv.getStats = getStats;
+
+                StatsSrv.BaseStats = BaseStats;
+
+                StatsSrv.updateStats = function (newStats, exerciseType, exerciseId) {
+                    var getCategoryLookupProm = _getCategoryLookup();
+                    var getStatsProm = getStats();
+                    var processedExerciseKey = _getProcessedExerciseKey(exerciseType, exerciseId);
+                    return $q.all([getCategoryLookupProm, getStatsProm]).then(function (res) {
+                        var categoryLookUp = res[0];
+                        var stats = res[1];
+
+                        var isExerciseRecorded = stats.processedExercises[processedExerciseKey];
+                        if(isExerciseRecorded){
+                            return;
+                        }
+
+                        angular.forEach(newStats, function (newStat, categoryId) {
+                            var categoriesToUpdate = [];
+                            var categoryIdToAdd = +categoryId;
+                            while (categoryIdToAdd !== null && angular.isDefined(categoryIdToAdd)) {
+                                categoriesToUpdate.unshift(categoryIdToAdd);
+                                categoryIdToAdd = _getParentCategoryId(categoryLookUp, categoryIdToAdd);
+                            }
+
+                            categoriesToUpdate.forEach(function (categoryId, index) {
+                                var level = index + 1;
+                                var levelKey = _getLevelKey(level);
+                                var levelStats = stats[levelKey];
+                                if (!levelStats) {
+                                    levelStats = {};
+
+                                    stats[levelKey] = levelStats;
+                                }
+
+                                var categoryKey = _getCategoryKey(categoryId);
+                                var categoryStats = levelStats[categoryKey];
+                                if(!categoryStats){
+                                    categoryStats = new BaseStats(categoryId,true);
+
+                                    var parentsIds = categoriesToUpdate.slice(0,index);
+                                    if(parentsIds.length){
+                                        parentsIds.reverse();//parent ids order should be from the bottom to the top
+                                        categoryStats.parentsIds = parentsIds;
+                                    }
+
+                                    levelStats[categoryKey] = categoryStats;
+                                }
+
+                                _baseStatsUpdater(categoryStats,newStat);
+                            });
+                        });
+                        stats.processedExercises[processedExerciseKey] = true;
+                        return setStats(stats);
+                    });
+
+                };
+
+                StatsSrv.isExerciseStatsRecorded = function(exerciseType, exerciseId){
+                    return StatsSrv.getStats().then(function(stats){
+                        var processedExerciseKey = _getProcessedExerciseKey(exerciseType, exerciseId);
+                        return !!stats.processedExercises[processedExerciseKey];
+                    });
+                };
+                //StatsSrv.getGeneralCategoryStats = function () {
+                //    return _baseStatsGetter('generalCategory');
+                //};
+
+                //StatsSrv.getSpecificCategoryStats = function () {
+                //    return _baseStatsGetter('specificCategory');
+                //};
+
+                //StatsSrv.getWeakestGeneralCategory = function (optionalGeneralCategories) {
+                //    return StatsSrv.getGeneralCategoryStats().then(function (allGeneralCategoryStats) {
+                //        var optionalGeneralCategoryDataArr = [];
+                //        for (var subjectId in optionalGeneralCategories) {
+                //            var optionalGeneralCategoriesForSubject = optionalGeneralCategories[subjectId];
+                //            _weakestGeneralCategory(optionalGeneralCategoriesForSubject, allGeneralCategoryStats, optionalGeneralCategoryDataArr, subjectId);
+                //        }
+                //        optionalGeneralCategoryDataArr.sort(function (generalCategory1, generalCategory2) {
+                //            return _getCategoryWeakness(generalCategory2) - _getCategoryWeakness(generalCategory1);
+                //        });
+                //        $log.debug('weakest general categories array', JSON.stringify(optionalGeneralCategoryDataArr));
+                //        return optionalGeneralCategoryDataArr[0];
+                //    });
+                //};
+
+                //StatsSrv.getWeakestSpecificCategory = function (optionalSpecificCategories) {
+                //    $log.debug('calculating weakest specific category for exercise type ', JSON.stringify(optionalSpecificCategories));
+                //    return StatsSrv.getSpecificCategoryStats().then(function (allSpecificCategoryStats) {
+                //        var optionalSpecificCategoryDataArr = [];
+                //        for (var subjectId in optionalSpecificCategories) {
+                //            var optionalSpecificCategoriesForSubject = optionalSpecificCategories[subjectId];
+                //            for (var generalCategoryId in optionalSpecificCategoriesForSubject) {
+                //                var optionalSpecificCategoriesForGeneralCategory = optionalSpecificCategoriesForSubject[generalCategoryId];
+                //                _weakestSpecificCategory(optionalSpecificCategoriesForGeneralCategory, allSpecificCategoryStats, optionalSpecificCategoryDataArr, subjectId, generalCategoryId);
+                //            }
+                //        }
+                //        optionalSpecificCategoryDataArr.sort(function (specificCategory1, specificCategory2) {
+                //            return _getSpecificCategoryWeakness(specificCategory2) - _getSpecificCategoryWeakness(specificCategory1);
+                //        });
+                //        $log.debug('weakest specific categories array', JSON.stringify(optionalSpecificCategoryDataArr));
+                //        return optionalSpecificCategoryDataArr[0];
+                //    });
+                //};
+
+                StatsSrv.getPerformanceData = function () {
+                    return StatsSrv.getStats().then(function (stats) {
+                        var subjectsStats = stats.subjectStats;
+                        var generalCategoriesStats = stats.generalCategoryStats;
+
+                        var performanceData = {};
+
+                        var generalCategoriesBySubject = {};
+                        var generalCategoryStatsKeys = Object.keys(generalCategoriesStats);
+                        var weakestGeneralCategoryBySubject = {};
+                        generalCategoryStatsKeys.forEach(function (key) {
+                            var generalCategoryStats = generalCategoriesStats[key];
+
+                            if (!generalCategoryStats) {
+                                $log.error('StatsSrv: getPerformanceData: null general category stat was received for the following key: ', key);
+                                return;
+                            }
+
+                            if (!generalCategoriesBySubject[generalCategoryStats.subjectId]) {
+                                generalCategoriesBySubject[generalCategoryStats.subjectId] = [];
+                            }
+                            var processedGeneralCategory = {
+                                id: generalCategoryStats.id,
+                                levelProgress: generalCategoryStats.totalQuestions ? Math.round(generalCategoryStats.correct / generalCategoryStats.totalQuestions * 100) : 0,
+                                avgTime: generalCategoryStats.totalTime ? Math.round(generalCategoryStats.totalTime / generalCategoryStats.totalQuestions / 1000) : 0,
+                                answeredQuestions: generalCategoryStats.totalQuestions
+                            };
+                            generalCategoriesBySubject[generalCategoryStats.subjectId].push(processedGeneralCategory);
+
+                            var weakestGeneralCategoryForSubject = weakestGeneralCategoryBySubject[generalCategoryStats.subjectId];
+                            if (!weakestGeneralCategoryForSubject || (weakestGeneralCategoryForSubject.successRate > processedGeneralCategory.levelProgress)) {
+                                weakestGeneralCategoryBySubject[generalCategoryStats.subjectId] = {
+                                    id: processedGeneralCategory.id,
+                                    successRate: processedGeneralCategory.levelProgress
+                                };
+                            }
+                        });
+
+                        SubjectEnum.getEnumArr().forEach(function (subject) {
+                            var subjectId = subject.enum;
+
+                            var performanceDataForSubject = performanceData[subjectId] = {};
+
+                            performanceDataForSubject.category = generalCategoriesBySubject[subjectId];
+                            performanceDataForSubject.weakestCategory = weakestGeneralCategoryBySubject[subjectId];
+
+                            var subjectStats = subjectsStats[subjectId];
+                            if (subjectStats) {
+                                performanceDataForSubject.overall = {
+                                    value: subjectStats.totalQuestions ? Math.round(subjectStats.correct / subjectStats.totalQuestions * 100) : 0,
+                                    avgTime: subjectStats.totalTime ? Math.round(subjectStats.totalTime / subjectStats.totalQuestions / 1000) : 0
+                                };
+                            }
+
+                        });
+
+                        return performanceData;
+                    });
+                };
+
+                return StatsSrv;
+            }
+        ];
+    });
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.storage').factory('storageFirebaseAdapter', [
         '$log', '$q', 'StorageSrv',
         function ($log, $q, StorageSrv) {
             function processValuesToSet(source){
                 if(angular.isArray(source)){
-                    source.forEach(function(item){
+                    source.forEach(function(item, index){
+                        if(angular.isUndefined(item)){
+                            source[index] = null;
+                        }
                         processValuesToSet(item);
                     });
                     return;
@@ -2107,6 +3011,20 @@ angular.module('znk.infra.general')
                         dest[key] = val;
                     }
                 });
+            };
+
+            //array utility srv
+            UtilitySrv.array = {};
+
+            UtilitySrv.array.convertToMap = function(arr, keyProp){
+                if(angular.isUndefined(keyProp)){
+                    keyProp = 'id';
+                }
+                var map = {};
+                arr.forEach(function(item){
+                    map[item[keyProp]] = item;
+                });
+                return map;
             };
 
             return UtilitySrv;
@@ -3523,11 +4441,11 @@ angular.module('znk.infra.general')
 
                             scope.vm.questionAnswered = function () {
                                 if (scope.settings.viewMode !== ZnkExerciseViewModeEnum.REVIEW.enum) {
-                                    updateTimeSpentOnQuestion();
                                     var currQuestion = getCurrentQuestion();
                                     var userAnswer = currQuestion.__questionStatus.userAnswer;
-
                                     currQuestion.__questionStatus.isAnsweredCorrectly = ZnkExerciseUtilitySrv.isAnswerCorrect(currQuestion,userAnswer);
+
+                                    updateTimeSpentOnQuestion();
                                 }
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
                                 //skip 1 digest cycle before triggering question answered
@@ -4353,6 +5271,42 @@ angular.module('znk.infra.general')
     ]);
 })(angular);
 
+(function (angular) {
+    'use strict';
+
+    var exerciseEventsConst = {};
+
+    exerciseEventsConst.tutorial = {
+        FINISH: 'tutorial:finish'
+    };
+
+    exerciseEventsConst.drill = {
+        FINISH: 'drill:finish'
+    };
+
+    exerciseEventsConst.practice = {
+        FINISH: 'practice:finish'
+    };
+
+    exerciseEventsConst.game = {
+        FINISH: 'game:finish'
+    };
+
+    exerciseEventsConst.section = {
+        FINISH: 'section:finish'
+    };
+
+    exerciseEventsConst.daily = {
+        STATUS_CHANGED: 'daily:status'
+    };
+
+    exerciseEventsConst.exam = {
+        COMPLETE: 'exam:complete'
+    };
+
+    angular.module('znk.infra.znkExercise').constant('exerciseEventsConst', exerciseEventsConst);
+})(angular);
+
 /**
  * attrs:
  *  mobile-temp=
@@ -4389,6 +5343,41 @@ angular.module('znk.infra.general')
     ]);
 })(angular);
 
+
+(function (angular) {
+    'use strict';
+
+    var exerciseAnswerStatusConst = {
+        unanswered: 0,
+        correct: 1,
+        wrong: 2
+    };
+    angular.module('znk.infra.znkExercise').constant('exerciseAnswerStatusConst', exerciseAnswerStatusConst);
+
+    angular.module('znk.infra.znkExercise').factory('ExerciseAnswerStatusEnum', [
+        'EnumSrv',
+        function (EnumSrv) {
+            var ExerciseAnswerStatusEnum = new EnumSrv.BaseEnum([
+                ['unanswered', exerciseAnswerStatusConst.unanswered, 'unanswered'],
+                ['correct', exerciseAnswerStatusConst.correct, 'correct'],
+                ['wrong', exerciseAnswerStatusConst.wrong, 'wrong']
+            ]);
+
+            ExerciseAnswerStatusEnum.convertSimpleAnswerToAnswerStatusEnum = function(answer) {
+                switch (answer) {
+                    case true:
+                        return ExerciseAnswerStatusEnum.correct.enum;
+                    case false:
+                        return ExerciseAnswerStatusEnum.wrong.enum;
+                    default :
+                        return ExerciseAnswerStatusEnum.unanswered.enum;
+                }
+            };
+
+            return ExerciseAnswerStatusEnum;
+        }
+    ]);
+})(angular);
 
 (function (angular) {
     'use strict';
