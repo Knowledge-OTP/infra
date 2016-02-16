@@ -1423,15 +1423,16 @@
             return {
                 link: {
                     pre: function (scope, element, attrs) {
-                        var watchDestroyer = scope.$watch(attrs.subjectIdToAttrDrv,function(subjectId){
-                            var contextAttr = attrs.contextAttr ? $interpolate(attrs.contextAttr)(scope) : undefined;
-                            var prefix = attrs.prefix ? $interpolate(attrs.prefix )(scope) : undefined;
-                            var suffix = attrs.suffix ? $interpolate(attrs.suffix )(scope) : undefined;
+                        var addedClassesArr = [];
 
-                            if(angular.isUndefined(subjectId)){
+                        scope.$watch(attrs.subjectIdToAttrDrv, function (subjectId) {
+                            var contextAttr = attrs.contextAttr ? $interpolate(attrs.contextAttr)(scope) : undefined;
+                            var prefix = attrs.prefix ? $interpolate(attrs.prefix)(scope) : undefined;
+                            var suffix = attrs.suffix ? $interpolate(attrs.suffix)(scope) : undefined;
+
+                            if (angular.isUndefined(subjectId)) {
                                 return;
                             }
-                            watchDestroyer();
 
                             var attrsArray;
                             if (contextAttr) {
@@ -1447,26 +1448,41 @@
                             var subjectEnumMap = SubjectEnum.getEnumMap();
                             var subjectNameToAdd = subjectEnumMap[subjectId];
 
-                            angular.forEach(attrsArray, function(value, key){
+                            angular.forEach(attrsArray, function (value, key) {
                                 var attrVal = subjectNameToAdd;
 
-                                if(attrPrefixes.length){
-                                    attrVal = (attrPrefixes[key] || attrPrefixes[0])  + '-' + attrVal;
+                                if (attrPrefixes.length) {
+                                    var prefix = attrPrefixes[key] || attrPrefixes[0];
+                                    if(prefix !== ''){
+                                        attrVal = prefix + '-' + attrVal;
+                                    }
                                 }
 
-                                if(attrSuffixes.length){
-                                    attrVal += '-' + (attrSuffixes[key] || attrSuffixes[0]);
+                                if (attrSuffixes.length) {
+                                    var suffix = attrSuffixes[key] || attrSuffixes[0];
+                                    if(suffix !== ''){
+                                        attrVal += '-' + suffix;
+                                    }
                                 }
 
-                                attrVal = attrVal.replace(/\s+/g,'');   // regex to clear spaces
-                                value = value.replace(/\s+/g,'');   // regex to clear spaces
+                                attrVal = attrVal.replace(/\s+/g, '');   // regex to clear spaces
+                                value = value.replace(/\s+/g, '');   // regex to clear spaces
 
                                 if (value === 'class') {
-                                    element.addClass(attrVal);
-                                } else {
-                                    element.attr(value, attrVal);
+                                    if (!element.hasClass(attrVal)) {
+                                        addedClassesArr.forEach(function (clsToRemove) {
+                                            if(clsToRemove.indexOf(subjectNameToAdd) === -1){
+                                                element.removeClass(clsToRemove);
+                                            }
+                                        });
+                                        addedClassesArr.push(attrVal);
+                                        element.addClass(attrVal);
+                                    }
+                                    } else {
+                                        element.attr(value, attrVal);
+                                    }
                                 }
-                            });
+                                );
 
                         });
                     }
