@@ -1677,7 +1677,7 @@
  *      videoNotAvail:
  *         the message to display when video is not available
  *         example : video-not-avail="<div class=&quot;video_not_available&quot; ></div>">
- *         vidPoster:
+ *      vidPoster:
  *         the poster for the video.  we dynamically check it . that is why we don't use the
  *         default poster attribute
  *      defaultPoster:
