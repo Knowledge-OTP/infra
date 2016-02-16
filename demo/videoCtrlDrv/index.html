@@ -17,9 +17,8 @@
 	                width       : 454px;
 	                height      : 254px;
 	                padding-top : 50px;
-	                visibility: hidden;
-                }
 
+                }
                 .video_not_available
                 {
 	                margin-top : 50px;
@@ -30,11 +29,12 @@
 
 </style>
 
-
- <video controls video-ctrl-drv = ""   preload="metadata" poster="" default-poster="http://corrupt-system.de/assets/media/sintel/sintel-trailer.jpg" video-not-avail="<div class='video_not_available' ></div>">
-	 <source src = "http://d1qqqwawt7o27r.cloudfront.net/videos/questions/1768.mp4" type = "video/mp4"/>
+<div ng-controller="videoCtrl">
+ <video controls ng-src="{{videoUrl}}" video-ctrl-drv = ""   preload="metadata" vid-poster="{{ poster }}" default-poster="{{ defaultPoster }}"
+		video-not-avail="{{ vidNotAvail }}">
+	 <source type = "video/mp4"/>
 </video>
-
+</div>
 
 <script src = "angular/angular.js"></script>
 
@@ -48,4 +48,4 @@
 <script src = "components/general/videoCtrlDrv.js"></script>
 <script src = "demoApp.js"></script>
 </body>
-</html>git
+</html>
