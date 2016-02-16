@@ -5,28 +5,43 @@ describe('testing service "HintSrv":', function () {
 
     var hintSettings = {
         HINT_NAME: 'demoHint',
-        hintAction: function(){
-            return hintSettings.hintActionProxy.apply(this,arguments);
+        hintActionGetter: function(){
+            return function(){
+                return hintSettings.hintAction.apply(this,arguments);
+            }
         },
-        hintActionProxy: function(){
+        hintAction: function(){
             return true;
         }
     };
 
     var hintSettings_2 = {
         HINT_NAME: 'demoHint_2',
-        hintAction: angular.noop,
-        counter: 0,
-        triggerFn: function(hintVal){
-            hintSettings_2.counter++;
-            return hintSettings_2.counter <=5;
+        hintActionGetter: function(testStorage){
+            return hintSettings_2.hintAction.bind(hintSettings_2, testStorage)
+        },
+        triggerFnGetter: function($timeout){
+            return function(hintVal){
+                return !hintVal || hintVal.value <5;
+            }
+        },
+        hintAction: function(testStorage){
+            var counterPath = 'counter';
+            return testStorage.get(counterPath).then(function(counter){
+                if(isNaN(counter)){
+                    counter = 0;
+                }
+                counter++;
+                testStorage.set(counterPath, counter);
+                return counter;
+            });
         }
     };
 
     beforeEach(module(function(HintSrvProvider){
-        HintSrvProvider.registerHint(hintSettings.HINT_NAME, hintSettings.hintAction);
+         HintSrvProvider.registerHint(hintSettings.HINT_NAME, hintSettings.hintActionGetter);
 
-        HintSrvProvider.registerHint(hintSettings_2.HINT_NAME, hintSettings_2.hintAction, hintSettings_2.triggerFn);
+        HintSrvProvider.registerHint(hintSettings_2.HINT_NAME, hintSettings_2.hintActionGetter, hintSettings_2.triggerFnGetter);
     }));
 
     var syncHintSrvActions;
@@ -48,14 +63,14 @@ describe('testing service "HintSrv":', function () {
         }]));
 
     it('when registering hint then it should be able to trigger it', function () {
-        spyOn(hintSettings,'hintActionProxy');
+        spyOn(hintSettings,'hintAction');
         syncHintSrvActions.triggerHint(hintSettings.HINT_NAME);
-        expect(hintSettings.hintActionProxy).toHaveBeenCalled();
+        expect(hintSettings.hintAction).toHaveBeenCalled();
     });
 
     it('when triggering hint then it should be recorded in hint status object in db', function () {
         var HINT_VALUE = 'hint_value';
-        hintSettings.hintActionProxy = function(){
+        hintSettings.hintAction = function(){
             return $q.when(HINT_VALUE)
         };
 
@@ -81,13 +96,36 @@ describe('testing service "HintSrv":', function () {
             }]
         };
 
-        spyOn(hintSettings,'hintActionProxy');
+        spyOn(hintSettings,'hintAction');
         syncHintSrvActions.triggerHint(hintSettings.HINT_NAME);
-        expect(hintSettings.hintActionProxy).not.toHaveBeenCalled();
+        expect(hintSettings.hintAction).not.toHaveBeenCalled();
+    });
+
+    it('when triggering hint then it action function should be triggered with hint status', function () {
+        spyOn(hintSettings_2,'hintAction').and.callThrough();
+        for(var i=0; i<5; i++){
+            syncHintSrvActions.triggerHint(hintSettings_2.HINT_NAME);
+        }
+        expect(hintSettings_2.hintAction).toHaveBeenCalled();
     });
 
     it('given determineWhetherToTriggerFn was defined and hint status is true when triggering hint then it should triggered', function () {
-        for(var i=0; i<10; i++){
+        var expectedVal = {
+            value: false,
+            date: testStorage.variables.currTimeStamp
+        };
+        testStorage.db.users.$$uid.hint.hintsStatus[hintSettings.HINT_NAME] = {
+            name: hintSettings.HINT_NAME,
+            history: [expectedVal]
+        };
+        spyOn(hintSettings,'hintAction');
+
+        syncHintSrvActions.triggerHint(hintSettings.HINT_NAME);
+        expect(hintSettings.hintAction).toHaveBeenCalledWith(expectedVal);
+    });
+
+    it('when triggering hints then it trigger and history should be recorded', function () {
+        for(var i=0; i<5; i++){
             syncHintSrvActions.triggerHint(hintSettings_2.HINT_NAME);
         }
         var historyItemCount = testStorage.db.users.$$uid.hint.hintsStatus[hintSettings_2.HINT_NAME].history.length;

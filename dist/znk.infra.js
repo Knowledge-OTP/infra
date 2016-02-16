@@ -1667,41 +1667,50 @@
     'use strict';
 
     angular.module('znk.infra.hint').provider('HintSrv',function(){
-
         var registeredHints = {};
-        function defaultDetermineWhetherToTriggerFn(hintVal){
-            return !(angular.isDefined(hintVal) && hintVal.value);
-        }
 
-        this.registerHint = function (hintName, hintAction, determineWhetherToTriggerFn) {
+        this.registerHint = function (hintName, hintAction, determineWhetherToTriggerFnGetter) {
             if(!registeredHints[hintName]){
                 registeredHints[hintName] = {
                     name: hintName,
                     action: hintAction,
-                    determineWhetherToTrigger: determineWhetherToTriggerFn || defaultDetermineWhetherToTriggerFn
+                    determineWhetherToTriggerGetter: determineWhetherToTriggerFnGetter
                 };
             }
         };
 
         this.$get = [
-            'InfraConfigSrv', '$q', '$log',
-            function (InfraConfigSrv, $q, $log) {
+            'InfraConfigSrv', '$q', '$log', '$injector',
+            function (InfraConfigSrv, $q, $log, $injector) {
                 var HintSrv = {};
                 var StorageSrv = InfraConfigSrv.getStorageService();
                 var hintPath = StorageSrv.variables.appUserSpacePath + '/hint';
 
+                function defaultDetermineWhetherToTriggerFn(hintVal){
+                    return angular.isUndefined(hintVal) || !hintVal.value;
+                }
+
                 HintSrv.triggerHint = function (hintName) {
                     var hintData = registeredHints[hintName];
-                    if(!hintData){
+                        if(!hintData){
                         $log.error('HintSrv: the following hint is not registered ' + hintName);
                     }
                     return getHints().then(function(hints){
                         var hintsStatus = hints.hintsStatus;
                         var hintLastVal = getHintLastValue(hintsStatus[hintName]);
-                        return $q.when(hintData.determineWhetherToTrigger(hintLastVal)).then(function(shouldBeTriggered){
-                            if(shouldBeTriggered){
-                                return $q.when(hintData.action()).then(function(result){
 
+                        var determineWhetherToTrigger;
+                        if(hintData.determineWhetherToTriggerGetter){
+                            determineWhetherToTrigger = $injector.invoke(hintData.determineWhetherToTriggerGetter);
+                        } else {
+                            determineWhetherToTrigger = defaultDetermineWhetherToTriggerFn;
+                        }
+
+                        return $q.when(determineWhetherToTrigger(hintLastVal)).then(function(shouldBeTriggered){
+                            if(shouldBeTriggered){
+                                var hintAction = $injector.invoke(hintData.action);
+
+                                return $q.when(hintAction(hintLastVal)).then(function(result){
                                     if(!hintsStatus[hintName]){
                                         hintsStatus[hintName] = {
                                             name: hintName,
