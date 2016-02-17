@@ -128,7 +128,16 @@ describe('testing service "HintSrv":', function () {
         for(var i=0; i<5; i++){
             syncHintSrvActions.triggerHint(hintSettings_2.HINT_NAME);
         }
-        var historyItemCount = testStorage.db.users.$$uid.hint.hintsStatus[hintSettings_2.HINT_NAME].history.length;
-        expect(historyItemCount).toBe(5);
+
+        var hintHistory = testStorage.db.users.$$uid.hint.hintsStatus[hintSettings_2.HINT_NAME].history;
+        var expectedResults = [
+            {"value": 1, "date": "%currTimeStamp%"},
+            {"value": 2, "date": "%currTimeStamp%"},
+            {"value": 3, "date": "%currTimeStamp%"},
+            {"value": 4, "date": "%currTimeStamp%"},
+            {"value": 5, "date": "%currTimeStamp%"}
+        ];
+
+        expect(hintHistory).toEqual(expectedResults);
     });
 });

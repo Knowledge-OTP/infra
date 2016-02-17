@@ -4,6 +4,8 @@
     angular.module('znk.infra.hint').provider('HintSrv',function(){
         var registeredHints = {};
 
+        this.hintsMap = {};
+
         this.registerHint = function (hintName, hintAction, determineWhetherToTriggerFnGetter) {
             if(!registeredHints[hintName]){
                 registeredHints[hintName] = {
@@ -12,6 +14,7 @@
                     determineWhetherToTriggerGetter: determineWhetherToTriggerFnGetter
                 };
             }
+            this.hintsMap[hintName] = hintName;
         };
 
         this.$get = [
@@ -20,6 +23,12 @@
                 var HintSrv = {};
                 var StorageSrv = InfraConfigSrv.getStorageService();
                 var hintPath = StorageSrv.variables.appUserSpacePath + '/hint';
+                var defaultHints = {
+                    hintsStatus:{
+
+                    }
+                };
+
 
                 function defaultDetermineWhetherToTriggerFn(hintVal){
                     return angular.isUndefined(hintVal) || !hintVal.value;
@@ -68,19 +77,7 @@
                 };
 
                 function getHints(){
-                    return StorageSrv.get(hintPath).then(function (hint) {
-                        var defaultValues = {
-                            hintsStatus:{
-
-                            }
-                        };
-
-                        for(var prop in defaultValues){
-                            if(angular.isUndefined(hint[prop])){
-                                hint[prop] = defaultValues[prop];
-                            }
-                        }
-
+                    return StorageSrv.get(hintPath, defaultHints).then(function (hint) {
                         return hint;
                     });
                 }
