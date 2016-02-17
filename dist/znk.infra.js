@@ -147,21 +147,7 @@
 
 (function (angular) {
     'use strict';
-    var svgMap = {
-        drill: 'components/znkTimeline/svg/icons/timeline-drills-icon.svg' ,
-        game: 'components/znkTimeline/svg/icons/timeline-mini-challenge-icon.svg' ,
-        tutorial: 'components/znkTimeline/svg/icons/timeline-tips-tricks-icon.svg' ,
-        section: 'components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg',
-        practice: 'components/znkTimeline/svg/icons/timeline-test-icon.svg'
-    };
-    angular.module('znk.infra.znkTimeline', ['znk.infra.svgIcon', 'znk.infra.enum'])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
-                SvgIconSrvProvider.registerSvgSources(svgMap);
-            }])
-        .constant('timelineImages', svgMap);
-
+    angular.module('znk.infra.znkTimeline', ['znk.infra.svgIcon', 'znk.infra.enum']);
 })(angular);
 
 'use strict';
@@ -5423,7 +5409,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkTimeline').directive('znkTimeline',['$window', '$templateCache', function($window, $templateCache) {
+    angular.module('znk.infra.znkTimeline').directive('znkTimeline',['$window', '$templateCache', 'ExerciseTypeEnum', function($window, $templateCache, ExerciseTypeEnum) {
         var directive = {
             restrict: 'A',
             scope: {
@@ -5623,7 +5609,7 @@
                         var locationImgY = data.lineTo.y - subLocation;
                         var locationImgX = data.lineTo.x - subLocation;
 
-                        if(dataObj.lastLine.length === 2 && data.exerciseType === 4) {
+                        if(dataObj.lastLine.length === 2 && data.exerciseType === ExerciseTypeEnum.SECTION.enum) {
                             src = settings.images[data.exerciseType].icon;
                             img = (imgBig) ? img : 15;
                             if(angular.isDefined(settings.isMobile) && !settings.isMobile) {
@@ -5631,7 +5617,7 @@
                             }
                             locationImgY  = locationImgY + 2;
                             locationImgX  = locationImgX + 2;
-                        } else if(dataObj.lastLine.length > 2 && data.exerciseType === 4) {
+                        } else if(dataObj.lastLine.length > 2 && data.exerciseType === ExerciseTypeEnum.SECTION.enum) {
                             src = settings.images[2].icon;
                         } else {
                             src = settings.images[data.exerciseType].icon;
@@ -5659,21 +5645,34 @@
 
 (function (angular) {
     'use strict';
-    angular.module('znk.infra.znkTimeline').service('TimelineSrv',['ExerciseTypeEnum', 'timelineImages', function(ExerciseTypeEnum, timelineImages) {
+
+    var svgMap = {
+        drill: 'components/znkTimeline/svg/icons/timeline-drills-icon.svg' ,
+        game: 'components/znkTimeline/svg/icons/timeline-mini-challenge-icon.svg' ,
+        tutorial: 'components/znkTimeline/svg/icons/timeline-tips-tricks-icon.svg' ,
+        section: 'components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg',
+        practice: 'components/znkTimeline/svg/icons/timeline-test-icon.svg'
+    };
+
+    angular.module('znk.infra.znkTimeline').service('TimelineSrv',['ExerciseTypeEnum', function(ExerciseTypeEnum) {
 
         this.getImages = function() {
             var imgObj = {};
 
-            imgObj[ExerciseTypeEnum.TUTORIAL.enum] = {icon: timelineImages.tutorial};
-            imgObj[ExerciseTypeEnum.PRACTICE.enum] = {icon: timelineImages.practice};
-            imgObj[ExerciseTypeEnum.GAME.enum] = {icon: timelineImages.game};
-            imgObj[ExerciseTypeEnum.SECTION.enum] = {icon: timelineImages.section};
-            imgObj[ExerciseTypeEnum.DRILL.enum] = {icon: timelineImages.drill};
+            imgObj[ExerciseTypeEnum.TUTORIAL.enum] = {icon: svgMap.tutorial};
+            imgObj[ExerciseTypeEnum.PRACTICE.enum] = {icon: svgMap.practice};
+            imgObj[ExerciseTypeEnum.GAME.enum] = {icon: svgMap.game};
+            imgObj[ExerciseTypeEnum.SECTION.enum] = {icon: svgMap.section};
+            imgObj[ExerciseTypeEnum.DRILL.enum] = {icon: svgMap.drill};
 
             return imgObj;
         };
 
-    }]);
+    }]).config([
+        'SvgIconSrvProvider',
+        function (SvgIconSrvProvider) {
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+     }]);
 })(angular);
 
 
@@ -5977,12 +5976,10 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "</svg>\n" +
     "");
   $templateCache.put("components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg",
-    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-    "<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n" +
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
-    "	 viewBox=\"-145 277 60 60\" style=\"enable-background:new -145 277 60 60;\" xml:space=\"preserve\">\n" +
+    "	 viewBox=\"-145 277 60 60\" style=\"enable-background:new -145 277 60 60;\" xml:space=\"preserve\" class=\"timeline-diagnostic-test-icon\">\n" +
     "	 <style type=\"text/css\">\n" +
-    "     	.st0{fill:#fff;}\n" +
+    "     	.timeline-diagnostic-test-icon .st0{fill:#fff;}\n" +
     "     </style>\n" +
     "<g id=\"kUxrE9.tif\">\n" +
     "	<g>\n" +
@@ -5997,14 +5994,12 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "</svg>\n" +
     "");
   $templateCache.put("components/znkTimeline/svg/icons/timeline-drills-icon.svg",
-    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-    "<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n" +
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
-    "	 viewBox=\"-145 277 60 60\" style=\"enable-background:new -145 277 60 60;\" xml:space=\"preserve\">\n" +
+    "	 viewBox=\"-145 277 60 60\" style=\"enable-background:new -145 277 60 60;\" xml:space=\"preserve\" class=\"timeline-drills-icon\">\n" +
     "<style type=\"text/css\">\n" +
-    "    .all > * { fill: #fff; }\n" +
-    "	.st0{clip-path:url(#SVGID_2_);}\n" +
-    "	.st1{clip-path:url(#SVGID_4_);}\n" +
+    "    .timeline-drills-icon .all > * { fill: #fff; }\n" +
+    "	.timeline-drills-icon .st0{clip-path:url(#SVGID_2_);}\n" +
+    "	.timeline-drills-icon .st1{clip-path:url(#SVGID_4_);}\n" +
     "</style>\n" +
     "<g id=\"XMLID_93_\" class=\"all\">\n" +
     "	<path id=\"XMLID_105_\" d=\"M-105.3,308.4h-18.6c-0.6,0-1-0.4-1-1c0-0.6,0.4-1,1-1h18.6c0.6,0,1,0.4,1,1S-104.8,308.4-105.3,308.4z\"/>\n" +
@@ -6056,12 +6051,10 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "</svg>\n" +
     "");
   $templateCache.put("components/znkTimeline/svg/icons/timeline-mini-challenge-icon.svg",
-    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-    "<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n" +
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
-    "	 viewBox=\"-105 277 60 60\" style=\"enable-background:new -105 277 60 60;\" xml:space=\"preserve\">\n" +
+    "	 viewBox=\"-105 277 60 60\" style=\"enable-background:new -105 277 60 60;\" xml:space=\"preserve\" class=\"timeline-mini-challenge-icon\">\n" +
     "	 	 <style type=\"text/css\">\n" +
-    "          	.st0{fill:#fff;}\n" +
+    "          	.timeline-mini-challenge-icon .st0{fill:#fff;}\n" +
     "          </style>\n" +
     "<g>\n" +
     "	<path class=\"st0\" d=\"M-75,332c-11.5,0-21-9.4-21-21c0-11.5,9.4-21,21-21s21,9.4,21,21S-63.5,332-75,332z M-75,292.7c-10.1,0-18.4,8.2-18.4,18.4\n" +
@@ -6078,12 +6071,10 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "</svg>\n" +
     "");
   $templateCache.put("components/znkTimeline/svg/icons/timeline-test-icon.svg",
-    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-    "<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n" +
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
-    "	 viewBox=\"-111 277 60 60\" style=\"enable-background:new -111 277 60 60;\" xml:space=\"preserve\">\n" +
+    "	 viewBox=\"-111 277 60 60\" style=\"enable-background:new -111 277 60 60;\" xml:space=\"preserve\" class=\"timeline-test-icon\">\n" +
     "<style type=\"text/css\">\n" +
-    "	.st0{fill:#fff;}\n" +
+    "	.timeline-test-icon .st0{fill:#fff;}\n" +
     "</style>\n" +
     "<g>\n" +
     "	<path class=\"st0\" d=\"M-62.9,332h-36.2c-1.5,0-2.8-1.2-2.8-2.8v-44.5c0-1.5,1.2-2.8,2.8-2.8h36.2c1.5,0,2.8,1.2,2.8,2.8v44.5\n" +
@@ -6225,12 +6216,10 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "</svg>\n" +
     "");
   $templateCache.put("components/znkTimeline/svg/icons/timeline-tips-tricks-icon.svg",
-    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-    "<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n" +
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
-    "	 viewBox=\"-145 277 60 60\" style=\"enable-background:new -145 277 60 60;\" xml:space=\"preserve\">\n" +
+    "	 viewBox=\"-145 277 60 60\" style=\"enable-background:new -145 277 60 60;\" xml:space=\"preserve\" class=\"timeline-tips-tricks-icon\">\n" +
     "<style type=\"text/css\">\n" +
-    "	.st0{fill:#fff;}\n" +
+    "	.timeline-tips-tricks-icon .st0{fill:#fff;}\n" +
     "</style>\n" +
     "<g id=\"XMLID_203_\">\n" +
     "	<path id=\"XMLID_209_\" class=\"st0\" d=\"M-115.2,285.5\"/>\n" +
@@ -6241,8 +6230,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "	<path class=\"st0\" id=\"XMLID_206_\" d=\"M-107.5,322.4h-15.1c-0.5,0-1-0.5-1-1c0-0.5,0.5-1,1-1h15.1c0.5,0,1,0.5,1,1\n" +
     "		C-106.5,322-106.9,322.4-107.5,322.4z\"/>\n" +
     "	<path class=\"st0\" id=\"XMLID_205_\" d=\"M-107,325.4H-123c-0.5,0-1-0.5-1-1s0.5-1,1-1h16.1c0.5,0,1,0.5,1,1C-106,325-106.4,325.4-107,325.4z\"/>\n" +
-    "	<path class=\"st0\" id=\"XMLID_210_\" d=\"M-109,328.5h-12.5c-0.5,0-1-0.5-1-1c0-0.5,0.5-1,1-1h12.5c0.5,0,1,0.5,1,1C-108,328-108.4,328.5-109,328.5\n" +
-    "		z\"/>\n" +
+    "	<path class=\"st0\" id=\"XMLID_210_\" d=\"M-109,328.5h-12.5c-0.5,0-1-0.5-1-1c0-0.5,0.5-1,1-1h12.5c0.5,0,1,0.5,1,1C-108,328-108.4,328.5-109,328.5z\"/>\n" +
     "	<path class=\"st0\" id=\"XMLID_204_\" d=\"M-111.1,329.7c-0.3,1.6-1.8,2.3-4.1,2.3s-3.6-0.8-4.1-2.3\"/>\n" +
     "</g>\n" +
     "</svg>\n" +
