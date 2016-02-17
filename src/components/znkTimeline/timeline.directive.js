@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkTimeline').directive('znkTimeline',['$window', '$templateCache', function($window, $templateCache) {
+    angular.module('znk.infra.znkTimeline').directive('znkTimeline',['$window', '$templateCache', 'ExerciseTypeEnum', function($window, $templateCache, ExerciseTypeEnum) {
         var directive = {
             restrict: 'A',
             scope: {
@@ -201,7 +201,7 @@
                         var locationImgY = data.lineTo.y - subLocation;
                         var locationImgX = data.lineTo.x - subLocation;
 
-                        if(dataObj.lastLine.length === 2 && data.exerciseType === 4) {
+                        if(dataObj.lastLine.length === 2 && data.exerciseType === ExerciseTypeEnum.SECTION.enum) {
                             src = settings.images[data.exerciseType].icon;
                             img = (imgBig) ? img : 15;
                             if(angular.isDefined(settings.isMobile) && !settings.isMobile) {
@@ -209,7 +209,7 @@
                             }
                             locationImgY  = locationImgY + 2;
                             locationImgX  = locationImgX + 2;
-                        } else if(dataObj.lastLine.length > 2 && data.exerciseType === 4) {
+                        } else if(dataObj.lastLine.length > 2 && data.exerciseType === ExerciseTypeEnum.SECTION.enum) {
                             src = settings.images[2].icon;
                         } else {
                             src = settings.images[data.exerciseType].icon;
