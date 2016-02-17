@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('demoApp', ['znk.infra.znkTimeline'])
-        .controller('Main', function ($scope, TimelineSrv) {
+        .controller('Main', function ($scope) {
 
            $scope.currentSubjectId = 2;
 

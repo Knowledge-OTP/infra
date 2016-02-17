@@ -5425,7 +5425,8 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkTimeline').directive('znkTimeline',['$window', '$templateCache', 'ExerciseTypeEnum', function($window, $templateCache, ExerciseTypeEnum) {
+    angular.module('znk.infra.znkTimeline').directive('znkTimeline',['$window', '$templateCache', 'ExerciseTypeEnum', 'TimelineSrv',
+        function($window, $templateCache, ExerciseTypeEnum, TimelineSrv) {
         var directive = {
             restrict: 'A',
             scope: {
@@ -5436,7 +5437,8 @@
 
                 var settings = angular.extend({
                     width: $window.innerWidth,
-                    height: $window.innerHeight
+                    height: $window.innerHeight,
+                    images: TimelineSrv.getImages()
                 }, scope.timelineSettings || {});
 
                 var dataObj;
