@@ -64,7 +64,7 @@ describe('testing service "HintSrv":', function () {
 
     it('when registering hint then it should be able to trigger it', function () {
         spyOn(hintSettings,'hintAction');
-        syncHintSrvActions.triggerHint(hintSettings.HINT_NAME);
+        syncHintSrvActions.triggerHint(HintSrv.hintMap[hintSettings.HINT_NAME]);
         expect(hintSettings.hintAction).toHaveBeenCalled();
     });
 
