@@ -17,6 +17,7 @@
         'znk.infra.popUp',
         'znk.infra.estimatedScore',
         'znk.infra.stats',
+        'znk.infra.hint',
         'znk.infra.znkTimeline'
     ]);
 })(angular);
