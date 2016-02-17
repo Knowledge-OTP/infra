@@ -59,7 +59,6 @@
                 subPoint: 35,
                 distance: optionsPerDevice.distance,
                 lineWidth: 2,
-                images: TimelineSrv.getImages(),
                 numbers: {
                     font: '200 12px Lato',
                     fillStyle: '#4a4a4a'
