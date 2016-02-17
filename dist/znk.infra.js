@@ -1706,7 +1706,7 @@ angular.module('znk.infra.general')
                            (angular.isDefined(attrs.defaultPoster)) ? attrs.defaultPoster :
                                'http://corrupt-system.de/assets/media/sintel/sintel-trailer.jpg';
                    };
-                   var setVid = function (elmCur, vidNotAvail) {
+                   var replaceVIdTag = function (elmCur, vidNotAvail) {
                        elmCur.replaceWith(vidNotAvail);
                    };
                    if (angular.isUndefined(attrs.vidPoster) || attrs.vidPoster === '') {
@@ -1720,11 +1720,11 @@ angular.module('znk.infra.general')
                        };
                    }
                    if (angular.isUndefined(attrs.ngSrc) || attrs.ngSrc === '') {
-                       setVid(element, vidNotAvail);
+                       replaceVIdTag(element, vidNotAvail);
                    }
                    else {
                        vidElm.addEventListener('error', function () {
-                           setVid(element, vidNotAvail);
+                           replaceVIdTag(element, vidNotAvail);
                        });
                        vidElm.addEventListener('loadeddata', function () {
                            this.style.visibility = 'visible';
