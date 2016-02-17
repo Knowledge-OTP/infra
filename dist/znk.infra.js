@@ -1747,7 +1747,7 @@ angular.module('znk.infra.general')
     angular.module('znk.infra.hint').provider('HintSrv',function(){
         var registeredHints = {};
 
-        this.hintsMap = {};
+        var _hintMap = {};
 
         this.registerHint = function (hintName, hintAction, determineWhetherToTriggerFnGetter) {
             if(!registeredHints[hintName]){
@@ -1757,7 +1757,7 @@ angular.module('znk.infra.general')
                     determineWhetherToTriggerGetter: determineWhetherToTriggerFnGetter
                 };
             }
-            this.hintsMap[hintName] = hintName;
+            _hintMap[hintName] = hintName;
         };
 
         this.$get = [
@@ -1767,15 +1767,10 @@ angular.module('znk.infra.general')
                 var StorageSrv = InfraConfigSrv.getStorageService();
                 var hintPath = StorageSrv.variables.appUserSpacePath + '/hint';
                 var defaultHints = {
-                    hintsStatus:{
-
-                    }
+                    hintsStatus:{}
                 };
 
-
-                function defaultDetermineWhetherToTriggerFn(hintVal){
-                    return angular.isUndefined(hintVal) || !hintVal.value;
-                }
+                HintSrv.hintMap = _hintMap;
 
                 HintSrv.triggerHint = function (hintName) {
                     var hintData = registeredHints[hintName];
@@ -1831,6 +1826,10 @@ angular.module('znk.infra.general')
 
                 function getHintLastValue(hintStatus){
                     return hintStatus && hintStatus.history && hintStatus.history.length && hintStatus.history[hintStatus.history.length - 1];
+                }
+
+                function defaultDetermineWhetherToTriggerFn(hintVal){
+                    return angular.isUndefined(hintVal) || !hintVal.value;
                 }
 
                 return HintSrv;
