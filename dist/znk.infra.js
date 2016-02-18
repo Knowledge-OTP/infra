@@ -4142,7 +4142,7 @@ angular.module('znk.infra.general')
                         $timeout(function(){
                             var currSlideIndex = ngModelCtrl.$viewValue;
                             defer.resolve(new Swiper(element[0], {
-                                initialSlide: currSlideIndex
+                                initialSlide: currSlideIndex || 0
                             }));
                         },0,false);
                     }
