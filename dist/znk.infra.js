@@ -4138,9 +4138,12 @@ angular.module('znk.infra.general')
                         });
                     }
 
-                    function postLink(scope,element){
+                    function postLink(scope,element,attrs,ngModelCtrl){
                         $timeout(function(){
-                            defer.resolve(new Swiper(element[0]));
+                            var currSlideIndex = ngModelCtrl.$viewValue;
+                            defer.resolve(new Swiper(element[0], {
+                                initialSlide: currSlideIndex
+                            }));
                         },0,false);
                     }
 
