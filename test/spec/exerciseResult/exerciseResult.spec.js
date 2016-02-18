@@ -322,7 +322,7 @@ describe('testing service "ExerciseResult":', function () {
         });
     });
 
-    describe('test average time per question',function(){
+    describe('test average analytics calculation',function(){
         it('when saving exercise result then average time per question should be calculated', function(){
             var exerciseId = 10;
             var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.DRILL.enum, exerciseId);
@@ -342,6 +342,7 @@ describe('testing service "ExerciseResult":', function () {
             var expectedResult = Math.round((20000 + 2000) / 3);
             expect(exerciseResult.avgTimePerQuestion).toBe(expectedResult);
         });
+
         it('when saving exercise result without answers then average time per question should be 0', function(){
             var exerciseId = 10;
             var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.DRILL.enum, exerciseId);
@@ -351,6 +352,65 @@ describe('testing service "ExerciseResult":', function () {
             exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.DRILL.enum, exerciseId);
             var expectedResult = 0;
             expect(exerciseResult.avgTimePerQuestion).toBe(expectedResult);
+        });
+
+        it('when saving exercise results then analytics should be calculated accordingly', function(){
+            var exerciseId = 10;
+            var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.DRILL.enum, exerciseId);
+            exerciseResult.questionResults = [{
+                isAnsweredCorrectly: true,    // correct
+                timeSpent: 100,
+                userAnswer: 1
+            },{
+                isAnsweredCorrectly: false,   // wrong
+                timeSpent: 20,
+                userAnswer: 2
+            },{
+                isAnsweredCorrectly: false,  // wrong
+                timeSpent: 30,
+                userAnswer: 1
+            },{
+                isAnsweredCorrectly: true,   // correct
+                timeSpent: 205,
+                userAnswer: 1
+            },{
+                isAnsweredCorrectly: true,   // correct
+                timeSpent: 3,
+                userAnswer: 2
+            },{
+                isAnsweredCorrectly: false,  // skipped
+                timeSpent: 12163
+            },{
+                isAnsweredCorrectly: false,  // wrong
+                timeSpent: 2,
+                userAnswer: 1
+            },{
+                isAnsweredCorrectly: true,   // correct
+                timeSpent: 4,
+                userAnswer: 1
+            },{
+                isAnsweredCorrectly: false,  // skipped
+                timeSpent: 12163
+            },{
+                isAnsweredCorrectly: true,   // correct
+                timeSpent: 5,
+                userAnswer: 1
+            }];
+
+            exerciseResult.$save();
+            $rootScope.$digest();
+
+            exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.DRILL.enum, exerciseId);
+            var expectedResult = {};
+
+            expectedResult.correctAvgTime = 63;
+            expectedResult.wrongAvgTime = 17;
+            expectedResult.skippedAvgTime = 12163;
+            expectedResult.correctAnswersNum = 5;
+            expectedResult.wrongAnswersNum =  3;
+            expectedResult.skippedAnswersNum = 2;
+
+            expect(exerciseResult).toEqual(jasmine.objectContaining(expectedResult));
         });
     });
 
@@ -446,4 +506,6 @@ describe('testing service "ExerciseResult":', function () {
         });
 
     });
+
+
 });
