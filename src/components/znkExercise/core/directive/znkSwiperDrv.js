@@ -83,7 +83,10 @@
 
                     function postLink(scope,element){
                         $timeout(function(){
-                            defer.resolve(new Swiper(element[0]));
+                            var currSlideIndex = scope.$parent.vm.currSlideIndex;
+                            defer.resolve(new Swiper(element[0], {
+                                initialSlide: currSlideIndex
+                            }));
                         },0,false);
                     }
 
