@@ -322,7 +322,7 @@ describe('testing service "ExerciseResult":', function () {
         });
     });
 
-    describe('test average analytics calculation',function(){
+    describe('test analytics calculation',function(){
         it('when saving exercise result then average time per question should be calculated', function(){
             var exerciseId = 10;
             var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.DRILL.enum, exerciseId);
