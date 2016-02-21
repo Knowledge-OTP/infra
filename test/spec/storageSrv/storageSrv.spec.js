@@ -148,6 +148,7 @@ describe('testing service "StorageSrv":', function () {
         entityMap[path] = expectedValue;
 
         testStorage.cleanPathCache(path);
+        expect(testStorage.entityCache.get(path)).toBe(undefined);
 
         var currVal;
         testStorage.get(path).then(function(val){
