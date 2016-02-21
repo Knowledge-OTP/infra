@@ -1,17 +1,18 @@
-xdescribe('testing service "StatsQuerySrv":', function () {
+describe('testing service "StatsQuerySrv":', function () {
     'use strict';
 
     beforeEach(module('znk.infra.stats', 'htmlTemplates','storage.mock', 'testUtility'));
 
-    beforeEach(module(function(StatsQuerySrvProvider) {
+    beforeEach(module(function(StatsSrvProvider) {
         function getCategoryLookup($q) {
-            return $q.when([]);
+            return $q.when(content.category);
         }
 
-        StatsQuerySrvProvider.setCategoryLookup(getCategoryLookup);
+        StatsSrvProvider.setCategoryLookup(getCategoryLookup);
     }));
 
     var $rootScope, StatsQuerySrv, SubjectEnum;
+    var actions;
     beforeEach(inject([
         '$injector',
         function ($injector) {
@@ -36,7 +37,7 @@ xdescribe('testing service "StatsQuerySrv":', function () {
                     wrong: 9,
                     totalTime: 0
                 },
-                id_2:{
+                id_2:{//weakness 0.41
                     totalQuestions: 29,
                     correct: 14,
                     unanswered: 3,
@@ -157,56 +158,56 @@ xdescribe('testing service "StatsQuerySrv":', function () {
 
             var TestUtilitySrv = $injector.get('TestUtilitySrv');
             TestUtilitySrv.general.printDebugLogs();
+
+            actions = TestUtilitySrv.general.convertAllAsyncToSync(StatsQuerySrv);
         }]));
 
-    //todo(igor) we need to transfer it to external utility service.
-    var actions = {};
-    function convertAsyncToSync(obj, fnName) {
-        return function () {
-            var res;
-            obj[fnName].apply(obj, arguments).then(function (_res) {
-                res = _res;
-            });
-            $rootScope.$digest();
-            return res;
-        };
-    }
-    var convertFnToSync = [
-        'getWeakestGeneralCategory',
-        'getWeakestSpecificCategory'
-    ];
-    actions.init = function () {
-        convertFnToSync.forEach(function (fnName) {
-            actions[fnName] = convertAsyncToSync(StatsQuerySrv, fnName);
-        });
-    };
-    beforeEach(function () {
-        actions.init();
-    });
+    ////todo(igor) we need to transfer it to external utility service.
+    //var actions = {};
+    //function convertAsyncToSync(obj, fnName) {
+    //    return function () {
+    //        var res;
+    //        obj[fnName].apply(obj, arguments).then(function (_res) {
+    //            res = _res;
+    //        });
+    //        $rootScope.$digest();
+    //        return res;
+    //    };
+    //}
+    //var convertFnToSync = [
+    //    'getWeakestGeneralCategory',
+    //    'getWeakestSpecificCategory'
+    //];
+    //actions.init = function () {
+    //    convertFnToSync.forEach(function (fnName) {
+    //        actions[fnName] = convertAsyncToSync(StatsQuerySrv, fnName);
+    //    });
+    //};
+    //beforeEach(function () {
+    //    actions.init();
+    //});
 
-    it('when requesting for weakest general category then the weakest should be returned depend on the given optional general categories', function () {
-        var weakestGeneralCategory = actions.getWeakestGeneralCategory({
-            0: [4],
-            1: [8,11],
-            2: [12]
-        });//[4,6,8,9,13]
-        var expectedResult = {//weakness 0.7
+    xit('when requesting for weakest category in level then the weakest category should be returned', function () {
+        var LEVEL = 2;
+        var weakestGeneralCategory = actions.getWeakestCategoryInLevel(LEVEL);
+        var expectedResult = {
             id:12
         };
         expect(weakestGeneralCategory).toEqual(jasmine.objectContaining(expectedResult));
     });
 
-    it('given optional general categories not exists in stats object when requesting for weakst general category then all optional specific categories ' +
-        'should be initialized',function(){
-        var weakestGeneralCategory = actions.getWeakestGeneralCategory({
-            0: [5,7]
-
-        });
-        expect(weakestGeneralCategory).toBeDefined();
-        expect(weakestGeneralCategory.subjectId).toBe(SubjectEnum.MATH.enum);
+    it('when requesting for weakest category in level and providing optional ids then weakest category from optional ids' +
+        'should be returned',function(){
+        var LEVEL = 3;
+        var optionalIds = [76, 85, 93];
+        var weakestGeneralCategory = actions.getWeakestCategoryInLevel(LEVEL, optionalIds);
+        var expectedResult = {
+            id: 93
+        };
+        expect(weakestGeneralCategory).toEqual(jasmine.objectContaining(expectedResult));
     });
 
-    it('when requesting weakest specific category then the weakest should be returned depend on the given optional general categories', function () {
+    xit('when requesting weakest specific category then the weakest should be returned depend on the given optional general categories', function () {
         var weakestSpecificCategory = actions.getWeakestSpecificCategory({
             0:{
                 4: [20,23]
@@ -225,7 +226,7 @@ xdescribe('testing service "StatsQuerySrv":', function () {
         expect(weakestSpecificCategory).toEqual(jasmine.objectContaining(expectedResult));
     });
 
-    it('given optional general categories not exists in stats object when requesting for weakest general category then all optional specific categories ' +
+    xit('given optional general categories not exists in stats object when requesting for weakest general category then all optional specific categories ' +
         'should be initialized',function(){
         var weakestGeneralCategory = actions.getWeakestGeneralCategory({
             0: [5,7]
@@ -234,7 +235,7 @@ xdescribe('testing service "StatsQuerySrv":', function () {
         expect(weakestGeneralCategory.subjectId).toBe(SubjectEnum.MATH.enum);
     });
 
-    it('given optional specific categories not exists in stats object when requesting for weakest specific category then all optional specific categories ' +
+    xit('given optional specific categories not exists in stats object when requesting for weakest specific category then all optional specific categories ' +
         'should be initialized',function(){
         var weakestSpecificCategory = actions.getWeakestSpecificCategory({
             2:{
