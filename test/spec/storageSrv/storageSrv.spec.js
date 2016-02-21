@@ -134,4 +134,27 @@ describe('testing service "StorageSrv":', function () {
         expect(obj2).toEqual(jasmine.objectContaining(expectedObj2));
         expect(obj2.$save).toBeDefined();
     });
+
+    it('when calling cleanPathCache function then next time requesting for the value of this path it should be retrieved ' +
+        'from the db',function(){
+        testStorage = new StorageSrv(entityGetter, entitySetter);
+        var path = 'path';
+
+        entityMap[path] = 'cachedValue';
+        testStorage.get(path);
+        $rootScope.$digest();
+
+        var expectedValue = 'freshValue';
+        entityMap[path] = expectedValue;
+
+        testStorage.cleanPathCache(path);
+
+        var currVal;
+        testStorage.get(path).then(function(val){
+            currVal = val;
+        });
+        $rootScope.$digest();
+
+        expect(currVal).toBe(expectedValue);
+    });
 });
