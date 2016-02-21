@@ -1242,11 +1242,41 @@
                 var getExercisesStatusDataProm = _getExercisesStatusData();
                 var dataToSave = {};
 
+                var countCorrect = 0,
+                    countWrong = 0,
+                    countSkipped = 0,
+                    correctTotalTime = 0,
+                    wrongTotalTime = 0,
+                    skippedTotalTime = 0;
+
                 var totalTimeSpentOnQuestions = exerciseResult.questionResults.reduce(function(previousValue, currResult) {
+                    var timeSpentOnQuestion =  angular.isDefined(currResult.timeSpent) && !isNaN(currResult.timeSpent) ? currResult.timeSpent : 0;
+                    if (currResult.isAnsweredCorrectly) {
+                        countCorrect++;
+                        correctTotalTime += timeSpentOnQuestion;
+                    }else if (angular.isDefined(currResult.userAnswer)) {
+                        countWrong++;
+                        wrongTotalTime += timeSpentOnQuestion;
+                    } else {
+                        countSkipped++;
+                        skippedTotalTime += timeSpentOnQuestion;
+                    }
+
                     return previousValue + (currResult.timeSpent || 0);
                 },0);
 
+                function _getAvgTime(totalNum, totalTime){
+                    var avgTime = Math.round(totalNum ? totalTime/totalNum : 0);
+                    return avgTime;
+                }
+
                 exerciseResult.duration = totalTimeSpentOnQuestions;
+                exerciseResult.correctAvgTime = _getAvgTime(countCorrect,correctTotalTime);
+                exerciseResult.wrongAvgTime = _getAvgTime(countWrong, wrongTotalTime);
+                exerciseResult.skippedAvgTime = _getAvgTime(countSkipped, skippedTotalTime);
+                exerciseResult.correctAnswersNum = countCorrect;
+                exerciseResult.wrongAnswersNum = countWrong;
+                exerciseResult.skippedAnswersNum = countSkipped;
 
                 var numOfAnsweredQuestions = exerciseResult.questionResults.length;
                 exerciseResult.avgTimePerQuestion = numOfAnsweredQuestions ? Math.round(totalTimeSpentOnQuestions / numOfAnsweredQuestions) : 0;
