@@ -156,5 +156,6 @@ describe('testing service "StorageSrv":', function () {
         $rootScope.$digest();
 
         expect(currVal).toBe(expectedValue);
+        expect(testStorage.entityCache.get(path)).toBe(expectedValue);
     });
 });
