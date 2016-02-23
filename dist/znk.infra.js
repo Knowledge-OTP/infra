@@ -2959,7 +2959,7 @@ angular.module('znk.infra.general')
         function ($cacheFactory, $q) {
             var getEntityPromMap = {};
 
-            var entityCache = $cacheFactory('entityCache');
+            var cacheId = 0;
 
             function StorageSrv(entityGetter, entitySetter) {
                 this.getter = function(path){
@@ -2969,11 +2969,14 @@ angular.module('znk.infra.general')
                 this.setter = function(path, newVal){
                     return $q.when(entitySetter(path,newVal));
                 };
+
+                this.entityCache = $cacheFactory('entityCache' + cacheId);
+                cacheId ++;
             }
 
             StorageSrv.prototype.get = function(path, defaultValue){
                 var self = this;
-                var entity = entityCache.get(path);
+                var entity = this.entityCache.get(path);
                 var getProm;
                 defaultValue = defaultValue || {};
                 var cacheProm = false;
@@ -2987,7 +2990,7 @@ angular.module('znk.infra.general')
                     cacheProm = true;
                     getProm = this.getter(path).then(function (_entity) {
                         _entity = angular.isUndefined(_entity) || _entity === null ? {} : _entity;
-                        entityCache.put(path, _entity);
+                        self.entityCache.put(path, _entity);
                         delete getEntityPromMap[path];
                         return _entity;
                     });
@@ -3024,7 +3027,7 @@ angular.module('znk.infra.general')
                     }
 
                     angular.forEach(dataToSaveInCache, function(value,path){
-                        entityCache.put(path,value);
+                        self.entityCache.put(path,value);
                         if(angular.isObject(value) && !value.$save){
                             value.$save = self.set.bind(self,path,value);
                         }
@@ -3036,6 +3039,10 @@ angular.module('znk.infra.general')
 
             StorageSrv.prototype.entityCommunicator = function (path, defaultValues) {
                 return new EntityCommunicator(path, defaultValues, this);
+            };
+
+            StorageSrv.prototype.cleanPathCache = function(path){
+                this.entityCache.remove(path);
             };
 
             StorageSrv.variables = StorageSrv.prototype.variables = {
@@ -4217,9 +4224,12 @@ angular.module('znk.infra.general')
                         });
                     }
 
-                    function postLink(scope,element){
+                    function postLink(scope,element,attrs,ngModelCtrl){
                         $timeout(function(){
-                            defer.resolve(new Swiper(element[0]));
+                            var currSlideIndex = ngModelCtrl.$viewValue;
+                            defer.resolve(new Swiper(element[0], {
+                                initialSlide: currSlideIndex || 0
+                            }));
                         },0,false);
                     }
 
