@@ -18,6 +18,7 @@
                     onEnded: '&?',
                     onCanplay: '&?',
                     onVideoError: '&?',
+                    videoErrorPoster: '@?',
                     actions: '=?',
                     heightToWidthRatioGetter: '&heightToWidthRatio',
                     videoHeight: '@'
@@ -60,6 +61,12 @@
                             $timeout(function(){
                                 if(scope.onVideoError){
                                     scope.onVideoError(ev);
+                                }
+
+                                if(scope.videoErrorPoster){
+                                    videoDomElem.removeAttribute("controls");
+                                    videoDomElem.poster = scope.videoErrorPoster;
+                                    videoDomElem.style.display = '';
                                 }
                             });
                         });
