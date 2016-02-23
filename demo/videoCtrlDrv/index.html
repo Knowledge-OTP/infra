@@ -1,43 +1,38 @@
 <!DOCTYPE html>
-<html lang = "en">
+<html lang="en">
 <head>
-    <meta charset = "UTF-8">
+    <meta charset="UTF-8">
     <title>Title</title>
-<link rel = "stylesheet" href = "main.css">
+    <link rel="stylesheet" href="main.css">
+    <style>
+        video {
+            width: 454px;
+            height: 254px;
+            padding-top: 50px;
+        }
+    </style>
 </head>
-<body ng-app = "demoApp">
-<style>
-    video{
-        width       : 454px;
-        height      : 254px;
-        padding-top : 50px;
-    }
-
-</style>
-
+<body ng-app="demoApp">
 <div ng-controller="videoCtrl">
-     <video controls
-            video-ctrl-drv>
-         <source type = "video/mp4" ng-src="{{videoUrl}}"/>
+    <video controls
+           video-ctrl-drv>
+        <source type = "video/mp4" ng-src="{{videoUrl}}"/>
     </video>
     <video controls
            video-ctrl-drv
            on-video-error="videoErrorHandler()"
            video-error-poster="http://mis.ihc.gov.pk/img/no-video.jpg"
-           ng-src="videoUrl">
+           ng-src="noVideo">
     </video>
 </div>
-
-<script src = "angular/angular.js"></script>
-
+<script src="angular/angular.js"></script>
 <script src="components/enums/module.js"></script>
 <script src="components/enums/services/enumSrv.js"></script>
 <script src="components/enums/enums/subjectEnum.js"></script>
 <script src="components/svgIcon/module.js"></script>
 <script src="components/svgIcon/svgIconSrv.js"></script>
-
-<script src = "components/general/module.js"></script>
-<script src = "components/general/videoCtrlDrv.js"></script>
-<script src = "demoApp.js"></script>
+<script src="components/general/module.js"></script>
+<script src="components/general/videoCtrlDrv.js"></script>
+<script src="demoApp.js"></script>
 </body>
 </html>
