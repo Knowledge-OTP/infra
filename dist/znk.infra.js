@@ -1773,7 +1773,7 @@
                         }
 
                         elementsToRemoveErrorEventListeners.push(relevantSourceDomElement);
-                        videoDomElem.querySelector('source').addEventListener('error', function(ev) {
+                        relevantSourceDomElement.addEventListener('error', function(ev) {
                             $timeout(function(){
                                 if(scope.onVideoError){
                                     scope.onVideoError(ev);
