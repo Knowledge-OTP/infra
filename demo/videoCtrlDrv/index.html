@@ -7,33 +7,25 @@
 </head>
 <body ng-app = "demoApp">
 <style>
-                video, .video_not_available
-                {
-	                margin-left : 10px;
-                }
-
-                video
-                {
-	                width       : 454px;
-	                height      : 254px;
-	                padding-top : 50px;
-	                visibility: hidden;
-                }
-                .video_not_available
-                {
-	                margin-top : 50px;
-	                background-color: #0a9bad;
-	                width       : 454px;
-	                height      : 254px;
-                }
+    video{
+        width       : 454px;
+        height      : 254px;
+        padding-top : 50px;
+    }
 
 </style>
 
 <div ng-controller="videoCtrl">
- <video controls ng-src="{{videoUrl}}" video-ctrl-drv = ""   preload="metadata" vid-poster="{{ poster }}" default-poster="{{ defaultPoster }}"
-		video-not-avail="{{ vidNotAvail }}">
-	 <source type = "video/mp4"/>
-</video>
+     <video controls
+            video-ctrl-drv>
+         <source type = "video/mp4" ng-src="{{videoUrl}}"/>
+    </video>
+    <video controls
+           video-ctrl-drv
+           on-video-error="videoErrorHandler()">
+        <source type = "video/mp4"
+                src="dummy"/>
+    </video>
 </div>
 
 <script src = "angular/angular.js"></script>
