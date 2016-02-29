@@ -38,6 +38,7 @@ describe('testing service "StatsQuerySrv":', function () {
                     totalTime: 0
                 },
                 id_2:{//weakness 0.41
+                    id: 2,
                     totalQuestions: 29,
                     correct: 14,
                     unanswered: 3,
@@ -54,7 +55,8 @@ describe('testing service "StatsQuerySrv":', function () {
                     correct: 15,
                     unanswered: 4,
                     wrong: 6,
-                    totalTime: 0
+                    totalTime: 0,
+                    parentsIds: [0]
                 },
                 id_8:{//weakness 0.076
                     id: 8,
@@ -63,7 +65,8 @@ describe('testing service "StatsQuerySrv":', function () {
                     correct: 57,
                     unanswered: 4,
                     wrong: 5,
-                    totalTime: 0
+                    totalTime: 0,
+                    parentsIds: [1]
                 },
                 id_11:{//weakness 0.385
                     id: 11,
@@ -72,7 +75,8 @@ describe('testing service "StatsQuerySrv":', function () {
                     correct: 8,
                     unanswered: 1,
                     wrong: 4,
-                    totalTime: 0
+                    totalTime: 0,
+                    parentsIds: [1]
                 },
                 id_12:{//weakness 0.517
                     id: 12,
@@ -81,7 +85,8 @@ describe('testing service "StatsQuerySrv":', function () {
                     correct: 14,
                     unanswered: 3,
                     wrong: 12,
-                    totalTime: 0
+                    totalTime: 0,
+                    parentsIds: [2]
                 }
             };
 
@@ -94,7 +99,8 @@ describe('testing service "StatsQuerySrv":', function () {
                     correct: 4,
                     unanswered: 2,
                     wrong: 4,
-                    totalTime: 0
+                    totalTime: 0,
+                    parentsIds: [4, 0]
                 },
                 id_23:{//weakness 0.266
                     id: 23,
@@ -104,7 +110,8 @@ describe('testing service "StatsQuerySrv":', function () {
                     correct: 11,
                     unanswered: 2,
                     wrong: 2,
-                    totalTime: 0
+                    totalTime: 0,
+                    parentsIds: [4, 0]
                 },
                 id_75:{//weakness 0.121
                     id: 75,
@@ -114,7 +121,8 @@ describe('testing service "StatsQuerySrv":', function () {
                     correct: 29,
                     unanswered: 2,
                     wrong: 2,
-                    totalTime: 0
+                    totalTime: 0,
+                    parentsIds: [8, 1]
                 },
                 id_76:{//weakness 0.091
                     id: 76,
@@ -124,7 +132,8 @@ describe('testing service "StatsQuerySrv":', function () {
                     correct: 28,
                     unanswered: 2,
                     wrong: 3,
-                    totalTime: 0
+                    totalTime: 0,
+                    parentsIds: [8, 1]
                 },
                 id_85:{//weakness 0.385
                     id: 85,
@@ -134,7 +143,8 @@ describe('testing service "StatsQuerySrv":', function () {
                     correct: 8,
                     unanswered: 1,
                     wrong: 4,
-                    totalTime: 0
+                    totalTime: 0,
+                    parentsIds: [11, 1]
                 },
                 id_93:{//weakness 0.517
                     id: 93,
@@ -144,7 +154,8 @@ describe('testing service "StatsQuerySrv":', function () {
                     correct: 14,
                     unanswered: 3,
                     wrong: 12,
-                    totalTime: 0
+                    totalTime: 0,
+                    parentsIds: [12, 2]
                 }
             };
 
@@ -162,32 +173,7 @@ describe('testing service "StatsQuerySrv":', function () {
             actions = TestUtilitySrv.general.convertAllAsyncToSync(StatsQuerySrv);
         }]));
 
-    ////todo(igor) we need to transfer it to external utility service.
-    //var actions = {};
-    //function convertAsyncToSync(obj, fnName) {
-    //    return function () {
-    //        var res;
-    //        obj[fnName].apply(obj, arguments).then(function (_res) {
-    //            res = _res;
-    //        });
-    //        $rootScope.$digest();
-    //        return res;
-    //    };
-    //}
-    //var convertFnToSync = [
-    //    'getWeakestGeneralCategory',
-    //    'getWeakestSpecificCategory'
-    //];
-    //actions.init = function () {
-    //    convertFnToSync.forEach(function (fnName) {
-    //        actions[fnName] = convertAsyncToSync(StatsQuerySrv, fnName);
-    //    });
-    //};
-    //beforeEach(function () {
-    //    actions.init();
-    //});
-
-    xit('when requesting for weakest category in level then the weakest category should be returned', function () {
+    it('when requesting for weakest category in level then the weakest category should be returned', function () {
         var LEVEL = 2;
         var weakestGeneralCategory = actions.getWeakestCategoryInLevel(LEVEL);
         var expectedResult = {
@@ -200,49 +186,17 @@ describe('testing service "StatsQuerySrv":', function () {
         'should be returned',function(){
         var LEVEL = 3;
         var optionalIds = [76, 85, 93];
-        var weakestGeneralCategory = actions.getWeakestCategoryInLevel(LEVEL, optionalIds);
+        var weakestCategory = actions.getWeakestCategoryInLevel(LEVEL, optionalIds);
         var expectedResult = {
             id: 93
         };
-        expect(weakestGeneralCategory).toEqual(jasmine.objectContaining(expectedResult));
+        expect(weakestCategory).toEqual(jasmine.objectContaining(expectedResult));
     });
-
-    xit('when requesting weakest specific category then the weakest should be returned depend on the given optional general categories', function () {
-        var weakestSpecificCategory = actions.getWeakestSpecificCategory({
-            0:{
-                4: [20,23]
-            },
-            1: {
-                8: [75],
-                11: [85]
-            },
-            2: {
-                12: [93]
-            }
-        });
-        var expectedResult = {
-            id: 20
-        };
-        expect(weakestSpecificCategory).toEqual(jasmine.objectContaining(expectedResult));
-    });
-
-    xit('given optional general categories not exists in stats object when requesting for weakest general category then all optional specific categories ' +
-        'should be initialized',function(){
-        var weakestGeneralCategory = actions.getWeakestGeneralCategory({
-            0: [5,7]
-        });
-        expect(weakestGeneralCategory).toBeDefined();
-        expect(weakestGeneralCategory.subjectId).toBe(SubjectEnum.MATH.enum);
-    });
-
-    xit('given optional specific categories not exists in stats object when requesting for weakest specific category then all optional specific categories ' +
-        'should be initialized',function(){
-        var weakestSpecificCategory = actions.getWeakestSpecificCategory({
-            2:{
-                12: [88,89,90,91]
-            }
-        });
-        expect(weakestSpecificCategory).toBeDefined();
-        expect(weakestSpecificCategory.subjectId).toBe(SubjectEnum.WRITING.enum);
+    it('when requesting for weakest category under specific parent then one should be returned', function(){
+        var parentId = 1;
+        var LEVEL = 3;
+        var weakestCategory = actions.getWeakestCategoryInLevelUnderParent(parentId, LEVEL);
+        var expectedResult = 85;
+        expect(weakestCategory.id).toBe(expectedResult);
     });
 });

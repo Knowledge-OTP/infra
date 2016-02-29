@@ -2467,6 +2467,26 @@ angular.module('znk.infra.general')
                 return (category.totalQuestions - category.correct) / (category.totalQuestions);
             }
 
+            function WeaknessAccumlator(){
+                var currWeakestCategory = {};
+
+                function _isMostWeakSoFar(categoryWeakness){
+                    return angular.isUndefined(currWeakestCategory.weakness) || currWeakestCategory.weakness < categoryWeakness;
+                }
+
+                this.proccessCategory = function(categoryStats){
+                    var categoryWeakness = _getCategoryWeakness(categoryStats);
+                    if(_isMostWeakSoFar(categoryWeakness)){
+                        currWeakestCategory.weakness = categoryWeakness;
+                        currWeakestCategory.category = categoryStats;
+                    }
+                };
+
+                this.getWeakestCategory = function(){
+                    return currWeakestCategory.category;
+                };
+            }
+
             StatsQuerySrv.getWeakestCategoryInLevel = function(level, optionalIds){
                 var currWeakestCategory = {};
 
@@ -2498,6 +2518,19 @@ angular.module('znk.infra.general')
                     }
 
                     return currWeakestCategory.category;
+                });
+            };
+
+            StatsQuerySrv.getWeakestCategoryInLevelUnderParent = function(parentId, level){
+                var weaknessAccumulator = new WeaknessAccumlator();
+                return StatsSrv.getLevelStats(level).then(function(levelStats){
+                    angular.forEach(levelStats, function(categoryStats){
+                        var isRelevant = categoryStats.parentsIds.indexOf(parentId) !== -1;
+                        if(isRelevant){
+                            weaknessAccumulator.proccessCategory(categoryStats);
+                        }
+                    });
+                    return weaknessAccumulator.getWeakestCategory();
                 });
             };
 
