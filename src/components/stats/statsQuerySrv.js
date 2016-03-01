@@ -67,11 +67,22 @@
                 });
             };
 
-            StatsQuerySrv.getWeakestCategoryInLevelUnderParent = function(parentId, level){
+            StatsQuerySrv.getWeakestCategoryInLevelUnderParent = function(parentId, level, optionalIds){
+                function _isOptional(id){
+                    if(!optionalIds.length){
+                        return true;
+                    }
+                    return optionalIds.indexOf(id) !== -1;
+                }
+
+                if(!angular.isArray(optionalIds)){
+                    optionalIds = [];
+                }
+
                 var weaknessAccumulator = new WeaknessAccumlator();
                 return StatsSrv.getLevelStats(level).then(function(levelStats){
                     angular.forEach(levelStats, function(categoryStats){
-                        var isRelevant = categoryStats.parentsIds.indexOf(parentId) !== -1;
+                        var isRelevant = (categoryStats.parentsIds.indexOf(parentId) !== -1) && _isOptional(categoryStats.id);
                         if(isRelevant){
                             weaknessAccumulator.proccessCategory(categoryStats);
                         }

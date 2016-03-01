@@ -124,7 +124,7 @@ describe('testing service "StatsQuerySrv":', function () {
                     totalTime: 0,
                     parentsIds: [8, 1]
                 },
-                id_76:{//weakness 0.091
+                id_76:{//weakness 0.151
                     id: 76,
                     generalCategoryId: 8,
                     subjectId: 1,
@@ -192,11 +192,23 @@ describe('testing service "StatsQuerySrv":', function () {
         };
         expect(weakestCategory).toEqual(jasmine.objectContaining(expectedResult));
     });
+
     it('when requesting for weakest category under specific parent then one should be returned', function(){
         var parentId = 1;
         var LEVEL = 3;
         var weakestCategory = actions.getWeakestCategoryInLevelUnderParent(parentId, LEVEL);
         var expectedResult = 85;
+        expect(weakestCategory.id).toBe(expectedResult);
+    });
+
+
+
+    it('when requesting for weakest category under specific parent and providing optionalIds then the weakest of the optional should be returned', function(){
+        var parentId = 1;
+        var LEVEL = 3;
+        var optionalCategories = [75, 76];
+        var weakestCategory = actions.getWeakestCategoryInLevelUnderParent(parentId, LEVEL, optionalCategories);
+        var expectedResult = 76;
         expect(weakestCategory.id).toBe(expectedResult);
     });
 });
