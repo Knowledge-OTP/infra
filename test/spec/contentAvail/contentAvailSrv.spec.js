@@ -180,6 +180,7 @@ describe('testing service "ContentAvailSrv":', function () {
         actions.purchaseTutorial(30);
         expect(actions.isTutorialAvail(20)).toBeTruthy();
         expect(actions.isTutorialAvail(30)).toBeTruthy();
+        expect(actions.isTutorialAvail(40)).toBeFalsy();
     });
 
     it('when user has purchased all tutorials then when asking if tutorial is avail should always true should',function(){
