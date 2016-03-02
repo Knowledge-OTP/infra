@@ -991,10 +991,12 @@ znk-exercise-pager {
   padding: 7px;
   background: #fff; }
   znk-exercise-pager znk-scroll {
-    background: #f5f8fa;
-    border-radius: 30px;
     display: flex;
-    align-items: center; }
+    align-items: center;
+    background: #f5f8fa;
+    border-top-right-radius: 30px;
+    border-top-left-radius: 30px;
+    width: calc(100% - 165px); }
     znk-exercise-pager znk-scroll .pager-items-wrapper {
       height: 44px;
       white-space: nowrap;
