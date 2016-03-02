@@ -982,18 +982,15 @@ znk-exercise.desktop {
       outline: none; }
 
 znk-exercise-pager {
-  background: #f5f8fa;
-  box-sizing: border-box;
-  display: block;
   position: absolute;
-  top: 0;
-  right: 0;
   bottom: 0;
-  left: 0;
+  box-sizing: border-box;
   z-index: 1;
   overflow: hidden;
-  border-radius: 30px; }
+  padding: 7px; }
   znk-exercise-pager znk-scroll {
+    background: #f5f8fa;
+    border-radius: 30px;
     display: flex;
     align-items: center; }
     znk-exercise-pager znk-scroll .pager-items-wrapper {
