@@ -981,6 +981,9 @@ znk-exercise.desktop {
     znk-exercise.desktop button:focus {
       outline: none; }
 
+znk-exercise.done-btn-show znk-scroll {
+  width: calc(100% - 168px); }
+
 znk-exercise-pager {
   width: calc(100% - 14px);
   position: absolute;
@@ -991,7 +994,7 @@ znk-exercise-pager {
   background: #f5f8fa;
   border-radius: 30px; }
   znk-exercise-pager znk-scroll {
-    width: calc(100% - 168px);
+    width: 100%;
     display: flex;
     align-items: center;
     z-index: 2; }
