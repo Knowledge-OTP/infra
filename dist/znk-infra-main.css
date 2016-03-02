@@ -982,12 +982,14 @@ znk-exercise.desktop {
       outline: none; }
 
 znk-exercise-pager {
+  width: 100%;
   position: absolute;
   bottom: 0;
   box-sizing: border-box;
   z-index: 1;
   overflow: hidden;
-  padding: 7px; }
+  padding: 7px;
+  background: #fff; }
   znk-exercise-pager znk-scroll {
     background: #f5f8fa;
     border-radius: 30px;
@@ -1001,8 +1003,8 @@ znk-exercise-pager {
       znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item {
         vertical-align: top;
         display: inline-block;
-        margin-right: 9px;
-        position: relative; }
+        position: relative;
+        margin-right: 9px; }
         znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item:first-child {
           margin-left: 11px; }
         znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item .question-status-indicator {
