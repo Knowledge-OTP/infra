@@ -1015,6 +1015,7 @@ znk-exercise-pager {
       display: inline-flex;
       align-items: center; }
       znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item {
+        cursor: pointer;
         vertical-align: top;
         display: inline-block;
         position: relative;
