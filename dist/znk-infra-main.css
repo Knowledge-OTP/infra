@@ -931,13 +931,14 @@ znk-exercise.desktop {
     position: absolute;
     right: 30px;
     bottom: 10px;
-    height: 37px;
-    background: #ff931e;
-    font-family: Lato;
-    font-size: 13px;
-    font-weight: normal;
-    border-radius: 30px;
-    color: white; }
+    height: 37px; }
+    znk-exercise.desktop .btn-section .done-btn-wrap .done-btn {
+      background: #ff931e;
+      color: white;
+      font-family: Lato;
+      font-size: 13px;
+      font-weight: normal;
+      border-radius: 30px; }
   znk-exercise.desktop.done-btn-hide .btn-section .done-btn {
     display: none !important; }
   znk-exercise.desktop.done-btn-show .btn-section .done-btn {
