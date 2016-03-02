@@ -987,7 +987,7 @@ znk-exercise-pager {
   bottom: 0;
   box-sizing: border-box;
   overflow: hidden;
-  padding: 7px;
+  margin: 7px;
   background: #f5f8fa;
   border-radius: 30px; }
   znk-exercise-pager znk-scroll {
