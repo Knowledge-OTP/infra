@@ -71,7 +71,7 @@
                         currMousePoint.y = evt.pageY;
                         moveScroll(xOffset,containerWidth,childWidth);
                     }
-                    function mouseUpEventHandler(evt){
+                    function mouseUpEventHandler(){
                         document.removeEventListener('mousemove',mouseMoveEventHandler);
                         document.removeEventListener('mouseup',mouseUpEventHandler);
                         containerWidth = null;
