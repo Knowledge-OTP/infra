@@ -982,19 +982,19 @@ znk-exercise.desktop {
       outline: none; }
 
 znk-exercise-pager {
-  width: 100%;
+  width: calc(100% - 14px);
   position: absolute;
   bottom: 0;
   box-sizing: border-box;
-  z-index: 1;
   overflow: hidden;
   padding: 7px;
   background: #f5f8fa;
   border-radius: 30px; }
   znk-exercise-pager znk-scroll {
-    width: calc(100% - 170px);
+    width: calc(100% - 168px);
     display: flex;
-    align-items: center; }
+    align-items: center;
+    z-index: 2; }
     znk-exercise-pager znk-scroll .pager-items-wrapper {
       height: 44px;
       white-space: nowrap;
@@ -1004,7 +1004,13 @@ znk-exercise-pager {
         vertical-align: top;
         display: inline-block;
         position: relative;
-        margin-right: 9px; }
+        margin-right: 9px;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none; }
         znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item:first-child {
           margin-left: 11px; }
         znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item .question-status-indicator {
