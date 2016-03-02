@@ -989,14 +989,12 @@ znk-exercise-pager {
   z-index: 1;
   overflow: hidden;
   padding: 7px;
-  background: #fff; }
+  background: #f5f8fa;
+  border-radius: 30px; }
   znk-exercise-pager znk-scroll {
+    width: calc(100% - 170px);
     display: flex;
-    align-items: center;
-    background: #f5f8fa;
-    border-top-right-radius: 30px;
-    border-top-left-radius: 30px;
-    width: calc(100% - 165px); }
+    align-items: center; }
     znk-exercise-pager znk-scroll .pager-items-wrapper {
       height: 44px;
       white-space: nowrap;
