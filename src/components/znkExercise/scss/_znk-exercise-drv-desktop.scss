@@ -1,27 +1,3 @@
-
-//znk-exercise-btn-section {
-//    .done-btn-wrap {
-//        width: 100%;
-//        height: 57px;
-//        position: absolute;
-//        right: 0;
-//        bottom: 0;
-//        box-shadow: 0px -4px 10px 0.1px $bsColor6;
-//        z-index:2;
-//        .done-btn {
-//            position: static;
-//            top: auto;
-//            right: auto;
-//            left: auto;
-//            bottom: auto;
-//            margin: 10px;
-//            float:right;
-//        }
-//    }
-//}
-
-
-
 znk-exercise.desktop {
     display: block;
     position: relative;
@@ -90,23 +66,28 @@ znk-exercise.desktop {
             }
         }
 
-        .done-btn {
+        .done-btn-wrap {
             z-index: 2;
             width: 160px;
             position: absolute;
-            right: 30px;
+            right: 12px;
             bottom: 10px;
             height: 37px;
-            background: #ff931e;
-            font: {
-                family: Lato;
-                size: 13px;
-                weight: normal;
+
+            .done-btn {
+                width: 100%;
+                height: 100%;
+                background: #ff931e;
+                color: $fcColor2;
+                font: {
+                    family: Lato;
+                    size: 13px;
+                    weight: normal;
+                }
+                border: {
+                    radius: 30px;
+                }
             }
-            border: {
-                radius: 30px;
-            }
-            color: white;
         }
     }
 
@@ -190,6 +171,16 @@ znk-exercise.desktop {
         &:focus {
             outline: none;
         }
+    }
+
+    .shadow-container {
+        width:100%;
+        height:51px;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        box-shadow: 0px -4px 10px 0.1px white;
+        z-index: 1;
     }
 
 }

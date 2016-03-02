@@ -1,15 +1,25 @@
+znk-exercise {
+    &.done-btn-show {
+        znk-scroll {
+            width: calc(100% - 168px);
+        }
+    }
+}
+
 znk-exercise-pager {
-    height: 57px;
-    background: $bgColor10;
+    width: calc(100% - 14px);
+    @include absolute-position(null, null, 0, null);
     box-sizing: border-box;
-    @include absolute-position(0, 0, 0, 0);
     overflow: hidden;
+    margin: 7px;
+    background: #f5f8fa;
     border-radius: 30px;
-    z-index: 1;
 
     znk-scroll {
+        width: 100%;
         display: flex;
         align-items: center;
+        z-index: 2;
 
         .pager-items-wrapper {
             height: 44px;
@@ -20,11 +30,16 @@ znk-exercise-pager {
             .pager-item {
                 vertical-align: top;
                 display: inline-block;
+                position: relative;
                 margin: {
                     right: 9px;
                 }
-
-                position: relative;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
 
                 &:first-child {
                     margin: {
