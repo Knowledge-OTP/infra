@@ -129,6 +129,32 @@
                     return _isFreeContent(freeContent,['exam',examKeyProp,'sections',sectionKeyProp]);
                 });
             };
+
+            this.isTutorialAvail = function(tutorialId){
+                if(isNaN(tutorialId)){
+                    return $q.reject('ContentAvailSrv: tutorial id should be a number');
+                }
+
+                return _baseIsEntityAvail().then(function(res) {
+                    if (res === true) {
+                        return true;
+                    }
+
+                    var tutorialKeyInStorage = idToKeyInStorage(tutorialId);
+
+                    var purchaseData = res[0];
+                    var freeContent = res[1];
+
+                    if(freeContent.tutorial[tutorialKeyInStorage]){
+                        return true;
+                    }
+
+                    return !!(purchaseData.tutorial === PURCHASED_ALL || purchaseData.tutorial[tutorialKeyInStorage]);
+
+                });
+
+
+            };
         }
     ]);
 })(angular);
