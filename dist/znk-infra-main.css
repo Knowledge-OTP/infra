@@ -273,6 +273,17 @@ $blueBG8: #75cbe8;
 
 */
 /* full background image with retina */
+/**
+ * Disable element selection
+ */
+.noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none; }
+
 znk-scroll {
   display: block;
   overflow: hidden;
@@ -1019,13 +1030,7 @@ znk-exercise-pager {
         vertical-align: top;
         display: inline-block;
         position: relative;
-        margin-right: 9px;
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none; }
+        margin-right: 9px; }
         znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item:first-child {
           margin-left: 11px; }
         znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item .question-status-indicator {
