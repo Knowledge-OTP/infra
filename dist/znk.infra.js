@@ -41,10 +41,14 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.estimatedScore', ['znk.infra.config','znk.infra.znkExercise'])
+    angular.module('znk.infra.estimatedScore', [
+            'znk.infra.config',
+            'znk.infra.znkExercise',
+            'znk.infra.utility'
+        ])
         .run([
             'EstimatedScoreEventsHandlerSrv',
-            function(EstimatedScoreEventsHandlerSrv){
+            function (EstimatedScoreEventsHandlerSrv) {
                 EstimatedScoreEventsHandlerSrv.init();
             }
         ]);
@@ -741,8 +745,8 @@
         };
 
         this.$get = [
-            '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum','ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log',
-            function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum,ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log) {
+            '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum','ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log', 'UtilitySrv',
+            function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum,ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log, UtilitySrv) {
                 if(angular.equals({},diagnosticScoring)){
                     $log.error('EstimatedScoreEventsHandlerSrv: diagnosticScoring was not set !!!');
                 }
@@ -780,11 +784,19 @@
                     var score = 0;
 
                     var questions = section.questions;
-                    for (var i in sectionResult.questionResults) {
-                        var question = questions[i];
-                        var result = sectionResult.questionResults[i];
-                        score += _getDiagnosticQuestionPoints(question, result);
-                    }
+                    var questionsMap = UtilitySrv.array.convertToMap(questions);
+
+                    sectionResult.questionResults.forEach(function(result, i){
+                        var question = questionsMap[result.questionId];
+                        if(angular.isUndefined(question)){
+                            $log.error('EstimatedScoreEventsHandler: question for result is missing',
+                                'section id: ',section.id,
+                                'result index: ', i
+                            );
+                        }else{
+                            score += _getDiagnosticQuestionPoints(question, result);
+                        }
+                    });
                     EstimatedScoreSrv.setDiagnosticSectionScore(score, ExerciseTypeEnum.SECTION.enum, section.subjectId, section.id);
                 }
 
