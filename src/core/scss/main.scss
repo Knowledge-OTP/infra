@@ -2,7 +2,8 @@
         'imports/colors',
         'imports/mixins';
 
-@import '../../components/scroll/znk-scroll-directive',
+@import 'general',
+        '../../components/scroll/znk-scroll-directive',
         '../../components/svgIcon/svg-icon',
         '../../components/znkExercise/scss/znk-exercise',
         '../../components/znkExercise/scss/select-answer-drv',
