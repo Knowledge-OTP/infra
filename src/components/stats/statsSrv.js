@@ -133,6 +133,13 @@
 
                 StatsSrv.getStats = getStats;
 
+                StatsSrv.getLevelStats = function(level){
+                    var levelKey = _getLevelKey(level);
+                    return getStats().then(function(statsData){
+                        return statsData[levelKey];
+                    });
+                };
+
                 StatsSrv.BaseStats = BaseStats;
 
                 StatsSrv.updateStats = function (newStats, exerciseType, exerciseId) {
