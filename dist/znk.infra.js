@@ -2412,7 +2412,6 @@
                     var childWidth;
 
                     function mouseMoveEventHandler(evt){
-                        $log.debug('mouse move',evt.pageX);
                         var xOffset = evt.pageX - currMousePoint.x;
                         //var yOffset = evt.pageY - currMousePoint.y;
 
@@ -2420,8 +2419,7 @@
                         currMousePoint.y = evt.pageY;
                         moveScroll(xOffset,containerWidth,childWidth);
                     }
-                    function mouseUpEventHandler(evt){
-                        $log.debug('mouse up',evt.pageX);
+                    function mouseUpEventHandler(){
                         document.removeEventListener('mousemove',mouseMoveEventHandler);
                         document.removeEventListener('mouseup',mouseUpEventHandler);
                         containerWidth = null;
@@ -2429,8 +2427,6 @@
                         currMousePoint = null;
                     }
                     function mouseDownHandler(evt){
-                        $log.debug('mouse down',evt.pageX);
-
                         var child = domElement.children[0];
                         if(!child){
                             return;
@@ -2443,7 +2439,6 @@
                             x: evt.pageX,
                             y: evt.pageY
                         };
-
 
                         document.addEventListener('mousemove',mouseMoveEventHandler);
 
@@ -2482,17 +2477,14 @@
                             var scrollOnMouseWheel = $interpolate(attrs.scrollOnMouseWheel || '')(scope) !== 'false';
                             var containerWidth,childWidth;
                             function mouseWheelEventHandler(evt){
-                                $log.debug('mouse wheel event',evt);
                                 moveScroll(-evt.deltaY, containerWidth, childWidth);
                             }
                             function mouseEnterEventHandler(){
-                                $log.debug('mouse enter');
                                 containerWidth = domElement.offsetWidth;
                                 childWidth = getElementWidth(domElement.children[0]);
                                 domElement.addEventListener('mousewheel',mouseWheelEventHandler);
                             }
                             function mouseUpEventHandler(){
-                                $log.debug('mouse leave');
                                 domElement.removeEventListener('mousewheel',mouseWheelEventHandler);
                             }
                             if(scrollOnMouseWheel){
@@ -6125,6 +6117,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "            ng-click=\"onDone()\">DONE\n" +
     "    </button>\n" +
     "</div>\n" +
+    "<div class=\"shadow-container\"></div>\n" +
     "");
   $templateCache.put("components/znkExercise/core/template/btnSectionMobileTemplate.html",
     "<div ng-class=\"{ 'next-disabled' : settings.slideDirection === d.slideDirections.NONE ||  settings.slideDirection === d.slideDirections.RIGHT }\">\n" +
