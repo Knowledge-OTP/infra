@@ -41,10 +41,14 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.estimatedScore', ['znk.infra.config','znk.infra.znkExercise'])
+    angular.module('znk.infra.estimatedScore', [
+            'znk.infra.config',
+            'znk.infra.znkExercise',
+            'znk.infra.utility'
+        ])
         .run([
             'EstimatedScoreEventsHandlerSrv',
-            function(EstimatedScoreEventsHandlerSrv){
+            function (EstimatedScoreEventsHandlerSrv) {
                 EstimatedScoreEventsHandlerSrv.init();
             }
         ]);
@@ -741,8 +745,8 @@
         };
 
         this.$get = [
-            '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum','ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log',
-            function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum,ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log) {
+            '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum','ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log', 'UtilitySrv',
+            function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum,ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log, UtilitySrv) {
                 if(angular.equals({},diagnosticScoring)){
                     $log.error('EstimatedScoreEventsHandlerSrv: diagnosticScoring was not set !!!');
                 }
@@ -780,11 +784,19 @@
                     var score = 0;
 
                     var questions = section.questions;
-                    for (var i in sectionResult.questionResults) {
-                        var question = questions[i];
-                        var result = sectionResult.questionResults[i];
-                        score += _getDiagnosticQuestionPoints(question, result);
-                    }
+                    var questionsMap = UtilitySrv.array.convertToMap(questions);
+
+                    sectionResult.questionResults.forEach(function(result, i){
+                        var question = questionsMap[result.questionId];
+                        if(angular.isUndefined(question)){
+                            $log.error('EstimatedScoreEventsHandler: question for result is missing',
+                                'section id: ',section.id,
+                                'result index: ', i
+                            );
+                        }else{
+                            score += _getDiagnosticQuestionPoints(question, result);
+                        }
+                    });
                     EstimatedScoreSrv.setDiagnosticSectionScore(score, ExerciseTypeEnum.SECTION.enum, section.subjectId, section.id);
                 }
 
@@ -6136,23 +6148,33 @@
     'use strict';
 
     var svgMap = {
-        drill: 'components/znkTimeline/svg/icons/timeline-drills-icon.svg' ,
-        game: 'components/znkTimeline/svg/icons/timeline-mini-challenge-icon.svg' ,
-        tutorial: 'components/znkTimeline/svg/icons/timeline-tips-tricks-icon.svg' ,
+        drill: 'components/znkTimeline/svg/icons/timeline-drills-icon.svg',
+        game: 'components/znkTimeline/svg/icons/timeline-mini-challenge-icon.svg',
+        tutorial: 'components/znkTimeline/svg/icons/timeline-tips-tricks-icon.svg',
         section: 'components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg',
         practice: 'components/znkTimeline/svg/icons/timeline-test-icon.svg'
     };
 
-    angular.module('znk.infra.znkTimeline').service('TimelineSrv',['ExerciseTypeEnum', function(ExerciseTypeEnum) {
+    angular.module('znk.infra.znkTimeline').service('TimelineSrv', ['ExerciseTypeEnum', function (ExerciseTypeEnum) {
 
-        this.getImages = function() {
+        this.getImages = function () {
             var imgObj = {};
 
-            imgObj[ExerciseTypeEnum.TUTORIAL.enum] = {icon: svgMap.tutorial};
-            imgObj[ExerciseTypeEnum.PRACTICE.enum] = {icon: svgMap.practice};
-            imgObj[ExerciseTypeEnum.GAME.enum] = {icon: svgMap.game};
-            imgObj[ExerciseTypeEnum.SECTION.enum] = {icon: svgMap.section};
-            imgObj[ExerciseTypeEnum.DRILL.enum] = {icon: svgMap.drill};
+            if (ExerciseTypeEnum.TUTORIAL) {
+                imgObj[ExerciseTypeEnum.TUTORIAL.enum] = {icon: svgMap.tutorial};
+            }
+            if (ExerciseTypeEnum.PRACTICE) {
+                imgObj[ExerciseTypeEnum.PRACTICE.enum] = {icon: svgMap.practice};
+            }
+            if (ExerciseTypeEnum.GAME) {
+                imgObj[ExerciseTypeEnum.GAME.enum] = {icon: svgMap.game};
+            }
+            if (ExerciseTypeEnum.SECTION) {
+                imgObj[ExerciseTypeEnum.SECTION.enum] = {icon: svgMap.section};
+            }
+            if (ExerciseTypeEnum.DRILL) {
+                imgObj[ExerciseTypeEnum.DRILL.enum] = {icon: svgMap.drill};
+            }
 
             return imgObj;
         };
@@ -6161,7 +6183,7 @@
         'SvgIconSrvProvider',
         function (SvgIconSrvProvider) {
             SvgIconSrvProvider.registerSvgSources(svgMap);
-     }]);
+        }]);
 })(angular);
 
 
