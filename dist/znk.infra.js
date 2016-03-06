@@ -1643,7 +1643,7 @@
 
             return {
                 scope: {
-                    play: '=',
+                    play: '=?',
                     typeGetter: '&?type',
                     configGetter: '&?config'
                 },
