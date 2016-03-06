@@ -10,17 +10,19 @@
         function ($timeout, ZnkExerciseViewModeEnum, ZnkExerciseAnswersSrv) {
             return {
                 templateUrl: 'components/znkExercise/answerTypes/templates/selectAnswerDrv.html',
-                require: ['^answerBuilder', '^ngModel'],
+                require: ['^answerBuilder', '^ngModel', '^znkExercise'],
                 restrict:'E',
                 scope: {},
                 link: function (scope, element, attrs, ctrls) {
                     var answerBuilder = ctrls[0];
                     var ngModelCtrl = ctrls[1];
+                    var ankExerciseCtrl = ctrls[2];
 
                     var MODE_ANSWER_WITH_QUESTION = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
                         MODE_ANSWER_ONLY = ZnkExerciseViewModeEnum.ONLY_ANSWER.enum,
                         MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum,
                         MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
+                    var keyMap = {};
 
                     scope.d = {};
 
@@ -36,8 +38,22 @@
                         updateAnswersFollowingSelection(viewMode);
                     };
 
+                    var body = document.body;
+                    body.addEventListener('keydown',f);
+
+                    function f(key){
+                        var questionIndex = answerBuilder.question.__questionStatus.index;
+                        var currentSlide = ankExerciseCtrl.currentSlide;
+                        key = String.fromCharCode(key.keyCode).toUpperCase();
+                        if(questionIndex === currentSlide && angular.isDefined(keyMap[key])){
+                            scope.d.click(scope.d.answers[keyMap[key]]);
+                        }
+                    }
+
                     scope.d.getIndexChar = function(answerIndex){
-                        return ZnkExerciseAnswersSrv.selectAnswer.getAnswerIndex(answerIndex,answerBuilder.question);
+                        var key = ZnkExerciseAnswersSrv.selectAnswer.getAnswerIndex(answerIndex,answerBuilder.question);
+                        keyMap[key] = answerIndex;
+                        return key;
                     };
 
                     function updateAnswersFollowingSelection(viewMode) {
