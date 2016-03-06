@@ -31,7 +31,7 @@
 
             return {
                 scope: {
-                    play: '&',
+                    play: '=',
                     typeGetter: '&?type',
                     configGetter: '&?config'
                 },
@@ -116,7 +116,7 @@
                         currentTime += scope.config.countDown ? -INTERVAL_TIME : INTERVAL_TIME;
 
                         if(scope.config.stopOnZero && currentTime === 0){
-                            return;
+                            return scope.play === false;
                         }
 
                         updateTime(currentTime);
