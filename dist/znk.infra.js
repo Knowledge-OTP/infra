@@ -1743,7 +1743,7 @@
                         updateTime(currentTime);
                     };
 
-                    scope.$watch('play()', function (play) {
+                    scope.$watch('play', function (play) {
                         if (intervalHandler) {
                             $interval.cancel(intervalHandler);
                         }
