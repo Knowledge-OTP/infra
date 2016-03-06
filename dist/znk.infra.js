@@ -1618,6 +1618,7 @@
  *          1: timer with displayed time.
  *          2: timer with round progress bar
  *      config:
+ *          stopOnZero
  *          countDown
  *          format: defaulted to mm:ss
  *          only for type 2:
@@ -1698,7 +1699,8 @@
                     scope.type = scope.typeGetter() || 1;
                     scope.config = scope.configGetter() || {};
                     var configDefaults = {
-                        format: 'mm:ss'
+                        format: 'mm:ss',
+                        stopOnZero: true
                     };
                     scope.config = angular.extend(configDefaults, scope.config);
 
@@ -1718,10 +1720,17 @@
 
                     function tick() {
                         var currentTime = ngModelCtrl.$viewValue;
+
                         if (angular.isUndefined(currentTime)) {
                             return;
                         }
+
                         currentTime += scope.config.countDown ? -INTERVAL_TIME : INTERVAL_TIME;
+
+                        if(scope.config.stopOnZero && currentTime === 0){
+                            return;
+                        }
+
                         updateTime(currentTime);
                         ngModelCtrl.$setViewValue(currentTime);
                     }
