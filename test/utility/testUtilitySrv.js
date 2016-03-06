@@ -78,7 +78,8 @@
                 };
                 result.questionResults = exercise.questions.map(function(question,index){
                     var questionResult = {
-                        timeSpent: 0
+                        timeSpent: 0,
+                        questionId: question.id
                     };
 
                     if (!correctAnswerMap[index] && numOfUnanswered) {

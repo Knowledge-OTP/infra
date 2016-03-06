@@ -41,10 +41,14 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.estimatedScore', ['znk.infra.config','znk.infra.znkExercise'])
+    angular.module('znk.infra.estimatedScore', [
+            'znk.infra.config',
+            'znk.infra.znkExercise',
+            'znk.infra.utility'
+        ])
         .run([
             'EstimatedScoreEventsHandlerSrv',
-            function(EstimatedScoreEventsHandlerSrv){
+            function (EstimatedScoreEventsHandlerSrv) {
                 EstimatedScoreEventsHandlerSrv.init();
             }
         ]);
@@ -437,6 +441,32 @@
                     return _isFreeContent(freeContent,['exam',examKeyProp,'sections',sectionKeyProp]);
                 });
             };
+
+            this.isTutorialAvail = function(tutorialId){
+                if(isNaN(tutorialId)){
+                    return $q.reject('ContentAvailSrv: tutorial id should be a number');
+                }
+
+                return _baseIsEntityAvail().then(function(res) {
+                    if (res === true) {
+                        return true;
+                    }
+
+                    var tutorialKeyInStorage = idToKeyInStorage(tutorialId);
+
+                    var purchaseData = res[0];
+                    var freeContent = res[1];
+
+                    if(freeContent.tutorial[tutorialKeyInStorage]){
+                        return true;
+                    }
+
+                    return !!(purchaseData.tutorial === PURCHASED_ALL || purchaseData.tutorial[tutorialKeyInStorage]);
+
+                });
+
+
+            };
         }
     ]);
 })(angular);
@@ -715,8 +745,8 @@
         };
 
         this.$get = [
-            '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum','ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log',
-            function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum,ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log) {
+            '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum','ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log', 'UtilitySrv',
+            function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum,ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log, UtilitySrv) {
                 if(angular.equals({},diagnosticScoring)){
                     $log.error('EstimatedScoreEventsHandlerSrv: diagnosticScoring was not set !!!');
                 }
@@ -754,11 +784,19 @@
                     var score = 0;
 
                     var questions = section.questions;
-                    for (var i in sectionResult.questionResults) {
-                        var question = questions[i];
-                        var result = sectionResult.questionResults[i];
-                        score += _getDiagnosticQuestionPoints(question, result);
-                    }
+                    var questionsMap = UtilitySrv.array.convertToMap(questions);
+
+                    sectionResult.questionResults.forEach(function(result, i){
+                        var question = questionsMap[result.questionId];
+                        if(angular.isUndefined(question)){
+                            $log.error('EstimatedScoreEventsHandler: question for result is missing',
+                                'section id: ',section.id,
+                                'result index: ', i
+                            );
+                        }else{
+                            score += _getDiagnosticQuestionPoints(question, result);
+                        }
+                    });
                     EstimatedScoreSrv.setDiagnosticSectionScore(score, ExerciseTypeEnum.SECTION.enum, section.subjectId, section.id);
                 }
 
@@ -2412,7 +2450,6 @@
                     var childWidth;
 
                     function mouseMoveEventHandler(evt){
-                        $log.debug('mouse move',evt.pageX);
                         var xOffset = evt.pageX - currMousePoint.x;
                         //var yOffset = evt.pageY - currMousePoint.y;
 
@@ -2420,8 +2457,7 @@
                         currMousePoint.y = evt.pageY;
                         moveScroll(xOffset,containerWidth,childWidth);
                     }
-                    function mouseUpEventHandler(evt){
-                        $log.debug('mouse up',evt.pageX);
+                    function mouseUpEventHandler(){
                         document.removeEventListener('mousemove',mouseMoveEventHandler);
                         document.removeEventListener('mouseup',mouseUpEventHandler);
                         containerWidth = null;
@@ -2429,8 +2465,6 @@
                         currMousePoint = null;
                     }
                     function mouseDownHandler(evt){
-                        $log.debug('mouse down',evt.pageX);
-
                         var child = domElement.children[0];
                         if(!child){
                             return;
@@ -2443,7 +2477,6 @@
                             x: evt.pageX,
                             y: evt.pageY
                         };
-
 
                         document.addEventListener('mousemove',mouseMoveEventHandler);
 
@@ -2482,17 +2515,14 @@
                             var scrollOnMouseWheel = $interpolate(attrs.scrollOnMouseWheel || '')(scope) !== 'false';
                             var containerWidth,childWidth;
                             function mouseWheelEventHandler(evt){
-                                $log.debug('mouse wheel event',evt);
                                 moveScroll(-evt.deltaY, containerWidth, childWidth);
                             }
                             function mouseEnterEventHandler(){
-                                $log.debug('mouse enter');
                                 containerWidth = domElement.offsetWidth;
                                 childWidth = getElementWidth(domElement.children[0]);
                                 domElement.addEventListener('mousewheel',mouseWheelEventHandler);
                             }
                             function mouseUpEventHandler(){
-                                $log.debug('mouse leave');
                                 domElement.removeEventListener('mousewheel',mouseWheelEventHandler);
                             }
                             if(scrollOnMouseWheel){
@@ -2616,9 +2646,95 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.stats').factory('StatsQuerySrv', [
-        function () {
+    angular.module('znk.infra.stats').service('StatsQuerySrv', [
+        'StatsSrv',
+        function (StatsSrv) {
             var StatsQuerySrv = {};
+
+            function _getCategoryWeakness(category) {
+                if (!category.totalQuestions) {
+                    return -Infinity;
+                }
+                return (category.totalQuestions - category.correct) / (category.totalQuestions);
+            }
+
+            function WeaknessAccumlator(){
+                var currWeakestCategory = {};
+
+                function _isMostWeakSoFar(categoryWeakness){
+                    return angular.isUndefined(currWeakestCategory.weakness) || currWeakestCategory.weakness < categoryWeakness;
+                }
+
+                this.proccessCategory = function(categoryStats){
+                    var categoryWeakness = _getCategoryWeakness(categoryStats);
+                    if(_isMostWeakSoFar(categoryWeakness)){
+                        currWeakestCategory.weakness = categoryWeakness;
+                        currWeakestCategory.category = categoryStats;
+                    }
+                };
+
+                this.getWeakestCategory = function(){
+                    return currWeakestCategory.category;
+                };
+            }
+
+            StatsQuerySrv.getWeakestCategoryInLevel = function(level, optionalIds){
+                var currWeakestCategory = {};
+
+                function _isOptional(categoryId){
+                    if(!angular.isArray(optionalIds)){
+                        return true;
+                    }
+
+                    return optionalIds.indexOf(categoryId) !== -1;
+                }
+
+                function _isMostWeakSoFar(categoryWeakness){
+                    return angular.isUndefined(currWeakestCategory.weakness) || currWeakestCategory.weakness < categoryWeakness;
+                }
+
+                return StatsSrv.getLevelStats(level).then(function(levelStats){
+                    angular.forEach(levelStats, function(categoryStats){
+                        var categoryWeakness = _getCategoryWeakness(categoryStats);
+
+                        if(_isOptional(categoryStats.id) && _isMostWeakSoFar(categoryWeakness)){
+                            currWeakestCategory.weakness = categoryWeakness;
+                            currWeakestCategory.category = angular.copy(categoryStats);
+                            return;
+                        }
+                    });
+
+                    if(currWeakestCategory.weakness === -Infinity){
+                        return null;
+                    }
+
+                    return currWeakestCategory.category;
+                });
+            };
+
+            StatsQuerySrv.getWeakestCategoryInLevelUnderParent = function(parentId, level, optionalIds){
+                function _isOptional(id){
+                    if(!optionalIds.length){
+                        return true;
+                    }
+                    return optionalIds.indexOf(id) !== -1;
+                }
+
+                if(!angular.isArray(optionalIds)){
+                    optionalIds = [];
+                }
+
+                var weaknessAccumulator = new WeaknessAccumlator();
+                return StatsSrv.getLevelStats(level).then(function(levelStats){
+                    angular.forEach(levelStats, function(categoryStats){
+                        var isRelevant = (categoryStats.parentsIds.indexOf(parentId) !== -1) && _isOptional(categoryStats.id);
+                        if(isRelevant){
+                            weaknessAccumulator.proccessCategory(categoryStats);
+                        }
+                    });
+                    return weaknessAccumulator.getWeakestCategory();
+                });
+            };
 
             return StatsQuerySrv;
         }
@@ -2759,6 +2875,13 @@
                 }
 
                 StatsSrv.getStats = getStats;
+
+                StatsSrv.getLevelStats = function(level){
+                    var levelKey = _getLevelKey(level);
+                    return getStats().then(function(statsData){
+                        return statsData[levelKey];
+                    });
+                };
 
                 StatsSrv.BaseStats = BaseStats;
 
@@ -6025,23 +6148,33 @@
     'use strict';
 
     var svgMap = {
-        drill: 'components/znkTimeline/svg/icons/timeline-drills-icon.svg' ,
-        game: 'components/znkTimeline/svg/icons/timeline-mini-challenge-icon.svg' ,
-        tutorial: 'components/znkTimeline/svg/icons/timeline-tips-tricks-icon.svg' ,
+        drill: 'components/znkTimeline/svg/icons/timeline-drills-icon.svg',
+        game: 'components/znkTimeline/svg/icons/timeline-mini-challenge-icon.svg',
+        tutorial: 'components/znkTimeline/svg/icons/timeline-tips-tricks-icon.svg',
         section: 'components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg',
         practice: 'components/znkTimeline/svg/icons/timeline-test-icon.svg'
     };
 
-    angular.module('znk.infra.znkTimeline').service('TimelineSrv',['ExerciseTypeEnum', function(ExerciseTypeEnum) {
+    angular.module('znk.infra.znkTimeline').service('TimelineSrv', ['ExerciseTypeEnum', function (ExerciseTypeEnum) {
 
-        this.getImages = function() {
+        this.getImages = function () {
             var imgObj = {};
 
-            imgObj[ExerciseTypeEnum.TUTORIAL.enum] = {icon: svgMap.tutorial};
-            imgObj[ExerciseTypeEnum.PRACTICE.enum] = {icon: svgMap.practice};
-            imgObj[ExerciseTypeEnum.GAME.enum] = {icon: svgMap.game};
-            imgObj[ExerciseTypeEnum.SECTION.enum] = {icon: svgMap.section};
-            imgObj[ExerciseTypeEnum.DRILL.enum] = {icon: svgMap.drill};
+            if (ExerciseTypeEnum.TUTORIAL) {
+                imgObj[ExerciseTypeEnum.TUTORIAL.enum] = {icon: svgMap.tutorial};
+            }
+            if (ExerciseTypeEnum.PRACTICE) {
+                imgObj[ExerciseTypeEnum.PRACTICE.enum] = {icon: svgMap.practice};
+            }
+            if (ExerciseTypeEnum.GAME) {
+                imgObj[ExerciseTypeEnum.GAME.enum] = {icon: svgMap.game};
+            }
+            if (ExerciseTypeEnum.SECTION) {
+                imgObj[ExerciseTypeEnum.SECTION.enum] = {icon: svgMap.section};
+            }
+            if (ExerciseTypeEnum.DRILL) {
+                imgObj[ExerciseTypeEnum.DRILL.enum] = {icon: svgMap.drill};
+            }
 
             return imgObj;
         };
@@ -6050,7 +6183,7 @@
         'SvgIconSrvProvider',
         function (SvgIconSrvProvider) {
             SvgIconSrvProvider.registerSvgSources(svgMap);
-     }]);
+        }]);
 })(angular);
 
 
@@ -6125,6 +6258,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "            ng-click=\"onDone()\">DONE\n" +
     "    </button>\n" +
     "</div>\n" +
+    "<div class=\"shadow-container\"></div>\n" +
     "");
   $templateCache.put("components/znkExercise/core/template/btnSectionMobileTemplate.html",
     "<div ng-class=\"{ 'next-disabled' : settings.slideDirection === d.slideDirections.NONE ||  settings.slideDirection === d.slideDirections.RIGHT }\">\n" +
@@ -6216,7 +6350,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkExercise/core/template/znkExercisePagerDrv.html",
     "<znk-scroll>\n" +
     "    <div class=\"pager-items-wrapper\">\n" +
-    "        <div class=\"pager-item\"\n" +
+    "        <div class=\"pager-item noselect\"\n" +
     "             ng-repeat=\"question in questions track by question.id\"\n" +
     "             question-status=\"question.__questionStatus\"\n" +
     "             question=\"question\"\n" +

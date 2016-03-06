@@ -3,18 +3,13 @@ describe('testing service "ContentAvailSrv":', function () {
 
     beforeEach(module('znk.infra.contentAvail', 'htmlTemplates','storage.mock', 'testUtility' /*''devicePlatformSrv.mock'*/));
 
-    var $rootScope, ContentAvailSrv,StorageSrv,actions, DevicePlatformSrv, /*DevicePlatformEnum,*/ AppRateStatusEnum, TestStorage;
+    var $rootScope, ContentAvailSrv,actions, TestStorage;
     beforeEach(inject([
         '$injector',
         function ($injector) {
             $rootScope = $injector.get('$rootScope');
             ContentAvailSrv = $injector.get('ContentAvailSrv');
             TestStorage = $injector.get('testStorage');
-            //DevicePlatformSrv = $injector.get('DevicePlatformSrv');
-            //DevicePlatformEnum = $injector.get('DevicePlatformEnum');
-            //AppRateStatusEnum = $injector.get('AppRateStatusEnum');
-
-            var $q = $injector.get('$q');
 
             TestStorage.db.users.$$uid.purchase = {
                 daily: 0,
@@ -68,6 +63,21 @@ describe('testing service "ContentAvailSrv":', function () {
                 var purchaseData = this.getPurchaseData();
                 purchaseData.daily = dailyOrder;
             };
+            actions.setFreeTutorial = function(tutorialId){
+                if(!TestStorage.db.freeContent.tutorial){
+                    TestStorage.db.freeContent.tutorial = {};
+                }
+                TestStorage.db.freeContent.tutorial['id_' + tutorialId] = true;
+            };
+            actions.purchaseTutorial = function(tutorialIdOrAll){
+                var purchaseData = this.getPurchaseData();
+
+                if(angular.isString(tutorialIdOrAll)){
+                    purchaseData.tutorial = tutorialIdOrAll;
+                }else{
+                    purchaseData.tutorial['id_' + tutorialIdOrAll] = true;
+                }
+            };
         }])
     );
 
@@ -89,7 +99,7 @@ describe('testing service "ContentAvailSrv":', function () {
         expect(actions.isDailyAvail(1)).toBeTruthy();
     });
 
-    it('given user without purchased exams and without subscription when checking if available section then only return true of it free',function(){
+    it('given user without purchased exams and without subscription when checking if available section then only return true it free',function(){
         actions.setFreeSection(25,1116);
         expect(actions.isSectionAvail(25,11)).toBeFalsy();
         expect(actions.isSectionAvail(3,1116)).toBeFalsy();
@@ -145,19 +155,41 @@ describe('testing service "ContentAvailSrv":', function () {
     });
 
     it('given user purchased all exams when asking if exam available then should always return true',function(){
-        actions.purchaseExam('all')
+        actions.purchaseExam('all');
         expect(actions.isExamAvail(30)).toBeTruthy();
         expect(actions.isExamAvail(35)).toBeTruthy();
     });
 
-    xit('given user has review the app when asking for free content which blocked by app rate then it should be available',function(){
-        StorageSrv.__appUserData.hint ={
-            hintsStatus:{
-                appRate: AppRateStatusEnum.rate.enum
-            }
-        };
-        expect(actions.isSectionAvail(25,1141)).toBeTruthy();
-        expect(actions.isSectionAvail(25,1164)).toBeTruthy();
-        expect(actions.isSectionAvail(25,1181)).toBeTruthy();
+    it('when user has subscription then isTutorialAvail should return true for all tutorial',function(){
+        expect(actions.isTutorialAvail(10)).toBeFalsy();
+        actions.addSubscription();
+        expect(actions.isTutorialAvail(10)).toBeTruthy();
+    });
+
+    it('when user has no subscription neither purchased tutorials then when asking if tutorial avail true should be returned' +
+        'only for the free tutorials', function(){
+        actions.setFreeTutorial(15);
+        expect(actions.isTutorialAvail(17)).toBeFalsy();
+        expect(actions.isTutorialAvail(15)).toBeTruthy();
+    });
+
+    it('when user has purchased a tutorial then when asking if it avail it should return true', function(){
+        expect(actions.isTutorialAvail(20)).toBeFalsy();
+        expect(actions.isTutorialAvail(30)).toBeFalsy();
+
+        actions.purchaseTutorial(20);
+        expect(actions.isTutorialAvail(20)).toBeTruthy();
+
+        actions.purchaseTutorial(30);
+        expect(actions.isTutorialAvail(30)).toBeTruthy();
+
+        expect(actions.isTutorialAvail(40)).toBeFalsy();
+    });
+
+    it('when user has purchased all tutorials then when asking if tutorial is avail should always true should',function(){
+        expect(actions.isTutorialAvail(20)).toBeFalsy();
+        actions.purchaseTutorial('all');
+        expect(actions.isTutorialAvail(20)).toBeTruthy();
+        expect(actions.isTutorialAvail(30)).toBeTruthy();
     });
 });

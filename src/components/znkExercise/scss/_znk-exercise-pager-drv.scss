@@ -1,16 +1,25 @@
+znk-exercise {
+    &.done-btn-show {
+        znk-scroll {
+            width: calc(100% - 168px);
+        }
+    }
+}
+
 znk-exercise-pager {
-    //height: 44px;
-    background: $bgColor10;
+    width: calc(100% - 14px);
+    @include absolute-position(null, null, 0, null);
     box-sizing: border-box;
-    display: block;
-    @include absolute-position(null, 27px, 7px, 27px);
-    z-index: 1;
     overflow: hidden;
+    margin: 0 7px 7px;
+    background: #f5f8fa;
     border-radius: 30px;
 
     znk-scroll {
+        width: 100%;
         display: flex;
         align-items: center;
+        z-index: 2;
 
         .pager-items-wrapper {
             height: 44px;
@@ -19,14 +28,13 @@ znk-exercise-pager {
             align-items: center;
 
             .pager-item {
+                cursor: pointer;
                 vertical-align: top;
                 display: inline-block;
+                position: relative;
                 margin: {
                     right: 9px;
                 }
-
-                position: relative;
-
                 &:first-child {
                     margin: {
                         left: 11px;
