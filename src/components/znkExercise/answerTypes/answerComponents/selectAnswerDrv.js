@@ -39,9 +39,9 @@
                     };
 
                     var body = document.body;
-                    body.addEventListener('keydown',f);
+                    body.addEventListener('keydown',keyboardHandler);
 
-                    function f(key){
+                    function keyboardHandler(key){
                         var questionIndex = answerBuilder.question.__questionStatus.index;
                         var currentSlide = ankExerciseCtrl.currentSlide;
                         key = String.fromCharCode(key.keyCode).toUpperCase();
