@@ -6119,7 +6119,7 @@
                             locationImgY  = locationImgY + 2;
                             locationImgX  = locationImgX + 2;
                         } else if(dataObj.lastLine.length > 2 && data.exerciseType === ExerciseTypeEnum.SECTION.enum) {
-                            src = settings.images[2].icon;
+                            src = settings.images[ExerciseTypeEnum.SECTION.val].icon;
                         } else {
                             src = settings.images[data.exerciseType].icon;
                         }
@@ -6171,10 +6171,12 @@
             }
             if (ExerciseTypeEnum.SECTION) {
                 imgObj[ExerciseTypeEnum.SECTION.enum] = {icon: svgMap.section};
+                imgObj[ExerciseTypeEnum.SECTION.val] = {icon: svgMap.practice};
             }
             if (ExerciseTypeEnum.DRILL) {
                 imgObj[ExerciseTypeEnum.DRILL.enum] = {icon: svgMap.drill};
             }
+
 
             return imgObj;
         };
