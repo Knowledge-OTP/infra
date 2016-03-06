@@ -6,17 +6,20 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('selectAnswer', [
-        '$timeout', 'ZnkExerciseViewModeEnum', 'ZnkExerciseAnswersSrv',
-        function ($timeout, ZnkExerciseViewModeEnum, ZnkExerciseAnswersSrv) {
+        '$timeout', 'ZnkExerciseViewModeEnum', 'ZnkExerciseAnswersSrv', 'ZnkExerciseEvents',
+        function ($timeout, ZnkExerciseViewModeEnum, ZnkExerciseAnswersSrv, ZnkExerciseEvents) {
             return {
                 templateUrl: 'components/znkExercise/answerTypes/templates/selectAnswerDrv.html',
-                require: ['^answerBuilder', '^ngModel', '^znkExercise'],
+                require: ['^answerBuilder', '^ngModel'],
                 restrict:'E',
                 scope: {},
                 link: function (scope, element, attrs, ctrls) {
                     var answerBuilder = ctrls[0];
                     var ngModelCtrl = ctrls[1];
-                    var ankExerciseCtrl = ctrls[2];
+                    var questionIndex = answerBuilder.question.__questionStatus.index;
+                    var currentSlide = answerBuilder.getCurrentIndex();    // current question/slide in the viewport
+                    var body = document.body;
+
 
                     var MODE_ANSWER_WITH_QUESTION = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
                         MODE_ANSWER_ONLY = ZnkExerciseViewModeEnum.ONLY_ANSWER.enum,
@@ -38,14 +41,23 @@
                         updateAnswersFollowingSelection(viewMode);
                     };
 
-                    var body = document.body;
-                    body.addEventListener('keydown',keyboardHandler);
+
+                    if(questionIndex === currentSlide){
+                        body.addEventListener('keydown',keyboardHandler);
+                    }
+
+                    scope.$on(ZnkExerciseEvents.QUESTION_CHANGED,function(event,value ,prevValue ,currQuestion){
+                        var currentSlide = currQuestion.__questionStatus.index;
+                        if(questionIndex !== currentSlide){
+                            body.removeEventListener('keydown',keyboardHandler);
+                        }else{
+                            body.addEventListener('keydown',keyboardHandler);
+                        }
+                    });
 
                     function keyboardHandler(key){
-                        var questionIndex = answerBuilder.question.__questionStatus.index;
-                        var currentSlide = ankExerciseCtrl.currentSlide;
                         key = String.fromCharCode(key.keyCode).toUpperCase();
-                        if(questionIndex === currentSlide && angular.isDefined(keyMap[key])){
+                        if(angular.isDefined(keyMap[key])){
                             scope.d.click(scope.d.answers[keyMap[key]]);
                         }
                     }
@@ -115,6 +127,10 @@
 
                     scope.$on('exercise:viewModeChanged', function () {
                         ngModelCtrl.$render();
+                    });
+
+                    scope.$on('$destroy',function(){
+                        body.removeEventListener('keydown',keyboardHandler);
                     });
                 }
             };
