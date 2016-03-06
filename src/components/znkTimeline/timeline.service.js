@@ -25,10 +25,12 @@
             }
             if (ExerciseTypeEnum.SECTION) {
                 imgObj[ExerciseTypeEnum.SECTION.enum] = {icon: svgMap.section};
+                imgObj[ExerciseTypeEnum.SECTION.val] = {icon: svgMap.practice};
             }
             if (ExerciseTypeEnum.DRILL) {
                 imgObj[ExerciseTypeEnum.DRILL.enum] = {icon: svgMap.drill};
             }
+
 
             return imgObj;
         };

@@ -212,7 +212,7 @@
                             locationImgY  = locationImgY + 2;
                             locationImgX  = locationImgX + 2;
                         } else if(dataObj.lastLine.length > 2 && data.exerciseType === ExerciseTypeEnum.SECTION.enum) {
-                            src = settings.images[ExerciseTypeEnum.PRACTICE.enum].icon;
+                            src = settings.images[ExerciseTypeEnum.SECTION.val].icon;
                         } else {
                             src = settings.images[data.exerciseType].icon;
                         }
