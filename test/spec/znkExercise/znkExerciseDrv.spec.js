@@ -695,15 +695,15 @@ describe('testing directive "znkExerciseDrv":', function () {
         expect(content.hasClass('done-btn-show')).toBeFalsy();
     });
 
-    it('given view mode is review and initForceDoneBtnDisplay is true then it still should hide the done button',function(){
+    it('given view mode is review and initForceDoneBtnDisplay is true then only done-btn-show class should be added',function(){
         var scopeSettings = {
             viewMode: ZnkExerciseViewModeEnum.REVIEW.enum,
             initForceDoneBtnDisplay: true
         };
         var content = createDirectiveHtml(undefined, undefined, scopeSettings).content;
 
-        expect(content.hasClass('done-btn-hide')).toBeTruthy();
-        expect(content.hasClass('done-btn-show')).toBeFalsy();
+        expect(content.hasClass('done-btn-hide')).toBeFalsy();
+        expect(content.hasClass('done-btn-show')).toBeTruthy();
     });
 
     it('when question and relevant answer are dynamically added then questions number changed event should be broadcast',function(){
