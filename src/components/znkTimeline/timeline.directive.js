@@ -1,8 +1,8 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkTimeline').directive('znkTimeline',['$window', '$templateCache', 'ExerciseTypeEnum', 'TimelineSrv',
-        function($window, $templateCache, ExerciseTypeEnum, TimelineSrv) {
+    angular.module('znk.infra.znkTimeline').directive('znkTimeline',['$window', '$templateCache', 'TimelineSrv',
+        function($window, $templateCache, TimelineSrv) {
         var directive = {
             restrict: 'A',
             scope: {
@@ -113,7 +113,8 @@
                             },
                             exerciseType: value.exerciseType,
                             exerciseId: value.exerciseId,
-                            score: value.score
+                            score: value.score,
+                            iconKey: value.iconKey || false
                         }, false, isLast);
 
                         if(value.score > dataObj.biggestScore.score) {
@@ -153,7 +154,6 @@
                     }
 
                     var subLocation = img / 2;
-                    var imgBig;
 
                     lastLine = data;
                     dataObj.lastLine.push(lastLine);
@@ -175,13 +175,11 @@
                             arc = arc * 1.5;
                             img = img + 5;
                             subLocation = img / 2;
-                            imgBig = true;
                         }
                     } else if(isLast) {
                         arc = arc * 1.5;
                         img = img + 5;
                         subLocation = img / 2;
-                        imgBig = true;
                     }
 
 
@@ -203,28 +201,18 @@
                         var locationImgY = data.lineTo.y - subLocation;
                         var locationImgX = data.lineTo.x - subLocation;
 
-                        if(dataObj.lastLine.length === 2 && data.exerciseType === ExerciseTypeEnum.SECTION.enum) {
-                            src = settings.images[data.exerciseType].icon;
-                            img = (imgBig) ? img : 15;
-                            if(angular.isDefined(settings.isMobile) && !settings.isMobile) {
-                                img = (imgBig) ? img : 20;
-                            }
-                            locationImgY  = locationImgY + 2;
-                            locationImgX  = locationImgX + 2;
-                        } else if(dataObj.lastLine.length > 2 && data.exerciseType === ExerciseTypeEnum.SECTION.enum) {
-                            src = settings.images[ExerciseTypeEnum.SECTION.val].icon;
-                        } else {
-                            src = settings.images[data.exerciseType].icon;
+                        if (data.iconKey) {
+                            src = settings.images[data.iconKey];
+
+                            var svg = $templateCache.get(src);
+                            var mySrc = (svg) ? 'data:image/svg+xml;base64,'+$window.btoa(svg) : src;
+
+                            imageObj.onload = function() {
+                                ctx.drawImage(imageObj, locationImgX, locationImgY, img, img);
+                            };
+
+                            imageObj.src = mySrc;
                         }
-
-                        var svg = $templateCache.get(src);
-                        var mySrc = (svg) ? 'data:image/svg+xml;base64,'+$window.btoa(svg) : src;
-
-                        imageObj.onload = function() {
-                            ctx.drawImage(imageObj, locationImgX, locationImgY, img, img);
-                        };
-
-                        imageObj.src = mySrc;
                     }
 
                 }
