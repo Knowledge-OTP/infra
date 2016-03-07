@@ -19,9 +19,11 @@
 
                 var StatsSrv = {};
 
-                function _getCategoryLookup() {
-                    return $injector.invoke(getCategoryLookup);
-                }
+                var _getCategoryLookup = function() {
+                    return $injector.invoke(getCategoryLookup).then(function(categoryMap){
+                        return categoryMap;
+                    });
+                };
 
                 function BaseStats(id, addInitOffset) {
                     if (angular.isDefined(id)) {
@@ -67,26 +69,6 @@
                     return StorageSrv.set(STATS_PATH, newStats);
                 }
 
-                //function _baseStatsGetter(name) {
-                //    return getStats().then(function (dailyPersonalization) {
-                //        return dailyPersonalization[name + 'Stats'];
-                //    });
-                //}
-                //
-                //function _getCategoryWeakness(category) {
-                //    if (!category.totalQuestions) {
-                //        return -Infinity;
-                //    }
-                //    return (category.totalQuestions - category.correct) / (category.totalQuestions);
-                //}
-                //
-                //function _getSpecificCategoryWeakness(specificCategory) {
-                //    if (!specificCategory.totalQuestions) {
-                //        return -Infinity;
-                //    }
-                //    return (specificCategory.totalQuestions - specificCategory.correct) / (specificCategory.totalQuestions);
-                //}
-
                 function _baseStatsUpdater(currStat, newStat) {
                     currStat.totalQuestions += newStat.totalQuestions;
                     currStat.correct += newStat.correct;
@@ -99,42 +81,34 @@
                     return lookUp[categoryId] ? lookUp[categoryId].parentId : lookUp[categoryId];
                 }
 
-                //function _weakestSpecificCategory(specificCategoriesForGeneralCategory, allSpecificCategory, specificCategoryDataArr, subjectId, generalCategoryId) {
-                //    specificCategoriesForGeneralCategory.forEach(function (specificCategoryId) {
-                //        var optionalSpecificCategoryData = allSpecificCategory[specificCategoryId];
-                //        if (!optionalSpecificCategoryData) {
-                //            optionalSpecificCategoryData = new BaseStats(specificCategoryId, subjectId, generalCategoryId);
-                //        }
-                //        specificCategoryDataArr.push(optionalSpecificCategoryData);
-                //    });
-                //}
-                //
-                //function _weakestGeneralCategory(gcForSubject, allGeneralCategory, generalCategoryDataArr, subjectId) {
-                //    gcForSubject.forEach(function (generalCategoryId) {
-                //        var optionalGeneralCategoryData = allGeneralCategory[generalCategoryId];
-                //        if (!optionalGeneralCategoryData) {
-                //            optionalGeneralCategoryData = new BaseStats(generalCategoryId, subjectId);
-                //        }
-                //        generalCategoryDataArr.push(optionalGeneralCategoryData);
-                //    });
-                //}
-
-                function _getLevelKey(level) {
-                    return 'level' + level + 'Categories';
-                }
-
-                function _getCategoryKey(categoryId){
-                    return 'id_' + categoryId;
-                }
-
                 function _getProcessedExerciseKey(exerciseType, exerciseId){
                     return exerciseType + '_' + exerciseId;
                 }
 
+                StatsSrv.getLevelKey = function(level) {
+                    return 'level' + level + 'Categories';
+                };
+
+                StatsSrv.getCategoryKey = function (categoryId){
+                    return 'id_' + categoryId;
+                };
+
+                StatsSrv.getAncestorIds = function(categoryId){
+                    var parentIds = [];
+                    return _getCategoryLookup().then(function(categoryLookUp){
+                        var categoryIdToAdd = _getParentCategoryId(categoryLookUp, +categoryId);
+                        while (categoryIdToAdd !== null && angular.isDefined(categoryIdToAdd)) {
+                            parentIds.push(categoryIdToAdd);
+                            categoryIdToAdd = _getParentCategoryId(categoryLookUp, categoryIdToAdd);
+                        }
+                        return parentIds;
+                    });
+                };
+
                 StatsSrv.getStats = getStats;
 
                 StatsSrv.getLevelStats = function(level){
-                    var levelKey = _getLevelKey(level);
+                    var levelKey = StatsSrv.getLevelKey(level);
                     return getStats().then(function(statsData){
                         return statsData[levelKey];
                     });
@@ -143,52 +117,48 @@
                 StatsSrv.BaseStats = BaseStats;
 
                 StatsSrv.updateStats = function (newStats, exerciseType, exerciseId) {
-                    var getCategoryLookupProm = _getCategoryLookup();
-                    var getStatsProm = getStats();
                     var processedExerciseKey = _getProcessedExerciseKey(exerciseType, exerciseId);
-                    return $q.all([getCategoryLookupProm, getStatsProm]).then(function (res) {
-                        var categoryLookUp = res[0];
-                        var stats = res[1];
-
+                    return getStats().then(function (stats) {
                         var isExerciseRecorded = stats.processedExercises[processedExerciseKey];
                         if(isExerciseRecorded){
                             return;
                         }
 
                         angular.forEach(newStats, function (newStat, categoryId) {
-                            var categoriesToUpdate = [];
-                            var categoryIdToAdd = +categoryId;
-                            while (categoryIdToAdd !== null && angular.isDefined(categoryIdToAdd)) {
-                                categoriesToUpdate.unshift(categoryIdToAdd);
-                                categoryIdToAdd = _getParentCategoryId(categoryLookUp, categoryIdToAdd);
-                            }
+                            StatsSrv.getAncestorIds(categoryId).then(function(categoriesToUpdate){
+                                categoriesToUpdate.forEach(function (categoryId, index) {
+                                    var level = index + 1;
+                                    var levelKey = StatsSrv.getLevelKey(level);
+                                    var levelStats = stats[levelKey];
+                                    if (!levelStats) {
+                                        levelStats = {};
 
-                            categoriesToUpdate.forEach(function (categoryId, index) {
-                                var level = index + 1;
-                                var levelKey = _getLevelKey(level);
-                                var levelStats = stats[levelKey];
-                                if (!levelStats) {
-                                    levelStats = {};
-
-                                    stats[levelKey] = levelStats;
-                                }
-
-                                var categoryKey = _getCategoryKey(categoryId);
-                                var categoryStats = levelStats[categoryKey];
-                                if(!categoryStats){
-                                    categoryStats = new BaseStats(categoryId,true);
-
-                                    var parentsIds = categoriesToUpdate.slice(0,index);
-                                    if(parentsIds.length){
-                                        parentsIds.reverse();//parent ids order should be from the bottom to the top
-                                        categoryStats.parentsIds = parentsIds;
+                                        stats[levelKey] = levelStats;
                                     }
 
-                                    levelStats[categoryKey] = categoryStats;
-                                }
+                                    var categoryKey = StatsSrv.getCategoryKey(categoryId);
+                                    var categoryStats = levelStats[categoryKey];
+                                    if(!categoryStats){
+                                        categoryStats = new BaseStats(categoryId,true);
 
-                                _baseStatsUpdater(categoryStats,newStat);
+                                        var parentsIds = categoriesToUpdate.slice(0,index);
+                                        if(parentsIds.length){
+                                            parentsIds.reverse();//parent ids order should be from the bottom to the top
+                                            categoryStats.parentsIds = parentsIds;
+                                        }
+
+                                        levelStats[categoryKey] = categoryStats;
+                                    }
+
+                                    _baseStatsUpdater(categoryStats,newStat);
+                                });
                             });
+
+                            //_getAncestorIds();
+                            //while (categoryIdToAdd !== null && angular.isDefined(categoryIdToAdd)) {
+                            //    categoriesToUpdate.unshift(categoryIdToAdd);
+                            //    categoryIdToAdd = _getParentCategoryId(categoryLookUp, categoryIdToAdd);
+                            //}
                         });
                         stats.processedExercises[processedExerciseKey] = true;
                         return setStats(stats);
@@ -202,6 +172,7 @@
                         return !!stats.processedExercises[processedExerciseKey];
                     });
                 };
+
                 //StatsSrv.getGeneralCategoryStats = function () {
                 //    return _baseStatsGetter('generalCategory');
                 //};

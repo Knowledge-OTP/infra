@@ -2,7 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.utility').factory('UtilitySrv', [
-        function () {
+        '$q',
+        function ($q) {
             var UtilitySrv = {};
 
             //general utility functions
@@ -41,6 +42,17 @@
                 return map;
             };
 
+            UtilitySrv.fn = {};
+
+            UtilitySrv.fn.singletonPromise = function(promGetter){
+                var prom;
+                return function(){
+                    if(!prom){
+                        prom = $q.when(angular.isFunction(promGetter) ? promGetter() : promGetter);
+                    }
+                    return prom;
+                };
+            };
             return UtilitySrv;
         }
     ]);

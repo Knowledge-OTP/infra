@@ -114,10 +114,14 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.stats', ['znk.infra.enum','znk.infra.znkExercise'])
+    angular.module('znk.infra.stats', [
+            'znk.infra.enum',
+            'znk.infra.znkExercise',
+            'znk.infra.utility'
+        ])
         .run([
             'StatsEventsHandlerSrv',
-            function(StatsEventsHandlerSrv){
+            function (StatsEventsHandlerSrv) {
                 StatsEventsHandlerSrv.init();
             }
         ]);
@@ -2647,8 +2651,8 @@
     'use strict';
 
     angular.module('znk.infra.stats').service('StatsQuerySrv', [
-        'StatsSrv',
-        function (StatsSrv) {
+        'StatsSrv', '$q',
+        function (StatsSrv, $q) {
             var StatsQuerySrv = {};
 
             function _getCategoryWeakness(category) {
@@ -2658,81 +2662,119 @@
                 return (category.totalQuestions - category.correct) / (category.totalQuestions);
             }
 
-            function WeaknessAccumlator(){
+            function WeaknessAccumulator() {
                 var currWeakestCategory = {};
 
-                function _isMostWeakSoFar(categoryWeakness){
+                function _isMostWeakSoFar(categoryWeakness) {
                     return angular.isUndefined(currWeakestCategory.weakness) || currWeakestCategory.weakness < categoryWeakness;
                 }
 
-                this.proccessCategory = function(categoryStats){
+                this.proccessCategory = function (categoryStats) {
                     var categoryWeakness = _getCategoryWeakness(categoryStats);
-                    if(_isMostWeakSoFar(categoryWeakness)){
+                    if (_isMostWeakSoFar(categoryWeakness)) {
                         currWeakestCategory.weakness = categoryWeakness;
                         currWeakestCategory.category = categoryStats;
                     }
                 };
 
-                this.getWeakestCategory = function(){
+                this.getWeakestCategory = function () {
                     return currWeakestCategory.category;
                 };
             }
 
-            StatsQuerySrv.getWeakestCategoryInLevel = function(level, optionalIds){
-                var currWeakestCategory = {};
+            //StatsQuerySrv.getWeakestCategoryInLevel = function (level, optionalIds) {
+            //    var currWeakestCategory = {};
+            //
+            //    function _isOptional(categoryId) {
+            //        if (!angular.isArray(optionalIds)) {
+            //            return true;
+            //        }
+            //
+            //        return optionalIds.indexOf(categoryId) !== -1;
+            //    }
+            //
+            //    function _isMostWeakSoFar(categoryWeakness) {
+            //        return angular.isUndefined(currWeakestCategory.weakness) || currWeakestCategory.weakness < categoryWeakness;
+            //    }
+            //
+            //    return StatsSrv.getLevelStats(level).then(function (levelStats) {
+            //        angular.forEach(levelStats, function (categoryStats) {
+            //            var categoryWeakness = _getCategoryWeakness(categoryStats);
+            //
+            //            if (_isOptional(categoryStats.id) && _isMostWeakSoFar(categoryWeakness)) {
+            //                currWeakestCategory.weakness = categoryWeakness;
+            //                currWeakestCategory.category = angular.copy(categoryStats);
+            //                return;
+            //            }
+            //        });
+            //
+            //        if (currWeakestCategory.weakness === -Infinity) {
+            //            return null;
+            //        }
+            //
+            //        return currWeakestCategory.category;
+            //    });
+            //};
 
-                function _isOptional(categoryId){
-                    if(!angular.isArray(optionalIds)){
+            StatsQuerySrv.getWeakestCategoryInLevel = function (level, optionalIds, parentId) {
+                function _isOptional(categoryStats) {
+                    if (!optionalIds.length && angular.isUndefined(parentId)) {
                         return true;
                     }
 
-                    return optionalIds.indexOf(categoryId) !== -1;
-                }
-
-                function _isMostWeakSoFar(categoryWeakness){
-                    return angular.isUndefined(currWeakestCategory.weakness) || currWeakestCategory.weakness < categoryWeakness;
-                }
-
-                return StatsSrv.getLevelStats(level).then(function(levelStats){
-                    angular.forEach(levelStats, function(categoryStats){
-                        var categoryWeakness = _getCategoryWeakness(categoryStats);
-
-                        if(_isOptional(categoryStats.id) && _isMostWeakSoFar(categoryWeakness)){
-                            currWeakestCategory.weakness = categoryWeakness;
-                            currWeakestCategory.category = angular.copy(categoryStats);
-                            return;
-                        }
-                    });
-
-                    if(currWeakestCategory.weakness === -Infinity){
-                        return null;
+                    var id = categoryStats.id;
+                    if (optionalIds.length && (optionalIds.indexOf(id) === -1)) {
+                        return false;
                     }
 
-                    return currWeakestCategory.category;
-                });
-            };
-
-            StatsQuerySrv.getWeakestCategoryInLevelUnderParent = function(parentId, level, optionalIds){
-                function _isOptional(id){
-                    if(!optionalIds.length){
-                        return true;
+                    var parentsIds = categoryStats.parentsIds;
+                    if (angular.isDefined(parentId) && parentsIds.indexOf(parentId) === -1) {
+                        return false;
                     }
-                    return optionalIds.indexOf(id) !== -1;
+
+                    return true;
                 }
 
-                if(!angular.isArray(optionalIds)){
+                if (!angular.isArray(optionalIds)) {
                     optionalIds = [];
                 }
 
-                var weaknessAccumulator = new WeaknessAccumlator();
-                return StatsSrv.getLevelStats(level).then(function(levelStats){
-                    angular.forEach(levelStats, function(categoryStats){
-                        var isRelevant = (categoryStats.parentsIds.indexOf(parentId) !== -1) && _isOptional(categoryStats.id);
-                        if(isRelevant){
-                            weaknessAccumulator.proccessCategory(categoryStats);
-                        }
+                return StatsSrv.getLevelStats(level).then(function (levelStats) {
+                    var iteratedObjProm = $q.when();
+                    var iteratedObj = {};
+
+                    if (optionalIds.length) {
+                        var allProm = [];
+                        optionalIds.forEach(function (categoryId) {
+                            var categoryKey = StatsSrv.getCategoryKey(categoryId);
+
+                            if (levelStats && levelStats[categoryKey]) {
+                                iteratedObj[categoryKey] = levelStats[categoryKey];
+                            } else {
+                                var prom = StatsSrv.getAncestorIds(categoryId).then(function (parentsIds) {
+                                    iteratedObj[categoryKey] = new StatsSrv.BaseStats(categoryId, true);
+                                    iteratedObj[categoryKey].parentsIds = parentsIds;
+                                });
+                                allProm.push(prom);
+                            }
+                        });
+                        iteratedObjProm = $q.all(allProm);
+                    } else {
+                        iteratedObjProm = $q.when();
+                        iteratedObj = levelStats;
+                    }
+
+                    return iteratedObjProm.then(function () {
+                        var weaknessAccumulator = new WeaknessAccumulator();
+                        angular.forEach(iteratedObj, function (categoryStats) {
+                            if (_isOptional(categoryStats)) {
+                                weaknessAccumulator.proccessCategory(categoryStats);
+                            }
+                        });
+
+                        return weaknessAccumulator.getWeakestCategory();
                     });
-                    return weaknessAccumulator.getWeakestCategory();
+
                 });
             };
 
@@ -2762,9 +2804,11 @@
 
                 var StatsSrv = {};
 
-                function _getCategoryLookup() {
-                    return $injector.invoke(getCategoryLookup);
-                }
+                var _getCategoryLookup = function() {
+                    return $injector.invoke(getCategoryLookup).then(function(categoryMap){
+                        return categoryMap;
+                    });
+                };
 
                 function BaseStats(id, addInitOffset) {
                     if (angular.isDefined(id)) {
@@ -2810,26 +2854,6 @@
                     return StorageSrv.set(STATS_PATH, newStats);
                 }
 
-                //function _baseStatsGetter(name) {
-                //    return getStats().then(function (dailyPersonalization) {
-                //        return dailyPersonalization[name + 'Stats'];
-                //    });
-                //}
-                //
-                //function _getCategoryWeakness(category) {
-                //    if (!category.totalQuestions) {
-                //        return -Infinity;
-                //    }
-                //    return (category.totalQuestions - category.correct) / (category.totalQuestions);
-                //}
-                //
-                //function _getSpecificCategoryWeakness(specificCategory) {
-                //    if (!specificCategory.totalQuestions) {
-                //        return -Infinity;
-                //    }
-                //    return (specificCategory.totalQuestions - specificCategory.correct) / (specificCategory.totalQuestions);
-                //}
-
                 function _baseStatsUpdater(currStat, newStat) {
                     currStat.totalQuestions += newStat.totalQuestions;
                     currStat.correct += newStat.correct;
@@ -2842,42 +2866,34 @@
                     return lookUp[categoryId] ? lookUp[categoryId].parentId : lookUp[categoryId];
                 }
 
-                //function _weakestSpecificCategory(specificCategoriesForGeneralCategory, allSpecificCategory, specificCategoryDataArr, subjectId, generalCategoryId) {
-                //    specificCategoriesForGeneralCategory.forEach(function (specificCategoryId) {
-                //        var optionalSpecificCategoryData = allSpecificCategory[specificCategoryId];
-                //        if (!optionalSpecificCategoryData) {
-                //            optionalSpecificCategoryData = new BaseStats(specificCategoryId, subjectId, generalCategoryId);
-                //        }
-                //        specificCategoryDataArr.push(optionalSpecificCategoryData);
-                //    });
-                //}
-                //
-                //function _weakestGeneralCategory(gcForSubject, allGeneralCategory, generalCategoryDataArr, subjectId) {
-                //    gcForSubject.forEach(function (generalCategoryId) {
-                //        var optionalGeneralCategoryData = allGeneralCategory[generalCategoryId];
-                //        if (!optionalGeneralCategoryData) {
-                //            optionalGeneralCategoryData = new BaseStats(generalCategoryId, subjectId);
-                //        }
-                //        generalCategoryDataArr.push(optionalGeneralCategoryData);
-                //    });
-                //}
-
-                function _getLevelKey(level) {
-                    return 'level' + level + 'Categories';
-                }
-
-                function _getCategoryKey(categoryId){
-                    return 'id_' + categoryId;
-                }
-
                 function _getProcessedExerciseKey(exerciseType, exerciseId){
                     return exerciseType + '_' + exerciseId;
                 }
 
+                StatsSrv.getLevelKey = function(level) {
+                    return 'level' + level + 'Categories';
+                };
+
+                StatsSrv.getCategoryKey = function (categoryId){
+                    return 'id_' + categoryId;
+                };
+
+                StatsSrv.getAncestorIds = function(categoryId){
+                    var parentIds = [];
+                    return _getCategoryLookup().then(function(categoryLookUp){
+                        var categoryIdToAdd = _getParentCategoryId(categoryLookUp, +categoryId);
+                        while (categoryIdToAdd !== null && angular.isDefined(categoryIdToAdd)) {
+                            parentIds.push(categoryIdToAdd);
+                            categoryIdToAdd = _getParentCategoryId(categoryLookUp, categoryIdToAdd);
+                        }
+                        return parentIds;
+                    });
+                };
+
                 StatsSrv.getStats = getStats;
 
                 StatsSrv.getLevelStats = function(level){
-                    var levelKey = _getLevelKey(level);
+                    var levelKey = StatsSrv.getLevelKey(level);
                     return getStats().then(function(statsData){
                         return statsData[levelKey];
                     });
@@ -2886,52 +2902,48 @@
                 StatsSrv.BaseStats = BaseStats;
 
                 StatsSrv.updateStats = function (newStats, exerciseType, exerciseId) {
-                    var getCategoryLookupProm = _getCategoryLookup();
-                    var getStatsProm = getStats();
                     var processedExerciseKey = _getProcessedExerciseKey(exerciseType, exerciseId);
-                    return $q.all([getCategoryLookupProm, getStatsProm]).then(function (res) {
-                        var categoryLookUp = res[0];
-                        var stats = res[1];
-
+                    return getStats().then(function (stats) {
                         var isExerciseRecorded = stats.processedExercises[processedExerciseKey];
                         if(isExerciseRecorded){
                             return;
                         }
 
                         angular.forEach(newStats, function (newStat, categoryId) {
-                            var categoriesToUpdate = [];
-                            var categoryIdToAdd = +categoryId;
-                            while (categoryIdToAdd !== null && angular.isDefined(categoryIdToAdd)) {
-                                categoriesToUpdate.unshift(categoryIdToAdd);
-                                categoryIdToAdd = _getParentCategoryId(categoryLookUp, categoryIdToAdd);
-                            }
+                            StatsSrv.getAncestorIds(categoryId).then(function(categoriesToUpdate){
+                                categoriesToUpdate.forEach(function (categoryId, index) {
+                                    var level = index + 1;
+                                    var levelKey = StatsSrv.getLevelKey(level);
+                                    var levelStats = stats[levelKey];
+                                    if (!levelStats) {
+                                        levelStats = {};
 
-                            categoriesToUpdate.forEach(function (categoryId, index) {
-                                var level = index + 1;
-                                var levelKey = _getLevelKey(level);
-                                var levelStats = stats[levelKey];
-                                if (!levelStats) {
-                                    levelStats = {};
-
-                                    stats[levelKey] = levelStats;
-                                }
-
-                                var categoryKey = _getCategoryKey(categoryId);
-                                var categoryStats = levelStats[categoryKey];
-                                if(!categoryStats){
-                                    categoryStats = new BaseStats(categoryId,true);
-
-                                    var parentsIds = categoriesToUpdate.slice(0,index);
-                                    if(parentsIds.length){
-                                        parentsIds.reverse();//parent ids order should be from the bottom to the top
-                                        categoryStats.parentsIds = parentsIds;
+                                        stats[levelKey] = levelStats;
                                     }
 
-                                    levelStats[categoryKey] = categoryStats;
-                                }
+                                    var categoryKey = StatsSrv.getCategoryKey(categoryId);
+                                    var categoryStats = levelStats[categoryKey];
+                                    if(!categoryStats){
+                                        categoryStats = new BaseStats(categoryId,true);
 
-                                _baseStatsUpdater(categoryStats,newStat);
+                                        var parentsIds = categoriesToUpdate.slice(0,index);
+                                        if(parentsIds.length){
+                                            parentsIds.reverse();//parent ids order should be from the bottom to the top
+                                            categoryStats.parentsIds = parentsIds;
+                                        }
+
+                                        levelStats[categoryKey] = categoryStats;
+                                    }
+
+                                    _baseStatsUpdater(categoryStats,newStat);
+                                });
                             });
+
+                            //_getAncestorIds();
+                            //while (categoryIdToAdd !== null && angular.isDefined(categoryIdToAdd)) {
+                            //    categoriesToUpdate.unshift(categoryIdToAdd);
+                            //    categoryIdToAdd = _getParentCategoryId(categoryLookUp, categoryIdToAdd);
+                            //}
                         });
                         stats.processedExercises[processedExerciseKey] = true;
                         return setStats(stats);
@@ -2945,6 +2957,7 @@
                         return !!stats.processedExercises[processedExerciseKey];
                     });
                 };
+
                 //StatsSrv.getGeneralCategoryStats = function () {
                 //    return _baseStatsGetter('generalCategory');
                 //};
@@ -3400,7 +3413,8 @@
     'use strict';
 
     angular.module('znk.infra.utility').factory('UtilitySrv', [
-        function () {
+        '$q',
+        function ($q) {
             var UtilitySrv = {};
 
             //general utility functions
@@ -3439,6 +3453,17 @@
                 return map;
             };
 
+            UtilitySrv.fn = {};
+
+            UtilitySrv.fn.singletonPromise = function(promGetter){
+                var prom;
+                return function(){
+                    if(!prom){
+                        prom = $q.when(angular.isFunction(promGetter) ? promGetter() : promGetter);
+                    }
+                    return prom;
+                };
+            };
             return UtilitySrv;
         }
     ]);

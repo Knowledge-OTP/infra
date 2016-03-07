@@ -5,13 +5,74 @@ describe('testing service "StatsQuerySrv":', function () {
 
     beforeEach(module(function(StatsSrvProvider) {
         function getCategoryLookup($q) {
-            return $q.when(content.category);
+            return $q.when({
+                0:{
+                    id: 0,
+                    parentId: null
+                },
+                1:{
+                    id: 1,
+                    parentId: null
+                },
+                2:{
+                    id: 2,
+                    parentId: null
+                },
+                4:{
+                    id: 4,
+                    parentId: 0
+                },
+                8:{
+                    id: 8,
+                    parentId: 1
+                },
+                11:{
+                    id: 11,
+                    parentId: 1
+                },
+                12:{
+                    id: 12,
+                    parentId: 2
+                },
+                20:{
+                    id: 20,
+                    parentId: 4
+                },
+                23:{
+                    id: 23,
+                    parentId: 4
+                },
+                75:{
+                    id: 75,
+                    parentId: 8
+                },
+                76:{
+                    id: 76,
+                    parentId: 8
+                },
+                85:{
+                    id: 85,
+                    parentId: 11
+                },
+                93:{
+                    id: 93,
+                    parentId: 12
+                },
+                102:{
+                    id: 102,
+                    parentId: 11
+                },
+                106:{
+                    id: 106,
+                    parentId: 11
+                }
+            });
         }
 
         StatsSrvProvider.setCategoryLookup(getCategoryLookup);
     }));
 
-    var $rootScope, StatsQuerySrv, SubjectEnum;
+    var $rootScope, StatsQuerySrv, SubjectEnum, StorageSrv;
     var actions;
     beforeEach(inject([
         '$injector',
@@ -159,7 +220,7 @@ describe('testing service "StatsQuerySrv":', function () {
                 }
             };
 
-            var StorageSrv = $injector.get('testStorage');
+            StorageSrv = $injector.get('testStorage');
             StorageSrv.db.users.$$uid.stats = {
                 level1Categories: level1,
                 level2Categories: level2,
@@ -196,19 +257,28 @@ describe('testing service "StatsQuerySrv":', function () {
     it('when requesting for weakest category under specific parent then one should be returned', function(){
         var parentId = 1;
         var LEVEL = 3;
-        var weakestCategory = actions.getWeakestCategoryInLevelUnderParent(parentId, LEVEL);
+        var weakestCategory = actions.getWeakestCategoryInLevel(LEVEL, null, parentId);
         var expectedResult = 85;
         expect(weakestCategory.id).toBe(expectedResult);
     });
-
 
 
     it('when requesting for weakest category under specific parent and providing optionalIds then the weakest of the optional should be returned', function(){
         var parentId = 1;
         var LEVEL = 3;
         var optionalCategories = [75, 76];
-        var weakestCategory = actions.getWeakestCategoryInLevelUnderParent(parentId, LEVEL, optionalCategories);
+        var weakestCategory = actions.getWeakestCategoryInLevel(LEVEL, optionalCategories, parentId);
         var expectedResult = 76;
         expect(weakestCategory.id).toBe(expectedResult);
+    });
+
+    it('given no stats were recorded when requesting for weakest category under specific parent and providing optionalIds ' +
+        'then a random one from the optional ids array should be returned', function(){
+        delete StorageSrv.db.users.$$uid.stats;
+        var parentId = 1;
+        var LEVEL = 3;
+        var optionalCategories = [102, 106];
+        var weakestCategory = actions.getWeakestCategoryInLevel(LEVEL, optionalCategories, parentId);
+        expect(optionalCategories).toEqual(jasmine.arrayContaining([weakestCategory.id]));
     });
 });
