@@ -17,7 +17,7 @@
                             return answer ? answer - INDEX_OFFSET : undefined;
                         });
                         ngModelCtrl.$parsers.push(function(index){
-                            return index ? index - INDEX_OFFSET : undefined;
+                            return index ? index + INDEX_OFFSET : undefined;
                         });
 
                     }
