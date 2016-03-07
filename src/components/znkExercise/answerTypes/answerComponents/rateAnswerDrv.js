@@ -88,17 +88,6 @@
                             }
                         }
                     }
-
-                    function formatter(answer) {
-                        return answer - INDEX_OFFSET;
-                    }
-
-                    function parser(index){
-                        return index + INDEX_OFFSET;
-                    }
-
-                    ngModelCtrl.$formatters.push(formatter);
-                    ngModelCtrl.$parsers.push(parser);
                 }
             };
         }
