@@ -14,10 +14,10 @@
                     if(answerTypeId === AnswerTypeEnum.RATE_ANSWER.enum){
                         var INDEX_OFFSET = 2;
                         ngModelCtrl.$formatters.push(function(answer){
-                            return answer - INDEX_OFFSET;
+                            return answer ? answer - INDEX_OFFSET : undefined;
                         });
                         ngModelCtrl.$parsers.push(function(index){
-                            return index + INDEX_OFFSET;
+                            return index ? index - INDEX_OFFSET : undefined;
                         });
 
                     }
