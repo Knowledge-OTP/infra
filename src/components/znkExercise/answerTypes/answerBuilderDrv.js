@@ -28,7 +28,7 @@
                         var questionBuilderCtrl = ctrls[1];
                         var ngModelCtrl = ctrls[2];
 
-                        var fnToBindFromQuestionBuilder = ['getViewMode'];
+                        var fnToBindFromQuestionBuilder = ['getViewMode', 'getCurrentIndex'];
                         ZnkExerciseUtilitySrv.bindFunctions(answerBuilderCtrl,questionBuilderCtrl,fnToBindFromQuestionBuilder);
 
                         answerBuilderCtrl.canUserAnswerBeChanged = function(){
