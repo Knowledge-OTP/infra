@@ -4910,8 +4910,12 @@
                              * */
                             scope.actions.setSlideDirection(scope.settings.initSlideDirection);
 
-                            if(scope.settings.viewMode === ZnkExerciseViewModeEnum.REVIEW.enum){
-                                scope.actions.forceDoneBtnDisplay(false);
+                            if(scope.settings.initForceDoneBtnDisplay === null) {
+                                if (scope.settings.viewMode === ZnkExerciseViewModeEnum.REVIEW.enum) {
+                                    scope.actions.forceDoneBtnDisplay(false);
+                                } else {
+                                    scope.actions.forceDoneBtnDisplay(scope.settings.initForceDoneBtnDisplay);
+                                }
                             } else {
                                 scope.actions.forceDoneBtnDisplay(scope.settings.initForceDoneBtnDisplay);
                             }
@@ -5917,8 +5921,8 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkTimeline').directive('znkTimeline',['$window', '$templateCache', 'ExerciseTypeEnum', 'TimelineSrv',
-        function($window, $templateCache, ExerciseTypeEnum, TimelineSrv) {
+    angular.module('znk.infra.znkTimeline').directive('znkTimeline',['$window', '$templateCache', 'TimelineSrv',
+        function($window, $templateCache, TimelineSrv) {
         var directive = {
             restrict: 'A',
             scope: {
@@ -6029,7 +6033,8 @@
                             },
                             exerciseType: value.exerciseType,
                             exerciseId: value.exerciseId,
-                            score: value.score
+                            score: value.score,
+                            iconKey: value.iconKey || false
                         }, false, isLast);
 
                         if(value.score > dataObj.biggestScore.score) {
@@ -6069,7 +6074,6 @@
                     }
 
                     var subLocation = img / 2;
-                    var imgBig;
 
                     lastLine = data;
                     dataObj.lastLine.push(lastLine);
@@ -6091,13 +6095,11 @@
                             arc = arc * 1.5;
                             img = img + 5;
                             subLocation = img / 2;
-                            imgBig = true;
                         }
                     } else if(isLast) {
                         arc = arc * 1.5;
                         img = img + 5;
                         subLocation = img / 2;
-                        imgBig = true;
                     }
 
 
@@ -6119,28 +6121,18 @@
                         var locationImgY = data.lineTo.y - subLocation;
                         var locationImgX = data.lineTo.x - subLocation;
 
-                        if(dataObj.lastLine.length === 2 && data.exerciseType === ExerciseTypeEnum.SECTION.enum) {
-                            src = settings.images[data.exerciseType].icon;
-                            img = (imgBig) ? img : 15;
-                            if(angular.isDefined(settings.isMobile) && !settings.isMobile) {
-                                img = (imgBig) ? img : 20;
-                            }
-                            locationImgY  = locationImgY + 2;
-                            locationImgX  = locationImgX + 2;
-                        } else if(dataObj.lastLine.length > 2 && data.exerciseType === ExerciseTypeEnum.SECTION.enum) {
-                            src = settings.images[ExerciseTypeEnum.SECTION.val].icon;
-                        } else {
-                            src = settings.images[data.exerciseType].icon;
+                        if (data.iconKey) {
+                            src = settings.images[data.iconKey];
+
+                            var svg = $templateCache.get(src);
+                            var mySrc = (svg) ? 'data:image/svg+xml;base64,'+$window.btoa(svg) : src;
+
+                            imageObj.onload = function() {
+                                ctx.drawImage(imageObj, locationImgX, locationImgY, img, img);
+                            };
+
+                            imageObj.src = mySrc;
                         }
-
-                        var svg = $templateCache.get(src);
-                        var mySrc = (svg) ? 'data:image/svg+xml;base64,'+$window.btoa(svg) : src;
-
-                        imageObj.onload = function() {
-                            ctx.drawImage(imageObj, locationImgX, locationImgY, img, img);
-                        };
-
-                        imageObj.src = mySrc;
                     }
 
                 }
@@ -6156,45 +6148,25 @@
 (function (angular) {
     'use strict';
 
-    var svgMap = {
-        drill: 'components/znkTimeline/svg/icons/timeline-drills-icon.svg',
-        game: 'components/znkTimeline/svg/icons/timeline-mini-challenge-icon.svg',
-        tutorial: 'components/znkTimeline/svg/icons/timeline-tips-tricks-icon.svg',
-        section: 'components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg',
-        practice: 'components/znkTimeline/svg/icons/timeline-test-icon.svg'
-    };
+    angular.module('znk.infra.znkTimeline').provider('TimelineSrv', ['SvgIconSrvProvider', function () {
 
-    angular.module('znk.infra.znkTimeline').service('TimelineSrv', ['ExerciseTypeEnum', function (ExerciseTypeEnum) {
+        var imgObj;
 
-        this.getImages = function () {
-            var imgObj = {};
-
-            if (ExerciseTypeEnum.TUTORIAL) {
-                imgObj[ExerciseTypeEnum.TUTORIAL.enum] = {icon: svgMap.tutorial};
-            }
-            if (ExerciseTypeEnum.PRACTICE) {
-                imgObj[ExerciseTypeEnum.PRACTICE.enum] = {icon: svgMap.practice};
-            }
-            if (ExerciseTypeEnum.GAME) {
-                imgObj[ExerciseTypeEnum.GAME.enum] = {icon: svgMap.game};
-            }
-            if (ExerciseTypeEnum.SECTION) {
-                imgObj[ExerciseTypeEnum.SECTION.enum] = {icon: svgMap.section};
-                imgObj[ExerciseTypeEnum.SECTION.val] = {icon: svgMap.practice};
-            }
-            if (ExerciseTypeEnum.DRILL) {
-                imgObj[ExerciseTypeEnum.DRILL.enum] = {icon: svgMap.drill};
-            }
-
-
-            return imgObj;
+        this.setImages = function(obj) {
+            imgObj = obj;
         };
 
-    }]).config([
-        'SvgIconSrvProvider',
-        function (SvgIconSrvProvider) {
-            SvgIconSrvProvider.registerSvgSources(svgMap);
-        }]);
+        this.$get = ['$log', function($log) {
+             return {
+                 getImages: function() {
+                     if (!angular.isObject(imgObj)) {
+                         $log.error('TimelineSrv getImages: obj is not an object! imgObj:', imgObj);
+                     }
+                     return imgObj;
+                 }
+             };
+        }];
+    }]);
 })(angular);
 
 
