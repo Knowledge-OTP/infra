@@ -41,6 +41,12 @@
                         updateAnswersFollowingSelection(viewMode);
                     };
 
+                    function keyboardHandler(key){
+                        key = String.fromCharCode(key.keyCode).toUpperCase();
+                        if(angular.isDefined(keyMap[key])){
+                            scope.d.click(scope.d.answers[keyMap[key]]);
+                        }
+                    }
 
                     if(questionIndex === currentSlide){
                         body.addEventListener('keydown',keyboardHandler);
@@ -55,12 +61,7 @@
                         }
                     });
 
-                    function keyboardHandler(key){
-                        key = String.fromCharCode(key.keyCode).toUpperCase();
-                        if(angular.isDefined(keyMap[key])){
-                            scope.d.click(scope.d.answers[keyMap[key]]);
-                        }
-                    }
+
 
                     scope.d.getIndexChar = function(answerIndex){
                         var key = ZnkExerciseAnswersSrv.selectAnswer.getAnswerIndex(answerIndex,answerBuilder.question);

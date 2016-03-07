@@ -21,8 +21,14 @@
                         id: 3,
                         content: '<span>answer3</span>'
                     }
-                ]
+                ],
+                __questionStatus:{
+                    index: 0
+                }
             };
+            this.getCurrentIndex = function() {
+                return 0;
+            }
 
             this.getViewMode = function(){
                 return ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum;
