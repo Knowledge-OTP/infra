@@ -7,7 +7,6 @@
         ng-repeat="question in vm.questions">
         <question-builder question="question"
                           rate-answer-formatter-parser
-                          answer-type-id="question.answerTypeId"
                           ng-model="question.__questionStatus.userAnswer"
                           ng-change="onQuestionAnswered(question)">
         </question-builder>
