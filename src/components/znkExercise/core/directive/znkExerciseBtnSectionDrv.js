@@ -45,11 +45,19 @@
                             scope.vm.currentQuestionIndex = index || 0;
                         }
 
+                        function _notReviewMode() {
+                            return viewMode !== ZnkExerciseViewModeEnum.REVIEW.enum;
+                        }
+
+                        function _isLastQuestion(index, questions) {
+                            return (index && index === (questions.length - 1) ) || znkExerciseDrvCtrl.isLastUnansweredQuestion();
+                        }
+
                         function _setDoneBtnDisplayStatus(currIndex){
                             var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
                             getQuestionsProm.then(function (questions) {
                                 scope.vm.maxQuestionIndex = questions.length - 1;
-                                if ((currIndex && currIndex === (questions.length - 1 )) || znkExerciseDrvCtrl.isLastUnansweredQuestion()) {
+                                if (_notReviewMode() && _isLastQuestion(currIndex, questions)) {
                                     scope.vm.showDoneButton = true;
                                 } else {
                                     scope.vm.showDoneButton = false;
@@ -79,12 +87,6 @@
                             _setDoneBtnDisplayStatus(newIndex);
                         });
 
-                        scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function () {
-                            if (znkExerciseDrvCtrl.isLastUnansweredQuestion()) {
-                                scope.vm.showDoneButton = true;
-                            }
-                        });
-
                         scope.$on(ZnkExerciseEvents.QUESTIONS_NUM_CHANGED, function(){
                             var currIndex = znkExerciseDrvCtrl.getCurrentIndex();
                             _setDoneBtnDisplayStatus(currIndex);
@@ -111,7 +113,7 @@
                         });
 
                         var currentQuestionAnsweredWatchFn;
-                        if(viewMode !== ZnkExerciseViewModeEnum.REVIEW.enum){
+                        if(_notReviewMode()){
                             currentQuestionAnsweredWatchFn = function(){
                                 return znkExerciseDrvCtrl.isCurrentQuestionAnswered();
                             };
