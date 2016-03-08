@@ -204,9 +204,9 @@ module.exports = function (grunt) {
     ]);
 
     grunt.registerTask('build', [
-        'clean:dist',
         'jshint:all',
         'karma:build',
+        'clean:dist',
         'sass',
         'html2js',
         'copy:dist',

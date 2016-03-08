@@ -1622,6 +1622,7 @@
  *          1: timer with displayed time.
  *          2: timer with round progress bar
  *      config:
+ *          stopOnZero
  *          countDown
  *          format: defaulted to mm:ss
  *          only for type 2:
@@ -1646,7 +1647,7 @@
 
             return {
                 scope: {
-                    play: '&',
+                    play: '=?',
                     typeGetter: '&?type',
                     configGetter: '&?config'
                 },
@@ -1702,7 +1703,8 @@
                     scope.type = scope.typeGetter() || 1;
                     scope.config = scope.configGetter() || {};
                     var configDefaults = {
-                        format: 'mm:ss'
+                        format: 'mm:ss',
+                        stopOnZero: true
                     };
                     scope.config = angular.extend(configDefaults, scope.config);
 
@@ -1722,10 +1724,17 @@
 
                     function tick() {
                         var currentTime = ngModelCtrl.$viewValue;
+
                         if (angular.isUndefined(currentTime)) {
                             return;
                         }
+
                         currentTime += scope.config.countDown ? -INTERVAL_TIME : INTERVAL_TIME;
+
+                        if(scope.config.stopOnZero && currentTime === 0){
+                            scope.play = false;
+                        }
+
                         updateTime(currentTime);
                         ngModelCtrl.$setViewValue(currentTime);
                     }
@@ -1738,7 +1747,7 @@
                         updateTime(currentTime);
                     };
 
-                    scope.$watch('play()', function (play) {
+                    scope.$watch('play', function (play) {
                         if (intervalHandler) {
                             $interval.cancel(intervalHandler);
                         }
@@ -3499,7 +3508,7 @@
                         var questionBuilderCtrl = ctrls[1];
                         var ngModelCtrl = ctrls[2];
 
-                        var fnToBindFromQuestionBuilder = ['getViewMode'];
+                        var fnToBindFromQuestionBuilder = ['getViewMode', 'getCurrentIndex'];
                         ZnkExerciseUtilitySrv.bindFunctions(answerBuilderCtrl,questionBuilderCtrl,fnToBindFromQuestionBuilder);
 
                         answerBuilderCtrl.canUserAnswerBeChanged = function(){
@@ -3733,17 +3742,6 @@
                             }
                         }
                     }
-
-                    function formatter(answer) {
-                        return answer - INDEX_OFFSET;
-                    }
-
-                    function parser(index){
-                        return index + INDEX_OFFSET;
-                    }
-
-                    ngModelCtrl.$formatters.push(formatter);
-                    ngModelCtrl.$parsers.push(parser);
                 }
             };
         }
@@ -3760,8 +3758,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('selectAnswer', [
-        '$timeout', 'ZnkExerciseViewModeEnum', 'ZnkExerciseAnswersSrv',
-        function ($timeout, ZnkExerciseViewModeEnum, ZnkExerciseAnswersSrv) {
+        '$timeout', 'ZnkExerciseViewModeEnum', 'ZnkExerciseAnswersSrv', 'ZnkExerciseEvents',
+        function ($timeout, ZnkExerciseViewModeEnum, ZnkExerciseAnswersSrv, ZnkExerciseEvents) {
             return {
                 templateUrl: 'components/znkExercise/answerTypes/templates/selectAnswerDrv.html',
                 require: ['^answerBuilder', '^ngModel'],
@@ -3770,11 +3768,16 @@
                 link: function (scope, element, attrs, ctrls) {
                     var answerBuilder = ctrls[0];
                     var ngModelCtrl = ctrls[1];
+                    var questionIndex = answerBuilder.question.__questionStatus.index;
+                    var currentSlide = answerBuilder.getCurrentIndex();    // current question/slide in the viewport
+                    var body = document.body;
+
 
                     var MODE_ANSWER_WITH_QUESTION = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
                         MODE_ANSWER_ONLY = ZnkExerciseViewModeEnum.ONLY_ANSWER.enum,
                         MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum,
                         MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
+                    var keyMap = {};
 
                     scope.d = {};
 
@@ -3790,8 +3793,32 @@
                         updateAnswersFollowingSelection(viewMode);
                     };
 
+                    function keyboardHandler(key){
+                        key = String.fromCharCode(key.keyCode).toUpperCase();
+                        if(angular.isDefined(keyMap[key])){
+                            scope.d.click(scope.d.answers[keyMap[key]]);
+                        }
+                    }
+
+                    if(questionIndex === currentSlide){
+                        body.addEventListener('keydown',keyboardHandler);
+                    }
+
+                    scope.$on(ZnkExerciseEvents.QUESTION_CHANGED,function(event,value ,prevValue ,currQuestion){
+                        var currentSlide = currQuestion.__questionStatus.index;
+                        if(questionIndex !== currentSlide){
+                            body.removeEventListener('keydown',keyboardHandler);
+                        }else{
+                            body.addEventListener('keydown',keyboardHandler);
+                        }
+                    });
+
+
+
                     scope.d.getIndexChar = function(answerIndex){
-                        return ZnkExerciseAnswersSrv.selectAnswer.getAnswerIndex(answerIndex,answerBuilder.question);
+                        var key = ZnkExerciseAnswersSrv.selectAnswer.getAnswerIndex(answerIndex,answerBuilder.question);
+                        keyMap[key] = answerIndex;
+                        return key;
                     };
 
                     function updateAnswersFollowingSelection(viewMode) {
@@ -3853,6 +3880,10 @@
 
                     scope.$on('exercise:viewModeChanged', function () {
                         ngModelCtrl.$render();
+                    });
+
+                    scope.$on('$destroy',function(){
+                        body.removeEventListener('keydown',keyboardHandler);
                     });
                 }
             };
@@ -4155,7 +4186,7 @@
                         var questionBuilderCtrl = ctrls[0];
                         var znkExerciseCtrl = ctrls[1];
 
-                        var functionsToBind = ['getViewMode','addQuestionChangeResolver','removeQuestionChangeResolver'];
+                        var functionsToBind = ['getViewMode','addQuestionChangeResolver','removeQuestionChangeResolver', 'getCurrentIndex'];
                         ZnkExerciseUtilitySrv.bindFunctions(questionBuilderCtrl, znkExerciseCtrl,functionsToBind);
                     },
                     post: function post(scope, element, attrs, ctrls) {
@@ -4272,6 +4303,36 @@
 })(angular);
 
 
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('rateAnswerFormatterParser', ['AnswerTypeEnum',
+        function (AnswerTypeEnum) {
+            return {
+                require: ['ngModel','questionBuilder'],
+                link: function(scope, elem, attrs, ctrls){
+                    var ngModelCtrl = ctrls[0];
+                    var questionBuilderCtrl = ctrls[1];
+                    var answerTypeId = questionBuilderCtrl.question.answerTypeId;
+
+                    if(answerTypeId === AnswerTypeEnum.RATE_ANSWER.enum){
+                        var INDEX_OFFSET = 2;
+                        ngModelCtrl.$formatters.push(function(answer){
+                            return answer ? answer - INDEX_OFFSET : undefined;
+                        });
+                        ngModelCtrl.$parsers.push(function(index){
+                            return index ? index + INDEX_OFFSET : undefined;
+                        });
+
+                    }
+                }
+            };
+        }
+    ]);
+})(angular);
+
+
 /**
  * attrs:
  *  prev-question
@@ -4319,11 +4380,19 @@
                             scope.vm.currentQuestionIndex = index || 0;
                         }
 
+                        function _notReviewMode() {
+                            return viewMode !== ZnkExerciseViewModeEnum.REVIEW.enum;
+                        }
+
+                        function _isLastQuestion(index, questions) {
+                            return (index && index === (questions.length - 1) ) || znkExerciseDrvCtrl.isLastUnansweredQuestion();
+                        }
+
                         function _setDoneBtnDisplayStatus(currIndex){
                             var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
                             getQuestionsProm.then(function (questions) {
                                 scope.vm.maxQuestionIndex = questions.length - 1;
-                                if ((currIndex && currIndex === (questions.length - 1 )) || znkExerciseDrvCtrl.isLastUnansweredQuestion()) {
+                                if (_notReviewMode() && _isLastQuestion(currIndex, questions)) {
                                     scope.vm.showDoneButton = true;
                                 } else {
                                     scope.vm.showDoneButton = false;
@@ -4353,12 +4422,6 @@
                             _setDoneBtnDisplayStatus(newIndex);
                         });
 
-                        scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function () {
-                            if (znkExerciseDrvCtrl.isLastUnansweredQuestion()) {
-                                scope.vm.showDoneButton = true;
-                            }
-                        });
-
                         scope.$on(ZnkExerciseEvents.QUESTIONS_NUM_CHANGED, function(){
                             var currIndex = znkExerciseDrvCtrl.getCurrentIndex();
                             _setDoneBtnDisplayStatus(currIndex);
@@ -4385,7 +4448,7 @@
                         });
 
                         var currentQuestionAnsweredWatchFn;
-                        if(viewMode !== ZnkExerciseViewModeEnum.REVIEW.enum){
+                        if(_notReviewMode()){
                             currentQuestionAnsweredWatchFn = function(){
                                 return znkExerciseDrvCtrl.isCurrentQuestionAnswered();
                             };
@@ -5933,8 +5996,8 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkTimeline').directive('znkTimeline',['$window', '$templateCache', 'ExerciseTypeEnum', 'TimelineSrv',
-        function($window, $templateCache, ExerciseTypeEnum, TimelineSrv) {
+    angular.module('znk.infra.znkTimeline').directive('znkTimeline',['$window', '$templateCache', 'TimelineSrv',
+        function($window, $templateCache, TimelineSrv) {
         var directive = {
             restrict: 'A',
             scope: {
@@ -6045,7 +6108,8 @@
                             },
                             exerciseType: value.exerciseType,
                             exerciseId: value.exerciseId,
-                            score: value.score
+                            score: value.score,
+                            iconKey: value.iconKey || false
                         }, false, isLast);
 
                         if(value.score > dataObj.biggestScore.score) {
@@ -6085,7 +6149,6 @@
                     }
 
                     var subLocation = img / 2;
-                    var imgBig;
 
                     lastLine = data;
                     dataObj.lastLine.push(lastLine);
@@ -6107,13 +6170,11 @@
                             arc = arc * 1.5;
                             img = img + 5;
                             subLocation = img / 2;
-                            imgBig = true;
                         }
                     } else if(isLast) {
                         arc = arc * 1.5;
                         img = img + 5;
                         subLocation = img / 2;
-                        imgBig = true;
                     }
 
 
@@ -6135,28 +6196,18 @@
                         var locationImgY = data.lineTo.y - subLocation;
                         var locationImgX = data.lineTo.x - subLocation;
 
-                        if(dataObj.lastLine.length === 2 && data.exerciseType === ExerciseTypeEnum.SECTION.enum) {
-                            src = settings.images[data.exerciseType].icon;
-                            img = (imgBig) ? img : 15;
-                            if(angular.isDefined(settings.isMobile) && !settings.isMobile) {
-                                img = (imgBig) ? img : 20;
-                            }
-                            locationImgY  = locationImgY + 2;
-                            locationImgX  = locationImgX + 2;
-                        } else if(dataObj.lastLine.length > 2 && data.exerciseType === ExerciseTypeEnum.SECTION.enum) {
-                            src = settings.images[2].icon;
-                        } else {
-                            src = settings.images[data.exerciseType].icon;
+                        if (data.iconKey) {
+                            src = settings.images[data.iconKey];
+
+                            var svg = $templateCache.get(src);
+                            var mySrc = (svg) ? 'data:image/svg+xml;base64,'+$window.btoa(svg) : src;
+
+                            imageObj.onload = function() {
+                                ctx.drawImage(imageObj, locationImgX, locationImgY, img, img);
+                            };
+
+                            imageObj.src = mySrc;
                         }
-
-                        var svg = $templateCache.get(src);
-                        var mySrc = (svg) ? 'data:image/svg+xml;base64,'+$window.btoa(svg) : src;
-
-                        imageObj.onload = function() {
-                            ctx.drawImage(imageObj, locationImgX, locationImgY, img, img);
-                        };
-
-                        imageObj.src = mySrc;
                     }
 
                 }
@@ -6172,43 +6223,25 @@
 (function (angular) {
     'use strict';
 
-    var svgMap = {
-        drill: 'components/znkTimeline/svg/icons/timeline-drills-icon.svg',
-        game: 'components/znkTimeline/svg/icons/timeline-mini-challenge-icon.svg',
-        tutorial: 'components/znkTimeline/svg/icons/timeline-tips-tricks-icon.svg',
-        section: 'components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg',
-        practice: 'components/znkTimeline/svg/icons/timeline-test-icon.svg'
-    };
+    angular.module('znk.infra.znkTimeline').provider('TimelineSrv', ['SvgIconSrvProvider', function () {
 
-    angular.module('znk.infra.znkTimeline').service('TimelineSrv', ['ExerciseTypeEnum', function (ExerciseTypeEnum) {
+        var imgObj;
 
-        this.getImages = function () {
-            var imgObj = {};
-
-            if (ExerciseTypeEnum.TUTORIAL) {
-                imgObj[ExerciseTypeEnum.TUTORIAL.enum] = {icon: svgMap.tutorial};
-            }
-            if (ExerciseTypeEnum.PRACTICE) {
-                imgObj[ExerciseTypeEnum.PRACTICE.enum] = {icon: svgMap.practice};
-            }
-            if (ExerciseTypeEnum.GAME) {
-                imgObj[ExerciseTypeEnum.GAME.enum] = {icon: svgMap.game};
-            }
-            if (ExerciseTypeEnum.SECTION) {
-                imgObj[ExerciseTypeEnum.SECTION.enum] = {icon: svgMap.section};
-            }
-            if (ExerciseTypeEnum.DRILL) {
-                imgObj[ExerciseTypeEnum.DRILL.enum] = {icon: svgMap.drill};
-            }
-
-            return imgObj;
+        this.setImages = function(obj) {
+            imgObj = obj;
         };
 
-    }]).config([
-        'SvgIconSrvProvider',
-        function (SvgIconSrvProvider) {
-            SvgIconSrvProvider.registerSvgSources(svgMap);
-        }]);
+        this.$get = ['$log', function($log) {
+             return {
+                 getImages: function() {
+                     if (!angular.isObject(imgObj)) {
+                         $log.error('TimelineSrv getImages: obj is not an object! imgObj:', imgObj);
+                     }
+                     return imgObj;
+                 }
+             };
+        }];
+    }]);
 })(angular);
 
 
@@ -6335,6 +6368,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "    <div class=\"swiper-slide\"\n" +
     "        ng-repeat=\"question in vm.questions\">\n" +
     "        <question-builder question=\"question\"\n" +
+    "                          rate-answer-formatter-parser\n" +
     "                          ng-model=\"question.__questionStatus.userAnswer\"\n" +
     "                          ng-change=\"onQuestionAnswered(question)\">\n" +
     "        </question-builder>\n" +

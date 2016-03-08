@@ -27,7 +27,7 @@
                         var questionBuilderCtrl = ctrls[0];
                         var znkExerciseCtrl = ctrls[1];
 
-                        var functionsToBind = ['getViewMode','addQuestionChangeResolver','removeQuestionChangeResolver'];
+                        var functionsToBind = ['getViewMode','addQuestionChangeResolver','removeQuestionChangeResolver', 'getCurrentIndex'];
                         ZnkExerciseUtilitySrv.bindFunctions(questionBuilderCtrl, znkExerciseCtrl,functionsToBind);
                     },
                     post: function post(scope, element, attrs, ctrls) {
