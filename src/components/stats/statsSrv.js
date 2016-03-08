@@ -173,48 +173,6 @@
                     });
                 };
 
-                //StatsSrv.getGeneralCategoryStats = function () {
-                //    return _baseStatsGetter('generalCategory');
-                //};
-
-                //StatsSrv.getSpecificCategoryStats = function () {
-                //    return _baseStatsGetter('specificCategory');
-                //};
-
-                //StatsSrv.getWeakestGeneralCategory = function (optionalGeneralCategories) {
-                //    return StatsSrv.getGeneralCategoryStats().then(function (allGeneralCategoryStats) {
-                //        var optionalGeneralCategoryDataArr = [];
-                //        for (var subjectId in optionalGeneralCategories) {
-                //            var optionalGeneralCategoriesForSubject = optionalGeneralCategories[subjectId];
-                //            _weakestGeneralCategory(optionalGeneralCategoriesForSubject, allGeneralCategoryStats, optionalGeneralCategoryDataArr, subjectId);
-                //        }
-                //        optionalGeneralCategoryDataArr.sort(function (generalCategory1, generalCategory2) {
-                //            return _getCategoryWeakness(generalCategory2) - _getCategoryWeakness(generalCategory1);
-                //        });
-                //        $log.debug('weakest general categories array', JSON.stringify(optionalGeneralCategoryDataArr));
-                //        return optionalGeneralCategoryDataArr[0];
-                //    });
-                //};
-
-                //StatsSrv.getWeakestSpecificCategory = function (optionalSpecificCategories) {
-                //    $log.debug('calculating weakest specific category for exercise type ', JSON.stringify(optionalSpecificCategories));
-                //    return StatsSrv.getSpecificCategoryStats().then(function (allSpecificCategoryStats) {
-                //        var optionalSpecificCategoryDataArr = [];
-                //        for (var subjectId in optionalSpecificCategories) {
-                //            var optionalSpecificCategoriesForSubject = optionalSpecificCategories[subjectId];
-                //            for (var generalCategoryId in optionalSpecificCategoriesForSubject) {
-                //                var optionalSpecificCategoriesForGeneralCategory = optionalSpecificCategoriesForSubject[generalCategoryId];
-                //                _weakestSpecificCategory(optionalSpecificCategoriesForGeneralCategory, allSpecificCategoryStats, optionalSpecificCategoryDataArr, subjectId, generalCategoryId);
-                //            }
-                //        }
-                //        optionalSpecificCategoryDataArr.sort(function (specificCategory1, specificCategory2) {
-                //            return _getSpecificCategoryWeakness(specificCategory2) - _getSpecificCategoryWeakness(specificCategory1);
-                //        });
-                //        $log.debug('weakest specific categories array', JSON.stringify(optionalSpecificCategoryDataArr));
-                //        return optionalSpecificCategoryDataArr[0];
-                //    });
-                //};
-
                 StatsSrv.getPerformanceData = function () {
                     return StatsSrv.getStats().then(function (stats) {
                         var subjectsStats = stats.subjectStats;
