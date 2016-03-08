@@ -3483,7 +3483,7 @@
                         var questionBuilderCtrl = ctrls[1];
                         var ngModelCtrl = ctrls[2];
 
-                        var fnToBindFromQuestionBuilder = ['getViewMode'];
+                        var fnToBindFromQuestionBuilder = ['getViewMode', 'getCurrentIndex'];
                         ZnkExerciseUtilitySrv.bindFunctions(answerBuilderCtrl,questionBuilderCtrl,fnToBindFromQuestionBuilder);
 
                         answerBuilderCtrl.canUserAnswerBeChanged = function(){
@@ -3717,17 +3717,6 @@
                             }
                         }
                     }
-
-                    function formatter(answer) {
-                        return answer - INDEX_OFFSET;
-                    }
-
-                    function parser(index){
-                        return index + INDEX_OFFSET;
-                    }
-
-                    ngModelCtrl.$formatters.push(formatter);
-                    ngModelCtrl.$parsers.push(parser);
                 }
             };
         }
@@ -3744,8 +3733,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('selectAnswer', [
-        '$timeout', 'ZnkExerciseViewModeEnum', 'ZnkExerciseAnswersSrv',
-        function ($timeout, ZnkExerciseViewModeEnum, ZnkExerciseAnswersSrv) {
+        '$timeout', 'ZnkExerciseViewModeEnum', 'ZnkExerciseAnswersSrv', 'ZnkExerciseEvents',
+        function ($timeout, ZnkExerciseViewModeEnum, ZnkExerciseAnswersSrv, ZnkExerciseEvents) {
             return {
                 templateUrl: 'components/znkExercise/answerTypes/templates/selectAnswerDrv.html',
                 require: ['^answerBuilder', '^ngModel'],
@@ -3754,11 +3743,16 @@
                 link: function (scope, element, attrs, ctrls) {
                     var answerBuilder = ctrls[0];
                     var ngModelCtrl = ctrls[1];
+                    var questionIndex = answerBuilder.question.__questionStatus.index;
+                    var currentSlide = answerBuilder.getCurrentIndex();    // current question/slide in the viewport
+                    var body = document.body;
+
 
                     var MODE_ANSWER_WITH_QUESTION = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
                         MODE_ANSWER_ONLY = ZnkExerciseViewModeEnum.ONLY_ANSWER.enum,
                         MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum,
                         MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
+                    var keyMap = {};
 
                     scope.d = {};
 
@@ -3774,8 +3768,32 @@
                         updateAnswersFollowingSelection(viewMode);
                     };
 
+                    function keyboardHandler(key){
+                        key = String.fromCharCode(key.keyCode).toUpperCase();
+                        if(angular.isDefined(keyMap[key])){
+                            scope.d.click(scope.d.answers[keyMap[key]]);
+                        }
+                    }
+
+                    if(questionIndex === currentSlide){
+                        body.addEventListener('keydown',keyboardHandler);
+                    }
+
+                    scope.$on(ZnkExerciseEvents.QUESTION_CHANGED,function(event,value ,prevValue ,currQuestion){
+                        var currentSlide = currQuestion.__questionStatus.index;
+                        if(questionIndex !== currentSlide){
+                            body.removeEventListener('keydown',keyboardHandler);
+                        }else{
+                            body.addEventListener('keydown',keyboardHandler);
+                        }
+                    });
+
+
+
                     scope.d.getIndexChar = function(answerIndex){
-                        return ZnkExerciseAnswersSrv.selectAnswer.getAnswerIndex(answerIndex,answerBuilder.question);
+                        var key = ZnkExerciseAnswersSrv.selectAnswer.getAnswerIndex(answerIndex,answerBuilder.question);
+                        keyMap[key] = answerIndex;
+                        return key;
                     };
 
                     function updateAnswersFollowingSelection(viewMode) {
@@ -3837,6 +3855,10 @@
 
                     scope.$on('exercise:viewModeChanged', function () {
                         ngModelCtrl.$render();
+                    });
+
+                    scope.$on('$destroy',function(){
+                        body.removeEventListener('keydown',keyboardHandler);
                     });
                 }
             };
@@ -4139,7 +4161,7 @@
                         var questionBuilderCtrl = ctrls[0];
                         var znkExerciseCtrl = ctrls[1];
 
-                        var functionsToBind = ['getViewMode','addQuestionChangeResolver','removeQuestionChangeResolver'];
+                        var functionsToBind = ['getViewMode','addQuestionChangeResolver','removeQuestionChangeResolver', 'getCurrentIndex'];
                         ZnkExerciseUtilitySrv.bindFunctions(questionBuilderCtrl, znkExerciseCtrl,functionsToBind);
                     },
                     post: function post(scope, element, attrs, ctrls) {
@@ -4249,6 +4271,36 @@
                         scope.vm.questions = notBindedQuestions;
                         scope.vm.swiperActions.updateFollowingSlideAddition();
                     });
+                }
+            };
+        }
+    ]);
+})(angular);
+
+
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('rateAnswerFormatterParser', ['AnswerTypeEnum',
+        function (AnswerTypeEnum) {
+            return {
+                require: ['ngModel','questionBuilder'],
+                link: function(scope, elem, attrs, ctrls){
+                    var ngModelCtrl = ctrls[0];
+                    var questionBuilderCtrl = ctrls[1];
+                    var answerTypeId = questionBuilderCtrl.question.answerTypeId;
+
+                    if(answerTypeId === AnswerTypeEnum.RATE_ANSWER.enum){
+                        var INDEX_OFFSET = 2;
+                        ngModelCtrl.$formatters.push(function(answer){
+                            return answer ? answer - INDEX_OFFSET : undefined;
+                        });
+                        ngModelCtrl.$parsers.push(function(index){
+                            return index ? index + INDEX_OFFSET : undefined;
+                        });
+
+                    }
                 }
             };
         }
@@ -4909,17 +4961,15 @@
                              *  INIT
                              * */
                             scope.actions.setSlideDirection(scope.settings.initSlideDirection);
-
-                            if(scope.settings.initForceDoneBtnDisplay === null) {
-                                if (scope.settings.viewMode === ZnkExerciseViewModeEnum.REVIEW.enum) {
+                            if(scope.settings.initForceDoneBtnDisplay === null){
+                                if(scope.settings.viewMode === ZnkExerciseViewModeEnum.REVIEW.enum){
                                     scope.actions.forceDoneBtnDisplay(false);
-                                } else {
+                                }else{
                                     scope.actions.forceDoneBtnDisplay(scope.settings.initForceDoneBtnDisplay);
                                 }
-                            } else {
+                            }else{
                                 scope.actions.forceDoneBtnDisplay(scope.settings.initForceDoneBtnDisplay);
                             }
-
                             scope.actions.pagerDisplay(scope.settings.initPagerDisplay);
                             /**
                              *  INIT END
@@ -6293,6 +6343,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "    <div class=\"swiper-slide\"\n" +
     "        ng-repeat=\"question in vm.questions\">\n" +
     "        <question-builder question=\"question\"\n" +
+    "                          rate-answer-formatter-parser\n" +
     "                          ng-model=\"question.__questionStatus.userAnswer\"\n" +
     "                          ng-change=\"onQuestionAnswered(question)\">\n" +
     "        </question-builder>\n" +
