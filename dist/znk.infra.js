@@ -991,7 +991,7 @@
 
                 function _baseGetter(key, subjectId) {
                     return processingData.then(function(){
-                        EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScore) {
+                        return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScore) {
                             if (angular.isUndefined(subjectId)) {
                                 return estimatedScore[key];
                             }
