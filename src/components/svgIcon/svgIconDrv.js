@@ -12,18 +12,25 @@
             return {
                 scope: {
                     name: '@'
-
                 },
                 link: {
-                    pre: function (scope, element) {
-                        var name = scope.name;
-                        if (!name) {
-                            $log.error('svgIcon directive: name attribute was not set');
-                            return;
+                    pre: function (scope, element, attrs) {
+                        function _appendSvgIcon(){
+                            element.addClass(name);
+                            SvgIconSrv.getSvgByName(name).then(function (svg) {
+                                element.append(svg);
+                            });
                         }
-                        element.addClass(name);
-                        SvgIconSrv.getSvgByName(name).then(function (svg) {
-                            element.append(svg);
+                        attrs.$observe('name', function(newName, prevName){
+                            element.empty();
+
+                            if(prevName){
+                                element.removeClass(name);
+                            }
+
+                            if(newName){
+                                _appendSvgIcon();
+                            }
                         });
                     }
                 }
