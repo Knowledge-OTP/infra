@@ -1161,10 +1161,12 @@
 
             function _getInitExerciseResult(exerciseTypeId,exerciseId,guid){
                 var storage = InfraConfigSrv.getStorageService();
+                var auth = InfraConfigSrv.getUserAuth();
                 return {
                     exerciseId: exerciseId,
                     exerciseTypeId: exerciseTypeId,
                     startedTime: storage.variables.currTimeStamp,
+                    uid: auth.uid,
                     questionResults: [],
                     guid: guid
                 };
@@ -1264,11 +1266,13 @@
             }
 
             function _getInitExamResult(examId, guid){
+                var auth = InfraConfigSrv.getUserAuth();
                 return {
                     isComplete: false,
                     startedTime: '%currTimeStamp%',
                     examId: examId,
                     guid: guid,
+                    uid: auth.uid,
                     sectionResults:{}
                 };
             }
@@ -1388,7 +1392,6 @@
                     var examResultGuid = examResultsGuids[examId];
                     if (!examResultGuid) {
                         var dataToSave = {};
-
                         var newExamResultGuid = UtilitySrv.general.createGuid();
                         examResultsGuids[examId] = newExamResultGuid;
                         dataToSave[EXAM_RESULTS_GUIDS_PATH] = examResultsGuids;
@@ -2085,8 +2088,13 @@
     angular.module('znk.infra.config').provider('InfraConfigSrv', [
         function () {
             var storageServiceName;
+            var authServiceName;
             this.setStorageServiceName = function(_storageServiceName){
                 storageServiceName = _storageServiceName;
+            };
+
+            this.setAuthServiceName = function(_authServiceName) {
+                authServiceName = _authServiceName;
             };
 
             this.$get = [
@@ -2100,6 +2108,18 @@
                             return;
                         }
                         return $injector.get(storageServiceName);
+                    };
+
+                    InfraConfigSrv.getAuthService = function(){
+                        if(!authServiceName){
+                            $log.debug('InfraConfigSrv: auth service name was not defined');
+                            return;
+                        }
+                        return $injector.get(authServiceName);
+                    };
+
+                    InfraConfigSrv.getUserAuth = function(){
+                        return InfraConfigSrv.getAuthService().getAuth();
                     };
 
                     return InfraConfigSrv;

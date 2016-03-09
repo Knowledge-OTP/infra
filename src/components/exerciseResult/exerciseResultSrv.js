@@ -21,10 +21,12 @@
 
             function _getInitExerciseResult(exerciseTypeId,exerciseId,guid){
                 var storage = InfraConfigSrv.getStorageService();
+                var auth = InfraConfigSrv.getUserAuth();
                 return {
                     exerciseId: exerciseId,
                     exerciseTypeId: exerciseTypeId,
                     startedTime: storage.variables.currTimeStamp,
+                    uid: auth.uid,
                     questionResults: [],
                     guid: guid
                 };
@@ -124,11 +126,13 @@
             }
 
             function _getInitExamResult(examId, guid){
+                var auth = InfraConfigSrv.getUserAuth();
                 return {
                     isComplete: false,
                     startedTime: '%currTimeStamp%',
                     examId: examId,
                     guid: guid,
+                    uid: auth.uid,
                     sectionResults:{}
                 };
             }
@@ -248,7 +252,6 @@
                     var examResultGuid = examResultsGuids[examId];
                     if (!examResultGuid) {
                         var dataToSave = {};
-
                         var newExamResultGuid = UtilitySrv.general.createGuid();
                         examResultsGuids[examId] = newExamResultGuid;
                         dataToSave[EXAM_RESULTS_GUIDS_PATH] = examResultsGuids;
