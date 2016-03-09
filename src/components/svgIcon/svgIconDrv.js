@@ -21,7 +21,12 @@
                                 element.append(svg);
                             });
                         }
-                        attrs.$observe('name', function(newName, prevName){
+
+                        function _nameAttrWatchFn(){
+                            return element.attr('name')
+                        }
+
+                        scope.$watch(_nameAttrWatchFn, function(newName, prevName){
                             element.empty();
 
                             if(prevName){
