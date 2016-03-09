@@ -3206,14 +3206,19 @@
                     name: '@'
                 },
                 link: {
-                    pre: function (scope, element, attrs) {
+                    pre: function (scope, element) {
                         function _appendSvgIcon(name){
                             element.addClass(name);
                             SvgIconSrv.getSvgByName(name).then(function (svg) {
                                 element.append(svg);
                             });
                         }
-                        attrs.$observe('name', function(newName, prevName){
+
+                        function _nameAttrWatchFn(){
+                            return element.attr('name');
+                        }
+
+                        scope.$watch(_nameAttrWatchFn, function(newName, prevName){
                             element.empty();
 
                             if(prevName){
