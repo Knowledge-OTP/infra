@@ -1161,11 +1161,12 @@
 
             function _getInitExerciseResult(exerciseTypeId,exerciseId,guid){
                 var storage = InfraConfigSrv.getStorageService();
+                var auth = InfraConfigSrv.getUserAuth();
                 return {
                     exerciseId: exerciseId,
                     exerciseTypeId: exerciseTypeId,
                     startedTime: storage.variables.currTimeStamp,
-                    uid: storage.variables.uid,
+                    uid: auth.uid,
                     questionResults: [],
                     guid: guid
                 };
@@ -1253,9 +1254,8 @@
             function _getExamResultByGuid(guid,examId) {
                 var storage = InfraConfigSrv.getStorageService();
                 var path = _getExamResultPath(guid);
-                var uid = storage.variables.uid;
                 return storage.get(path).then(function(examResult){
-                    var initResult = _getInitExamResult(examId, guid, uid);
+                    var initResult = _getInitExamResult(examId, guid);
                     if(examResult.guid !== guid){
                         angular.extend(examResult,initResult);
                     }else{
@@ -1265,13 +1265,14 @@
                 });
             }
 
-            function _getInitExamResult(examId, guid, uid){
+            function _getInitExamResult(examId, guid){
+                var auth = InfraConfigSrv.getUserAuth();
                 return {
                     isComplete: false,
                     startedTime: '%currTimeStamp%',
                     examId: examId,
                     guid: guid,
-                    uid: uid,
+                    uid: auth.uid,
                     sectionResults:{}
                 };
             }
@@ -1387,18 +1388,16 @@
 
             this.getExamResult = function (examId) {
                 var storage = InfraConfigSrv.getStorageService();
-                var uid = storage.variables.uid;
                 return _getExamResultsGuids().then(function (examResultsGuids) {
                     var examResultGuid = examResultsGuids[examId];
                     if (!examResultGuid) {
                         var dataToSave = {};
-                        uid = storage.variables.uid;
                         var newExamResultGuid = UtilitySrv.general.createGuid();
                         examResultsGuids[examId] = newExamResultGuid;
                         dataToSave[EXAM_RESULTS_GUIDS_PATH] = examResultsGuids;
 
                         var examResultPath = _getExamResultPath(newExamResultGuid);
-                        var initExamResult = _getInitExamResult(examId, newExamResultGuid, uid);
+                        var initExamResult = _getInitExamResult(examId, newExamResultGuid);
                         dataToSave[examResultPath] = initExamResult;
 
                         return storage.set(dataToSave).then(function (res) {
@@ -2089,8 +2088,13 @@
     angular.module('znk.infra.config').provider('InfraConfigSrv', [
         function () {
             var storageServiceName;
+            var authServiceName;
             this.setStorageServiceName = function(_storageServiceName){
                 storageServiceName = _storageServiceName;
+            };
+
+            this.setAuthServiceName = function(_authServiceName) {
+                authServiceName = _authServiceName;
             };
 
             this.$get = [
@@ -2104,6 +2108,18 @@
                             return;
                         }
                         return $injector.get(storageServiceName);
+                    };
+
+                    InfraConfigSrv.getAuthService = function(){
+                        if(!authServiceName){
+                            $log.debug('InfraConfigSrv: auth service name was not defined');
+                            return;
+                        }
+                        return $injector.get(authServiceName);
+                    };
+
+                    InfraConfigSrv.getUserAuth = function(){
+                        return InfraConfigSrv.getAuthService().getAuth();
                     };
 
                     return InfraConfigSrv;
