@@ -90,7 +90,7 @@ module.exports = function (grunt) {
         },
         concat: {
             dist: {
-                src: ['<%= yeoman.src %>/core/*.js', '<%= yeoman.src %>/components/**/module.js', '<%= yeoman.src %>/components/**/*.js'],
+                src: ['<%= yeoman.src %>/core/*.js', '<%= yeoman.src %>/components/**/module.js', '<%= yeoman.src %>/components/**/*.js','.tmp/*.js'],
                 dest: '<%= yeoman.dist %>/<%= yeoman.appName %>.js'
             }
         },
@@ -116,11 +116,19 @@ module.exports = function (grunt) {
         // Test settings
         karma: {
             unit: {
+                browsers: [
+                    'Chrome',
+                    'Safari'
+                ],
                 configFile: 'test/karma-unit.conf.js'
             },
             build: {
                 configFile: 'test/karma-unit.conf.js',
-                singleRun: true
+                singleRun: true,
+                browsers: [
+                    'Chrome',
+                    'Safari'
+                ]
             }
         },
         connect: {
@@ -162,7 +170,7 @@ module.exports = function (grunt) {
             },
             dist: {
                 files: {
-                    '.tmp/main.css': 'src/core/main.scss'
+                    '.tmp/main.css': 'src/core/scss/main.scss'
                 }
             }
         },
@@ -170,6 +178,17 @@ module.exports = function (grunt) {
             dist: {
                 src: '.tmp/main.css',
                 dest: 'dist/znk-infra-main.css'
+            }
+        },
+        html2js: {
+            options:{
+                module: 'znk.infra',
+                singleModule: true,
+                existingModule: true
+            },
+            main: {
+                src: ['src/**/*.html','src/**/*.svg'],
+                dest: '.tmp/templates.js'
             }
         }
     });
@@ -184,6 +203,7 @@ module.exports = function (grunt) {
         'jshint:all',
         //'karma:build',
         'sass',
+        'html2js',
         'copy:dist',
         'concat:dist',
         'ngAnnotate:dist',

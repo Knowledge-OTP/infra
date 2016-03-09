@@ -1,0 +1,13 @@
+<znk-swiper class="znk-carousel"
+            ng-model="vm.currSlideIndex"
+            actions="vm.swiperActions"
+            ng-change="vm.SlideChanged()"
+            disable-swipe="{{vm.isLocked}}">
+    <div class="swiper-slide"
+        ng-repeat="question in vm.questions">
+        <question-builder question="question"
+                          ng-model="question.__questionStatus.userAnswer"
+                          ng-change="onQuestionAnswered(question)">
+        </question-builder>
+    </div>
+</znk-swiper>

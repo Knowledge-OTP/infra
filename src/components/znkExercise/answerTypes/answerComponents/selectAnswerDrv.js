@@ -5,30 +5,29 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('selectAnswerDrv', [
-        '$timeout', 'ZnkExerciseDrvSrv', 'MediaSrv',
-        function ($timeout, ZnkExerciseDrvSrv, MediaSrv) {
+    angular.module('znk.infra.znkExercise').directive('selectAnswer', [
+        '$timeout', 'ZnkExerciseViewModeEnum',
+        function ($timeout, ZnkExerciseViewModeEnum) {
             return {
-                templateUrl: 'scripts/exercise/templates/selectAnswerDrv.html',
-                require: ['^simpleQuestion', '^ngModel'],
+                templateUrl: 'components/znkExercise/answerTypes/templates/selectAnswerDrv.html',
+                require: ['^answerBuilder', '^ngModel'],
+                restrict:'E',
                 scope: {},
                 link: function (scope, element, attrs, ctrls) {
-                    var questionDrvCtrl = ctrls[0];
+                    var answerBuilder = ctrls[0];
                     var ngModelCtrl = ctrls[1];
 
-                    var MODE_ANSWER_WITH_QUESTION = ZnkExerciseDrvSrv.viewModeEnum.answerWithResult.enum,
-                        MODE_ANSWER_ONLY = ZnkExerciseDrvSrv.viewModeEnum.answerOnly.enum,
-                        MODE_REVIEW = ZnkExerciseDrvSrv.viewModeEnum.review.enum,
-                        MODE_MUST_ANSWER = ZnkExerciseDrvSrv.viewModeEnum.mustAnswer.enum;
+                    var MODE_ANSWER_WITH_QUESTION = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
+                        MODE_ANSWER_ONLY = ZnkExerciseViewModeEnum.ONLY_ANSWER.enum,
+                        MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum,
+                        MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
 
                     scope.d = {};
 
-                    scope.d.answers = questionDrvCtrl.question.answers;
+                    scope.d.answers = answerBuilder.question.answers;
 
-                    scope.d.showSolution = questionDrvCtrl.showSolution;
-
-                    scope.d.tap = function (answer) {
-                        var viewMode = questionDrvCtrl.getViewMode();
+                    scope.d.click = function (answer) {
+                        var viewMode = answerBuilder.getViewMode();
 
                         if ((!isNaN(parseInt(ngModelCtrl.$viewValue)) && viewMode === MODE_ANSWER_WITH_QUESTION) || viewMode === MODE_REVIEW) {
                             return;
@@ -37,9 +36,14 @@
                         updateAnswersFollowingSelection(viewMode);
                     };
 
+                    scope.d.getIndexChar = function(questionIndex){
+                        var UPPER_A_ASCII_CODE = 65;
+                        return String.fromCharCode(UPPER_A_ASCII_CODE + questionIndex);
+                    };
+
                     function updateAnswersFollowingSelection(viewMode) {
                         var selectedAnswerId = ngModelCtrl.$viewValue;
-                        var correctAnswerId = questionDrvCtrl.question.correctAnswerId;
+                        var correctAnswerId = answerBuilder.question.correctAnswerId;
                         var $answers = angular.element(element[0].querySelectorAll('.answer'));
                         for (var i = 0; i < $answers.length; i++) {
 
@@ -52,7 +56,7 @@
                             var classToAdd,
                                 classToRemove;
 
-                            if (questionDrvCtrl.getViewMode() === MODE_ANSWER_ONLY || questionDrvCtrl.getViewMode() === MODE_MUST_ANSWER) {
+                            if (answerBuilder.getViewMode() === MODE_ANSWER_ONLY || answerBuilder.getViewMode() === MODE_MUST_ANSWER) {
                                 // dont show correct / wrong indication
                                 classToRemove = 'answered';
                                 classToAdd = selectedAnswerId === answer.id ? 'answered' : 'neutral';
@@ -60,7 +64,7 @@
                                 // the rest of the optional states involve correct / wrong indications
                                 if (angular.isUndefined(selectedAnswerId)) {
                                     // unanswered question
-                                    if (questionDrvCtrl.getViewMode() === MODE_REVIEW) {
+                                    if (answerBuilder.getViewMode() === MODE_REVIEW) {
                                         classToAdd = correctAnswerId === answer.id ? 'answered-incorrect' : 'neutral';
                                     }
                                 } else if (selectedAnswerId === answer.id) {
@@ -75,10 +79,10 @@
                             $answerElem.addClass(classToAdd);
                             if (viewMode === MODE_ANSWER_WITH_QUESTION){
                                 if (classToAdd === 'correct'){
-                                    MediaSrv.playCorrectAnswerSound();
+
                                 }
                                 if (classToAdd === 'wrong'){
-                                    MediaSrv.playWrongAnswerSound();
+
                                 }
                             }
                         }

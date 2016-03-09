@@ -1,78 +1,162 @@
 znk-exercise.desktop {
-  display: block;
-  position: relative;
+    display: block;
+    position: relative;
 
-  .btn-section {
-    .btn-container {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      display: inline-flex;
-      align-items: center;
+    .btn-section {
+        .btn-container {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            align-items: center;
+            display: none;
 
-      &.right-container {
-        right: -40px;
+            &.right-container {
+                right: -40px;
 
-        button{
-          border-top-right-radius: 42px;
-          border-bottom-right-radius: 42px;
-          padding-left: 2px;
+                button {
+                    border-top-right-radius: 42px;
+                    border-bottom-right-radius: 42px;
+                    padding-left: 2px;
 
-          .chevron{
-            transform: rotate(-90deg);
-          }
+                    .chevron {
+                        transform: rotate(-90deg);
+                    }
+                }
+            }
+
+            &.left-container {
+                left: -40px;
+
+                button {
+                    border-top-left-radius: 42px;
+                    border-bottom-left-radius: 42px;
+                    padding-left: 5px;
+
+                    .chevron {
+                        transform: rotate(90deg);
+                    }
+                }
+            }
+
+            button {
+                height: 80px;
+                width: 40px;
+                background: #fbfafa;
+
+                &:focus {
+                    outline: none;
+                }
+
+                svg-icon.chevron {
+                    width: 33px;
+
+                    .st0 {
+                        stroke: #0a9bad;
+                    }
+                }
+            }
         }
-      }
 
-      &.left-container{
-        left: -40px;
-
-        button{
-          border-top-left-radius: 42px;
-          border-bottom-left-radius: 42px;
-          padding-left: 5px;
-
-          .chevron{
-            transform: rotate(90deg);
-          }
+        .done-btn {
+            z-index: 1;
+            width: 160px;
+            position: absolute;
+            right: 30px;
+            bottom: 10px;
+            height: 35px;
+            background: #ff931e;
+            font: {
+                family: Lato;
+                size: 13px;
+                weight: normal;
+            }
+            border: {
+                radius: 30px;
+            }
+            color: white;
         }
-      }
+    }
 
-      button {
+    &.done-btn-hide{
+        .btn-section{
+            .done-btn{
+                display: none!important;
+            }
+        }
+    }
+
+    &.done-btn-show{
+        .btn-section{
+            .done-btn{
+                display: block!important;
+            }
+        }
+    }
+
+    &.direction-right{
+        .btn-section{
+            .btn-container.left-container{
+                display: inline-flex;
+            }
+        }
+    }
+
+    &.direction-left{
+        .btn-section{
+            .btn-container.right-container{
+                display: inline-flex;
+            }
+        }
+    }
+
+    svg-icon.chevron {
+        .st0 {
+            fill: none;
+            stroke: #231F20;
+            stroke-width: 12;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-miterlimit: 10;
+        }
+    }
+
+    questions-carousel {
+        &.znk-carousel-container {
+            display: flex;
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+
+            .znk-carousel {
+                @include absolute-full-cover;
+
+                .slide {
+                    width: 100%;
+                    height: 100%;
+
+                    question-builder {
+                        width: 100%;
+                        height: 100%;
+                    }
+                }
+            }
+        }
+    }
+
+    button {
         padding: 0;
-        height: 80px;
-        width: 40px;
-        border:{
-          top: none;
-          right: none;
-          bottom: none;
-          left: none;
-        }
-        background: #fbfafa;
-
-        &:focus{
-          outline: none;
+        border: {
+            top: none;
+            right: none;
+            bottom: none;
+            left: none;
         }
 
-        svg-icon.chevron{
-          width: 33px;
-
-          .st0{
-            stroke: #0a9bad;
-          }
+        &:focus {
+            outline: none;
         }
-      }
     }
-  }
 
-  svg-icon.chevron {
-    .st0 {
-      fill: none;
-      stroke: #231F20;
-      stroke-width: 12;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      stroke-miterlimit: 10;
-    }
-  }
 }

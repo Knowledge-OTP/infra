@@ -6,8 +6,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('questionBuilder', [
-        '$compile', 'QuestionTypesSrv', '$timeout',
-        function ($compile, QuestionTypesSrv, $timeout) {
+        '$compile', 'QuestionTypesSrv', '$timeout', 'ZnkExerciseUtilitySrv',
+        function ($compile, QuestionTypesSrv, $timeout, ZnkExerciseUtilitySrv) {
             return {
                 restrict: 'E',
                 require: ['questionBuilder', '^znkExercise'],
@@ -19,6 +19,7 @@
                     function ($scope) {
                         var self = this;
                         self.question = $scope.questionGetter();
+
                     }
                 ],
                 link: {
@@ -26,16 +27,13 @@
                         var questionBuilderCtrl = ctrls[0];
                         var znkExerciseCtrl = ctrls[1];
 
-                        questionBuilderCtrl.getViewMode = znkExerciseCtrl.getViewMode;
-
-                        questionBuilderCtrl.setQuestionChangeResolver = znkExerciseCtrl.setQuestionChangeResolver.bind(znkExerciseCtrl);
+                        var functionsToBind = ['getViewMode','addQuestionChangeResolver','removeQuestionChangeResolver'];
+                        ZnkExerciseUtilitySrv.bindFunctions(questionBuilderCtrl, znkExerciseCtrl,functionsToBind);
                     },
                     post: function post(scope, element, attrs, ctrls) {
                         var questionBuilderCtrl = ctrls[0];
                         var znkExerciseCtrl = ctrls[1];
-                        /** question type is built out of several properties, can be set via ExerciseUtilsSrv.setQuestionType function **/
-                        var questionType = questionBuilderCtrl.question.__type;
-                        var questionHtmlTemplate = QuestionTypesSrv.getQuestionHtmlTemplate(questionType);
+                        var questionHtmlTemplate = QuestionTypesSrv.getQuestionHtmlTemplate(questionBuilderCtrl.question);
                         element.append(questionHtmlTemplate);
                         var childScope = scope.$new(true);
                         $compile(element.contents())(childScope);
@@ -44,7 +42,7 @@
                         var innerTimeout;
                         $timeout(function(){
                             innerTimeout = $timeout(function(){
-                                znkExerciseCtrl.questionRendered(questionBuilderCtrl.question.__questionStatus.index);
+                                znkExerciseCtrl.notifyQuestionReady(questionBuilderCtrl.question.__questionStatus.index);
                             });
                         },0,false);
 

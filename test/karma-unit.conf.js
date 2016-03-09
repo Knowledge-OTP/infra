@@ -21,12 +21,15 @@ module.exports = function (config) {
         // list of files / patterns to load in the browser
         files: [
             // bower:js
+            'bower_components/es5-shim/es5-shim.js',
             'bower_components/angular/angular.js',
+            'bower_components/Swiper/dist/js/swiper.js',
             'bower_components/angular-mocks/angular-mocks.js',
             // endbower
 
             //html
-            '**/*.html',
+            'src/**/*.html',
+            'src/**/*.svg',
 
             //utility
             'test/utility/**/*.*',
@@ -57,9 +60,9 @@ module.exports = function (config) {
         // - Safari (only Mac)
         // - PhantomJS
         // - IE (only Windows)
-        browsers: [
-            'PhantomJS'
-        ],
+        //browsers: [
+        //    'Chrome'
+        //],
 
         // Which plugins to enable
         //plugins: [
@@ -77,7 +80,8 @@ module.exports = function (config) {
 
         colors: true,
         preprocessors: {
-            '**/*.html': ['ng-html2js']
+            '**/*.html': ['ng-html2js'],
+            '**/*.svg': ['ng-html2js']
         },
         // level of logging
         // possible values: LOG_DISABLE || LOG_ERROR || LOG_WARN || LOG_INFO || LOG_DEBUG
