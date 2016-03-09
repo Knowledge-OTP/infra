@@ -31,14 +31,18 @@
                     $log.error('EstimatedScoreSrv: rawScoreToScoreFnGetter was not set !!!');
                 }
 
+                var processingData = $q.when();
+
                 var EstimatedScoreSrv = {};
 
                 function _baseGetter(key, subjectId) {
-                    return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScore) {
-                        if (angular.isUndefined(subjectId)) {
-                            return estimatedScore[key];
-                        }
-                        return estimatedScore[key][subjectId];
+                    return processingData.then(function(){
+                        EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScore) {
+                            if (angular.isUndefined(subjectId)) {
+                                return estimatedScore[key];
+                            }
+                            return estimatedScore[key][subjectId];
+                        });
                     });
                 }
 
@@ -117,66 +121,72 @@
                 };
 
                 EstimatedScoreSrv.setDiagnosticSectionScore = function (score, exerciseType, subjectId, exerciseId) {
-                    return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScoreData) {
-                        //score was already set
-                        if (estimatedScoreData.estimatedScores[subjectId].length) {
-                            return $q.reject('Exercise already processed ' + 'type ' + exerciseType + ' id ' + exerciseId);
-                        }
+                    processingData = processingData.then(function(){
+                        return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScoreData) {
+                            //score was already set
+                            if (estimatedScoreData.estimatedScores[subjectId].length) {
+                                return $q.reject('Exercise already processed ' + 'type ' + exerciseType + ' id ' + exerciseId);
+                            }
 
-                        score = Math.max(minDiagnosticScore, Math.min(maxDiagnosticScore, score));
-                        estimatedScoreData.estimatedScores[subjectId].push({
-                            exerciseType: exerciseType,
-                            exerciseId: exerciseId,
-                            score: score,
-                            time: Date.now()
-                        });
-                        return EstimatedScoreHelperSrv.setEstimateScoreData(estimatedScoreData).then(function () {
-                            return estimatedScoreData.estimatedScores[subjectId][estimatedScoreData.estimatedScores[subjectId].length - 1];
+                            score = Math.max(minDiagnosticScore, Math.min(maxDiagnosticScore, score));
+                            estimatedScoreData.estimatedScores[subjectId].push({
+                                exerciseType: exerciseType,
+                                exerciseId: exerciseId,
+                                score: score,
+                                time: Date.now()
+                            });
+                            return EstimatedScoreHelperSrv.setEstimateScoreData(estimatedScoreData).then(function () {
+                                return estimatedScoreData.estimatedScores[subjectId][estimatedScoreData.estimatedScores[subjectId].length - 1];
+                            });
                         });
                     });
+                    return processingData;
                 };
 
                 EstimatedScoreSrv.addRawScore = function (rawScore, exerciseType, subjectId, exerciseId, isDiagnostic) {
-                    return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScoreData) {
-                        if (_isExerciseAlreadyProcessed(estimatedScoreData, exerciseType, exerciseId)) {
-                            return $q.reject('Exercise already processed ' + 'type ' + exerciseType + ' id ' + exerciseId);
-                        }
-                        if (exerciseType === ExerciseTypeEnum.SECTION.enum) {
-                            var sectionSubjectRowScores = estimatedScoreData.sectionsRawScores[subjectId];
-                            var newSectionSubjectRawScore = {
-                                exerciseType: exerciseType,
-                                exerciseId: exerciseId,
-                                time: Date.now()
-                            };
-                            angular.extend(newSectionSubjectRawScore, rawScore);
-                            sectionSubjectRowScores.push(newSectionSubjectRawScore);
-                        } else {
-                            var exerciseSubjectRawScore = estimatedScoreData.exercisesRawScores[subjectId];
-                            exerciseSubjectRawScore.exerciseType = exerciseType;
-                            exerciseSubjectRawScore.exerciseId = exerciseId;
-                            exerciseSubjectRawScore.time = Date.now();
-                            exerciseSubjectRawScore.total += rawScore.total;
-                            exerciseSubjectRawScore.earned += rawScore.earned;
-                        }
-
-                        if (!isDiagnostic) {
-                            var normalizedRawScore = _calculateNormalizedRawScore(estimatedScoreData.sectionsRawScores[subjectId], estimatedScoreData.exercisesRawScores[subjectId], subjectId);
-                            var estimatedScoresForSpecificSubject = estimatedScoreData.estimatedScores[subjectId];
-                            var currEstimatedScore = estimatedScoresForSpecificSubject[estimatedScoresForSpecificSubject.length - 1] || {};
-                            return _calculateNewEstimatedScore(subjectId, normalizedRawScore, currEstimatedScore.score, exerciseType !== ExerciseTypeEnum.SECTION.enum).then(function (newEstimatedScore) {
-                                estimatedScoreData.estimatedScores[subjectId].push({
+                    processingData = processingData.then(function(){
+                        return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScoreData) {
+                            if (_isExerciseAlreadyProcessed(estimatedScoreData, exerciseType, exerciseId)) {
+                                return $q.reject('Exercise already processed ' + 'type ' + exerciseType + ' id ' + exerciseId);
+                            }
+                            if (exerciseType === ExerciseTypeEnum.SECTION.enum) {
+                                var sectionSubjectRowScores = estimatedScoreData.sectionsRawScores[subjectId];
+                                var newSectionSubjectRawScore = {
                                     exerciseType: exerciseType,
                                     exerciseId: exerciseId,
-                                    score: newEstimatedScore,
                                     time: Date.now()
+                                };
+                                angular.extend(newSectionSubjectRawScore, rawScore);
+                                sectionSubjectRowScores.push(newSectionSubjectRawScore);
+                            } else {
+                                var exerciseSubjectRawScore = estimatedScoreData.exercisesRawScores[subjectId];
+                                exerciseSubjectRawScore.exerciseType = exerciseType;
+                                exerciseSubjectRawScore.exerciseId = exerciseId;
+                                exerciseSubjectRawScore.time = Date.now();
+                                exerciseSubjectRawScore.total += rawScore.total;
+                                exerciseSubjectRawScore.earned += rawScore.earned;
+                            }
+
+                            if (!isDiagnostic) {
+                                var normalizedRawScore = _calculateNormalizedRawScore(estimatedScoreData.sectionsRawScores[subjectId], estimatedScoreData.exercisesRawScores[subjectId], subjectId);
+                                var estimatedScoresForSpecificSubject = estimatedScoreData.estimatedScores[subjectId];
+                                var currEstimatedScore = estimatedScoresForSpecificSubject[estimatedScoresForSpecificSubject.length - 1] || {};
+                                return _calculateNewEstimatedScore(subjectId, normalizedRawScore, currEstimatedScore.score, exerciseType !== ExerciseTypeEnum.SECTION.enum).then(function (newEstimatedScore) {
+                                    estimatedScoreData.estimatedScores[subjectId].push({
+                                        exerciseType: exerciseType,
+                                        exerciseId: exerciseId,
+                                        score: newEstimatedScore,
+                                        time: Date.now()
+                                    });
+                                    return estimatedScoreData;
                                 });
-                                return estimatedScoreData;
-                            });
-                        }
-                        return estimatedScoreData;
-                    }).then(function (estimatedScoreData) {
-                        return EstimatedScoreHelperSrv.setEstimateScoreData(estimatedScoreData);
+                            }
+                            return estimatedScoreData;
+                        }).then(function (estimatedScoreData) {
+                            return EstimatedScoreHelperSrv.setEstimateScoreData(estimatedScoreData);
+                        });
                     });
+                    return processingData;
                 };
 
                 return EstimatedScoreSrv;
