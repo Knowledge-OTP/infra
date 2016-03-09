@@ -2691,40 +2691,6 @@
                 };
             }
 
-            //StatsQuerySrv.getWeakestCategoryInLevel = function (level, optionalIds) {
-            //    var currWeakestCategory = {};
-            //
-            //    function _isOptional(categoryId) {
-            //        if (!angular.isArray(optionalIds)) {
-            //            return true;
-            //        }
-            //
-            //        return optionalIds.indexOf(categoryId) !== -1;
-            //    }
-            //
-            //    function _isMostWeakSoFar(categoryWeakness) {
-            //        return angular.isUndefined(currWeakestCategory.weakness) || currWeakestCategory.weakness < categoryWeakness;
-            //    }
-            //
-            //    return StatsSrv.getLevelStats(level).then(function (levelStats) {
-            //        angular.forEach(levelStats, function (categoryStats) {
-            //            var categoryWeakness = _getCategoryWeakness(categoryStats);
-            //
-            //            if (_isOptional(categoryStats.id) && _isMostWeakSoFar(categoryWeakness)) {
-            //                currWeakestCategory.weakness = categoryWeakness;
-            //                currWeakestCategory.category = angular.copy(categoryStats);
-            //                return;
-            //            }
-            //        });
-            //
-            //        if (currWeakestCategory.weakness === -Infinity) {
-            //            return null;
-            //        }
-            //
-            //        return currWeakestCategory.category;
-            //    });
-            //};
-
             StatsQuerySrv.getWeakestCategoryInLevel = function (level, optionalIds, parentId) {
                 function _isOptional(categoryStats) {
                     if (!optionalIds.length && angular.isUndefined(parentId)) {
@@ -2918,10 +2884,13 @@
                             return;
                         }
 
-                        angular.forEach(newStats, function (newStat, categoryId) {
-                            StatsSrv.getAncestorIds(categoryId).then(function(categoriesToUpdate){
+                        var allProm = [];
+                        angular.forEach(newStats, function (newStat, processedCategoryId) {
+                            var prom = StatsSrv.getAncestorIds(processedCategoryId).then(function(categoriesToUpdate){
+                                categoriesToUpdate.unshift(+processedCategoryId);
+                                var deepestLevel = categoriesToUpdate.length;
                                 categoriesToUpdate.forEach(function (categoryId, index) {
-                                    var level = index + 1;
+                                    var level = deepestLevel - index;
                                     var levelKey = StatsSrv.getLevelKey(level);
                                     var levelStats = stats[levelKey];
                                     if (!levelStats) {
@@ -2935,9 +2904,8 @@
                                     if(!categoryStats){
                                         categoryStats = new BaseStats(categoryId,true);
 
-                                        var parentsIds = categoriesToUpdate.slice(0,index);
+                                        var parentsIds = categoriesToUpdate.slice(index + 1);
                                         if(parentsIds.length){
-                                            parentsIds.reverse();//parent ids order should be from the bottom to the top
                                             categoryStats.parentsIds = parentsIds;
                                         }
 
@@ -2947,15 +2915,12 @@
                                     _baseStatsUpdater(categoryStats,newStat);
                                 });
                             });
-
-                            //_getAncestorIds();
-                            //while (categoryIdToAdd !== null && angular.isDefined(categoryIdToAdd)) {
-                            //    categoriesToUpdate.unshift(categoryIdToAdd);
-                            //    categoryIdToAdd = _getParentCategoryId(categoryLookUp, categoryIdToAdd);
-                            //}
+                            allProm.push(prom);
                         });
-                        stats.processedExercises[processedExerciseKey] = true;
-                        return setStats(stats);
+                        return $q.all(allProm).then(function(){
+                            stats.processedExercises[processedExerciseKey] = true;
+                            return setStats(stats);
+                        });
                     });
 
                 };
@@ -2964,108 +2929,6 @@
                     return StatsSrv.getStats().then(function(stats){
                         var processedExerciseKey = _getProcessedExerciseKey(exerciseType, exerciseId);
                         return !!stats.processedExercises[processedExerciseKey];
-                    });
-                };
-
-                //StatsSrv.getGeneralCategoryStats = function () {
-                //    return _baseStatsGetter('generalCategory');
-                //};
-
-                //StatsSrv.getSpecificCategoryStats = function () {
-                //    return _baseStatsGetter('specificCategory');
-                //};
-
-                //StatsSrv.getWeakestGeneralCategory = function (optionalGeneralCategories) {
-                //    return StatsSrv.getGeneralCategoryStats().then(function (allGeneralCategoryStats) {
-                //        var optionalGeneralCategoryDataArr = [];
-                //        for (var subjectId in optionalGeneralCategories) {
-                //            var optionalGeneralCategoriesForSubject = optionalGeneralCategories[subjectId];
-                //            _weakestGeneralCategory(optionalGeneralCategoriesForSubject, allGeneralCategoryStats, optionalGeneralCategoryDataArr, subjectId);
-                //        }
-                //        optionalGeneralCategoryDataArr.sort(function (generalCategory1, generalCategory2) {
-                //            return _getCategoryWeakness(generalCategory2) - _getCategoryWeakness(generalCategory1);
-                //        });
-                //        $log.debug('weakest general categories array', JSON.stringify(optionalGeneralCategoryDataArr));
-                //        return optionalGeneralCategoryDataArr[0];
-                //    });
-                //};
-
-                //StatsSrv.getWeakestSpecificCategory = function (optionalSpecificCategories) {
-                //    $log.debug('calculating weakest specific category for exercise type ', JSON.stringify(optionalSpecificCategories));
-                //    return StatsSrv.getSpecificCategoryStats().then(function (allSpecificCategoryStats) {
-                //        var optionalSpecificCategoryDataArr = [];
-                //        for (var subjectId in optionalSpecificCategories) {
-                //            var optionalSpecificCategoriesForSubject = optionalSpecificCategories[subjectId];
-                //            for (var generalCategoryId in optionalSpecificCategoriesForSubject) {
-                //                var optionalSpecificCategoriesForGeneralCategory = optionalSpecificCategoriesForSubject[generalCategoryId];
-                //                _weakestSpecificCategory(optionalSpecificCategoriesForGeneralCategory, allSpecificCategoryStats, optionalSpecificCategoryDataArr, subjectId, generalCategoryId);
-                //            }
-                //        }
-                //        optionalSpecificCategoryDataArr.sort(function (specificCategory1, specificCategory2) {
-                //            return _getSpecificCategoryWeakness(specificCategory2) - _getSpecificCategoryWeakness(specificCategory1);
-                //        });
-                //        $log.debug('weakest specific categories array', JSON.stringify(optionalSpecificCategoryDataArr));
-                //        return optionalSpecificCategoryDataArr[0];
-                //    });
-                //};
-
-                StatsSrv.getPerformanceData = function () {
-                    return StatsSrv.getStats().then(function (stats) {
-                        var subjectsStats = stats.subjectStats;
-                        var generalCategoriesStats = stats.generalCategoryStats;
-
-                        var performanceData = {};
-
-                        var generalCategoriesBySubject = {};
-                        var generalCategoryStatsKeys = Object.keys(generalCategoriesStats);
-                        var weakestGeneralCategoryBySubject = {};
-                        generalCategoryStatsKeys.forEach(function (key) {
-                            var generalCategoryStats = generalCategoriesStats[key];
-
-                            if (!generalCategoryStats) {
-                                $log.error('StatsSrv: getPerformanceData: null general category stat was received for the following key: ', key);
-                                return;
-                            }
-
-                            if (!generalCategoriesBySubject[generalCategoryStats.subjectId]) {
-                                generalCategoriesBySubject[generalCategoryStats.subjectId] = [];
-                            }
-                            var processedGeneralCategory = {
-                                id: generalCategoryStats.id,
-                                levelProgress: generalCategoryStats.totalQuestions ? Math.round(generalCategoryStats.correct / generalCategoryStats.totalQuestions * 100) : 0,
-                                avgTime: generalCategoryStats.totalTime ? Math.round(generalCategoryStats.totalTime / generalCategoryStats.totalQuestions / 1000) : 0,
-                                answeredQuestions: generalCategoryStats.totalQuestions
-                            };
-                            generalCategoriesBySubject[generalCategoryStats.subjectId].push(processedGeneralCategory);
-
-                            var weakestGeneralCategoryForSubject = weakestGeneralCategoryBySubject[generalCategoryStats.subjectId];
-                            if (!weakestGeneralCategoryForSubject || (weakestGeneralCategoryForSubject.successRate > processedGeneralCategory.levelProgress)) {
-                                weakestGeneralCategoryBySubject[generalCategoryStats.subjectId] = {
-                                    id: processedGeneralCategory.id,
-                                    successRate: processedGeneralCategory.levelProgress
-                                };
-                            }
-                        });
-
-                        SubjectEnum.getEnumArr().forEach(function (subject) {
-                            var subjectId = subject.enum;
-
-                            var performanceDataForSubject = performanceData[subjectId] = {};
-
-                            performanceDataForSubject.category = generalCategoriesBySubject[subjectId];
-                            performanceDataForSubject.weakestCategory = weakestGeneralCategoryBySubject[subjectId];
-
-                            var subjectStats = subjectsStats[subjectId];
-                            if (subjectStats) {
-                                performanceDataForSubject.overall = {
-                                    value: subjectStats.totalQuestions ? Math.round(subjectStats.correct / subjectStats.totalQuestions * 100) : 0,
-                                    avgTime: subjectStats.totalTime ? Math.round(subjectStats.totalTime / subjectStats.totalQuestions / 1000) : 0
-                                };
-                            }
-
-                        });
-
-                        return performanceData;
                     });
                 };
 
