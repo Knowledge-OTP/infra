@@ -58,7 +58,6 @@
             }
 
             .znk-popup-buttons{
-                cursor: pointer;
                 @include display-flex;
                 @include justify-content(center);
                 border-radius: 0px 0px 15px 15px;
@@ -68,6 +67,7 @@
                 };
 
                 .button-wrapper{
+                    cursor: pointer;
                     @include text-style(14px, $fcColor5, Lato, $regularFontWeight);
                     border: 1px solid $bgColor3;
                     border-radius: 20px;
