@@ -4261,10 +4261,9 @@
 
                         function _setDoneBtnDisplayStatus(currIndex) {
                             var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
-                            var answeredCount = znkExerciseDrvCtrl.answeredCount;
                             getQuestionsProm.then(function (questions) {
                                 scope.vm.maxQuestionIndex = questions.length - 1;
-                                if (_notReviewMode() && (_isLastQuestion(currIndex, questions) || answeredCount === questions.length)) {
+                                if (_notReviewMode() && (_isLastQuestion(currIndex, questions) || znkExerciseDrvCtrl.areAllQuestionsAnswered())) {
                                     scope.vm.showDoneButton = true;
                                 } else {
                                     scope.vm.showDoneButton = false;
@@ -5021,6 +5020,13 @@
             self.getQuestions = function(){
                 return exerciseReadyDefer.promise.then(function(){
                     return $scope.vm.questionsWithAnswers;
+                });
+            };
+
+            self.areAllQuestionsAnswered = function() {
+                var answeredCount = self.answeredCount;
+                return self.getQuestions().then(function(questions) {
+                    return answeredCount === questions.length;
                 });
             };
 

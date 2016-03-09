@@ -55,10 +55,9 @@
 
                         function _setDoneBtnDisplayStatus(currIndex) {
                             var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
-                            var answeredCount = znkExerciseDrvCtrl.answeredCount;
                             getQuestionsProm.then(function (questions) {
                                 scope.vm.maxQuestionIndex = questions.length - 1;
-                                if (_notReviewMode() && (_isLastQuestion(currIndex, questions) || answeredCount === questions.length)) {
+                                if (_notReviewMode() && (_isLastQuestion(currIndex, questions) || znkExerciseDrvCtrl.areAllQuestionsAnswered())) {
                                     scope.vm.showDoneButton = true;
                                 } else {
                                     scope.vm.showDoneButton = false;
