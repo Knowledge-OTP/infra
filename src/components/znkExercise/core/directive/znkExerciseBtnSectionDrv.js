@@ -50,14 +50,15 @@
                         }
 
                         function _isLastQuestion(index, questions) {
-                            return (index && index === (questions.length - 1) ) || znkExerciseDrvCtrl.isLastUnansweredQuestion();
+                            return index && index === (questions.length - 1);
                         }
 
-                        function _setDoneBtnDisplayStatus(currIndex){
+                        function _setDoneBtnDisplayStatus(currIndex) {
                             var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
+                            var answeredCount = znkExerciseDrvCtrl.answeredCount;
                             getQuestionsProm.then(function (questions) {
                                 scope.vm.maxQuestionIndex = questions.length - 1;
-                                if (_notReviewMode() && _isLastQuestion(currIndex, questions)) {
+                                if (_notReviewMode() && (_isLastQuestion(currIndex, questions) || answeredCount === questions.length)) {
                                     scope.vm.showDoneButton = true;
                                 } else {
                                     scope.vm.showDoneButton = false;
@@ -85,6 +86,11 @@
                         scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex) {
                             _setCurrentQuestionIndex(newIndex);
                             _setDoneBtnDisplayStatus(newIndex);
+                        });
+
+                        scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function () {
+                            var currIndex = znkExerciseDrvCtrl.getCurrentIndex();
+                            _setDoneBtnDisplayStatus(currIndex);
                         });
 
                         scope.$on(ZnkExerciseEvents.QUESTIONS_NUM_CHANGED, function(){
