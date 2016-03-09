@@ -2990,7 +2990,7 @@
                     keys.forEach(function(key){
                         var value = source[key];
 
-                        if(key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length)){
+                        if(key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length) || (value !== value)){//value !== value return true if it equals to NaN
                             $log.debug('storageFirebaseAdapter: illegal property was deleted before save',key);
                             delete source[key];
                             return;
