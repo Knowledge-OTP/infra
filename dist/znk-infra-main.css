@@ -1412,6 +1412,7 @@ select-answer {
         font-weight: 400;
         margin-top: 6px; }
     .znk-popup .base-popup .znk-popup-wrapper .znk-popup-buttons {
+      cursor: pointer;
       display: -webkit-flex;
       display: -moz-box;
       display: -ms-flexbox;
