@@ -14,7 +14,7 @@
                     name: '@'
                 },
                 link: {
-                    pre: function (scope, element, attrs) {
+                    pre: function (scope, element) {
                         function _appendSvgIcon(name){
                             element.addClass(name);
                             SvgIconSrv.getSvgByName(name).then(function (svg) {
@@ -23,7 +23,7 @@
                         }
 
                         function _nameAttrWatchFn(){
-                            return element.attr('name')
+                            return element.attr('name');
                         }
 
                         scope.$watch(_nameAttrWatchFn, function(newName, prevName){
