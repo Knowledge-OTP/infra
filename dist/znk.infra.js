@@ -2691,40 +2691,6 @@
                 };
             }
 
-            //StatsQuerySrv.getWeakestCategoryInLevel = function (level, optionalIds) {
-            //    var currWeakestCategory = {};
-            //
-            //    function _isOptional(categoryId) {
-            //        if (!angular.isArray(optionalIds)) {
-            //            return true;
-            //        }
-            //
-            //        return optionalIds.indexOf(categoryId) !== -1;
-            //    }
-            //
-            //    function _isMostWeakSoFar(categoryWeakness) {
-            //        return angular.isUndefined(currWeakestCategory.weakness) || currWeakestCategory.weakness < categoryWeakness;
-            //    }
-            //
-            //    return StatsSrv.getLevelStats(level).then(function (levelStats) {
-            //        angular.forEach(levelStats, function (categoryStats) {
-            //            var categoryWeakness = _getCategoryWeakness(categoryStats);
-            //
-            //            if (_isOptional(categoryStats.id) && _isMostWeakSoFar(categoryWeakness)) {
-            //                currWeakestCategory.weakness = categoryWeakness;
-            //                currWeakestCategory.category = angular.copy(categoryStats);
-            //                return;
-            //            }
-            //        });
-            //
-            //        if (currWeakestCategory.weakness === -Infinity) {
-            //            return null;
-            //        }
-            //
-            //        return currWeakestCategory.category;
-            //    });
-            //};
-
             StatsQuerySrv.getWeakestCategoryInLevel = function (level, optionalIds, parentId) {
                 function _isOptional(categoryStats) {
                     if (!optionalIds.length && angular.isUndefined(parentId)) {
@@ -2966,48 +2932,6 @@
                         return !!stats.processedExercises[processedExerciseKey];
                     });
                 };
-
-                //StatsSrv.getGeneralCategoryStats = function () {
-                //    return _baseStatsGetter('generalCategory');
-                //};
-
-                //StatsSrv.getSpecificCategoryStats = function () {
-                //    return _baseStatsGetter('specificCategory');
-                //};
-
-                //StatsSrv.getWeakestGeneralCategory = function (optionalGeneralCategories) {
-                //    return StatsSrv.getGeneralCategoryStats().then(function (allGeneralCategoryStats) {
-                //        var optionalGeneralCategoryDataArr = [];
-                //        for (var subjectId in optionalGeneralCategories) {
-                //            var optionalGeneralCategoriesForSubject = optionalGeneralCategories[subjectId];
-                //            _weakestGeneralCategory(optionalGeneralCategoriesForSubject, allGeneralCategoryStats, optionalGeneralCategoryDataArr, subjectId);
-                //        }
-                //        optionalGeneralCategoryDataArr.sort(function (generalCategory1, generalCategory2) {
-                //            return _getCategoryWeakness(generalCategory2) - _getCategoryWeakness(generalCategory1);
-                //        });
-                //        $log.debug('weakest general categories array', JSON.stringify(optionalGeneralCategoryDataArr));
-                //        return optionalGeneralCategoryDataArr[0];
-                //    });
-                //};
-
-                //StatsSrv.getWeakestSpecificCategory = function (optionalSpecificCategories) {
-                //    $log.debug('calculating weakest specific category for exercise type ', JSON.stringify(optionalSpecificCategories));
-                //    return StatsSrv.getSpecificCategoryStats().then(function (allSpecificCategoryStats) {
-                //        var optionalSpecificCategoryDataArr = [];
-                //        for (var subjectId in optionalSpecificCategories) {
-                //            var optionalSpecificCategoriesForSubject = optionalSpecificCategories[subjectId];
-                //            for (var generalCategoryId in optionalSpecificCategoriesForSubject) {
-                //                var optionalSpecificCategoriesForGeneralCategory = optionalSpecificCategoriesForSubject[generalCategoryId];
-                //                _weakestSpecificCategory(optionalSpecificCategoriesForGeneralCategory, allSpecificCategoryStats, optionalSpecificCategoryDataArr, subjectId, generalCategoryId);
-                //            }
-                //        }
-                //        optionalSpecificCategoryDataArr.sort(function (specificCategory1, specificCategory2) {
-                //            return _getSpecificCategoryWeakness(specificCategory2) - _getSpecificCategoryWeakness(specificCategory1);
-                //        });
-                //        $log.debug('weakest specific categories array', JSON.stringify(optionalSpecificCategoryDataArr));
-                //        return optionalSpecificCategoryDataArr[0];
-                //    });
-                //};
 
                 StatsSrv.getPerformanceData = function () {
                     return StatsSrv.getStats().then(function (stats) {
@@ -3341,18 +3265,25 @@
             return {
                 scope: {
                     name: '@'
-
                 },
                 link: {
-                    pre: function (scope, element) {
-                        scope.$watch(function(){
-                            return element.attr('name');
-                        }, function () {
-                            var name = element.attr('name');
+                    pre: function (scope, element, attrs) {
+                        function _appendSvgIcon(name){
                             element.addClass(name);
                             SvgIconSrv.getSvgByName(name).then(function (svg) {
                                 element.append(svg);
                             });
+                        }
+                        attrs.$observe('name', function(newName, prevName){
+                            element.empty();
+
+                            if(prevName){
+                                element.removeClass(name);
+                            }
+
+                            if(newName){
+                                _appendSvgIcon(newName);
+                            }
                         });
                     }
                 }
@@ -3360,6 +3291,7 @@
         }
     ]);
 })(angular);
+
 
 (function (angular) {
     'use strict';
