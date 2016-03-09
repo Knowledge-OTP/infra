@@ -4214,8 +4214,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseBtnSection', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum',
-        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseEvents, ZnkExerciseViewModeEnum) {
+        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum', '$q',
+        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseEvents, ZnkExerciseViewModeEnum, $q) {
             return {
                 restrict: 'E',
                 scope: {
@@ -4256,14 +4256,17 @@
                         }
 
                         function _isLastQuestion(index, questions) {
-                            return (index && index === (questions.length - 1) ) || znkExerciseDrvCtrl.isLastUnansweredQuestion();
+                            return index && index === (questions.length - 1);
                         }
 
-                        function _setDoneBtnDisplayStatus(currIndex){
+                        function _setDoneBtnDisplayStatus(currIndex) {
                             var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
-                            getQuestionsProm.then(function (questions) {
+                            var areAllQuestionsAnsweredProm = znkExerciseDrvCtrl.areAllQuestionsAnswered();
+                            $q.all([getQuestionsProm, areAllQuestionsAnsweredProm]).then(function (results) {
+                                var questions = results[0];
+                                var areAllQuestionsAnswered = results[1];
                                 scope.vm.maxQuestionIndex = questions.length - 1;
-                                if (_notReviewMode() && _isLastQuestion(currIndex, questions)) {
+                                if (_notReviewMode() && (_isLastQuestion(currIndex, questions) || areAllQuestionsAnswered)) {
                                     scope.vm.showDoneButton = true;
                                 } else {
                                     scope.vm.showDoneButton = false;
@@ -4291,6 +4294,11 @@
                         scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex) {
                             _setCurrentQuestionIndex(newIndex);
                             _setDoneBtnDisplayStatus(newIndex);
+                        });
+
+                        scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function () {
+                            var currIndex = znkExerciseDrvCtrl.getCurrentIndex();
+                            _setDoneBtnDisplayStatus(currIndex);
                         });
 
                         scope.$on(ZnkExerciseEvents.QUESTIONS_NUM_CHANGED, function(){
@@ -5015,6 +5023,13 @@
             self.getQuestions = function(){
                 return exerciseReadyDefer.promise.then(function(){
                     return $scope.vm.questionsWithAnswers;
+                });
+            };
+
+            self.areAllQuestionsAnswered = function() {
+                var answeredCount = self.answeredCount;
+                return self.getQuestions().then(function(questions) {
+                    return answeredCount === questions.length;
                 });
             };
 
