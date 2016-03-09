@@ -2884,13 +2884,10 @@
                             return;
                         }
 
-                        var allProm = [];
-                        angular.forEach(newStats, function (newStat, processedCategoryId) {
-                            var prom = StatsSrv.getAncestorIds(processedCategoryId).then(function(categoriesToUpdate){
-                                categoriesToUpdate.unshift(+processedCategoryId);
-                                var deepestLevel = categoriesToUpdate.length;
+                        angular.forEach(newStats, function (newStat, categoryId) {
+                            StatsSrv.getAncestorIds(categoryId).then(function(categoriesToUpdate){
                                 categoriesToUpdate.forEach(function (categoryId, index) {
-                                    var level = deepestLevel - index;
+                                    var level = index + 1;
                                     var levelKey = StatsSrv.getLevelKey(level);
                                     var levelStats = stats[levelKey];
                                     if (!levelStats) {
@@ -2904,8 +2901,9 @@
                                     if(!categoryStats){
                                         categoryStats = new BaseStats(categoryId,true);
 
-                                        var parentsIds = categoriesToUpdate.slice(index + 1);
+                                        var parentsIds = categoriesToUpdate.slice(0,index);
                                         if(parentsIds.length){
+                                            parentsIds.reverse();//parent ids order should be from the bottom to the top
                                             categoryStats.parentsIds = parentsIds;
                                         }
 
@@ -2915,12 +2913,15 @@
                                     _baseStatsUpdater(categoryStats,newStat);
                                 });
                             });
-                            allProm.push(prom);
+
+                            //_getAncestorIds();
+                            //while (categoryIdToAdd !== null && angular.isDefined(categoryIdToAdd)) {
+                            //    categoriesToUpdate.unshift(categoryIdToAdd);
+                            //    categoryIdToAdd = _getParentCategoryId(categoryLookUp, categoryIdToAdd);
+                            //}
                         });
-                        return $q.all(allProm).then(function(){
-                            stats.processedExercises[processedExerciseKey] = true;
-                            return setStats(stats);
-                        });
+                        stats.processedExercises[processedExerciseKey] = true;
+                        return setStats(stats);
                     });
 
                 };
@@ -2929,6 +2930,66 @@
                     return StatsSrv.getStats().then(function(stats){
                         var processedExerciseKey = _getProcessedExerciseKey(exerciseType, exerciseId);
                         return !!stats.processedExercises[processedExerciseKey];
+                    });
+                };
+
+                StatsSrv.getPerformanceData = function () {
+                    return StatsSrv.getStats().then(function (stats) {
+                        var subjectsStats = stats.subjectStats;
+                        var generalCategoriesStats = stats.generalCategoryStats;
+
+                        var performanceData = {};
+
+                        var generalCategoriesBySubject = {};
+                        var generalCategoryStatsKeys = Object.keys(generalCategoriesStats);
+                        var weakestGeneralCategoryBySubject = {};
+                        generalCategoryStatsKeys.forEach(function (key) {
+                            var generalCategoryStats = generalCategoriesStats[key];
+
+                            if (!generalCategoryStats) {
+                                $log.error('StatsSrv: getPerformanceData: null general category stat was received for the following key: ', key);
+                                return;
+                            }
+
+                            if (!generalCategoriesBySubject[generalCategoryStats.subjectId]) {
+                                generalCategoriesBySubject[generalCategoryStats.subjectId] = [];
+                            }
+                            var processedGeneralCategory = {
+                                id: generalCategoryStats.id,
+                                levelProgress: generalCategoryStats.totalQuestions ? Math.round(generalCategoryStats.correct / generalCategoryStats.totalQuestions * 100) : 0,
+                                avgTime: generalCategoryStats.totalTime ? Math.round(generalCategoryStats.totalTime / generalCategoryStats.totalQuestions / 1000) : 0,
+                                answeredQuestions: generalCategoryStats.totalQuestions
+                            };
+                            generalCategoriesBySubject[generalCategoryStats.subjectId].push(processedGeneralCategory);
+
+                            var weakestGeneralCategoryForSubject = weakestGeneralCategoryBySubject[generalCategoryStats.subjectId];
+                            if (!weakestGeneralCategoryForSubject || (weakestGeneralCategoryForSubject.successRate > processedGeneralCategory.levelProgress)) {
+                                weakestGeneralCategoryBySubject[generalCategoryStats.subjectId] = {
+                                    id: processedGeneralCategory.id,
+                                    successRate: processedGeneralCategory.levelProgress
+                                };
+                            }
+                        });
+
+                        SubjectEnum.getEnumArr().forEach(function (subject) {
+                            var subjectId = subject.enum;
+
+                            var performanceDataForSubject = performanceData[subjectId] = {};
+
+                            performanceDataForSubject.category = generalCategoriesBySubject[subjectId];
+                            performanceDataForSubject.weakestCategory = weakestGeneralCategoryBySubject[subjectId];
+
+                            var subjectStats = subjectsStats[subjectId];
+                            if (subjectStats) {
+                                performanceDataForSubject.overall = {
+                                    value: subjectStats.totalQuestions ? Math.round(subjectStats.correct / subjectStats.totalQuestions * 100) : 0,
+                                    avgTime: subjectStats.totalTime ? Math.round(subjectStats.totalTime / subjectStats.totalQuestions / 1000) : 0
+                                };
+                            }
+
+                        });
+
+                        return performanceData;
                     });
                 };
 
@@ -3204,18 +3265,25 @@
             return {
                 scope: {
                     name: '@'
-
                 },
                 link: {
-                    pre: function (scope, element) {
-                        scope.$watch(function(){
-                            return element.attr('name');
-                        }, function () {
-                            var name = element.attr('name');
+                    pre: function (scope, element, attrs) {
+                        function _appendSvgIcon(name){
                             element.addClass(name);
                             SvgIconSrv.getSvgByName(name).then(function (svg) {
                                 element.append(svg);
                             });
+                        }
+                        attrs.$observe('name', function(newName, prevName){
+                            element.empty();
+
+                            if(prevName){
+                                element.removeClass(name);
+                            }
+
+                            if(newName){
+                                _appendSvgIcon(newName);
+                            }
                         });
                     }
                 }
@@ -3223,6 +3291,7 @@
         }
     ]);
 })(angular);
+
 
 (function (angular) {
     'use strict';
