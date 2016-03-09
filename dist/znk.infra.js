@@ -1165,6 +1165,7 @@
                     exerciseId: exerciseId,
                     exerciseTypeId: exerciseTypeId,
                     startedTime: storage.variables.currTimeStamp,
+                    uid: storage.variables.uid,
                     questionResults: [],
                     guid: guid
                 };
@@ -1252,8 +1253,9 @@
             function _getExamResultByGuid(guid,examId) {
                 var storage = InfraConfigSrv.getStorageService();
                 var path = _getExamResultPath(guid);
+                var uid = storage.variables.uid;
                 return storage.get(path).then(function(examResult){
-                    var initResult = _getInitExamResult(examId, guid);
+                    var initResult = _getInitExamResult(examId, guid, uid);
                     if(examResult.guid !== guid){
                         angular.extend(examResult,initResult);
                     }else{
@@ -1263,12 +1265,13 @@
                 });
             }
 
-            function _getInitExamResult(examId, guid){
+            function _getInitExamResult(examId, guid, uid){
                 return {
                     isComplete: false,
                     startedTime: '%currTimeStamp%',
                     examId: examId,
                     guid: guid,
+                    uid: uid,
                     sectionResults:{}
                 };
             }
@@ -1384,17 +1387,18 @@
 
             this.getExamResult = function (examId) {
                 var storage = InfraConfigSrv.getStorageService();
+                var uid = storage.variables.uid;
                 return _getExamResultsGuids().then(function (examResultsGuids) {
                     var examResultGuid = examResultsGuids[examId];
                     if (!examResultGuid) {
                         var dataToSave = {};
-
+                        uid = storage.variables.uid;
                         var newExamResultGuid = UtilitySrv.general.createGuid();
                         examResultsGuids[examId] = newExamResultGuid;
                         dataToSave[EXAM_RESULTS_GUIDS_PATH] = examResultsGuids;
 
                         var examResultPath = _getExamResultPath(newExamResultGuid);
-                        var initExamResult = _getInitExamResult(examId, newExamResultGuid);
+                        var initExamResult = _getInitExamResult(examId, newExamResultGuid, uid);
                         dataToSave[examResultPath] = initExamResult;
 
                         return storage.set(dataToSave).then(function (res) {
