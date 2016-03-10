@@ -3262,7 +3262,7 @@
                             element.empty();
 
                             if(prevName){
-                                element.removeClass(name);
+                                element.removeClass(prevName);
                             }
 
                             if(newName){
@@ -3302,12 +3302,17 @@
             var getSvgPromMap = {};
 
             this.$get = [
-                '$templateCache', '$q', '$http',
-                function ($templateCache, $q, $http) {
+                '$templateCache', '$q', '$http', '$log',
+                function ($templateCache, $q, $http, $log) {
                     var SvgIconSrv = {};
 
                     SvgIconSrv.getSvgByName = function (name) {
                         var src = svgMap[name];
+
+                        if(!src){
+                            $log.error('SvgIconSrv: src is missing for the following name', name);
+                            return $q.reject('no source was found');
+                        }
 
                         if(getSvgPromMap[src]){
                             return getSvgPromMap[src];

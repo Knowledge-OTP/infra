@@ -30,7 +30,7 @@
                             element.empty();
 
                             if(prevName){
-                                element.removeClass(name);
+                                element.removeClass(prevName);
                             }
 
                             if(newName){
