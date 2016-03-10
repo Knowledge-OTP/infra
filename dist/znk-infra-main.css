@@ -1360,16 +1360,18 @@ select-answer {
 
 .znk-popup .base-popup {
   z-index: 999999;
-  position: absolute;
+  position: fixed;
   top: 0;
-  right: 0;
   bottom: 0;
   left: 0;
+  right: 0;
   background: rgba(0, 0, 0, 0.7);
-  text-align: center; }
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; }
   .znk-popup .base-popup .znk-popup-wrapper {
     width: 390px;
-    margin-top: 300px;
     margin-right: auto;
     margin-left: auto; }
     .znk-popup .base-popup .znk-popup-wrapper .znk-popup-header {
