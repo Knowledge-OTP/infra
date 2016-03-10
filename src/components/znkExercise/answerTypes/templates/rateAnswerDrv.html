@@ -2,7 +2,7 @@
 
     <div class="checkbox-items-wrapper" >
 
-        <div class="item-repeater" ng-repeat="item in d.itemsArray">
+        <div class="item-repeater" ng-repeat="item in d.itemsArray track by $index">
             <svg-icon class="correct-icon" name="correct"></svg-icon>
             <svg-icon class="wrong-icon" name="wrong"></svg-icon>
             <div class="checkbox-item" ng-click="clickHandler($index)">
