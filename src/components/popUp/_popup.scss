@@ -1,14 +1,18 @@
 .znk-popup{
     .base-popup{
         z-index: 999999;
-        @include absolute-full-cover;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
         background: $tbgColor1;
         text-align: center;
 
         .znk-popup-wrapper{
             width: 390px;
             margin:{
-                top: 300px;
+                top: 250px;
                 right: auto;
                 left: auto;
             }
