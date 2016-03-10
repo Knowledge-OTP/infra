@@ -6302,7 +6302,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "            ng-change=\"vm.SlideChanged()\"\n" +
     "            disable-swipe=\"{{vm.isLocked}}\">\n" +
     "    <div class=\"swiper-slide\"\n" +
-    "        ng-repeat=\"question in vm.questions\">\n" +
+    "        ng-repeat=\"question in vm.questions \">\n" +
     "        <question-builder question=\"question\"\n" +
     "                          rate-answer-formatter-parser\n" +
     "                          ng-model=\"question.__questionStatus.userAnswer\"\n" +
