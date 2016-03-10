@@ -1023,14 +1023,14 @@ znk-exercise-pager {
     znk-exercise-pager znk-scroll .pager-items-wrapper {
       height: 44px;
       white-space: nowrap;
-      display: inline-flex;
       align-items: center; }
       znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item {
         cursor: pointer;
         vertical-align: top;
         display: inline-block;
         position: relative;
-        margin-right: 9px; }
+        margin-right: 9px;
+        top: 9px; }
         znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item:first-child {
           margin-left: 11px; }
         znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item .question-status-indicator {
@@ -1077,23 +1077,25 @@ znk-exercise-pager {
           display: none; }
         znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item.bookmark .question-bookmark-icon {
           display: block; }
-        znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item.current .question-bookmark-icon {
-          top: -3px;
-          z-index: 1; }
-        znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item.current .question-status-indicator {
-          width: 36px;
-          height: 36px;
-          margin-top: 0; }
-          znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item.current .question-status-indicator:before {
-            border-color: #CFCFCF; }
-          znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item.current .question-status-indicator .index {
-            font-size: 16px; }
-        znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item.current.correct .question-status-indicator:before {
-          border-color: #87ca4d; }
-        znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item.current.wrong .question-status-indicator:before {
-          border-color: #ff6766; }
-        znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item.current.neutral .question-status-indicator:before {
-          border-color: #0a9bad; }
+        znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item.current {
+          top: 4px; }
+          znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item.current .question-bookmark-icon {
+            top: -3px;
+            z-index: 1; }
+          znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item.current .question-status-indicator {
+            width: 36px;
+            height: 36px;
+            margin-top: 0; }
+            znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item.current .question-status-indicator:before {
+              border-color: #CFCFCF; }
+            znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item.current .question-status-indicator .index {
+              font-size: 16px; }
+          znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item.current.correct .question-status-indicator:before {
+            border-color: #87ca4d; }
+          znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item.current.wrong .question-status-indicator:before {
+            border-color: #ff6766; }
+          znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item.current.neutral .question-status-indicator:before {
+            border-color: #0a9bad; }
         znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item.activated {
           opacity: 0.6; }
 
