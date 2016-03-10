@@ -2,7 +2,7 @@ describe('testing service "ExerciseResult":', function () {
     'use strict';
 
     beforeEach(module('znk.infra.exerciseResult', 'znk.infra.storage', 'znk.infra.enum',
-        'htmlTemplates', 'testUtility', 'storage.mock', 'auth.mock'));
+        'htmlTemplates', 'testUtility', 'storage.mock', 'user.mock'));
 
     var $rootScope, ExerciseResultSrv, ExerciseTypeEnum, actions, testStorage, ExerciseStatusEnum;
     beforeEach(inject([

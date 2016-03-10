@@ -1171,15 +1171,17 @@
 
             function _getInitExerciseResult(exerciseTypeId,exerciseId,guid){
                 var storage = InfraConfigSrv.getStorageService();
-                var auth = InfraConfigSrv.getUserAuth();
-                return {
-                    exerciseId: exerciseId,
-                    exerciseTypeId: exerciseTypeId,
-                    startedTime: storage.variables.currTimeStamp,
-                    uid: auth.uid,
-                    questionResults: [],
-                    guid: guid
-                };
+                var userProm = InfraConfigSrv.getUserData();
+                return userProm.then(function(user) {
+                    return {
+                        exerciseId: exerciseId,
+                        exerciseTypeId: exerciseTypeId,
+                        startedTime: storage.variables.currTimeStamp,
+                        uid: user.uid,
+                        questionResults: [],
+                        guid: guid
+                    };
+                });
             }
 
             function _getExerciseResultByGuid(guid) {
@@ -1216,40 +1218,44 @@
                         dataToSave[EXERCISE_RESULTS_GUIDS_PATH] = exerciseResultsGuids;
 
                         var exerciseResultPath = _getExerciseResultPath(newGuid);
-                        var initResult = _getInitExerciseResult(exerciseTypeId,exerciseId,newGuid);
-                        dataToSave[exerciseResultPath] = initResult;
+                        var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,newGuid);
+                        return initResultProm.then(function(initResult) {
+                            dataToSave[exerciseResultPath] = initResult;
 
-                        var setProm;
-                        if(getExamResultProm){
-                            initResult.examId = examId;
-                            setProm = getExamResultProm.then(function(examResult){
-                                if(!examResult.sectionResults){
-                                    examResult.sectionResults = {};
-                                }
-                                if(examSectionsNum && !examResult.examSectionsNum) {
-                                    examResult.examSectionsNum = examSectionsNum;
-                                }
-                                examResult.sectionResults[exerciseId] = newGuid;
-                                var examResultPath = _getExamResultPath(examResult.guid);
-                                dataToSave[examResultPath] = examResult;
+                            var setProm;
+                            if(getExamResultProm){
+                                initResult.examId = examId;
+                                setProm = getExamResultProm.then(function(examResult){
+                                    if(!examResult.sectionResults){
+                                        examResult.sectionResults = {};
+                                    }
+                                    if(examSectionsNum && !examResult.examSectionsNum) {
+                                        examResult.examSectionsNum = examSectionsNum;
+                                    }
+                                    examResult.sectionResults[exerciseId] = newGuid;
+                                    var examResultPath = _getExamResultPath(examResult.guid);
+                                    dataToSave[examResultPath] = examResult;
+                                });
+                            }
+
+                            return $q.when(setProm).then(function(){
+                                return storage.set(dataToSave);
+                            }).then(function(res){
+                                return res[exerciseResultPath];
                             });
-                        }
-
-                        return $q.when(setProm).then(function(){
-                            return storage.set(dataToSave);
-                        }).then(function(res){
-                            return res[exerciseResultPath];
                         });
                     }
 
                     return _getExerciseResultByGuid(resultGuid).then(function(result){
-                        var initResult = _getInitExerciseResult(exerciseTypeId,exerciseId,resultGuid);
-                        if(result.guid !== resultGuid){
-                            angular.extend(result,initResult);
-                        }else{
-                            UtilitySrv.object.extendWithoutOverride(result, initResult);
-                        }
-                        return result;
+                        var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,resultGuid);
+                        return initResultProm.then(function(initResult) {
+                            if(result.guid !== resultGuid){
+                                angular.extend(result,initResult);
+                            }else{
+                                UtilitySrv.object.extendWithoutOverride(result, initResult);
+                            }
+                            return result;
+                        });
                     });
                 }).then(function(exerciseResult){
                     exerciseResult.$save = exerciseSaveFn;
@@ -1265,26 +1271,30 @@
                 var storage = InfraConfigSrv.getStorageService();
                 var path = _getExamResultPath(guid);
                 return storage.get(path).then(function(examResult){
-                    var initResult = _getInitExamResult(examId, guid);
-                    if(examResult.guid !== guid){
-                        angular.extend(examResult,initResult);
-                    }else{
-                        UtilitySrv.object.extendWithoutOverride(examResult,initResult);
-                    }
-                    return examResult;
+                    var initResultProm = _getInitExamResult(examId, guid);
+                    return initResultProm.then(function(initResult) {
+                        if(examResult.guid !== guid){
+                            angular.extend(examResult,initResult);
+                        }else{
+                            UtilitySrv.object.extendWithoutOverride(examResult,initResult);
+                        }
+                        return examResult;
+                    });
                 });
             }
 
             function _getInitExamResult(examId, guid){
-                var auth = InfraConfigSrv.getUserAuth();
-                return {
-                    isComplete: false,
-                    startedTime: '%currTimeStamp%',
-                    examId: examId,
-                    guid: guid,
-                    uid: auth.uid,
-                    sectionResults:{}
-                };
+                var userProm = InfraConfigSrv.getUserData();
+                return userProm.then(function(user) {
+                    return {
+                        isComplete: false,
+                        startedTime: '%currTimeStamp%',
+                        examId: examId,
+                        guid: guid,
+                        uid: user.uid,
+                        sectionResults:{}
+                    };
+                });
             }
 
             function _getExamResultsGuids(){
@@ -1407,11 +1417,13 @@
                         dataToSave[EXAM_RESULTS_GUIDS_PATH] = examResultsGuids;
 
                         var examResultPath = _getExamResultPath(newExamResultGuid);
-                        var initExamResult = _getInitExamResult(examId, newExamResultGuid);
-                        dataToSave[examResultPath] = initExamResult;
+                        var initExamResultProm = _getInitExamResult(examId, newExamResultGuid);
+                        return initExamResultProm.then(function(initExamResult) {
+                            dataToSave[examResultPath] = initExamResult;
 
-                        return storage.set(dataToSave).then(function (res) {
-                            return res[examResultPath];
+                            return storage.set(dataToSave).then(function (res) {
+                                return res[examResultPath];
+                            });
                         });
                     }
 
@@ -2098,18 +2110,18 @@
     angular.module('znk.infra.config').provider('InfraConfigSrv', [
         function () {
             var storageServiceName;
-            var authServiceName;
+            var userDataFn;
             this.setStorageServiceName = function(_storageServiceName){
                 storageServiceName = _storageServiceName;
             };
 
-            this.setAuthServiceName = function(_authServiceName) {
-                authServiceName = _authServiceName;
+            this.setUserDataFn = function(_userDataFn) {
+                userDataFn = _userDataFn;
             };
 
             this.$get = [
-                '$injector', '$log',
-                function ($injector, $log) {
+                '$injector', '$log', '$q',
+                function ($injector, $log, $q) {
                     var InfraConfigSrv = {};
 
                     InfraConfigSrv.getStorageService = function(){
@@ -2120,16 +2132,14 @@
                         return $injector.get(storageServiceName);
                     };
 
-                    InfraConfigSrv.getAuthService = function(){
-                        if(!authServiceName){
-                            $log.debug('InfraConfigSrv: auth service name was not defined');
+                    InfraConfigSrv.getUserData = function(){
+                        var userDataInjected;
+                        if(!userDataFn){
+                            $log.debug('InfraConfigSrv: auth fn name was not defined');
                             return;
                         }
-                        return $injector.get(authServiceName);
-                    };
-
-                    InfraConfigSrv.getUserAuth = function(){
-                        return InfraConfigSrv.getAuthService().getAuth();
+                        userDataInjected = $injector.invoke(userDataFn);
+                        return $q.when(userDataInjected);
                     };
 
                     return InfraConfigSrv;
