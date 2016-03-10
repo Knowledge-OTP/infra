@@ -7,5 +7,11 @@
                 'checkmark': 'checkmark-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
+        })
+        .run(function($timeout){
+            $timeout(function(){
+                var vIconDomElem = document.querySelector('.checkmark3');
+                vIconDomElem.setAttribute('name', 'checkmark');
+            },1000);
         });
 })(angular);

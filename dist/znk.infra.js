@@ -985,14 +985,18 @@
                     $log.error('EstimatedScoreSrv: rawScoreToScoreFnGetter was not set !!!');
                 }
 
+                var processingData = $q.when();
+
                 var EstimatedScoreSrv = {};
 
                 function _baseGetter(key, subjectId) {
-                    return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScore) {
-                        if (angular.isUndefined(subjectId)) {
-                            return estimatedScore[key];
-                        }
-                        return estimatedScore[key][subjectId];
+                    return processingData.then(function(){
+                        return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScore) {
+                            if (angular.isUndefined(subjectId)) {
+                                return estimatedScore[key];
+                            }
+                            return estimatedScore[key][subjectId];
+                        });
                     });
                 }
 
@@ -1071,66 +1075,72 @@
                 };
 
                 EstimatedScoreSrv.setDiagnosticSectionScore = function (score, exerciseType, subjectId, exerciseId) {
-                    return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScoreData) {
-                        //score was already set
-                        if (estimatedScoreData.estimatedScores[subjectId].length) {
-                            return $q.reject('Exercise already processed ' + 'type ' + exerciseType + ' id ' + exerciseId);
-                        }
+                    processingData = processingData.then(function(){
+                        return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScoreData) {
+                            //score was already set
+                            if (estimatedScoreData.estimatedScores[subjectId].length) {
+                                return $q.reject('Exercise already processed ' + 'type ' + exerciseType + ' id ' + exerciseId);
+                            }
 
-                        score = Math.max(minDiagnosticScore, Math.min(maxDiagnosticScore, score));
-                        estimatedScoreData.estimatedScores[subjectId].push({
-                            exerciseType: exerciseType,
-                            exerciseId: exerciseId,
-                            score: score,
-                            time: Date.now()
-                        });
-                        return EstimatedScoreHelperSrv.setEstimateScoreData(estimatedScoreData).then(function () {
-                            return estimatedScoreData.estimatedScores[subjectId][estimatedScoreData.estimatedScores[subjectId].length - 1];
+                            score = Math.max(minDiagnosticScore, Math.min(maxDiagnosticScore, score));
+                            estimatedScoreData.estimatedScores[subjectId].push({
+                                exerciseType: exerciseType,
+                                exerciseId: exerciseId,
+                                score: score,
+                                time: Date.now()
+                            });
+                            return EstimatedScoreHelperSrv.setEstimateScoreData(estimatedScoreData).then(function () {
+                                return estimatedScoreData.estimatedScores[subjectId][estimatedScoreData.estimatedScores[subjectId].length - 1];
+                            });
                         });
                     });
+                    return processingData;
                 };
 
                 EstimatedScoreSrv.addRawScore = function (rawScore, exerciseType, subjectId, exerciseId, isDiagnostic) {
-                    return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScoreData) {
-                        if (_isExerciseAlreadyProcessed(estimatedScoreData, exerciseType, exerciseId)) {
-                            return $q.reject('Exercise already processed ' + 'type ' + exerciseType + ' id ' + exerciseId);
-                        }
-                        if (exerciseType === ExerciseTypeEnum.SECTION.enum) {
-                            var sectionSubjectRowScores = estimatedScoreData.sectionsRawScores[subjectId];
-                            var newSectionSubjectRawScore = {
-                                exerciseType: exerciseType,
-                                exerciseId: exerciseId,
-                                time: Date.now()
-                            };
-                            angular.extend(newSectionSubjectRawScore, rawScore);
-                            sectionSubjectRowScores.push(newSectionSubjectRawScore);
-                        } else {
-                            var exerciseSubjectRawScore = estimatedScoreData.exercisesRawScores[subjectId];
-                            exerciseSubjectRawScore.exerciseType = exerciseType;
-                            exerciseSubjectRawScore.exerciseId = exerciseId;
-                            exerciseSubjectRawScore.time = Date.now();
-                            exerciseSubjectRawScore.total += rawScore.total;
-                            exerciseSubjectRawScore.earned += rawScore.earned;
-                        }
-
-                        if (!isDiagnostic) {
-                            var normalizedRawScore = _calculateNormalizedRawScore(estimatedScoreData.sectionsRawScores[subjectId], estimatedScoreData.exercisesRawScores[subjectId], subjectId);
-                            var estimatedScoresForSpecificSubject = estimatedScoreData.estimatedScores[subjectId];
-                            var currEstimatedScore = estimatedScoresForSpecificSubject[estimatedScoresForSpecificSubject.length - 1] || {};
-                            return _calculateNewEstimatedScore(subjectId, normalizedRawScore, currEstimatedScore.score, exerciseType !== ExerciseTypeEnum.SECTION.enum).then(function (newEstimatedScore) {
-                                estimatedScoreData.estimatedScores[subjectId].push({
+                    processingData = processingData.then(function(){
+                        return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScoreData) {
+                            if (_isExerciseAlreadyProcessed(estimatedScoreData, exerciseType, exerciseId)) {
+                                return $q.reject('Exercise already processed ' + 'type ' + exerciseType + ' id ' + exerciseId);
+                            }
+                            if (exerciseType === ExerciseTypeEnum.SECTION.enum) {
+                                var sectionSubjectRowScores = estimatedScoreData.sectionsRawScores[subjectId];
+                                var newSectionSubjectRawScore = {
                                     exerciseType: exerciseType,
                                     exerciseId: exerciseId,
-                                    score: newEstimatedScore,
                                     time: Date.now()
+                                };
+                                angular.extend(newSectionSubjectRawScore, rawScore);
+                                sectionSubjectRowScores.push(newSectionSubjectRawScore);
+                            } else {
+                                var exerciseSubjectRawScore = estimatedScoreData.exercisesRawScores[subjectId];
+                                exerciseSubjectRawScore.exerciseType = exerciseType;
+                                exerciseSubjectRawScore.exerciseId = exerciseId;
+                                exerciseSubjectRawScore.time = Date.now();
+                                exerciseSubjectRawScore.total += rawScore.total;
+                                exerciseSubjectRawScore.earned += rawScore.earned;
+                            }
+
+                            if (!isDiagnostic) {
+                                var normalizedRawScore = _calculateNormalizedRawScore(estimatedScoreData.sectionsRawScores[subjectId], estimatedScoreData.exercisesRawScores[subjectId], subjectId);
+                                var estimatedScoresForSpecificSubject = estimatedScoreData.estimatedScores[subjectId];
+                                var currEstimatedScore = estimatedScoresForSpecificSubject[estimatedScoresForSpecificSubject.length - 1] || {};
+                                return _calculateNewEstimatedScore(subjectId, normalizedRawScore, currEstimatedScore.score, exerciseType !== ExerciseTypeEnum.SECTION.enum).then(function (newEstimatedScore) {
+                                    estimatedScoreData.estimatedScores[subjectId].push({
+                                        exerciseType: exerciseType,
+                                        exerciseId: exerciseId,
+                                        score: newEstimatedScore,
+                                        time: Date.now()
+                                    });
+                                    return estimatedScoreData;
                                 });
-                                return estimatedScoreData;
-                            });
-                        }
-                        return estimatedScoreData;
-                    }).then(function (estimatedScoreData) {
-                        return EstimatedScoreHelperSrv.setEstimateScoreData(estimatedScoreData);
+                            }
+                            return estimatedScoreData;
+                        }).then(function (estimatedScoreData) {
+                            return EstimatedScoreHelperSrv.setEstimateScoreData(estimatedScoreData);
+                        });
                     });
+                    return processingData;
                 };
 
                 return EstimatedScoreSrv;
@@ -2990,7 +3000,7 @@
                     keys.forEach(function(key){
                         var value = source[key];
 
-                        if(key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length)){
+                        if(key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length) || (value !== value)){//value !== value return true if it equals to NaN
                             $log.debug('storageFirebaseAdapter: illegal property was deleted before save',key);
                             delete source[key];
                             return;
@@ -3236,14 +3246,19 @@
                     name: '@'
                 },
                 link: {
-                    pre: function (scope, element, attrs) {
+                    pre: function (scope, element) {
                         function _appendSvgIcon(name){
                             element.addClass(name);
                             SvgIconSrv.getSvgByName(name).then(function (svg) {
                                 element.append(svg);
                             });
                         }
-                        attrs.$observe('name', function(newName, prevName){
+
+                        function _nameAttrWatchFn(){
+                            return element.attr('name');
+                        }
+
+                        scope.$watch(_nameAttrWatchFn, function(newName, prevName){
                             element.empty();
 
                             if(prevName){
@@ -4244,8 +4259,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseBtnSection', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum',
-        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseEvents, ZnkExerciseViewModeEnum) {
+        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum', '$q',
+        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseEvents, ZnkExerciseViewModeEnum, $q) {
             return {
                 restrict: 'E',
                 scope: {
@@ -4286,14 +4301,17 @@
                         }
 
                         function _isLastQuestion(index, questions) {
-                            return (index && index === (questions.length - 1) ) || znkExerciseDrvCtrl.isLastUnansweredQuestion();
+                            return index && index === (questions.length - 1);
                         }
 
-                        function _setDoneBtnDisplayStatus(currIndex){
+                        function _setDoneBtnDisplayStatus(currIndex) {
                             var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
-                            getQuestionsProm.then(function (questions) {
+                            var areAllQuestionsAnsweredProm = znkExerciseDrvCtrl.areAllQuestionsAnswered();
+                            $q.all([getQuestionsProm, areAllQuestionsAnsweredProm]).then(function (results) {
+                                var questions = results[0];
+                                var areAllQuestionsAnswered = results[1];
                                 scope.vm.maxQuestionIndex = questions.length - 1;
-                                if (_notReviewMode() && _isLastQuestion(currIndex, questions)) {
+                                if (_notReviewMode() && (_isLastQuestion(currIndex, questions) || areAllQuestionsAnswered)) {
                                     scope.vm.showDoneButton = true;
                                 } else {
                                     scope.vm.showDoneButton = false;
@@ -4321,6 +4339,11 @@
                         scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex) {
                             _setCurrentQuestionIndex(newIndex);
                             _setDoneBtnDisplayStatus(newIndex);
+                        });
+
+                        scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function () {
+                            var currIndex = znkExerciseDrvCtrl.getCurrentIndex();
+                            _setDoneBtnDisplayStatus(currIndex);
                         });
 
                         scope.$on(ZnkExerciseEvents.QUESTIONS_NUM_CHANGED, function(){
@@ -5045,6 +5068,13 @@
             self.getQuestions = function(){
                 return exerciseReadyDefer.promise.then(function(){
                     return $scope.vm.questionsWithAnswers;
+                });
+            };
+
+            self.areAllQuestionsAnswered = function() {
+                var answeredCount = self.answeredCount;
+                return self.getQuestions().then(function(questions) {
+                    return answeredCount === questions.length;
                 });
             };
 

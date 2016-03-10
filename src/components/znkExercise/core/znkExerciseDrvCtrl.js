@@ -107,6 +107,13 @@
                 });
             };
 
+            self.areAllQuestionsAnswered = function() {
+                var answeredCount = self.answeredCount;
+                return self.getQuestions().then(function(questions) {
+                    return answeredCount === questions.length;
+                });
+            };
+
             function isQuestionAnswered(index) {
                 var questionWithAnswer = $scope.vm.questionsWithAnswers ? $scope.vm.questionsWithAnswers[index] : {};
                 return questionWithAnswer && questionWithAnswer.__questionStatus && angular.isDefined(questionWithAnswer.__questionStatus.userAnswer);
