@@ -18,7 +18,8 @@
         'znk.infra.estimatedScore',
         'znk.infra.stats',
         'znk.infra.hint',
-        'znk.infra.znkTimeline'
+        'znk.infra.znkTimeline',
+        'znk.infra.analytics'
     ]);
 })(angular);
 
