@@ -6209,11 +6209,11 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "\n" +
     "    <div class=\"checkbox-items-wrapper\" >\n" +
     "\n" +
-    "        <div class=\"item-repeater\" ng-repeat=\"item in ::d.itemsArray track by $index\">\n" +
+    "        <div class=\"item-repeater\" ng-repeat=\"item in d.itemsArray\">\n" +
     "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
     "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
     "            <div class=\"checkbox-item\" ng-click=\"clickHandler($index)\">\n" +
-    "                <div class=\"item-index\">{{ ::($index + 2)}}</div>\n" +
+    "                <div class=\"item-index\">{{$index +  2}}</div>\n" +
     "            </div>\n" +
     "            <div class=\"correct-answer-line\"></div>\n" +
     "        </div>\n" +
