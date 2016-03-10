@@ -11,7 +11,13 @@
         .run(function($timeout){
             $timeout(function(){
                 var vIconDomElem = document.querySelector('.checkmark3');
-                vIconDomElem.setAttribute('name', 'checkmark');
+                vIconDomElem.setAttribute('name', 'checkmark-new');
+
+                $timeout(function(){
+                    var vIconDomElem = document.querySelector('.checkmark3');
+                    vIconDomElem.setAttribute('name', 'checkmark');
+                },1000);
+
             },1000);
         });
 })(angular);
