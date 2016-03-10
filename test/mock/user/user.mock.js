@@ -1,13 +1,15 @@
 (function (angular) {
     'use strict';
 
-    var mockAuthServiceName = 'testAuth';
+    var mockUserFn = ['testUser', function(testUser) {
+        return testUser.getAuth();
+    }];
 
-    angular.module('auth.mock', ['znk.infra.config'])
+    angular.module('user.mock', ['znk.infra.config'])
         .config(function(InfraConfigSrvProvider){
-            InfraConfigSrvProvider.setAuthServiceName(mockAuthServiceName );
+            InfraConfigSrvProvider.setUserDataFn(mockUserFn);
         })
-        .service(mockAuthServiceName, function(){
+        .service('testUser', function(){
              this.getAuth = function() {
                  return {
                      uid: 'fakeUid'
