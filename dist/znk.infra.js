@@ -4240,10 +4240,10 @@
                     if(answerTypeId === AnswerTypeEnum.RATE_ANSWER.enum){
                         var INDEX_OFFSET = 2;
                         ngModelCtrl.$formatters.push(function(answer){
-                            return answer ? answer - INDEX_OFFSET : undefined;
+                            return angular.isDefined(answer) ? answer - INDEX_OFFSET : undefined;
                         });
                         ngModelCtrl.$parsers.push(function(index){
-                            return index ? index + INDEX_OFFSET : undefined;
+                            return angular.isDefined(index) ? index + INDEX_OFFSET : undefined;
                         });
 
                     }
@@ -6209,11 +6209,11 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "\n" +
     "    <div class=\"checkbox-items-wrapper\" >\n" +
     "\n" +
-    "        <div class=\"item-repeater\" ng-repeat=\"item in ::d.itemsArray track by $index\">\n" +
+    "        <div class=\"item-repeater\" ng-repeat=\"item in d.itemsArray track by $index\">\n" +
     "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
     "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
     "            <div class=\"checkbox-item\" ng-click=\"clickHandler($index)\">\n" +
-    "                <div class=\"item-index\">{{ ::($index + 2)}}</div>\n" +
+    "                <div class=\"item-index\">{{$index +  2}}</div>\n" +
     "            </div>\n" +
     "            <div class=\"correct-answer-line\"></div>\n" +
     "        </div>\n" +
