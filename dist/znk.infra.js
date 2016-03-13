@@ -334,12 +334,14 @@
                 return;
             }
             var newEventObj = {};
-            if(eventObj.eventName && events[eventObj.eventName]) {
-                newEventObj.eventName = events[eventObj.eventName];
-            } else if(eventObj.nameOnTheFly) {
-                newEventObj.eventName = eventObj.eventName;
-            } else {
-                $log.error('znkAnalyticsUtilSrv eventName not matching any eky in events const key:', eventObj.eventName);
+            if(eventObj.eventName) {
+                if(events[eventObj.eventName]) {
+                    newEventObj.eventName = events[eventObj.eventName];
+                } else if(eventObj.nameOnTheFly) {
+                    newEventObj.eventName = eventObj.eventName;
+                } else {
+                    $log.error('znkAnalyticsUtilSrv eventName not matching any eky in events const key:', eventObj.eventName);
+                }
             }
             newEventObj.props = _extendProps(eventObj);
             return newEventObj;
