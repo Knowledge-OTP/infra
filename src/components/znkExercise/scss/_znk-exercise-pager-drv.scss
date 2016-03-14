@@ -24,7 +24,6 @@ znk-exercise-pager {
         .pager-items-wrapper {
             height: 44px;
             white-space: nowrap;
-            display: inline-flex;
             align-items: center;
 
             .pager-item {
@@ -35,6 +34,8 @@ znk-exercise-pager {
                 margin: {
                     right: 9px;
                 }
+                top: 9px;
+
                 &:first-child {
                     margin: {
                         left: 11px;
@@ -96,6 +97,8 @@ znk-exercise-pager {
                 }
 
                 &.current {
+                    top: 4px;
+
                     .question-bookmark-icon {
                         top: -3px;
                         z-index: 1;
