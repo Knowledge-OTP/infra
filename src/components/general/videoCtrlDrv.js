@@ -204,6 +204,8 @@
                         scope.$on('$destroy', function () {
                             videoElem.off('canplay', canPlayHandler);
 
+                            videoElem.off('play', playHandler);
+
                             videoElem.off('ended', endedHandler);
 
                             videoDomElem.removeEventListener('loadedmetadata',loadedmetadata );
