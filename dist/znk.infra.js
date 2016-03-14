@@ -2009,6 +2009,7 @@
                 scope:{
                     onEnded: '&?',
                     onCanplay: '&?',
+                    onPlay: '&?',
                     onVideoError: '&?',
                     videoErrorPoster: '@?',
                     actions: '=?',
@@ -2144,6 +2145,14 @@
                             });
                         }
 
+                        function playHandler() {
+                            $timeout(function() {
+                                if(scope.onPlay) {
+                                    scope.onPlay();
+                                }
+                            });
+                        }
+
                         function setVideoDimensions(width,height){
                             if(setVideoDimensions.wasSet){
                                 return;
@@ -2173,6 +2182,7 @@
                         }
 
                         videoElem.on('canplay', canPlayHandler);
+                        videoElem.on('play', playHandler);
                         videoElem.on('ended', endedHandler);
 
                         if(posterImg){
