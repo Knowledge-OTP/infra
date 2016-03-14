@@ -2523,9 +2523,6 @@
                                     '<div class="btn" ' +
                                              'ng-click="d.btnClick(button)" ' +
                                              'ng-class="button.type" ' +
-                                             'analytics-on="click" ' +
-                                             'analytics-event="click-popup-{{button.text}}" ' +
-                                             'analytics-category="popup">{{button.text}}' +
                                     '</div>' +
                                 '</div>' +
                             '</div>' +
