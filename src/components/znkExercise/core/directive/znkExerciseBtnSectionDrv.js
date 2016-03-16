@@ -65,7 +65,6 @@
                                 var questions = results[0];
                                 var areAllQuestionsAnswered = results[1];
 
-                                scope.vm.maxQuestionIndex = questions.length - 1;
                                 var currIndex = znkExerciseDrvCtrl.getCurrentIndex();
 
                                 if (_notReviewMode() && (_isLastQuestion(currIndex, questions) || areAllQuestionsAnswered)) {
@@ -135,8 +134,9 @@
                             _determineDoneBtnDisplayStatus(currIndex);
                         });
 
-                        scope.$on(ZnkExerciseEvents.QUESTIONS_NUM_CHANGED, function(){
+                        scope.$on(ZnkExerciseEvents.QUESTIONS_NUM_CHANGED, function(evt, newQuestionNum){
                             var currIndex = znkExerciseDrvCtrl.getCurrentIndex();
+                            scope.vm.maxQuestionIndex = newQuestionNum - 1;
                             _determineDoneBtnDisplayStatus(currIndex);
                         });
 
