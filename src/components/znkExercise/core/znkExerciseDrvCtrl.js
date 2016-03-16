@@ -2,22 +2,41 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('ZnkExerciseDrvCtrl', [
-        '$scope', '$q', 'ZnkExerciseEvents', '$log',
-        function ($scope, $q, ZnkExerciseEvents, $log) {
+        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$element',
+        function ($scope, $q, ZnkExerciseEvents, $log, $element) {
             var self = this;
-            var exerciseReadyDefer = $q.defer();
-            var isExerciseReady = false;
 
-            self.setExerciseAsReady = function(){
-                if(isExerciseReady){
-                    return;
+            var questionReadyDefer = $q.defer();
+            var btnSectionReadyDefer = $q.defer();
+
+            var exerciseReadyProm = $q.all([
+                questionReadyDefer.promise,
+                btnSectionReadyDefer.promise
+            ]);
+
+            exerciseReadyProm.then(function(){
+                $scope.$broadcast(ZnkExerciseEvents.READY);
+                if ($scope.settings.onExerciseReady) {
+                    $scope.settings.onExerciseReady();
                 }
-                isExerciseReady = true;
-                exerciseReadyDefer.resolve(isExerciseReady);
-            };
+            });
+
+            function isQuestionAnswered(index) {
+                var questionWithAnswer = $scope.vm.questionsWithAnswers ? $scope.vm.questionsWithAnswers[index] : {};
+                return questionWithAnswer && questionWithAnswer.__questionStatus && angular.isDefined(questionWithAnswer.__questionStatus.userAnswer);
+            }
+
+            function canChangeQuestion(requiredIndex, currIndex){
+                var promArr = [];
+                changeQuestionResolvers.forEach(function(resolver){
+                    var getResolverResult = $q.when(angular.isFunction(resolver ) ? resolver(requiredIndex, currIndex) : resolver);
+                    promArr.push(getResolverResult);
+                });
+                return $q.all(promArr);
+            }
 
             self.isExerciseReady = function(){
-                return isExerciseReady ;
+                return exerciseReadyProm;
             };
 
             self.getViewMode = function () {
@@ -72,15 +91,12 @@
                 return this.setCurrentIndex(newCurrIndex);
             };
 
-            self.notifyQuestionReady = function () {
-                if (!self.__exerciseReady) {
-                    self.__exerciseReady = true;
-                    $scope.$broadcast(ZnkExerciseEvents.READY);
-                    exerciseReadyDefer.resolve(true);
-                    if ($scope.settings.onExerciseReady) {
-                        $scope.settings.onExerciseReady();
-                    }
-                }
+            self.notifyQuestionBuilderReady = function () {
+                questionReadyDefer.resolve();
+            };
+
+            self.notifyBtnSectionReady = function(){
+                btnSectionReadyDefer.resolve();
             };
 
             self.isCurrentQuestionAnswered = function () {
@@ -102,7 +118,7 @@
             };
 
             self.getQuestions = function(){
-                return exerciseReadyDefer.promise.then(function(){
+                return questionReadyDefer.promise.then(function(){
                     return $scope.vm.questionsWithAnswers;
                 });
             };
@@ -114,18 +130,8 @@
                 });
             };
 
-            function isQuestionAnswered(index) {
-                var questionWithAnswer = $scope.vm.questionsWithAnswers ? $scope.vm.questionsWithAnswers[index] : {};
-                return questionWithAnswer && questionWithAnswer.__questionStatus && angular.isDefined(questionWithAnswer.__questionStatus.userAnswer);
-            }
-
-            function canChangeQuestion(requiredIndex, currIndex){
-                var promArr = [];
-                changeQuestionResolvers.forEach(function(resolver){
-                    var getResolverResult = $q.when(angular.isFunction(resolver ) ? resolver(requiredIndex, currIndex) : resolver);
-                    promArr.push(getResolverResult);
-                });
-                return $q.all(promArr);
-            }
+            self.getElement = function(){
+                return $element;
+            };
         }]);
 })(angular);

@@ -1,19 +1,19 @@
-<div class="btn-container left-container ng-hide" ng-show="!!vm.currentQuestionIndex">
+<div class="btn-container left-container ng-hide"
+     ng-show="!!vm.currentQuestionIndex && vm.slideRightAllowed">
     <button ng-click="vm.prevQuestion()">
         <svg-icon name="chevron"></svg-icon>
     </button>
 </div>
 <div class="btn-container right-container ng-hide"
-     ng-show="vm.maxQuestionIndex !== vm.currentQuestionIndex"
+     ng-show="vm.maxQuestionIndex !== vm.currentQuestionIndex && vm.slideLeftAllowed"
      ng-class="{'question-answered': vm.isCurrentQuestionAnswered}">
     <button ng-click="vm.nextQuestion()">
         <svg-icon name="chevron"></svg-icon>
     </button>
 </div>
 <div class="done-btn-wrap">
-    <button class="done-btn ng-hide"
+    <button class="done-btn ng-hide show-opacity-animate"
             ng-show="vm.showDoneButton"
             ng-click="onDone()">DONE
     </button>
 </div>
-<div class="shadow-container"></div>

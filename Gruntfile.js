@@ -166,7 +166,7 @@ module.exports = function (grunt) {
                 files:[
                     'src/**/*.scss',
                 ],
-                tasks: ['sass']
+                tasks: ['sass','autoprefixer:main']
             }
         },
         sass: {
@@ -194,6 +194,14 @@ module.exports = function (grunt) {
             main: {
                 src: ['src/**/*.html','src/**/*.svg'],
                 dest: '.tmp/templates.js'
+            }
+        },
+        autoprefixer: {
+            options: {
+                browsers: ['last 2 versions']
+            },
+            main: {
+                src: ['.tmp/main.css']
             }
         }
     });

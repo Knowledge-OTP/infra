@@ -1,7 +1,12 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise', ['znk.infra.enum', 'znk.infra.svgIcon', 'znk.infra.scroll'])
+    angular.module('znk.infra.znkExercise', [
+            'znk.infra.enum',
+            'znk.infra.svgIcon',
+            'znk.infra.scroll',
+            'ngAnimate'
+        ])
         .config([
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {

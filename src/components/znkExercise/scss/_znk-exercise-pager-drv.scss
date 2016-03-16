@@ -1,7 +1,7 @@
 znk-exercise {
     &.done-btn-show {
-        znk-scroll {
-            width: calc(100% - 168px);
+        znk-exercise-pager{
+            width: calc(100% - 185px);
         }
     }
 }
@@ -14,17 +14,15 @@ znk-exercise-pager {
     margin: 0 7px 7px;
     background: #f5f8fa;
     border-radius: 30px;
+    z-index: 1;
 
     znk-scroll {
         width: 100%;
-        display: flex;
-        align-items: center;
-        z-index: 2;
 
         .pager-items-wrapper {
             height: 44px;
             white-space: nowrap;
-            align-items: center;
+            display: inline-block;
 
             .pager-item {
                 cursor: pointer;

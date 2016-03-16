@@ -2,6 +2,7 @@
   "name": "znkinfra",
   "private": true,
   "devDependencies": {
+    "grunt-autoprefixer": "^3.0.4",
     "grunt-contrib-clean": "0.6.0",
     "grunt-contrib-concat": "0.5.0",
     "grunt-contrib-connect": "^0.11.2",
@@ -30,6 +31,5 @@
   "engines": {
     "node": ">=0.10.0"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }

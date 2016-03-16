@@ -14,11 +14,18 @@
 
         znk-exercise{
             height: 500px;
-            width: 500px;
+            width: 1000px;
             margin: 100px 100px 0 auto;
-            background: white;
             display: inline-block;
+            float: right;
         }
+
+        question-builder{
+            overflow: auto;
+            height: 100%;
+            background: white;
+        }
+
     </style>
     <div style="float: left;">
         <button ng-click="addQuestion()">Add question</button>
@@ -35,14 +42,16 @@
         <button ng-click="setViewMode(4)">MUST_ANSWER</button>
         <div></div>
         <button ng-click="showOrHidePager()">show hide pager</button>
+        <div></div>
+        <button ng-click="showOrHideDoneBtn()">show hide done button</button>
     </div>
     <znk-exercise ng-model="results"
                   questions="questions"
                   settings="settings"
-                  actions="d.actions"
-                  ng-if="!hideExercise">
+                  actions="d.actions">
     </znk-exercise>
     <script src="angular/angular.js"></script>
+    <script src="angular-animate/angular-animate.js"></script>
     <script src="Swiper/dist/js/swiper.js"></script>
 
     <script src="components/enums/module.js"></script>
