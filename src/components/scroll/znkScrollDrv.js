@@ -68,13 +68,12 @@
                     function mouseMoveEventHandler(evt){
                         //$log.debug('mouse move',evt.pageX);
                         var xOffset = evt.pageX - currMousePoint.x;
-                        //var yOffset = evt.pageY - currMousePoint.y;
 
                         currMousePoint.x = evt.pageX;
                         currMousePoint.y = evt.pageY;
                         moveScroll(xOffset,containerWidth,childWidth);
                     }
-                    function mouseUpEventHandler(evt){
+                    function mouseUpEventHandler(){
                         //$log.debug('mouse up',evt.pageX);
                         document.removeEventListener('mousemove',mouseMoveEventHandler);
                         document.removeEventListener('mouseup',mouseUpEventHandler);

@@ -905,7 +905,8 @@ znk-exercise.desktop {
     top: 0;
     bottom: 0;
     align-items: center;
-    display: none; }
+    display: flex;
+    transition: all 0.2s linear; }
     znk-exercise.desktop .btn-section .btn-container.right-container {
       right: -40px; }
       znk-exercise.desktop .btn-section .btn-container.right-container.question-answered button {
@@ -918,6 +919,10 @@ znk-exercise.desktop {
         padding-left: 2px; }
         znk-exercise.desktop .btn-section .btn-container.right-container button .chevron {
           transform: rotate(-90deg); }
+      znk-exercise.desktop .btn-section .btn-container.right-container.ng-hide-add, znk-exercise.desktop .btn-section .btn-container.right-container.ng-hide-remove {
+        transition: all linear 0.2s; }
+      znk-exercise.desktop .btn-section .btn-container.right-container.ng-hide {
+        right: 0; }
     znk-exercise.desktop .btn-section .btn-container.left-container {
       left: -40px; }
       znk-exercise.desktop .btn-section .btn-container.left-container button {
@@ -926,10 +931,15 @@ znk-exercise.desktop {
         padding-left: 5px; }
         znk-exercise.desktop .btn-section .btn-container.left-container button .chevron {
           transform: rotate(90deg); }
+      znk-exercise.desktop .btn-section .btn-container.left-container.ng-hide-add, znk-exercise.desktop .btn-section .btn-container.left-container.ng-hide-remove {
+        transition: all linear 0.2s; }
+      znk-exercise.desktop .btn-section .btn-container.left-container.ng-hide {
+        left: 0; }
     znk-exercise.desktop .btn-section .btn-container button {
       height: 80px;
       width: 40px;
-      background: #fbfafa; }
+      background: #fbfafa;
+      cursor: pointer; }
       znk-exercise.desktop .btn-section .btn-container button:focus {
         outline: none; }
       znk-exercise.desktop .btn-section .btn-container button svg-icon.chevron {
@@ -951,15 +961,8 @@ znk-exercise.desktop {
       font-family: Lato;
       font-size: 13px;
       font-weight: normal;
-      border-radius: 30px; }
-  znk-exercise.desktop.done-btn-hide .btn-section .done-btn {
-    display: none !important; }
-  znk-exercise.desktop.done-btn-show .btn-section .done-btn {
-    display: block !important; }
-  znk-exercise.desktop.direction-right .btn-section .btn-container.left-container {
-    display: inline-flex; }
-  znk-exercise.desktop.direction-left .btn-section .btn-container.right-container {
-    display: inline-flex; }
+      border-radius: 30px;
+      cursor: pointer; }
   znk-exercise.desktop svg-icon.chevron .st0 {
     fill: none;
     stroke: #231F20;
@@ -994,17 +997,9 @@ znk-exercise.desktop {
     border-left: none; }
     znk-exercise.desktop button:focus {
       outline: none; }
-  znk-exercise.desktop .shadow-container {
-    width: 100%;
-    height: 51px;
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    box-shadow: 0px -4px 10px 0.1px white;
-    z-index: 1; }
 
-znk-exercise.done-btn-show znk-scroll {
-  width: calc(100% - 168px); }
+znk-exercise.done-btn-show znk-exercise-pager {
+  width: calc(100% - 185px); }
 
 znk-exercise-pager {
   width: calc(100% - 14px);
@@ -1014,16 +1009,14 @@ znk-exercise-pager {
   overflow: hidden;
   margin: 0 7px 7px;
   background: #f5f8fa;
-  border-radius: 30px; }
+  border-radius: 30px;
+  z-index: 1; }
   znk-exercise-pager znk-scroll {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    z-index: 2; }
+    width: 100%; }
     znk-exercise-pager znk-scroll .pager-items-wrapper {
       height: 44px;
       white-space: nowrap;
-      align-items: center; }
+      display: inline-block; }
       znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item {
         cursor: pointer;
         vertical-align: top;
@@ -1099,8 +1092,31 @@ znk-exercise-pager {
         znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item.activated {
           opacity: 0.6; }
 
+znk-exercise:not(.done-btn-show) .question-bottom-shadow {
+  width: 0%; }
+
 znk-exercise question-builder, znk-exercise questions-carousel, znk-exercise answer-builder {
   display: block; }
+
+znk-exercise .question-bottom-shadow {
+  transition: all 0.1s linear;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  height: 55px;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.91);
+  box-shadow: 0px -3px 7px 0px rgba(0, 0, 0, 0.08); }
+
+znk-exercise.done-btn-show .question-bottom-shadow, znk-exercise.pager-displayed .question-bottom-shadow {
+  width: 100%; }
+
+znk-exercise .show-opacity-animate.ng-hide-add, znk-exercise .show-opacity-animate.ng-hide-remove {
+  transition: all linear 0.2s;
+  opacity: 1; }
+
+znk-exercise .show-opacity-animate.ng-hide {
+  opacity: 0; }
 
 select-answer {
   font-size: 18px;

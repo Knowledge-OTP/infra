@@ -58,7 +58,7 @@
                 return val;
             };
 
-            BaseEnum.prototype.getNameToEnumMap = function getValByEnum(id) {
+            BaseEnum.prototype.getNameToEnumMap = function getValByEnum() {
                 var enumsObj = this;
                 var nameToEnumMap = {};
 
