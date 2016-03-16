@@ -8,7 +8,9 @@
         LISTENING: 3,
         SPEAKING: 4,
         ENGLISH: 5,
-        SCIENCE: 6
+        SCIENCE: 6,
+        VERBAL: 7,
+        ESSAY: 8
     };
 
     angular.module('znk.infra.enum').constant('SubjectEnumConst', subjectEnum);
@@ -24,7 +26,9 @@
                 ['LISTENING', subjectEnum.LISTENING, 'listening'],
                 ['SPEAKING', subjectEnum.SPEAKING, 'speaking'],
                 ['ENGLISH', subjectEnum.ENGLISH, 'english'],
-                ['SCIENCE', subjectEnum.SCIENCE, 'science']
+                ['SCIENCE', subjectEnum.SCIENCE, 'science'],
+                ['VERBAL', subjectEnum.VERBAL, 'verbal'],
+                ['ESSAY', subjectEnum.ESSAY, 'essay']
             ]);
 
             return SubjectEnum;
