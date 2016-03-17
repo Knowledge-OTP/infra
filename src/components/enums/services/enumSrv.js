@@ -58,6 +58,19 @@
                 return val;
             };
 
+            BaseEnum.prototype.getNameToEnumMap = function getValByEnum() {
+                var enumsObj = this;
+                var nameToEnumMap = {};
+
+                var keys = Object.keys(enumsObj);
+                keys.forEach(function(enumName){
+                    var enumObj = enumsObj[enumName];
+                    nameToEnumMap[enumName] = enumObj.enum;
+                });
+
+                return nameToEnumMap ;
+            };
+
             EnumSrv.flashcardStatus = new BaseEnum([
                 ['keep', 0, 'Keep'],
                 ['remove', 1, 'Remove']

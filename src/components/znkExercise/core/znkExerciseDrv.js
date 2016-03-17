@@ -97,7 +97,9 @@
                             scope.actions = scope.actions || {};
 
                             scope.actions.setSlideIndex = function setSlideIndex(index) {
-                                znkExerciseDrvCtrl.setCurrentIndex(index);
+                                znkExerciseDrvCtrl.isExerciseReady().then(function(){
+                                    znkExerciseDrvCtrl.setCurrentIndex(index);
+                                });
                             };
 
                             scope.actions.getCurrentIndex = function () {
@@ -109,52 +111,55 @@
                             };
 
                             scope.actions.setSlideDirection = function(newSlideDirection){
-                                if(angular.isDefined(newSlideDirection)){
-                                    var isRightDirection = newSlideDirection === ZnkExerciseSlideDirectionEnum.RIGHT.enum;
-                                    var isLeftDirection = newSlideDirection === ZnkExerciseSlideDirectionEnum.LEFT.enum;
-                                    var isAllDirection = newSlideDirection === ZnkExerciseSlideDirectionEnum.ALL.enum;
-                                    var DIRECTION_CLASS_PREFIX = 'direction';
+                                znkExerciseDrvCtrl.isExerciseReady().then(function(){
+                                    if(angular.isDefined(newSlideDirection)){
+                                        //  do nothing incase the slide direction was not changed
+                                        if(scope.vm.slideDirection === newSlideDirection){
+                                            return;
+                                        }
 
-                                    var rightDirectionClass =DIRECTION_CLASS_PREFIX + '-' + ZnkExerciseSlideDirectionEnum.RIGHT.val;
-                                    if(isRightDirection || isAllDirection){
-                                        element.addClass(rightDirectionClass);
-                                    }else{
-                                        element.removeClass(rightDirectionClass);
+                                        var isRightDirection = newSlideDirection === ZnkExerciseSlideDirectionEnum.RIGHT.enum;
+                                        var isLeftDirection = newSlideDirection === ZnkExerciseSlideDirectionEnum.LEFT.enum;
+                                        var isAllDirection = newSlideDirection === ZnkExerciseSlideDirectionEnum.ALL.enum;
+                                        var DIRECTION_CLASS_PREFIX = 'direction';
+
+                                        var rightDirectionClass =DIRECTION_CLASS_PREFIX + '-' + ZnkExerciseSlideDirectionEnum.RIGHT.val;
+                                        if(isRightDirection || isAllDirection){
+                                            element.addClass(rightDirectionClass);
+                                        }else{
+                                            element.removeClass(rightDirectionClass);
+                                        }
+
+                                        var leftDirectionClass=DIRECTION_CLASS_PREFIX + '-' + ZnkExerciseSlideDirectionEnum.LEFT.val;
+                                        if(isLeftDirection || isAllDirection){
+                                            element.addClass(leftDirectionClass);
+                                        }else{
+                                            element.removeClass(leftDirectionClass);
+                                        }
+
+                                        scope.vm.slideDirection = newSlideDirection;
+
+                                        scope.$broadcast(ZnkExerciseEvents.SLIDE_DIRECTION_CHANGED,newSlideDirection);
                                     }
-
-                                    var leftDirectionClass=DIRECTION_CLASS_PREFIX + '-' + ZnkExerciseSlideDirectionEnum.LEFT.val;
-                                    if(isLeftDirection || isAllDirection){
-                                        element.addClass(leftDirectionClass);
-                                    }else{
-                                        element.removeClass(leftDirectionClass);
-                                    }
-
-                                    scope.vm.slideDirection = newSlideDirection;
-                                }
+                                });
                             };
 
                             scope.actions.forceDoneBtnDisplay = function(display){
-                                if(display === true){
-                                    element.addClass('done-btn-show');
-                                }else{
-                                    element.removeClass('done-btn-show');
-                                }
-
-                                if(display === false){
-                                    element.addClass('done-btn-hide');
-                                }else{
-                                    element.removeClass('done-btn-hide');
-                                }
+                                znkExerciseDrvCtrl.isExerciseReady().then(function(){
+                                    scope.vm.btnSectionActions.forceDoneBtnDisplay(display);
+                                });
                             };
 
                             scope.actions.pagerDisplay = function(display){
-                                var showPager = !!display;
-                                if(showPager){
-                                    element.addClass('pager-displayed');
-                                }else{
-                                    element.removeClass('pager-displayed');
-                                }
-                                scope.vm.showPager = !!display;
+                                znkExerciseDrvCtrl.isExerciseReady().then(function(){
+                                    var showPager = !!display;
+                                    if(showPager){
+                                        element.addClass('pager-displayed');
+                                    }else{
+                                        element.removeClass('pager-displayed');
+                                    }
+                                    scope.vm.showPager = !!display;
+                                });
                             };
 
                             /**
@@ -167,7 +172,6 @@
                             function render(viewValue) {
                                 allQuestionWithAnswersArr = viewValue;
                                 scope.vm.questionsWithAnswers = allQuestionWithAnswersArr;
-                                znkExerciseDrvCtrl.setExerciseAsReady();
                             }
 
                             ngModelCtrl.$render = function () {
@@ -343,17 +347,13 @@
                             /**
                              *  INIT
                              * */
+
                             scope.actions.setSlideDirection(scope.settings.initSlideDirection);
-                            if(scope.settings.initForceDoneBtnDisplay === null){
-                                if(scope.settings.viewMode === ZnkExerciseViewModeEnum.REVIEW.enum){
-                                    scope.actions.forceDoneBtnDisplay(false);
-                                }else{
-                                    scope.actions.forceDoneBtnDisplay(scope.settings.initForceDoneBtnDisplay);
-                                }
-                            }else{
-                                scope.actions.forceDoneBtnDisplay(scope.settings.initForceDoneBtnDisplay);
-                            }
+
+                            scope.actions.forceDoneBtnDisplay(scope.settings.initForceDoneBtnDisplay);
+
                             scope.actions.pagerDisplay(scope.settings.initPagerDisplay);
+
                             /**
                              *  INIT END
                              * */

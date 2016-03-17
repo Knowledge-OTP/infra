@@ -80,6 +80,7 @@ describe('testing directive "znkExerciseDrv":', function () {
                 'actions="d.actions">' +
                 '</znk-exercise>';
         }
+
         content = $compile(content)($scope);
 
         content.getNgModelCtrl = function () {
@@ -114,10 +115,21 @@ describe('testing directive "znkExerciseDrv":', function () {
             $timeout.flush(300);
         };
 
-        content.getNextQuestionBtnContainer = function(){
-            var domElement = content[0];
-            return angular.element(domElement.querySelector('.btn-container.right-container'));
+        content.getSlideLeftBtnElement = function () {
+            var domElem = content[0];
+            return angular.element(domElem.querySelector('.btn-container.left-container'));
         };
+
+        content.getSlideRightBtnElement = function () {
+            var domElem = content[0];
+            return angular.element(domElem.querySelector('.btn-container.right-container'));
+        };
+
+        content.getBtnSectionScope = function(){
+            var domElem = content[0];
+            return angular.element(domElem.querySelector('znk-exercise-btn-section')).isolateScope();
+        };
+
         //wait for the slide box to compile the questions
         $scope.$digest();
         $timeout.flush();
@@ -136,6 +148,20 @@ describe('testing directive "znkExerciseDrv":', function () {
     function sortArrByQuestionId(item1, item2) {
         return item1.questionId - item2.questionId;
     }
+
+    it('given btn section and question builder ready then znkExerciseDrvCtrl.isExerciseReady promise should return true', function () {
+        var scopeContent = createDirectiveHtml();
+        var content = scopeContent.content;
+        var znkExerciseCtrl = content.getZnkExerciseDrvCtrl();
+
+        var isExerciseReady;
+        znkExerciseCtrl.isExerciseReady().then(function () {
+            isExerciseReady = true;
+        });
+        scopeContent.scope.$digest();
+
+        expect(isExerciseReady).toBeTruthy();
+    });
 
     it('given formatter combining questions with answers has finish when executing isExerciseReady ' +
         'function then true should be returned', function () {
@@ -542,6 +568,7 @@ describe('testing directive "znkExerciseDrv":', function () {
         scope.d.actions.setSlideDirection(ZnkExerciseSlideDirectionEnum.LEFT.enum);
         scope.d.actions.setSlideDirection(ZnkExerciseSlideDirectionEnum.ALL.enum);
         scope.d.actions.setSlideDirection(ZnkExerciseSlideDirectionEnum.NONE.enum);
+        scope.$digest();
 
         expect(content.hasClass('direction-' + ZnkExerciseSlideDirectionEnum.RIGHT.val)).toBeFalsy();
         expect(content.hasClass('direction-' + ZnkExerciseSlideDirectionEnum.LEFT.val)).toBeFalsy();
@@ -557,6 +584,7 @@ describe('testing directive "znkExerciseDrv":', function () {
         content.setCurrentIndex(3);
         var expectCurrIndex = isolateScope.vm.getCurrentIndex();
         scope.d.actions.setSlideDirection(ZnkExerciseSlideDirectionEnum.NONE.enum);
+        scope.$digest();
 
         content.setCurrentIndex(4);
         var currentIndex = isolateScope.vm.getCurrentIndex();
@@ -573,6 +601,7 @@ describe('testing directive "znkExerciseDrv":', function () {
         content.setCurrentIndex(3);
         var expectCurrIndex = isolateScope.vm.getCurrentIndex();
         scope.d.actions.setSlideDirection(ZnkExerciseSlideDirectionEnum.NONE.enum);
+        scope.$digest();
 
         content.setCurrentIndex(1);
         var currentIndex = isolateScope.vm.getCurrentIndex();
@@ -594,6 +623,24 @@ describe('testing directive "znkExerciseDrv":', function () {
         expect(currentIndex).toBe(4);
     });
 
+
+    it('when current slide direction is left then only slide right button should be enabled', function () {
+        var scopeContent = createDirectiveHtml();
+        var content = scopeContent.content;
+        var isolateScope = scopeContent.isolateScope;
+        var scope = scopeContent.scope;
+
+        content.setCurrentIndex(2);
+        scope.d.actions.setSlideDirection(ZnkExerciseSlideDirectionEnum.LEFT.enum);
+        scope.$digest();
+
+        var slideRightElem = content.getSlideRightBtnElement();
+        expect(slideRightElem.hasClass('ng-hide')).toBeFalsy();
+
+        var slideLeftElem = content.getSlideLeftBtnElement();
+        expect(slideLeftElem.hasClass('ng-hide')).toBeTruthy();
+    });
+
     it('given current slide direction is right when trying to set current slide to lower index then it should be' +
         'set', function () {
         var scopeContent = createDirectiveHtml();
@@ -607,6 +654,23 @@ describe('testing directive "znkExerciseDrv":', function () {
         content.setCurrentIndex(1);
         var currentIndex = isolateScope.vm.getCurrentIndex();
         expect(currentIndex).toBe(1);
+    });
+
+    it('when current slide direction is right then only slide left button should be enabled', function () {
+        var scopeContent = createDirectiveHtml();
+        var content = scopeContent.content;
+        var isolateScope = scopeContent.isolateScope;
+        var scope = scopeContent.scope;
+
+        content.setCurrentIndex(2);
+        scope.d.actions.setSlideDirection(ZnkExerciseSlideDirectionEnum.RIGHT.enum);
+        scope.$digest();
+
+        var slideRightElem = content.getSlideRightBtnElement();
+        expect(slideRightElem.hasClass('ng-hide')).toBeTruthy();
+
+        var slideLeftElem = content.getSlideLeftBtnElement();
+        expect(slideLeftElem.hasClass('ng-hide')).toBeFalsy();
     });
 
     it('given current slide direction is all when trying to set current slide to higher index then it should be' +
@@ -644,112 +708,120 @@ describe('testing directive "znkExerciseDrv":', function () {
         var content = scopeContent.content;
         var scope = scopeContent.scope;
         scope.d.actions.forceDoneBtnDisplay(true);
+        scope.$digest();
         expect(content.hasClass('done-btn-show')).toBeTruthy();
     });
 
-    it('when invoking force done button display with false parameter button then done-btn-hide class should be added', function () {
+    it('when invoking force done button display with false parameter button then done-btn-show class should be removed', function () {
         var scopeContent = createDirectiveHtml();
         var content = scopeContent.content;
         var scope = scopeContent.scope;
         scope.d.actions.forceDoneBtnDisplay(false);
-        expect(content.hasClass('done-btn-hide')).toBeTruthy();
-    });
-
-    it('given done-btn-hide class is added when invoking force done button display with true parameter button then done-btn-hide class should be removed', function () {
-        var scopeContent = createDirectiveHtml();
-        var content = scopeContent.content;
-        var scope = scopeContent.scope;
-        scope.d.actions.forceDoneBtnDisplay(false);
-        scope.d.actions.forceDoneBtnDisplay(true);
-        expect(content.hasClass('done-btn-hide')).toBeFalsy();
-    });
-
-    it('when invoking force done button display with null parameter after it was invoked with true and false then done-btn-hide  done-btn-show class should be removed', function () {
-        var scopeContent = createDirectiveHtml();
-        var content = scopeContent.content;
-        var scope = scopeContent.scope;
-        scope.d.actions.forceDoneBtnDisplay(false);
-        scope.d.actions.forceDoneBtnDisplay(true);
-        scope.d.actions.forceDoneBtnDisplay(null);
-        expect(content.hasClass('done-btn-hide')).toBeFalsy();
+        scope.$digest();
         expect(content.hasClass('done-btn-show')).toBeFalsy();
     });
 
-    it('given view mode is not review then done-btn-show done-btn-hide class should not be added',function(){
+    it('when invoking force done button display with null parameter after it was invoked with false then done-btn-show class should be added', function () {
+        var scopeContent = createDirectiveHtml();
+        var content = scopeContent.content;
+        var scope = scopeContent.scope;
+        scope.d.actions.forceDoneBtnDisplay(false);
+        scope.$digest();
+        scope.d.actions.forceDoneBtnDisplay(null);
+        scope.$digest();
+        expect(content.hasClass('done-btn-show')).toBeFalsy();
+    });
+
+    it('given view mode is not review then done-btn-show class should not be added', function () {
         var scopeSettings = {
             viewMode: ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum
         };
         var content = createDirectiveHtml(undefined, undefined, scopeSettings).content;
-
-        expect(content.hasClass('done-btn-hide')).toBeFalsy();
         expect(content.hasClass('done-btn-show')).toBeFalsy();
     });
 
-    it('given view mode is review then only done-btn-hide class should be added',function(){
+    it('given view mode is review then done-btn-show class should not be added', function () {
         var scopeSettings = {
             viewMode: ZnkExerciseViewModeEnum.REVIEW.enum
         };
-        var content = createDirectiveHtml(undefined, undefined, scopeSettings).content;
-
-        expect(content.hasClass('done-btn-hide')).toBeTruthy();
-        expect(content.hasClass('done-btn-show')).toBeFalsy();
+        var scopeContent = createDirectiveHtml(undefined, undefined, scopeSettings);
+        scopeContent.scope.$digest();
+        expect(scopeContent.content.hasClass('done-btn-show')).toBeFalsy();
     });
 
-    it('given view mode is review and initForceDoneBtnDisplay is true then only done-btn-show class should be added',function(){
+    it('given view mode is review and initForceDoneBtnDisplay is true then done-btn-show class should be added', function () {
         var scopeSettings = {
             viewMode: ZnkExerciseViewModeEnum.REVIEW.enum,
             initForceDoneBtnDisplay: true
         };
         var content = createDirectiveHtml(undefined, undefined, scopeSettings).content;
 
-        expect(content.hasClass('done-btn-hide')).toBeFalsy();
         expect(content.hasClass('done-btn-show')).toBeTruthy();
     });
 
-    it('when question and relevant answer are dynamically added then questions number changed event should be broadcast',function(){
+    it('when question and relevant answer are dynamically added then questions number changed event should be broadcast', function () {
         var scopeContent = createDirectiveHtml();
         var content = scopeContent.content;
         var isolateScope = scopeContent.isolateScope;
         var scope = scopeContent.scope;
 
         var currQuestionsNum = scope.d.questions.length;
-        spyOn(isolateScope,'$broadcast');
+        spyOn(isolateScope, '$broadcast');
         scope.d.answers.push({});
         scope.d.answers = angular.copy(scope.d.answers);
         scope.d.questions.push({});
         scope.$digest();
-        expect(isolateScope.$broadcast).toHaveBeenCalledWith(ZnkExerciseEvents.QUESTIONS_NUM_CHANGED, currQuestionsNum+1, currQuestionsNum);
+        expect(isolateScope.$broadcast).toHaveBeenCalledWith(ZnkExerciseEvents.QUESTIONS_NUM_CHANGED, currQuestionsNum + 1, currQuestionsNum);
     });
 
     it('when current question is unanswered then right arrow button (next question) ' +
-        'should not have question-answered class',function(){
+        'should not have question-answered class', function () {
 
-        var scopeContent = createDirectiveHtml(undefined,undefined,undefined, [{},{},{},{},{}]);
+        var scopeContent = createDirectiveHtml(undefined, undefined, undefined, [{}, {}, {}, {}, {}]);
         var content = scopeContent.content;
         var scope = scopeContent.scope;
 
-        var nextBtnContainerElement = content.getNextQuestionBtnContainer();
+        var nextBtnContainerElement = content.getSlideRightBtnElement();
         expect(nextBtnContainerElement.hasClass('question-answered')).toBeFalsy();
     });
 
     it('when current question is answered then right arrow button (next question) ' +
-        'should have question-answered class',function(){
+        'should have question-answered class', function () {
         var scopeContent = createDirectiveHtml();
         var content = scopeContent.content;
 
-        var nextBtnContainerElement = content.getNextQuestionBtnContainer();
+        var nextBtnContainerElement = content.getSlideRightBtnElement();
         expect(nextBtnContainerElement.hasClass('question-answered')).toBeTruthy();
     });
 
     it('when current question is answered and view mode is review then right arrow button (next question) ' +
-        'should not have question-answered class',function(){
+        'should not have question-answered class', function () {
         var settings = {
             viewMode: ZnkExerciseViewModeEnum.REVIEW.enum
         };
-        var scopeContent = createDirectiveHtml(undefined,undefined,settings);
+        var scopeContent = createDirectiveHtml(undefined, undefined, settings);
         var content = scopeContent.content;
 
-        var nextBtnContainerElement = content.getNextQuestionBtnContainer();
+        var nextBtnContainerElement = content.getSlideRightBtnElement();
         expect(nextBtnContainerElement.hasClass('question-answered')).toBeFalsy();
+    });
+
+    it('when question numbers change then total question number in znkExerciseBtnSectionDrv ' +
+        'directive should be update', function () {
+        var scopeContent = createDirectiveHtml();
+
+        scopeContent.scope.d.questions.push({
+            id: 6,
+            groupDataType: 1
+        });
+        scopeContent.scope.d.answers.push({
+            questionId: 6
+        });
+        scopeContent.scope.d.answers = angular.copy(scopeContent.scope.d.answers);
+        scopeContent.scope.$digest();
+
+        var btnSectionScope = scopeContent.content.getBtnSectionScope();
+        var expectedResult = 5;
+        expect(btnSectionScope.vm.maxQuestionIndex).toBe(expectedResult);
     });
 });
