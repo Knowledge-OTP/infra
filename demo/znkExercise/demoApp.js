@@ -2,9 +2,13 @@
     'use strict';
 
     angular.module('demoApp', ['znk.infra.znkExercise'])
-        .config(function (QuestionTypesSrvProvider) {
+        .config(function (QuestionTypesSrvProvider, $sceProvider) {
+            $sceProvider.enabled(false);
+
             var map = {
-                1: '<div>question Type 1</div><span>{{$parent.questionGetter().id}}</span><answer-builder></answer-builder>',
+                1: '<div>question Type 1</div><span>{{$parent.questionGetter().id}}</span>' +
+                   '<div ng-bind-html="$parent.questionGetter().content"></div>' +
+                   '<answer-builder></answer-builder>',
                 2: '<div>question Type 2</div><span>{{$parent.questionGetter().id}}</span>',
                 3: '<div>question Type 3</div><span>{{$parent.questionGetter().id}}</span>'
             };
@@ -18,10 +22,11 @@
         })
         .controller('Main', function ($scope, $timeout) {
             $scope.d = {};
+            var id = 0;
             $scope.questions = [
                 {
                     __type: 1,
-                    id: 1,
+                    id: ++id,
                     answerTypeId: 0,
                     answers: [
                         {
@@ -37,11 +42,58 @@
                             content: '<span>answer3</span>'
                         }
                     ],
-                    correctAnswerId: 1
+                    correctAnswerId: 1,
+                    content:
+                        '<div style="padding-left: 517px;">' +
+                            '<div>Header</div>' +
+                            '<div>Content</div>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                        '</div>'
                 },
                 {
                     __type: 1,
-                    id: 2,
+                    id: ++id,
                     answerTypeId: 3,
                     correctAnswerText: [
                         {
@@ -58,9 +110,45 @@
                         }
                     ]
                 },
-                {__type: 3, id: 3},
-                {__type: 1, id: 4},
-                {__type: 2, id: 5}
+                {__type: 3, id: ++id},
+                {__type: 1, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id},
+                {__type: 2, id: ++id}
             ];
 
             $scope.settings = {
@@ -71,7 +159,7 @@
                 onDone: function () {
                     alert('On done was invoked');
                 },
-                initPagerDisplay: true,
+                initPagerDisplay: false,
                 initForceDoneBtnDisplay: true
             };
 
@@ -131,6 +219,11 @@
             $scope.showOrHidePager = function () {
                 $scope.settings.initPagerDisplay = !$scope.settings.initPagerDisplay;
                 $scope.d.actions.pagerDisplay($scope.settings.initPagerDisplay);
+            };
+
+            $scope.showOrHideDoneBtn = function () {
+                $scope.settings.initForceDoneBtnDisplay = !$scope.settings.initForceDoneBtnDisplay;
+                $scope.d.actions.forceDoneBtnDisplay($scope.settings.initForceDoneBtnDisplay);
             };
         });
 })(angular);

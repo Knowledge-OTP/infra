@@ -6,12 +6,14 @@
                     on-question-answered="vm.questionAnswered()"
                     slide-direction="{{vm.slideDirection}}">
 </questions-carousel>
+<div class="question-bottom-shadow"></div>
 <znk-exercise-btn-section class="btn-section"
                           prev-question="vm.setCurrentIndexByOffset(-1)"
                           next-question="vm.setCurrentIndexByOffset(1)"
-                          on-done="settings.onDone()">
+                          on-done="settings.onDone()"
+                          actions="vm.btnSectionActions">
 </znk-exercise-btn-section>
-<znk-exercise-pager class="ng-hide"
+<znk-exercise-pager class="ng-hide show-opacity-animate"
                     ng-show="vm.showPager"
                     questions="vm.questionsWithAnswers"
                     ng-model="vm.currentSlide">

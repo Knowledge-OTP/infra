@@ -8,7 +8,8 @@ znk-exercise.desktop {
             top: 0;
             bottom: 0;
             align-items: center;
-            display: none;
+            display: flex;
+            transition: all 0.2s linear;
 
             &.right-container {
                 right: -40px;
@@ -31,6 +32,14 @@ znk-exercise.desktop {
                         transform: rotate(-90deg);
                     }
                 }
+
+                &.ng-hide-add, &.ng-hide-remove {
+                    transition: all linear 0.2s;
+                }
+
+                &.ng-hide {
+                    right: 0;
+                }
             }
 
             &.left-container {
@@ -45,12 +54,21 @@ znk-exercise.desktop {
                         transform: rotate(90deg);
                     }
                 }
+
+                &.ng-hide-add, &.ng-hide-remove {
+                    transition: all linear 0.2s;
+                }
+
+                &.ng-hide {
+                    left: 0;
+                }
             }
 
             button {
                 height: 80px;
                 width: 40px;
                 background: #fbfafa;
+                cursor: pointer;
 
                 &:focus {
                     outline: none;
@@ -87,38 +105,7 @@ znk-exercise.desktop {
                 border: {
                     radius: 30px;
                 }
-            }
-        }
-    }
-
-    &.done-btn-hide{
-        .btn-section{
-            .done-btn{
-                display: none!important;
-            }
-        }
-    }
-
-    &.done-btn-show{
-        .btn-section{
-            .done-btn{
-                display: block!important;
-            }
-        }
-    }
-
-    &.direction-right{
-        .btn-section{
-            .btn-container.left-container{
-                display: inline-flex;
-            }
-        }
-    }
-
-    &.direction-left{
-        .btn-section{
-            .btn-container.right-container{
-                display: inline-flex;
+                cursor: pointer;
             }
         }
     }
@@ -171,16 +158,6 @@ znk-exercise.desktop {
         &:focus {
             outline: none;
         }
-    }
-
-    .shadow-container {
-        width:100%;
-        height:51px;
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        box-shadow: 0px -4px 10px 0.1px white;
-        z-index: 1;
     }
 
 }

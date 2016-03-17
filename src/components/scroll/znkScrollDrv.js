@@ -19,7 +19,7 @@
                     var currXMatchRegex = currTransformVal.match(/translateX\((.*)px\)/);
                     var currX;
                     if(!angular.isArray(currXMatchRegex ) || currXMatchRegex.length < 2){
-                        $log.debug('failed to math transform value');
+                        //$log.debug('failed to math transform value');
                         currX = 0;
                     }else{
                         currX = +currXMatchRegex[1];
@@ -63,15 +63,18 @@
                     var containerWidth;
                     var childWidth;
 
+                    var WHEEL_MOUSE_EVENT = 'wheel';
+
                     function mouseMoveEventHandler(evt){
+                        //$log.debug('mouse move',evt.pageX);
                         var xOffset = evt.pageX - currMousePoint.x;
-                        //var yOffset = evt.pageY - currMousePoint.y;
 
                         currMousePoint.x = evt.pageX;
                         currMousePoint.y = evt.pageY;
                         moveScroll(xOffset,containerWidth,childWidth);
                     }
                     function mouseUpEventHandler(){
+                        //$log.debug('mouse up',evt.pageX);
                         document.removeEventListener('mousemove',mouseMoveEventHandler);
                         document.removeEventListener('mouseup',mouseUpEventHandler);
                         containerWidth = null;
@@ -79,6 +82,8 @@
                         currMousePoint = null;
                     }
                     function mouseDownHandler(evt){
+                        //$log.debug('mouse down',evt.pageX);
+
                         var child = domElement.children[0];
                         if(!child){
                             return;
@@ -91,6 +96,7 @@
                             x: evt.pageX,
                             y: evt.pageY
                         };
+
 
                         document.addEventListener('mousemove',mouseMoveEventHandler);
 
@@ -129,15 +135,19 @@
                             var scrollOnMouseWheel = $interpolate(attrs.scrollOnMouseWheel || '')(scope) !== 'false';
                             var containerWidth,childWidth;
                             function mouseWheelEventHandler(evt){
-                                moveScroll(-evt.deltaY, containerWidth, childWidth);
+                                //$log.debug('mouse wheel event',evt);
+                                var offset = -evt.deltaY * 4;// firefox is really slow....
+                                moveScroll(offset, containerWidth, childWidth);
                             }
                             function mouseEnterEventHandler(){
+                                //$log.debug('mouse enter');
                                 containerWidth = domElement.offsetWidth;
                                 childWidth = getElementWidth(domElement.children[0]);
-                                domElement.addEventListener('mousewheel',mouseWheelEventHandler);
+                                domElement.addEventListener(WHEEL_MOUSE_EVENT,mouseWheelEventHandler);
                             }
                             function mouseUpEventHandler(){
-                                domElement.removeEventListener('mousewheel',mouseWheelEventHandler);
+                                //$log.debug('mouse leave');
+                                domElement.removeEventListener(WHEEL_MOUSE_EVENT,mouseWheelEventHandler);
                             }
                             if(scrollOnMouseWheel){
                                 domElement.addEventListener('mouseenter',mouseEnterEventHandler);
@@ -169,7 +179,7 @@
                                 domElement.removeEventListener('mousedown',mouseDownHandler);
                                 domElement.removeEventListener('mouseenter',mouseEnterEventHandler);
                                 domElement.removeEventListener('mouseleave',mouseUpEventHandler);
-                                domElement.removeEventListener('mousewheel',mouseWheelEventHandler);
+                                domElement.removeEventListener(WHEEL_MOUSE_EVENT,mouseWheelEventHandler);
                             });
                         }
                     };

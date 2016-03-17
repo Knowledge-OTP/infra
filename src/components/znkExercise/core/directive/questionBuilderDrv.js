@@ -38,11 +38,11 @@
                         var childScope = scope.$new(true);
                         $compile(element.contents())(childScope);
 
-                        //after 2 digests at max the question should be randered
+                        //after 2 digests at max the question should be rendered
                         var innerTimeout;
                         $timeout(function(){
                             innerTimeout = $timeout(function(){
-                                znkExerciseCtrl.notifyQuestionReady(questionBuilderCtrl.question.__questionStatus.index);
+                                znkExerciseCtrl.notifyQuestionBuilderReady(questionBuilderCtrl.question.__questionStatus.index);
                             });
                         },0,false);
 

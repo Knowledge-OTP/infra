@@ -11,6 +11,7 @@
  *      unlockSwipeToNext
  *      enableKeyboardControl
  *      disableKeyboardControl
+ *      noSwiping
  *
  */
 
@@ -40,7 +41,7 @@
 
                             var fnToBindFromSwiper = [
                                 'lockSwipes', 'lockSwipeToPrev', 'lockSwipeToNext', 'unlockSwipes',
-                                'unlockSwipeToPrev', 'unlockSwipeToNext'
+                                'unlockSwipeToPrev', 'unlockSwipeToNext', 'noSwiping'
                             ];
                             fnToBindFromSwiper.forEach(function(fnName){
                                 actions[fnName] = function(){
@@ -85,7 +86,8 @@
                         $timeout(function(){
                             var currSlideIndex = ngModelCtrl.$viewValue;
                             defer.resolve(new Swiper(element[0], {
-                                initialSlide: currSlideIndex || 0
+                                initialSlide: currSlideIndex || 0,
+                                onlyExternal: true
                             }));
                         },0,false);
                     }
