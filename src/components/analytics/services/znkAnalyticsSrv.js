@@ -1,3 +1,11 @@
+/**
+ * znkAnalyticsSrv
+ *
+ *   api:
+ *      getEventsConst
+ *      getDebugMode
+ *      { handlers you register in config phase }
+ */
 (function (angular) {
     'use strict';
 
@@ -38,6 +46,7 @@
         laterRateButtonClicked: 'Later Rate Button Clicked',
         purchaseModalOpened: 'Purchase Modal opened',
         purchaseOrderStarted: 'Order Started',
+        purchaseOrderPending: 'Order Pending',
         purchaseOrderCompleted: 'Order Completed',
         purchaseOrderCancelled: 'Order Cancelled'
     };
