@@ -6569,10 +6569,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "    <div class=\"bookmark-icon-container only-tablet\"\n" +
     "         ng-class=\"vm.questionsWithAnswers[vm.currentSlide].__questionStatus.bookmark ? 'bookmark-active-icon' : 'bookmark-icon'\"\n" +
     "         ng-click=\"vm.bookmarkCurrentQuestion()\"\n" +
-    "         ng-hide=\"settings.viewMode === d.reviewModeId\"\n" +
-    "         analytics-on=\"click\"\n" +
-    "         analytics-event=\"click-bookmark-question\"\n" +
-    "         analytics-category=\"exercise\"></div>\n" +
+    "         ng-hide=\"settings.viewMode === d.reviewModeId\"></div>\n" +
     "    <ng-switch\n" +
     "            on=\"vm.currentSlide !== vm.questionsWithAnswers.length - 1 && vm.answeredCount !== vm.questionsWithAnswers.length\"\n" +
     "            ng-hide=\"settings.viewMode === d.reviewModeId\"\n" +
@@ -6580,28 +6577,20 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "            ng-click=\"d.next()\">\n" +
     "        <button ng-switch-when=\"true\"\n" +
     "                class=\"btn next\">\n" +
-    "            <div class=\"only-tablet\"\n" +
-    "                 analytics-on=\"click\"\n" +
-    "                 analytics-event=\"click-next\"\n" +
-    "                 analytics-category=\"exercise\">\n" +
+    "            <div class=\"only-tablet\">\n" +
     "                <span>NEXT</span>\n" +
     "                <i class=\"question-arrow-right-icon\"></i>\n" +
     "            </div>\n" +
     "        </button>\n" +
     "        <button ng-switch-when=\"false\"\n" +
     "                class=\"btn finish\">\n" +
-    "            <div analytics-on=\"click\"\n" +
-    "                 analytics-event=\"click-finish\"\n" +
-    "                 analytics-category=\"exercise\">DONE\n" +
-    "            </div>\n" +
+    "            <div>DONE</div>\n" +
     "        </button>\n" +
     "    </ng-switch>\n" +
     "    <button class=\"btn sum ng-hide\"\n" +
     "            ng-click=\"settings.onSummary()\"\n" +
-    "            ng-show=\"settings.viewMode === d.reviewModeId\"\n" +
-    "            analytics-on=\"click\"\n" +
-    "            analytics-event=\"click-summary\"\n" +
-    "            analytics-category=\"exercise\">SUMMARY\n" +
+    "            ng-show=\"settings.viewMode === d.reviewModeId\">\n" +
+    "        SUMMARY\n" +
     "    </button>\n" +
     "</div>\n" +
     "");
