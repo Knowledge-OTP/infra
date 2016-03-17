@@ -2,10 +2,7 @@
     <div class="bookmark-icon-container only-tablet"
          ng-class="vm.questionsWithAnswers[vm.currentSlide].__questionStatus.bookmark ? 'bookmark-active-icon' : 'bookmark-icon'"
          ng-click="vm.bookmarkCurrentQuestion()"
-         ng-hide="settings.viewMode === d.reviewModeId"
-         analytics-on="click"
-         analytics-event="click-bookmark-question"
-         analytics-category="exercise"></div>
+         ng-hide="settings.viewMode === d.reviewModeId"></div>
     <ng-switch
             on="vm.currentSlide !== vm.questionsWithAnswers.length - 1 && vm.answeredCount !== vm.questionsWithAnswers.length"
             ng-hide="settings.viewMode === d.reviewModeId"
@@ -13,27 +10,19 @@
             ng-click="d.next()">
         <button ng-switch-when="true"
                 class="btn next">
-            <div class="only-tablet"
-                 analytics-on="click"
-                 analytics-event="click-next"
-                 analytics-category="exercise">
+            <div class="only-tablet">
                 <span>NEXT</span>
                 <i class="question-arrow-right-icon"></i>
             </div>
         </button>
         <button ng-switch-when="false"
                 class="btn finish">
-            <div analytics-on="click"
-                 analytics-event="click-finish"
-                 analytics-category="exercise">DONE
-            </div>
+            <div>DONE</div>
         </button>
     </ng-switch>
     <button class="btn sum ng-hide"
             ng-click="settings.onSummary()"
-            ng-show="settings.viewMode === d.reviewModeId"
-            analytics-on="click"
-            analytics-event="click-summary"
-            analytics-category="exercise">SUMMARY
+            ng-show="settings.viewMode === d.reviewModeId">
+        SUMMARY
     </button>
 </div>
