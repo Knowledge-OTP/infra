@@ -1,11 +1,44 @@
 @import "../../../../bower_components/Swiper/dist/css/swiper";
-
 @import "select-answer-drv",
-        "znk-exercise-drv-desktop",
-        "znk-exercise-pager-drv";
+"znk-exercise-drv-desktop",
+"znk-exercise-pager-drv";
 
-znk-exercise{
-  question-builder, questions-carousel, answer-builder{
-    display: block;
-  }
+znk-exercise {
+    &:not(.done-btn-show){
+        .question-bottom-shadow {
+            width: 0%;
+        }
+    }
+
+    question-builder, questions-carousel, answer-builder {
+        display: block;
+    }
+
+    .question-bottom-shadow{
+        transition: all 0.1s linear;
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        height: 55px;
+        z-index: 1;
+        background: rgba(255, 255, 255, 0.91);
+        box-shadow: 0px -3px 7px 0px $tbgColor3;
+    }
+
+    &.done-btn-show, &.pager-displayed{
+        .question-bottom-shadow{
+            width: 100%;
+        }
+    }
+
+    .show-opacity-animate{
+        &.ng-hide-add, &.ng-hide-remove {
+            transition: all linear 0.2s;
+            opacity: 1;
+        }
+
+        &.ng-hide {
+            opacity: 0;
+        }
+    }
 }
