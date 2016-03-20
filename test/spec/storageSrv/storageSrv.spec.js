@@ -106,17 +106,20 @@ describe('testing service "StorageSrv":', function () {
     it('when set multiple locations are save simultaneously then cache should be updated accordingly',function(){
         testStorage = new StorageSrv(entityGetter, entitySetter);
 
-        var expectedObj1 = {
-            a:1
-        };
-        var expectedObj2 = {
-            a:2
-        };
-
+        var expectedObj1;
+        var expectedObj2;
         testStorage.set({
-            path1: angular.copy(expectedObj1),
-            path2: angular.copy(expectedObj2)
+            path1: {
+                a:1
+            },
+            path2: {
+                a:2
+            }
+        }).then(function(savedData){
+            expectedObj1 = savedData.path1;
+            expectedObj2 = savedData.path2;
         });
+        $rootScope.$digest();
 
         var obj1;
         testStorage.get('path1').then(function(res){

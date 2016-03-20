@@ -108,8 +108,9 @@ describe('testing service "ExerciseResult":', function () {
             var exerciseResult = testStorage.db.exerciseResults[guid];
 
             delete expectedResult.$save;
-
-            expect(exerciseResult).toEqual(jasmine.objectContaining(expectedResult));
+            angular.forEach(expectedResult, function(value, key){
+                expect(exerciseResult[key]).toEqual(value);
+            });
         });
 
         it('when requesting for result by guid and it not exist then it should be set to init result', function () {
@@ -197,8 +198,6 @@ describe('testing service "ExerciseResult":', function () {
 
             var examResultKeys = Object.keys(testStorage.db.examResults);
             var examResult = testStorage.db.examResults[examResultKeys[0]];
-
-            delete expectedResult.$save;
 
             expect(examResult).toEqual(expectedResult);
         });

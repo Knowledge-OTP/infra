@@ -3399,7 +3399,14 @@
                     }
                     cacheProm = true;
                     getProm = this.getter(path).then(function (_entity) {
-                        _entity = angular.isUndefined(_entity) || _entity === null ? {} : _entity;
+                        if(angular.isUndefined(_entity) || _entity === null ){
+                            _entity = Object.create({
+                                $save: function(){
+                                    return self.set(path,this);
+                                }
+                            });
+                        }
+
                         self.entityCache.put(path, _entity);
                         delete getEntityPromMap[path];
                         return _entity;
@@ -3412,9 +3419,6 @@
                             _entity[key] = angular.copy(defaultValue[key]);
                         }
                     });
-                    if(angular.isObject(_entity) && !_entity.$save){
-                        _entity.$save = self.set.bind(self,path,_entity);
-                    }
                     return _entity;
                 });
 
@@ -3436,14 +3440,27 @@
                         dataToSaveInCache = pathStrOrObj;
                     }
 
+                    var cachedDataMap = {};
                     angular.forEach(dataToSaveInCache, function(value,path){
-                        self.entityCache.put(path,value);
+                        var cachedValue;
+
                         if(angular.isObject(value) && !value.$save){
-                            value.$save = self.set.bind(self,path,value);
+                            cachedValue = Object.create({
+                                $save: function(){
+                                    return self.set(path,this);
+                                }
+                            });
+                            angular.forEach(value, function(value, key){
+                                cachedValue[key] = value;
+                            });
+                        }else{
+                            cachedValue = value;
                         }
+                        cachedDataMap[path] = cachedValue;
+                        self.entityCache.put(path,cachedValue);
                     });
 
-                    return angular.isObject(pathStrOrObj) ? dataToSaveInCache : dataToSaveInCache[pathStrOrObj];
+                    return angular.isObject(pathStrOrObj) ? cachedDataMap : cachedDataMap[pathStrOrObj];
                 });
             };
 
