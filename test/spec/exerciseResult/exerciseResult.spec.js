@@ -177,6 +177,7 @@ describe('testing service "ExerciseResult":', function () {
             var examId = 1;
             testStorage.db.users.$$uid.examResults[examId] = 'guid';
             var expectedResult = {
+                guid: 'guid',
                 isComplete: false,
                 startedTime: '%currTimeStamp%',
                 examId: examId,

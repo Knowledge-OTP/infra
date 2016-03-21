@@ -37,11 +37,16 @@
                     cacheProm = true;
                     getProm = this.getter(path).then(function (_entity) {
                         if(angular.isUndefined(_entity) || _entity === null ){
-                            _entity = Object.create({
+                            _entity = {};
+                        }
+
+                        if(angular.isObject(_entity)){
+                            var initObj = Object.create({
                                 $save: function(){
                                     return self.set(path,this);
                                 }
                             });
+                            _entity  = angular.extend(initObj, _entity); 
                         }
 
                         self.entityCache.put(path, _entity);
