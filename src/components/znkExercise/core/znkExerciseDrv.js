@@ -5,6 +5,7 @@
  *  ngModel: results array
  *
  *  settings:
+ *      allowedTimeForExercise
  *      onDone
  *      onQuestionAnswered
  *      wrapperCls
@@ -62,8 +63,14 @@
                                 onSlideChange: angular.noop,
                                 initSlideDirection: ZnkExerciseSlideDirectionEnum.ALL.enum,
                                 initForceDoneBtnDisplay: null,
-                                initPagerDisplay: true
+                                initPagerDisplay: true,
+                                allowedTimeForExercise: Infinity
                             };
+
+                            scope.settings.allowedTimeForExercise = +scope.settings.allowedTimeForExercise;
+                            if(isNaN(scope.settings.allowedTimeForExercise)){
+                                $log.error('znkExerciseDrv: allowed time for exercise was not set!!!!');
+                            }
                             scope.settings = angular.extend(defaultSettings, scope.settings);
 
                             var znkExerciseDrvCtrl = ctrls[0];
@@ -282,7 +289,10 @@
                                         questionId: questionWithAnswer.id
                                     };
 
-                                    var propsToCopyFromQuestionStatus = ['blackboardData', 'timeSpent', 'bookmark', 'userAnswer', 'isAnsweredCorrectly', 'audioEnded'];
+                                    var propsToCopyFromQuestionStatus = [
+                                        'blackboardData', 'timeSpent', 'bookmark', 'userAnswer', 'isAnsweredCorrectly',
+                                        'audioEnded', 'afterAllowedTime'
+                                    ];
                                     propsToCopyFromQuestionStatus.forEach(function (propName) {
                                         var value = questionWithAnswer.__questionStatus[propName];
                                         if (angular.isDefined(value)) {
@@ -310,7 +320,10 @@
                                     var userAnswer = currQuestion.__questionStatus.userAnswer;
                                     currQuestion.__questionStatus.isAnsweredCorrectly = ZnkExerciseUtilitySrv.isAnswerCorrect(currQuestion,userAnswer);
 
-                                    updateTimeSpentOnQuestion();
+                                    updateTimeSpentOnQuestion(undefined,true);
+                                    var afterAllowedTime = _isExceededAllowedTime();
+                                    currQuestion.__questionStatus.afterAllowedTime = afterAllowedTime;
+                                    setViewValue();
                                 }
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
                                 //skip 1 digest cycle before triggering question answered
@@ -326,7 +339,7 @@
                                 setViewValue();
                             };
 
-                            function updateTimeSpentOnQuestion(questionNum) {
+                            function updateTimeSpentOnQuestion(questionNum, dontSetViewValue) {
                                 questionNum = angular.isDefined(questionNum) ? questionNum : scope.vm.currentSlide;
                                 if (scope.settings.viewMode === ZnkExerciseViewModeEnum.REVIEW.enum) {
                                     return;
@@ -341,9 +354,20 @@
                                 updateTimeSpentOnQuestion.lastTimeStamp = currTime;
                                 var question = scope.vm.questionsWithAnswers[questionNum];
                                 question.__questionStatus.timeSpent = (question.__questionStatus.timeSpent || 0) + timePassed;
-                                setViewValue();
+
+                                if(!dontSetViewValue){
+                                    setViewValue();
+                                }
                             }
 
+                            function _isExceededAllowedTime(){
+                                var totalTimeSpent = 0;
+                                scope.vm.questionsWithAnswers.forEach(function(questionWithAnswer){
+                                    totalTimeSpent += questionWithAnswer.__questionStatus.timeSpent || 0;
+                                });
+                                var allowedTime = scope.settings.allowedTimeForExercise;
+                                return totalTimeSpent > allowedTime;
+                            }
                             /**
                              *  INIT
                              * */

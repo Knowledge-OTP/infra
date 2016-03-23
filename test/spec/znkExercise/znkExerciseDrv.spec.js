@@ -66,7 +66,9 @@ describe('testing directive "znkExerciseDrv":', function () {
                     {questionId: 4, userAnswer: '45'},
                     {questionId: 5}
                 ],
-                settings: scopeSettings || {},
+                settings: scopeSettings || {
+                    allowedTimeForExercise: 20000
+                },
                 articles: []
             };
         }
@@ -823,5 +825,19 @@ describe('testing directive "znkExerciseDrv":', function () {
         var btnSectionScope = scopeContent.content.getBtnSectionScope();
         var expectedResult = 5;
         expect(btnSectionScope.vm.maxQuestionIndex).toBe(expectedResult);
+    });
+
+    it('when answer is answered after allowed time then it should be marked as answer after allowed time', function(){
+        var time = 1;
+        Date.now = function () {
+            return time;
+        };
+        var scopeContent = createDirectiveHtml();
+        var scope = scopeContent.scope;
+        var isolateScope = scopeContent.isolateScope;
+        //var content = scopeContent.content;
+        time += 25000;
+        isolateScope.vm.questionAnswered();
+        expect(scope.d.answers[0].afterAllowedTime).toBeTruthy();
     });
 });

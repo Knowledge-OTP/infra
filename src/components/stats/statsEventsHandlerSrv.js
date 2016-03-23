@@ -2,35 +2,30 @@
     'use strict';
 
     angular.module('znk.infra.stats').factory('StatsEventsHandlerSrv', [
-        '$rootScope','exerciseEventsConst', 'StatsSrv', 'ExerciseTypeEnum', '$log', 'SubjectEnum', 'QuestionFormatEnum',
-        function ($rootScope, exerciseEventsConst, StatsSrv, ExerciseTypeEnum, $log, SubjectEnum, QuestionFormatEnum) {
+        '$rootScope', 'exerciseEventsConst', 'StatsSrv', 'ExerciseTypeEnum', '$log',
+        function ($rootScope, exerciseEventsConst, StatsSrv, ExerciseTypeEnum, $log) {
             var StatsEventsHandlerSrv = {};
 
             var childScope = $rootScope.$new(true);
 
-            function _eventHandler(exerciseType, evt, exercise, results){
-                return StatsSrv.isExerciseStatsRecorded(exerciseType, exercise.id).then(function(isRecorded){
-                    if(isRecorded){
+            function _eventHandler(exerciseType, evt, exercise, results) {
+                return StatsSrv.isExerciseStatsRecorded(exerciseType, exercise.id).then(function (isRecorded) {
+                    if (isRecorded) {
                         return;
                     }
 
-                    var newStats  = {};
+                    var newStats = {};
 
-                    results.questionResults.forEach(function(result,index){
+                    results.questionResults.forEach(function (result, index) {
                         var question = exercise.questions[index];
                         var categoryId = question.categoryId;
 
-                        //if writing question then only standard format should be recorded
-                        if(question.subjectId === SubjectEnum.WRITING.enum && question.questionFormatId !== QuestionFormatEnum.STANDARD.enum){
+                        if (isNaN(+categoryId) || categoryId === null) {
+                            $log.error('StatsEventsHandlerSrv: _eventHandler: bad category id for the following question: ', question.id, categoryId);
                             return;
                         }
 
-                        if(isNaN(+categoryId) || categoryId === null){
-                            $log.error('StatsEventsHandlerSrv: _eventHandler: bad category id for the following question: ',question.id,categoryId);
-                            return;
-                        }
-
-                        if(!newStats[categoryId]){
+                        if (!newStats[categoryId]) {
                             newStats[categoryId] = new StatsSrv.BaseStats();
                         }
                         var newStat = newStats[categoryId];
@@ -39,11 +34,11 @@
 
                         newStat.totalTime += result.timeSpent || 0;
 
-                        if(angular.isUndefined(result.userAnswer)){
+                        if (angular.isUndefined(result.userAnswer)) {
                             newStat.unanswered++;
-                        }else if(result.isAnsweredCorrectly){
+                        } else if (result.isAnsweredCorrectly) {
                             newStat.correct++;
-                        }else{
+                        } else {
                             newStat.wrong++;
                         }
                     });
@@ -54,7 +49,7 @@
 
             var eventsToRegister = [];
             var exerciseTypeEnumArr = ExerciseTypeEnum.getEnumArr();
-            exerciseTypeEnumArr.forEach(function(enumObj){
+            exerciseTypeEnumArr.forEach(function (enumObj) {
                 var exerciseNameLowerCase = enumObj.val.toLowerCase();
                 eventsToRegister.push({
                     evt: exerciseEventsConst[exerciseNameLowerCase].FINISH,
@@ -62,8 +57,8 @@
                 });
             });
 
-            eventsToRegister.forEach(function(evtConfig){
-                childScope.$on(evtConfig.evt,_eventHandler.bind(StatsEventsHandlerSrv,evtConfig.exerciseType));
+            eventsToRegister.forEach(function (evtConfig) {
+                childScope.$on(evtConfig.evt, _eventHandler.bind(StatsEventsHandlerSrv, evtConfig.exerciseType));
             });
             //added in order to load the service
             StatsEventsHandlerSrv.init = angular.noop;

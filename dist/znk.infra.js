@@ -962,34 +962,34 @@
         var diagnosticScoring = {};
         this.setDiagnosticScoring = function (diagnosticScoringData) {
             var keys = Object.keys(diagnosticScoringData);
-            keys.forEach(function(questionDifficulty){
+            keys.forEach(function (questionDifficulty) {
                 var scoringDataArr = diagnosticScoringData[questionDifficulty];
-                diagnosticScoring[questionDifficulty] = pointsMap.apply(this,scoringDataArr);
+                diagnosticScoring[questionDifficulty] = pointsMap.apply(this, scoringDataArr);
             });
         };
 
         var exercisesRawScoring = {};
-        this.setExerciseRawPoints = function(exerciseType,scoringData){
-            exercisesRawScoring[exerciseType] = pointsMap.apply(this,scoringData);
+        this.setExerciseRawPoints = function (exerciseType, scoringData) {
+            exercisesRawScoring[exerciseType] = pointsMap.apply(this, scoringData);
         };
 
         var allowedTimeForExercisesMap;
-        this.setAllowedTimeForExercises = function(_allowedTimeForExercisesMap){
+        this.setAllowedTimeForExercises = function (_allowedTimeForExercisesMap) {
             allowedTimeForExercisesMap = _allowedTimeForExercisesMap;
         };
 
         this.$get = [
-            '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum','ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log', 'UtilitySrv',
-            function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum,ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log, UtilitySrv) {
-                if(angular.equals({},diagnosticScoring)){
+            '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum', 'ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log', 'UtilitySrv',
+            function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum, ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log, UtilitySrv) {
+                if (angular.equals({}, diagnosticScoring)) {
                     $log.error('EstimatedScoreEventsHandlerSrv: diagnosticScoring was not set !!!');
                 }
 
-                if(angular.equals({},exercisesRawScoring)){
+                if (angular.equals({}, exercisesRawScoring)) {
                     $log.error('EstimatedScoreEventsHandlerSrv: diagnosticScoring was not set !!!');
                 }
 
-                if(!allowedTimeForExercisesMap){
+                if (!allowedTimeForExercisesMap) {
                     $log.error('EstimatedScoreEventsHandlerSrv: allowedTimeForExercisesMap was not set !!!');
                 }
 
@@ -1020,14 +1020,14 @@
                     var questions = section.questions;
                     var questionsMap = UtilitySrv.array.convertToMap(questions);
 
-                    sectionResult.questionResults.forEach(function(result, i){
+                    sectionResult.questionResults.forEach(function (result, i) {
                         var question = questionsMap[result.questionId];
-                        if(angular.isUndefined(question)){
+                        if (angular.isUndefined(question)) {
                             $log.error('EstimatedScoreEventsHandler: question for result is missing',
-                                'section id: ',section.id,
+                                'section id: ', section.id,
                                 'result index: ', i
                             );
-                        }else{
+                        } else {
                             score += _getDiagnosticQuestionPoints(question, result);
                         }
                     });
@@ -1035,25 +1035,17 @@
                 }
 
                 function _getQuestionRawPoints(exerciseType, result) {
-                    var isAnsweredWithinAllowedTime;
-                    var answerStatus;
+                    var isAnsweredWithinAllowedTime = !result.afterAllowedTime;
 
-                    //answered after allowed time
-                    if (angular.isDefined(result.answerAfterTime)) {
-                        isAnsweredWithinAllowedTime = false;
-                        answerStatus = result.answerAfterTime;
-                    } else {//answered within allowed time
-                        isAnsweredWithinAllowedTime = true;
-                        answerStatus = ExerciseAnswerStatusEnum.convertSimpleAnswerToAnswerStatusEnum(result.isAnsweredCorrectly);
-                    }
+                    var answerStatus = ExerciseAnswerStatusEnum.convertSimpleAnswerToAnswerStatusEnum(result.isAnsweredCorrectly);
 
                     var rawPointsMap = exercisesRawScoring[exerciseType];
                     return _basePointsGetter(rawPointsMap, answerStatus, isAnsweredWithinAllowedTime);
                 }
 
-                function calculateRawScore(exerciseType, exerciseResult, allowedTime) {
-                    if(!exercisesRawScoring[exerciseType]){
-                        $log.error('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: '+ exerciseType);
+                function calculateRawScore(exerciseType, exerciseResult) {
+                    if (!exercisesRawScoring[exerciseType]) {
+                        $log.error('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: ' + exerciseType);
                     }
 
                     var questionResults = exerciseResult.questionResults;
@@ -1063,13 +1055,8 @@
                         earned: 0
                     };
 
-                    var allowedTimeForExercise = angular.isDefined(allowedTime) ? allowedTime : allowedTimeForExercisesMap[exerciseType];
-                    if(angular.isUndefined(allowedTimeForExercise)){
-                        $log.error('EstimatedScoreEventsHandlerSrv: allowed time missing for the following exercise type: ' + exerciseType);
-                    }
-                    var withinAllowedTime = allowedTimeForExercise >= exerciseResult.duration;
                     questionResults.forEach(function (result) {
-                        rawPoints.earned += _getQuestionRawPoints(exerciseType, result, withinAllowedTime);
+                        rawPoints.earned += _getQuestionRawPoints(exerciseType, result);
                     });
                     return rawPoints;
                 }
@@ -1079,7 +1066,7 @@
                     if (isDiagnostic) {
                         diagnosticSectionCompleteHandler(section, sectionResult);
                     }
-                    var rawScore = calculateRawScore(ExerciseTypeEnum.SECTION.enum, sectionResult, section.time);
+                    var rawScore = calculateRawScore(ExerciseTypeEnum.SECTION.enum, sectionResult);
                     EstimatedScoreSrv.addRawScore(rawScore, ExerciseTypeEnum.SECTION.enum, section.subjectId, section.id, isDiagnostic);
                 });
 
@@ -2875,35 +2862,30 @@
     'use strict';
 
     angular.module('znk.infra.stats').factory('StatsEventsHandlerSrv', [
-        '$rootScope','exerciseEventsConst', 'StatsSrv', 'ExerciseTypeEnum', '$log', 'SubjectEnum', 'QuestionFormatEnum',
-        function ($rootScope, exerciseEventsConst, StatsSrv, ExerciseTypeEnum, $log, SubjectEnum, QuestionFormatEnum) {
+        '$rootScope', 'exerciseEventsConst', 'StatsSrv', 'ExerciseTypeEnum', '$log',
+        function ($rootScope, exerciseEventsConst, StatsSrv, ExerciseTypeEnum, $log) {
             var StatsEventsHandlerSrv = {};
 
             var childScope = $rootScope.$new(true);
 
-            function _eventHandler(exerciseType, evt, exercise, results){
-                return StatsSrv.isExerciseStatsRecorded(exerciseType, exercise.id).then(function(isRecorded){
-                    if(isRecorded){
+            function _eventHandler(exerciseType, evt, exercise, results) {
+                return StatsSrv.isExerciseStatsRecorded(exerciseType, exercise.id).then(function (isRecorded) {
+                    if (isRecorded) {
                         return;
                     }
 
-                    var newStats  = {};
+                    var newStats = {};
 
-                    results.questionResults.forEach(function(result,index){
+                    results.questionResults.forEach(function (result, index) {
                         var question = exercise.questions[index];
                         var categoryId = question.categoryId;
 
-                        //if writing question then only standard format should be recorded
-                        if(question.subjectId === SubjectEnum.WRITING.enum && question.questionFormatId !== QuestionFormatEnum.STANDARD.enum){
+                        if (isNaN(+categoryId) || categoryId === null) {
+                            $log.error('StatsEventsHandlerSrv: _eventHandler: bad category id for the following question: ', question.id, categoryId);
                             return;
                         }
 
-                        if(isNaN(+categoryId) || categoryId === null){
-                            $log.error('StatsEventsHandlerSrv: _eventHandler: bad category id for the following question: ',question.id,categoryId);
-                            return;
-                        }
-
-                        if(!newStats[categoryId]){
+                        if (!newStats[categoryId]) {
                             newStats[categoryId] = new StatsSrv.BaseStats();
                         }
                         var newStat = newStats[categoryId];
@@ -2912,11 +2894,11 @@
 
                         newStat.totalTime += result.timeSpent || 0;
 
-                        if(angular.isUndefined(result.userAnswer)){
+                        if (angular.isUndefined(result.userAnswer)) {
                             newStat.unanswered++;
-                        }else if(result.isAnsweredCorrectly){
+                        } else if (result.isAnsweredCorrectly) {
                             newStat.correct++;
-                        }else{
+                        } else {
                             newStat.wrong++;
                         }
                     });
@@ -2927,7 +2909,7 @@
 
             var eventsToRegister = [];
             var exerciseTypeEnumArr = ExerciseTypeEnum.getEnumArr();
-            exerciseTypeEnumArr.forEach(function(enumObj){
+            exerciseTypeEnumArr.forEach(function (enumObj) {
                 var exerciseNameLowerCase = enumObj.val.toLowerCase();
                 eventsToRegister.push({
                     evt: exerciseEventsConst[exerciseNameLowerCase].FINISH,
@@ -2935,8 +2917,8 @@
                 });
             });
 
-            eventsToRegister.forEach(function(evtConfig){
-                childScope.$on(evtConfig.evt,_eventHandler.bind(StatsEventsHandlerSrv,evtConfig.exerciseType));
+            eventsToRegister.forEach(function (evtConfig) {
+                childScope.$on(evtConfig.evt, _eventHandler.bind(StatsEventsHandlerSrv, evtConfig.exerciseType));
             });
             //added in order to load the service
             StatsEventsHandlerSrv.init = angular.noop;
@@ -4911,6 +4893,7 @@
  *  ngModel: results array
  *
  *  settings:
+ *      allowedTimeForExercise
  *      onDone
  *      onQuestionAnswered
  *      wrapperCls
@@ -4968,8 +4951,14 @@
                                 onSlideChange: angular.noop,
                                 initSlideDirection: ZnkExerciseSlideDirectionEnum.ALL.enum,
                                 initForceDoneBtnDisplay: null,
-                                initPagerDisplay: true
+                                initPagerDisplay: true,
+                                allowedTimeForExercise: Infinity
                             };
+
+                            scope.settings.allowedTimeForExercise = +scope.settings.allowedTimeForExercise;
+                            if(isNaN(scope.settings.allowedTimeForExercise)){
+                                $log.error('znkExerciseDrv: allowed time for exercise was not set!!!!');
+                            }
                             scope.settings = angular.extend(defaultSettings, scope.settings);
 
                             var znkExerciseDrvCtrl = ctrls[0];
@@ -5188,7 +5177,10 @@
                                         questionId: questionWithAnswer.id
                                     };
 
-                                    var propsToCopyFromQuestionStatus = ['blackboardData', 'timeSpent', 'bookmark', 'userAnswer', 'isAnsweredCorrectly', 'audioEnded'];
+                                    var propsToCopyFromQuestionStatus = [
+                                        'blackboardData', 'timeSpent', 'bookmark', 'userAnswer', 'isAnsweredCorrectly',
+                                        'audioEnded', 'afterAllowedTime'
+                                    ];
                                     propsToCopyFromQuestionStatus.forEach(function (propName) {
                                         var value = questionWithAnswer.__questionStatus[propName];
                                         if (angular.isDefined(value)) {
@@ -5216,7 +5208,10 @@
                                     var userAnswer = currQuestion.__questionStatus.userAnswer;
                                     currQuestion.__questionStatus.isAnsweredCorrectly = ZnkExerciseUtilitySrv.isAnswerCorrect(currQuestion,userAnswer);
 
-                                    updateTimeSpentOnQuestion();
+                                    updateTimeSpentOnQuestion(undefined,true);
+                                    var afterAllowedTime = _isExceededAllowedTime();
+                                    currQuestion.__questionStatus.afterAllowedTime = afterAllowedTime;
+                                    setViewValue();
                                 }
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
                                 //skip 1 digest cycle before triggering question answered
@@ -5232,7 +5227,7 @@
                                 setViewValue();
                             };
 
-                            function updateTimeSpentOnQuestion(questionNum) {
+                            function updateTimeSpentOnQuestion(questionNum, dontSetViewValue) {
                                 questionNum = angular.isDefined(questionNum) ? questionNum : scope.vm.currentSlide;
                                 if (scope.settings.viewMode === ZnkExerciseViewModeEnum.REVIEW.enum) {
                                     return;
@@ -5247,9 +5242,20 @@
                                 updateTimeSpentOnQuestion.lastTimeStamp = currTime;
                                 var question = scope.vm.questionsWithAnswers[questionNum];
                                 question.__questionStatus.timeSpent = (question.__questionStatus.timeSpent || 0) + timePassed;
-                                setViewValue();
+
+                                if(!dontSetViewValue){
+                                    setViewValue();
+                                }
                             }
 
+                            function _isExceededAllowedTime(){
+                                var totalTimeSpent = 0;
+                                scope.vm.questionsWithAnswers.forEach(function(questionWithAnswer){
+                                    totalTimeSpent += questionWithAnswer.__questionStatus.timeSpent || 0;
+                                });
+                                var allowedTime = scope.settings.allowedTimeForExercise;
+                                return totalTimeSpent > allowedTime;
+                            }
                             /**
                              *  INIT
                              * */
