@@ -57,8 +57,7 @@
                             relevantSourceDomElement = videoDomElem;
                         }
 
-                        elementsToRemoveErrorEventListeners.push(relevantSourceDomElement);
-                        relevantSourceDomElement.addEventListener('error', function(ev) {
+                        function errorHandler(ev) {
                             $timeout(function(){
                                 if(scope.onVideoError){
                                     scope.onVideoError(ev);
@@ -70,6 +69,12 @@
                                     videoDomElem.style.display = '';
                                 }
                             });
+                        }
+                        relevantSourceDomElement.addEventListener('error', errorHandler);
+
+                        elementsToRemoveErrorEventListeners.push({
+                            domElement: relevantSourceDomElement,
+                            handler: errorHandler
                         });
                     }
 
@@ -210,8 +215,8 @@
 
                             videoDomElem.removeEventListener('loadedmetadata',loadedmetadata );
 
-                            elementsToRemoveErrorEventListeners.forEach(function(videoSourceDomElement){
-                                videoSourceDomElement.removeEventListener('error');
+                            elementsToRemoveErrorEventListeners.forEach(function(removedElementData){
+                                removedElementData.domElement.removeEventListener('error', removedElementData.handler);
                             });
 
                             if(posterImg){
