@@ -59,11 +59,6 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
 
         var drillRawPoints = [0.2, 0, 0, 0];
         EstimatedScoreEventsHandlerSrvProvider.setExerciseRawPoints(exerciseTypeConst.DRILL, drillRawPoints);
-
-        var allowedTimeForExercises = {
-            5: 4 * 60 * 1000
-        };
-        EstimatedScoreEventsHandlerSrvProvider.setAllowedTimeForExercises(allowedTimeForExercises);
     }));
 
     var exerciseEventsConst, actions, TestUtilitySrv, $rootScope, ExerciseTypeEnum, SubjectEnum, testStorage,
