@@ -40,11 +40,6 @@
             exercisesRawScoring[exerciseType] = pointsMap.apply(this, scoringData);
         };
 
-        var allowedTimeForExercisesMap;
-        this.setAllowedTimeForExercises = function (_allowedTimeForExercisesMap) {
-            allowedTimeForExercisesMap = _allowedTimeForExercisesMap;
-        };
-
         this.$get = [
             '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum', 'ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log', 'UtilitySrv',
             function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum, ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log, UtilitySrv) {
@@ -54,10 +49,6 @@
 
                 if (angular.equals({}, exercisesRawScoring)) {
                     $log.error('EstimatedScoreEventsHandlerSrv: diagnosticScoring was not set !!!');
-                }
-
-                if (!allowedTimeForExercisesMap) {
-                    $log.error('EstimatedScoreEventsHandlerSrv: allowedTimeForExercisesMap was not set !!!');
                 }
 
                 var EstimatedScoreEventsHandlerSrv = {};
