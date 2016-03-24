@@ -6799,7 +6799,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "     style=\"enable-background:new 0 0 188.5 129;\"\n" +
     "     xml:space=\"preserve\">\n" +
     "<style type=\"text/css\">\n" +
-    "	correct-icon-svg .st0 {\n" +
+    "	.correct-icon-svg .st0 {\n" +
     "        fill: none;\n" +
     "        stroke: #231F20;\n" +
     "        stroke-width: 15;\n" +
