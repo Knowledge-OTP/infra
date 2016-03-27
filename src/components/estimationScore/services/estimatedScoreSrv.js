@@ -144,8 +144,8 @@
                             return EstimatedScoreHelperSrv.setEstimateScoreData(estimatedScoreData).then(function () {
                                 return estimatedScoreData.estimatedScores[subjectId][estimatedScoreData.estimatedScores[subjectId].length - 1];
                             });
-                        }).catch(function(){
-
+                        }).catch(function(errMsg){
+                            $log.info(errMsg);
                         });
                     });
                     return processingData;
@@ -156,7 +156,6 @@
                         return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScoreData) {
                             if (_isExerciseAlreadyProcessed(estimatedScoreData, exerciseType, exerciseId)) {
                                 var errMsg = 'Exercise already processed ' + 'type ' + exerciseType + ' id ' + exerciseId;
-                                $log.info(errMsg);
                                 return $q.reject(errMsg);
                             }
                             if (exerciseType === ExerciseTypeEnum.SECTION.enum) {
@@ -194,8 +193,8 @@
                             return estimatedScoreData;
                         }).then(function (estimatedScoreData) {
                             return EstimatedScoreHelperSrv.setEstimateScoreData(estimatedScoreData);
-                        }).catch(function(){
-
+                        }).catch(function(errMsg){
+                            $log.info(errMsg);
                         });
                     });
                     return processingData;
