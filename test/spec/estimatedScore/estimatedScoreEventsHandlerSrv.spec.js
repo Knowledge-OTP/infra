@@ -282,4 +282,30 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         expect(estimatedScores .length).toBe(3);
         expect(estimatedScores[2]).toEqual(jasmine.objectContaining(expectedEstimatedScore));
     });
+
+    it('when exercise is completed and no initial score is set then the received score should be set as the initial one', function(){
+        var drillMock = content.drill10;
+        var estimatedScoreMock = {
+            exerciseType: 4,
+            exerciseId: 1087,
+            score: 24,
+            time: 1441625776941
+        };
+
+        var CORRECT_NUM = 5;
+        var UNANSWERED_NUM = 2;
+        var resultMock = TestUtilitySrv.exercise.mockExerciseResult(drillMock, CORRECT_NUM, UNANSWERED_NUM, true);
+
+        $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, drillMock, resultMock);
+        $rootScope.$digest();
+
+        var estimatedScore = actions.getEstimatedScoresFromDb(drillMock.subjectId);
+        var expectedEstimatedScore = {
+            exerciseType: ExerciseTypeEnum.DRILL.enum,
+            exerciseId: drillMock.id,
+            score: 90
+        };
+        expect(estimatedScore.length).toBe(1);
+        expect(estimatedScore[0]).toEqual(jasmine.objectContaining(expectedEstimatedScore));
+    });
 });

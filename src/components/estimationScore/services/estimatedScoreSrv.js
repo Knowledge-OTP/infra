@@ -60,6 +60,10 @@
                         total: sectionsTotalPoints,
                         earned: sectionsTotalPoints * sectionsWithWeightEarnedPoints / sectionsWithWeightTotalPoints
                     };
+                    if(isNaN(combinedSectionRawScore.earned)){
+                        combinedSectionRawScore.earned = 0;
+                    }
+
                     var rawScore = (2 / 3) * combinedSectionRawScore.earned + (1 / 3) * exerciseSubjectRawScore.earned;
                     var maxRawScore = (2 / 3) * combinedSectionRawScore.total + (1 / 3) * exerciseSubjectRawScore.total;
                     var subjectRawScoreEdges = subjectsRawScoreEdges[subjectId];
@@ -125,7 +129,9 @@
                         return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScoreData) {
                             //score was already set
                             if (estimatedScoreData.estimatedScores[subjectId].length) {
-                                return $q.reject('Exercise already processed ' + 'type ' + exerciseType + ' id ' + exerciseId);
+                                var errMsg = 'Exercise already processed ' + 'type ' + exerciseType + ' id ' + exerciseId;
+                                $log.info(errMsg);
+                                return $q.reject(errMsg);
                             }
 
                             score = Math.max(minDiagnosticScore, Math.min(maxDiagnosticScore, score));
@@ -138,6 +144,8 @@
                             return EstimatedScoreHelperSrv.setEstimateScoreData(estimatedScoreData).then(function () {
                                 return estimatedScoreData.estimatedScores[subjectId][estimatedScoreData.estimatedScores[subjectId].length - 1];
                             });
+                        }).catch(function(errMsg){
+                            $log.info(errMsg);
                         });
                     });
                     return processingData;
@@ -147,7 +155,8 @@
                     processingData = processingData.then(function(){
                         return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScoreData) {
                             if (_isExerciseAlreadyProcessed(estimatedScoreData, exerciseType, exerciseId)) {
-                                return $q.reject('Exercise already processed ' + 'type ' + exerciseType + ' id ' + exerciseId);
+                                var errMsg = 'Exercise already processed ' + 'type ' + exerciseType + ' id ' + exerciseId;
+                                return $q.reject(errMsg);
                             }
                             if (exerciseType === ExerciseTypeEnum.SECTION.enum) {
                                 var sectionSubjectRowScores = estimatedScoreData.sectionsRawScores[subjectId];
@@ -184,6 +193,8 @@
                             return estimatedScoreData;
                         }).then(function (estimatedScoreData) {
                             return EstimatedScoreHelperSrv.setEstimateScoreData(estimatedScoreData);
+                        }).catch(function(errMsg){
+                            $log.info(errMsg);
                         });
                     });
                     return processingData;
