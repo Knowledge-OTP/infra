@@ -292,18 +292,8 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
             time: 1441625776941
         };
 
-        debugger;
-        //testStorage.db.users.$$uid.estimatedScore = {
-        //    sectionsRawScores: {},
-        //    estimatedScores: {}
-        //};
-        //testStorage.db.users.$$uid.estimatedScore.estimatedScores[drillMock.subjectId] = [estimatedScoreMock];
-
-
-        var TOTAL_QUESTIONS = drillMock.questions.length;
         var CORRECT_NUM = 5;
         var UNANSWERED_NUM = 2;
-        var WRONG_NUM = CORRECT_NUM - UNANSWERED_NUM;
         var resultMock = TestUtilitySrv.exercise.mockExerciseResult(drillMock, CORRECT_NUM, UNANSWERED_NUM, true);
 
         $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, drillMock, resultMock);
