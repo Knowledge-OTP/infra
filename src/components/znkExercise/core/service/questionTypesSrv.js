@@ -12,16 +12,18 @@
         };
 
         this.$get = [
-            '$log',
-            function ($log) {
+            '$log','$q',
+            function ($log, $q) {
                 var QuestionTypesSrv = {};
 
                 QuestionTypesSrv.getQuestionHtmlTemplate = function getQuestionHtmlTemplate(question) {
-                    var questionTypeId = questionTypeGetterFn(question);
-                    if(!questionTypeToHtmlTemplateMap[questionTypeId]){
-                        $log.error('QuestionTypesSrv: Template was not registered for the following question type:',questionTypeId);
-                    }
-                    return questionTypeToHtmlTemplateMap[questionTypeId];
+                    return $q.when(questionTypeGetterFn(question)).then(function(questionType){
+                        var questionTypeId = questionType;
+                        if(!questionTypeToHtmlTemplateMap[questionTypeId]){
+                            $log.error('QuestionTypesSrv: Template was not registered for the following question type:',questionTypeId);
+                        }
+                        return questionTypeToHtmlTemplateMap[questionTypeId];
+                    });
                 };
 
                 return QuestionTypesSrv;

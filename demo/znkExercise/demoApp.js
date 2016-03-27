@@ -153,6 +153,7 @@
 
             $scope.settings = {
                 viewMode: 1,
+                allowedTimeForExercise: 10000,
                 onQuestionAnswered: function () {
 
                 },

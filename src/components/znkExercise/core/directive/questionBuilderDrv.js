@@ -33,10 +33,13 @@
                     post: function post(scope, element, attrs, ctrls) {
                         var questionBuilderCtrl = ctrls[0];
                         var znkExerciseCtrl = ctrls[1];
-                        var questionHtmlTemplate = QuestionTypesSrv.getQuestionHtmlTemplate(questionBuilderCtrl.question);
-                        element.append(questionHtmlTemplate);
-                        var childScope = scope.$new(true);
-                        $compile(element.contents())(childScope);
+
+                        QuestionTypesSrv.getQuestionHtmlTemplate(questionBuilderCtrl.question).then(function(result){
+                            var questionHtmlTemplate = result;
+                            element.append(questionHtmlTemplate);
+                            var childScope = scope.$new(true);
+                            $compile(element.contents())(childScope);
+                        });
 
                         //after 2 digests at max the question should be rendered
                         var innerTimeout;
