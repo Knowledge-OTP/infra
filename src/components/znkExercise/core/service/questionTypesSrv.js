@@ -23,7 +23,7 @@
                             $log.error('QuestionTypesSrv: Template was not registered for the following question type:',questionTypeId);
                         }
                         return questionTypeToHtmlTemplateMap[questionTypeId];
-                    })
+                    });
                 };
 
                 return QuestionTypesSrv;
