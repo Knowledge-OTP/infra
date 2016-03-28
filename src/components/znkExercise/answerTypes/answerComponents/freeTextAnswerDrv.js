@@ -24,9 +24,6 @@
 
                     var regex = /(?: |^)\d*\.?\d+(?: |$)|(?: |^)\d*\/?\d+(?: |$)/;
                     scope.clickHandler = function(userAnswer){
-                        if ((!regex.test(userAnswer))) {
-                            return;
-                        }
                         if(regex.test(userAnswer)){
                             ngModelCtrl.$setViewValue(userAnswer);
                             updateViewByCorrectAnswers(userAnswer);
