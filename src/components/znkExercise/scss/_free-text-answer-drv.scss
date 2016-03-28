@@ -1,7 +1,43 @@
 free-text-answer{
     .free-text-answer-wrapper {
-        @include dimension(500px, 115px);
+        @include dimension(520px, 115px);
         padding-left: 30px;
+
+        .answer-feedback{
+            @include dimension(70px, auto);
+            display: flex;
+            align-items: center;
+            .user-answer{
+                @include text-style(18px, $fcColor6, Lato, $regularFontWeight);
+                display: inline-block;
+            }
+
+            svg-icon.correct, svg-icon.wrong{
+                margin-left: 17px;
+                float: right;
+                display: none;
+            }
+
+            svg-icon.wrong {
+                svg {
+                    @include dimension(18px, auto);
+                    line{
+                        stroke: $bcColor4;
+                    }
+                }
+                display: block;
+            }
+
+            &.correct.svg-icon.correct{
+                svg {
+                    @include dimension(26px, auto);
+                    line{
+                        stroke: $bgColor2;
+                    }
+                }
+                display: block;
+            }
+        }
 
         .instructions-title-wrapper{
             @include text-style(14px, $fcColor6, Lato, $regularFontWeight);
@@ -53,10 +89,12 @@ free-text-answer{
             }
 
             input {
-                @include dimension(262px, 43px);
+                @include dimension(244px, 43px);
+                @include text-style(21px, $fcColor6, Lato, $regularFontWeight);
                 border-radius: 30px;
                 border: 1px solid $bcColor5;
                 background-color: $bgColor13;
+                padding-left: 18px;
             }
 
             input:focus{

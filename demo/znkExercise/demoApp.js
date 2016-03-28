@@ -43,6 +43,11 @@
                         }
                     ],
                     correctAnswerId: 1,
+                    correctAnswerText: [{
+                        content:'14/5'
+                    },{
+                        content:'2.8'
+                    }]
 
                 },
                 {

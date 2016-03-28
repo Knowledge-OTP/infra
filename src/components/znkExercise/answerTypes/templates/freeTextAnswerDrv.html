@@ -1,13 +1,25 @@
-<div class="free-text-answer-wrapper">
-    <div class="instructions-title-wrapper">
-        <div class="instructions-title">Type your answer in the textboxes below.<svg-icon name="info"></svg-icon></div>
-        <div class="note-title">Note: answers cannot be longer than four characters (including decimal points and fractions signs)</div>
-    </div>
-    <div class="input-wrapper">
-        <input ngPattern="onlyNumbers"  ng-model="example.value" min="0" max="99" required>
-        <div class="arrow-wrapper">
-            <svg-icon name="arrow"></svg-icon>
-            <div class="svg-back"></div>
+<div class="free-text-answer-wrapper" ng-switch="false">
+
+    <div ng-switch-when="true">
+        <div class="answer-feedback">
+            <div class="user-answer">{{::userAnswer}}</div>
+            <svg-icon name="correct"></svg-icon>
+            <svg-icon name="wrong"></svg-icon>
         </div>
     </div>
+
+    <div ng-switch-when="false">
+        <div class="instructions-title-wrapper">
+            <div class="instructions-title">Type your answer in the textboxes below.<svg-icon name="info"></svg-icon></div>
+            <div class="note-title">Note: answers cannot be longer than four characters (including decimal points and fractions signs)</div>
+        </div>
+        <div class="input-wrapper">
+            <input min="0" max="99" required ng-model="userAnswer">
+            <div class="arrow-wrapper" ng-click="clickHandler(userAnswer)">
+                <svg-icon name="arrow"></svg-icon>
+                <div class="svg-back"></div>
+            </div>
+        </div>
+    </div>
+
 </div>
