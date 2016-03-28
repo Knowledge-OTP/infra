@@ -1975,8 +1975,9 @@
 
                         currentTime += scope.config.countDown ? -INTERVAL_TIME : INTERVAL_TIME;
 
-                        if(scope.config.stopOnZero && currentTime === 0){
+                        if(scope.config.stopOnZero && currentTime <= 0){
                             scope.play = false;
+                            currentTime = 0;
                         }
 
                         updateTime(currentTime);
