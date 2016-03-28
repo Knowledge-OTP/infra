@@ -1,0 +1,67 @@
+free-text-answer{
+    .free-text-answer-wrapper {
+        @include dimension(500px, 115px);
+        padding-left: 30px;
+
+        .instructions-title-wrapper{
+            @include text-style(14px, $fcColor6, Lato, $regularFontWeight);
+
+            .instructions-title{
+                display: flex;
+                margin-bottom: 7px;
+
+                svg-icon.info{
+                    @include dimension(16px, auto);
+                    display: inline-block;
+                    margin-left: 6px;
+                }
+            }
+
+            .note-title{
+                @include text-style(12px, $fcColor9, Lato Italic, $regularFontWeight);
+                margin-bottom: 17px;
+            }
+        }
+
+        .input-wrapper {
+            @include dimension(261.5px, 43px);
+            position: relative;
+
+            .arrow-wrapper {
+                @include dimension(48px, 48px);
+                position: absolute;
+                top:1px;
+                right: -1px;
+                cursor: pointer;
+
+                svg-icon.arrow {
+                    @include dimension(48px, auto);
+                    position: relative;
+                    z-index: 2;
+                    float: left;
+                    path{
+                        fill: $bgColor14;
+                    }
+                }
+
+                .svg-back{
+                    @include dimension(24px, 45px);
+                    background-color: $bgColor14;
+                    position: absolute;
+                    z-index: 1;
+                }
+            }
+
+            input {
+                @include dimension(262px, 43px);
+                border-radius: 30px;
+                border: 1px solid $bcColor5;
+                background-color: $bgColor13;
+            }
+
+            input:focus{
+                outline: none;
+            }
+        }
+    }
+}

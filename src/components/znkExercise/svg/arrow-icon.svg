@@ -1,0 +1,13 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="-468.2 482.4 96 89.8" class="arrow-icon-wrapper">
+    <style type="text/css">
+        .arrow-icon-wrapper .st0{fill:#109BAC;}
+        .arrow-icon-wrapper .st1{fill:none;stroke:#fff;stroke-width:5.1237;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}
+    </style>
+    <path class="st0" d="M-417.2,572.2h-6.2c-24.7,0-44.9-20.2-44.9-44.9v0c0-24.7,20.2-44.9,44.9-44.9h6.2c24.7,0,44.9,20.2,44.9,44.9
+    v0C-372.2,552-392.5,572.2-417.2,572.2z"/>
+    <g>
+        <line class="st1" x1="-442.8" y1="527.3" x2="-401.4" y2="527.3"/>
+        <line class="st1" x1="-401.4" y1="527.3" x2="-414.3" y2="514.4"/>
+        <line class="st1" x1="-401.4" y1="527.3" x2="-414.3" y2="540.2"/>
+    </g>
+</svg>
