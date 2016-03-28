@@ -1306,8 +1306,8 @@
                             return EstimatedScoreHelperSrv.setEstimateScoreData(estimatedScoreData).then(function () {
                                 return estimatedScoreData.estimatedScores[subjectId][estimatedScoreData.estimatedScores[subjectId].length - 1];
                             });
-                        }).catch(function(){
-
+                        }).catch(function(errMsg){
+                            $log.info(errMsg);
                         });
                     });
                     return processingData;
@@ -1318,7 +1318,6 @@
                         return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScoreData) {
                             if (_isExerciseAlreadyProcessed(estimatedScoreData, exerciseType, exerciseId)) {
                                 var errMsg = 'Exercise already processed ' + 'type ' + exerciseType + ' id ' + exerciseId;
-                                $log.info(errMsg);
                                 return $q.reject(errMsg);
                             }
                             if (exerciseType === ExerciseTypeEnum.SECTION.enum) {
@@ -1356,8 +1355,8 @@
                             return estimatedScoreData;
                         }).then(function (estimatedScoreData) {
                             return EstimatedScoreHelperSrv.setEstimateScoreData(estimatedScoreData);
-                        }).catch(function(){
-
+                        }).catch(function(errMsg){
+                            $log.info(errMsg);
                         });
                     });
                     return processingData;
@@ -1976,8 +1975,9 @@
 
                         currentTime += scope.config.countDown ? -INTERVAL_TIME : INTERVAL_TIME;
 
-                        if(scope.config.stopOnZero && currentTime === 0){
+                        if(scope.config.stopOnZero && currentTime <= 0){
                             scope.play = false;
+                            currentTime = 0;
                         }
 
                         updateTime(currentTime);
@@ -4376,10 +4376,13 @@
                     post: function post(scope, element, attrs, ctrls) {
                         var questionBuilderCtrl = ctrls[0];
                         var znkExerciseCtrl = ctrls[1];
-                        var questionHtmlTemplate = QuestionTypesSrv.getQuestionHtmlTemplate(questionBuilderCtrl.question);
-                        element.append(questionHtmlTemplate);
-                        var childScope = scope.$new(true);
-                        $compile(element.contents())(childScope);
+
+                        QuestionTypesSrv.getQuestionHtmlTemplate(questionBuilderCtrl.question).then(function(result){
+                            var questionHtmlTemplate = result;
+                            element.append(questionHtmlTemplate);
+                            var childScope = scope.$new(true);
+                            $compile(element.contents())(childScope);
+                        });
 
                         //after 2 digests at max the question should be rendered
                         var innerTimeout;
@@ -4835,16 +4838,18 @@
         };
 
         this.$get = [
-            '$log',
-            function ($log) {
+            '$log','$q',
+            function ($log, $q) {
                 var QuestionTypesSrv = {};
 
                 QuestionTypesSrv.getQuestionHtmlTemplate = function getQuestionHtmlTemplate(question) {
-                    var questionTypeId = questionTypeGetterFn(question);
-                    if(!questionTypeToHtmlTemplateMap[questionTypeId]){
-                        $log.error('QuestionTypesSrv: Template was not registered for the following question type:',questionTypeId);
-                    }
-                    return questionTypeToHtmlTemplateMap[questionTypeId];
+                    return $q.when(questionTypeGetterFn(question)).then(function(questionType){
+                        var questionTypeId = questionType;
+                        if(!questionTypeToHtmlTemplateMap[questionTypeId]){
+                            $log.error('QuestionTypesSrv: Template was not registered for the following question type:',questionTypeId);
+                        }
+                        return questionTypeToHtmlTemplateMap[questionTypeId];
+                    });
                 };
 
                 return QuestionTypesSrv;
