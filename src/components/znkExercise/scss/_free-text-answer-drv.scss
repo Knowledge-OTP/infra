@@ -3,8 +3,8 @@ free-text-answer{
         @include dimension(520px, 115px);
         padding-left: 30px;
 
-        .answer-feedback{
-            @include dimension(70px, auto);
+        .answer-status{
+            @include dimension(85px, auto);
             display: flex;
             align-items: center;
             .user-answer{
@@ -17,25 +17,55 @@ free-text-answer{
                 float: right;
                 display: none;
             }
+        }
 
-            svg-icon.wrong {
+        .correct-answer{
+            @include text-style(18px, $fcColor9, Lato , $regularFontWeight);
+            margin-top: 10px;
+            display: none;
+
+            span{
+                color: $fcColor7;
+            }
+        }
+
+        .neutral, .wrong{
+            .correct-answer{
+                display: block;
+            }
+        }
+
+        .wrong {
+            svg-icon.wrong-icon {
                 svg {
                     @include dimension(18px, auto);
-                    line{
-                        stroke: $bcColor4;
+                    line {
+                        stroke: $bgColor1;
+                    }
+                }
+                position: relative;
+                top: 3px;
+                display: block;
+            }
+
+            .user-answer {
+                color: $fcColor10;
+            }
+        }
+
+        .correct {
+            svg-icon.correct-icon {
+                svg {
+                    @include dimension(26px, auto);
+                    line {
+                        stroke: $bgColor2;
                     }
                 }
                 display: block;
             }
 
-            &.correct.svg-icon.correct{
-                svg {
-                    @include dimension(26px, auto);
-                    line{
-                        stroke: $bgColor2;
-                    }
-                }
-                display: block;
+            .user-answer {
+                color: $fcColor7;
             }
         }
 

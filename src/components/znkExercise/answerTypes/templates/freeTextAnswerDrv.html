@@ -1,11 +1,12 @@
-<div class="free-text-answer-wrapper" ng-switch="false">
+<div class="free-text-answer-wrapper" ng-switch="showCorrectAnswer">
 
-    <div ng-switch-when="true">
-        <div class="answer-feedback">
-            <div class="user-answer">{{::userAnswer}}</div>
-            <svg-icon name="correct"></svg-icon>
-            <svg-icon name="wrong"></svg-icon>
+    <div ng-switch-when="true" ng-class="userAnswerStatus">
+        <div class="answer-status">
+            <div class="user-answer">{{d.userAnswer}}</div>
+            <svg-icon class="correct-icon" name="correct"></svg-icon>
+            <svg-icon class="wrong-icon" name="wrong"></svg-icon>
         </div>
+        <div class="correct-answer">Correct answer: <span>{{correctAnswer}}</span></div>
     </div>
 
     <div ng-switch-when="false">
@@ -14,8 +15,8 @@
             <div class="note-title">Note: answers cannot be longer than four characters (including decimal points and fractions signs)</div>
         </div>
         <div class="input-wrapper">
-            <input min="0" max="99" required ng-model="userAnswer">
-            <div class="arrow-wrapper" ng-click="clickHandler(userAnswer)">
+            <input min="0" max="99" required ng-model="d.userAnswer">
+            <div class="arrow-wrapper" ng-click="clickHandler(d.userAnswer)">
                 <svg-icon name="arrow"></svg-icon>
                 <div class="svg-back"></div>
             </div>
