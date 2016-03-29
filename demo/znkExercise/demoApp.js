@@ -110,6 +110,32 @@
                         }
                     ]
                 },
+                {
+                    __type: 1,
+                    id: ++id,
+                    answerTypeId: 1,
+                    answers: [
+                        {
+                            id: 1,
+                            content: '<span>answer1</span>'
+                        },
+                        {
+                            id: 2,
+                            content: '<span>answer2</span>'
+                        },
+                        {
+                            id: 3,
+                            content: '<span>answer3</span>'
+                        }
+                    ],
+                    correctAnswerId: 1,
+                    correctAnswerText: [{
+                        content:'14/5'
+                    },{
+                        content:'2.8'
+                    }]
+
+                },
                 {__type: 3, id: ++id},
                 {__type: 1, id: ++id},
                 {__type: 2, id: ++id},

@@ -166,7 +166,9 @@
                 var svgMap = {
                     chevron: 'components/znkExercise/svg/chevron-icon.svg',
                     correct: 'components/znkExercise/svg/correct-icon.svg',
-                    wrong: 'components/znkExercise/svg/wrong-icon.svg'
+                    wrong: 'components/znkExercise/svg/wrong-icon.svg',
+                    info: 'components/znkExercise/svg/info-icon.svg',
+                    arrow: 'components/znkExercise/svg/arrow-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }]);
@@ -3674,7 +3676,7 @@
             var typeToViewMap = {};
 
             typeToViewMap[AnswerTypeEnum.SELECT_ANSWER.enum] = '<select-answer></select-answer>';
-            typeToViewMap[AnswerTypeEnum.FREE_TEXT_ANSWER.enum] = '<select-answer></select-answer>';
+            typeToViewMap[AnswerTypeEnum.FREE_TEXT_ANSWER.enum] = '<free-text-answer></free-text-answer>';
             typeToViewMap[AnswerTypeEnum.RATE_ANSWER.enum] = '<rate-answer></rate-answer>';
 
             return {
@@ -3715,125 +3717,89 @@
     ]);
 })(angular);
 
-///**
-// * attrs:
-// */
-//
-//(function (angular) {
-//    'use strict';
-//
-//    angular.module('znk.infra.znkExercise').directive('freeTextAnswerDrv', [
-//        'ZnkExerciseDrvSrv', 'MediaSrv', 'SubjectEnumConst',
-//        function (ZnkExerciseDrvSrv, MediaSrv, SubjectEnumConst) {
-//            return {
-//                templateUrl: 'scripts/exercise/templates/freeTextAnswerDrv.html',
-//                require: ['^simpleQuestion','^ngModel'],
-//                scope:{},
-//                link: function (scope, element, attrs, ctrls) {
-//                    var questionDrvCtrl = ctrls[0];
-//                    var ngModelCtrl = scope.ngModelCtrl = ctrls[1];
-//
-//
-//                    scope.d = {
-//                        showSolution: questionDrvCtrl.showSolution,
-//                        ngModelCtrl: ngModelCtrl,
-//                        numOfGridCells: questionDrvCtrl.question.subjectId === SubjectEnumConst.LISTENING ? 2 : 3
-//                    };
-//
-//                    updateCanEdit();
-//
-//                    function isCorrect(flatAnswer) {
-//                        var correctAnswersArr = questionDrvCtrl.question.correctAnswerText.map(function(answer){
-//                            return answer.content;
-//                        });
-//
-//                        return correctAnswersArr.indexOf(flatAnswer);
-//                    }
-//
-//                    /**
-//                     * Returns the first correct answer, formatted as comma seperated values
-//                     * @return {string} correct answers
-//                     */
-//                    function getFirstCorrectAnswer() {
-//                        // '341' -> '3, 4, 1'
-//                        if(questionDrvCtrl.question.correctAnswerText[0].content){
-//                            return questionDrvCtrl.question.correctAnswerText[0].content.match(/.{1}/g).join(', ');
-//                        }else{
-//                            console.log('content problem in free text question');
-//                        }
-//
-//                    }
-//
-//                    function setCorrectnessClass(enableSound){
-//
-//                        scope.d.currentAnswer = ngModelCtrl.$viewValue && ngModelCtrl.$viewValue.indexOf(', ') === -1 ?  ngModelCtrl.$viewValue.match(/.{1}/g).join(',') : ngModelCtrl.$viewValue;
-//                        var viewMode = questionDrvCtrl.getViewMode();
-//                        var classToAdd;
-//
-//                        if((viewMode === ZnkExerciseDrvSrv.viewModeEnum.answerWithResult.enum && angular.isUndefined(scope.d.answer)) ||
-//                            viewMode === ZnkExerciseDrvSrv.viewModeEnum.answerOnly.enum || viewMode === ZnkExerciseDrvSrv.viewModeEnum.mustAnswer.enum){
-//                            classToAdd = 'neutral';
-//
-//                        } else {
-//                            if (isCorrect(scope.d.answer) === -1) {
-//                                var $questionCorrectAnswer = angular.element(element[0].querySelector('.question-correct-answer'));
-//                                $questionCorrectAnswer.empty();
-//                                $questionCorrectAnswer.html(getFirstCorrectAnswer());
-//
-//                                if(angular.isUndefined(scope.d.answer)){
-//                                    classToAdd = 'not-answered';
-//                                }else{
-//                                    classToAdd = 'wrong';
-//                                }
-//                            } else {
-//                                classToAdd = 'correct';
-//                            }
-//
-//                            if (viewMode === ZnkExerciseDrvSrv.viewModeEnum.answerWithResult.enum && enableSound){
-//                                if (classToAdd === 'correct'){
-//                                    MediaSrv.playCorrectAnswerSound();
-//                                }
-//                                if (classToAdd === 'wrong'){
-//                                    MediaSrv.playWrongAnswerSound();
-//                                }
-//                            }
-//                        }
-//
-//                        element.addClass(classToAdd);
-//                    }
-//
-//                    function updateCanEdit() {
-//                        var viewMode = questionDrvCtrl.getViewMode();
-//                        scope.d.disableEdit = (viewMode === ZnkExerciseDrvSrv.viewModeEnum.review.enum ||
-//                            (viewMode === ZnkExerciseDrvSrv.viewModeEnum.answerWithResult.enum && scope.d.answer));
-//                    }
-//
-//                    scope.d.save = function(){
-//                        ngModelCtrl.$setViewValue(scope.d.answer);
-//                        setCorrectnessClass(true);
-//                        updateCanEdit();
-//                    };
-//
-//                    ngModelCtrl.$render = function(){
-//                        scope.d.answer = ngModelCtrl.$viewValue;
-//                        setCorrectnessClass(false);
-//                        updateCanEdit();
-//                    };
-//
-//                    scope.$on('exercise:viewModeChanged', function () {
-//                        updateCanEdit();
-//                        ngModelCtrl.$render();
-//                    });
-//
-//                    scope.$watch('d.answer', function() {
-//                        scope.d.save();
-//                    });
-//                }
-//            };
-//        }
-//    ]);
-//})(angular);
-//
+/**
+ * attrs:
+ */
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('freeTextAnswer', ['ZnkExerciseViewModeEnum', '$timeout',
+
+        function (ZnkExerciseViewModeEnum, $timeout) {
+            return {
+                templateUrl: 'components/znkExercise/answerTypes/templates/freeTextAnswerDrv.html',
+                require: ['^ngModel', '^answerBuilder'],
+                scope:{},
+                link: function (scope, element, attrs, ctrls) {
+                    var ngModelCtrl = ctrls[0];
+                    var answerBuilderCtrl = ctrls[1];
+
+                    scope.d = {};
+
+                    var MODE_ANSWER_ONLY = ZnkExerciseViewModeEnum.ONLY_ANSWER.enum,
+                        MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum,
+                        MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
+
+                    var regex = /(?: |^)\d*\.?\d+(?: |$)|(?: |^)\d*\/?\d+(?: |$)/;
+                    scope.clickHandler = function(userAnswer){
+                        if(regex.test(userAnswer)){
+                            ngModelCtrl.$setViewValue(userAnswer);
+                            updateViewByCorrectAnswers(userAnswer);
+                        } else {
+                            // todo: user answer invalid
+                        }
+                    };
+
+                    function updateViewByCorrectAnswers(userAnswer) {
+                        var correctAnswers = answerBuilderCtrl.question.correctAnswerText;
+                        var viewMode = answerBuilderCtrl.getViewMode();
+                        scope.correctAnswer = correctAnswers[0].content;
+
+                        if (viewMode === MODE_ANSWER_ONLY || viewMode === MODE_MUST_ANSWER) {
+                            scope.d.userAnswer = angular.isDefined(userAnswer) ? userAnswer : '';
+                            scope.showCorrectAnswer = false;
+                        } else {
+
+                            if (angular.isUndefined(userAnswer)) {
+                                // unanswered question
+                                    scope.userAnswerStatus = 'neutral';
+                                    scope.showCorrectAnswer = viewMode === MODE_REVIEW;
+                            } else {
+                                if (_isAnswerdCorrectly(userAnswer, correctAnswers)) {
+                                    scope.userAnswerStatus = 'correct';
+                                } else {
+                                    scope.userAnswerStatus = 'wrong';
+                                }
+                                scope.showCorrectAnswer = true;
+                                scope.d.userAnswer = userAnswer;
+                            }
+                        }
+                    }
+
+                    function _isAnswerdCorrectly(userAnswer,correctAnswers) {
+                        for (var i = 0; i < correctAnswers.length; i++) {
+                            if (userAnswer === correctAnswers[i].content) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+
+                    ngModelCtrl.$render = function () {
+                        //skip one digest cycle in order to let the answers time to be compiled
+                        $timeout(function(){
+                            updateViewByCorrectAnswers(ngModelCtrl.$viewValue);
+                        });
+                    };
+
+                    ngModelCtrl.$render();
+                }
+            };
+        }
+    ]);
+})(angular);
+
 
 
 /**
@@ -6250,7 +6216,7 @@
                         isCorrect = ('' + question.correctAnswerId) === answer;
                         break;
                     case AnswerTypeEnum.FREE_TEXT_ANSWER.enum:
-                        answer = '' + userAnswer;
+                         answer = '' + userAnswer;
                          answersIdsMap = question.correctAnswerText.map(function (answerMap) {
                             return '' + answerMap.content;
                         });
@@ -6564,6 +6530,34 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "    </div>\n" +
     "</div>\n" +
     "");
+  $templateCache.put("components/znkExercise/answerTypes/templates/freeTextAnswerDrv.html",
+    "<div class=\"free-text-answer-wrapper\" ng-switch=\"showCorrectAnswer\">\n" +
+    "\n" +
+    "    <div ng-switch-when=\"true\" ng-class=\"userAnswerStatus\">\n" +
+    "        <div class=\"answer-status\">\n" +
+    "            <div class=\"user-answer\">{{d.userAnswer}}</div>\n" +
+    "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
+    "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
+    "        </div>\n" +
+    "        <div class=\"correct-answer\">Correct answer: <span>{{correctAnswer}}</span></div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-switch-when=\"false\">\n" +
+    "        <div class=\"instructions-title-wrapper\">\n" +
+    "            <div class=\"instructions-title\">Type your answer in the textboxes below.<svg-icon name=\"info\"></svg-icon></div>\n" +
+    "            <div class=\"note-title\">Note: answers cannot be longer than four characters (including decimal points and fractions signs)</div>\n" +
+    "        </div>\n" +
+    "        <div class=\"input-wrapper\">\n" +
+    "            <input min=\"0\" max=\"99\" required ng-model=\"d.userAnswer\">\n" +
+    "            <div class=\"arrow-wrapper\" ng-click=\"clickHandler(d.userAnswer)\">\n" +
+    "                <svg-icon name=\"arrow\"></svg-icon>\n" +
+    "                <div class=\"svg-back\"></div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "</div>\n" +
+    "");
   $templateCache.put("components/znkExercise/answerTypes/templates/rateAnswerDrv.html",
     "<div class=\"rate-answer-wrapper\">\n" +
     "\n" +
@@ -6800,6 +6794,21 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "</g>\n" +
     "</svg>\n" +
     "");
+  $templateCache.put("components/znkExercise/svg/arrow-icon.svg",
+    "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\" viewBox=\"-468.2 482.4 96 89.8\" class=\"arrow-icon-wrapper\">\n" +
+    "    <style type=\"text/css\">\n" +
+    "        .arrow-icon-wrapper .st0{fill:#109BAC;}\n" +
+    "        .arrow-icon-wrapper .st1{fill:none;stroke:#fff;stroke-width:5.1237;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
+    "    </style>\n" +
+    "    <path class=\"st0\" d=\"M-417.2,572.2h-6.2c-24.7,0-44.9-20.2-44.9-44.9v0c0-24.7,20.2-44.9,44.9-44.9h6.2c24.7,0,44.9,20.2,44.9,44.9\n" +
+    "    v0C-372.2,552-392.5,572.2-417.2,572.2z\"/>\n" +
+    "    <g>\n" +
+    "        <line class=\"st1\" x1=\"-442.8\" y1=\"527.3\" x2=\"-401.4\" y2=\"527.3\"/>\n" +
+    "        <line class=\"st1\" x1=\"-401.4\" y1=\"527.3\" x2=\"-414.3\" y2=\"514.4\"/>\n" +
+    "        <line class=\"st1\" x1=\"-401.4\" y1=\"527.3\" x2=\"-414.3\" y2=\"540.2\"/>\n" +
+    "    </g>\n" +
+    "</svg>\n" +
+    "");
   $templateCache.put("components/znkExercise/svg/chevron-icon.svg",
     "<svg x=\"0px\" y=\"0px\" viewBox=\"0 0 143.5 65.5\">\n" +
     "    <polyline class=\"st0\" points=\"6,6 71.7,59.5 137.5,6 \"/>\n" +
@@ -6828,6 +6837,26 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "<g>\n" +
     "	<line class=\"st0\" x1=\"7.5\" y1=\"62\" x2=\"67\" y2=\"121.5\"/>\n" +
     "	<line class=\"st0\" x1=\"67\" y1=\"121.5\" x2=\"181\" y2=\"7.5\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/info-icon.svg",
+    "<svg\n" +
+    "    version=\"1.1\"\n" +
+    "    xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "    x=\"0px\"\n" +
+    "    y=\"0px\"\n" +
+    "    viewBox=\"-497 499 28 28\"\n" +
+    "    class=\"info-icon\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.info-icon .st0{fill:none;stroke:#0A9BAD; stroke-width:2;}\n" +
+    "	.info-icon .st2{fill:#0A9BAD;}\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<circle class=\"st0\" cx=\"-483\" cy=\"513\" r=\"13.5\"/>\n" +
+    "	<g>\n" +
+    "		<path class=\"st2\" d=\"M-485.9,509.2h3.9v8.1h3v1.2h-7.6v-1.2h3v-6.9h-2.4V509.2z M-483.5,505.6h1.5v1.9h-1.5V505.6z\"/>\n" +
+    "	</g>\n" +
     "</g>\n" +
     "</svg>\n" +
     "");

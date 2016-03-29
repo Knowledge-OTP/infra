@@ -20,7 +20,7 @@
                         isCorrect = ('' + question.correctAnswerId) === answer;
                         break;
                     case AnswerTypeEnum.FREE_TEXT_ANSWER.enum:
-                        answer = '' + userAnswer;
+                         answer = '' + userAnswer;
                          answersIdsMap = question.correctAnswerText.map(function (answerMap) {
                             return '' + answerMap.content;
                         });
