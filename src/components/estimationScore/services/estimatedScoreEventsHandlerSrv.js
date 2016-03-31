@@ -133,23 +133,12 @@
                     EstimatedScoreSrv.addRawScore(rawScore, exerciseType, exercise.subjectId, exercise.id);
                 }
 
-                var exercisesHandledByBaseExerciseFinishHandler = [
-                    {
-                        name: exerciseEventsConst.drill.FINISH,
-                        type: ExerciseTypeEnum.DRILL.enum
-                    },
-                    {
-                        name: exerciseEventsConst.tutorial.FINISH,
-                        type: ExerciseTypeEnum.TUTORIAL.enum
-                    },
-                    {
-                        name: exerciseEventsConst.game.FINISH,
-                        type: ExerciseTypeEnum.GAME.enum
+                angular.forEach(ExerciseTypeEnum, function(enumObj, enumName){
+                    if(enumName !== 'SECTION'){
+                        var enumLowercaseName = enumName.toLowerCase();
+                        var evtName = exerciseEventsConst[enumLowercaseName].FINISH;
+                        childScope.$on(evtName, _baseExerciseFinishHandler.bind(EstimatedScoreEventsHandlerSrv, enumObj.enum));
                     }
-                ];
-
-                exercisesHandledByBaseExerciseFinishHandler.forEach(function (evt) {
-                    childScope.$on(evt.name, _baseExerciseFinishHandler.bind(EstimatedScoreEventsHandlerSrv, evt.type));
                 });
 
                 EstimatedScoreEventsHandlerSrv.init = angular.noop;
