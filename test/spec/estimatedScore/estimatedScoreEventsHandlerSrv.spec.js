@@ -4,14 +4,14 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
     beforeEach(module('znk.infra.estimatedScore', 'htmlTemplates', 'testUtility', 'storage.mock'));
 
     var rawPointsForExerciseTypeMap = {
-        4:{
+        4: {
             correctWithin: 1,
             correctAfter: 0,
             wrongWithin: -0.25,
             wrongAfter: 0,
             unanswered: 0
         },
-        5:{
+        5: {
             correctWithin: 0.2,
             correctAfter: 0,
             wrongWithin: 0,
@@ -19,12 +19,12 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
             unanswered: 0
         }
     };
-
-    beforeEach(module(function($logProvider, EstimatedScoreSrvProvider, EstimatedScoreEventsHandlerSrvProvider, exerciseTypeConst){
+    var shouldEventBeProcessed;
+    beforeEach(module(function ($logProvider, EstimatedScoreSrvProvider, EstimatedScoreEventsHandlerSrvProvider, exerciseTypeConst) {
         $logProvider.debugEnabled(true);
 
         var subjectsRawScoreEdges = {
-            0:{
+            0: {
                 min: 0,
                 max: 60
             },
@@ -35,8 +35,8 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         };
         EstimatedScoreSrvProvider.setSubjectsRawScoreEdges(subjectsRawScoreEdges);
 
-        EstimatedScoreSrvProvider.setRawScoreToRealScoreFn(function(){
-            return function(subjectId, rawScore){
+        EstimatedScoreSrvProvider.setRawScoreToRealScoreFn(function () {
+            return function (subjectId, rawScore) {
                 return rawScore * 3;
             };
         });
@@ -46,29 +46,35 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         EstimatedScoreSrvProvider.setMinMaxDiagnosticScore(MIN_DIAGNOSTIC_SCORE, MAX_DIAGNOSTIC_SCORE);
 
         var diagnosticScoringMap = {
-            1: [90,90,50,50],
-            2: [100,100,60,60],
-            3: [120,120,80,80],
-            4: [140,140,100,100],
-            5: [150,150,120,120]
+            1: [90, 90, 50, 50],
+            2: [100, 100, 60, 60],
+            3: [120, 120, 80, 80],
+            4: [140, 140, 100, 100],
+            5: [150, 150, 120, 120]
         };
         EstimatedScoreEventsHandlerSrvProvider.setDiagnosticScoring(diagnosticScoringMap);
 
-        var sectionRawPoints = [1,0,-0.25,0];
+        var sectionRawPoints = [1, 0, -0.25, 0];
         EstimatedScoreEventsHandlerSrvProvider.setExerciseRawPoints(exerciseTypeConst.SECTION, sectionRawPoints);
 
         var drillRawPoints = [0.2, 0, 0, 0];
         EstimatedScoreEventsHandlerSrvProvider.setExerciseRawPoints(exerciseTypeConst.DRILL, drillRawPoints);
+
+        EstimatedScoreEventsHandlerSrvProvider.setEventProcessControl(function () {
+            return function () {
+                return angular.isDefined(shouldEventBeProcessed) ? shouldEventBeProcessed.apply(this, arguments) : true;
+            };
+        });
     }));
 
     var exerciseEventsConst, actions, TestUtilitySrv, $rootScope, ExerciseTypeEnum, SubjectEnum, testStorage,
-        ExerciseAnswerStatusEnum;
+        ExerciseAnswerStatusEnum, EstimatedScoreSrv;
     beforeEach(inject(
         function ($injector) {
             exerciseEventsConst = $injector.get('exerciseEventsConst');
             $rootScope = $injector.get('$rootScope');
             TestUtilitySrv = $injector.get('TestUtilitySrv');
-            var EstimatedScoreSrv = $injector.get('EstimatedScoreSrv');
+            EstimatedScoreSrv = $injector.get('EstimatedScoreSrv');
             ExerciseTypeEnum = $injector.get('ExerciseTypeEnum');
             SubjectEnum = $injector.get('SubjectEnum');
             testStorage = $injector.get('testStorage');
@@ -78,15 +84,15 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
 
             actions = TestUtilitySrv.general.convertAllAsyncToSync(EstimatedScoreSrv);
 
-            actions.getSectionsRawScoresFromDb = function(subjectId){
+            actions.getSectionsRawScoresFromDb = function (subjectId) {
                 return testStorage.db.users.$$uid.estimatedScore.sectionsRawScores[subjectId];
             };
 
-            actions.getEstimatedScoresFromDb = function(subjectId){
+            actions.getEstimatedScoresFromDb = function (subjectId) {
                 return testStorage.db.users.$$uid.estimatedScore.estimatedScores[subjectId];
             };
 
-            actions.getExercisesRawScoreFromDb = function(subjectId){
+            actions.getExercisesRawScoreFromDb = function (subjectId) {
                 return testStorage.db.users.$$uid.estimatedScore.exercisesRawScores[subjectId];
             };
         }
@@ -114,7 +120,7 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
             exerciseType: ExerciseTypeEnum.SECTION.enum,
             exerciseId: section.id,
             score: (0 * 90) + (1 * 100) + (2 * 120) + (1 * 140) + (1 * 150) +   //correct
-                   (1 * 50) + (3 * 60) + (2 * 80) + (1 * 100) + (2 * 120)       //wrong
+            (1 * 50) + (3 * 60) + (2 * 80) + (1 * 100) + (2 * 120)       //wrong
             //score: (/*3*/ 3 * 120) + (/*2*/ 1 * 100) + (/*4*/ 1 * 140) +
             //(/*1*/ 3 * 50) + (/*5*/ 2 * 120) + (/*4*/ 3 * 100) + (/*2*/ 2 * 60) + (/*3*/ 2 * 80)
         };
@@ -219,7 +225,7 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         expect(estimatedScore.length).toBe(2);
     });
 
-    it('when section is completed then when calculating raw score then more weight should be given to latest finished sections',function(){
+    it('when section is completed then when calculating raw score then more weight should be given to latest finished sections', function () {
         var examMock = content.exam40;
         var sectionKey = 'section' + examMock.sections[0].id;
         var sectionMock = content[sectionKey];
@@ -244,7 +250,7 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
             exerciseId: 1087,
             score: 34,
             time: 1441625776941
-        },{
+        }, {
             exerciseType: 3,
             exerciseId: 1087,
             score: 38.845,
@@ -271,7 +277,7 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
             exerciseId: sectionMock.id,
             score: 179.08
         };
-        expect(estimatedScores .length).toBe(3);
+        expect(estimatedScores.length).toBe(3);
         expect(estimatedScores[2]).toEqual(jasmine.objectContaining(expectedEstimatedScore));
 
 
@@ -279,11 +285,11 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         $rootScope.$broadcast(exerciseEventsConst.section.FINISH, sectionMock, resultMock, examMock);
         $rootScope.$digest();
         var estimatedScores = actions.getEstimatedScoresFromDb(sectionMock.subjectId);
-        expect(estimatedScores .length).toBe(3);
+        expect(estimatedScores.length).toBe(3);
         expect(estimatedScores[2]).toEqual(jasmine.objectContaining(expectedEstimatedScore));
     });
 
-    it('when exercise is completed and no initial score is set then the received score should be set as the initial one', function(){
+    it('when exercise is completed and no initial score is set then the received score should be set as the initial one', function () {
         var drillMock = content.drill10;
         var estimatedScoreMock = {
             exerciseType: 4,
@@ -307,5 +313,26 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         };
         expect(estimatedScore.length).toBe(1);
         expect(estimatedScore[0]).toEqual(jasmine.objectContaining(expectedEstimatedScore));
+    });
+
+    it('when shouldBeProcessed return false than the event should not be processed', function () {
+        spyOn(EstimatedScoreSrv, 'addRawScore');
+        shouldEventBeProcessed = function (exerciseType, exercise, result) {
+            return exercise.id === 10;
+        };
+
+        var drillMock = content.drill10;
+        var CORRECT_NUM = 5;
+        var UNANSWERED_NUM = 2;
+        var resultMock = TestUtilitySrv.exercise.mockExerciseResult(drillMock, CORRECT_NUM, UNANSWERED_NUM, true);
+
+        $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, drillMock, resultMock);
+        $rootScope.$digest();
+
+        drillMock.id = 12;
+        $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, drillMock, resultMock);
+        $rootScope.$digest();
+
+        expect(EstimatedScoreSrv.addRawScore).toHaveBeenCalledTimes(1);
     });
 });

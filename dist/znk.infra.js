@@ -975,9 +975,14 @@
             exercisesRawScoring[exerciseType] = pointsMap.apply(this, scoringData);
         };
 
+        var eventProcessControl;
+        this.setEventProcessControl = function(_eventProcessControl){
+            eventProcessControl = _eventProcessControl;
+        };
+
         this.$get = [
-            '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum', 'ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log', 'UtilitySrv',
-            function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum, ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log, UtilitySrv) {
+            '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum', 'ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log', 'UtilitySrv', '$injector', '$q',
+            function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum, ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log, UtilitySrv, $injector, $q) {
                 if (angular.equals({}, diagnosticScoring)) {
                     $log.error('EstimatedScoreEventsHandlerSrv: diagnosticScoring was not set !!!');
                 }
@@ -1007,7 +1012,7 @@
                     return _basePointsGetter(pointsMap, answerStatus, true);
                 }
 
-                function diagnosticSectionCompleteHandler(section, sectionResult) {
+                function _diagnosticSectionCompleteHandler(section, sectionResult) {
                     var score = 0;
 
                     var questions = section.questions;
@@ -1036,7 +1041,7 @@
                     return _basePointsGetter(rawPointsMap, answerStatus, isAnsweredWithinAllowedTime);
                 }
 
-                function calculateRawScore(exerciseType, exerciseResult) {
+                function _calculateRawScore(exerciseType, exerciseResult) {
                     if (!exercisesRawScoring[exerciseType]) {
                         $log.error('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: ' + exerciseType);
                     }
@@ -1054,18 +1059,39 @@
                     return rawPoints;
                 }
 
-                childScope.$on(exerciseEventsConst.section.FINISH, function (evt, section, sectionResult, exam) {
-                    var isDiagnostic = exam.typeId === ExamTypeEnum.DIAGNOSTIC.enum;
-                    if (isDiagnostic) {
-                        diagnosticSectionCompleteHandler(section, sectionResult);
+                function _shouldEventBeProcessed(exerciseType, exercise, exerciseResult){
+                    if(!eventProcessControl){
+                        return $q.when(true);
                     }
-                    var rawScore = calculateRawScore(ExerciseTypeEnum.SECTION.enum, sectionResult);
-                    EstimatedScoreSrv.addRawScore(rawScore, ExerciseTypeEnum.SECTION.enum, section.subjectId, section.id, isDiagnostic);
+
+                    var shouldEventBeProcessed =$injector.invoke(eventProcessControl);
+                    if(angular.isFunction(shouldEventBeProcessed )){
+                        shouldEventBeProcessed = shouldEventBeProcessed(exerciseType, exercise, exerciseResult);
+                    }
+                    return $q.when(shouldEventBeProcessed);
+                }
+
+                childScope.$on(exerciseEventsConst.section.FINISH, function (evt, section, sectionResult, exam) {
+                    _shouldEventBeProcessed(exerciseEventsConst.section.FINISH, section, sectionResult)
+                        .then(function(shouldBeProcessed){
+                            if(shouldBeProcessed){
+                                var isDiagnostic = exam.typeId === ExamTypeEnum.DIAGNOSTIC.enum;
+                                if (isDiagnostic) {
+                                    _diagnosticSectionCompleteHandler(section, sectionResult);
+                                }
+                                var rawScore = _calculateRawScore(ExerciseTypeEnum.SECTION.enum, sectionResult);
+                                EstimatedScoreSrv.addRawScore(rawScore, ExerciseTypeEnum.SECTION.enum, section.subjectId, section.id, isDiagnostic);
+                            }
+                        });
                 });
 
                 function _baseExerciseFinishHandler(exerciseType, evt, exercise, exerciseResult) {
-                    var rawScore = calculateRawScore(exerciseType, exerciseResult);
-                    EstimatedScoreSrv.addRawScore(rawScore, exerciseType, exercise.subjectId, exercise.id);
+                    _shouldEventBeProcessed(exerciseType, exercise, exerciseResult).then(function(shouldBeProcessed){
+                        if(shouldBeProcessed){
+                            var rawScore = _calculateRawScore(exerciseType, exerciseResult);
+                            EstimatedScoreSrv.addRawScore(rawScore, exerciseType, exercise.subjectId, exercise.id);
+                        }
+                    });
                 }
 
                 angular.forEach(ExerciseTypeEnum, function(enumObj, enumName){
