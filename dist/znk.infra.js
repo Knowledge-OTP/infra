@@ -6649,7 +6649,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "    </button>\n" +
     "</div>\n" +
     "<div class=\"done-btn-wrap show-opacity-animate\" ng-if=\"vm.showDoneButton\">\n" +
-    "    <button autofocus class=\"done-btn\"\n" +
+    "    <button tabindex=\"1\" autofocus class=\"done-btn\"\n" +
     "            ng-click=\"onDone()\">DONE\n" +
     "    </button>\n" +
     "</div>\n" +
