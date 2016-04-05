@@ -1688,6 +1688,34 @@
 })(angular);
 
 /**
+ * the HTML5 autofocus property can be finicky when it comes to dynamically loaded
+ * templates and such with AngularJS. Use this simple directive to
+ * tame this beast once and for all.
+ *
+ * Usage:
+ * <input type="text" autofocus>
+ *
+ * License: MIT
+ */
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.general')
+        .directive('autofocus', ['$timeout', function($timeout) {
+            return {
+                restrict: 'A',
+                link : function($scope, $element) {
+                    $timeout(function() {
+                        $element[0].focus();
+                    });
+                }
+            };
+        }]);
+})(angular);
+
+
+/**
  * evaluates content , then it appended it to the DOM , and finally it compiles it with scope which was created out of the directive scope.
  * attrs-
  *  compile-drv: expression which be evaluated and then appended to the dom.
@@ -4670,7 +4698,6 @@
                         function keyboardClickCB(e){
                             var LEFT_ARROW_KEY = 37;
                             var RIGHT_ARROW_KEY = 39;
-                            var ENTER_KEY = 13;
 
                             switch(e.keyCode){
                                 case LEFT_ARROW_KEY:
@@ -4678,11 +4705,6 @@
                                     break;
                                 case RIGHT_ARROW_KEY:
                                     scope.vm.nextQuestion();
-                                    break;
-                                case ENTER_KEY:
-                                    if(scope.vm.showDoneButton) {
-                                        scope.onDone();
-                                    }
                                     break;
                             }
                         }
