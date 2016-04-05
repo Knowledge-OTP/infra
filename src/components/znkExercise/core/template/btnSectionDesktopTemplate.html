@@ -11,9 +11,8 @@
         <svg-icon name="chevron"></svg-icon>
     </button>
 </div>
-<div class="done-btn-wrap ng-hide show-opacity-animate" ng-show="vm.showDoneButton">
-    <button class="done-btn"
-
+<div class="done-btn-wrap show-opacity-animate" ng-if="vm.showDoneButton">
+    <button autofocus class="done-btn"
             ng-click="onDone()">DONE
     </button>
 </div>

@@ -6648,9 +6648,8 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "        <svg-icon name=\"chevron\"></svg-icon>\n" +
     "    </button>\n" +
     "</div>\n" +
-    "<div class=\"done-btn-wrap ng-hide show-opacity-animate\" ng-show=\"vm.showDoneButton\">\n" +
-    "    <button class=\"done-btn\"\n" +
-    "\n" +
+    "<div class=\"done-btn-wrap show-opacity-animate\" ng-if=\"vm.showDoneButton\">\n" +
+    "    <button autofocus class=\"done-btn\"\n" +
     "            ng-click=\"onDone()\">DONE\n" +
     "    </button>\n" +
     "</div>\n" +
