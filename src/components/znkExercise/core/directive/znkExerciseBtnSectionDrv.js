@@ -163,7 +163,6 @@
                         function keyboardClickCB(e){
                             var LEFT_ARROW_KEY = 37;
                             var RIGHT_ARROW_KEY = 39;
-                            var ENTER_KEY = 13;
 
                             switch(e.keyCode){
                                 case LEFT_ARROW_KEY:
@@ -171,11 +170,6 @@
                                     break;
                                 case RIGHT_ARROW_KEY:
                                     scope.vm.nextQuestion();
-                                    break;
-                                case ENTER_KEY:
-                                    if(scope.vm.showDoneButton) {
-                                        scope.onDone();
-                                    }
                                     break;
                             }
                         }
