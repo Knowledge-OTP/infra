@@ -1708,7 +1708,7 @@
                 link : function($scope, $element) {
                     $timeout(function() {
                         $element[0].focus();
-                    });
+                    }, 0, false);
                 }
             };
         }]);
@@ -6943,7 +6943,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "");
   $templateCache.put("components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
-    "	 viewBox=\"-145 277 60 60\" style=\"enable-background:new -145 277 60 60;\" xml:space=\"preserve\" class=\"timeline-diagnostic-test-icon\">\n" +
+    "	 viewBox=\"-145 277 60 60\" style=\"enable-background:new -145 277 60 60;\" xml:space=\"preserve\" class=\"timeline-diagnostic-test-icon\" width=\"30px\" height=\"30px\">\n" +
     "	 <style type=\"text/css\">\n" +
     "     	.timeline-diagnostic-test-icon .st0{fill:#fff;}\n" +
     "     </style>\n" +
@@ -6961,7 +6961,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "");
   $templateCache.put("components/znkTimeline/svg/icons/timeline-drills-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
-    "	 viewBox=\"-145 277 60 60\" style=\"enable-background:new -145 277 60 60;\" xml:space=\"preserve\" class=\"timeline-drills-icon\">\n" +
+    "	 viewBox=\"-145 277 60 60\" style=\"enable-background:new -145 277 60 60;\" xml:space=\"preserve\" class=\"timeline-drills-icon\" width=\"30px\" height=\"30px\">\n" +
     "<style type=\"text/css\">\n" +
     "    .timeline-drills-icon .all > * { fill: #fff; }\n" +
     "	.timeline-drills-icon .st0{clip-path:url(#SVGID_2_);}\n" +
@@ -7018,7 +7018,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "");
   $templateCache.put("components/znkTimeline/svg/icons/timeline-mini-challenge-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
-    "	 viewBox=\"-105 277 60 60\" style=\"enable-background:new -105 277 60 60;\" xml:space=\"preserve\" class=\"timeline-mini-challenge-icon\">\n" +
+    "	 viewBox=\"-105 277 60 60\" style=\"enable-background:new -105 277 60 60;\" xml:space=\"preserve\" class=\"timeline-mini-challenge-icon\" width=\"30px\" height=\"30px\">\n" +
     "	 	 <style type=\"text/css\">\n" +
     "          	.timeline-mini-challenge-icon .st0{fill:#fff;}\n" +
     "          </style>\n" +
@@ -7038,7 +7038,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "");
   $templateCache.put("components/znkTimeline/svg/icons/timeline-test-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
-    "	 viewBox=\"-111 277 60 60\" style=\"enable-background:new -111 277 60 60;\" xml:space=\"preserve\" class=\"timeline-test-icon\">\n" +
+    "	 viewBox=\"-111 277 60 60\" style=\"enable-background:new -111 277 60 60;\" xml:space=\"preserve\" class=\"timeline-test-icon\" width=\"30px\" height=\"30px\">\n" +
     "<style type=\"text/css\">\n" +
     "	.timeline-test-icon .st0{fill:#fff;}\n" +
     "</style>\n" +
@@ -7183,7 +7183,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "");
   $templateCache.put("components/znkTimeline/svg/icons/timeline-tips-tricks-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
-    "	 viewBox=\"-145 277 60 60\" style=\"enable-background:new -145 277 60 60;\" xml:space=\"preserve\" class=\"timeline-tips-tricks-icon\">\n" +
+    "	 viewBox=\"-145 277 60 60\" style=\"enable-background:new -145 277 60 60;\" xml:space=\"preserve\" class=\"timeline-tips-tricks-icon\" width=\"30px\" height=\"30px\">\n" +
     "<style type=\"text/css\">\n" +
     "	.timeline-tips-tricks-icon .st0{fill:#fff;}\n" +
     "</style>\n" +
