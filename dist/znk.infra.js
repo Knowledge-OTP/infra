@@ -3652,6 +3652,14 @@
                 });
             };
 
+            UtilitySrv.object.convertToArray = function(obj){
+                var arr = [];
+                angular.forEach(obj, function(obj){
+                    arr.push(obj);
+                });
+                return arr;
+            };
+
             //array utility srv
             UtilitySrv.array = {};
 
@@ -3677,6 +3685,7 @@
                     return prom;
                 };
             };
+            
             return UtilitySrv;
         }
     ]);
