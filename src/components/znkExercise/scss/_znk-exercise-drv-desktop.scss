@@ -106,6 +106,9 @@ znk-exercise.desktop {
                     radius: 30px;
                 }
                 cursor: pointer;
+                &:focus {
+                    background: $bgColor15;
+                }
             }
         }
     }
