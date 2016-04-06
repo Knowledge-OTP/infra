@@ -1456,7 +1456,7 @@ free-text-answer .free-text-answer-wrapper {
       height: 48px;
       position: absolute;
       top: 1px;
-      right: -1px;
+      right: -2px;
       cursor: pointer; }
       free-text-answer .free-text-answer-wrapper .input-wrapper .arrow-wrapper svg-icon.arrow {
         width: 48px;

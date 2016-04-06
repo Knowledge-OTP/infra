@@ -1708,7 +1708,7 @@
                 link : function($scope, $element) {
                     $timeout(function() {
                         $element[0].focus();
-                    });
+                    }, 0, false);
                 }
             };
         }]);
