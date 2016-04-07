@@ -2919,8 +2919,8 @@
     'use strict';
 
     angular.module('znk.infra.stats').factory('StatsEventsHandlerSrv', [
-        '$rootScope', 'exerciseEventsConst', 'StatsSrv', 'ExerciseTypeEnum', '$log',
-        function ($rootScope, exerciseEventsConst, StatsSrv, ExerciseTypeEnum, $log) {
+        '$rootScope', 'exerciseEventsConst', 'StatsSrv', 'ExerciseTypeEnum', '$log', 'UtilitySrv',
+        function ($rootScope, exerciseEventsConst, StatsSrv, ExerciseTypeEnum, $log, UtilitySrv) {
             var StatsEventsHandlerSrv = {};
 
             var childScope = $rootScope.$new(true);
@@ -2933,8 +2933,9 @@
 
                     var newStats = {};
 
-                    results.questionResults.forEach(function (result, index) {
-                        var question = exercise.questions[index];
+                    var questionsMap = UtilitySrv.array.convertToMap(exercise.questions);
+                    results.questionResults.forEach(function (result) {
+                        var question = questionsMap[result.questionId];
                         var categoryId = question.categoryId;
 
                         if (isNaN(+categoryId) || categoryId === null) {
