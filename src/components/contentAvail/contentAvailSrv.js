@@ -223,7 +223,7 @@
                     isExamAvail: isExamAvail,
                     isSectionAvail: isSectionAvail,
                     isTutorialAvail: isTutorialAvail
-                }
+                };
             }];
         }
     ]);
