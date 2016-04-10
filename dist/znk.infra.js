@@ -1401,11 +1401,21 @@
 
             var EXERCISES_STATUS_PATH = StorageSrv.variables.appUserSpacePath + '/exercisesStatus';
 
+            function _isValidNumber(number){
+                return angular.isNumber(number) && !isNaN(number);
+            }
+
             function _getExerciseResultPath(guid) {
                 return EXERCISE_RESULTS_PATH + '/' + guid;
             }
 
             function _getInitExerciseResult(exerciseTypeId,exerciseId,guid){
+                if(!_isValidNumber(exerciseTypeId) || !_isValidNumber(exerciseId)){
+                    var errMSg = 'exercise type id and exercise id should be number !!!';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+
                 var storage = InfraConfigSrv.getStorageService();
                 var userProm = InfraConfigSrv.getUserData();
                 return userProm.then(function(user) {
@@ -1452,6 +1462,12 @@
             }
 
             function _getInitExamResult(examId, guid){
+                if(!_isValidNumber(examId)){
+                    var errMsg = 'Exam id is not a number !!!';
+                    $log.error(errMsg);
+                    return $q.reject(errMsg);
+                }
+
                 var userProm = InfraConfigSrv.getUserData();
                 return userProm.then(function(user) {
                     return {
@@ -1578,14 +1594,18 @@
                 this.status = status;
             }
 
-            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum) {
+            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum, dontInitialize) {
                 var getExamResultProm;
                 if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
-                    getExamResultProm = ExerciseResultSrv.getExamResult(examId);
+                    getExamResultProm = ExerciseResultSrv.getExamResult(examId, dontInitialize);
                 }
                 return _getExerciseResultsGuids().then(function (exerciseResultsGuids) {
                     var resultGuid = exerciseResultsGuids[exerciseTypeId] && exerciseResultsGuids[exerciseTypeId][exerciseId];
                     if (!resultGuid) {
+                        if(dontInitialize){
+                            return null;
+                        }
+
                         if(!exerciseResultsGuids[exerciseTypeId]){
                             exerciseResultsGuids[exerciseTypeId] = {};
                         }
@@ -1641,16 +1661,22 @@
                         });
                     });
                 }).then(function(exerciseResult){
-                    exerciseResult.$save = exerciseSaveFn;
+                    if(angular.isObject(exerciseResult)){
+                        exerciseResult.$save = exerciseSaveFn;
+                    }
                     return exerciseResult;
                 });
             };
 
-            this.getExamResult = function (examId) {
+            this.getExamResult = function (examId, dontInitialize) {
                 var storage = InfraConfigSrv.getStorageService();
                 return _getExamResultsGuids().then(function (examResultsGuids) {
                     var examResultGuid = examResultsGuids[examId];
                     if (!examResultGuid) {
+                        if(dontInitialize){
+                            return null;
+                        }
+
                         var dataToSave = {};
                         var newExamResultGuid = UtilitySrv.general.createGuid();
                         examResultsGuids[examId] = newExamResultGuid;
