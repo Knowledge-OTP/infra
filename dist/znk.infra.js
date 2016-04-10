@@ -1401,12 +1401,16 @@
 
             var EXERCISES_STATUS_PATH = StorageSrv.variables.appUserSpacePath + '/exercisesStatus';
 
+            function _isValidNumber(number){
+                return angular.isNumber(number) && !isNaN(number);
+            }
+
             function _getExerciseResultPath(guid) {
                 return EXERCISE_RESULTS_PATH + '/' + guid;
             }
 
             function _getInitExerciseResult(exerciseTypeId,exerciseId,guid){
-                if(!angular.isNumber(exerciseTypeId) || !angular.isNumber(exerciseId)){
+                if(!_isValidNumber(exerciseTypeId) || !_isValidNumber(exerciseId)){
                     var errMSg = 'exercise type id and exercise id should be number !!!';
                     $log.error(errMSg);
                     return $q.reject(errMSg);
@@ -1458,7 +1462,7 @@
             }
 
             function _getInitExamResult(examId, guid){
-                if(!angular.isNumber(examId)){
+                if(!_isValidNumber(examId)){
                     var errMsg = 'Exam id is not a number !!!';
                     $log.error(errMsg);
                     return $q.reject(errMsg);
