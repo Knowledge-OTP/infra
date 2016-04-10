@@ -1407,7 +1407,9 @@
 
             function _getInitExerciseResult(exerciseTypeId,exerciseId,guid){
                 if(!angular.isNumber(exerciseTypeId) || !angular.isNumber(exerciseId)){
-                    return $q.reject('exercise type id and exercise id should be number !!!');
+                    var errMSg = 'exercise type id and exercise id should be number !!!';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
                 }
 
                 var storage = InfraConfigSrv.getStorageService();
@@ -1457,7 +1459,9 @@
 
             function _getInitExamResult(examId, guid){
                 if(!angular.isNumber(examId)){
-                    return $q.reject('Exam id is not a number !!!');
+                    var errMsg = 'Exam id is not a number !!!';
+                    $log.error(errMsg);
+                    return $q.reject(errMsg);
                 }
 
                 var userProm = InfraConfigSrv.getUserData();
