@@ -20,6 +20,10 @@
             }
 
             function _getInitExerciseResult(exerciseTypeId,exerciseId,guid){
+                if(isNaN(exerciseTypeId) || isNaN(exerciseId)){
+                    return $q.reject('exercise type id and exercise id should be number !!!');
+                }
+
                 var storage = InfraConfigSrv.getStorageService();
                 var userProm = InfraConfigSrv.getUserData();
                 return userProm.then(function(user) {
@@ -66,6 +70,10 @@
             }
 
             function _getInitExamResult(examId, guid){
+                if(isNaN(examId)){
+                    return $q.reject('Exam id is not a number !!!');
+                }
+
                 var userProm = InfraConfigSrv.getUserData();
                 return userProm.then(function(user) {
                     return {
@@ -274,7 +282,7 @@
                         if(dontInitilize){
                             return null;
                         }
-                        
+
                         var dataToSave = {};
                         var newExamResultGuid = UtilitySrv.general.createGuid();
                         examResultsGuids[examId] = newExamResultGuid;
