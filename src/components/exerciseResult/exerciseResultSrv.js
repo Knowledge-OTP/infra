@@ -20,7 +20,7 @@
             }
 
             function _getInitExerciseResult(exerciseTypeId,exerciseId,guid){
-                if(isNaN(exerciseTypeId) || isNaN(exerciseId)){
+                if(!angular.isNumber(exerciseTypeId) || !angular.isNumber(exerciseId)){
                     return $q.reject('exercise type id and exercise id should be number !!!');
                 }
 
@@ -70,7 +70,7 @@
             }
 
             function _getInitExamResult(examId, guid){
-                if(isNaN(examId)){
+                if(!angular.isNumber(examId)){
                     return $q.reject('Exam id is not a number !!!');
                 }
 
