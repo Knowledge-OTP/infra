@@ -43,7 +43,8 @@ describe('testing service "ExerciseResult":', function () {
             expect(exerciseResult).toEqual(jasmine.objectContaining(expectedExerciseResult));
         });
 
-        it('when requesting for a not exiting result with dont initilize pararmter then a new iresult should not be created and null should be returned', function () {
+        it('when requesting for a not exiting result with dont initialize pararmter then a new result should not be created ' +
+            'and null should be returned', function () {
             var exerciseId = 20;
             var dontInitIfNotExists = true;
             var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseId, undefined, undefined, dontInitIfNotExists);
@@ -224,7 +225,7 @@ describe('testing service "ExerciseResult":', function () {
             expect(examResult).toEqual(jasmine.objectContaining(expectedExamResult));
         });
 
-        it('when requesting for exam result with dont initlize parameter then null should be returned', function(){
+        it('when requesting for exam result with dont initialize parameter then null should be returned', function(){
             var examId = 1;
             var dontInit = true;
             var examResult = actions.getExamResult(examId, dontInit);

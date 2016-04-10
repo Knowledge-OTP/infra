@@ -208,15 +208,15 @@
                 this.status = status;
             }
 
-            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum, dontInitilize) {
+            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum, dontInitialize) {
                 var getExamResultProm;
                 if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
-                    getExamResultProm = ExerciseResultSrv.getExamResult(examId, dontInitilize);
+                    getExamResultProm = ExerciseResultSrv.getExamResult(examId, dontInitialize);
                 }
                 return _getExerciseResultsGuids().then(function (exerciseResultsGuids) {
                     var resultGuid = exerciseResultsGuids[exerciseTypeId] && exerciseResultsGuids[exerciseTypeId][exerciseId];
                     if (!resultGuid) {
-                        if(dontInitilize){
+                        if(dontInitialize){
                             return null;
                         }
 
@@ -282,12 +282,12 @@
                 });
             };
 
-            this.getExamResult = function (examId, dontInitilize) {
+            this.getExamResult = function (examId, dontInitialize) {
                 var storage = InfraConfigSrv.getStorageService();
                 return _getExamResultsGuids().then(function (examResultsGuids) {
                     var examResultGuid = examResultsGuids[examId];
                     if (!examResultGuid) {
-                        if(dontInitilize){
+                        if(dontInitialize){
                             return null;
                         }
 
