@@ -1578,14 +1578,18 @@
                 this.status = status;
             }
 
-            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum) {
+            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum, dontInitilize) {
                 var getExamResultProm;
                 if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
-                    getExamResultProm = ExerciseResultSrv.getExamResult(examId);
+                    getExamResultProm = ExerciseResultSrv.getExamResult(examId, dontInitilize);
                 }
                 return _getExerciseResultsGuids().then(function (exerciseResultsGuids) {
                     var resultGuid = exerciseResultsGuids[exerciseTypeId] && exerciseResultsGuids[exerciseTypeId][exerciseId];
                     if (!resultGuid) {
+                        if(dontInitilize){
+                            return null;
+                        }
+
                         if(!exerciseResultsGuids[exerciseTypeId]){
                             exerciseResultsGuids[exerciseTypeId] = {};
                         }
@@ -1641,16 +1645,22 @@
                         });
                     });
                 }).then(function(exerciseResult){
-                    exerciseResult.$save = exerciseSaveFn;
+                    if(angular.isObject(exerciseResult)){
+                        exerciseResult.$save = exerciseSaveFn;
+                    }
                     return exerciseResult;
                 });
             };
 
-            this.getExamResult = function (examId) {
+            this.getExamResult = function (examId, dontInitilize) {
                 var storage = InfraConfigSrv.getStorageService();
                 return _getExamResultsGuids().then(function (examResultsGuids) {
                     var examResultGuid = examResultsGuids[examId];
                     if (!examResultGuid) {
+                        if(dontInitilize){
+                            return null;
+                        }
+                        
                         var dataToSave = {};
                         var newExamResultGuid = UtilitySrv.general.createGuid();
                         examResultsGuids[examId] = newExamResultGuid;

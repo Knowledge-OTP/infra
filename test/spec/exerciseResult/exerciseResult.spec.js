@@ -43,6 +43,14 @@ describe('testing service "ExerciseResult":', function () {
             expect(exerciseResult).toEqual(jasmine.objectContaining(expectedExerciseResult));
         });
 
+        it('when requesting for a not exiting result with dont initilize pararmter then a new iresult should not be created and null should be returned', function () {
+            var exerciseId = 20;
+            var dontInitIfNotExists = true;
+            var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseId, undefined, undefined, dontInitIfNotExists);
+            expect(exerciseResult).toBeNull();
+            expect(testStorage.db.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum]).toBeUndefined();
+        });
+
         it('when requesting for a not exiting result then a new initialized result should be saved in db', function () {
             var exerciseId = 10;
             actions.getExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseId);
@@ -113,7 +121,7 @@ describe('testing service "ExerciseResult":', function () {
             });
         });
 
-        it('when requesting for result by guid and it not exist then it should be set to init result', function () {
+        it('when requesting for result and it not exist although the guid exists then it should be set to init result', function () {
             var exerciseId = 10;
 
             testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum] = {};
@@ -214,6 +222,13 @@ describe('testing service "ExerciseResult":', function () {
                 examId: examId
             };
             expect(examResult).toEqual(jasmine.objectContaining(expectedExamResult));
+        });
+
+        it('when requesting for exam result with dont initlize parameter then null should be returned', function(){
+            var examId = 1;
+            var dontInit = true;
+            var examResult = actions.getExamResult(examId, dontInit);
+            expect(examResult).toBeNull();
         });
     });
 
@@ -506,6 +521,5 @@ describe('testing service "ExerciseResult":', function () {
         });
 
     });
-
 
 });
