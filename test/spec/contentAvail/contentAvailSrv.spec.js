@@ -1,7 +1,25 @@
 describe('testing service "ContentAvailSrv":', function () {
     'use strict';
 
+    var ContentAvailSrvProvider;
     beforeEach(module('znk.infra.contentAvail', 'htmlTemplates','storage.mock', 'testUtility' /*''devicePlatformSrv.mock'*/));
+
+    beforeEach(function () {
+        module(['ContentAvailSrvProvider', function (_ContentAvailSrvProvider) {
+            ContentAvailSrvProvider = _ContentAvailSrvProvider;
+            ContentAvailSrvProvider.setSpecials({
+                socialSharing: function() {
+                    return true;
+                },
+                someThingTrue: function() {
+                    return true;
+                },
+                someThingFalse: function() {
+                    return false;
+                }
+            });
+        }]);
+    });
 
     var $rootScope, ContentAvailSrv,actions, TestStorage;
     beforeEach(inject([
@@ -22,7 +40,8 @@ describe('testing service "ContentAvailSrv":', function () {
                 daily: 0,
                 exam: {},
                 tutorial: {},
-                subscription: {}
+                subscription: {},
+                specials: {}
             };
 
             var TestUtilitySrv = $injector.get('TestUtilitySrv');
@@ -42,6 +61,9 @@ describe('testing service "ContentAvailSrv":', function () {
             };
             actions.setFreeDaily = function(dailyOrder){
                 TestStorage.db.freeContent.daily = dailyOrder;
+            };
+            actions.setSpecials = function(specialObj){
+                TestStorage.db.freeContent.specials = specialObj;
             };
             actions.setFreeSection = function(examId, sectionId){
                 if(!TestStorage.db.freeContent.exam['id_' + examId]){
@@ -191,5 +213,141 @@ describe('testing service "ContentAvailSrv":', function () {
         actions.purchaseTutorial('all');
         expect(actions.isTutorialAvail(20)).toBeTruthy();
         expect(actions.isTutorialAvail(30)).toBeTruthy();
+    });
+
+    it('when user has specials with one key that has daily:1 then isDailyAvail should return true for one daily more then free content daily num',function(){
+        actions.setSpecials({
+            socialSharing: {
+                daily: 1
+            }
+        });
+        expect(actions.isDailyAvail(1)).toBeTruthy();
+    });
+
+    it('when user has specials with several keys then isDailyAvail should return true for sum of all dailies that user has true in config phase',function(){
+        actions.setSpecials({
+            socialSharing: {
+                daily: 1
+            },
+            someThingTrue: {
+                daily: 2
+            },
+            someThingFalse: {
+                daily: 2 // return false from config phase, shouldn't be counted
+            }
+        });
+        expect(actions.isDailyAvail(3)).toBeTruthy();
+        expect(actions.isDailyAvail(4)).toBeFalsy();
+    });
+
+
+    it('when user has specials exam then isExamAvail should return true for one exam in socialSharing',function(){
+        actions.setSpecials({
+            socialSharing: {
+                exam: {
+                    id_1: {
+                        sections: {
+                            id_1111: true
+                        }
+                    }
+                }
+            }
+        });
+        expect(actions.isExamAvail(1)).toBeTruthy();
+        expect(actions.isExamAvail(25)).toBeFalsy();
+    });
+
+    it('when user has specials exam then isExamAvail should return true for some exams in specials',function(){
+        actions.setSpecials({
+            socialSharing: {
+                exam: {
+                    id_1: {
+                        sections: {
+                            id_1111: true
+                        }
+                    }
+                }
+            },
+            someThingTrue: {
+                exam: {
+                    id_2: {
+                        sections: {
+                            id_2222: false
+                        }
+                    }
+                }
+            },
+            someThingFalse: {
+                exam: {
+                    id_3: {
+                        sections: {
+                            id_3333: true
+                        }
+                    }
+                } // return false from config phase, shouldn't be counted
+            }
+        });
+        expect(actions.isExamAvail(1)).toBeTruthy();
+        expect(actions.isExamAvail(2)).toBeTruthy();
+        expect(actions.isExamAvail(3)).toBeFalsy();
+    });
+
+    it('when user has specials section then isSectionAvail should return true for one section in socialSharing',function(){
+        actions.setSpecials({
+            socialSharing: {
+                exam: {
+                    id_1: {
+                        sections: {
+                            id_1111: true
+                        }
+                    }
+                }
+            },
+            someThingTrue: {
+                exam: {
+                    id_2: {
+                        sections: {
+                            id_2222: false
+                        }
+                    }
+                }
+            },
+            someThingFalse: {
+                exam: {
+                    id_3: {
+                        sections: {
+                            id_3333: true
+                        }
+                    }
+                } // return false from config phase, shouldn't be counted
+            }
+        });
+        expect(actions.isSectionAvail(1, 1111)).toBeTruthy();
+        expect(actions.isSectionAvail(2, 2222)).toBeFalsy();
+        expect(actions.isSectionAvail(3, 7777)).toBeFalsy();
+    });
+
+    it('when user has specials section then isSectionAvail should return true for one section in socialSharing',function(){
+        actions.setSpecials({
+            socialSharing: {
+                tutorial: {
+                    id_1: true
+                }
+            },
+            someThingTrue: {
+                tutorial: {
+                    id_2: false
+                }
+            },
+            someThingFalse: {
+                tutorial: {
+                    id_3: true
+                } // return false from config phase, shouldn't be counted
+            }
+        });
+        // isTutorialAvail
+        expect(actions.isTutorialAvail(1)).toBeTruthy();
+        expect(actions.isSectionAvail(2)).toBeFalsy();
+        expect(actions.isSectionAvail(3)).toBeFalsy();
     });
 });
