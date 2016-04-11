@@ -21,6 +21,7 @@
                         daily: 0,
                         exam: {},
                         tutorial: {},
+                        section: {},
                         subscription: {}
                     };
                     return StorageService.get(purchaseDataPath,defValues);
@@ -33,6 +34,7 @@
                         daily: 0,
                         exam: {},
                         tutorial: {},
+                        section: {},
                         specials: {}
                     };
                     return StorageService.get(freeContentPath,defValues);
@@ -66,6 +68,7 @@
                             var earnedSpecialsObj = {
                                 daily: 0,
                                 exam: {},
+                                section: {},
                                 tutorial: {}
                             };
                             angular.forEach(specialsRes, function(specialVal, specialKey) {
@@ -77,6 +80,9 @@
                                                 break;
                                             case 'exam':
                                                 earnedSpecialsObj.exam = angular.extend(earnedSpecialsObj.exam, val);
+                                                break;
+                                            case 'section':
+                                                earnedSpecialsObj.section = angular.extend(earnedSpecialsObj.section, val);
                                                 break;
                                             case 'tutorial':
                                                 earnedSpecialsObj.tutorial = angular.extend(earnedSpecialsObj.tutorial, val);
@@ -91,15 +97,16 @@
                     });
                 }
 
-                function _isExamPurchased(purchaseData,examId){
-                    var examKeyProp = idToKeyInStorage(examId);
-                    return !!(purchaseData.exam === PURCHASED_ALL  || purchaseData.exam[examKeyProp]);
-                }
+                function _isContentOwned(contentData,pathArr){
+                    var prefixPathArr = pathArr.slice(0, pathArr.length - 1);
+                    var prefixPath = prefixPathArr.join('.');
+                    var isAllOwned = $parse(prefixPath)(contentData) === PURCHASED_ALL;
+                    if(isAllOwned){
+                        return true;
+                    }
 
-                function _isFreeContent(freeContentData,pathArr){
                     var fullPath = pathArr.join('.');
-                    var isFreeGetter = $parse(fullPath);
-                    return !!isFreeGetter(freeContentData);
+                    return $parse(fullPath)(contentData);
                 }
 
                 function hasSubscription() {
@@ -121,14 +128,13 @@
                         var freeContent = res[1];
                         var earnedSpecials = res[3];
 
-                        if(angular.isString(purchaseData.daily)){
-                            return purchaseData.daily === PURCHASED_ALL ||
-                                freeContent.daily === PURCHASED_ALL ||
-                                earnedSpecials.daily === PURCHASED_ALL;
-                        }else{
-                            var maxAvailDailyOrder = (purchaseData.daily || 0) + (freeContent.daily || 0) + (earnedSpecials.daily || 0);
-                            return dailyOrder <= maxAvailDailyOrder;
+                        var isAllOwned = purchaseData.daily === PURCHASED_ALL || freeContent.daily === PURCHASED_ALL || earnedSpecials.daily === PURCHASED_ALL;
+                        if(isAllOwned){
+                            return true;
                         }
+
+                        var maxAvailDailyOrder = (purchaseData.daily || 0) + (freeContent.daily || 0) + (earnedSpecials.daily || 0);
+                        return dailyOrder <= maxAvailDailyOrder;
                     });
                 }
 
@@ -142,18 +148,12 @@
                         var freeContent = res[1];
                         var earnedSpecials = res[3];
 
-                        var isPurchased = _isExamPurchased(purchaseData,examId);
-                        if(isPurchased){
-                            return true;
-                        }
+                        var examPathArr = ['exam',idToKeyInStorage(examId)];
+                        var isOwnedViaFreeContent = _isContentOwned(freeContent,examPathArr);
+                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials,examPathArr);
+                        var isOwnedViaPurchase = _isContentOwned(purchaseData,examPathArr);
 
-                        var resultsFreeContent = _isFreeContent(freeContent,['exam',idToKeyInStorage(examId)]);
-
-                        if(earnedSpecials.exam) {
-                            return (resultsFreeContent || _isFreeContent(earnedSpecials,['exam',idToKeyInStorage(examId)]));
-                        }
-
-                        return resultsFreeContent;
+                        return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
                     });
                 }
 
@@ -168,28 +168,24 @@
                         var earnedSpecials = res[3];
 
                         var examKeyProp = idToKeyInStorage(examId);
-                        var sectionKeyProp = idToKeyInStorage(sectionId);
-
-                        var isExamPurchased = _isExamPurchased(purchaseData,examId);
+                        var examPathArr = ['exam',examKeyProp];
+                        var isExamPurchased = _isContentOwned(purchaseData,examPathArr);
                         if(isExamPurchased ){
                             return true;
                         }
 
-                        var resultsFreeContent = _isFreeContent(freeContent,['exam',examKeyProp,'sections',sectionKeyProp]);
+                        var sectionKeyProp = idToKeyInStorage(sectionId);
 
-                        if(earnedSpecials.exam) {
-                            return (resultsFreeContent || _isFreeContent(earnedSpecials,['exam',examKeyProp,'sections',sectionKeyProp]));
-                        }
+                        var sectionPathArr = ['section',sectionKeyProp];
+                        var isOwnedViaFreeContent = _isContentOwned(freeContent,sectionPathArr);
+                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials,sectionPathArr);
+                        var isOwnedViaPurchase = _isContentOwned(purchaseData,sectionPathArr);
 
-                        return resultsFreeContent;
+                        return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
                     });
                 }
 
                 function isTutorialAvail(tutorialId){
-                    if(isNaN(tutorialId)){
-                        return $q.reject('ContentAvailSrv: tutorial id should be a number');
-                    }
-
                     return _baseIsEntityAvail().then(function(res) {
                         if (res === true) {
                             return true;
@@ -200,15 +196,12 @@
                         var purchaseData = res[0];
                         var freeContent = res[1];
                         var earnedSpecials = res[3];
+                        var tutorialPathArr = ['tutorial',tutorialKeyInStorage];
+                        var isOwnedViaFreeContent = _isContentOwned(freeContent,tutorialPathArr);
+                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials,tutorialPathArr);
+                        var isOwnedViaPurchase = _isContentOwned(purchaseData,tutorialPathArr);
 
-                        if(freeContent.tutorial[tutorialKeyInStorage] || earnedSpecials.tutorial[tutorialKeyInStorage]){
-                            return true;
-                        }
-
-                        return !!(purchaseData.tutorial === PURCHASED_ALL ||
-                        freeContent.tutorial === PURCHASED_ALL ||
-                        earnedSpecials.tutorial === PURCHASED_ALL ||
-                        purchaseData.tutorial[tutorialKeyInStorage]);
+                        return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
 
                     });
                 }

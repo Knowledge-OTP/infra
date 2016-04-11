@@ -4,15 +4,12 @@ describe('testing service "ContentAvailSrv":', function () {
     var ContentAvailSrvProvider;
     beforeEach(module('znk.infra.contentAvail', 'htmlTemplates','storage.mock', 'testUtility' /*''devicePlatformSrv.mock'*/));
 
+    var userSpecialsMap = false;
     beforeEach(function () {
         module(['ContentAvailSrvProvider', function (_ContentAvailSrvProvider) {
             ContentAvailSrvProvider = _ContentAvailSrvProvider;
             ContentAvailSrvProvider.setSpecials(['$q', function($q) {
-                return $q.when({
-                    socialSharing: true,
-                    someThingTrue: true,
-                    someThingFalse: false
-                });
+                return $q.when(userSpecialsMap);
             }]);
         }]);
     });
@@ -62,12 +59,14 @@ describe('testing service "ContentAvailSrv":', function () {
                 TestStorage.db.freeContent.specials = specialObj;
             };
             actions.setFreeSection = function(examId, sectionId){
-                if(!TestStorage.db.freeContent.exam['id_' + examId]){
-                    TestStorage.db.freeContent.exam['id_' + examId] = {
-                        sections:{}
-                    };
+                TestStorage.db.freeContent.exam['id_' + examId] = true;
+                if(!TestStorage.db.freeContent.section){
+                    TestStorage.db.freeContent.section = {};
                 }
-                TestStorage.db.freeContent.exam['id_' + examId].sections['id_' + sectionId] = true;
+                TestStorage.db.freeContent.section['id_' + sectionId] = true;
+            };
+            actions.setFreeExam = function(examId){
+                TestStorage.db.freeContent.exam['id_' + examId] = true;
             };
             actions.purchaseExam = function(examIdOrString){
                 var purchaseData = this.getPurchaseData();
@@ -120,7 +119,6 @@ describe('testing service "ContentAvailSrv":', function () {
     it('given user without purchased exams and without subscription when checking if available section then only return true it free',function(){
         actions.setFreeSection(25,1116);
         expect(actions.isSectionAvail(25,11)).toBeFalsy();
-        expect(actions.isSectionAvail(3,1116)).toBeFalsy();
         expect(actions.isSectionAvail(25,1116)).toBeTruthy();
     });
 
@@ -140,7 +138,7 @@ describe('testing service "ContentAvailSrv":', function () {
     });
 
     it('given only exam id 25 is free when asking if avail exam should return true only for exam 25',function(){
-        actions.setFreeSection(25,1116);
+        actions.setFreeExam(25);
         expect(actions.isExamAvail(25)).toBeTruthy();
         expect(actions.isExamAvail(23)).toBeFalsy();
     });
@@ -212,6 +210,11 @@ describe('testing service "ContentAvailSrv":', function () {
     });
 
     it('when user has specials with one key that has daily:1 then isDailyAvail should return true for one daily more then free content daily num',function(){
+        userSpecialsMap = {
+            socialSharing: true,
+            someThingTrue: true,
+            someThingFalse: false
+        };
         actions.setSpecials({
             socialSharing: {
                 daily: 1
@@ -221,6 +224,11 @@ describe('testing service "ContentAvailSrv":', function () {
     });
 
     it('when user has specials with several keys then isDailyAvail should return true for sum of all dailies that user has true in config phase',function(){
+        userSpecialsMap = {
+            socialSharing: true,
+            someThingTrue: true,
+            someThingFalse: false
+        };
         actions.setSpecials({
             socialSharing: {
                 daily: 1
@@ -238,14 +246,15 @@ describe('testing service "ContentAvailSrv":', function () {
 
 
     it('when user has specials exam then isExamAvail should return true for one exam in socialSharing',function(){
+        userSpecialsMap = {
+            socialSharing: true,
+            someThingTrue: true,
+            someThingFalse: false
+        };
         actions.setSpecials({
             socialSharing: {
                 exam: {
-                    id_1: {
-                        sections: {
-                            id_1111: true
-                        }
-                    }
+                    id_1: true
                 }
             }
         });
@@ -254,32 +263,25 @@ describe('testing service "ContentAvailSrv":', function () {
     });
 
     it('when user has specials exam then isExamAvail should return true for some exams in specials',function(){
+        userSpecialsMap = {
+            socialSharing: true,
+            someThingTrue: true,
+            someThingFalse: false
+        };
         actions.setSpecials({
             socialSharing: {
                 exam: {
-                    id_1: {
-                        sections: {
-                            id_1111: true
-                        }
-                    }
+                    id_1: true
                 }
             },
             someThingTrue: {
                 exam: {
-                    id_2: {
-                        sections: {
-                            id_2222: false
-                        }
-                    }
+                    id_2: true
                 }
             },
             someThingFalse: {
                 exam: {
-                    id_3: {
-                        sections: {
-                            id_3333: true
-                        }
-                    }
+                    id_3: true
                 } // return false from config phase, shouldn't be counted
             }
         });
@@ -289,32 +291,25 @@ describe('testing service "ContentAvailSrv":', function () {
     });
 
     it('when user has specials section then isSectionAvail should return true for one section in socialSharing',function(){
+        userSpecialsMap = {
+            socialSharing: true,
+            someThingTrue: true,
+            someThingFalse: false
+        };
         actions.setSpecials({
             socialSharing: {
-                exam: {
-                    id_1: {
-                        sections: {
-                            id_1111: true
-                        }
-                    }
+                section: {
+                    id_1111: true
                 }
             },
             someThingTrue: {
-                exam: {
-                    id_2: {
-                        sections: {
-                            id_2222: false
-                        }
-                    }
+                section: {
+                    id_2222: false
                 }
             },
             someThingFalse: {
-                exam: {
-                    id_3: {
-                        sections: {
-                            id_3333: true
-                        }
-                    }
+                section: {
+                    id_3333: true
                 } // return false from config phase, shouldn't be counted
             }
         });
@@ -323,7 +318,12 @@ describe('testing service "ContentAvailSrv":', function () {
         expect(actions.isSectionAvail(3, 7777)).toBeFalsy();
     });
 
-    it('when user has specials section then isSectionAvail should return true for one section in socialSharing',function(){
+    it('when user has specials tutorial then isTutorialAvail should return true for one tutorial in specials',function(){
+        userSpecialsMap = {
+            socialSharing: true,
+            someThingTrue: true,
+            someThingFalse: false
+        };
         actions.setSpecials({
             socialSharing: {
                 tutorial: {
@@ -343,7 +343,7 @@ describe('testing service "ContentAvailSrv":', function () {
         });
         // isTutorialAvail
         expect(actions.isTutorialAvail(1)).toBeTruthy();
-        expect(actions.isSectionAvail(2)).toBeFalsy();
-        expect(actions.isSectionAvail(3)).toBeFalsy();
+        expect(actions.isTutorialAvail(2)).toBeFalsy();
+        expect(actions.isTutorialAvail(3)).toBeFalsy();
     });
 });

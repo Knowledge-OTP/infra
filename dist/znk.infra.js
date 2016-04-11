@@ -552,6 +552,7 @@
                         daily: 0,
                         exam: {},
                         tutorial: {},
+                        section: {},
                         subscription: {}
                     };
                     return StorageService.get(purchaseDataPath,defValues);
@@ -564,17 +565,15 @@
                         daily: 0,
                         exam: {},
                         tutorial: {},
+                        section: {},
                         specials: {}
                     };
                     return StorageService.get(freeContentPath,defValues);
                 }
 
                 function getUserSpecialsData(){
-                    var specialsProms = {};
-                    angular.forEach(_specials, function(specialFn, key) {
-                        specialsProms[key] = $injector.invoke(specialFn);
-                    });
-                    return $q.all(specialsProms);
+                    var specialsProm = $injector.invoke(_specials);
+                    return $q.when(specialsProm);
                 }
 
                 function idToKeyInStorage(id){
@@ -586,7 +585,7 @@
                 }
 
                 function _baseIsEntityAvail(){
-                    return $q.all([getUserPurchaseData(),getFreeContentData()]).then(function(res){
+                    return $q.all([getUserPurchaseData(),getFreeContentData(), getUserSpecialsData()]).then(function(res){
                         var purchaseData = res[0];
                         var hasSubscription = _hasSubscription(purchaseData.subscription);
                         if(hasSubscription){
@@ -595,46 +594,50 @@
                             if(!_specials) {
                                 return res;
                             }
-                            return getUserSpecialsData().then(function(specialsRes) {
-                                var specials = res[1].specials;
-                                var earnedSpecialsObj = {
-                                    daily: 0,
-                                    exam: {},
-                                    tutorial: {}
-                                };
-                                angular.forEach(specialsRes, function(specialVal, specialKey) {
-                                    if(specials[specialKey] && specialVal === true) {
-                                        angular.forEach(specials[specialKey], function(val, key) {
-                                            switch(key) {
-                                                case 'daily':
-                                                    earnedSpecialsObj.daily += val;
+                            var specials = res[1].specials;
+                            var specialsRes = res[2];
+                            var earnedSpecialsObj = {
+                                daily: 0,
+                                exam: {},
+                                section: {},
+                                tutorial: {}
+                            };
+                            angular.forEach(specialsRes, function(specialVal, specialKey) {
+                                if(specials[specialKey] && specialVal === true) {
+                                    angular.forEach(specials[specialKey], function(val, key) {
+                                        switch(key) {
+                                            case 'daily':
+                                                earnedSpecialsObj.daily += val;
                                                 break;
-                                                case 'exam':
-                                                    earnedSpecialsObj.exam = angular.extend(earnedSpecialsObj.exam, val);
+                                            case 'exam':
+                                                earnedSpecialsObj.exam = angular.extend(earnedSpecialsObj.exam, val);
                                                 break;
-                                                case 'tutorial':
-                                                    earnedSpecialsObj.tutorial = angular.extend(earnedSpecialsObj.tutorial, val);
+                                            case 'section':
+                                                earnedSpecialsObj.section = angular.extend(earnedSpecialsObj.section, val);
                                                 break;
-                                            }
-                                        });
-                                    }
-                                });
-                                res.push(earnedSpecialsObj);
-                                return res;
+                                            case 'tutorial':
+                                                earnedSpecialsObj.tutorial = angular.extend(earnedSpecialsObj.tutorial, val);
+                                                break;
+                                        }
+                                    });
+                                }
                             });
+                            res.push(earnedSpecialsObj);
+                            return res;
                         }
                     });
                 }
 
-                function _isExamPurchased(purchaseData,examId){
-                    var examKeyProp = idToKeyInStorage(examId);
-                    return !!(purchaseData.exam === PURCHASED_ALL  || purchaseData.exam[examKeyProp]);
-                }
+                function _isContentOwned(contentData,pathArr){
+                    var prefixPathArr = pathArr.slice(0, pathArr.length - 1);
+                    var prefixPath = prefixPathArr.join('.');
+                    var isAllOwned = $parse(prefixPath)(contentData) === PURCHASED_ALL;
+                    if(isAllOwned){
+                        return true;
+                    }
 
-                function _isFreeContent(freeContentData,pathArr){
                     var fullPath = pathArr.join('.');
-                    var isFreeGetter = $parse(fullPath);
-                    return !!isFreeGetter(freeContentData);
+                    return $parse(fullPath)(contentData);
                 }
 
                 function hasSubscription() {
@@ -654,18 +657,15 @@
 
                         var purchaseData = res[0];
                         var freeContent = res[1];
-                        var specials = res[2];
+                        var earnedSpecials = res[3];
 
-                        if((specials.daily + freeContent.daily) >= dailyOrder){
+                        var isAllOwned = purchaseData.daily === PURCHASED_ALL || freeContent.daily === PURCHASED_ALL || earnedSpecials.daily === PURCHASED_ALL;
+                        if(isAllOwned){
                             return true;
                         }
 
-                        if(angular.isString(purchaseData.daily)){
-                            return purchaseData.daily === PURCHASED_ALL;
-                        }else{
-                            var maxAvailDailyOrder = (purchaseData.daily || 0) + (freeContent.daily || 0);
-                            return dailyOrder <= maxAvailDailyOrder;
-                        }
+                        var maxAvailDailyOrder = (purchaseData.daily || 0) + (freeContent.daily || 0) + (earnedSpecials.daily || 0);
+                        return dailyOrder <= maxAvailDailyOrder;
                     });
                 }
 
@@ -677,24 +677,18 @@
 
                         var purchaseData = res[0];
                         var freeContent = res[1];
-                        var specials = res[2];
+                        var earnedSpecials = res[3];
 
-                        var isPurchased = _isExamPurchased(purchaseData,examId);
-                        if(isPurchased){
-                            return true;
-                        }
+                        var examPathArr = ['exam',idToKeyInStorage(examId)];
+                        var isOwnedViaFreeContent = _isContentOwned(freeContent,examPathArr);
+                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials,examPathArr);
+                        var isOwnedViaPurchase = _isContentOwned(purchaseData,examPathArr);
 
-                        var resultsFreeContent = _isFreeContent(freeContent,['exam',idToKeyInStorage(examId)]);
-
-                        if(specials.exam) {
-                           return (resultsFreeContent || _isFreeContent(specials,['exam',idToKeyInStorage(examId)]));
-                        }
-
-                        return resultsFreeContent;
+                        return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
                     });
                 }
 
-                 function isSectionAvail(examId,sectionId){
+                function isSectionAvail(examId,sectionId){
                     return _baseIsEntityAvail().then(function(res){
                         if(res === true){
                             return true;
@@ -702,31 +696,27 @@
 
                         var purchaseData = res[0];
                         var freeContent = res[1];
-                        var specials = res[2];
+                        var earnedSpecials = res[3];
 
                         var examKeyProp = idToKeyInStorage(examId);
-                        var sectionKeyProp = idToKeyInStorage(sectionId);
-
-                        var isExamPurchased = _isExamPurchased(purchaseData,examId);
+                        var examPathArr = ['exam',examKeyProp];
+                        var isExamPurchased = _isContentOwned(purchaseData,examPathArr);
                         if(isExamPurchased ){
                             return true;
                         }
 
-                        var resultsFreeContent = _isFreeContent(freeContent,['exam',examKeyProp,'sections',sectionKeyProp]);
+                        var sectionKeyProp = idToKeyInStorage(sectionId);
 
-                        if(specials.exam) {
-                            return (resultsFreeContent || _isFreeContent(specials,['exam',examKeyProp,'sections',sectionKeyProp]));
-                        }
+                        var sectionPathArr = ['section',sectionKeyProp];
+                        var isOwnedViaFreeContent = _isContentOwned(freeContent,sectionPathArr);
+                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials,sectionPathArr);
+                        var isOwnedViaPurchase = _isContentOwned(purchaseData,sectionPathArr);
 
-                        return resultsFreeContent;
+                        return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
                     });
                 }
 
-                 function isTutorialAvail(tutorialId){
-                    if(isNaN(tutorialId)){
-                        return $q.reject('ContentAvailSrv: tutorial id should be a number');
-                    }
-
+                function isTutorialAvail(tutorialId){
                     return _baseIsEntityAvail().then(function(res) {
                         if (res === true) {
                             return true;
@@ -736,13 +726,13 @@
 
                         var purchaseData = res[0];
                         var freeContent = res[1];
-                        var specials = res[2];
+                        var earnedSpecials = res[3];
+                        var tutorialPathArr = ['tutorial',tutorialKeyInStorage];
+                        var isOwnedViaFreeContent = _isContentOwned(freeContent,tutorialPathArr);
+                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials,tutorialPathArr);
+                        var isOwnedViaPurchase = _isContentOwned(purchaseData,tutorialPathArr);
 
-                        if(freeContent.tutorial[tutorialKeyInStorage] || specials.tutorial[tutorialKeyInStorage]){
-                            return true;
-                        }
-
-                        return !!(purchaseData.tutorial === PURCHASED_ALL || purchaseData.tutorial[tutorialKeyInStorage]);
+                        return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
 
                     });
                 }
