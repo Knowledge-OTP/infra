@@ -10,7 +10,7 @@
                 _specials = specialsObj;
             };
 
-            this.$get = ['$q', '$parse', '$injector', 'InfraConfigSrv', function($q, $parse, $injector, InfraConfigSrv) {
+            this.$get = ['$q', '$parse', '$injector', 'InfraConfigSrv', '$log', function($q, $parse, $injector, InfraConfigSrv, $log) {
 
                 var PURCHASED_ALL = 'all';
 
@@ -77,19 +77,12 @@
                                         if(val === PURCHASED_ALL) {
                                             earnedSpecialsObj[key] = val;
                                         } else {
-                                            switch(key) {
-                                                case 'daily':
-                                                    earnedSpecialsObj.daily += val;
-                                                    break;
-                                                case 'exam':
-                                                    earnedSpecialsObj.exam = angular.extend(earnedSpecialsObj.exam, val);
-                                                    break;
-                                                case 'section':
-                                                    earnedSpecialsObj.section = angular.extend(earnedSpecialsObj.section, val);
-                                                    break;
-                                                case 'tutorial':
-                                                    earnedSpecialsObj.tutorial = angular.extend(earnedSpecialsObj.tutorial, val);
-                                                    break;
+                                            if(angular.isNumber(val)) {
+                                                earnedSpecialsObj[key] += val;
+                                            } else if(angular.isObject(val) && !angular.isArray(val)) {
+                                                earnedSpecialsObj[key] = angular.extend(earnedSpecialsObj[key], val);
+                                            } else {
+                                                $log.error('ContentAvailSrv: maybe there is a problem with content! key: '+ key);
                                             }
                                         }
                                     });
