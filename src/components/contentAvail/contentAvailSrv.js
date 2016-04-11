@@ -121,14 +121,12 @@
                         var freeContent = res[1];
                         var earnedSpecials = res[3];
 
-                        if((earnedSpecials.daily + freeContent.daily) >= dailyOrder){
-                            return true;
-                        }
-
                         if(angular.isString(purchaseData.daily)){
-                            return purchaseData.daily === PURCHASED_ALL;
+                            return purchaseData.daily === PURCHASED_ALL ||
+                                freeContent.daily === PURCHASED_ALL ||
+                                earnedSpecials.daily === PURCHASED_ALL;
                         }else{
-                            var maxAvailDailyOrder = (purchaseData.daily || 0) + (freeContent.daily || 0);
+                            var maxAvailDailyOrder = (purchaseData.daily || 0) + (freeContent.daily || 0) + (earnedSpecials.daily || 0);
                             return dailyOrder <= maxAvailDailyOrder;
                         }
                     });
@@ -207,7 +205,10 @@
                             return true;
                         }
 
-                        return !!(purchaseData.tutorial === PURCHASED_ALL || purchaseData.tutorial[tutorialKeyInStorage]);
+                        return !!(purchaseData.tutorial === PURCHASED_ALL ||
+                        freeContent.tutorial === PURCHASED_ALL ||
+                        earnedSpecials.tutorial === PURCHASED_ALL ||
+                        purchaseData.tutorial[tutorialKeyInStorage]);
 
                     });
                 }
