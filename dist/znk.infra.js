@@ -572,7 +572,10 @@
                 }
 
                 function getUserSpecialsData(){
-                    var specialsProm = $injector.invoke(_specials);
+                    var specialsProm = false;
+                    if(_specials) {
+                         specialsProm = $injector.invoke(_specials);
+                    }
                     return $q.when(specialsProm);
                 }
 
@@ -588,52 +591,51 @@
                     return $q.all([getUserPurchaseData(),getFreeContentData(), getUserSpecialsData()]).then(function(res){
                         var purchaseData = res[0];
                         var hasSubscription = _hasSubscription(purchaseData.subscription);
+                        var earnedSpecialsObj = {
+                            daily: 0,
+                            exam: {},
+                            section: {},
+                            tutorial: {}
+                        };
                         if(hasSubscription){
                             return true;
-                        }else{
-                            if(!_specials) {
-                                return res;
-                            }
+                        } else {
                             var specials = res[1].specials;
                             var specialsRes = res[2];
-                            var earnedSpecialsObj = {
-                                daily: 0,
-                                exam: {},
-                                section: {},
-                                tutorial: {}
-                            };
-                            angular.forEach(specialsRes, function(specialVal, specialKey) {
-                                if(specials[specialKey] && specialVal === true) {
-                                    angular.forEach(specials[specialKey], function(val, key) {
-                                        if(val === PURCHASED_ALL) {
-                                            earnedSpecialsObj[key] = val;
-                                        } else {
-                                            switch(key) {
-                                                case 'daily':
-                                                    if(angular.isNumber(val)) {
-                                                        earnedSpecialsObj.daily += val;
-                                                    }
-                                                    break;
-                                                case 'exam':
-                                                    if(angular.isObject(val) && !angular.isArray(val)) {
-                                                        earnedSpecialsObj.exam = angular.extend(earnedSpecialsObj.exam, val);
-                                                    }
-                                                    break;
-                                                case 'section':
-                                                    if(angular.isObject(val) && !angular.isArray(val)) {
-                                                        earnedSpecialsObj.section = angular.extend(earnedSpecialsObj.section, val);
-                                                    }
-                                                    break;
-                                                case 'tutorial':
-                                                    if(angular.isObject(val) && !angular.isArray(val)) {
-                                                        earnedSpecialsObj.tutorial = angular.extend(earnedSpecialsObj.tutorial, val);
-                                                    }
-                                                    break;
+                            if(specialsRes) {
+                                angular.forEach(specialsRes, function(specialVal, specialKey) {
+                                    if(specials[specialKey] && specialVal === true) {
+                                        angular.forEach(specials[specialKey], function(val, key) {
+                                            if(val === PURCHASED_ALL) {
+                                                earnedSpecialsObj[key] = val;
+                                            } else {
+                                                switch(key) {
+                                                    case 'daily':
+                                                        if(angular.isNumber(val)) {
+                                                            earnedSpecialsObj.daily += val;
+                                                        }
+                                                        break;
+                                                    case 'exam':
+                                                        if(angular.isObject(val) && !angular.isArray(val)) {
+                                                            earnedSpecialsObj.exam = angular.extend(earnedSpecialsObj.exam, val);
+                                                        }
+                                                        break;
+                                                    case 'section':
+                                                        if(angular.isObject(val) && !angular.isArray(val)) {
+                                                            earnedSpecialsObj.section = angular.extend(earnedSpecialsObj.section, val);
+                                                        }
+                                                        break;
+                                                    case 'tutorial':
+                                                        if(angular.isObject(val) && !angular.isArray(val)) {
+                                                            earnedSpecialsObj.tutorial = angular.extend(earnedSpecialsObj.tutorial, val);
+                                                        }
+                                                        break;
+                                                }
                                             }
-                                        }
-                                    });
-                                }
-                            });
+                                        });
+                                    }
+                                });
+                            }
                             res.push(earnedSpecialsObj);
                             return res;
                         }
