@@ -7,17 +7,13 @@ describe('testing service "ContentAvailSrv":', function () {
     beforeEach(function () {
         module(['ContentAvailSrvProvider', function (_ContentAvailSrvProvider) {
             ContentAvailSrvProvider = _ContentAvailSrvProvider;
-            ContentAvailSrvProvider.setSpecials({
-                socialSharing: function() {
-                    return true;
-                },
-                someThingTrue: function() {
-                    return true;
-                },
-                someThingFalse: function() {
-                    return false;
-                }
-            });
+            ContentAvailSrvProvider.setSpecials(['$q', function($q) {
+                return $q.when({
+                    socialSharing: true,
+                    someThingTrue: true,
+                    someThingFalse: false
+                });
+            }]);
         }]);
     });
 

@@ -39,11 +39,8 @@
                 }
 
                 function getUserSpecialsData(){
-                    var specialsProms = {};
-                    angular.forEach(_specials, function(specialFn, key) {
-                        specialsProms[key] = $injector.invoke(specialFn);
-                    });
-                    return $q.all(specialsProms);
+                    var specialsProm = $injector.invoke(_specials);
+                    return $q.when(specialsProm);
                 }
 
                 function idToKeyInStorage(id){
@@ -55,7 +52,7 @@
                 }
 
                 function _baseIsEntityAvail(){
-                    return $q.all([getUserPurchaseData(),getFreeContentData()]).then(function(res){
+                    return $q.all([getUserPurchaseData(),getFreeContentData(), getUserSpecialsData()]).then(function(res){
                         var purchaseData = res[0];
                         var hasSubscription = _hasSubscription(purchaseData.subscription);
                         if(hasSubscription){
@@ -64,33 +61,32 @@
                             if(!_specials) {
                                 return res;
                             }
-                            return getUserSpecialsData().then(function(specialsRes) {
-                                var specials = res[1].specials;
-                                var earnedSpecialsObj = {
-                                    daily: 0,
-                                    exam: {},
-                                    tutorial: {}
-                                };
-                                angular.forEach(specialsRes, function(specialVal, specialKey) {
-                                    if(specials[specialKey] && specialVal === true) {
-                                        angular.forEach(specials[specialKey], function(val, key) {
-                                            switch(key) {
-                                                case 'daily':
-                                                    earnedSpecialsObj.daily += val;
+                            var specials = res[1].specials;
+                            var specialsRes = res[2];
+                            var earnedSpecialsObj = {
+                                daily: 0,
+                                exam: {},
+                                tutorial: {}
+                            };
+                            angular.forEach(specialsRes, function(specialVal, specialKey) {
+                                if(specials[specialKey] && specialVal === true) {
+                                    angular.forEach(specials[specialKey], function(val, key) {
+                                        switch(key) {
+                                            case 'daily':
+                                                earnedSpecialsObj.daily += val;
                                                 break;
-                                                case 'exam':
-                                                    earnedSpecialsObj.exam = angular.extend(earnedSpecialsObj.exam, val);
+                                            case 'exam':
+                                                earnedSpecialsObj.exam = angular.extend(earnedSpecialsObj.exam, val);
                                                 break;
-                                                case 'tutorial':
-                                                    earnedSpecialsObj.tutorial = angular.extend(earnedSpecialsObj.tutorial, val);
+                                            case 'tutorial':
+                                                earnedSpecialsObj.tutorial = angular.extend(earnedSpecialsObj.tutorial, val);
                                                 break;
-                                            }
-                                        });
-                                    }
-                                });
-                                res.push(earnedSpecialsObj);
-                                return res;
+                                        }
+                                    });
+                                }
                             });
+                            res.push(earnedSpecialsObj);
+                            return res;
                         }
                     });
                 }
@@ -123,9 +119,9 @@
 
                         var purchaseData = res[0];
                         var freeContent = res[1];
-                        var specials = res[2];
+                        var earnedSpecials = res[3];
 
-                        if((specials.daily + freeContent.daily) >= dailyOrder){
+                        if((earnedSpecials.daily + freeContent.daily) >= dailyOrder){
                             return true;
                         }
 
@@ -146,7 +142,7 @@
 
                         var purchaseData = res[0];
                         var freeContent = res[1];
-                        var specials = res[2];
+                        var earnedSpecials = res[3];
 
                         var isPurchased = _isExamPurchased(purchaseData,examId);
                         if(isPurchased){
@@ -155,15 +151,15 @@
 
                         var resultsFreeContent = _isFreeContent(freeContent,['exam',idToKeyInStorage(examId)]);
 
-                        if(specials.exam) {
-                           return (resultsFreeContent || _isFreeContent(specials,['exam',idToKeyInStorage(examId)]));
+                        if(earnedSpecials.exam) {
+                            return (resultsFreeContent || _isFreeContent(earnedSpecials,['exam',idToKeyInStorage(examId)]));
                         }
 
                         return resultsFreeContent;
                     });
                 }
 
-                 function isSectionAvail(examId,sectionId){
+                function isSectionAvail(examId,sectionId){
                     return _baseIsEntityAvail().then(function(res){
                         if(res === true){
                             return true;
@@ -171,7 +167,7 @@
 
                         var purchaseData = res[0];
                         var freeContent = res[1];
-                        var specials = res[2];
+                        var earnedSpecials = res[3];
 
                         var examKeyProp = idToKeyInStorage(examId);
                         var sectionKeyProp = idToKeyInStorage(sectionId);
@@ -183,15 +179,15 @@
 
                         var resultsFreeContent = _isFreeContent(freeContent,['exam',examKeyProp,'sections',sectionKeyProp]);
 
-                        if(specials.exam) {
-                            return (resultsFreeContent || _isFreeContent(specials,['exam',examKeyProp,'sections',sectionKeyProp]));
+                        if(earnedSpecials.exam) {
+                            return (resultsFreeContent || _isFreeContent(earnedSpecials,['exam',examKeyProp,'sections',sectionKeyProp]));
                         }
 
                         return resultsFreeContent;
                     });
                 }
 
-                 function isTutorialAvail(tutorialId){
+                function isTutorialAvail(tutorialId){
                     if(isNaN(tutorialId)){
                         return $q.reject('ContentAvailSrv: tutorial id should be a number');
                     }
@@ -205,9 +201,9 @@
 
                         var purchaseData = res[0];
                         var freeContent = res[1];
-                        var specials = res[2];
+                        var earnedSpecials = res[3];
 
-                        if(freeContent.tutorial[tutorialKeyInStorage] || specials.tutorial[tutorialKeyInStorage]){
+                        if(freeContent.tutorial[tutorialKeyInStorage] || earnedSpecials.tutorial[tutorialKeyInStorage]){
                             return true;
                         }
 
