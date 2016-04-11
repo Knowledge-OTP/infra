@@ -41,7 +41,10 @@
                 }
 
                 function getUserSpecialsData(){
-                    var specialsProm = $injector.invoke(_specials);
+                    var specialsProm = false;
+                    if(_specials) {
+                         specialsProm = $injector.invoke(_specials);
+                    }
                     return $q.when(specialsProm);
                 }
 
