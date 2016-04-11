@@ -541,7 +541,7 @@
                 _specials = specialsObj;
             };
 
-            this.$get = ['$q', '$parse', '$injector', 'InfraConfigSrv', '$log', function($q, $parse, $injector, InfraConfigSrv, $log) {
+            this.$get = ['$q', '$parse', '$injector', 'InfraConfigSrv', function($q, $parse, $injector, InfraConfigSrv) {
 
                 var PURCHASED_ALL = 'all';
 
@@ -608,12 +608,27 @@
                                         if(val === PURCHASED_ALL) {
                                             earnedSpecialsObj[key] = val;
                                         } else {
-                                            if(angular.isNumber(val)) {
-                                                earnedSpecialsObj[key] += val;
-                                            } else if(angular.isObject(val) && !angular.isArray(val)) {
-                                                earnedSpecialsObj[key] = angular.extend(earnedSpecialsObj[key], val);
-                                            } else {
-                                                $log.error('ContentAvailSrv: maybe there is a problem with content! key: '+ key);
+                                            switch(key) {
+                                                case 'daily':
+                                                    if(angular.isNumber(val)) {
+                                                        earnedSpecialsObj.daily += val;
+                                                    }
+                                                    break;
+                                                case 'exam':
+                                                    if(angular.isObject(val) && !angular.isArray(val)) {
+                                                        earnedSpecialsObj.exam = angular.extend(earnedSpecialsObj.exam, val);
+                                                    }
+                                                    break;
+                                                case 'section':
+                                                    if(angular.isObject(val) && !angular.isArray(val)) {
+                                                        earnedSpecialsObj.section = angular.extend(earnedSpecialsObj.section, val);
+                                                    }
+                                                    break;
+                                                case 'tutorial':
+                                                    if(angular.isObject(val) && !angular.isArray(val)) {
+                                                        earnedSpecialsObj.tutorial = angular.extend(earnedSpecialsObj.tutorial, val);
+                                                    }
+                                                    break;
                                             }
                                         }
                                     });
