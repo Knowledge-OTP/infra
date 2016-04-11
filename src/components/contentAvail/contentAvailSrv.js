@@ -74,19 +74,23 @@
                             angular.forEach(specialsRes, function(specialVal, specialKey) {
                                 if(specials[specialKey] && specialVal === true) {
                                     angular.forEach(specials[specialKey], function(val, key) {
-                                        switch(key) {
-                                            case 'daily':
-                                                earnedSpecialsObj.daily += val;
-                                                break;
-                                            case 'exam':
-                                                earnedSpecialsObj.exam = angular.extend(earnedSpecialsObj.exam, val);
-                                                break;
-                                            case 'section':
-                                                earnedSpecialsObj.section = angular.extend(earnedSpecialsObj.section, val);
-                                                break;
-                                            case 'tutorial':
-                                                earnedSpecialsObj.tutorial = angular.extend(earnedSpecialsObj.tutorial, val);
-                                                break;
+                                        if(val === PURCHASED_ALL) {
+                                            earnedSpecialsObj[key] = val;
+                                        } else {
+                                            switch(key) {
+                                                case 'daily':
+                                                    earnedSpecialsObj.daily += val;
+                                                    break;
+                                                case 'exam':
+                                                    earnedSpecialsObj.exam = angular.extend(earnedSpecialsObj.exam, val);
+                                                    break;
+                                                case 'section':
+                                                    earnedSpecialsObj.section = angular.extend(earnedSpecialsObj.section, val);
+                                                    break;
+                                                case 'tutorial':
+                                                    earnedSpecialsObj.tutorial = angular.extend(earnedSpecialsObj.tutorial, val);
+                                                    break;
+                                            }
                                         }
                                     });
                                 }
