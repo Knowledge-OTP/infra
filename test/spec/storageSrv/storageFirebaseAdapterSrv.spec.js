@@ -14,8 +14,8 @@ describe('testing service "storageFirebaseAdapter":', function () {
             $rootScope = $injector.get('$rootScope');
             storageFirebaseAdapter = $injector.get('storageFirebaseAdapter');
             StorageSrv = $injector.get('StorageSrv');
-        }])
-    );
+        }
+    ]));
 
 
     var actions = {};
@@ -59,16 +59,6 @@ describe('testing service "storageFirebaseAdapter":', function () {
     };
 
     var endpoint = 'https://znk-test.firebaseio.com';
-
-    it('when requesting for entity then the firebase path should be built correctly', function () {
-        var expectedPath = 'users/1';
-        var adapter = actions.syncAdapter(storageFirebaseAdapter(endpoint));
-        var expectedVal = {key: 'val'};
-        adapter.set(expectedPath,expectedVal);
-        adapter.__refMap[expectedPath].autoFlush();
-        var entity = adapter.get(StorageSrv.variables.appUserSpacePath);
-        expect(entity).toEqual(expectedVal);
-    });
 
     it('when calling set then it should update firebase db', function () {
         var path = 'testPath';

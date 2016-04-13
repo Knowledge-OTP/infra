@@ -205,7 +205,8 @@ describe('testing service "ExerciseResult":', function () {
             var expectedResult = actions.getExamResult(examId);
             expectedResult.newProp = 'new value';
             expectedResult.$save();
-
+            $rootScope.$digest();
+            
             var examResultKeys = Object.keys(testStorage.db.examResults);
             var examResult = testStorage.db.examResults[examResultKeys[0]];
 
