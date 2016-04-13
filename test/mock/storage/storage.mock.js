@@ -41,7 +41,12 @@
                 return ret;
             }
 
-            var storage = new StorageSrv(getter,setter);
+            var config = {
+                variables:{
+                    uid: '$$$$uid'
+                }
+            };
+            var storage = new StorageSrv(getter,setter,config);
             storage.db = db;
             storage.variables = StorageSrv.variables;
 

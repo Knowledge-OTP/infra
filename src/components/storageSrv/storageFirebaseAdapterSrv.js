@@ -46,11 +46,10 @@
                 });
 
                 function getRef(relativePath){
-                    var processedRelativePath = processPath(relativePath,authObj);
-                    if(!refMap[processedRelativePath]){
-                        refMap[processedRelativePath] = refMap.rootRef.child(processedRelativePath);
+                    if(!refMap[relativePath]){
+                        refMap[relativePath] = refMap.rootRef.child(relativePath);
                     }
-                    return refMap[processedRelativePath];
+                    return refMap[relativePath];
                 }
 
                 function get(relativePath){
@@ -71,9 +70,8 @@
 
                     if(angular.isObject(relativePathOrObject)){
                         var valuesToSet ={};
-                        angular.forEach(relativePathOrObject,function(value,key){
-                            var processedPath = processPath(key, authObj);
-                            valuesToSet[processedPath] = angular.copy(value);
+                        angular.forEach(relativePathOrObject,function(value,path){
+                            valuesToSet[path] = angular.copy(value);
                         });
                         processValuesToSet(valuesToSet);
                         refMap.rootRef.update(valuesToSet, function(err){
@@ -105,19 +103,6 @@
                     __refMap: refMap//for testing
                 };
             }
-
-            var pathVariables= StorageSrv.variables;
-
-            var regexString = pathVariables.uid.replace(/\$/g,'\\$');
-            var UID_REGEX = new RegExp(regexString,'g');
-            function processPath(path,authObj) {
-                var processedPath = path.replace(UID_REGEX, authObj.uid);
-                return processedPath;
-            }
-            storageFirebaseAdapter.processPath = function (path,authObj) {
-                var processedPath = path.replace(UID_REGEX, authObj.uid);
-                return processedPath;
-            };
 
             function processValue(value){
                 if(value === StorageSrv.variables.currTimeStamp){

@@ -14,8 +14,8 @@ describe('testing service "storageFirebaseAdapter":', function () {
             $rootScope = $injector.get('$rootScope');
             storageFirebaseAdapter = $injector.get('storageFirebaseAdapter');
             StorageSrv = $injector.get('StorageSrv');
-        }])
-    );
+        }
+    ]));
 
 
     var actions = {};
@@ -60,16 +60,6 @@ describe('testing service "storageFirebaseAdapter":', function () {
 
     var endpoint = 'https://znk-test.firebaseio.com';
 
-    it('when requesting for entity then the firebase path should be built correctly', function () {
-        var expectedPath = 'users/1';
-        var adapter = actions.syncAdapter(storageFirebaseAdapter(endpoint));
-        var expectedVal = {key: 'val'};
-        adapter.set(expectedPath,expectedVal);
-        adapter.__refMap[expectedPath].autoFlush();
-        var entity = adapter.get(StorageSrv.variables.appUserSpacePath);
-        expect(entity).toEqual(expectedVal);
-    });
-
     it('when calling set then it should update firebase db', function () {
         var path = 'testPath';
         var syncedAdapter = actions.syncAdapter(storageFirebaseAdapter(endpoint));
@@ -113,16 +103,13 @@ describe('testing service "storageFirebaseAdapter":', function () {
                 b: 2
             }
         };
-        savedDataMap[StorageSrv.variables.uid] = 5;
 
         syncedAdapter.set(angular.copy(savedDataMap));
         syncedAdapter.__refMap.rootRef.flush();
         var aVal = syncedAdapter.get('a');
         var bVal = syncedAdapter.get('b');
-        var uidVal = syncedAdapter.get('1');
         expect(aVal).toEqual(savedDataMap.a);
         expect(bVal).toEqual(savedDataMap.b);
-        expect(uidVal).toEqual(5);
     });
 
     it('when value has a storageSrv time stamp variable then it should be changed to firebase time stamp', function () {
