@@ -5286,12 +5286,8 @@
                                     var questionCopy = angular.copy(question);
                                     var answer = answersMap[questionCopy.id] || {};
 
-                                    questionCopy.__questionStatus = {
-                                        index: index
-                                    };
-                                    for (var prop in answer) {
-                                        questionCopy.__questionStatus[prop] = answer[prop];
-                                    }
+                                    questionCopy.__questionStatus= angular.copy(answer);
+                                    questionCopy.__questionStatus.index = index;
 
                                     return questionCopy;
                                 });
@@ -5309,20 +5305,8 @@
                                         return;
                                     }
 
-                                    var answer = {
-                                        questionId: questionWithAnswer.id
-                                    };
-
-                                    var propsToCopyFromQuestionStatus = [
-                                        'blackboardData', 'timeSpent', 'bookmark', 'userAnswer', 'isAnsweredCorrectly',
-                                        'audioEnded', 'afterAllowedTime'
-                                    ];
-                                    propsToCopyFromQuestionStatus.forEach(function (propName) {
-                                        var value = questionWithAnswer.__questionStatus[propName];
-                                        if (angular.isDefined(value)) {
-                                            answer[propName] = value;
-                                        }
-                                    });
+                                    var answer = angular.copy(questionWithAnswer.__questionStatus);
+                                    answer.questionId = questionWithAnswer.id;
 
                                     if (angular.isDefined(answer.userAnswer)) {
                                         scope.vm.answeredCount ++;
