@@ -173,6 +173,7 @@
             'znk.infra.enum',
             'znk.infra.svgIcon',
             'znk.infra.scroll',
+            'znk.infra.autofocus',
             'ngAnimate'
         ])
         .config([
@@ -6854,7 +6855,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "</div>\n" +
     "<div class=\"done-btn-wrap show-opacity-animate\" ng-if=\"vm.showDoneButton\">\n" +
     "    <button tabindex=\"0\"\n" +
-    "            autofocus=\"true\"\n" +
+    "            ng-autofocus=\"true\"\n" +
     "            class=\"done-btn\"\n" +
     "            ng-click=\"onDone()\">DONE\n" +
     "    </button>\n" +
