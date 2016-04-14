@@ -37,8 +37,8 @@
                         MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
 
                     scope.clickHandler = function(){
-                        ngModelCtrl.$setViewValue( scope.d.userAnswer);
-                        updateViewByCorrectAnswers( scope.d.userAnswer);
+                        ngModelCtrl.$setViewValue(scope.d.userAnswer);
+                        updateViewByCorrectAnswers(scope.d.userAnswer);
                     };
 
                     function updateViewByCorrectAnswers(userAnswer) {
