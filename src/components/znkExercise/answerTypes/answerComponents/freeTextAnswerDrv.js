@@ -15,7 +15,7 @@
                 link: function (scope, element, attrs, ctrls) {
                     var ngModelCtrl = ctrls[0];
                     var answerBuilderCtrl = ctrls[1];
-                    var userAnsweValidation = /^[0-9\/\.]{0,4}$/;
+                    var userAnswerValidation = /^[0-9\/\.]{0,4}$/;
 
                     scope.d = {};
 
@@ -27,8 +27,8 @@
                         return userAnswer
                     };
 
-                    function _isValid(str){
-                        return userAnsweValidation.test(str);
+                    function _isValid(answerToCheck){
+                        return userAnswerValidation.test(answerToCheck);
                     }
 
                     var MODE_ANSWER_ONLY = ZnkExerciseViewModeEnum.ONLY_ANSWER.enum,
