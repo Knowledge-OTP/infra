@@ -963,8 +963,6 @@ znk-exercise.desktop {
       font-weight: normal;
       border-radius: 30px;
       cursor: pointer; }
-      znk-exercise.desktop .btn-section .done-btn-wrap .done-btn:focus {
-        background: #f08a1c; }
   znk-exercise.desktop svg-icon.chevron .st0 {
     fill: none;
     stroke: #231F20;
@@ -997,8 +995,6 @@ znk-exercise.desktop {
     border-right: none;
     border-bottom: none;
     border-left: none; }
-    znk-exercise.desktop button:focus {
-      outline: none; }
 
 znk-exercise.done-btn-show znk-exercise-pager {
   width: calc(100% - 185px); }
@@ -1532,29 +1528,29 @@ free-text-answer .free-text-answer-wrapper {
       border-radius: 0px 0px 15px 15px;
       background: #fff;
       padding-bottom: 50px; }
-      .znk-popup .base-popup .znk-popup-wrapper .znk-popup-buttons .button-wrapper {
+      .znk-popup .base-popup .znk-popup-wrapper .znk-popup-buttons .button-wrapper:nth-child(2) button.btn {
+        color: #fff;
+        margin-left: 10px;
+        background-color: #0a9bad; }
+      .znk-popup .base-popup .znk-popup-wrapper .znk-popup-buttons .button-wrapper button.btn {
         cursor: pointer;
         font-size: 14px;
         color: #0a9bad;
         font-family: Lato;
         font-weight: 400;
         border: 1px solid #0a9bad;
-        border-radius: 20px; }
-        .znk-popup .base-popup .znk-popup-wrapper .znk-popup-buttons .button-wrapper .btn {
-          display: -webkit-flex;
-          display: -moz-box;
-          display: -ms-flexbox;
-          display: flex;
-          justify-content: center;
-          -webkit-justify-content: center;
-          align-items: center;
-          -webkit-align-items: center;
-          width: 150px;
-          height: 34px; }
-        .znk-popup .base-popup .znk-popup-wrapper .znk-popup-buttons .button-wrapper:nth-child(2) {
-          color: #fff;
-          margin-left: 10px;
-          background-color: #0a9bad; }
+        border-radius: 20px;
+        display: -webkit-flex;
+        display: -moz-box;
+        display: -ms-flexbox;
+        display: flex;
+        justify-content: center;
+        -webkit-justify-content: center;
+        align-items: center;
+        -webkit-align-items: center;
+        width: 150px;
+        height: 34px;
+        background: #fff; }
   .znk-popup .base-popup.exercise-popup .znk-popup-wrapper {
     width: 68%;
     margin-top: 240px; }

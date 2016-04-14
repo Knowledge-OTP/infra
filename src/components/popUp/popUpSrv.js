@@ -43,11 +43,13 @@
                             '<div class="znk-popup-body">%body%</div>' +
                             '<div class="znk-popup-buttons">' +
                                 '<div ng-repeat="button in ::d.buttons" class="button-wrapper">' +
-                                    '<div class="btn" ' +
+                                    '<button class="btn" ' +
                                              'ng-click="d.btnClick(button)" ' +
-                                             'ng-class="button.type"> ' +
+                                             'ng-class="button.type" ' +
+                                             'ng-autofocus="button.addAutoFocus" ' +
+                                             'tabindex="0">' +
                                              '{{button.text}}' +
-                                    '</div>' +
+                                    '</button>' +
                                 '</div>' +
                             '</div>' +
                         '</div>' +
@@ -118,10 +120,11 @@
                 return PopUpSrv.popup(wrapperCls,header,body,btnArr);
             }
 
-            function BaseButton(text,type,resolveVal,rejectVal){
+            function BaseButton(text,type,resolveVal,rejectVal, addAutoFocus){
                 var btn = {
                     text: text || '',
-                    type: type || ''
+                    type: type || '',
+                    addAutoFocus: addAutoFocus
                 };
 
                 if(rejectVal){
@@ -134,28 +137,27 @@
             }
 
             PopUpSrv.error = function error(title,content){
-                var btn = new BaseButton('OK',null,'ok');
+                var btn = new BaseButton('OK',null,'ok', undefined, true);
                 return basePopup('error-popup','exclamation-mark',title || 'OOOPS...',content,[btn]);
             };
-
 
             PopUpSrv.ErrorConfirmation = function error(title, content, acceptBtnTitle,cancelBtnTitle){
                 var buttons = [
                     new BaseButton(acceptBtnTitle,null,acceptBtnTitle),
-                    new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle)
+                    new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle, true)
                 ];
                 return basePopup('error-popup','exclamation-mark',title,content,buttons);
             };
 
             PopUpSrv.success = function success(title,content){
-                var btn = new BaseButton('OK',null,'ok');
+                var btn = new BaseButton('OK',null,'ok', undefined, true);
                 return basePopup('success-popup','exclamation-mark',title || '',content,[btn]);
             };
 
             PopUpSrv.warning = function warning(title,content,acceptBtnTitle,cancelBtnTitle){
                 var buttons = [
                     new BaseButton(acceptBtnTitle,null,acceptBtnTitle),
-                    new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle)
+                    new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle, true)
                 ];
                 return basePopup('warning-popup','exclamation-mark',title,content,buttons);
             };
