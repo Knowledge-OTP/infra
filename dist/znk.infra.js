@@ -532,160 +532,234 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.contentAvail').service('ContentAvailSrv', [
-        '$q', '$parse', 'InfraConfigSrv',
-        function ($q, $parse, InfraConfigSrv) {
-            var PURCHASED_ALL = 'all';
+    angular.module('znk.infra.contentAvail').provider('ContentAvailSrv', [
+        function () {
 
-            function getUserPurchaseData(){
-                var StorageService = InfraConfigSrv.getStorageService();
-                var purchaseDataPath = StorageService.variables.appUserSpacePath + '/purchase';
-                var defValues = {
-                    daily: 0,
-                    exam: {},
-                    tutorial: {},
-                    subscription: {}
-                };
-                return StorageService.get(purchaseDataPath,defValues);
-            }
+            var _specials;
 
-            function getFreeContentData(){
-                var StorageService = InfraConfigSrv.getStorageService();
-                var freeContentPath = 'freeContent';
-                var defValues = {
-                    daily: 0,
-                    exam: {},
-                    tutorial: {}
-                };
-                return StorageService.get(freeContentPath,defValues);
-            }
-
-            function idToKeyInStorage(id){
-                return 'id_' + id;
-            }
-
-            function _hasSubscription(subscriptionObj){
-                return subscriptionObj && subscriptionObj.expiryDate && subscriptionObj.expiryDate > Date.now();
-            }
-
-            function _baseIsEntityAvail(){
-                return $q.all([getUserPurchaseData(),getFreeContentData()]).then(function(res){
-                    var purchaseData = res[0];
-                    var hasSubscription = _hasSubscription(purchaseData.subscription);
-                    if(hasSubscription){
-                        return true;
-                    }else{
-                        return res;
-                    }
-                });
-            }
-
-            function _isExamPurchased(purchaseData,examId){
-                var examKeyProp = idToKeyInStorage(examId);
-                return !!(purchaseData.exam === PURCHASED_ALL  || purchaseData.exam[examKeyProp]);
-            }
-
-            function _isFreeContent(freeContentData,pathArr){
-                var fullPath = pathArr.join('.');
-                var isFreeGetter = $parse(fullPath);
-                return !!isFreeGetter(freeContentData);
-            }
-
-            this.hasSubscription = function(){
-                return getUserPurchaseData().then(function(purchaseData){
-                    return _hasSubscription(purchaseData.subscription);
-                });
+            this.setSpecials = function(specialsObj) {
+                _specials = specialsObj;
             };
 
-            this.isDailyAvail = function(dailyOrder){
-                if(!angular.isNumber(dailyOrder) || isNaN(dailyOrder)){
-                    return $q.reject('daily order should be a number');
+            this.$get = ['$q', '$parse', '$injector', 'InfraConfigSrv', function($q, $parse, $injector, InfraConfigSrv) {
+
+                var PURCHASED_ALL = 'all';
+
+                function getUserPurchaseData(){
+                    var StorageService = InfraConfigSrv.getStorageService();
+                    var purchaseDataPath = StorageService.variables.appUserSpacePath + '/purchase';
+                    var defValues = {
+                        daily: 0,
+                        exam: {},
+                        tutorial: {},
+                        section: {},
+                        subscription: {}
+                    };
+                    return StorageService.get(purchaseDataPath,defValues);
                 }
-                return _baseIsEntityAvail().then(function(res){
-                    if(res === true){
+
+                function getFreeContentData(){
+                    var StorageService = InfraConfigSrv.getStorageService();
+                    var freeContentPath = 'freeContent';
+                    var defValues = {
+                        daily: 0,
+                        exam: {},
+                        tutorial: {},
+                        section: {},
+                        specials: {}
+                    };
+                    return StorageService.get(freeContentPath,defValues);
+                }
+
+                function getUserSpecialsData(){
+                    var specialsProm = false;
+                    if(_specials) {
+                         specialsProm = $injector.invoke(_specials);
+                    }
+                    return $q.when(specialsProm);
+                }
+
+                function idToKeyInStorage(id){
+                    return 'id_' + id;
+                }
+
+                function _hasSubscription(subscriptionObj){
+                    return subscriptionObj && subscriptionObj.expiryDate && subscriptionObj.expiryDate > Date.now();
+                }
+
+                function _baseIsEntityAvail(){
+                    return $q.all([getUserPurchaseData(),getFreeContentData(), getUserSpecialsData()]).then(function(res){
+                        var purchaseData = res[0];
+                        var hasSubscription = _hasSubscription(purchaseData.subscription);
+                        var earnedSpecialsObj = {
+                            daily: 0,
+                            exam: {},
+                            section: {},
+                            tutorial: {}
+                        };
+                        if(hasSubscription){
+                            return true;
+                        } else {
+                            var specials = res[1].specials;
+                            var specialsRes = res[2];
+                            if(specialsRes) {
+                                angular.forEach(specialsRes, function(specialVal, specialKey) {
+                                    if(specials[specialKey] && specialVal === true) {
+                                        angular.forEach(specials[specialKey], function(val, key) {
+                                            if(val === PURCHASED_ALL) {
+                                                earnedSpecialsObj[key] = val;
+                                            } else {
+                                                switch(key) {
+                                                    case 'daily':
+                                                        if(angular.isNumber(val)) {
+                                                            earnedSpecialsObj.daily += val;
+                                                        }
+                                                        break;
+                                                    case 'exam':
+                                                        if(angular.isObject(val) && !angular.isArray(val)) {
+                                                            earnedSpecialsObj.exam = angular.extend(earnedSpecialsObj.exam, val);
+                                                        }
+                                                        break;
+                                                    case 'section':
+                                                        if(angular.isObject(val) && !angular.isArray(val)) {
+                                                            earnedSpecialsObj.section = angular.extend(earnedSpecialsObj.section, val);
+                                                        }
+                                                        break;
+                                                    case 'tutorial':
+                                                        if(angular.isObject(val) && !angular.isArray(val)) {
+                                                            earnedSpecialsObj.tutorial = angular.extend(earnedSpecialsObj.tutorial, val);
+                                                        }
+                                                        break;
+                                                }
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                            res.push(earnedSpecialsObj);
+                            return res;
+                        }
+                    });
+                }
+
+                function _isContentOwned(contentData,pathArr){
+                    var prefixPathArr = pathArr.slice(0, pathArr.length - 1);
+                    var prefixPath = prefixPathArr.join('.');
+                    var isAllOwned = $parse(prefixPath)(contentData) === PURCHASED_ALL;
+                    if(isAllOwned){
                         return true;
                     }
 
-                    var purchaseData = res[0];
-                    var freeContent = res[1];
+                    var fullPath = pathArr.join('.');
+                    return $parse(fullPath)(contentData);
+                }
 
-                    if(freeContent.daily >= dailyOrder){
-                        return true;
+                function hasSubscription() {
+                    return getUserPurchaseData().then(function(purchaseData){
+                        return _hasSubscription(purchaseData.subscription);
+                    });
+                }
+
+                function isDailyAvail(dailyOrder){
+                    if(!angular.isNumber(dailyOrder) || isNaN(dailyOrder)){
+                        return $q.reject('daily order should be a number');
                     }
+                    return _baseIsEntityAvail().then(function(res){
+                        if(res === true){
+                            return true;
+                        }
 
-                    if(angular.isString(purchaseData.daily)){
-                        return purchaseData.daily === PURCHASED_ALL;
-                    }else{
-                        var maxAvailDailyOrder = (purchaseData.daily || 0) + (freeContent.daily || 0);
+                        var purchaseData = res[0];
+                        var freeContent = res[1];
+                        var earnedSpecials = res[3];
+
+                        var isAllOwned = purchaseData.daily === PURCHASED_ALL || freeContent.daily === PURCHASED_ALL || earnedSpecials.daily === PURCHASED_ALL;
+                        if(isAllOwned){
+                            return true;
+                        }
+
+                        var maxAvailDailyOrder = (purchaseData.daily || 0) + (freeContent.daily || 0) + (earnedSpecials.daily || 0);
                         return dailyOrder <= maxAvailDailyOrder;
-                    }
-                });
-            };
-
-            this.isExamAvail = function(examId){
-                return _baseIsEntityAvail().then(function(res){
-                    if(res === true){
-                        return true;
-                    }
-
-                    var purchaseData = res[0];
-                    var freeContent = res[1];
-
-                    var isPurchased = _isExamPurchased(purchaseData,examId);
-                    if(isPurchased){
-                        return true;
-                    }
-
-                    return _isFreeContent(freeContent,['exam',idToKeyInStorage(examId)]);
-                });
-            };
-
-            this.isSectionAvail = function(examId,sectionId){
-                return _baseIsEntityAvail().then(function(res){
-                    if(res === true){
-                        return true;
-                    }
-
-                    var purchaseData = res[0];
-                    var freeContent = res[1];
-
-                    var examKeyProp = idToKeyInStorage(examId);
-                    var sectionKeyProp = idToKeyInStorage(sectionId);
-
-                    var isExamPurchased = _isExamPurchased(purchaseData,examId);
-                    if(isExamPurchased ){
-                        return true;
-                    }
-
-                    return _isFreeContent(freeContent,['exam',examKeyProp,'sections',sectionKeyProp]);
-                });
-            };
-
-            this.isTutorialAvail = function(tutorialId){
-                if(isNaN(tutorialId)){
-                    return $q.reject('ContentAvailSrv: tutorial id should be a number');
+                    });
                 }
 
-                return _baseIsEntityAvail().then(function(res) {
-                    if (res === true) {
-                        return true;
-                    }
+                function isExamAvail(examId){
+                    return _baseIsEntityAvail().then(function(res){
+                        if(res === true){
+                            return true;
+                        }
 
-                    var tutorialKeyInStorage = idToKeyInStorage(tutorialId);
+                        var purchaseData = res[0];
+                        var freeContent = res[1];
+                        var earnedSpecials = res[3];
 
-                    var purchaseData = res[0];
-                    var freeContent = res[1];
+                        var examPathArr = ['exam',idToKeyInStorage(examId)];
+                        var isOwnedViaFreeContent = _isContentOwned(freeContent,examPathArr);
+                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials,examPathArr);
+                        var isOwnedViaPurchase = _isContentOwned(purchaseData,examPathArr);
 
-                    if(freeContent.tutorial[tutorialKeyInStorage]){
-                        return true;
-                    }
+                        return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
+                    });
+                }
 
-                    return !!(purchaseData.tutorial === PURCHASED_ALL || purchaseData.tutorial[tutorialKeyInStorage]);
+                function isSectionAvail(examId,sectionId){
+                    return _baseIsEntityAvail().then(function(res){
+                        if(res === true){
+                            return true;
+                        }
 
-                });
+                        var purchaseData = res[0];
+                        var freeContent = res[1];
+                        var earnedSpecials = res[3];
 
+                        var examKeyProp = idToKeyInStorage(examId);
+                        var examPathArr = ['exam',examKeyProp];
+                        var isExamPurchased = _isContentOwned(purchaseData,examPathArr);
+                        if(isExamPurchased ){
+                            return true;
+                        }
 
-            };
+                        var sectionKeyProp = idToKeyInStorage(sectionId);
+
+                        var sectionPathArr = ['section',sectionKeyProp];
+                        var isOwnedViaFreeContent = _isContentOwned(freeContent,sectionPathArr);
+                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials,sectionPathArr);
+                        var isOwnedViaPurchase = _isContentOwned(purchaseData,sectionPathArr);
+
+                        return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
+                    });
+                }
+
+                function isTutorialAvail(tutorialId){
+                    return _baseIsEntityAvail().then(function(res) {
+                        if (res === true) {
+                            return true;
+                        }
+
+                        var tutorialKeyInStorage = idToKeyInStorage(tutorialId);
+
+                        var purchaseData = res[0];
+                        var freeContent = res[1];
+                        var earnedSpecials = res[3];
+                        var tutorialPathArr = ['tutorial',tutorialKeyInStorage];
+                        var isOwnedViaFreeContent = _isContentOwned(freeContent,tutorialPathArr);
+                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials,tutorialPathArr);
+                        var isOwnedViaPurchase = _isContentOwned(purchaseData,tutorialPathArr);
+
+                        return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
+
+                    });
+                }
+
+                // api
+                return {
+                    hasSubscription: hasSubscription,
+                    isDailyAvail: isDailyAvail,
+                    isExamAvail: isExamAvail,
+                    isSectionAvail: isSectionAvail,
+                    isTutorialAvail: isTutorialAvail
+                };
+            }];
         }
     ]);
 })(angular);
@@ -1401,11 +1475,21 @@
 
             var EXERCISES_STATUS_PATH = StorageSrv.variables.appUserSpacePath + '/exercisesStatus';
 
+            function _isValidNumber(number){
+                return angular.isNumber(number) && !isNaN(number);
+            }
+
             function _getExerciseResultPath(guid) {
                 return EXERCISE_RESULTS_PATH + '/' + guid;
             }
 
             function _getInitExerciseResult(exerciseTypeId,exerciseId,guid){
+                if(!_isValidNumber(exerciseTypeId) || !_isValidNumber(exerciseId)){
+                    var errMSg = 'exercise type id and exercise id should be number !!!';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+
                 var storage = InfraConfigSrv.getStorageService();
                 var userProm = InfraConfigSrv.getUserData();
                 return userProm.then(function(user) {
@@ -1452,6 +1536,12 @@
             }
 
             function _getInitExamResult(examId, guid){
+                if(!_isValidNumber(examId)){
+                    var errMsg = 'Exam id is not a number !!!';
+                    $log.error(errMsg);
+                    return $q.reject(errMsg);
+                }
+
                 var userProm = InfraConfigSrv.getUserData();
                 return userProm.then(function(user) {
                     return {
@@ -1578,14 +1668,18 @@
                 this.status = status;
             }
 
-            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum) {
+            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum, dontInitialize) {
                 var getExamResultProm;
                 if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
-                    getExamResultProm = ExerciseResultSrv.getExamResult(examId);
+                    getExamResultProm = ExerciseResultSrv.getExamResult(examId, dontInitialize);
                 }
                 return _getExerciseResultsGuids().then(function (exerciseResultsGuids) {
                     var resultGuid = exerciseResultsGuids[exerciseTypeId] && exerciseResultsGuids[exerciseTypeId][exerciseId];
                     if (!resultGuid) {
+                        if(dontInitialize){
+                            return null;
+                        }
+
                         if(!exerciseResultsGuids[exerciseTypeId]){
                             exerciseResultsGuids[exerciseTypeId] = {};
                         }
@@ -1641,16 +1735,22 @@
                         });
                     });
                 }).then(function(exerciseResult){
-                    exerciseResult.$save = exerciseSaveFn;
+                    if(angular.isObject(exerciseResult)){
+                        exerciseResult.$save = exerciseSaveFn;
+                    }
                     return exerciseResult;
                 });
             };
 
-            this.getExamResult = function (examId) {
+            this.getExamResult = function (examId, dontInitialize) {
                 var storage = InfraConfigSrv.getStorageService();
                 return _getExamResultsGuids().then(function (examResultsGuids) {
                     var examResultGuid = examResultsGuids[examId];
                     if (!examResultGuid) {
+                        if(dontInitialize){
+                            return null;
+                        }
+
                         var dataToSave = {};
                         var newExamResultGuid = UtilitySrv.general.createGuid();
                         examResultsGuids[examId] = newExamResultGuid;
@@ -2919,8 +3019,8 @@
     'use strict';
 
     angular.module('znk.infra.stats').factory('StatsEventsHandlerSrv', [
-        '$rootScope', 'exerciseEventsConst', 'StatsSrv', 'ExerciseTypeEnum', '$log',
-        function ($rootScope, exerciseEventsConst, StatsSrv, ExerciseTypeEnum, $log) {
+        '$rootScope', 'exerciseEventsConst', 'StatsSrv', 'ExerciseTypeEnum', '$log', 'UtilitySrv',
+        function ($rootScope, exerciseEventsConst, StatsSrv, ExerciseTypeEnum, $log, UtilitySrv) {
             var StatsEventsHandlerSrv = {};
 
             var childScope = $rootScope.$new(true);
@@ -2933,8 +3033,9 @@
 
                     var newStats = {};
 
-                    results.questionResults.forEach(function (result, index) {
-                        var question = exercise.questions[index];
+                    var questionsMap = UtilitySrv.array.convertToMap(exercise.questions);
+                    results.questionResults.forEach(function (result) {
+                        var question = questionsMap[result.questionId];
                         var categoryId = question.categoryId;
 
                         if (isNaN(+categoryId) || categoryId === null) {
@@ -3315,11 +3416,10 @@
                 });
 
                 function getRef(relativePath){
-                    var processedRelativePath = processPath(relativePath,authObj);
-                    if(!refMap[processedRelativePath]){
-                        refMap[processedRelativePath] = refMap.rootRef.child(processedRelativePath);
+                    if(!refMap[relativePath]){
+                        refMap[relativePath] = refMap.rootRef.child(relativePath);
                     }
-                    return refMap[processedRelativePath];
+                    return refMap[relativePath];
                 }
 
                 function get(relativePath){
@@ -3340,9 +3440,8 @@
 
                     if(angular.isObject(relativePathOrObject)){
                         var valuesToSet ={};
-                        angular.forEach(relativePathOrObject,function(value,key){
-                            var processedPath = processPath(key, authObj);
-                            valuesToSet[processedPath] = angular.copy(value);
+                        angular.forEach(relativePathOrObject,function(value,path){
+                            valuesToSet[path] = angular.copy(value);
                         });
                         processValuesToSet(valuesToSet);
                         refMap.rootRef.update(valuesToSet, function(err){
@@ -3375,19 +3474,6 @@
                 };
             }
 
-            var pathVariables= StorageSrv.variables;
-
-            var regexString = pathVariables.uid.replace(/\$/g,'\\$');
-            var UID_REGEX = new RegExp(regexString,'g');
-            function processPath(path,authObj) {
-                var processedPath = path.replace(UID_REGEX, authObj.uid);
-                return processedPath;
-            }
-            storageFirebaseAdapter.processPath = function (path,authObj) {
-                var processedPath = path.replace(UID_REGEX, authObj.uid);
-                return processedPath;
-            };
-
             function processValue(value){
                 if(value === StorageSrv.variables.currTimeStamp){
                     return Firebase.ServerValue.TIMESTAMP;
@@ -3404,107 +3490,210 @@
     'use strict';
 
     angular.module('znk.infra.storage').factory('StorageSrv', [
-        '$cacheFactory', '$q',
-        function ($cacheFactory, $q) {
+        '$cacheFactory', '$q', '$log',
+        function ($cacheFactory, $q, $log) {
             var getEntityPromMap = {};
 
             var cacheId = 0;
 
-            function StorageSrv(entityGetter, entitySetter) {
-                this.getter = function(path){
+            /**
+             *  entityGetter -
+             *  entitySetter -
+             *  config-
+             *      cacheRules - rules which control whether path should be cached, the possible values are:
+             *          string - if the path equal to the rule string the it will not be cached.
+             *          function - receive the path as argument, if the function return true then the path will not be cached.
+             *          regex - if the path matches the regex then it will not be cached.
+             *      variables -
+             *          uid - function or value which return current uid as straight value or promise
+             * */
+            function StorageSrv(entityGetter, entitySetter, config) {
+                this.getter = function (path) {
                     return $q.when(entityGetter(path));
                 };
 
-                this.setter = function(path, newVal){
-                    return $q.when(entitySetter(path,newVal));
+                this.setter = function (path, newVal) {
+                    return $q.when(entitySetter(path, newVal));
                 };
 
                 this.entityCache = $cacheFactory('entityCache' + cacheId);
-                cacheId ++;
+
+                config = config || {};
+                var defaultConfig = {
+                    variables: {
+                        uid: null
+                    },
+                    cacheRules: []
+                };
+                this.config = angular.extend(defaultConfig, config);
+
+                cacheId++;
             }
 
-            StorageSrv.prototype.get = function(path, defaultValue){
-                var self = this;
-                var entity = this.entityCache.get(path);
-                var getProm;
-                defaultValue = defaultValue || {};
-                var cacheProm = false;
+            function _shouldBeCached(path, config) {
+                var cacheRules = config.cacheRules;
 
-                if (entity) {
-                    getProm = $q.when(entity);
-                } else {
-                    if (getEntityPromMap[path]) {
-                        return getEntityPromMap[path];
+                for (var i = 0; i < cacheRules.length; i++) {
+                    var rule = cacheRules[i];
+                    var shouldNotBeCached = false;
+
+                    if (angular.isString(rule)) {
+                        shouldNotBeCached = rule === path;
                     }
-                    cacheProm = true;
-                    getProm = this.getter(path).then(function (_entity) {
-                        if(angular.isUndefined(_entity) || _entity === null ){
-                            _entity = {};
-                        }
 
-                        if(angular.isObject(_entity)){
-                            var initObj = Object.create({
-                                $save: function(){
-                                    return self.set(path,this);
-                                }
-                            });
-                            _entity  = angular.extend(initObj, _entity); 
-                        }
+                    if (angular.isFunction(rule)) {
+                        shouldNotBeCached = rule(path);
+                    }
 
-                        self.entityCache.put(path, _entity);
-                        delete getEntityPromMap[path];
+                    if (rule instanceof RegExp) {
+                        shouldNotBeCached = rule.test(path);
+                    }
+
+                    if (shouldNotBeCached) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            function _getUid(config) {
+                var getUid = angular.isFunction(config.variables.uid) ? config.variables.uid() : config.variables.uid;
+                return $q.when(getUid);
+            }
+
+            function _processPath(pathStrOrObj, config) {
+                return _getUid(config).then(function (uid) {
+                    function _replaceVariables(path){
+                        var regexString = StorageSrv.variables.uid.replace(/\$/g, '\\$');
+                        var UID_REGEX = new RegExp(regexString, 'g');
+                        return path.replace(UID_REGEX, uid);
+                    }
+
+                    if (angular.isUndefined(uid) || uid === null) {
+                        $log.debug('StorageSrv: empty uid was received');
+                    }
+
+                    if(angular.isString(pathStrOrObj)){
+                        var processedPath = _replaceVariables(pathStrOrObj);
+                        return processedPath;
+                    }
+
+                    if(angular.isObject(pathStrOrObj)){
+                        var processedPathObj = {};
+                        angular.forEach(pathStrOrObj, function(value, pathName){
+                            var processedPath = _replaceVariables(pathName);
+                            processedPathObj[processedPath] = value;
+                        });
+
+                        return processedPathObj;
+                    }
+                    $log.error('StorageSrv: failed to process path');
+                });
+            }
+
+            StorageSrv.prototype.get = function (path, defaultValue) {
+                var self = this;
+
+                return _processPath(path, self.config).then(function (processedPath) {
+                    var entity = self.entityCache.get(processedPath);
+                    var getProm;
+                    defaultValue = defaultValue || {};
+                    var cacheProm = false;
+
+                    if (entity) {
+                        getProm = $q.when(entity);
+                    } else {
+                        if (getEntityPromMap[processedPath]) {
+                            return getEntityPromMap[processedPath];
+                        }
+                        cacheProm = true;
+                        getProm = self.getter(processedPath).then(function (_entity) {
+                            if (angular.isUndefined(_entity) || _entity === null) {
+                                _entity = {};
+                            }
+
+                            if (angular.isObject(_entity)) {
+                                var initObj = Object.create({
+                                    $save: function () {
+                                        return self.set(processedPath, this);
+                                    }
+                                });
+                                _entity = angular.extend(initObj, _entity);
+                            }
+
+                            if (_shouldBeCached(processedPath, self.config)) {
+                                self.entityCache.put(processedPath, _entity);
+                            }
+
+                            delete getEntityPromMap[processedPath];
+
+                            return _entity;
+                        });
+                    }
+                    getProm = getProm.then(function (_entity) {
+                        var keys = Object.keys(defaultValue);
+                        keys.forEach(function (key) {
+                            if (angular.isUndefined(_entity[key])) {
+                                _entity[key] = angular.copy(defaultValue[key]);
+                            }
+                        });
                         return _entity;
                     });
-                }
-                getProm = getProm.then(function(_entity){
-                    var keys = Object.keys(defaultValue);
-                    keys.forEach(function(key){
-                        if (angular.isUndefined(_entity[key])) {
-                            _entity[key] = angular.copy(defaultValue[key]);
-                        }
-                    });
-                    return _entity;
-                });
 
-                if (cacheProm) {
-                    getEntityPromMap[path] = getProm;
-                }
-
-                return getProm;
-            };
-
-            StorageSrv.prototype.set = function(pathStrOrObj, newValue){
-                var self = this;
-                return this.setter(pathStrOrObj, newValue).then(function(){
-                    var dataToSaveInCache = {};
-
-                    if(!angular.isObject(pathStrOrObj)){
-                        dataToSaveInCache[pathStrOrObj] = newValue;
-                    }else{
-                        dataToSaveInCache = pathStrOrObj;
+                    if (cacheProm) {
+                        getEntityPromMap[path] = getProm;
                     }
 
-                    var cachedDataMap = {};
-                    angular.forEach(dataToSaveInCache, function(value,path){
-                        var cachedValue;
+                    return getProm;
+                });
+            };
 
-                        if(angular.isObject(value) && !value.$save){
-                            cachedValue = Object.create({
-                                $save: function(){
-                                    return self.set(path,this);
-                                }
-                            });
-                            angular.forEach(value, function(value, key){
-                                cachedValue[key] = value;
-                            });
-                        }else{
-                            cachedValue = value;
+            StorageSrv.prototype.getServerValue = function(path){
+                var self = this;
+                return _processPath(path, self.config).then(function (processedPath) {
+                    return self.getter(processedPath);
+                });
+            };
+
+            StorageSrv.prototype.set = function (pathStrOrObj, newValue) {
+                var self = this;
+
+                return _processPath(pathStrOrObj, self.config).then(function (processedPathOrObj) {
+                    return self.setter(processedPathOrObj, newValue).then(function () {
+                        var dataToSaveInCache = {};
+
+                        if (!angular.isObject(processedPathOrObj)) {
+                            dataToSaveInCache[processedPathOrObj] = newValue;
+                        } else {
+                            dataToSaveInCache = processedPathOrObj;
                         }
-                        cachedDataMap[path] = cachedValue;
-                        self.entityCache.put(path,cachedValue);
-                    });
 
-                    return angular.isObject(pathStrOrObj) ? cachedDataMap : cachedDataMap[pathStrOrObj];
+                        var cachedDataMap = {};
+                        angular.forEach(dataToSaveInCache, function (value, path) {
+                            var cachedValue;
+
+                            if (angular.isObject(value) && !value.$save) {
+                                cachedValue = Object.create({
+                                    $save: function () {
+                                        return self.set(path, this);
+                                    }
+                                });
+                                angular.forEach(value, function (value, key) {
+                                    cachedValue[key] = value;
+                                });
+                            } else {
+                                cachedValue = value;
+                            }
+
+                            cachedDataMap[path] = cachedValue;
+
+                            if (_shouldBeCached(path, self.config)) {
+                                self.entityCache.put(path, cachedValue);
+                            }
+                        });
+
+                        return angular.isObject(processedPathOrObj) ? cachedDataMap : cachedDataMap[processedPathOrObj];
+                    });
                 });
             };
 
@@ -3512,7 +3701,7 @@
                 return new EntityCommunicator(path, defaultValues, this);
             };
 
-            StorageSrv.prototype.cleanPathCache = function(path){
+            StorageSrv.prototype.cleanPathCache = function (path) {
                 this.entityCache.remove(path);
             };
 
@@ -5194,12 +5383,8 @@
                                     var questionCopy = angular.copy(question);
                                     var answer = answersMap[questionCopy.id] || {};
 
-                                    questionCopy.__questionStatus = {
-                                        index: index
-                                    };
-                                    for (var prop in answer) {
-                                        questionCopy.__questionStatus[prop] = answer[prop];
-                                    }
+                                    questionCopy.__questionStatus= angular.copy(answer);
+                                    questionCopy.__questionStatus.index = index;
 
                                     return questionCopy;
                                 });
@@ -5217,20 +5402,8 @@
                                         return;
                                     }
 
-                                    var answer = {
-                                        questionId: questionWithAnswer.id
-                                    };
-
-                                    var propsToCopyFromQuestionStatus = [
-                                        'blackboardData', 'timeSpent', 'bookmark', 'userAnswer', 'isAnsweredCorrectly',
-                                        'audioEnded', 'afterAllowedTime'
-                                    ];
-                                    propsToCopyFromQuestionStatus.forEach(function (propName) {
-                                        var value = questionWithAnswer.__questionStatus[propName];
-                                        if (angular.isDefined(value)) {
-                                            answer[propName] = value;
-                                        }
-                                    });
+                                    var answer = angular.copy(questionWithAnswer.__questionStatus);
+                                    answer.questionId = questionWithAnswer.id;
 
                                     if (angular.isDefined(answer.userAnswer)) {
                                         scope.vm.answeredCount ++;
