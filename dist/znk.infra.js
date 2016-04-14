@@ -4003,13 +4003,13 @@
 
                     scope.d = {};
 
-                    var userAnswerToBind = '';  // stores the current userAnswer
-                    scope.d.userAnswer = function(newUserAnswer){
+                    scope.d.userAnswer = '';  // stores the current userAnswer
+                    scope.d.userAnswerGetterSetter = function(newUserAnswer){
                         if(arguments.length && _isAnswerValid(newUserAnswer)){
-                            userAnswerToBind = newUserAnswer;
-                            return userAnswerToBind;
+                            scope.d.userAnswer = newUserAnswer;
+                            return scope.d.userAnswer;
                         }
-                        return userAnswerToBind;
+                        return scope.d.userAnswer;
                     };
 
                     function _isAnswerValid(answerToCheck){
@@ -4021,8 +4021,8 @@
                         MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
 
                     scope.clickHandler = function(){
-                        ngModelCtrl.$setViewValue(userAnswerToBind);
-                        updateViewByCorrectAnswers(userAnswerToBind);
+                        ngModelCtrl.$setViewValue(scope.d.userAnswer);
+                        updateViewByCorrectAnswers(scope.d.userAnswer);
                     };
 
                     function updateViewByCorrectAnswers(userAnswer) {
@@ -4031,7 +4031,7 @@
                         scope.correctAnswer = correctAnswers[0].content;
 
                         if (viewMode === MODE_ANSWER_ONLY || viewMode === MODE_MUST_ANSWER) {
-                            userAnswerToBind = angular.isDefined(userAnswer) ? userAnswer : '';
+                            scope.d.userAnswer = angular.isDefined(userAnswer) ? userAnswer : '';
                             scope.showCorrectAnswer = false;
                         } else {
 
@@ -4040,18 +4040,18 @@
                                     scope.userAnswerStatus = 'neutral';
                                     scope.showCorrectAnswer = viewMode === MODE_REVIEW;
                             } else {
-                                if (_isAnswerdCorrectly(userAnswer, correctAnswers)) {
+                                if (_isAnsweredCorrectly(userAnswer, correctAnswers)) {
                                     scope.userAnswerStatus = 'correct';
                                 } else {
                                     scope.userAnswerStatus = 'wrong';
                                 }
                                 scope.showCorrectAnswer = true;
-                                userAnswerToBind = userAnswer;
+                                scope.d.userAnswer = userAnswer;
                             }
                         }
                     }
 
-                    function _isAnswerdCorrectly(userAnswer,correctAnswers) {
+                    function _isAnsweredCorrectly(userAnswer,correctAnswers) {
                         for (var i = 0; i < correctAnswers.length; i++) {
                             if (userAnswer === correctAnswers[i].content) {
                                 return true;
@@ -6793,7 +6793,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "\n" +
     "    <div ng-switch-when=\"true\" ng-class=\"userAnswerStatus\">\n" +
     "        <div class=\"answer-status\">\n" +
-    "            <div class=\"user-answer\">{{d.userAnswer()}}</div>\n" +
+    "            <div class=\"user-answer\">{{d.userAnswer}}</div>\n" +
     "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
     "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
     "        </div>\n" +
@@ -6802,7 +6802,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "\n" +
     "    <div ng-switch-when=\"false\">\n" +
     "        <div class=\"input-wrapper\">\n" +
-    "            <input ng-model-options=\"{ getterSetter: true }\" ng-model=\"d.userAnswer\">\n" +
+    "            <input ng-model-options=\"{ getterSetter: true }\" ng-model=\"d.userAnswerGetterSetter\">\n" +
     "            <div class=\"arrow-wrapper\" ng-click=\"clickHandler()\">\n" +
     "                <svg-icon name=\"arrow\"></svg-icon>\n" +
     "                <div class=\"svg-back\"></div>\n" +
