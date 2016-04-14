@@ -6808,7 +6808,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "<div ng-repeat=\"answer in ::d.answers track by answer.id\"\n" +
     "     class=\"answer\"\n" +
     "     ng-click=\"d.click(answer)\"\n" +
-    "    tabindex=\"\">\n" +
+    "     tabindex=\"-1\">\n" +
     "    <div class=\"content-wrapper\">\n" +
     "        <div class=\"answer-index-wrapper\">\n" +
     "            <span class=\"index-char\">{{::d.getIndexChar($index)}}</span>\n" +
