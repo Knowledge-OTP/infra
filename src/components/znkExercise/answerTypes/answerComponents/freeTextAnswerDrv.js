@@ -19,13 +19,13 @@
 
                     scope.d = {};
 
-                    var userAnswerToBind = '';  // stores the current userAnswer
-                    scope.d.userAnswer = function(newUserAnswer){
+                    scope.d.userAnswer = '';  // stores the current userAnswer
+                    scope.d.userAnswerGetterSetter = function(newUserAnswer){
                         if(arguments.length && _isAnswerValid(newUserAnswer)){
-                            userAnswerToBind = newUserAnswer;
-                            return userAnswerToBind;
+                            scope.d.userAnswer = newUserAnswer;
+                            return scope.d.userAnswer;
                         }
-                        return userAnswerToBind;
+                        return scope.d.userAnswer;
                     };
 
                     function _isAnswerValid(answerToCheck){
@@ -37,8 +37,8 @@
                         MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
 
                     scope.clickHandler = function(){
-                        ngModelCtrl.$setViewValue(userAnswerToBind);
-                        updateViewByCorrectAnswers(userAnswerToBind);
+                        ngModelCtrl.$setViewValue( scope.d.userAnswer);
+                        updateViewByCorrectAnswers( scope.d.userAnswer);
                     };
 
                     function updateViewByCorrectAnswers(userAnswer) {
@@ -47,7 +47,7 @@
                         scope.correctAnswer = correctAnswers[0].content;
 
                         if (viewMode === MODE_ANSWER_ONLY || viewMode === MODE_MUST_ANSWER) {
-                            userAnswerToBind = angular.isDefined(userAnswer) ? userAnswer : '';
+                            scope.d.userAnswer = angular.isDefined(userAnswer) ? userAnswer : '';
                             scope.showCorrectAnswer = false;
                         } else {
 
@@ -62,7 +62,7 @@
                                     scope.userAnswerStatus = 'wrong';
                                 }
                                 scope.showCorrectAnswer = true;
-                                userAnswerToBind = userAnswer;
+                                scope.d.userAnswer = userAnswer;
                             }
                         }
                     }
