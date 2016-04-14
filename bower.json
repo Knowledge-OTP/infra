@@ -5,8 +5,8 @@
     "Zinkerz"
   ],
   "dependencies": {
-    "angular": "1.4.8",
-    "angular-animate": "1.4.8",
+    "angular": "1.5.3",
+    "angular-animate": "1.5.3",
     "Swiper": "swiper#~3.2.7",
     "firebase": "~2.3.2"
   },
@@ -18,7 +18,7 @@
   ],
   "main": "dist/znk.infra.js",
   "resolutions": {
-    "angular": "1.4.x"
+    "angular": "1.5.4"
   },
   "devDependencies": {
     "es5-shim": "~4.4.1",

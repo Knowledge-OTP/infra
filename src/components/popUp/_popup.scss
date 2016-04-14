@@ -73,20 +73,22 @@
                 };
 
                 .button-wrapper{
-                    cursor: pointer;
-                    @include text-style(14px, $fcColor5, Lato, $regularFontWeight);
-                    border: 1px solid $bgColor3;
-                    border-radius: 20px;
-
-                    .btn{
-                        @include flex-middle;
-                        @include dimension(150px, 34px);
+                    &:nth-child(2){
+                        button.btn{
+                            color: $fcColor2;
+                            margin-left: 10px;
+                            background-color: $bgColor3;
+                        }
                     }
 
-                    &:nth-child(2){
-                        color: $fcColor2;
-                        margin-left: 10px;
-                        background-color: $bgColor3;
+                    button.btn{
+                        cursor: pointer;
+                        @include text-style(14px, $fcColor5, Lato, $regularFontWeight);
+                        border: 1px solid $bgColor3;
+                        border-radius: 20px;
+                        @include flex-middle;
+                        @include dimension(150px, 34px);
+                        background: $bgColor6;
                     }
                 }
             }
@@ -97,7 +99,6 @@
                 margin:{
                     top: 240px;
                 }
-            ;
 
                 .znk-popup-header{
                     height: 37px;

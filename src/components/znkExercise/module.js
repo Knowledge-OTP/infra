@@ -5,6 +5,7 @@
             'znk.infra.enum',
             'znk.infra.svgIcon',
             'znk.infra.scroll',
+            'znk.infra.autofocus',
             'ngAnimate'
         ])
         .config([
