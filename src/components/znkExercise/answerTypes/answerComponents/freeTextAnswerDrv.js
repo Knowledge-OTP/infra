@@ -19,13 +19,13 @@
 
                     scope.d = {};
 
-                    var userAnswer = '';  // stores the current userAnswer
+                    var userAnswerToBind = '';  // stores the current userAnswer
                     scope.d.userAnswer = function(newUserAnswer){
                         if(arguments.length && _isAnswerValid(newUserAnswer)){
-                            userAnswer = newUserAnswer;
-                            return userAnswer;
+                            userAnswerToBind = newUserAnswer;
+                            return userAnswerToBind;
                         }
-                        return userAnswer;
+                        return userAnswerToBind;
                     };
 
                     function _isAnswerValid(answerToCheck){
@@ -37,8 +37,8 @@
                         MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
 
                     scope.clickHandler = function(){
-                        ngModelCtrl.$setViewValue(userAnswer);
-                        updateViewByCorrectAnswers(userAnswer);
+                        ngModelCtrl.$setViewValue(userAnswerToBind);
+                        updateViewByCorrectAnswers(userAnswerToBind);
                     };
 
                     function updateViewByCorrectAnswers(userAnswer) {
@@ -47,7 +47,7 @@
                         scope.correctAnswer = correctAnswers[0].content;
 
                         if (viewMode === MODE_ANSWER_ONLY || viewMode === MODE_MUST_ANSWER) {
-                            scope.d.userAnswer = angular.isDefined(userAnswer) ? userAnswer : '';
+                            userAnswerToBind = angular.isDefined(userAnswer) ? userAnswer : '';
                             scope.showCorrectAnswer = false;
                         } else {
 
@@ -62,7 +62,7 @@
                                     scope.userAnswerStatus = 'wrong';
                                 }
                                 scope.showCorrectAnswer = true;
-                                scope.d.userAnswer = userAnswer;
+                                userAnswerToBind = userAnswer;
                             }
                         }
                     }
