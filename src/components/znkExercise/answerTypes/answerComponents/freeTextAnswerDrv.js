@@ -15,21 +15,28 @@
                 link: function (scope, element, attrs, ctrls) {
                     var ngModelCtrl = ctrls[0];
                     var answerBuilderCtrl = ctrls[1];
+                    var userAnsweValidation = /^[0-9\/\.]{0,4}$/;
 
                     scope.d = {};
+
+                    var userAnswer = '';  // stores the current userAnswer
+                    scope.d.userAnswer = function(newUserAnswer){
+                        if(arguments.length && _isValid(newUserAnswer)){
+                           return  userAnswer = newUserAnswer
+                        }
+                        return userAnswer
+                    };
+
+                    function _isValid(str){
+                        return userAnsweValidation.test(str);
+                    }
 
                     var MODE_ANSWER_ONLY = ZnkExerciseViewModeEnum.ONLY_ANSWER.enum,
                         MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum,
                         MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
 
-                    var regex = /(?: |^)\d*\.?\d+(?: |$)|(?: |^)\d*\/?\d+(?: |$)/;
                     scope.clickHandler = function(userAnswer){
-                        if(regex.test(userAnswer)){
-                            ngModelCtrl.$setViewValue(userAnswer);
-                            updateViewByCorrectAnswers(userAnswer);
-                        } else {
-                            // todo: user answer invalid
-                        }
+                        updateViewByCorrectAnswers(userAnswer());
                     };
 
                     function updateViewByCorrectAnswers(userAnswer) {

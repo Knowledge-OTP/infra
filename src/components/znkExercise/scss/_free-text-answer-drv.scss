@@ -69,26 +69,6 @@ free-text-answer{
             }
         }
 
-        .instructions-title-wrapper{
-            @include text-style(14px, $fcColor6, Lato, $regularFontWeight);
-
-            .instructions-title{
-                display: flex;
-                margin-bottom: 7px;
-
-                svg-icon.info{
-                    @include dimension(16px, auto);
-                    display: inline-block;
-                    margin-left: 6px;
-                }
-            }
-
-            .note-title{
-                @include text-style(12px, $fcColor9, Lato Italic, $regularFontWeight);
-                margin-bottom: 17px;
-            }
-        }
-
         .input-wrapper {
             @include dimension(261.5px, 43px);
             position: relative;
