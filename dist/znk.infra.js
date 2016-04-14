@@ -3790,21 +3790,30 @@
                 link: function (scope, element, attrs, ctrls) {
                     var ngModelCtrl = ctrls[0];
                     var answerBuilderCtrl = ctrls[1];
+                    var userAnswerValidation = /^[0-9\/\.]{0,4}$/;
 
                     scope.d = {};
+
+                    var userAnswer = '';  // stores the current userAnswer
+                    scope.d.userAnswer = function(newUserAnswer){
+                        if(arguments.length && _isAnswerValid(newUserAnswer)){
+                            userAnswer = newUserAnswer;
+                            return userAnswer;
+                        }
+                        return userAnswer;
+                    };
+
+                    function _isAnswerValid(answerToCheck){
+                        return userAnswerValidation.test(answerToCheck);
+                    }
 
                     var MODE_ANSWER_ONLY = ZnkExerciseViewModeEnum.ONLY_ANSWER.enum,
                         MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum,
                         MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
 
-                    var regex = /(?: |^)\d*\.?\d+(?: |$)|(?: |^)\d*\/?\d+(?: |$)/;
-                    scope.clickHandler = function(userAnswer){
-                        if(regex.test(userAnswer)){
-                            ngModelCtrl.$setViewValue(userAnswer);
-                            updateViewByCorrectAnswers(userAnswer);
-                        } else {
-                            // todo: user answer invalid
-                        }
+                    scope.clickHandler = function(){
+                        ngModelCtrl.$setViewValue(userAnswer);
+                        updateViewByCorrectAnswers(userAnswer);
                     };
 
                     function updateViewByCorrectAnswers(userAnswer) {
@@ -6599,12 +6608,8 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "    </div>\n" +
     "\n" +
     "    <div ng-switch-when=\"false\">\n" +
-    "        <div class=\"instructions-title-wrapper\">\n" +
-    "            <div class=\"instructions-title\">Type your answer in the textboxes below.<svg-icon name=\"info\"></svg-icon></div>\n" +
-    "            <div class=\"note-title\">Note: answers cannot be longer than four characters (including decimal points and fractions signs)</div>\n" +
-    "        </div>\n" +
     "        <div class=\"input-wrapper\">\n" +
-    "            <input min=\"0\" max=\"99\" required ng-model=\"d.userAnswer\">\n" +
+    "            <input  ng-model-options=\"{ getterSetter: true }\" ng-model=\"d.userAnswer\">\n" +
     "            <div class=\"arrow-wrapper\" ng-click=\"clickHandler(d.userAnswer)\">\n" +
     "                <svg-icon name=\"arrow\"></svg-icon>\n" +
     "                <div class=\"svg-back\"></div>\n" +

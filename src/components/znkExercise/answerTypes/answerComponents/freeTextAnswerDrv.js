@@ -22,9 +22,10 @@
                     var userAnswer = '';  // stores the current userAnswer
                     scope.d.userAnswer = function(newUserAnswer){
                         if(arguments.length && _isAnswerValid(newUserAnswer)){
-                           return  userAnswer = newUserAnswer
+                            userAnswer = newUserAnswer;
+                            return userAnswer;
                         }
-                        return userAnswer
+                        return userAnswer;
                     };
 
                     function _isAnswerValid(answerToCheck){
