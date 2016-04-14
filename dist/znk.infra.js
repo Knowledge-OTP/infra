@@ -32,6 +32,21 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.autofocus', ['znk.infra.enum', 'znk.infra.svgIcon'])
+        .config([
+        'SvgIconSrvProvider',
+        function (SvgIconSrvProvider) {
+            var svgMap = {
+                'clock-icon': 'components/general/svg/clock-icon.svg'
+            };
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+        }]);
+
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.content', []);
 })(angular);
 (function (angular) {
@@ -102,7 +117,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.popUp', ['znk.infra.svgIcon'])
+    angular.module('znk.infra.popUp', ['znk.infra.svgIcon', 'znk.infra.autofocus'])
         .config([
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
@@ -379,6 +394,36 @@
         };
     }]);
 })(angular);
+
+/**
+ * the HTML5 autofocus property can be finicky when it comes to dynamically loaded
+ * templates and such with AngularJS. Use this simple directive to
+ * tame this beast once and for all.
+ *
+ * Usage:
+ * <input type="text" autofocus>
+ *
+ * License: MIT
+ */
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.autofocus')
+        .directive('ngAutofocus', ['$timeout', function($timeout) {
+            return {
+                restrict: 'A',
+                link : function(scope, element, attrs) {
+                    if(scope.$eval(attrs.ngAutofocus)){
+                        $timeout(function() {
+                            element[0].focus();
+                        }, 0, false);
+                    }
+                }
+            };
+        }]);
+})(angular);
+
 
 'use strict';
 
@@ -1788,34 +1833,6 @@
 })(angular);
 
 /**
- * the HTML5 autofocus property can be finicky when it comes to dynamically loaded
- * templates and such with AngularJS. Use this simple directive to
- * tame this beast once and for all.
- *
- * Usage:
- * <input type="text" autofocus>
- *
- * License: MIT
- */
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.general')
-        .directive('autofocus', ['$timeout', function($timeout) {
-            return {
-                restrict: 'A',
-                link : function($scope, $element) {
-                    $timeout(function() {
-                        $element[0].focus();
-                    }, 0, false);
-                }
-            };
-        }]);
-})(angular);
-
-
-/**
  * evaluates content , then it appended it to the DOM , and finally it compiles it with scope which was created out of the directive scope.
  * attrs-
  *  compile-drv: expression which be evaluated and then appended to the dom.
@@ -2695,11 +2712,13 @@
                             '<div class="znk-popup-body">%body%</div>' +
                             '<div class="znk-popup-buttons">' +
                                 '<div ng-repeat="button in ::d.buttons" class="button-wrapper">' +
-                                    '<div class="btn" ' +
+                                    '<button class="btn" ' +
                                              'ng-click="d.btnClick(button)" ' +
-                                             'ng-class="button.type"> ' +
+                                             'ng-class="button.type" ' +
+                                             'ng-autofocus="button.addAutoFocus" ' +
+                                             'tabindex="0">' +
                                              '{{button.text}}' +
-                                    '</div>' +
+                                    '</button>' +
                                 '</div>' +
                             '</div>' +
                         '</div>' +
@@ -2770,10 +2789,11 @@
                 return PopUpSrv.popup(wrapperCls,header,body,btnArr);
             }
 
-            function BaseButton(text,type,resolveVal,rejectVal){
+            function BaseButton(text,type,resolveVal,rejectVal, addAutoFocus){
                 var btn = {
                     text: text || '',
-                    type: type || ''
+                    type: type || '',
+                    addAutoFocus: addAutoFocus
                 };
 
                 if(rejectVal){
@@ -2786,28 +2806,27 @@
             }
 
             PopUpSrv.error = function error(title,content){
-                var btn = new BaseButton('OK',null,'ok');
+                var btn = new BaseButton('OK',null,'ok', undefined, true);
                 return basePopup('error-popup','exclamation-mark',title || 'OOOPS...',content,[btn]);
             };
-
 
             PopUpSrv.ErrorConfirmation = function error(title, content, acceptBtnTitle,cancelBtnTitle){
                 var buttons = [
                     new BaseButton(acceptBtnTitle,null,acceptBtnTitle),
-                    new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle)
+                    new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle, true)
                 ];
                 return basePopup('error-popup','exclamation-mark',title,content,buttons);
             };
 
             PopUpSrv.success = function success(title,content){
-                var btn = new BaseButton('OK',null,'ok');
+                var btn = new BaseButton('OK',null,'ok', undefined, true);
                 return basePopup('success-popup','exclamation-mark',title || '',content,[btn]);
             };
 
             PopUpSrv.warning = function warning(title,content,acceptBtnTitle,cancelBtnTitle){
                 var buttons = [
                     new BaseButton(acceptBtnTitle,null,acceptBtnTitle),
-                    new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle)
+                    new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle, true)
                 ];
                 return basePopup('warning-popup','exclamation-mark',title,content,buttons);
             };
@@ -6834,7 +6853,9 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "    </button>\n" +
     "</div>\n" +
     "<div class=\"done-btn-wrap show-opacity-animate\" ng-if=\"vm.showDoneButton\">\n" +
-    "    <button tabindex=\"1\" autofocus class=\"done-btn\"\n" +
+    "    <button tabindex=\"0\"\n" +
+    "            autofocus=\"true\"\n" +
+    "            class=\"done-btn\"\n" +
     "            ng-click=\"onDone()\">DONE\n" +
     "    </button>\n" +
     "</div>\n" +
