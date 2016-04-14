@@ -963,8 +963,6 @@ znk-exercise.desktop {
       font-weight: normal;
       border-radius: 30px;
       cursor: pointer; }
-      znk-exercise.desktop .btn-section .done-btn-wrap .done-btn:focus {
-        background: #f08a1c; }
   znk-exercise.desktop svg-icon.chevron .st0 {
     fill: none;
     stroke: #231F20;
@@ -997,8 +995,6 @@ znk-exercise.desktop {
     border-right: none;
     border-bottom: none;
     border-left: none; }
-    znk-exercise.desktop button:focus {
-      outline: none; }
 
 znk-exercise.done-btn-show znk-exercise-pager {
   width: calc(100% - 185px); }
