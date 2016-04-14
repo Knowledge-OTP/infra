@@ -3794,13 +3794,13 @@
 
                     scope.d = {};
 
-                    var userAnswer = '';  // stores the current userAnswer
+                    var userAnswerToBind = '';  // stores the current userAnswer
                     scope.d.userAnswer = function(newUserAnswer){
                         if(arguments.length && _isAnswerValid(newUserAnswer)){
-                            userAnswer = newUserAnswer;
-                            return userAnswer;
+                            userAnswerToBind = newUserAnswer;
+                            return userAnswerToBind;
                         }
-                        return userAnswer;
+                        return userAnswerToBind;
                     };
 
                     function _isAnswerValid(answerToCheck){
@@ -3812,8 +3812,8 @@
                         MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
 
                     scope.clickHandler = function(){
-                        ngModelCtrl.$setViewValue(userAnswer);
-                        updateViewByCorrectAnswers(userAnswer);
+                        ngModelCtrl.$setViewValue(userAnswerToBind);
+                        updateViewByCorrectAnswers(userAnswerToBind);
                     };
 
                     function updateViewByCorrectAnswers(userAnswer) {
@@ -3822,7 +3822,7 @@
                         scope.correctAnswer = correctAnswers[0].content;
 
                         if (viewMode === MODE_ANSWER_ONLY || viewMode === MODE_MUST_ANSWER) {
-                            scope.d.userAnswer = angular.isDefined(userAnswer) ? userAnswer : '';
+                            userAnswerToBind = angular.isDefined(userAnswer) ? userAnswer : '';
                             scope.showCorrectAnswer = false;
                         } else {
 
@@ -3837,7 +3837,7 @@
                                     scope.userAnswerStatus = 'wrong';
                                 }
                                 scope.showCorrectAnswer = true;
-                                scope.d.userAnswer = userAnswer;
+                                userAnswerToBind = userAnswer;
                             }
                         }
                     }
@@ -6600,7 +6600,7 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "\n" +
     "    <div ng-switch-when=\"true\" ng-class=\"userAnswerStatus\">\n" +
     "        <div class=\"answer-status\">\n" +
-    "            <div class=\"user-answer\">{{d.userAnswer}}</div>\n" +
+    "            <div class=\"user-answer\">{{d.userAnswer()}}</div>\n" +
     "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
     "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
     "        </div>\n" +
@@ -6609,8 +6609,8 @@ angular.module('znk.infra').run(['$templateCache', function($templateCache) {
     "\n" +
     "    <div ng-switch-when=\"false\">\n" +
     "        <div class=\"input-wrapper\">\n" +
-    "            <input  ng-model-options=\"{ getterSetter: true }\" ng-model=\"d.userAnswer\">\n" +
-    "            <div class=\"arrow-wrapper\" ng-click=\"clickHandler(d.userAnswer)\">\n" +
+    "            <input ng-model-options=\"{ getterSetter: true }\" ng-model=\"d.userAnswer\">\n" +
+    "            <div class=\"arrow-wrapper\" ng-click=\"clickHandler()\">\n" +
     "                <svg-icon name=\"arrow\"></svg-icon>\n" +
     "                <div class=\"svg-back\"></div>\n" +
     "            </div>\n" +
