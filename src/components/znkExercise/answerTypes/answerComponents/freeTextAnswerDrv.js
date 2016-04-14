@@ -21,13 +21,13 @@
 
                     var userAnswer = '';  // stores the current userAnswer
                     scope.d.userAnswer = function(newUserAnswer){
-                        if(arguments.length && _isValid(newUserAnswer)){
+                        if(arguments.length && _isAnswerValid(newUserAnswer)){
                            return  userAnswer = newUserAnswer
                         }
                         return userAnswer
                     };
 
-                    function _isValid(answerToCheck){
+                    function _isAnswerValid(answerToCheck){
                         return userAnswerValidation.test(answerToCheck);
                     }
 
