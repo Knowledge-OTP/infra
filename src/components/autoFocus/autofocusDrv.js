@@ -12,14 +12,16 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.general')
-        .directive('autofocus', ['$timeout', function($timeout) {
+    angular.module('znk.infra.autofocus')
+        .directive('ngAutofocus', ['$timeout', function($timeout) {
             return {
                 restrict: 'A',
-                link : function($scope, $element) {
-                    $timeout(function() {
-                        $element[0].focus();
-                    }, 0, false);
+                link : function(scope, element, attrs) {
+                    if(scope.$eval(attrs.ngAutofocus)){
+                        $timeout(function() {
+                            element[0].focus();
+                        }, 0, false);
+                    }
                 }
             };
         }]);

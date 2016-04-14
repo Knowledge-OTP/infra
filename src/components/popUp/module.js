@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.popUp', ['znk.infra.svgIcon'])
+    angular.module('znk.infra.popUp', ['znk.infra.svgIcon', 'znk.infra.autofocus'])
         .config([
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
