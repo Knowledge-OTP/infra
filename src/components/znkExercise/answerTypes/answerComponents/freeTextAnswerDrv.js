@@ -56,7 +56,7 @@
                                     scope.userAnswerStatus = 'neutral';
                                     scope.showCorrectAnswer = viewMode === MODE_REVIEW;
                             } else {
-                                if (_isAnswerdCorrectly(userAnswer, correctAnswers)) {
+                                if (_isAnsweredCorrectly(userAnswer, correctAnswers)) {
                                     scope.userAnswerStatus = 'correct';
                                 } else {
                                     scope.userAnswerStatus = 'wrong';
@@ -67,7 +67,7 @@
                         }
                     }
 
-                    function _isAnswerdCorrectly(userAnswer,correctAnswers) {
+                    function _isAnsweredCorrectly(userAnswer,correctAnswers) {
                         for (var i = 0; i < correctAnswers.length; i++) {
                             if (userAnswer === correctAnswers[i].content) {
                                 return true;
