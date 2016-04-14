@@ -1424,25 +1424,6 @@ free-text-answer .free-text-answer-wrapper {
         stroke: #87ca4d; }
   free-text-answer .free-text-answer-wrapper .correct .user-answer {
     color: #87ca4d; }
-  free-text-answer .free-text-answer-wrapper .instructions-title-wrapper {
-    font-size: 14px;
-    color: #4f4d4d;
-    font-family: Lato;
-    font-weight: 400; }
-    free-text-answer .free-text-answer-wrapper .instructions-title-wrapper .instructions-title {
-      display: flex;
-      margin-bottom: 7px; }
-      free-text-answer .free-text-answer-wrapper .instructions-title-wrapper .instructions-title svg-icon.info {
-        width: 16px;
-        height: auto;
-        display: inline-block;
-        margin-left: 6px; }
-    free-text-answer .free-text-answer-wrapper .instructions-title-wrapper .note-title {
-      font-size: 12px;
-      color: #757a83;
-      font-family: Lato Italic;
-      font-weight: 400;
-      margin-bottom: 17px; }
   free-text-answer .free-text-answer-wrapper .input-wrapper {
     width: 261.5px;
     height: 43px;

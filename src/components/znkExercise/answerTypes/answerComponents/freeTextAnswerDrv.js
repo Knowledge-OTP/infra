@@ -15,21 +15,30 @@
                 link: function (scope, element, attrs, ctrls) {
                     var ngModelCtrl = ctrls[0];
                     var answerBuilderCtrl = ctrls[1];
+                    var userAnswerValidation = /^[0-9\/\.]{0,4}$/;
 
                     scope.d = {};
+
+                    scope.d.userAnswer = '';  // stores the current userAnswer
+                    scope.d.userAnswerGetterSetter = function(newUserAnswer){
+                        if(arguments.length && _isAnswerValid(newUserAnswer)){
+                            scope.d.userAnswer = newUserAnswer;
+                            return scope.d.userAnswer;
+                        }
+                        return scope.d.userAnswer;
+                    };
+
+                    function _isAnswerValid(answerToCheck){
+                        return userAnswerValidation.test(answerToCheck);
+                    }
 
                     var MODE_ANSWER_ONLY = ZnkExerciseViewModeEnum.ONLY_ANSWER.enum,
                         MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum,
                         MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
 
-                    var regex = /(?: |^)\d*\.?\d+(?: |$)|(?: |^)\d*\/?\d+(?: |$)/;
-                    scope.clickHandler = function(userAnswer){
-                        if(regex.test(userAnswer)){
-                            ngModelCtrl.$setViewValue(userAnswer);
-                            updateViewByCorrectAnswers(userAnswer);
-                        } else {
-                            // todo: user answer invalid
-                        }
+                    scope.clickHandler = function(){
+                        ngModelCtrl.$setViewValue(scope.d.userAnswer);
+                        updateViewByCorrectAnswers(scope.d.userAnswer);
                     };
 
                     function updateViewByCorrectAnswers(userAnswer) {
@@ -47,7 +56,7 @@
                                     scope.userAnswerStatus = 'neutral';
                                     scope.showCorrectAnswer = viewMode === MODE_REVIEW;
                             } else {
-                                if (_isAnswerdCorrectly(userAnswer, correctAnswers)) {
+                                if (_isAnsweredCorrectly(userAnswer, correctAnswers)) {
                                     scope.userAnswerStatus = 'correct';
                                 } else {
                                     scope.userAnswerStatus = 'wrong';
@@ -58,7 +67,7 @@
                         }
                     }
 
-                    function _isAnswerdCorrectly(userAnswer,correctAnswers) {
+                    function _isAnsweredCorrectly(userAnswer,correctAnswers) {
                         for (var i = 0; i < correctAnswers.length; i++) {
                             if (userAnswer === correctAnswers[i].content) {
                                 return true;
