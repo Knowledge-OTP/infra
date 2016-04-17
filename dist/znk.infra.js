@@ -1044,7 +1044,7 @@ angular.module('znk.infra.contentAvail').run(['$templateCache', function($templa
     ]);
 })(angular);
 
-angular.module('znk.infra.enums').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.enum').run(['$templateCache', function($templateCache) {
 
 }]);
 
