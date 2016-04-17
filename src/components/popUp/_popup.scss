@@ -1,3 +1,7 @@
+@import './src/scss/imports/variables',
+        './src/scss/imports/colors',
+        './src/scss/imports/mixins';
+
 .znk-popup{
     .base-popup{
         z-index: 999999;

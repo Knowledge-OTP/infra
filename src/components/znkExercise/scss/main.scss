@@ -1,7 +1,12 @@
-@import "../../../../bower_components/Swiper/dist/css/swiper";
-@import "select-answer-drv",
-"znk-exercise-drv-desktop",
-"znk-exercise-pager-drv";
+@import './src/scss/imports/variables',
+        './src/scss/imports/colors',
+        './src/scss/imports/mixins';
+
+@import 'free-text-answer-drv',
+        'rate-answer-drv',
+        'select-answer-drv',
+        'znk-exercise-drv-desktop',
+        'znk-exercise-pager-drv';
 
 znk-exercise {
     &:not(.done-btn-show){

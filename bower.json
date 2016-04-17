@@ -1,6 +1,6 @@
 {
   "name": "infra",
-  "version": "v2.0.2",
+  "version": "v3.0.0",
   "authors": [
     "Zinkerz"
   ],
@@ -16,7 +16,10 @@
     "test",
     "demo"
   ],
-  "main": "dist/znk.infra.js",
+  "main": [
+      "dist/znk.infra.js",
+      "dist/main.css"
+  ],
   "resolutions": {
     "angular": "1.5.4"
   },
