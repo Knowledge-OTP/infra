@@ -91,7 +91,7 @@ module.exports = function (grunt) {
         concat: {
             dist: {
                 files:[{
-                    src: ['.tmp/components/**/*.js'],
+                    src: ['.tmp/components/**/module.js', '.tmp/components/**/*.js'],
                     dest: '<%= yeoman.dist %>/<%= yeoman.appName %>.js'
                 }]
             }
