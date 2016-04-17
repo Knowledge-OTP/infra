@@ -405,7 +405,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 })(angular);
 
 
-angular.module('znk.infra.autoFocus').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.autofocus').run(['$templateCache', function($templateCache) {
 
 }]);
 
