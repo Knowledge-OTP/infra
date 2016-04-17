@@ -2601,7 +2601,7 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
     });
 })(angular);
 
-angular.module('znk.infra.hintSrv').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.hint').run(['$templateCache', function($templateCache) {
 
 }]);
 
