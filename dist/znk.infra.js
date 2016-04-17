@@ -1499,7 +1499,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
     });
 })(angular);
 
-angular.module('znk.infra.estimationScore').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.estimatedScore').run(['$templateCache', function($templateCache) {
 
 }]);
 

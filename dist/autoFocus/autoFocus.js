@@ -43,6 +43,6 @@
 })(angular);
 
 
-angular.module('znk.infra.autoFocus').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.autofocus').run(['$templateCache', function($templateCache) {
 
 }]);
