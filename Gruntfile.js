@@ -94,7 +94,7 @@ module.exports = function (grunt) {
                     src: ['.tmp/components/**/module.js', '.tmp/components/**/*.js', '.tmp/module.js'],
                     dest: '<%= yeoman.dist %>/<%= yeoman.appName %>.js'
                 },{
-                    src: ['<%= yeoman.dist %>/**/main.css'],
+                    src: ['<%= yeoman.dist %>/**/main.css','.tmp/general.css'],
                     dest: '<%= yeoman.dist %>/main.css'
                 }]
             }
@@ -186,6 +186,11 @@ module.exports = function (grunt) {
                     dest: 'dist/',
                     ext: '.css'
                 }]
+            },
+            general:{
+                files:{
+                    '.tmp/general.css': '<%= yeoman.src %>/scss/general.scss'
+                }
             }
         },
         copy: {
