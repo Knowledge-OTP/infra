@@ -44,6 +44,7 @@
                         return $q.when({
                             latestRevisions: mockData.latestRevisions,
                             revisionManifest: mockData.revisionManifest,
+                            revisionManifestGetter: null,
                             create: function(path) {
                                 return { set: angular.noop, get: function() { return { value: 666 } } };
                             },
