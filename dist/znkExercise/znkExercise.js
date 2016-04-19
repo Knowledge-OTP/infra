@@ -1896,7 +1896,7 @@
 
 
 angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
-  $templateCache.put("../.tmp/components/znkExercise/answerTypes/templates/freeTextAnswerDrv.html",
+  $templateCache.put("components/znkExercise/answerTypes/templates/freeTextAnswerDrv.html",
     "<div class=\"free-text-answer-wrapper\" ng-switch=\"showCorrectAnswer\">\n" +
     "\n" +
     "    <div ng-switch-when=\"true\" ng-class=\"userAnswerStatus\">\n" +
@@ -1920,7 +1920,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "\n" +
     "</div>\n" +
     "");
-  $templateCache.put("../.tmp/components/znkExercise/answerTypes/templates/rateAnswerDrv.html",
+  $templateCache.put("components/znkExercise/answerTypes/templates/rateAnswerDrv.html",
     "<div class=\"rate-answer-wrapper\">\n" +
     "\n" +
     "    <div class=\"checkbox-items-wrapper\" >\n" +
@@ -1937,7 +1937,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "    </div>\n" +
     "</div>\n" +
     "");
-  $templateCache.put("../.tmp/components/znkExercise/answerTypes/templates/selectAnswerDrv.html",
+  $templateCache.put("components/znkExercise/answerTypes/templates/selectAnswerDrv.html",
     "<div ng-repeat=\"answer in ::d.answers track by answer.id\"\n" +
     "     class=\"answer\"\n" +
     "     ng-click=\"d.click(answer)\"\n" +
@@ -1952,7 +1952,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "    </div>\n" +
     "</div>\n" +
     "");
-  $templateCache.put("../.tmp/components/znkExercise/core/template/btnSectionDesktopTemplate.html",
+  $templateCache.put("components/znkExercise/core/template/btnSectionDesktopTemplate.html",
     "<div class=\"btn-container left-container ng-hide\"\n" +
     "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
     "    <button ng-click=\"vm.prevQuestion()\">\n" +
@@ -1974,7 +1974,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "    </button>\n" +
     "</div>\n" +
     "");
-  $templateCache.put("../.tmp/components/znkExercise/core/template/btnSectionMobileTemplate.html",
+  $templateCache.put("components/znkExercise/core/template/btnSectionMobileTemplate.html",
     "<div ng-class=\"{ 'next-disabled' : settings.slideDirection === d.slideDirections.NONE ||  settings.slideDirection === d.slideDirections.RIGHT }\">\n" +
     "    <div class=\"bookmark-icon-container only-tablet\"\n" +
     "         ng-class=\"vm.questionsWithAnswers[vm.currentSlide].__questionStatus.bookmark ? 'bookmark-active-icon' : 'bookmark-icon'\"\n" +
@@ -2004,7 +2004,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "    </button>\n" +
     "</div>\n" +
     "");
-  $templateCache.put("../.tmp/components/znkExercise/core/template/questionSwiperDesktopTemplate.html",
+  $templateCache.put("components/znkExercise/core/template/questionSwiperDesktopTemplate.html",
     "<znk-swiper class=\"znk-carousel\"\n" +
     "            ng-model=\"vm.currSlideIndex\"\n" +
     "            actions=\"vm.swiperActions\"\n" +
@@ -2020,7 +2020,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "    </div>\n" +
     "</znk-swiper>\n" +
     "");
-  $templateCache.put("../.tmp/components/znkExercise/core/template/questionSwiperMobileTemplate.html",
+  $templateCache.put("components/znkExercise/core/template/questionSwiperMobileTemplate.html",
     "<ion-slide-box znk-slide=\"settings.slideDirection\" class=\"znk-carousel\"\n" +
     "               show-pager=\"false\"\n" +
     "               active-slide=\"vm.currentSlide\">\n" +
@@ -2031,7 +2031,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "    </question-builder>\n" +
     "</ion-slide-box>\n" +
     "");
-  $templateCache.put("../.tmp/components/znkExercise/core/template/znkExerciseDrv.html",
+  $templateCache.put("components/znkExercise/core/template/znkExerciseDrv.html",
     "<div ng-transclude></div>\n" +
     "<questions-carousel class=\"znk-carousel-container\"\n" +
     "                    questions=\"vm.questionsWithAnswers\"\n" +
@@ -2053,7 +2053,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "                    ng-model=\"vm.currentSlide\">\n" +
     "</znk-exercise-pager>\n" +
     "");
-  $templateCache.put("../.tmp/components/znkExercise/core/template/znkExercisePagerDrv.html",
+  $templateCache.put("components/znkExercise/core/template/znkExercisePagerDrv.html",
     "<znk-scroll>\n" +
     "    <div class=\"pager-items-wrapper\">\n" +
     "        <div class=\"pager-item noselect\"\n" +
@@ -2069,7 +2069,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "    </div>\n" +
     "</znk-scroll>\n" +
     "");
-  $templateCache.put("../.tmp/components/znkExercise/core/template/znkSwiperTemplate.html",
+  $templateCache.put("components/znkExercise/core/template/znkSwiperTemplate.html",
     "<div class=\"swiper-container\">\n" +
     "    <!-- Additional required wrapper -->\n" +
     "    <div class=\"swiper-wrapper\" ng-transclude>\n" +
@@ -2077,7 +2077,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "    </div>\n" +
     "</div>\n" +
     "");
-  $templateCache.put("../.tmp/components/znkExercise/svg/arrow-icon.svg",
+  $templateCache.put("components/znkExercise/svg/arrow-icon.svg",
     "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\" viewBox=\"-468.2 482.4 96 89.8\" class=\"arrow-icon-wrapper\">\n" +
     "    <style type=\"text/css\">\n" +
     "        .arrow-icon-wrapper .st0{fill:#109BAC;}\n" +
@@ -2092,12 +2092,12 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "    </g>\n" +
     "</svg>\n" +
     "");
-  $templateCache.put("../.tmp/components/znkExercise/svg/chevron-icon.svg",
+  $templateCache.put("components/znkExercise/svg/chevron-icon.svg",
     "<svg x=\"0px\" y=\"0px\" viewBox=\"0 0 143.5 65.5\">\n" +
     "    <polyline class=\"st0\" points=\"6,6 71.7,59.5 137.5,6 \"/>\n" +
     "</svg>\n" +
     "");
-  $templateCache.put("../.tmp/components/znkExercise/svg/correct-icon.svg",
+  $templateCache.put("components/znkExercise/svg/correct-icon.svg",
     "<svg version=\"1.1\"\n" +
     "     class=\"correct-icon-svg\"\n" +
     "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
@@ -2123,7 +2123,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</g>\n" +
     "</svg>\n" +
     "");
-  $templateCache.put("../.tmp/components/znkExercise/svg/info-icon.svg",
+  $templateCache.put("components/znkExercise/svg/info-icon.svg",
     "<svg\n" +
     "    version=\"1.1\"\n" +
     "    xmlns=\"http://www.w3.org/2000/svg\"\n" +
@@ -2143,7 +2143,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</g>\n" +
     "</svg>\n" +
     "");
-  $templateCache.put("../.tmp/components/znkExercise/svg/wrong-icon.svg",
+  $templateCache.put("components/znkExercise/svg/wrong-icon.svg",
     "<svg version=\"1.1\"\n" +
     "     class=\"wrong-icon-svg\"\n" +
     "     xmlns=\"http://www.w3.org/2000/svg\"\n" +

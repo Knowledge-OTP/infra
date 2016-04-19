@@ -201,7 +201,8 @@ module.exports = function (grunt) {
             options:{
                 module: 'znk.infra',
                 singleModule: true,
-                existingModule: true
+                existingModule: true,
+                base: '../infra/.tmp/'
             }
         },
         autoprefixer: {
