@@ -206,7 +206,7 @@
 
 
 angular.module('znk.infra.general').run(['$templateCache', function($templateCache) {
-  $templateCache.put("../.tmp/components/general/svg/clock-icon.svg",
+  $templateCache.put("components/general/svg/clock-icon.svg",
     "<svg version=\"1.1\" class=\"clock-icon-svg\"\n" +
     "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
     "     x=\"0px\"\n" +
@@ -271,7 +271,7 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
     "    </g>\n" +
     "</svg>\n" +
     "");
-  $templateCache.put("../.tmp/components/general/templates/timerDrv.html",
+  $templateCache.put("components/general/templates/timerDrv.html",
     "<div ng-switch=\"type\" class=\"timer-drv\">\n" +
     "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +
     "        <svg-icon class=\"icon-wrapper\" name=\"clock-icon\"></svg-icon>\n" +

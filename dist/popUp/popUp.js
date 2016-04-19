@@ -186,7 +186,7 @@
 })();
 
 angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache) {
-  $templateCache.put("../.tmp/components/popUp/svg/exclamation-mark-icon.svg",
+  $templateCache.put("components/popUp/svg/exclamation-mark-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
     "	 viewBox=\"-556.8 363.3 50.8 197.2\" style=\"enable-background:new -556.8 363.3 50.8 197.2;\" xml:space=\"preserve\">\n" +
     "<style type=\"text/css\">\n" +

@@ -4,7 +4,7 @@
 })(angular);
 
 angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templateCache) {
-  $templateCache.put("../.tmp/components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg",
+  $templateCache.put("components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
     "	 viewBox=\"-145 277 60 60\" style=\"enable-background:new -145 277 60 60;\" xml:space=\"preserve\" class=\"timeline-diagnostic-test-icon\" width=\"30px\" height=\"30px\">\n" +
     "	 <style type=\"text/css\">\n" +
@@ -22,7 +22,7 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templat
     "</g>\n" +
     "</svg>\n" +
     "");
-  $templateCache.put("../.tmp/components/znkTimeline/svg/icons/timeline-drills-icon.svg",
+  $templateCache.put("components/znkTimeline/svg/icons/timeline-drills-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
     "	 viewBox=\"-145 277 60 60\" style=\"enable-background:new -145 277 60 60;\" xml:space=\"preserve\" class=\"timeline-drills-icon\" width=\"30px\" height=\"30px\">\n" +
     "<style type=\"text/css\">\n" +
@@ -79,7 +79,7 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templat
     "</g>\n" +
     "</svg>\n" +
     "");
-  $templateCache.put("../.tmp/components/znkTimeline/svg/icons/timeline-mini-challenge-icon.svg",
+  $templateCache.put("components/znkTimeline/svg/icons/timeline-mini-challenge-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
     "	 viewBox=\"-105 277 60 60\" style=\"enable-background:new -105 277 60 60;\" xml:space=\"preserve\" class=\"timeline-mini-challenge-icon\" width=\"30px\" height=\"30px\">\n" +
     "	 	 <style type=\"text/css\">\n" +
@@ -99,7 +99,7 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templat
     "</g>\n" +
     "</svg>\n" +
     "");
-  $templateCache.put("../.tmp/components/znkTimeline/svg/icons/timeline-test-icon.svg",
+  $templateCache.put("components/znkTimeline/svg/icons/timeline-test-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
     "	 viewBox=\"-111 277 60 60\" style=\"enable-background:new -111 277 60 60;\" xml:space=\"preserve\" class=\"timeline-test-icon\" width=\"30px\" height=\"30px\">\n" +
     "<style type=\"text/css\">\n" +
@@ -244,7 +244,7 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templat
     "</g>\n" +
     "</svg>\n" +
     "");
-  $templateCache.put("../.tmp/components/znkTimeline/svg/icons/timeline-tips-tricks-icon.svg",
+  $templateCache.put("components/znkTimeline/svg/icons/timeline-tips-tricks-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
     "	 viewBox=\"-145 277 60 60\" style=\"enable-background:new -145 277 60 60;\" xml:space=\"preserve\" class=\"timeline-tips-tricks-icon\" width=\"30px\" height=\"30px\">\n" +
     "<style type=\"text/css\">\n" +
