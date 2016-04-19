@@ -91,7 +91,7 @@ module.exports = function (grunt) {
         concat: {
             dist: {
                 files:[{
-                    src: ['.tmp/components/**/module.js', '.tmp/components/**/*.js'],
+                    src: ['.tmp/components/**/module.js', '.tmp/components/**/*.js', '.tmp/module.js'],
                     dest: '<%= yeoman.dist %>/<%= yeoman.appName %>.js'
                 }]
             }
@@ -187,10 +187,14 @@ module.exports = function (grunt) {
                 dest: 'dist/main.css'
             },
             copyComponentsToTmp:{
-                expand: true,
-                cwd: '<%= yeoman.src %>/components',
-                src: '**/*.*',
-                dest: '.tmp/components'
+                files:[{
+                    expand: true,
+                    cwd: '<%= yeoman.src %>/components',
+                    src: '**/*.*',
+                    dest: '.tmp/components'
+                },{
+                    '.tmp/module.js': '<%= yeoman.src %>/core/module.js'
+                }]
             }
         },
         html2js: {
@@ -198,10 +202,6 @@ module.exports = function (grunt) {
                 module: 'znk.infra',
                 singleModule: true,
                 existingModule: true
-            },
-            main: {
-                src: ['src/**/*.html','src/**/*.svg'],
-                dest: '.tmp/templates.js'
             }
         },
         autoprefixer: {
