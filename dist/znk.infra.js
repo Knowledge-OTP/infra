@@ -514,30 +514,40 @@ angular.module('znk.infra.config').run(['$templateCache', function($templateCach
             }
 
             ContentSrv.getRev = function(practiceName, dataObj) {
+                var getRevisionProm = $q.when(false);
 
-                if(!dataObj || !dataObj.revisionManifest || !dataObj.latestRevisions) {
-                    return $q.when({ error: 'No Data Found! ', data: dataObj });
+                if (angular.isFunction(dataObj.revisionManifestGetter)) {
+                    getRevisionProm = dataObj.revisionManifestGetter().then(function (result) {
+                        dataObj.revisionManifest = result;
+                        return result;
+                    });
                 }
 
-                var userManifest = dataObj.revisionManifest[practiceName];
-                var publicationManifest = dataObj.latestRevisions[practiceName];
-                var newRev;
+                return getRevisionProm.then(function () {
+                    if (!dataObj || !dataObj.revisionManifest || !dataObj.latestRevisions) {
+                        return $q.when({error: 'No Data Found! ', data: dataObj});
+                    }
 
-                if(angular.isUndefined(publicationManifest)) {
-                    return $q.when({ error: 'Not Found', data: dataObj });
-                }
+                    var userManifest = dataObj.revisionManifest[practiceName];
+                    var publicationManifest = dataObj.latestRevisions[practiceName];
+                    var newRev;
 
-                if(!userManifest) {
-                    newRev = { rev:  publicationManifest.rev, status: 'new' };
-                } else if(userManifest.rev < publicationManifest.rev) {
-                    newRev = { rev:  userManifest.rev, status: 'old' };
-                } else if(userManifest.rev === publicationManifest.rev) {
-                    newRev = { rev:  publicationManifest.rev, status: 'same' };
-                } else {
-                    newRev = { error: 'failed to get revision!', data: dataObj };
-                }
+                    if (angular.isUndefined(publicationManifest)) {
+                        return $q.when({error: 'Not Found', data: dataObj});
+                    }
 
-                return $q.when(newRev);
+                    if (!userManifest) {
+                        newRev = {rev: publicationManifest.rev, status: 'new'};
+                    } else if (userManifest.rev < publicationManifest.rev) {
+                        newRev = {rev: userManifest.rev, status: 'old'};
+                    } else if (userManifest.rev === publicationManifest.rev) {
+                        newRev = {rev: publicationManifest.rev, status: 'same'};
+                    } else {
+                        newRev = {error: 'failed to get revision!', data: dataObj};
+                    }
+
+                    return newRev;
+                });
             };
 
             ContentSrv.setRev = function(practiceName, newRev) {
