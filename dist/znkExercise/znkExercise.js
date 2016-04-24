@@ -1968,7 +1968,6 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</div>\n" +
     "<div class=\"done-btn-wrap show-opacity-animate\" ng-if=\"vm.showDoneButton\">\n" +
     "    <button tabindex=\"0\"\n" +
-    "            ng-autofocus=\"true\"\n" +
     "            class=\"done-btn\"\n" +
     "            ng-click=\"onDone()\">DONE\n" +
     "    </button>\n" +
