@@ -637,6 +637,8 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
 
                 var PURCHASED_ALL = 'all';
 
+                var ContentAvailSrvObj = {};
+
                 function getUserPurchaseData(){
                     var StorageService = InfraConfigSrv.getStorageService();
                     var purchaseDataPath = StorageService.variables.appUserSpacePath + '/purchase';
@@ -666,7 +668,7 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                 function getUserSpecialsData(){
                     var specialsProm = false;
                     if(_specials) {
-                         specialsProm = $injector.invoke(_specials);
+                        specialsProm = $injector.invoke(_specials);
                     }
                     return $q.when(specialsProm);
                 }
@@ -746,13 +748,13 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                     return $parse(fullPath)(contentData);
                 }
 
-                function hasSubscription() {
+                ContentAvailSrvObj.hasSubscription = function hasSubscription() {
                     return getUserPurchaseData().then(function(purchaseData){
                         return _hasSubscription(purchaseData.subscription);
                     });
-                }
+                };
 
-                function isDailyAvail(dailyOrder){
+                ContentAvailSrvObj.isDailyAvail = function isDailyAvail(dailyOrder){
                     if(!angular.isNumber(dailyOrder) || isNaN(dailyOrder)){
                         return $q.reject('daily order should be a number');
                     }
@@ -773,9 +775,9 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                         var maxAvailDailyOrder = (purchaseData.daily || 0) + (freeContent.daily || 0) + (earnedSpecials.daily || 0);
                         return dailyOrder <= maxAvailDailyOrder;
                     });
-                }
+                };
 
-                function isExamAvail(examId){
+                ContentAvailSrvObj.isExamAvail = function isExamAvail(examId){
                     return _baseIsEntityAvail().then(function(res){
                         if(res === true){
                             return true;
@@ -792,9 +794,9 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
 
                         return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
                     });
-                }
+                };
 
-                function isSectionAvail(examId,sectionId){
+                ContentAvailSrvObj.isSectionAvail = function isSectionAvail(examId,sectionId){
                     return _baseIsEntityAvail().then(function(res){
                         if(res === true){
                             return true;
@@ -820,9 +822,9 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
 
                         return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
                     });
-                }
+                };
 
-                function isTutorialAvail(tutorialId){
+                ContentAvailSrvObj.isTutorialAvail = function isTutorialAvail(tutorialId){
                     return _baseIsEntityAvail().then(function(res) {
                         if (res === true) {
                             return true;
@@ -841,16 +843,15 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                         return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
 
                     });
-                }
-
-                // api
-                return {
-                    hasSubscription: hasSubscription,
-                    isDailyAvail: isDailyAvail,
-                    isExamAvail: isExamAvail,
-                    isSectionAvail: isSectionAvail,
-                    isTutorialAvail: isTutorialAvail
                 };
+
+                ContentAvailSrvObj.getFreeContentDailyNum = function getFreeContentDailyNum() {
+                    return getFreeContentData().then(function(freeContentData) {
+                        return freeContentData.daily;
+                    });
+                };
+                // api
+                return ContentAvailSrvObj;
             }];
         }
     ]);
