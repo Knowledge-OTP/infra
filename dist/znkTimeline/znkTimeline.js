@@ -382,7 +382,8 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templat
                             exerciseType: value.exerciseType,
                             exerciseId: value.exerciseId,
                             score: value.score,
-                            iconKey: value.iconKey || false
+                            iconKey: value.iconKey || false,
+                            time: value.time 
                         }, false, isLast);
 
                         if(value.score > dataObj.biggestScore.score) {
