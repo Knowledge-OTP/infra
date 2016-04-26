@@ -101,22 +101,17 @@
                         var currentDistance = (index + 2) * settings.distance;
                         var isLast = index === (timelineData.data.length - 1);
 
-                        createPath({
-                            moveTo: {
-                                x: lastLine.lineTo.x,
+                        createPath(value, {
+                        }, false, isLast);
+                        value.moveTo = {
+                            x: lastLine.lineTo.x,
                                 y: lastLine.lineTo.y
-                            },
-                            lineTo: {
-                                x: currentDistance,
+                        };
+                        value.lineTo =  {
+                            x: currentDistance,
                                 y: height
 
-                            },
-                            exerciseType: value.exerciseType,
-                            exerciseId: value.exerciseId,
-                            score: value.score,
-                            iconKey: value.iconKey || false,
-                            time: value.time 
-                        }, false, isLast);
+                        };
 
                         if(value.score > dataObj.biggestScore.score) {
                             dataObj.biggestScore = { score: value.score, lastLineTo: lastLine.lineTo };
