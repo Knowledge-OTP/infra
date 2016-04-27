@@ -7530,6 +7530,6 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templat
         'znk.infra.hint',
         'znk.infra.znkTimeline',
         'znk.infra.analytics',
-        'znk.infra.device-not-supported'
+        'znk.infra.deviceNotSupported'
     ]);
 })(angular);
