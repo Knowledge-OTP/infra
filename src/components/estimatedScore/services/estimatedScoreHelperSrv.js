@@ -19,42 +19,39 @@
             }
 
             EstimatedScoreHelperSrv.getEstimatedScoreData = function(){
-                if(!EstimatedScoreHelperSrv.getEstimatedScoreData.prom){
-                    EstimatedScoreHelperSrv.getEstimatedScoreData.prom = StorageSrv.get(ESTIMATE_SCORE_PATH).then(function(estimatedScore){
-                        var defaultValues = {
-                            estimatedScores: {},
-                            sectionsRawScores:{},
-                            exercisesRawScores: {},
-                            processedExercises: []
-                        };
+                return StorageSrv.get(ESTIMATE_SCORE_PATH).then(function(estimatedScore){
+                    var defaultValues = {
+                        estimatedScores: {},
+                        sectionsRawScores:{},
+                        exercisesRawScores: {},
+                        processedExercises: []
+                    };
 
-                        _SetSubjectInitialVal(defaultValues.estimatedScores,[]);
-                        _SetSubjectInitialVal(defaultValues.sectionsRawScores,[]);
-                        var rawScoreInitialObject = {
-                            total: 0,
-                            earned: 0
-                        };
-                        _SetSubjectInitialVal(defaultValues.exercisesRawScores,rawScoreInitialObject);
+                    _SetSubjectInitialVal(defaultValues.estimatedScores,[]);
+                    _SetSubjectInitialVal(defaultValues.sectionsRawScores,[]);
+                    var rawScoreInitialObject = {
+                        total: 0,
+                        earned: 0
+                    };
+                    _SetSubjectInitialVal(defaultValues.exercisesRawScores,rawScoreInitialObject);
 
-                        angular.forEach(defaultValues, function(defaultVal, defaultValKey){
-                            if(angular.isUndefined(estimatedScore[defaultValKey])){
-                                estimatedScore[defaultValKey] = defaultVal ;
-                            }
+                    angular.forEach(defaultValues, function(defaultVal, defaultValKey){
+                        if(angular.isUndefined(estimatedScore[defaultValKey])){
+                            estimatedScore[defaultValKey] = defaultVal ;
+                        }
 
-                            if(estimatedScore[defaultValKey] !== defaultVal && angular.isObject(defaultVal)){
-                                var currVal = estimatedScore[defaultValKey];
-                                angular.forEach(defaultVal, function(innerDefaultVal, innerDefaultValueKey){
-                                    if(angular.isUndefined(currVal[innerDefaultValueKey])){
-                                        currVal[innerDefaultValueKey] = innerDefaultVal;
-                                    }
-                                });
-                            }
-                        });
-
-                        return estimatedScore;
+                        if(estimatedScore[defaultValKey] !== defaultVal && angular.isObject(defaultVal)){
+                            var currVal = estimatedScore[defaultValKey];
+                            angular.forEach(defaultVal, function(innerDefaultVal, innerDefaultValueKey){
+                                if(angular.isUndefined(currVal[innerDefaultValueKey])){
+                                    currVal[innerDefaultValueKey] = innerDefaultVal;
+                                }
+                            });
+                        }
                     });
-                }
-                return EstimatedScoreHelperSrv.getEstimatedScoreData.prom;
+
+                    return estimatedScore;
+                });
             };
 
             EstimatedScoreHelperSrv.setEstimateScoreData = function (newEstimateScoreData){
