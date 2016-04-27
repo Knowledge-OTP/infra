@@ -1307,7 +1307,6 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
             }
 
             EstimatedScoreHelperSrv.getEstimatedScoreData = function(){
-                if(!EstimatedScoreHelperSrv.getEstimatedScoreData.prom){
                     EstimatedScoreHelperSrv.getEstimatedScoreData.prom = StorageSrv.get(ESTIMATE_SCORE_PATH).then(function(estimatedScore){
                         var defaultValues = {
                             estimatedScores: {},
@@ -1341,8 +1340,8 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
 
                         return estimatedScore;
                     });
-                }
-                return EstimatedScoreHelperSrv.getEstimatedScoreData.prom;
+
+                    return EstimatedScoreHelperSrv.getEstimatedScoreData.prom;
             };
 
             EstimatedScoreHelperSrv.setEstimateScoreData = function (newEstimateScoreData){
