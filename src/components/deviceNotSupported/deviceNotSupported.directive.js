@@ -22,16 +22,18 @@
                 },
                 link: function (scope, element, attrs) {
 
-                    scope.$watch(attrs.title, function(newValue, oldValue) {
-                            if ( angular.isDefined(scope.title) ) {
+                    var watchTitle = scope.$watch(attrs.title, function(newValue, oldValue) {
+                            if ( angular.isDefined(attrs.title) ) {
                                 scope.title = attrs.title;
+                                watchTitle();
                             }
                         }
                     );
 
-                    scope.$watch(attrs.subTitle, function(newValue, oldValue) {
-                            if ( angular.isDefined(scope.subTitle) ) {
+                    var watchSubtitle = scope.$watch(attrs.subTitle, function(newValue, oldValue) {
+                            if ( angular.isDefined(attrs.subTitle) ) {
                                 scope.subTitle = attrs.subTitle;
+                                watchSubtitle();
                             }
                         }
                     );
