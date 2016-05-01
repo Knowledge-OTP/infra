@@ -143,24 +143,28 @@ module.exports = function (grunt) {
         },
         connect: {
             options: {
-                base: ['src','bower_components','.tmp'],
+                base: ['dist','bower_components'],
                 open: true,
                 livereload: 35730
             },
             serve: {
                 options: {
-                    port: 9001
+                    port: 9001,
+                    hostname: 'localhost'
                 }
             }
         },
         watch: {
             options: {
-                livereload: '<%= connect.options.livereload %>'
+                livereload: '<%= connect.options.livereload %>',
+                host: 'localhost'
             },
-            sourceJS: {
+            jsAndHtml: {
                 files: [
-                    'src/**/*.js'
-                ]
+                    'src/**/*.js',
+                    'src/**/*.{html,svg}'
+                ],
+                tasks: ['copy:copyComponentsToTmp','prepareConfiguration','html2js', 'concat']
             },
             demo: {
                 files: [
@@ -171,11 +175,12 @@ module.exports = function (grunt) {
                 files:[
                     'src/**/*.scss'
                 ],
-                tasks: ['sass','autoprefixer:main']
+                tasks: ['copy:copyComponentsToTmp','sass','autoprefixer:main']
             }
         },
         sass: {
             // options: {
+
             //     sourceMap: true
             // },
             allComponenets:{
