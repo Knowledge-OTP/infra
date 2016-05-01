@@ -22,8 +22,8 @@
                 templateUrl: 'components/deviceNotSupported/deviceNotSupported.template.html',
                 restrict: 'E',
                 scope: {
-                    title: '&',
-                    subTitle: '&',
+                    title: '@',
+                    subTitle: '@',
                     imageSrc: '@'
                 },
                 link: function (scope, element, attrs) {
