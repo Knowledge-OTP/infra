@@ -22,14 +22,27 @@
                 templateUrl: 'components/deviceNotSupported/deviceNotSupported.template.html',
                 restrict: 'E',
                 scope: {
-                    title: '@',
-                    subTitle: '@',
+                    title: '&',
+                    subTitle: '&',
                     imageSrc: '@'
                 },
                 link: function (scope, element, attrs) {
+
+                    scope.$watch(attrs.title, function(newValue, oldValue) {
+                            if ( angular.isDefined(scope.title) ) {
+                                scope.title = attrs.title;
+                            }
+                        }
+                    );
+
+                    scope.$watch(attrs.subTitle, function(newValue, oldValue) {
+                            if ( angular.isDefined(scope.subTitle) ) {
+                                scope.subTitle = attrs.subTitle;
+                            }
+                        }
+                    );
+
                     scope.imageSrc = attrs.imageSrc;
-                    scope.title = attrs.title;
-                    scope.subTitle = attrs.subTitle;
 
                     scope.styleObj = {
                         'background-image' : 'url(' + scope.imageSrc + ')'
