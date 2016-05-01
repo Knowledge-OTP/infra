@@ -868,7 +868,13 @@ angular.module('znk.infra.contentAvail').run(['$templateCache', function($templa
 }]);
 
 /**
- *
+ * Device Not Supported
+ * This directive hides all content on the page and shows a message and an image
+ * Parameters:
+ * title
+ * subtitle
+ * image src to display
+ * by default the message will show when the screen width is 1024px or below, this can be overridden by css at the application level
  */
 (function (angular) {
     'use strict';
@@ -881,15 +887,16 @@ angular.module('znk.infra.contentAvail').run(['$templateCache', function($templa
                 scope: {
                     title: '@',
                     subTitle: '@',
-                    breakAt: '@',
                     imageSrc: '@'
                 },
-                link: function (scope) {
-                    scope.imageSrc = 'http://dev-act.zinkerz.com.s3-website-eu-west-1.amazonaws.com/assets/images/not-supported-browsers-img.png';
-                    scope.styleObj = { 'background-image' : 'url(' + scope.imageSrc + ')' };
-                    scope.title = 'this is our title';
-                    scope.subTitle = 'this is our sub-title';
-                    scope.breakAt = '768';
+                link: function (scope, element, attrs) {
+                    scope.imageSrc = attrs.imageSrc;
+                    scope.title = attrs.title;
+                    scope.subTitle = attrs.subTitle;
+
+                    scope.styleObj = {
+                        'background-image' : 'url(' + scope.imageSrc + ')'
+                    };
                 }
             };
         }
