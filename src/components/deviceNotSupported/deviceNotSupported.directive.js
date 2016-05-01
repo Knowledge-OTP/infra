@@ -22,7 +22,7 @@
                 },
                 link: function (scope, element, attrs) {
 
-                    var watchTitle = scope.$watch(attrs.title, function(newValue, oldValue) {
+                    var watchTitle = scope.$watch(attrs.title, function() {
                             if ( angular.isDefined(attrs.title) ) {
                                 scope.title = attrs.title;
                                 watchTitle();
@@ -30,7 +30,7 @@
                         }
                     );
 
-                    var watchSubtitle = scope.$watch(attrs.subTitle, function(newValue, oldValue) {
+                    var watchSubtitle = scope.$watch(attrs.subTitle, function() {
                             if ( angular.isDefined(attrs.subTitle) ) {
                                 scope.subTitle = attrs.subTitle;
                                 watchSubtitle();
