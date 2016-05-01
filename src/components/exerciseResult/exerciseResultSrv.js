@@ -142,7 +142,7 @@
                 exerciseResult.wrongAnswersNum = countWrong;
                 exerciseResult.skippedAnswersNum = countSkipped;
 
-                if(exerciseResult.isComplete && angular.isDefined(exerciseResult.endedTime)){
+                if(exerciseResult.isComplete && angular.isUndefined(exerciseResult.endedTime)){
                     exerciseResult.endedTime = Date.now();
                 }
 
