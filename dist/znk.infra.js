@@ -1707,6 +1707,10 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
                 exerciseResult.wrongAnswersNum = countWrong;
                 exerciseResult.skippedAnswersNum = countSkipped;
 
+                if(exerciseResult.isComplete && angular.isDefined(exerciseResult.endedTime)){
+                    exerciseResult.endedTime = Date.now();
+                }
+
                 var numOfAnsweredQuestions = exerciseResult.questionResults.length;
                 exerciseResult.avgTimePerQuestion = numOfAnsweredQuestions ? Math.round(totalTimeSpentOnQuestions / numOfAnsweredQuestions) : 0;
                 var exerciseResultPath = _getExerciseResultPath(exerciseResult.guid);
