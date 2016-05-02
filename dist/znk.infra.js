@@ -890,23 +890,8 @@ angular.module('znk.infra.contentAvail').run(['$templateCache', function($templa
                     imageSrc: '@'
                 },
                 link: function (scope, element, attrs) {
-
-                    var watchTitle = scope.$watch(attrs.title, function() {
-                            if ( angular.isDefined(attrs.title) ) {
-                                scope.title = attrs.title;
-                                watchTitle();
-                            }
-                        }
-                    );
-
-                    var watchSubtitle = scope.$watch(attrs.subTitle, function() {
-                            if ( angular.isDefined(attrs.subTitle) ) {
-                                scope.subTitle = attrs.subTitle;
-                                watchSubtitle();
-                            }
-                        }
-                    );
-
+                    scope.title = attrs.title;
+                    scope.subTitle = attrs.subTitle;
                     scope.imageSrc = attrs.imageSrc;
 
                     scope.styleObj = {
