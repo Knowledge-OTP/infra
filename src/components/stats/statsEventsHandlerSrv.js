@@ -2,13 +2,11 @@
     'use strict';
 
     angular.module('znk.infra.stats').factory('StatsEventsHandlerSrv', [
-        '$rootScope', 'exerciseEventsConst', 'StatsSrv', 'ExerciseTypeEnum', '$log', 'UtilitySrv',
-        function ($rootScope, exerciseEventsConst, StatsSrv, ExerciseTypeEnum, $log, UtilitySrv) {
+        'exerciseEventsConst', 'StatsSrv', 'ExerciseTypeEnum', '$log', 'UtilitySrv',
+        function (exerciseEventsConst, StatsSrv, ExerciseTypeEnum, $log, UtilitySrv) {
             var StatsEventsHandlerSrv = {};
 
-            var childScope = $rootScope.$new(true);
-
-            function _eventHandler(exerciseType, evt, exercise, results) {
+            StatsEventsHandlerSrv.addNewExerciseResult = function(exerciseType, exercise, results){
                 return StatsSrv.isExerciseStatsRecorded(exerciseType, exercise.id).then(function (isRecorded) {
                     if (isRecorded) {
                         return;
@@ -46,21 +44,8 @@
 
                     return StatsSrv.updateStats(newStats, exerciseType, exercise.id);
                 });
-            }
+            };
 
-            var eventsToRegister = [];
-            var exerciseTypeEnumArr = ExerciseTypeEnum.getEnumArr();
-            exerciseTypeEnumArr.forEach(function (enumObj) {
-                var exerciseNameLowerCase = enumObj.val.toLowerCase();
-                eventsToRegister.push({
-                    evt: exerciseEventsConst[exerciseNameLowerCase].FINISH,
-                    exerciseType: enumObj.enum
-                });
-            });
-
-            eventsToRegister.forEach(function (evtConfig) {
-                childScope.$on(evtConfig.evt, _eventHandler.bind(StatsEventsHandlerSrv, evtConfig.exerciseType));
-            });
             //added in order to load the service
             StatsEventsHandlerSrv.init = angular.noop;
 
