@@ -21,9 +21,9 @@
                     imageSrc: '@'
                 },
                 link: function (scope, element, attrs) {
-                    scope.imageSrc = attrs.imageSrc;
                     scope.title = attrs.title;
                     scope.subTitle = attrs.subTitle;
+                    scope.imageSrc = attrs.imageSrc;
 
                     scope.styleObj = {
                         'background-image' : 'url(' + scope.imageSrc + ')'
