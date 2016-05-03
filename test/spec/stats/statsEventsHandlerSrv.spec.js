@@ -11,7 +11,7 @@ describe('testing service "StatsEventsHandlerSrv":', function () {
         StatsSrvProvider.setCategoryLookup(getCategoryLookup);
     }));
 
-    var $rootScope, exerciseEventsConst, TestUtilitySrv, testStorage;
+    var $rootScope, exerciseEventsConst, TestUtilitySrv, testStorage, StatsEventsHandlerSrv, ExerciseTypeEnum;
     beforeEach(inject([
         '$injector',
         function ($injector) {
@@ -20,6 +20,8 @@ describe('testing service "StatsEventsHandlerSrv":', function () {
             testStorage = $injector.get('testStorage');
             TestUtilitySrv = $injector.get('TestUtilitySrv');
             TestUtilitySrv.general.printDebugLogs();
+            StatsEventsHandlerSrv = $injector.get('StatsEventsHandlerSrv');
+            ExerciseTypeEnum = $injector.get('ExerciseTypeEnum');
         }]));
 
     var actions = {};
@@ -246,10 +248,10 @@ describe('testing service "StatsEventsHandlerSrv":', function () {
             }
         };
 
-        $rootScope.$broadcast(exerciseEventsConst.tutorial.FINISH, exerciseMock, resultMock);
+        StatsEventsHandlerSrv.addNewExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseMock, resultMock);
         $rootScope.$digest();
 
-        $rootScope.$broadcast(exerciseEventsConst.tutorial.FINISH, exerciseMock, resultMock);
+        StatsEventsHandlerSrv.addNewExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseMock, resultMock);
         $rootScope.$digest();
 
         angular.forEach(expectedLevel4Stats,function(expectedResult, key){
