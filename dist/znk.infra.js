@@ -103,7 +103,8 @@
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    'exclamation-mark': 'components/popUp/svg/exclamation-mark-icon.svg'
+                    'exclamation-mark': 'components/popUp/svg/exclamation-mark-icon.svg',
+                    'correct': 'components/popUp/svg/correct-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }]);
@@ -2993,7 +2994,7 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function($templat
 
             PopUpSrv.success = function success(title,content){
                 var btn = new BaseButton('OK',null,'ok', undefined, true);
-                return basePopup('success-popup','exclamation-mark',title || '',content,[btn]);
+                return basePopup('success-popup','correct',title || '',content,[btn]);
             };
 
             PopUpSrv.warning = function warning(title,content,acceptBtnTitle,cancelBtnTitle){
@@ -3014,6 +3015,28 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function($templat
 })();
 
 angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/popUp/svg/correct-icon.svg",
+    "<svg version=\"1.1\"\n" +
+    "     class=\"correct-icon-svg\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "	 viewBox=\"0 0 188.5 129\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.correct-icon-svg .st0 {\n" +
+    "        fill: none;\n" +
+    "        stroke: #231F20;\n" +
+    "        stroke-width: 15;\n" +
+    "        stroke-linecap: round;\n" +
+    "        stroke-linejoin: round;\n" +
+    "        stroke-miterlimit: 10;\n" +
+    "    }\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<line class=\"st0\" x1=\"7.5\" y1=\"62\" x2=\"67\" y2=\"121.5\"/>\n" +
+    "	<line class=\"st0\" x1=\"67\" y1=\"121.5\" x2=\"181\" y2=\"7.5\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
   $templateCache.put("components/popUp/svg/exclamation-mark-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
     "	 viewBox=\"-556.8 363.3 50.8 197.2\" style=\"enable-background:new -556.8 363.3 50.8 197.2;\" xml:space=\"preserve\">\n" +

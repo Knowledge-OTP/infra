@@ -6,7 +6,8 @@
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    'exclamation-mark': 'components/popUp/svg/exclamation-mark-icon.svg'
+                    'exclamation-mark': 'components/popUp/svg/exclamation-mark-icon.svg',
+                    'correct': 'components/popUp/svg/correct-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }]);
