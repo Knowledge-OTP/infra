@@ -1,0 +1,20 @@
+<svg version="1.1"
+     class="correct-icon-svg"
+     x="0px"
+     y="0px"
+	 viewBox="0 0 188.5 129">
+<style type="text/css">
+	.correct-icon-svg .st0 {
+        fill: none;
+        stroke: #231F20;
+        stroke-width: 15;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-miterlimit: 10;
+    }
+</style>
+<g>
+	<line class="st0" x1="7.5" y1="62" x2="67" y2="121.5"/>
+	<line class="st0" x1="67" y1="121.5" x2="181" y2="7.5"/>
+</g>
+</svg>

@@ -44,6 +44,16 @@
                             }
                         }
                     }
+
+                    .correct{
+                        margin-top: 6px;
+                        svg{
+                           @include dimension(34px, 34px);
+                            line{
+                                stroke: $bgColor6;
+                            }
+                        }
+                    }
                 }
             }
 
