@@ -30,6 +30,10 @@ describe('testing service "ExerciseResult":', function () {
         };
     });
 
+    function _isValidStartedTime(startedTimeValue){
+        return angular.isNumber(startedTimeValue) && !isNaN(startedTimeValue);
+    }
+
     describe('testing exercise result', function () {
         it('when requesting for a not exiting result then a new initialized result should be returned', function () {
             var exerciseId = 20;
@@ -37,10 +41,10 @@ describe('testing service "ExerciseResult":', function () {
             var expectedExerciseResult = {
                 exerciseId: exerciseId,
                 exerciseTypeId: ExerciseTypeEnum.TUTORIAL.enum,
-                startedTime: '%currTimeStamp%',
                 questionResults: []
             };
             expect(exerciseResult).toEqual(jasmine.objectContaining(expectedExerciseResult));
+            expect(_isValidStartedTime(exerciseResult.startedTime)).toBeTruthy();
         });
 
         it('when requesting for a not exiting result with dont initialize pararmter then a new result should not be created ' +
@@ -67,7 +71,6 @@ describe('testing service "ExerciseResult":', function () {
             var result = {
                 exerciseId: exerciseId,
                 exerciseTypeId: ExerciseTypeEnum.TUTORIAL.enum,
-                startedTime: '%currTimeStamp%',
                 guid: questionGuid
             };
 
@@ -80,6 +83,7 @@ describe('testing service "ExerciseResult":', function () {
 
             var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseId);
             expect(exerciseResult).toEqual(jasmine.objectContaining(expectedResult));
+            expect(_isValidStartedTime(exerciseResult.startedTime)).toBeTruthy();
         });
 
         it('when requesting for an exiting result which has user answers then it should be returned', function () {
@@ -89,7 +93,6 @@ describe('testing service "ExerciseResult":', function () {
             var result = {
                 exerciseId: exerciseId,
                 exerciseTypeId: ExerciseTypeEnum.TUTORIAL.enum,
-                startedTime: '%currTimeStamp%',
                 guid: questionGuid,
                 questionResults: [{
                     userAnswer: 1
@@ -104,6 +107,7 @@ describe('testing service "ExerciseResult":', function () {
 
             var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseId);
             expect(exerciseResult).toEqual(jasmine.objectContaining(expectedResult));
+            expect(_isValidStartedTime(exerciseResult.startedTime)).toBeTruthy();
         });
 
         it('when saving result then it should be saved in db', function () {
@@ -132,10 +136,10 @@ describe('testing service "ExerciseResult":', function () {
             var expectedExerciseResult = {
                 exerciseId: exerciseId,
                 exerciseTypeId: ExerciseTypeEnum.TUTORIAL.enum,
-                startedTime: '%currTimeStamp%',
                 questionResults: []
             };
             expect(exerciseResult).toEqual(jasmine.objectContaining(expectedExerciseResult));
+            expect(_isValidStartedTime(exerciseResult.startedTime)).toBeTruthy();
         });
     });
 
@@ -146,10 +150,10 @@ describe('testing service "ExerciseResult":', function () {
             var examResult = actions.getExamResult(examId);
             var expectedExamResult = {
                 isComplete: false,
-                startedTime: '%currTimeStamp%',
                 examId: examId
             };
             expect(examResult).toEqual(jasmine.objectContaining(expectedExamResult));
+            expect(_isValidStartedTime(examResult.startedTime)).toBeTruthy();
         });
 
         it('when requesting for not existing exam result then initialized result should be saved in db', function () {
@@ -167,7 +171,6 @@ describe('testing service "ExerciseResult":', function () {
             testStorage.db.users.$$uid.examResults[examId] = 'guid';
             var result = {
                 isComplete: false,
-                startedTime: '%currTimeStamp%',
                 examId: examId,
                 guid: guid
             };
@@ -180,6 +183,7 @@ describe('testing service "ExerciseResult":', function () {
             var examResult = actions.getExamResult(examId);
 
             expect(examResult).toEqual(jasmine.objectContaining(expectedResult));
+            expect(_isValidStartedTime(examResult.startedTime)).toBeTruthy();
         });
 
         it('when requesting for existing result which has sectionResults then it should be returned', function () {
@@ -188,7 +192,6 @@ describe('testing service "ExerciseResult":', function () {
             var expectedResult = {
                 guid: 'guid',
                 isComplete: false,
-                startedTime: '%currTimeStamp%',
                 examId: examId,
                 sectionResults: {
                     1: 1
@@ -198,6 +201,7 @@ describe('testing service "ExerciseResult":', function () {
             testStorage.db.examResults['guid'] = expectedResult;
             var examResult = actions.getExamResult(examId);
             expect(examResult).toEqual(jasmine.objectContaining(expectedResult));
+            expect(_isValidStartedTime(examResult.startedTime)).toBeTruthy();
         });
 
         it('when changing not exiting result data and saving then it should be saved it db', function () {
@@ -206,7 +210,7 @@ describe('testing service "ExerciseResult":', function () {
             expectedResult.newProp = 'new value';
             expectedResult.$save();
             $rootScope.$digest();
-            
+
             var examResultKeys = Object.keys(testStorage.db.examResults);
             var examResult = testStorage.db.examResults[examResultKeys[0]];
 
@@ -220,10 +224,10 @@ describe('testing service "ExerciseResult":', function () {
             var examResult = actions.getExamResult(examId);
             var expectedExamResult = {
                 isComplete: false,
-                startedTime: '%currTimeStamp%',
                 examId: examId
             };
             expect(examResult).toEqual(jasmine.objectContaining(expectedExamResult));
+            expect(_isValidStartedTime(examResult.startedTime)).toBeTruthy();
         });
 
         it('when requesting for exam result with dont initialize parameter then null should be returned', function(){
@@ -257,7 +261,8 @@ describe('testing service "ExerciseResult":', function () {
             var expectedExercisesStatusData = {};
             expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum] = {};
             expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum][exerciseId] = {
-                status: ExerciseStatusEnum.ACTIVE.enum
+                status: ExerciseStatusEnum.ACTIVE.enum,
+                duration: 0
             };
 
             var exercisesStatusData = testStorage.db.users.$$uid.exercisesStatus;
@@ -275,7 +280,8 @@ describe('testing service "ExerciseResult":', function () {
             var expectedExercisesStatusData = {};
             expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum] = {};
             expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum][exerciseId] = {
-                status: ExerciseStatusEnum.COMPLETED.enum
+                status: ExerciseStatusEnum.COMPLETED.enum,
+                duration: 0
             };
 
             var exercisesStatusData = testStorage.db.users.$$uid.exercisesStatus;
@@ -294,7 +300,8 @@ describe('testing service "ExerciseResult":', function () {
             var expectedExercisesStatusData = {};
             expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum] = {};
             expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum][exerciseId] = {
-                status: ExerciseStatusEnum.COMPLETED.enum
+                status: ExerciseStatusEnum.COMPLETED.enum,
+                duration: 0
             };
 
             var exercisesStatusData = testStorage.db.users.$$uid.exercisesStatus;
@@ -431,7 +438,7 @@ describe('testing service "ExerciseResult":', function () {
         });
     });
 
-    describe('test save exam isCompleted when all sections are completed',function(){
+    describe('test saving section result',function(){
 
         it('when section is not complete, then examResult.isComplete = false', function(){
             var exerciseId = 4;
@@ -522,6 +529,28 @@ describe('testing service "ExerciseResult":', function () {
             expect(examResult.isComplete).toEqual(true);
         });
 
+        it('when section is saved then exam duration should be updated accordingly', function(){
+            var examId = 1;
+            var examSectionsId = [1,2,3];
+
+            examSectionsId.forEach(function(sectionId){
+                actions.getExerciseResult(ExerciseTypeEnum.SECTION.enum, sectionId, examId, examSectionsId.length);
+            });
+
+            var sectionsStatus = testStorage.db.users.$$uid.exercisesStatus[ExerciseTypeEnum.SECTION.enum] = {};
+            sectionsStatus[1] = {
+                duration: 5000
+            };
+            sectionsStatus[2]={
+                duration: 7500
+            };
+
+            var sectionId3Result = actions.getExerciseResult(ExerciseTypeEnum.SECTION.enum, 3, examId, examSectionsId.length);
+            sectionId3Result.$save();
+
+            var examResult = actions.getExamResult(examId);
+            expect(examResult.duration).toBe(12500);
+        });
     });
 
 });
