@@ -3649,7 +3649,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
 
                         if(key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length) || (value !== value)){//value !== value return true if it equals to NaN
                             if(key !== '$save'){
-                                $log.error('storageFirebaseAdapter: illegal property was deleted before save ' + key);
+                                $log.debug('storageFirebaseAdapter: illegal property was deleted before save ' + key);
                             }
                             delete source[key];
                             return;
