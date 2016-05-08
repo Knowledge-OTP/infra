@@ -3620,7 +3620,9 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                         var value = source[key];
 
                         if(key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length) || (value !== value)){//value !== value return true if it equals to NaN
-                            $log.debug('storageFirebaseAdapter: illegal property was deleted before save',key);
+                            if(value !== '$save'){
+                                $log.error('storageFirebaseAdapter: illegal property was deleted before save',key);
+                            }
                             delete source[key];
                             return;
                         }
@@ -3658,7 +3660,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                     ref.once('value',function(dataSnapshot){
                         defer.resolve(dataSnapshot.val());
                     },function(err){
-                        $log.debug('storageFirebaseAdapter: failed to retrieve data for the following path',relativePath,err);
+                        $log.error('storageFirebaseAdapter: failed to retrieve data for the following path',relativePath,err);
                         defer.reject(err);
                     });
                     return defer.promise;
@@ -3685,7 +3687,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                         var ref = getRef(relativePathOrObject);
                         ref.set(newValueCopy,function(err){
                             if(err){
-                                $log.debug('storageFirebaseAdapter: failed to set data for the following path',relativePathOrObject,err);
+                                $log.error('storageFirebaseAdapter: failed to set data for the following path',relativePathOrObject,err);
                                 defer.reject(err);
                             }else{
                                 defer.resolve(newValueCopy);
