@@ -261,7 +261,8 @@ describe('testing service "ExerciseResult":', function () {
             var expectedExercisesStatusData = {};
             expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum] = {};
             expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum][exerciseId] = {
-                status: ExerciseStatusEnum.ACTIVE.enum
+                status: ExerciseStatusEnum.ACTIVE.enum,
+                duration: 0
             };
 
             var exercisesStatusData = testStorage.db.users.$$uid.exercisesStatus;
@@ -279,7 +280,8 @@ describe('testing service "ExerciseResult":', function () {
             var expectedExercisesStatusData = {};
             expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum] = {};
             expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum][exerciseId] = {
-                status: ExerciseStatusEnum.COMPLETED.enum
+                status: ExerciseStatusEnum.COMPLETED.enum,
+                duration: 0
             };
 
             var exercisesStatusData = testStorage.db.users.$$uid.exercisesStatus;
@@ -298,7 +300,8 @@ describe('testing service "ExerciseResult":', function () {
             var expectedExercisesStatusData = {};
             expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum] = {};
             expectedExercisesStatusData[ExerciseTypeEnum.DRILL.enum][exerciseId] = {
-                status: ExerciseStatusEnum.COMPLETED.enum
+                status: ExerciseStatusEnum.COMPLETED.enum,
+                duration: 0
             };
 
             var exercisesStatusData = testStorage.db.users.$$uid.exercisesStatus;
@@ -435,7 +438,7 @@ describe('testing service "ExerciseResult":', function () {
         });
     });
 
-    describe('test save exam isCompleted when all sections are completed',function(){
+    describe('test saving section result',function(){
 
         it('when section is not complete, then examResult.isComplete = false', function(){
             var exerciseId = 4;
@@ -526,6 +529,28 @@ describe('testing service "ExerciseResult":', function () {
             expect(examResult.isComplete).toEqual(true);
         });
 
+        it('when section is saved then exam duration should be updated accordingly', function(){
+            var examId = 1;
+            var examSectionsId = [1,2,3];
+
+            examSectionsId.forEach(function(sectionId){
+                actions.getExerciseResult(ExerciseTypeEnum.SECTION.enum, sectionId, examId, examSectionsId.length);
+            });
+
+            var sectionsStatus = testStorage.db.users.$$uid.exercisesStatus[ExerciseTypeEnum.SECTION.enum] = {};
+            sectionsStatus[1] = {
+                duration: 5000
+            };
+            sectionsStatus[2]={
+                duration: 7500
+            };
+
+            var sectionId3Result = actions.getExerciseResult(ExerciseTypeEnum.SECTION.enum, 3, examId, examSectionsId.length);
+            sectionId3Result.$save();
+
+            var examResult = actions.getExamResult(examId);
+            expect(examResult.duration).toBe(12500);
+        });
     });
 
 });

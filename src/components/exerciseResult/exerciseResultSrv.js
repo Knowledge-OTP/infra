@@ -29,7 +29,7 @@
                     $log.error(errMSg);
                     return $q.reject(errMSg);
                 }
-                
+
                 var userProm = InfraConfigSrv.getUserData();
                 return userProm.then(function(user) {
                     return {
@@ -158,13 +158,17 @@
 
                     var exerciseNewStatus = exerciseResult.isComplete ?
                         ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
-                    exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId] = new ExerciseStatus(exerciseNewStatus);
+                    exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId] = new ExerciseStatus(exerciseNewStatus, totalTimeSpentOnQuestions);
                     dataToSave[EXERCISES_STATUS_PATH] = exercisesStatusData;
 
-                    var checkIfALlSectionsDoneProm = $q.when();
-                    if(exerciseNewStatus === ExerciseStatusEnum.COMPLETED.enum && exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
-                        checkIfALlSectionsDoneProm = ExerciseResultSrv.getExamResult(exerciseResult.examId).then(function(examResult) {
-                            if(areAllSectionCompleted(examResult,exercisesStatusData)){
+                    var getSectionAggregatedDataProm = $q.when();
+                    if(exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
+                        getSectionAggregatedDataProm = ExerciseResultSrv.getExamResult(exerciseResult.examId).then(function(examResult) {
+                            var sectionsAggregatedData = _getExamAggregatedSectionsData(examResult, exercisesStatusData);
+
+                            examResult.duration = sectionsAggregatedData.sectionsDuration;
+
+                            if(sectionsAggregatedData.allSectionsCompleted){
                                 examResult.isComplete = true;
                                 examResult.endedTime = Date.now();
                                 var examResultPath = _getExamResultPath(examResult.guid);
@@ -173,7 +177,7 @@
                         });
                     }
 
-                    return checkIfALlSectionsDoneProm.then(function() {
+                    return getSectionAggregatedDataProm.then(function() {
                         var storage = InfraConfigSrv.getStorageService();
                         storage.set(dataToSave);
 
@@ -183,23 +187,30 @@
                 });
             }
 
-            function areAllSectionCompleted(examResult, exercisesStatusData) {
+            function _getExamAggregatedSectionsData(examResult, exercisesStatusData) {
+                var aggregatedData = {
+                    sectionsDuration: 0
+                };
+
                 var sectionExercisesStatus = exercisesStatusData[ExerciseTypeEnum.SECTION.enum];
                 var sectionResultsToArr = Object.keys(examResult.sectionResults);
 
-                if(sectionResultsToArr.length !== +examResult.examSectionsNum) {
-                    return false;
-                }
+                var areAllExamSectionsHasResults = sectionResultsToArr.length === +examResult.examSectionsNum;
+                aggregatedData.allSectionsCompleted = areAllExamSectionsHasResults;
 
                 for(var i = 0, ii = sectionResultsToArr.length; i < ii; i++) {
                     var sectionId = sectionResultsToArr[i];
-                    var isSectionComplete = sectionExercisesStatus[sectionId].status === ExerciseStatusEnum.COMPLETED.enum;
+                    var sectionStatus =  sectionExercisesStatus[sectionId] || {};
+
+                    var isSectionComplete = sectionStatus.status === ExerciseStatusEnum.COMPLETED.enum;
                     if(!isSectionComplete){
-                        return false;
+                        aggregatedData.allSectionsCompleted = false;
                     }
+
+                    aggregatedData.sectionsDuration += sectionStatus.duration || 0;
                 }
 
-                return true;
+                return aggregatedData;
             }
 
             function _getExercisesStatusData(){
@@ -207,8 +218,9 @@
                 return storage.get(EXERCISES_STATUS_PATH);
             }
 
-            function ExerciseStatus(status){
+            function ExerciseStatus(status, duration){
                 this.status = status;
+                this.duration = duration;
             }
 
             this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum, dontInitialize) {
@@ -246,13 +258,15 @@
                             if(getExamResultProm){
                                 initResult.examId = examId;
                                 setProm = getExamResultProm.then(function(examResult){
-                                    if(!examResult.sectionResults){
-                                        examResult.sectionResults = {};
-                                    }
                                     if(examSectionsNum && !examResult.examSectionsNum) {
                                         examResult.examSectionsNum = examSectionsNum;
                                     }
+
+                                    if(!examResult.sectionResults){
+                                        examResult.sectionResults = {};
+                                    }
                                     examResult.sectionResults[exerciseId] = newGuid;
+
                                     var examResultPath = _getExamResultPath(examResult.guid);
                                     dataToSave[examResultPath] = examResult;
                                 });
