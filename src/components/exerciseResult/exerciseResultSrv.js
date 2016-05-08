@@ -16,7 +16,11 @@
             var EXERCISES_STATUS_PATH = StorageSrv.variables.appUserSpacePath + '/exercisesStatus';
 
             function _isValidNumber(number){
-                return angular.isNumber(number) && !isNaN(number);
+                if(!angular.isNumber(number) && !angular.isString(number)){
+                    return false;
+                }
+
+                return !isNaN(+number);
             }
 
             function _getExerciseResultPath(guid) {
@@ -24,12 +28,6 @@
             }
 
             function _getInitExerciseResult(exerciseTypeId,exerciseId,guid){
-                if(!_isValidNumber(exerciseTypeId) || !_isValidNumber(exerciseId)){
-                    var errMSg = 'exercise type id and exercise id should be number !!!';
-                    $log.error(errMSg);
-                    return $q.reject(errMSg);
-                }
-
                 var userProm = InfraConfigSrv.getUserData();
                 return userProm.then(function(user) {
                     return {
@@ -75,12 +73,6 @@
             }
 
             function _getInitExamResult(examId, guid){
-                if(!_isValidNumber(examId)){
-                    var errMsg = 'Exam id is not a number !!!';
-                    $log.error(errMsg);
-                    return $q.reject(errMsg);
-                }
-
                 var userProm = InfraConfigSrv.getUserData();
                 return userProm.then(function(user) {
                     return {
@@ -224,6 +216,22 @@
             }
 
             this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum, dontInitialize) {
+                if(!_isValidNumber(exerciseTypeId) || !_isValidNumber(exerciseId)){
+                    var errMSg = 'ExerciseResultSrv: exercise type id, exercise id should be number !!!';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                exerciseTypeId = +exerciseTypeId;
+                exerciseId = +exerciseId;
+
+                if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum && !_isValidNumber(examId)){
+                    var examErrMSg = 'ExerciseResultSrv: exam id should be provided when asking for section result and should' +
+                        ' be a number!!!';
+                    $log.error(examErrMSg);
+                    return $q.reject(examErrMSg);
+                }
+                examId = +examId;
+
                 var getExamResultProm;
                 if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
                     getExamResultProm = ExerciseResultSrv.getExamResult(examId, dontInitialize);
@@ -300,6 +308,13 @@
             };
 
             this.getExamResult = function (examId, dontInitialize) {
+                if(!_isValidNumber(examId)){
+                    var errMsg = 'Exam id is not a number !!!';
+                    $log.error(errMsg);
+                    return $q.reject(errMsg);
+                }
+                examId = +examId;
+
                 var storage = InfraConfigSrv.getStorageService();
                 return _getExamResultsGuids().then(function (examResultsGuids) {
                     var examResultGuid = examResultsGuids[examId];
