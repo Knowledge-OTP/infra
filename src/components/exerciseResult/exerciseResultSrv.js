@@ -29,14 +29,13 @@
                     $log.error(errMSg);
                     return $q.reject(errMSg);
                 }
-
-                var storage = InfraConfigSrv.getStorageService();
+                
                 var userProm = InfraConfigSrv.getUserData();
                 return userProm.then(function(user) {
                     return {
                         exerciseId: exerciseId,
                         exerciseTypeId: exerciseTypeId,
-                        startedTime: storage.variables.currTimeStamp,
+                        startedTime: Date.now(),
                         uid: user.uid,
                         questionResults: [],
                         guid: guid
@@ -86,7 +85,7 @@
                 return userProm.then(function(user) {
                     return {
                         isComplete: false,
-                        startedTime: '%currTimeStamp%',
+                        startedTime: Date.now(),
                         examId: examId,
                         guid: guid,
                         uid: user.uid,
@@ -167,7 +166,7 @@
                         checkIfALlSectionsDoneProm = ExerciseResultSrv.getExamResult(exerciseResult.examId).then(function(examResult) {
                             if(areAllSectionCompleted(examResult,exercisesStatusData)){
                                 examResult.isComplete = true;
-                                examResult.endedTime = StorageSrv.variables.currTimeStamp;
+                                examResult.endedTime = Date.now();
                                 var examResultPath = _getExamResultPath(examResult.guid);
                                 dataToSave[examResultPath] = examResult;
                             }
