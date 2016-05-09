@@ -65,8 +65,8 @@
 }
 
 //useful mixins
-@include background-cover-image($imagePathWithoutExtension){
-    background-image-url-retina($imagePathWithoutExtension);
+@mixin background-cover-image($imagePathWithoutExtension){
+    @include background-image-url-retina($imagePathWithoutExtension);
     background:{
         position: center;
         size: cover;
