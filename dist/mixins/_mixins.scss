@@ -1,5 +1,5 @@
 //cross browser
-@mixin format-input-placeholder($color, $opacity) {
+@mixin placeholder($color, $opacity) {
     ::-webkit-input-placeholder {
         color: $color;
     }
@@ -47,6 +47,5 @@
             left: 1px;
             top: -18px;
         }
-    ;
     }
 }
