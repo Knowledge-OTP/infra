@@ -1,5 +1,5 @@
 //cross browser
-@mixin placeholder($color, $opacity) {
+@mixin placeholder() {
     ::-webkit-input-placeholder {
         @content;
     }
