@@ -14,6 +14,22 @@
     }
 }
 
+//retina
+/* full background image with retina */
+@mixin background-image-url-retina($imagePathWithoutExtension) {
+    /*CSS for basic styling and non-retina image path:*/
+    background: {
+        image: url('#{$imagePathWithoutExtension}.png');
+    }
+
+    /*CSS for serving the retina image to devices with a high "device-pixel-ratio":*/
+    @media only screen and (min-resolution: 1.5dppx) {
+        background: {
+            image: url('#{$imagePathWithoutExtension}@2x.png');
+        }
+    }
+}
+
 //components
 @mixin cloud-arrow($direction: up,$size: 10px,$color: white) {
     content: '';
@@ -45,5 +61,16 @@
             left: 1px;
             top: -18px;
         }
+    }
+}
+
+//useful mixins
+@include background-cover-image($imagePathWithoutExtension){
+    background-image-url-retina($imagePathWithoutExtension);
+    background:{
+        position: center;
+        size: cover;
+        attachment: fixed;
+        repeat: no-repeat;
     }
 }
