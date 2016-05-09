@@ -1,18 +1,16 @@
 //cross browser
 @mixin placeholder($color, $opacity) {
     ::-webkit-input-placeholder {
-        color: $color;
+        @content;
     }
     :-moz-placeholder {
-        color: $color;
-        opacity: $opacity;
+        @content;
     }
     ::-moz-placeholder {
-        color: $color;
-        opacity: $opacity;
+        @content;
     }
     :-ms-input-placeholder {
-        color: $color;
+        @content;
     }
 }
 
