@@ -1280,8 +1280,9 @@ $blueBG8: #75cbe8;
 */
 /* full background image with retina */
 svg-icon {
-  display: block;
-  overflow: hidden; }
+  display: block; }
+  svg-icon svg {
+    display: block; }
 
 /* fonts size */
 /*
