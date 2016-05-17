@@ -3,8 +3,7 @@
 
     angular.module('znk.infra.config').provider('InfraConfigSrv', [
         function () {
-            var storageServiceName,
-                userDataFn,
+            var userDataFn,
                 storages = {};
 
             this.setStorages = function(_globalStorageGetter, _studentStorageGetter, _teacherStorageGetter){
