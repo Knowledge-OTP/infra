@@ -11,12 +11,36 @@
         body{
             background: #f2f2f2;
         }
-    </style>
-    <script src="angular/angular.js"></script>
 
+        .container{
+            display: flex;
+        }
+    </style>
+    <div class="container">
+        <div class="item">
+            <button ng-click="getWorkouts()">Get all workouts</button>
+            <div ng-repeat="workout in workouts">
+                <div>type: {{workout.typeId}}</div>
+                <div>exercise id: {{workout.exerciseId}}</div>
+                <div>status: {{workout.status}}</div>
+            </div>
+        </div>
+        <div class="item">
+            <button ng-click="setWorkouts()">Get all workouts</button>
+        </div>
+    </div>
+    <script src="angular/angular.js"></script>
+    <script src="firebase/firebase-debug.js"></script>
+
+    <script src="config/config.js"></script>
+    <script src="utility/utility.js"></script>
+    <script src="contentAvail/contentAvail.js"></script>
     <script src="enum/enum.js"></script>
+    <script src="storage/storage.js"></script>
     <script src="exerciseUtility/exerciseUtility.js"></script>
+    <script src="exerciseResult/exerciseResult.js"></script>
 
     <script src="demoApp.js"></script>
+    <script src="storagesConfig.js"></script>
 </body>
 </html>

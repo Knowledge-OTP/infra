@@ -9,16 +9,13 @@
 
     angular.module('znk.infra.config').provider('InfraConfigSrv', [
         function () {
-            var storageServiceName,
-                userDataFn,
-                globalStorageGetter,
-                studentStorageGetter,
-                dashboardStorageGetter;
+            var userDataFn,
+                storages = {};
 
-            this.setStorages = function(_globalStorageGetter, _studentStorageGetter, _dashboardStorageGetter){
-                globalStorageGetter = _globalStorageGetter;
-                studentStorageGetter = _studentStorageGetter;
-                dashboardStorageGetter = _dashboardStorageGetter;
+            this.setStorages = function(_globalStorageGetter, _studentStorageGetter, _teacherStorageGetter){
+                storages.globalGetter = _globalStorageGetter;
+                storages.studentGetter = _studentStorageGetter;
+                storages.teacherGetter = _teacherStorageGetter;
             };
 
             this.setUserDataFn = function(_userDataFn) {
@@ -30,29 +27,22 @@
                 function ($injector, $log, $q) {
                     var InfraConfigSrv = {};
 
-                    InfraConfigSrv.getGlobalStorage = function(){
-                        if(!globalStorageGetter){
-                            $log.error('InfraConfigSrv: global Storage name was not defined');
-                            return;
+                    function _baseStorageGetter(name){
+                        var storageGetterKey = name + 'Getter';
+                        var storageGetter = storages[storageGetterKey];
+                        if(!storageGetter ){
+                            var errMsg = 'InfraConfigSrv: ' + name + ' Storage name was not defined';
+                            $log.error(errMsg);
+                            return $q.reject(errMsg);
                         }
-                        return $injector.invoke(storageServiceName);
-                    };
+                        return $q.when($injector.invoke(storageGetter));
+                    }
 
-                    InfraConfigSrv.getStudentStorage = function(){
-                        if(!studentStorageGetter){
-                            $log.error('InfraConfigSrv: student storage service was not defined');
-                            return;
-                        }
-                        return $injector.invoke(studentStorageGetter);
-                    };
+                    InfraConfigSrv.getGlobalStorage = _baseStorageGetter.bind(InfraConfigSrv, 'global');
 
-                    InfraConfigSrv.getDashboardStorage = function(){
-                        if(!dashboardStorageGetter ){
-                            $log.error('InfraConfigSrv: dashboard storage service name was not defined');
-                            return;
-                        }
-                        return $injector.invoke(dashboardStorageGetter );
-                    };
+                    InfraConfigSrv.getStudentStorage = _baseStorageGetter.bind(InfraConfigSrv, 'student');
+
+                    InfraConfigSrv.getTeacherStorage = _baseStorageGetter.bind(InfraConfigSrv, 'teacher');
 
                     InfraConfigSrv.getUserData = function(){
                         var userDataInjected;

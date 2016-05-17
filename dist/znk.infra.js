@@ -73,7 +73,11 @@
     'use strict';
 
     angular.module('znk.infra.exerciseUtility', [
-        'znk.infra.enum'
+        'znk.infra.config',
+        'znk.infra.enum',
+        'znk.infra.storage',
+        'znk.infra.exerciseResult',
+        'znk.infra.contentAvail',
     ]);
 })(angular);
 
@@ -429,16 +433,13 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 
     angular.module('znk.infra.config').provider('InfraConfigSrv', [
         function () {
-            var storageServiceName,
-                userDataFn,
-                globalStorageGetter,
-                studentStorageGetter,
-                dashboardStorageGetter;
+            var userDataFn,
+                storages = {};
 
-            this.setStorages = function(_globalStorageGetter, _studentStorageGetter, _dashboardStorageGetter){
-                globalStorageGetter = _globalStorageGetter;
-                studentStorageGetter = _studentStorageGetter;
-                dashboardStorageGetter = _dashboardStorageGetter;
+            this.setStorages = function(_globalStorageGetter, _studentStorageGetter, _teacherStorageGetter){
+                storages.globalGetter = _globalStorageGetter;
+                storages.studentGetter = _studentStorageGetter;
+                storages.teacherGetter = _teacherStorageGetter;
             };
 
             this.setUserDataFn = function(_userDataFn) {
@@ -450,29 +451,22 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 function ($injector, $log, $q) {
                     var InfraConfigSrv = {};
 
-                    InfraConfigSrv.getGlobalStorage = function(){
-                        if(!globalStorageGetter){
-                            $log.error('InfraConfigSrv: global Storage name was not defined');
-                            return;
+                    function _baseStorageGetter(name){
+                        var storageGetterKey = name + 'Getter';
+                        var storageGetter = storages[storageGetterKey];
+                        if(!storageGetter ){
+                            var errMsg = 'InfraConfigSrv: ' + name + ' Storage name was not defined';
+                            $log.error(errMsg);
+                            return $q.reject(errMsg);
                         }
-                        return $injector.invoke(storageServiceName);
-                    };
+                        return $q.when($injector.invoke(storageGetter));
+                    }
 
-                    InfraConfigSrv.getStudentStorage = function(){
-                        if(!studentStorageGetter){
-                            $log.error('InfraConfigSrv: student storage service was not defined');
-                            return;
-                        }
-                        return $injector.invoke(studentStorageGetter);
-                    };
+                    InfraConfigSrv.getGlobalStorage = _baseStorageGetter.bind(InfraConfigSrv, 'global');
 
-                    InfraConfigSrv.getDashboardStorage = function(){
-                        if(!dashboardStorageGetter ){
-                            $log.error('InfraConfigSrv: dashboard storage service name was not defined');
-                            return;
-                        }
-                        return $injector.invoke(dashboardStorageGetter );
-                    };
+                    InfraConfigSrv.getStudentStorage = _baseStorageGetter.bind(InfraConfigSrv, 'student');
+
+                    InfraConfigSrv.getTeacherStorage = _baseStorageGetter.bind(InfraConfigSrv, 'teacher');
 
                     InfraConfigSrv.getUserData = function(){
                         var userDataInjected;
@@ -661,6 +655,12 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.contentAvail', ['znk.infra.config']);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.contentAvail').provider('ContentAvailSrv', [
         function () {
 
@@ -677,29 +677,31 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                 var ContentAvailSrvObj = {};
 
                 function getUserPurchaseData(){
-                    var StorageService = InfraConfigSrv.getStorageService();
-                    var purchaseDataPath = StorageService.variables.appUserSpacePath + '/purchase';
-                    var defValues = {
-                        daily: 0,
-                        exam: {},
-                        tutorial: {},
-                        section: {},
-                        subscription: {}
-                    };
-                    return StorageService.get(purchaseDataPath,defValues);
+                    return InfraConfigSrv.getStudentStorage().then(function(studentStorageSrv){
+                        var purchaseDataPath = studentStorageSrv.variables.appUserSpacePath + '/purchase';
+                        var defValues = {
+                            daily: 0,
+                            exam: {},
+                            tutorial: {},
+                            section: {},
+                            subscription: {}
+                        };
+                        return studentStorageSrv.get(purchaseDataPath,defValues);
+                    });
                 }
 
                 function getFreeContentData(){
-                    var StorageService = InfraConfigSrv.getStorageService();
-                    var freeContentPath = 'freeContent';
-                    var defValues = {
-                        daily: 0,
-                        exam: {},
-                        tutorial: {},
-                        section: {},
-                        specials: {}
-                    };
-                    return StorageService.get(freeContentPath,defValues);
+                    return InfraConfigSrv.getStudentStorage().then(function(studentStorageSrv){
+                        var freeContentPath = 'freeContent';
+                        var defValues = {
+                            daily: 0,
+                            exam: {},
+                            tutorial: {},
+                            section: {},
+                            specials: {}
+                        };
+                        return studentStorageSrv.get(freeContentPath,defValues);
+                    });
                 }
 
                 function getUserSpecialsData(){
@@ -893,6 +895,10 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
         }
     ]);
 })(angular);
+
+angular.module('znk.infra.contentAvail').run(['$templateCache', function($templateCache) {
+
+}]);
 
 angular.module('znk.infra.contentAvail').run(['$templateCache', function($templateCache) {
 
@@ -2260,9 +2266,8 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.exerciseUtility').factory('WorkoutsSrv',
-        ["ExerciseStatusEnum", "ExerciseTypeEnum", "ActStorageSrv", "$log", "TutorialSrv", "PracticeSrv", "ExerciseResultSrv", "ContentAvailSrv", "$q", function (ExerciseStatusEnum, ExerciseTypeEnum, ActStorageSrv, $log,
-                  TutorialSrv, PracticeSrv, ExerciseResultSrv, ContentAvailSrv, $q) {
+    angular.module('znk.infra.exerciseUtility').service('WorkoutsSrv',
+        ["ExerciseStatusEnum", "ExerciseTypeEnum", "$log", "StorageSrv", "ExerciseResultSrv", "ContentAvailSrv", "$q", "InfraConfigSrv", function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q, InfraConfigSrv) {
             'ngInject';
 
             var workoutsDataPath = StorageSrv.variables.appUserSpacePath + '/workouts';
@@ -2271,26 +2276,28 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
                 var defaultValue = {
                     workouts: {}
                 };
-                return ActStorageSrv.get(workoutsDataPath, defaultValue);
+                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                    return StudentStorageSrv.get(workoutsDataPath, defaultValue);
+                });
             }
-            
+
             function getWorkoutKey(workoutId) {
                 return 'workout_' + workoutId;
             }
-            
+
             function _getWorkout(workoutId) {
                 var workoutKey = getWorkoutKey(workoutId);
                 return _getWorkoutsData().then(function (workoutsData) {
                     return workoutsData.workouts[workoutKey];
                 });
             }
-            
+
             function _setIsAvailForWorkout(workout) {
                 return ContentAvailSrv.isDailyAvail(workout.workoutOrder).then(function (isAvail) {
                     workout.isAvail = isAvail;
                 });
             }
-            
+
             this.getAllWorkouts = function () {
                 return _getWorkoutsData().then(function (workoutsData) {
                     var workoutsArr = [],
@@ -2313,15 +2320,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
                     });
                 });
             };
-            
-            this.setWorkout = function (workoutId, newWorkoutValue) {
-                return _getWorkoutsData().then(function (workoutsData) {
-                    var workoutKey = getWorkoutKey(workoutId);
-                    workoutsData.workouts[workoutKey] = newWorkoutValue;
-                    ActStorageSrv.set(workoutsDataPath, workoutsData);
-                });
-            };
-            
+
             this.getWorkoutData = function (workoutId) {
                 if (angular.isUndefined(workoutId)) {
                     $log.error('workoutSrv: getWorkoutData function was invoked without workout id');
@@ -2329,7 +2328,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
                 return _getWorkout(workoutId).then(function (workout) {
                     if (workout) {
                         var getExerciseProm;
-            
+
                         switch (workout.exerciseTypeId) {
                             case ExerciseTypeEnum.TUTORIAL.enum:
                                 getExerciseProm = TutorialSrv.getTutorial(workout.exerciseId);
@@ -2341,7 +2340,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
                                 getExerciseProm = TutorialSrv.getTutorial(workout.exerciseId);
                                 break;
                         }
-            
+
                         return {
                             workoutId: workoutId,
                             exerciseTypeId: workout.exerciseTypeId,
@@ -2350,6 +2349,16 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
                         };
                     }
                     return null;
+                });
+            };
+
+            this.setWorkout = function (workoutId, newWorkoutValue) {
+                return _getWorkoutsData().then(function (workoutsData) {
+                    var workoutKey = getWorkoutKey(workoutId);
+                    workoutsData.workouts[workoutKey] = newWorkoutValue;
+                    InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                        StudentStorageSrv.set(workoutsDataPath, workoutsData);
+                    });
                 });
             };
             
@@ -4436,7 +4445,7 @@ angular.module('znk.infra.storage').run(['$templateCache', function($templateCac
                 var alreadyRegisteredSvgIconNames = Object.keys(svgMap);
                 alreadyRegisteredSvgIconNames.forEach(function(svgIconName){
                     if(!!_svgMap[svgIconName]){
-                        console.log('SvgIconSrv: svg icon was already defined before ',svgIconName);
+                        console.error('SvgIconSrv: svg icon was already defined before ',svgIconName);
                     }
                 });
                 angular.extend(svgMap,_svgMap);

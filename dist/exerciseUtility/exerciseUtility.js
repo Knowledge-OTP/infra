@@ -2,7 +2,11 @@
     'use strict';
 
     angular.module('znk.infra.exerciseUtility', [
-        'znk.infra.enum'
+        'znk.infra.config',
+        'znk.infra.enum',
+        'znk.infra.storage',
+        'znk.infra.exerciseResult',
+        'znk.infra.contentAvail',
     ]);
 })(angular);
 
@@ -255,9 +259,8 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.exerciseUtility').factory('WorkoutsSrv',
-        function (ExerciseStatusEnum, ExerciseTypeEnum, ActStorageSrv, $log,
-                  TutorialSrv, PracticeSrv, ExerciseResultSrv, ContentAvailSrv, $q) {
+    angular.module('znk.infra.exerciseUtility').service('WorkoutsSrv',
+        function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q, InfraConfigSrv) {
             'ngInject';
 
             var workoutsDataPath = StorageSrv.variables.appUserSpacePath + '/workouts';
@@ -266,26 +269,28 @@
                 var defaultValue = {
                     workouts: {}
                 };
-                return ActStorageSrv.get(workoutsDataPath, defaultValue);
+                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                    return StudentStorageSrv.get(workoutsDataPath, defaultValue);
+                });
             }
-            
+
             function getWorkoutKey(workoutId) {
                 return 'workout_' + workoutId;
             }
-            
+
             function _getWorkout(workoutId) {
                 var workoutKey = getWorkoutKey(workoutId);
                 return _getWorkoutsData().then(function (workoutsData) {
                     return workoutsData.workouts[workoutKey];
                 });
             }
-            
+
             function _setIsAvailForWorkout(workout) {
                 return ContentAvailSrv.isDailyAvail(workout.workoutOrder).then(function (isAvail) {
                     workout.isAvail = isAvail;
                 });
             }
-            
+
             this.getAllWorkouts = function () {
                 return _getWorkoutsData().then(function (workoutsData) {
                     var workoutsArr = [],
@@ -308,15 +313,7 @@
                     });
                 });
             };
-            
-            this.setWorkout = function (workoutId, newWorkoutValue) {
-                return _getWorkoutsData().then(function (workoutsData) {
-                    var workoutKey = getWorkoutKey(workoutId);
-                    workoutsData.workouts[workoutKey] = newWorkoutValue;
-                    ActStorageSrv.set(workoutsDataPath, workoutsData);
-                });
-            };
-            
+
             this.getWorkoutData = function (workoutId) {
                 if (angular.isUndefined(workoutId)) {
                     $log.error('workoutSrv: getWorkoutData function was invoked without workout id');
@@ -324,7 +321,7 @@
                 return _getWorkout(workoutId).then(function (workout) {
                     if (workout) {
                         var getExerciseProm;
-            
+
                         switch (workout.exerciseTypeId) {
                             case ExerciseTypeEnum.TUTORIAL.enum:
                                 getExerciseProm = TutorialSrv.getTutorial(workout.exerciseId);
@@ -336,7 +333,7 @@
                                 getExerciseProm = TutorialSrv.getTutorial(workout.exerciseId);
                                 break;
                         }
-            
+
                         return {
                             workoutId: workoutId,
                             exerciseTypeId: workout.exerciseTypeId,
@@ -345,6 +342,16 @@
                         };
                     }
                     return null;
+                });
+            };
+
+            this.setWorkout = function (workoutId, newWorkoutValue) {
+                return _getWorkoutsData().then(function (workoutsData) {
+                    var workoutKey = getWorkoutKey(workoutId);
+                    workoutsData.workouts[workoutKey] = newWorkoutValue;
+                    InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                        StudentStorageSrv.set(workoutsDataPath, workoutsData);
+                    });
                 });
             };
             

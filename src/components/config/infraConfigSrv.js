@@ -22,11 +22,12 @@
                     var InfraConfigSrv = {};
 
                     function _baseStorageGetter(name){
-                        var storageGetterKey = name + 'getter';
+                        var storageGetterKey = name + 'Getter';
                         var storageGetter = storages[storageGetterKey];
                         if(!storageGetter ){
-                            $log.error('InfraConfigSrv: ' + name + ' Storage name was not defined');
-                            return;
+                            var errMsg = 'InfraConfigSrv: ' + name + ' Storage name was not defined';
+                            $log.error(errMsg);
+                            return $q.reject(errMsg);
                         }
                         return $q.when($injector.invoke(storageGetter));
                     }

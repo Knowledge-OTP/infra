@@ -143,7 +143,7 @@ module.exports = function (grunt) {
         },
         connect: {
             options: {
-                base: ['dist','bower_components'],
+                base: ['dist','bower_components', 'demo/shared'],
                 open: true,
                 livereload: 35730
             },
