@@ -7,7 +7,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.config').provider('InfraConfigSrv', [ENV,
+    angular.module('znk.infra.config').provider('InfraConfigSrv', [
         function () {
             var storageServiceName;
             var userDataFn;
