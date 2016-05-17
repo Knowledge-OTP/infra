@@ -22,7 +22,7 @@
                 },
                 link: function (scope, element, attrs) {
                     if (ENV.debug) {
-                        angular.element(element[0]).addClass('disabled')
+                        angular.element(element[0]).addClass('disabled');
                     } else {
                         scope.title = attrs.title;
                         scope.subTitle = attrs.subTitle;
