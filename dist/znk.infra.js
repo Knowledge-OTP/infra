@@ -39,7 +39,14 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.deviceNotSupported', []);
+    var deviceNotSupportedModule = angular.module('znk.infra.deviceNotSupported', []);
+    deviceNotSupportedModule.factory('ENV', function() {
+        var ENV = {
+            debug: true
+        };
+        return ENV;
+    });
+
 })(angular);
 
 (function (angular) {
@@ -419,7 +426,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.config').provider('InfraConfigSrv', [
+    angular.module('znk.infra.config').provider('InfraConfigSrv', [ENV,
         function () {
             var storageServiceName;
             var userDataFn;
@@ -880,8 +887,8 @@ angular.module('znk.infra.contentAvail').run(['$templateCache', function($templa
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.deviceNotSupported').directive('deviceNotSupported', [
-        function () {
+    angular.module('znk.infra.deviceNotSupported').directive('deviceNotSupported', ['ENV',
+        function (ENV) {
             return {
                 templateUrl: 'components/deviceNotSupported/deviceNotSupported.template.html',
                 restrict: 'E',
@@ -891,13 +898,17 @@ angular.module('znk.infra.contentAvail').run(['$templateCache', function($templa
                     imageSrc: '@'
                 },
                 link: function (scope, element, attrs) {
-                    scope.title = attrs.title;
-                    scope.subTitle = attrs.subTitle;
-                    scope.imageSrc = attrs.imageSrc;
+                    if (ENV.debug) {
+                        angular.element(element[0]).addClass('disabled')
+                    } else {
+                        scope.title = attrs.title;
+                        scope.subTitle = attrs.subTitle;
+                        scope.imageSrc = attrs.imageSrc;
 
-                    scope.styleObj = {
-                        'background-image' : 'url(' + scope.imageSrc + ')'
-                    };
+                        scope.styleObj = {
+                            'background-image' : 'url(' + scope.imageSrc + ')'
+                        };
+                    }
                 }
             };
         }
@@ -2747,6 +2758,22 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
 })(angular);
 
 angular.module('znk.infra.hint').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('EnvMockService').factory('EnvMockService', [
+        function () {
+            var EnvMockService = {};
+
+            return EnvMockService;
+        }
+    ]);
+})(angular);
+
+angular.module('znk.infra.mock').run(['$templateCache', function($templateCache) {
 
 }]);
 

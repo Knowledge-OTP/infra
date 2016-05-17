@@ -1,7 +1,14 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.deviceNotSupported', []);
+    var deviceNotSupportedModule = angular.module('znk.infra.deviceNotSupported', []);
+    deviceNotSupportedModule.factory('ENV', function() {
+        var ENV = {
+            debug: true
+        };
+        return ENV;
+    });
+
 })(angular);
 
 /**
@@ -16,8 +23,8 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.deviceNotSupported').directive('deviceNotSupported', [
-        function () {
+    angular.module('znk.infra.deviceNotSupported').directive('deviceNotSupported', ['ENV',
+        function (ENV) {
             return {
                 templateUrl: 'components/deviceNotSupported/deviceNotSupported.template.html',
                 restrict: 'E',
@@ -27,13 +34,17 @@
                     imageSrc: '@'
                 },
                 link: function (scope, element, attrs) {
-                    scope.title = attrs.title;
-                    scope.subTitle = attrs.subTitle;
-                    scope.imageSrc = attrs.imageSrc;
+                    if (ENV.debug) {
+                        angular.element(element[0]).addClass('disabled')
+                    } else {
+                        scope.title = attrs.title;
+                        scope.subTitle = attrs.subTitle;
+                        scope.imageSrc = attrs.imageSrc;
 
-                    scope.styleObj = {
-                        'background-image' : 'url(' + scope.imageSrc + ')'
-                    };
+                        scope.styleObj = {
+                            'background-image' : 'url(' + scope.imageSrc + ')'
+                        };
+                    }
                 }
             };
         }

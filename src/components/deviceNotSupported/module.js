@@ -1,5 +1,12 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.deviceNotSupported', []);
+    var deviceNotSupportedModule = angular.module('znk.infra.deviceNotSupported', []);
+    deviceNotSupportedModule.factory('ENV', function() {
+        var ENV = {
+            debug: true
+        };
+        return ENV;
+    });
+
 })(angular);
