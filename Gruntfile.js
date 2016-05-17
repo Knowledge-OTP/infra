@@ -164,7 +164,7 @@ module.exports = function (grunt) {
                     'src/**/*.js',
                     'src/**/*.{html,svg}'
                 ],
-                tasks: ['copy:copyComponentsToTmp','prepareConfiguration','html2js', 'concat']
+                tasks: ['copy:copyComponentsToTmp','prepareConfiguration','html2js', 'concat', 'ngAnnotate']
             },
             demo: {
                 files: [
