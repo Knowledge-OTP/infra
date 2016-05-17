@@ -7,12 +7,12 @@
                 userDataFn,
                 globalStorageGetter,
                 studentStorageGetter,
-                dashboardStorageGetter;
+                teacherStorageGetter;
 
-            this.setStorages = function(_globalStorageGetter, _studentStorageGetter, _dashboardStorageGetter){
+            this.setStorages = function(_globalStorageGetter, _studentStorageGetter, _teacherStorageGetter){
                 globalStorageGetter = _globalStorageGetter;
                 studentStorageGetter = _studentStorageGetter;
-                dashboardStorageGetter = _dashboardStorageGetter;
+                teacherStorageGetter = _teacherStorageGetter;
             };
 
             this.setUserDataFn = function(_userDataFn) {
@@ -40,12 +40,12 @@
                         return $injector.invoke(studentStorageGetter);
                     };
 
-                    InfraConfigSrv.getDashboardStorage = function(){
-                        if(!dashboardStorageGetter ){
+                    InfraConfigSrv.getTeacherStorage = function(){
+                        if(!teacherStorageGetter ){
                             $log.error('InfraConfigSrv: dashboard storage service name was not defined');
                             return;
                         }
-                        return $injector.invoke(dashboardStorageGetter );
+                        return $injector.invoke(teacherStorageGetter );
                     };
 
                     InfraConfigSrv.getUserData = function(){
