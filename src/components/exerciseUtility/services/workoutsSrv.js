@@ -64,18 +64,8 @@
                 return _getWorkout(workoutId).then(function (workout) {
                     if (workout) {
                         var getExerciseProm;
-                        var exerciseTypeVal = ExerciseTypeEnum.getValByEnum(workout.exerciseTypeId);
-                        switch (workout.exerciseTypeId) {
-                            case ExerciseTypeEnum.TUTORIAL.enum:
-                                getExerciseProm = TutorialSrv.getTutorial(workout.exerciseId);
-                                break;
-                            case ExerciseTypeEnum.PRACTICE.enum:
-                                getExerciseProm = PracticeSrv.getPractice(workout.exerciseId);
-                                break;
-                            default:
-                                getExerciseProm = TutorialSrv.getTutorial(workout.exerciseId);
-                                break;
-                        }
+                        var exerciseTypeName = ExerciseTypeEnum.getValByEnum(workout.exerciseTypeId).toLowerCase();
+                        getExerciseProm = BaseExerciseGetterSrv.getExerciseByNameAndId(workout.exerciseId, exerciseTypeName);
 
                         return {
                             workoutId: workoutId,
