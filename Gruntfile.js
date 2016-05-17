@@ -301,6 +301,7 @@ module.exports = function (grunt) {
         'sass',
         'html2js',
         'concat',
-        'copy:dist'
+        'copy:dist',
+        'ngAnnotate'
     ]);
 };
