@@ -200,8 +200,13 @@ module.exports = function (grunt) {
         },
         copy: {
             dist: {
-                src: '.tmp/main.css',
-                dest: 'dist/main.css'
+                files:[{
+                    src: '.tmp/main.css',
+                    dest: 'dist/main.css'
+                },{
+                    src: '.tmp/components/mixins/_mixins.scss',
+                    dest: 'dist/mixins/_mixins.scss'
+                }]
             },
             copyComponentsToTmp:{
                 files:[{
@@ -271,6 +276,10 @@ module.exports = function (grunt) {
         grunt.file.expand(".tmp/components/*").forEach(function (dir) {
             // get the module name from the directory name
             var dirName = dir.substr(dir.lastIndexOf('/')+1);
+            //mixins component has no js
+            if(dirName === 'mixins'){
+                return;
+            }
 
             html2js[dirName] = {
                 options:{

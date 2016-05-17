@@ -2,7 +2,10 @@
         './src/scss/imports/colors',
         './src/scss/imports/mixins';
 
-svg-icon{
-  display: block;
-  overflow: hidden;
+svg-icon {
+    display: block;
+
+    svg {
+        display: block;
+    }
 }
