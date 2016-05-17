@@ -9,10 +9,16 @@
 
     angular.module('znk.infra.config').provider('InfraConfigSrv', [
         function () {
-            var storageServiceName;
-            var userDataFn;
-            this.setStorageServiceName = function(_storageServiceName){
-                storageServiceName = _storageServiceName;
+            var storageServiceName,
+                userDataFn,
+                globalStorageGetter,
+                studentStorageGetter,
+                dashboardStorageGetter;
+
+            this.setStorages = function(_globalStorageGetter, _studentStorageGetter, _dashboardStorageGetter){
+                globalStorageGetter = _globalStorageGetter;
+                studentStorageGetter = _studentStorageGetter;
+                dashboardStorageGetter = _dashboardStorageGetter;
             };
 
             this.setUserDataFn = function(_userDataFn) {
@@ -24,12 +30,28 @@
                 function ($injector, $log, $q) {
                     var InfraConfigSrv = {};
 
-                    InfraConfigSrv.getStorageService = function(){
-                        if(!storageServiceName){
-                            $log.debug('InfraConfigSrv: storage service name was not defined');
+                    InfraConfigSrv.getGlobalStorage = function(){
+                        if(!globalStorageGetter){
+                            $log.error('InfraConfigSrv: global Storage name was not defined');
                             return;
                         }
-                        return $injector.get(storageServiceName);
+                        return $injector.invoke(storageServiceName);
+                    };
+
+                    InfraConfigSrv.getStudentStorage = function(){
+                        if(!studentStorageGetter){
+                            $log.error('InfraConfigSrv: student storage service was not defined');
+                            return;
+                        }
+                        return $injector.invoke(studentStorageGetter);
+                    };
+
+                    InfraConfigSrv.getDashboardStorage = function(){
+                        if(!dashboardStorageGetter ){
+                            $log.error('InfraConfigSrv: dashboard storage service name was not defined');
+                            return;
+                        }
+                        return $injector.invoke(dashboardStorageGetter );
                     };
 
                     InfraConfigSrv.getUserData = function(){

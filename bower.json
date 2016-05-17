@@ -17,12 +17,9 @@
     "demo"
   ],
   "main": [
-      "dist/znk.infra.js",
-      "dist/main.css"
+    "dist/znk.infra.js",
+    "dist/main.css"
   ],
-  "resolutions": {
-    "angular": "1.5.4"
-  },
   "devDependencies": {
     "es5-shim": "~4.4.1",
     "angular-mocks": "1.5.5",
