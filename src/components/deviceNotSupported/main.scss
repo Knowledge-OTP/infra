@@ -3,6 +3,9 @@
         './src/scss/imports/mixins';
 
 device-not-supported {
+    &.disabled {
+        display: none;
+    }
     .device-not-supported-inner {
         display: none;
     }

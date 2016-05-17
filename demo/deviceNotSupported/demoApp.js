@@ -3,6 +3,12 @@
 
     angular
         .module('demoApp', ['znk.infra.deviceNotSupported'])
+        .factory('ENV', function() {
+            var ENV = {
+                debug: false
+            };
+            return ENV;
+        })
         .controller('myController', [function () {
                 var self = this;
                 self.title = 'My Title';
