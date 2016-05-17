@@ -23,13 +23,13 @@
                 '$injector', '$log', '$q',
                 function ($injector, $log, $q) {
                     var InfraConfigSrv = {};
-
+                    
                     InfraConfigSrv.getGlobalStorage = function(){
                         if(!globalStorageGetter){
                             $log.error('InfraConfigSrv: global Storage name was not defined');
                             return;
                         }
-                        return $injector.invoke(storageServiceName);
+                        return $q.when($injector.invoke(storageServiceName));
                     };
 
                     InfraConfigSrv.getStudentStorage = function(){
@@ -37,7 +37,7 @@
                             $log.error('InfraConfigSrv: student storage service was not defined');
                             return;
                         }
-                        return $injector.invoke(studentStorageGetter);
+                        return $q.when($injector.invoke(studentStorageGetter));
                     };
 
                     InfraConfigSrv.getTeacherStorage = function(){
@@ -45,7 +45,7 @@
                             $log.error('InfraConfigSrv: dashboard storage service name was not defined');
                             return;
                         }
-                        return $injector.invoke(teacherStorageGetter );
+                        return $q.when($injector.invoke(teacherStorageGetter));
                     };
 
                     InfraConfigSrv.getUserData = function(){
