@@ -2,7 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.exerciseUtility').service('WorkoutsSrv',
-        function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q, InfraConfigSrv) {
+        function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
+                  InfraConfigSrv, BaseExerciseGetterSrv) {
             'ngInject';
 
             var workoutsDataPath = StorageSrv.variables.appUserSpacePath + '/workouts';
@@ -63,7 +64,7 @@
                 return _getWorkout(workoutId).then(function (workout) {
                     if (workout) {
                         var getExerciseProm;
-
+                        var exerciseTypeVal = ExerciseTypeEnum.getValByEnum(workout.exerciseTypeId);
                         switch (workout.exerciseTypeId) {
                             case ExerciseTypeEnum.TUTORIAL.enum:
                                 getExerciseProm = TutorialSrv.getTutorial(workout.exerciseId);
@@ -96,7 +97,7 @@
                     });
                 });
             };
-            
+
             this.getWorkoutKey = getWorkoutKey;
         }
     );

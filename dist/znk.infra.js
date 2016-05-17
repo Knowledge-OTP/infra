@@ -2168,33 +2168,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
     angular.module('znk.infra.exerciseUtility').factory('BaseExerciseGetterSrv',
         ["ContentSrv", "$log", "$q", function (ContentSrv, $log, $q) {
             'ngInject';
-
-            // this.getContent = function (data) {
-            //     return ContentSrv.getContent(data).then(function (result) {
-            //         return angular.fromJson(result);
-            //     }, function (err) {
-            //         if (err) {
-            //             $log.error(err);
-            //             return $q.reject(err);
-            //         }
-            //     });
-            // };
-            //
-            // this.getAllContentByKey = function (key) {
-            //     var resultsProm = [];
-            //     return ContentSrv.getAllContentIdsByKey(key).then(function (results) {
-            //         angular.forEach(results, function (keyValue) {
-            //             resultsProm.push(self.getContent({ exerciseType: keyValue }));
-            //         });
-            //         return $q.all(resultsProm);
-            //     }, function (err) {
-            //         if (err) {
-            //             $log.error(err);
-            //             return $q.reject(err);
-            //         }
-            //     });
-            // };
-
+            
             var BaseExerciseGetterSrvPrototype = {};
 
             BaseExerciseGetterSrvPrototype.get = function (exerciseId) {
@@ -2267,7 +2241,8 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.exerciseUtility').service('WorkoutsSrv',
-        ["ExerciseStatusEnum", "ExerciseTypeEnum", "$log", "StorageSrv", "ExerciseResultSrv", "ContentAvailSrv", "$q", "InfraConfigSrv", function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q, InfraConfigSrv) {
+        ["ExerciseStatusEnum", "ExerciseTypeEnum", "$log", "StorageSrv", "ExerciseResultSrv", "ContentAvailSrv", "$q", "InfraConfigSrv", "BaseExerciseGetterSrv", function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
+                  InfraConfigSrv, BaseExerciseGetterSrv) {
             'ngInject';
 
             var workoutsDataPath = StorageSrv.variables.appUserSpacePath + '/workouts';
@@ -2328,7 +2303,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
                 return _getWorkout(workoutId).then(function (workout) {
                     if (workout) {
                         var getExerciseProm;
-
+                        var exerciseTypeVal = ExerciseTypeEnum.getValByEnum(workout.exerciseTypeId);
                         switch (workout.exerciseTypeId) {
                             case ExerciseTypeEnum.TUTORIAL.enum:
                                 getExerciseProm = TutorialSrv.getTutorial(workout.exerciseId);
@@ -2361,7 +2336,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
                     });
                 });
             };
-            
+
             this.getWorkoutKey = getWorkoutKey;
         }]
     );

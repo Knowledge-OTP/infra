@@ -15,18 +15,44 @@
         .container{
             display: flex;
         }
+
+        .item{
+            margin-right: 50px;
+        }
+
+        .workout{
+            margin-bottom: 20px;
+        }
     </style>
     <div class="container">
         <div class="item">
             <button ng-click="getWorkouts()">Get all workouts</button>
-            <div ng-repeat="workout in workouts">
-                <div>type: {{workout.typeId}}</div>
+            <div ng-repeat="workout in workouts" class="workout">
+                <div>order: {{workout.workoutOrder}}</div>
+                <div>type: {{workout.exerciseTypeId}}</div>
                 <div>exercise id: {{workout.exerciseId}}</div>
                 <div>status: {{workout.status}}</div>
             </div>
         </div>
         <div class="item">
-            <button ng-click="setWorkouts()">Get all workouts</button>
+            <button ng-click="updateWorkout()">Update exercise</button>
+            <div>
+                <label>exercise order:</label>
+                <input type="text" ng-model="exerciseOrder">
+            </div>
+            <div>
+                <label>exercise status:</label>
+                <input type="number" ng-model="workoutData.status">
+            </div>
+        </div>
+        <div class="item">
+            <div>
+                <button ng-click="getWorkoutData()">get workout data</button>
+                <div>
+                    <label>workout id</label>
+                    <input type="number" ng-model="workoutIdToRetrieveData">
+                </div>
+            </div>
         </div>
     </div>
     <script src="angular/angular.js"></script>
