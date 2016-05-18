@@ -157,6 +157,12 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.user', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.utility', []);
 })(angular);
 
@@ -952,166 +958,6 @@ angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function($
     "</div>\n" +
     "");
 }]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.enum').factory('AnswerTypeEnum', [
-        'EnumSrv',
-        function (EnumSrv) {
-            return new EnumSrv.BaseEnum([
-                ['SELECT_ANSWER',0 ,'select answer'],
-                ['FREE_TEXT_ANSWER',1 ,'free text answer'],
-                ['RATE_ANSWER',3 ,'rate answer']
-            ]);
-        }
-    ]);
-})(angular);
-
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.enum').factory('ExamTypeEnum', [
-        'EnumSrv',
-        function (EnumSrv) {
-            return new EnumSrv.BaseEnum([
-                ['FULL TEST', 0, 'test'],
-                ['MINI TEST', 1, 'miniTest'],
-                ['DIAGNOSTIC', 2, 'diagnostic']
-            ]);
-        }
-    ]);
-})(angular);
-
-
-(function (angular) {
-    'use strict';
-
-    var exerciseStatusEnum = {
-        NEW: 0,
-        ACTIVE: 1,
-        COMPLETED: 2,
-        COMING_SOON: 3
-    };
-
-    angular.module('znk.infra.enum').constant('exerciseStatusConst', exerciseStatusEnum);
-
-    angular.module('znk.infra.enum').factory('ExerciseStatusEnum', [
-        'EnumSrv',
-        function (EnumSrv) {
-            return new EnumSrv.BaseEnum([
-                ['NEW', exerciseStatusEnum.NEW, 'new'],
-                ['ACTIVE', exerciseStatusEnum.ACTIVE, 'active'],
-                ['COMPLETED', exerciseStatusEnum.COMPLETED, 'completed'],
-                ['COMING_SOON', exerciseStatusEnum.COMING_SOON, 'coming soon']
-            ]);
-        }
-    ]);
-})(angular);
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.enum').factory('ExerciseTimeEnum', [
-        'EnumSrv',
-        function (EnumSrv) {
-            return new EnumSrv.BaseEnum([
-                ['5_MIN', 5, '5 min'],
-                ['10_MIN', 10, '10 min'],
-                ['15_MIN', 15, '15 min']
-            ]);
-        }
-    ]);
-})(angular);
-
-
-(function (angular) {
-    'use strict';
-
-    var exerciseTypeConst = {
-        TUTORIAL: 1,
-        PRACTICE: 2,
-        GAME: 3,
-        SECTION: 4,
-        DRILL: 5
-    };
-
-    angular.module('znk.infra.enum')
-        .constant('exerciseTypeConst', exerciseTypeConst)
-        .factory('ExerciseTypeEnum', [
-            'EnumSrv',
-            function (EnumSrv) {
-                return new EnumSrv.BaseEnum([
-                    ['TUTORIAL', 1, 'Tutorial'],
-                    ['PRACTICE', 2, 'Practice'],
-                    ['GAME', 3, 'Game'],
-                    ['SECTION', 4, 'Section'],
-                    ['DRILL', 5, 'Drill']
-                ]);
-            }
-        ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.enum').factory('QuestionFormatEnum', [
-        'EnumSrv',
-        function (EnumSrv) {
-
-            var QuestionFormatEnum = new EnumSrv.BaseEnum([
-                ['TEXT',1,'text'],
-                ['AUDIO',2, 'audio'],
-                ['TEXT_AUDIO', 3, 'text audio'],
-                ['PROSE_SUMMARY', 4, 'prose Summary'],
-                ['FILL_IN_TABLE', 5, 'fill in a table'],
-                ['CONNECTING_CONTENT', 6, 'connecting content'],
-                ['INDEPENDENT', 7, 'independent'],
-                ['STANDARD', 8, 'standard']
-            ]);
-
-            return QuestionFormatEnum;
-        }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    var subjectEnum = {
-        MATH: 0,
-        READING: 1,
-        WRITING: 2,
-        LISTENING: 3,
-        SPEAKING: 4,
-        ENGLISH: 5,
-        SCIENCE: 6,
-        VERBAL: 7,
-        ESSAY: 8
-    };
-
-    angular.module('znk.infra.enum').constant('SubjectEnumConst', subjectEnum);
-
-    angular.module('znk.infra.enum').factory('SubjectEnum', [
-        'EnumSrv',
-        function (EnumSrv) {
-
-            var SubjectEnum = new EnumSrv.BaseEnum([
-                ['MATH', subjectEnum.MATH, 'math'],
-                ['READING', subjectEnum.READING, 'reading'],
-                ['WRITING', subjectEnum.WRITING, 'writing'],
-                ['LISTENING', subjectEnum.LISTENING, 'listening'],
-                ['SPEAKING', subjectEnum.SPEAKING, 'speaking'],
-                ['ENGLISH', subjectEnum.ENGLISH, 'english'],
-                ['SCIENCE', subjectEnum.SCIENCE, 'science'],
-                ['VERBAL', subjectEnum.VERBAL, 'verbal'],
-                ['ESSAY', subjectEnum.ESSAY, 'essay']
-            ]);
-
-            return SubjectEnum;
-        }
-    ]);
-})(angular);
 
 'use strict';
 (function (angular) {
@@ -4493,6 +4339,49 @@ angular.module('znk.infra.storage').run(['$templateCache', function($templateCac
 })(angular);
 
 angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCache) {
+
+}]);
+
+angular.module('znk.infra.user').service('UserProfileService',
+    ["InfraConfigSrv", "StorageSrv", function (InfraConfigSrv, StorageSrv) {
+        'ngInject';
+
+        var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
+
+        this.getProfile = function () {
+            return InfraConfigSrv.getGlobalStorage().then(function(globalStorage) {
+                return globalStorage.get(profilePath).then(function (profile) {
+                    if (profile && (angular.isDefined(profile.email) || angular.isDefined(profile.nickname))) {
+                        return profile;
+                    }
+                    return InfraConfigSrv.getUserData().then(function(authData) {
+                        var emailFromAuth = authData.password ? authData.password.email : '';
+                        var nickNameFromAuth = authData.auth ? authData.auth.name : emailFromAuth;
+
+                        if (!profile.email) {
+                            profile.email = emailFromAuth;
+                        }
+                        if (!profile.nickname) {
+                            profile.nickname = nickNameFromAuth;
+                        }
+                        if (!profile.createdTime) {
+                            profile.createdTime = storage.variables.currTimeStamp;
+                        }
+
+                        return globalStorage.set(profilePath, profile);
+                    });
+                });
+            });
+        };
+
+        this.setProfile = function (newProfile) {
+            return InfraConfigSrv.getGlobalStorage().then(function(globalStorage) {
+                return globalStorage.set(profilePath, newProfile);
+            });
+        };
+}]);
+
+angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -7963,6 +7852,7 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templat
         'znk.infra.hint',
         'znk.infra.znkTimeline',
         'znk.infra.analytics',
-        'znk.infra.deviceNotSupported'
+        'znk.infra.deviceNotSupported',
+        'znk.infra.user'
     ]);
 })(angular);
