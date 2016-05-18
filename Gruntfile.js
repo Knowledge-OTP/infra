@@ -302,8 +302,8 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('build', [
-        //'jshint:all',
-        //'karma:build',
+        'jshint:all',
+        'karma:build',
         'clean:dist',
         'copy:copyComponentsToTmp',
         'prepareConfiguration',
