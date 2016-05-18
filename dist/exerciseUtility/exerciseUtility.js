@@ -7,6 +7,7 @@
         'znk.infra.storage',
         'znk.infra.exerciseResult',
         'znk.infra.contentAvail',
+        'znk.infra.content',
     ]);
 })(angular);
 
@@ -161,33 +162,7 @@
     angular.module('znk.infra.exerciseUtility').factory('BaseExerciseGetterSrv',
         function (ContentSrv, $log, $q) {
             'ngInject';
-
-            // this.getContent = function (data) {
-            //     return ContentSrv.getContent(data).then(function (result) {
-            //         return angular.fromJson(result);
-            //     }, function (err) {
-            //         if (err) {
-            //             $log.error(err);
-            //             return $q.reject(err);
-            //         }
-            //     });
-            // };
-            //
-            // this.getAllContentByKey = function (key) {
-            //     var resultsProm = [];
-            //     return ContentSrv.getAllContentIdsByKey(key).then(function (results) {
-            //         angular.forEach(results, function (keyValue) {
-            //             resultsProm.push(self.getContent({ exerciseType: keyValue }));
-            //         });
-            //         return $q.all(resultsProm);
-            //     }, function (err) {
-            //         if (err) {
-            //             $log.error(err);
-            //             return $q.reject(err);
-            //         }
-            //     });
-            // };
-
+            
             var BaseExerciseGetterSrvPrototype = {};
 
             BaseExerciseGetterSrvPrototype.get = function (exerciseId) {
@@ -260,7 +235,8 @@
     'use strict';
 
     angular.module('znk.infra.exerciseUtility').service('WorkoutsSrv',
-        function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q, InfraConfigSrv) {
+        function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
+                  InfraConfigSrv, BaseExerciseGetterSrv) {
             'ngInject';
 
             var workoutsDataPath = StorageSrv.variables.appUserSpacePath + '/workouts';
@@ -321,18 +297,8 @@
                 return _getWorkout(workoutId).then(function (workout) {
                     if (workout) {
                         var getExerciseProm;
-
-                        switch (workout.exerciseTypeId) {
-                            case ExerciseTypeEnum.TUTORIAL.enum:
-                                getExerciseProm = TutorialSrv.getTutorial(workout.exerciseId);
-                                break;
-                            case ExerciseTypeEnum.PRACTICE.enum:
-                                getExerciseProm = PracticeSrv.getPractice(workout.exerciseId);
-                                break;
-                            default:
-                                getExerciseProm = TutorialSrv.getTutorial(workout.exerciseId);
-                                break;
-                        }
+                        var exerciseTypeName = ExerciseTypeEnum.getValByEnum(workout.exerciseTypeId).toLowerCase();
+                        getExerciseProm = BaseExerciseGetterSrv.getExerciseByNameAndId(workout.exerciseId, exerciseTypeName);
 
                         return {
                             workoutId: workoutId,
@@ -354,7 +320,7 @@
                     });
                 });
             };
-            
+
             this.getWorkoutKey = getWorkoutKey;
         }
     );

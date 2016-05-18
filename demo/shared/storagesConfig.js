@@ -26,7 +26,8 @@
                             uid: function () {
                                 return auth.uid;
                             }
-                        }
+                        },
+                        cache: /.*/
                     };
                     return new StorageSrv(fbAdapter.get, fbAdapter.set, config);
                 });
