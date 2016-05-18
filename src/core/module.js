@@ -20,6 +20,7 @@
         'znk.infra.hint',
         'znk.infra.znkTimeline',
         'znk.infra.analytics',
-        'znk.infra.deviceNotSupported'
+        'znk.infra.deviceNotSupported',
+        'znk.infra.user'
     ]);
 })(angular);
