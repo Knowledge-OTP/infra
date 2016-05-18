@@ -1,3 +1,5 @@
+'use strict';
+
 angular.module('znk.infra.user').service('UserProfileService',
     function (InfraConfigSrv, StorageSrv) {
         'ngInject';
@@ -21,7 +23,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                             profile.nickname = nickNameFromAuth;
                         }
                         if (!profile.createdTime) {
-                            profile.createdTime = storage.variables.currTimeStamp;
+                            profile.createdTime = StorageSrv.variables.currTimeStamp;
                         }
 
                         return globalStorage.set(profilePath, profile);
