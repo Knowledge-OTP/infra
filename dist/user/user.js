@@ -112,7 +112,6 @@ angular.module('znk.infra.user').service('UserGoalsService', ['InfraConfigSrv', 
 
 angular.module('znk.infra.user').service('UserProfileService',
     function (InfraConfigSrv, StorageSrv) {
-        'ngInject';
 
         var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
 
@@ -151,10 +150,8 @@ angular.module('znk.infra.user').service('UserProfileService',
 
 'use strict';
 
-angular.module('znk.infra.user').service('UserSchoolsService' [
+angular.module('znk.infra.user').service('UserSchoolsService', ['InfraConfigSrv', 'StorageSrv', 'ENV', '$http', 'UserGoalsService', '$q',
     function(InfraConfigSrv, StorageSrv, ENV, $http, UserGoalsService, $q) {
-        'ngInject';
-
         var schoolsPath = StorageSrv.variables.appUserSpacePath + '/dreamSchools';
 
         this.getAppSchoolsList = function () {

@@ -1,9 +1,7 @@
 'use strict';
 
-angular.module('znk.infra.user').service('UserSchoolsService' [
+angular.module('znk.infra.user').service('UserSchoolsService', ['InfraConfigSrv', 'StorageSrv', 'ENV', '$http', 'UserGoalsService', '$q',
     function(InfraConfigSrv, StorageSrv, ENV, $http, UserGoalsService, $q) {
-        'ngInject';
-
         var schoolsPath = StorageSrv.variables.appUserSpacePath + '/dreamSchools';
 
         this.getAppSchoolsList = function () {
