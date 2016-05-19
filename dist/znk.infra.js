@@ -4336,12 +4336,9 @@ angular.module('znk.infra.user').service('UserGoalsService', ['InfraConfigSrv', 
                     if (!userGoals.goals) {
                         userGoals.goals = {
                             isCompleted: false,
-                            english: defaultSubjectScore,
+                            verbal: defaultSubjectScore,
                             math: defaultSubjectScore,
-                            writing: defaultSubjectScore,
-                            reading: defaultSubjectScore,
-                            science: defaultSubjectScore,
-                            compositeScore: defaultSubjectScore
+                            totalScore: defaultSubjectScore * 2
                         };
                     }
                     return userGoals;
@@ -4355,8 +4352,8 @@ angular.module('znk.infra.user').service('UserGoalsService', ['InfraConfigSrv', 
             // 2. Calc the average score for each school and set it for each subject goal
 
             return this.getGoals().then(function (userGoals) {
-                var minSchoolScore = 20,
-                    maxSchoolScore = 25,
+                var minSchoolScore = 400,
+                    maxSchoolScore = 1600,
                     avgScores = [];
 
                 angular.forEach(userSchools, function (school) {
@@ -4377,38 +4374,28 @@ angular.module('znk.infra.user').service('UserGoalsService', ['InfraConfigSrv', 
 
                 userGoals = {
                     isCompleted: false,
-                    english: avgSchoolsScore || defaultSubjectScore,
-                    math: avgSchoolsScore || defaultSubjectScore,
-                    writing: avgSchoolsScore || defaultSubjectScore,
-                    reading: avgSchoolsScore || defaultSubjectScore,
-                    science: avgSchoolsScore || defaultSubjectScore
+                    verbal: avgSchoolsScore || defaultSubjectScore,
+                    math: avgSchoolsScore || defaultSubjectScore
                 };
 
                 userGoals.compositeScore = averageSubjectsGoal(userGoals);
-                var prom = save ? self.setGoals(userGoals) : $q.when(userGoals);
-                return prom;
+                return save ? self.setGoals(userGoals) : $q.when(userGoals);
             });
         };
 
         function _defaultUserGoals() {
             return {
                 isCompleted: false,
-                english: defaultSubjectScore,
+                verbal: defaultSubjectScore,
                 math: defaultSubjectScore,
-                writing: defaultSubjectScore,
-                reading: defaultSubjectScore,
-                science: defaultSubjectScore,
-                compositeScore: defaultSubjectScore
+                totalScore: defaultSubjectScore * 2
             };
         }
 
         function averageSubjectsGoal(goals) {
-            // retrun the avg of 4 subject goals
             var math = goals.math || defaultSubjectScore;
-            var english = goals.english || defaultSubjectScore;
-            var reading = goals.reading || defaultSubjectScore;
-            var science = goals.science || defaultSubjectScore;
-            return Math.round((math + english + reading + science) / 4);
+            var verbal = goals.english || defaultSubjectScore;
+            return Math.round((math + verbal) / 2);
         }
 }]);
 
