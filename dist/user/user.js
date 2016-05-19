@@ -9,7 +9,7 @@
 angular.module('znk.infra.user').service('UserGoalsService', ['InfraConfigSrv', 'StorageSrv', '$q',
     function (InfraConfigSrv, StorageSrv, $q) {
         var goalsPath = StorageSrv.variables.appUserSpacePath + '/goals';
-        var defaultSubjectScore = 25;
+        var defaultSubjectScore = 600;
         var self = this;
 
         this.getGoals = function () {
