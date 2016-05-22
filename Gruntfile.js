@@ -89,7 +89,17 @@ module.exports = function (grunt) {
                 }
             }
         },
-        concat: {},
+        concat: {
+            mainModule:{
+                files:[{
+                    src: ['<%= yeoman.src %>/core/module.js','<%= yeoman.src %>/*/**/*.js'],
+                    dest: '<%= yeoman.tmp %>/znk.infra.js'
+                },{
+                    src: ['<%= yeoman.tmp %>/**/*.css'],
+                    dest: '<%= yeoman.tmp %>/main.css'
+                }]
+            }
+        },
         uglify: {
             dist: {
                 files: {
@@ -217,8 +227,14 @@ module.exports = function (grunt) {
                     src: '*/locale/*.*',
                     dest: '<%= yeoman.dist %>/'
                 }, {
-                    src: '.tmp/components/mixins/_mixins.scss',
-                    dest: 'dist/mixins/_mixins.scss'
+                    src: '<%= yeoman.tmp %>/components/mixins/_mixins.scss',
+                    dest: '<%= yeoman.dist %>/mixins/_mixins.scss'
+                }, {
+                    src: '<%= yeoman.tmp %>/znk.infra.js',
+                    dest: '<%= yeoman.dist %>/znk.infra.js'
+                }, {
+                    src: '<%= yeoman.tmp %>/main.css',
+                    dest: '<%= yeoman.dist %>/main.css'
                 }]
             }
         },
@@ -323,13 +339,14 @@ module.exports = function (grunt) {
         'sass',
         'html2js',
         'concat:build',
+        'concat:mainModule',
         'copy:build',
         'ngAnnotate'
     ]);
 
     grunt.registerTask('dist', [
-        'jshint:all',
-        'karma:build',
+        // 'jshint:all',
+        // 'karma:build',
         'clean:dist',
         'build',
         'copy:dist',
