@@ -43,13 +43,15 @@
 
             function _getExerciseResultByGuid(guid) {
                 var exerciseResultPath = _getExerciseResultPath(guid);
-                var storage = InfraConfigSrv.getStorageService();
-                return storage.get(exerciseResultPath);
+                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                    return StudentStorageSrv.get(exerciseResultPath);
+                });
             }
 
             function _getExerciseResultsGuids(){
-                var storage = InfraConfigSrv.getStorageService();
-                return storage.get(EXERCISE_RESULTS_GUIDS_PATH);
+                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                    return StudentStorageSrv.get(EXERCISE_RESULTS_GUIDS_PATH);
+                });
             }
 
             function _getExamResultPath(guid) {
@@ -57,17 +59,18 @@
             }
 
             function _getExamResultByGuid(guid,examId) {
-                var storage = InfraConfigSrv.getStorageService();
-                var path = _getExamResultPath(guid);
-                return storage.get(path).then(function(examResult){
-                    var initResultProm = _getInitExamResult(examId, guid);
-                    return initResultProm.then(function(initResult) {
-                        if(examResult.guid !== guid){
-                            angular.extend(examResult,initResult);
-                        }else{
-                            UtilitySrv.object.extendWithoutOverride(examResult,initResult);
-                        }
-                        return examResult;
+                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                    var path = _getExamResultPath(guid);
+                    return StudentStorageSrv.get(path).then(function(examResult){
+                        var initResultProm = _getInitExamResult(examId, guid);
+                        return initResultProm.then(function(initResult) {
+                            if(examResult.guid !== guid){
+                                angular.extend(examResult,initResult);
+                            }else{
+                                UtilitySrv.object.extendWithoutOverride(examResult,initResult);
+                            }
+                            return examResult;
+                        });
                     });
                 });
             }
@@ -87,8 +90,9 @@
             }
 
             function _getExamResultsGuids(){
-                var storage = InfraConfigSrv.getStorageService();
-                return storage.get(EXAM_RESULTS_GUIDS_PATH);
+                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                    return StudentStorageSrv.get(EXAM_RESULTS_GUIDS_PATH);
+                });
             }
 
             function exerciseSaveFn(){
@@ -170,10 +174,10 @@
                     }
 
                     return getSectionAggregatedDataProm.then(function() {
-                        var storage = InfraConfigSrv.getStorageService();
-                        storage.set(dataToSave);
-
-                        return exerciseResult;
+                        return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                            StudentStorageSrv.set(dataToSave);
+                            return exerciseResult;
+                        });
                     });
 
                 });
@@ -206,8 +210,9 @@
             }
 
             function _getExercisesStatusData(){
-                var storage = InfraConfigSrv.getStorageService();
-                return storage.get(EXERCISES_STATUS_PATH);
+                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                    return StudentStorageSrv.get(EXERCISES_STATUS_PATH);
+                });
             }
 
             function ExerciseStatus(status, duration){
@@ -247,43 +252,42 @@
                             exerciseResultsGuids[exerciseTypeId] = {};
                         }
 
-                        var storage = InfraConfigSrv.getStorageService();
+                        return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                            var newGuid = UtilitySrv.general.createGuid();
 
+                            var dataToSave = {};
 
-                        var newGuid = UtilitySrv.general.createGuid();
+                            exerciseResultsGuids[exerciseTypeId][exerciseId] = newGuid;
+                            dataToSave[EXERCISE_RESULTS_GUIDS_PATH] = exerciseResultsGuids;
 
-                        var dataToSave = {};
+                            var exerciseResultPath = _getExerciseResultPath(newGuid);
+                            var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,newGuid);
+                            return initResultProm.then(function(initResult) {
+                                dataToSave[exerciseResultPath] = initResult;
 
-                        exerciseResultsGuids[exerciseTypeId][exerciseId] = newGuid;
-                        dataToSave[EXERCISE_RESULTS_GUIDS_PATH] = exerciseResultsGuids;
+                                var setProm;
+                                if(getExamResultProm){
+                                    initResult.examId = examId;
+                                    setProm = getExamResultProm.then(function(examResult){
+                                        if(examSectionsNum && !examResult.examSectionsNum) {
+                                            examResult.examSectionsNum = examSectionsNum;
+                                        }
 
-                        var exerciseResultPath = _getExerciseResultPath(newGuid);
-                        var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,newGuid);
-                        return initResultProm.then(function(initResult) {
-                            dataToSave[exerciseResultPath] = initResult;
+                                        if(!examResult.sectionResults){
+                                            examResult.sectionResults = {};
+                                        }
+                                        examResult.sectionResults[exerciseId] = newGuid;
 
-                            var setProm;
-                            if(getExamResultProm){
-                                initResult.examId = examId;
-                                setProm = getExamResultProm.then(function(examResult){
-                                    if(examSectionsNum && !examResult.examSectionsNum) {
-                                        examResult.examSectionsNum = examSectionsNum;
-                                    }
+                                        var examResultPath = _getExamResultPath(examResult.guid);
+                                        dataToSave[examResultPath] = examResult;
+                                    });
+                                }
 
-                                    if(!examResult.sectionResults){
-                                        examResult.sectionResults = {};
-                                    }
-                                    examResult.sectionResults[exerciseId] = newGuid;
-
-                                    var examResultPath = _getExamResultPath(examResult.guid);
-                                    dataToSave[examResultPath] = examResult;
+                                return $q.when(setProm).then(function(){
+                                    return StudentStorageSrv.set(dataToSave);
+                                }).then(function(res){
+                                    return res[exerciseResultPath];
                                 });
-                            }
-
-                            return $q.when(setProm).then(function(){
-                                return storage.set(dataToSave);
-                            }).then(function(res){
-                                return res[exerciseResultPath];
                             });
                         });
                     }
@@ -315,31 +319,33 @@
                 }
                 examId = +examId;
 
-                var storage = InfraConfigSrv.getStorageService();
-                return _getExamResultsGuids().then(function (examResultsGuids) {
-                    var examResultGuid = examResultsGuids[examId];
-                    if (!examResultGuid) {
-                        if(dontInitialize){
-                            return null;
+                var storage = InfraConfigSrv.getStudentStorage();
+                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                    return _getExamResultsGuids().then(function (examResultsGuids) {
+                        var examResultGuid = examResultsGuids[examId];
+                        if (!examResultGuid) {
+                            if(dontInitialize){
+                                return null;
+                            }
+
+                            var dataToSave = {};
+                            var newExamResultGuid = UtilitySrv.general.createGuid();
+                            examResultsGuids[examId] = newExamResultGuid;
+                            dataToSave[EXAM_RESULTS_GUIDS_PATH] = examResultsGuids;
+
+                            var examResultPath = _getExamResultPath(newExamResultGuid);
+                            var initExamResultProm = _getInitExamResult(examId, newExamResultGuid);
+                            return initExamResultProm.then(function(initExamResult) {
+                                dataToSave[examResultPath] = initExamResult;
+
+                                return StudentStorageSrv.set(dataToSave).then(function (res) {
+                                    return res[examResultPath];
+                                });
+                            });
                         }
 
-                        var dataToSave = {};
-                        var newExamResultGuid = UtilitySrv.general.createGuid();
-                        examResultsGuids[examId] = newExamResultGuid;
-                        dataToSave[EXAM_RESULTS_GUIDS_PATH] = examResultsGuids;
-
-                        var examResultPath = _getExamResultPath(newExamResultGuid);
-                        var initExamResultProm = _getInitExamResult(examId, newExamResultGuid);
-                        return initExamResultProm.then(function(initExamResult) {
-                            dataToSave[examResultPath] = initExamResult;
-
-                            return storage.set(dataToSave).then(function (res) {
-                                return res[examResultPath];
-                            });
-                        });
-                    }
-
-                    return _getExamResultByGuid(examResultGuid, examId);
+                        return _getExamResultByGuid(examResultGuid, examId);
+                    });
                 });
             };
 

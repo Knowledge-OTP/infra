@@ -345,8 +345,8 @@ module.exports = function (grunt) {
     ]);
 
     grunt.registerTask('dist', [
-        // 'jshint:all',
-        // 'karma:build',
+        'jshint:all',
+        'karma:build',
         'clean:dist',
         'build',
         'copy:dist',

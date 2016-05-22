@@ -9,12 +9,18 @@ describe('testing service "ExerciseResult":', function () {
         '$injector',
         function ($injector) {
             $rootScope = $injector.get('$rootScope');
+
             ExerciseResultSrv = $injector.get('ExerciseResultSrv');
+
             ExerciseTypeEnum = $injector.get('ExerciseTypeEnum');
-            testStorage = $injector.get('testStorage');
-            ExerciseStatusEnum = $injector.get('ExerciseStatusEnum');
 
             var TestUtilitySrv = $injector.get('TestUtilitySrv');
+
+            var InfraConfigSrv = $injector.get('InfraConfigSrv');
+            testStorage = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage, InfraConfigSrv)();
+
+            ExerciseStatusEnum = $injector.get('ExerciseStatusEnum');
+
             actions = TestUtilitySrv.general.convertAllAsyncToSync(ExerciseResultSrv);
         }]));
 

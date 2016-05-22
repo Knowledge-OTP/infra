@@ -77,7 +77,8 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
             EstimatedScoreSrv = $injector.get('EstimatedScoreSrv');
             ExerciseTypeEnum = $injector.get('ExerciseTypeEnum');
             SubjectEnum = $injector.get('SubjectEnum');
-            testStorage = $injector.get('testStorage');
+            var InfraConfigSrv = $injector.get('InfraConfigSrv');
+            testStorage = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage, InfraConfigSrv)();
             ExerciseAnswerStatusEnum = $injector.get('ExerciseAnswerStatusEnum');
 
             TestUtilitySrv.general.printDebugLogs();

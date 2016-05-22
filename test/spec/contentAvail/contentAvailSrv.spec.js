@@ -19,9 +19,14 @@ describe('testing service "ContentAvailSrv":', function () {
         '$injector',
         function ($injector) {
             $rootScope = $injector.get('$rootScope');
-            ContentAvailSrv = $injector.get('ContentAvailSrv');
-            TestStorage = $injector.get('testStorage');
 
+            ContentAvailSrv = $injector.get('ContentAvailSrv');
+
+            var TestUtilitySrv = $injector.get('TestUtilitySrv');
+
+            var InfraConfigSrv = $injector.get('InfraConfigSrv');
+
+            TestStorage = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage, InfraConfigSrv)();
             TestStorage.db.users.$$uid.purchase = {
                 daily: 0,
                 exam: {},
@@ -37,15 +42,16 @@ describe('testing service "ContentAvailSrv":', function () {
                 specials: {}
             };
 
-            var TestUtilitySrv = $injector.get('TestUtilitySrv');
+            var purchaseDataPath = TestStorage.variables.appUserSpacePath + '/purchase';
             actions = TestUtilitySrv.general.convertAllAsyncToSync(ContentAvailSrv);
             actions.addSubscription = function(){
                 var purchaseData = this.getPurchaseData();
                 purchaseData.subscription.expiryDate = Date.now() + 1000 * 60 * 24 * 30;//one month
+                TestStorage.set(purchaseDataPath, purchaseData);
+                $rootScope.$digest();
             };
             actions.getPurchaseData = function(){
                 var purchaseData;
-                var purchaseDataPath = TestStorage.variables.appUserSpacePath + '/purchase';
                 TestStorage.get(purchaseDataPath).then(function(_purchaseData){
                     purchaseData = _purchaseData;
                 });

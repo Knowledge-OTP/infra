@@ -17,13 +17,15 @@ describe('testing service "HintSrv":', function () {
 
     var hintSettings_2 = {
         HINT_NAME: 'demoHint_2',
-        hintActionGetter: function(testStorage){
-            return hintSettings_2.hintAction.bind(hintSettings_2, testStorage)
+        hintActionGetter: function(InfraConfigSrv){
+            return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                return hintSettings_2.hintAction.bind(hintSettings_2, StudentStorageSrv);
+            });
         },
         triggerFnGetter: function($timeout){
             return function(hintVal){
                 return !hintVal || hintVal.value <5;
-            }
+            };
         },
         hintAction: function(testStorage){
             var counterPath = 'counter';
@@ -52,7 +54,9 @@ describe('testing service "HintSrv":', function () {
             $rootScope = $injector.get('$rootScope');
             HintSrv = $injector.get('HintSrv');
             TestUtilitySrv = $injector.get('TestUtilitySrv');
-            testStorage = $injector.get('testStorage');
+
+            var InfraConfigSrv = $injector.get('InfraConfigSrv');
+            testStorage = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage, InfraConfigSrv)();
             $q = $injector.get('$q');
 
             syncHintSrvActions = TestUtilitySrv.general.convertAllAsyncToSync(HintSrv);
