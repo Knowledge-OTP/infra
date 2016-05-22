@@ -93,7 +93,7 @@ module.exports = function (grunt) {
             mainModule:{
                 files:[{
                     src: ['<%= yeoman.src %>/core/module.js','<%= yeoman.src %>/*/**/*.js'],
-                    dest: '<%= yeoman.tmp %>/znk.infra.js'
+                    dest: '<%= yeoman.tmp %>/' + appConfig.appName + '.js'
                 },{
                     src: ['<%= yeoman.tmp %>/**/*.css'],
                     dest: '<%= yeoman.tmp %>/main.css'
@@ -230,8 +230,8 @@ module.exports = function (grunt) {
                     src: '<%= yeoman.tmp %>/mixins/_mixins.scss',
                     dest: '<%= yeoman.dist %>/mixins/_mixins.scss'
                 }, {
-                    src: '<%= yeoman.tmp %>/znk.infra.js',
-                    dest: '<%= yeoman.dist %>/znk.infra.js'
+                    src: '<%= yeoman.tmp %>/' + appConfig.appName + '.js',
+                    dest: '<%= yeoman.dist %>/' + appConfig.appName + '.js'
                 }, {
                     src: '<%= yeoman.tmp %>/main.css',
                     dest: '<%= yeoman.dist %>/main.css'
@@ -240,10 +240,9 @@ module.exports = function (grunt) {
         },
         html2js: {
             options: {
-                module: 'znk.infra',
+                module: appConfig.appName,
                 singleModule: true,
-                existingModule: true,
-                base: '../infra/.tmp/'
+                existingModule: true
             }
         },
         autoprefixer: {
@@ -309,7 +308,7 @@ module.exports = function (grunt) {
 
             html2js[dirName] = {
                 options: {
-                    module: 'znk.infra.' + dirName,
+                    module: appConfig.appName + '.' + dirName,
                     base: 'src'
                 },
                 src: [dir + '/**/*.{html,svg}'],
