@@ -18,24 +18,24 @@ describe('testing service "HintSrv":', function () {
     var hintSettings_2 = {
         HINT_NAME: 'demoHint_2',
         hintActionGetter: function(InfraConfigSrv){
-            return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                return hintSettings_2.hintAction.bind(hintSettings_2, StudentStorageSrv);
-            });
+            return hintSettings_2.hintAction.bind(hintSettings_2, InfraConfigSrv);
         },
         triggerFnGetter: function($timeout){
             return function(hintVal){
                 return !hintVal || hintVal.value <5;
             };
         },
-        hintAction: function(testStorage){
+        hintAction: function(InfraConfigSrv){
             var counterPath = 'counter';
-            return testStorage.get(counterPath).then(function(counter){
-                if(isNaN(counter)){
-                    counter = 0;
-                }
-                counter++;
-                testStorage.set(counterPath, counter);
-                return counter;
+            return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                return StudentStorageSrv.get(counterPath).then(function(counter){
+                    if(isNaN(counter)){
+                        counter = 0;
+                    }
+                    counter++;
+                    testStorage.set(counterPath, counter);
+                    return counter;
+                });
             });
         }
     };
