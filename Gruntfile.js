@@ -227,7 +227,7 @@ module.exports = function (grunt) {
                     src: '*/locale/*.*',
                     dest: '<%= yeoman.dist %>/'
                 }, {
-                    src: '<%= yeoman.tmp %>/components/mixins/_mixins.scss',
+                    src: '<%= yeoman.tmp %>/mixins/_mixins.scss',
                     dest: '<%= yeoman.dist %>/mixins/_mixins.scss'
                 }, {
                     src: '<%= yeoman.tmp %>/znk.infra.js',
