@@ -1,6 +1,16 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.exerciseResult', [
+        'znk.infra.config',
+        'znk.infra.utility',
+        'znk.infra.exerciseUtility'
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
         'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum',
         function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum) {
@@ -363,3 +373,7 @@
         }
     ]);
 })(angular);
+
+angular.module('znk.infra.exerciseResult').run(['$templateCache', function($templateCache) {
+
+}]);
