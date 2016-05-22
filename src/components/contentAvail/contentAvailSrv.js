@@ -240,8 +240,4 @@
             }];
         }
     ]);
-})(angular);
-
-angular.module('znk.infra.contentAvail').run(['$templateCache', function($templateCache) {
-
-}]);
+})(angular);  
