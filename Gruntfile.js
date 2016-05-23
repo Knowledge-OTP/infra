@@ -170,7 +170,7 @@ module.exports = function (grunt) {
                 files:[
                     'src/**/*.{html,svg}'
                 ],
-                tasks:['html2js']
+                tasks:['prepareConfiguration','html2js']
             },
             demo: {
                 files: [
