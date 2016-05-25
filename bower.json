@@ -14,7 +14,7 @@
     ".*",
     "src",
     "test",
-    "demo"
+    "demo/"
   ],
   "main": [
     "dist/znk.infra.js",

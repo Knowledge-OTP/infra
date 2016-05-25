@@ -18,10 +18,9 @@
         };
 
         this.$get = [
-            'InfraConfigSrv', '$q', '$log', '$injector',
-            function (InfraConfigSrv, $q, $log, $injector) {
+            'InfraConfigSrv', '$q', '$log', '$injector', 'StorageSrv',
+            function (InfraConfigSrv, $q, $log, $injector, StorageSrv) {
                 var HintSrv = {};
-                var StorageSrv = InfraConfigSrv.getStorageService();
                 var hintPath = StorageSrv.variables.appUserSpacePath + '/hint';
                 var defaultHints = {
                     hintsStatus:{}
@@ -72,13 +71,17 @@
                 };
 
                 function getHints(){
-                    return StorageSrv.get(hintPath, defaultHints).then(function (hint) {
-                        return hint;
+                    return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                        return StudentStorageSrv.get(hintPath, defaultHints).then(function (hint) {
+                            return hint;
+                        });
                     });
                 }
 
                 function saveHints(newHint){
-                    return StorageSrv.set(hintPath, newHint);
+                    return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                        return StudentStorageSrv.set(hintPath, newHint);
+                    });
                 }
 
                 function getHintLastValue(hintStatus){

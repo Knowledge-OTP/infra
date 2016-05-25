@@ -23,6 +23,7 @@ module.exports = function (grunt) {
     var appConfig = {
         src: 'src',
         dist: 'dist',
+        tmp: '.tmp',
         appName: 'znk.infra'
     };
 
@@ -57,7 +58,7 @@ module.exports = function (grunt) {
                 files: [{
                     dot: true,
                     src: [
-                        '.tmp',
+                        '<%= yeoman.tmp %>',
                         '<%= yeoman.dist %>/{,*/}*',
                         '!<%= yeoman.dist %>/.git{,*/}*'
                     ]
@@ -68,7 +69,7 @@ module.exports = function (grunt) {
 
         // Automatically inject Bower components into the app
         wiredep: {
-            demo:{
+            demo: {
                 src: 'demo/**/index.html'
             },
             test: {
@@ -89,13 +90,13 @@ module.exports = function (grunt) {
             }
         },
         concat: {
-            dist: {
+            mainModule:{
                 files:[{
-                    src: ['.tmp/components/**/module.js', '.tmp/components/**/*.js', '.tmp/module.js'],
-                    dest: '<%= yeoman.dist %>/<%= yeoman.appName %>.js'
+                    src: ['<%= yeoman.src %>/core/module.js','<%= yeoman.src %>/*/**/*.js'],
+                    dest: '<%= yeoman.tmp %>/' + appConfig.appName + '.js'
                 },{
-                    src: ['<%= yeoman.dist %>/**/main.css','.tmp/general.css'],
-                    dest: '<%= yeoman.dist %>/main.css'
+                    src: ['<%= yeoman.tmp %>/**/*.css'],
+                    dest: '<%= yeoman.tmp %>/main.css'
                 }]
             }
         },
@@ -143,7 +144,7 @@ module.exports = function (grunt) {
         },
         connect: {
             options: {
-                base: ['dist','bower_components', 'demo/shared'],
+                base: ['.tmp', 'bower_components', 'demoShared'],
                 open: true,
                 livereload: 35730
             },
@@ -159,12 +160,17 @@ module.exports = function (grunt) {
                 livereload: '<%= connect.options.livereload %>',
                 host: 'localhost'
             },
-            jsAndHtml: {
+            js: {
                 files: [
-                    'src/**/*.js',
+                    'src/**/*.js'
+                ],
+                tasks: ['prepareConfiguration','concat:build']
+            },
+            html:{
+                files:[
                     'src/**/*.{html,svg}'
                 ],
-                tasks: ['copy:copyComponentsToTmp','prepareConfiguration','html2js', 'concat', 'ngAnnotate']
+                tasks:['prepareConfiguration','html2js']
             },
             demo: {
                 files: [
@@ -172,10 +178,14 @@ module.exports = function (grunt) {
                 ]
             },
             sass: {
-                files:[
+                files: [
                     'src/**/*.scss'
                 ],
-                tasks: ['copy:copyComponentsToTmp','sass','autoprefixer:main']
+                tasks: ['sass', 'autoprefixer:main']
+            },
+            locale:{
+                files: ['<%= yeoman.src %>/**/locale/*.json'],
+                tasks:['copy:dist']
             }
         },
         sass: {
@@ -183,48 +193,56 @@ module.exports = function (grunt) {
 
             //     sourceMap: true
             // },
-            allComponenets:{
-                files:[{
+            allComponenets: {
+                files: [{
                     expand: true,
-                    cwd: '.tmp/components',
+                    cwd: '<%= yeoman.src %>/components',
                     src: '**/main.scss',
-                    dest: 'dist/',
+                    dest: '<%= yeoman.tmp %>/',
                     ext: '.css'
                 }]
-            },
-            general:{
-                files:{
-                    '.tmp/general.css': '<%= yeoman.src %>/scss/general.scss'
-                }
             }
         },
         copy: {
-            dist: {
-                files:[{
-                    src: '.tmp/main.css',
-                    dest: 'dist/main.css'
-                },{
-                    src: '.tmp/components/mixins/_mixins.scss',
-                    dest: 'dist/mixins/_mixins.scss'
-                }]
-            },
-            copyComponentsToTmp:{
+            build:{
                 files:[{
                     expand: true,
                     cwd: '<%= yeoman.src %>/components',
-                    src: '**/*.*',
-                    dest: '.tmp/components'
+                    src: '*/locale/*.*',
+                    dest: '<%= yeoman.tmp %>'
+                }, {
+                    src: '<%= yeoman.src %>/components/mixins/_mixins.scss',
+                    dest: '<%= yeoman.tmp %>/mixins/_mixins.scss'
+                }]
+            },
+            dist: {
+                files: [{
+                    expand: true,
+                    cwd: '<%= yeoman.tmp %>/',
+                    src: '*/main.css',
+                    dest: '<%= yeoman.dist %>/'
                 },{
-                    '.tmp/module.js': '<%= yeoman.src %>/core/module.js'
+                    expand: true,
+                    cwd: '<%= yeoman.tmp %>/',
+                    src: '*/locale/*.*',
+                    dest: '<%= yeoman.dist %>/'
+                }, {
+                    src: '<%= yeoman.tmp %>/mixins/_mixins.scss',
+                    dest: '<%= yeoman.dist %>/mixins/_mixins.scss'
+                }, {
+                    src: '<%= yeoman.tmp %>/' + appConfig.appName + '.js',
+                    dest: '<%= yeoman.dist %>/' + appConfig.appName + '.js'
+                }, {
+                    src: '<%= yeoman.tmp %>/main.css',
+                    dest: '<%= yeoman.dist %>/main.css'
                 }]
             }
         },
         html2js: {
-            options:{
-                module: 'znk.infra',
+            options: {
+                module: appConfig.appName,
                 singleModule: true,
-                existingModule: true,
-                base: '../infra/.tmp/'
+                existingModule: true
             }
         },
         autoprefixer: {
@@ -232,7 +250,7 @@ module.exports = function (grunt) {
                 browsers: ['last 2 versions']
             },
             main: {
-                src: ['.tmp/main.css']
+                src: ['.tmp/**/*.css']
             }
         }
     });
@@ -246,12 +264,12 @@ module.exports = function (grunt) {
         'build'
     ]);
 
-    grunt.registerTask('ci',function(){
-      grunt.task.run([
-        'jshint:all',
-        'karma:ci'
-      ]);
-  });
+    grunt.registerTask('ci', function () {
+        grunt.task.run([
+            'jshint:all',
+            'karma:ci'
+        ]);
+    });
 
     grunt.registerTask('serve', function (component) {
         if (component) {
@@ -263,38 +281,51 @@ module.exports = function (grunt) {
         }
         console.log('serving from', grunt.config('connect').options.base);
         grunt.task.run([
-            'sass',
+            'build',
             'connect:serve',
             'watch'
         ]);
     });
 
-    grunt.registerTask('prepareConfiguration', 'preparing html2js and concat configuration for each component', function(){
+    grunt.registerTask('prepareConfiguration', 'preparing html2js and concat configuration for each component', function () {
         var concat = grunt.config.get('concat') || {};
+        concat.build = {
+            files: []
+        };
+        concat.dist = {
+            files: []
+        };
+
         var html2js = grunt.config.get('html2js') || {};
 
-        grunt.file.expand(".tmp/components/*").forEach(function (dir) {
+        grunt.file.expand("src/components/*").forEach(function (dir) {
             // get the module name from the directory name
-            var dirName = dir.substr(dir.lastIndexOf('/')+1);
+            var dirName = dir.substr(dir.lastIndexOf('/') + 1);
             //mixins component has no js
-            if(dirName === 'mixins'){
+            if (dirName === 'mixins') {
                 return;
             }
 
             html2js[dirName] = {
-                options:{
-                    module: 'znk.infra.' + dirName
+                options: {
+                    module: appConfig.appName + '.' + dirName,
+                    base: 'src'
                 },
                 src: [dir + '/**/*.{html,svg}'],
-                dest: dir + '/templates.js'
+                dest: '<%= yeoman.tmp %>/' + dirName + '/templates.js'
             };
 
             // create a subtask for each module, find all src files
             // and combine into a single js file per component
-            concat[dirName] = {
+            concat.build.files.push({
                 src: [dir + '/module.js', dir + '/**/*.js'],
-                dest: '<%= yeoman.dist %>/' + dirName + '/' + dirName + '.js'
-            };
+                dest: '.tmp/' + dirName + '/' + dirName + '.js'
+            });
+            var componentPathInTmp = '.tmp/' + dirName + '/';
+            concat.dist.files.push({
+                src: [ componentPathInTmp + dirName + '.js', componentPathInTmp + 'templates.js'],
+                dest: 'dist/' + dirName + '/' + dirName + '.js'
+            });
         });
         // add module subtasks to the concat task in initConfig
         grunt.config.set('html2js', html2js);
@@ -302,15 +333,22 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('build', [
-        'jshint:all',
-        'karma:build',
-        'clean:dist',
-        'copy:copyComponentsToTmp',
+        'clean:server',
         'prepareConfiguration',
         'sass',
         'html2js',
-        'concat',
-        'copy:dist',
+        'concat:build',
+        'concat:mainModule',
+        'copy:build',
         'ngAnnotate'
+    ]);
+
+    grunt.registerTask('dist', [
+        'jshint:all',
+        'karma:build',
+        'clean:dist',
+        'build',
+        'copy:dist',
+        'concat:dist'
     ]);
 };

@@ -1895,281 +1895,6 @@
 })(angular);
 
 
-angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
-  $templateCache.put("components/znkExercise/answerTypes/templates/freeTextAnswerDrv.html",
-    "<div class=\"free-text-answer-wrapper\" ng-switch=\"showCorrectAnswer\">\n" +
-    "\n" +
-    "    <div ng-switch-when=\"true\" ng-class=\"userAnswerStatus\">\n" +
-    "        <div class=\"answer-status\">\n" +
-    "            <div class=\"user-answer\">{{d.userAnswer}}</div>\n" +
-    "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
-    "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
-    "        </div>\n" +
-    "        <div class=\"correct-answer\">Correct answer: <span>{{correctAnswer}}</span></div>\n" +
-    "    </div>\n" +
-    "\n" +
-    "    <div ng-switch-when=\"false\">\n" +
-    "        <div class=\"input-wrapper\">\n" +
-    "            <input ng-model-options=\"{ getterSetter: true }\" ng-model=\"d.userAnswerGetterSetter\">\n" +
-    "            <div class=\"arrow-wrapper\" ng-click=\"clickHandler()\">\n" +
-    "                <svg-icon name=\"arrow\"></svg-icon>\n" +
-    "                <div class=\"svg-back\"></div>\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "\n" +
-    "</div>\n" +
-    "");
-  $templateCache.put("components/znkExercise/answerTypes/templates/rateAnswerDrv.html",
-    "<div class=\"rate-answer-wrapper\">\n" +
-    "\n" +
-    "    <div class=\"checkbox-items-wrapper\" >\n" +
-    "\n" +
-    "        <div class=\"item-repeater\" ng-repeat=\"item in d.itemsArray track by $index\">\n" +
-    "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
-    "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
-    "            <div class=\"checkbox-item\" ng-click=\"clickHandler($index)\">\n" +
-    "                <div class=\"item-index\">{{$index +  2}}</div>\n" +
-    "            </div>\n" +
-    "            <div class=\"correct-answer-line\"></div>\n" +
-    "        </div>\n" +
-    "\n" +
-    "    </div>\n" +
-    "</div>\n" +
-    "");
-  $templateCache.put("components/znkExercise/answerTypes/templates/selectAnswerDrv.html",
-    "<div ng-repeat=\"answer in ::d.answers track by answer.id\"\n" +
-    "     class=\"answer\"\n" +
-    "     ng-click=\"d.click(answer)\"\n" +
-    "     tabindex=\"-1\">\n" +
-    "    <div class=\"content-wrapper\">\n" +
-    "        <div class=\"answer-index-wrapper\">\n" +
-    "            <span class=\"index-char\">{{::d.getIndexChar($index)}}</span>\n" +
-    "        </div>\n" +
-    "        <markup content=\"answer.content\" type=\"md\" class=\"content\"></markup>\n" +
-    "        <svg-icon class=\"correct-icon-drv\" name=\"correct\"></svg-icon>\n" +
-    "        <svg-icon class=\"wrong-icon-drv\" name=\"wrong\"></svg-icon>\n" +
-    "    </div>\n" +
-    "</div>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/btnSectionDesktopTemplate.html",
-    "<div class=\"btn-container left-container ng-hide\"\n" +
-    "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
-    "    <button ng-click=\"vm.prevQuestion()\">\n" +
-    "        <svg-icon name=\"chevron\"></svg-icon>\n" +
-    "    </button>\n" +
-    "</div>\n" +
-    "<div class=\"btn-container right-container ng-hide\"\n" +
-    "     ng-show=\"vm.maxQuestionIndex !== vm.currentQuestionIndex && vm.slideLeftAllowed\"\n" +
-    "     ng-class=\"{'question-answered': vm.isCurrentQuestionAnswered}\">\n" +
-    "    <button ng-click=\"vm.nextQuestion()\">\n" +
-    "        <svg-icon name=\"chevron\"></svg-icon>\n" +
-    "    </button>\n" +
-    "</div>\n" +
-    "<div class=\"done-btn-wrap show-opacity-animate\" ng-if=\"vm.showDoneButton\">\n" +
-    "    <button tabindex=\"0\"\n" +
-    "            class=\"done-btn\"\n" +
-    "            ng-click=\"onDone()\">DONE\n" +
-    "    </button>\n" +
-    "</div>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/btnSectionMobileTemplate.html",
-    "<div ng-class=\"{ 'next-disabled' : settings.slideDirection === d.slideDirections.NONE ||  settings.slideDirection === d.slideDirections.RIGHT }\">\n" +
-    "    <div class=\"bookmark-icon-container only-tablet\"\n" +
-    "         ng-class=\"vm.questionsWithAnswers[vm.currentSlide].__questionStatus.bookmark ? 'bookmark-active-icon' : 'bookmark-icon'\"\n" +
-    "         ng-click=\"vm.bookmarkCurrentQuestion()\"\n" +
-    "         ng-hide=\"settings.viewMode === d.reviewModeId\"></div>\n" +
-    "    <ng-switch\n" +
-    "            on=\"vm.currentSlide !== vm.questionsWithAnswers.length - 1 && vm.answeredCount !== vm.questionsWithAnswers.length\"\n" +
-    "            ng-hide=\"settings.viewMode === d.reviewModeId\"\n" +
-    "            class=\"ng-hide\"\n" +
-    "            ng-click=\"d.next()\">\n" +
-    "        <button ng-switch-when=\"true\"\n" +
-    "                class=\"btn next\">\n" +
-    "            <div class=\"only-tablet\">\n" +
-    "                <span>NEXT</span>\n" +
-    "                <i class=\"question-arrow-right-icon\"></i>\n" +
-    "            </div>\n" +
-    "        </button>\n" +
-    "        <button ng-switch-when=\"false\"\n" +
-    "                class=\"btn finish\">\n" +
-    "            <div>DONE</div>\n" +
-    "        </button>\n" +
-    "    </ng-switch>\n" +
-    "    <button class=\"btn sum ng-hide\"\n" +
-    "            ng-click=\"settings.onSummary()\"\n" +
-    "            ng-show=\"settings.viewMode === d.reviewModeId\">\n" +
-    "        SUMMARY\n" +
-    "    </button>\n" +
-    "</div>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/questionSwiperDesktopTemplate.html",
-    "<znk-swiper class=\"znk-carousel\"\n" +
-    "            ng-model=\"vm.currSlideIndex\"\n" +
-    "            actions=\"vm.swiperActions\"\n" +
-    "            ng-change=\"vm.SlideChanged()\"\n" +
-    "            disable-swipe=\"{{vm.isLocked}}\">\n" +
-    "    <div class=\"swiper-slide\"\n" +
-    "        ng-repeat=\"question in vm.questions \">\n" +
-    "        <question-builder question=\"question\"\n" +
-    "                          rate-answer-formatter-parser\n" +
-    "                          ng-model=\"question.__questionStatus.userAnswer\"\n" +
-    "                          ng-change=\"onQuestionAnswered(question)\">\n" +
-    "        </question-builder>\n" +
-    "    </div>\n" +
-    "</znk-swiper>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/questionSwiperMobileTemplate.html",
-    "<ion-slide-box znk-slide=\"settings.slideDirection\" class=\"znk-carousel\"\n" +
-    "               show-pager=\"false\"\n" +
-    "               active-slide=\"vm.currentSlide\">\n" +
-    "    <question-builder slide-repeat-drv=\"question in vm.questionsWithAnswers\"\n" +
-    "                      question=\"question\"\n" +
-    "                      ng-model=\"question.__questionStatus.userAnswer\"\n" +
-    "                      ng-change=\"vm.questionAnswered(question)\">\n" +
-    "    </question-builder>\n" +
-    "</ion-slide-box>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/znkExerciseDrv.html",
-    "<div ng-transclude></div>\n" +
-    "<questions-carousel class=\"znk-carousel-container\"\n" +
-    "                    questions=\"vm.questionsWithAnswers\"\n" +
-    "                    disable-swipe=\"{{vm.slideDirection !== 2}}\"\n" +
-    "                    ng-model=\"vm.currentSlide\"\n" +
-    "                    on-question-answered=\"vm.questionAnswered()\"\n" +
-    "                    slide-direction=\"{{vm.slideDirection}}\">\n" +
-    "</questions-carousel>\n" +
-    "<div class=\"question-bottom-shadow\"></div>\n" +
-    "<znk-exercise-btn-section class=\"btn-section\"\n" +
-    "                          prev-question=\"vm.setCurrentIndexByOffset(-1)\"\n" +
-    "                          next-question=\"vm.setCurrentIndexByOffset(1)\"\n" +
-    "                          on-done=\"settings.onDone()\"\n" +
-    "                          actions=\"vm.btnSectionActions\">\n" +
-    "</znk-exercise-btn-section>\n" +
-    "<znk-exercise-pager class=\"ng-hide show-opacity-animate\"\n" +
-    "                    ng-show=\"vm.showPager\"\n" +
-    "                    questions=\"vm.questionsWithAnswers\"\n" +
-    "                    ng-model=\"vm.currentSlide\">\n" +
-    "</znk-exercise-pager>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/znkExercisePagerDrv.html",
-    "<znk-scroll>\n" +
-    "    <div class=\"pager-items-wrapper\">\n" +
-    "        <div class=\"pager-item noselect\"\n" +
-    "             ng-repeat=\"question in questions track by question.id\"\n" +
-    "             question-status=\"question.__questionStatus\"\n" +
-    "             question=\"question\"\n" +
-    "             ng-click=\"d.tap($index)\">\n" +
-    "            <div class=\"question-bookmark-icon\"></div>\n" +
-    "            <div class=\"question-status-indicator\">\n" +
-    "                <div class=\"index\">{{::$index + 1}}</div>\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "</znk-scroll>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/znkSwiperTemplate.html",
-    "<div class=\"swiper-container\">\n" +
-    "    <!-- Additional required wrapper -->\n" +
-    "    <div class=\"swiper-wrapper\" ng-transclude>\n" +
-    "        <!-- Slides -->\n" +
-    "    </div>\n" +
-    "</div>\n" +
-    "");
-  $templateCache.put("components/znkExercise/svg/arrow-icon.svg",
-    "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\" viewBox=\"-468.2 482.4 96 89.8\" class=\"arrow-icon-wrapper\">\n" +
-    "    <style type=\"text/css\">\n" +
-    "        .arrow-icon-wrapper .st0{fill:#109BAC;}\n" +
-    "        .arrow-icon-wrapper .st1{fill:none;stroke:#fff;stroke-width:5.1237;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
-    "    </style>\n" +
-    "    <path class=\"st0\" d=\"M-417.2,572.2h-6.2c-24.7,0-44.9-20.2-44.9-44.9v0c0-24.7,20.2-44.9,44.9-44.9h6.2c24.7,0,44.9,20.2,44.9,44.9\n" +
-    "    v0C-372.2,552-392.5,572.2-417.2,572.2z\"/>\n" +
-    "    <g>\n" +
-    "        <line class=\"st1\" x1=\"-442.8\" y1=\"527.3\" x2=\"-401.4\" y2=\"527.3\"/>\n" +
-    "        <line class=\"st1\" x1=\"-401.4\" y1=\"527.3\" x2=\"-414.3\" y2=\"514.4\"/>\n" +
-    "        <line class=\"st1\" x1=\"-401.4\" y1=\"527.3\" x2=\"-414.3\" y2=\"540.2\"/>\n" +
-    "    </g>\n" +
-    "</svg>\n" +
-    "");
-  $templateCache.put("components/znkExercise/svg/chevron-icon.svg",
-    "<svg x=\"0px\" y=\"0px\" viewBox=\"0 0 143.5 65.5\">\n" +
-    "    <polyline class=\"st0\" points=\"6,6 71.7,59.5 137.5,6 \"/>\n" +
-    "</svg>\n" +
-    "");
-  $templateCache.put("components/znkExercise/svg/correct-icon.svg",
-    "<svg version=\"1.1\"\n" +
-    "     class=\"correct-icon-svg\"\n" +
-    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
-    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
-    "     x=\"0px\"\n" +
-    "     y=\"0px\"\n" +
-    "	 viewBox=\"0 0 188.5 129\"\n" +
-    "     style=\"enable-background:new 0 0 188.5 129;\"\n" +
-    "     xml:space=\"preserve\">\n" +
-    "<style type=\"text/css\">\n" +
-    "	.correct-icon-svg .st0 {\n" +
-    "        fill: none;\n" +
-    "        stroke: #231F20;\n" +
-    "        stroke-width: 15;\n" +
-    "        stroke-linecap: round;\n" +
-    "        stroke-linejoin: round;\n" +
-    "        stroke-miterlimit: 10;\n" +
-    "    }\n" +
-    "</style>\n" +
-    "<g>\n" +
-    "	<line class=\"st0\" x1=\"7.5\" y1=\"62\" x2=\"67\" y2=\"121.5\"/>\n" +
-    "	<line class=\"st0\" x1=\"67\" y1=\"121.5\" x2=\"181\" y2=\"7.5\"/>\n" +
-    "</g>\n" +
-    "</svg>\n" +
-    "");
-  $templateCache.put("components/znkExercise/svg/info-icon.svg",
-    "<svg\n" +
-    "    version=\"1.1\"\n" +
-    "    xmlns=\"http://www.w3.org/2000/svg\"\n" +
-    "    x=\"0px\"\n" +
-    "    y=\"0px\"\n" +
-    "    viewBox=\"-497 499 28 28\"\n" +
-    "    class=\"info-icon\">\n" +
-    "<style type=\"text/css\">\n" +
-    "	.info-icon .st0{fill:none;stroke:#0A9BAD; stroke-width:2;}\n" +
-    "	.info-icon .st2{fill:#0A9BAD;}\n" +
-    "</style>\n" +
-    "<g>\n" +
-    "	<circle class=\"st0\" cx=\"-483\" cy=\"513\" r=\"13.5\"/>\n" +
-    "	<g>\n" +
-    "		<path class=\"st2\" d=\"M-485.9,509.2h3.9v8.1h3v1.2h-7.6v-1.2h3v-6.9h-2.4V509.2z M-483.5,505.6h1.5v1.9h-1.5V505.6z\"/>\n" +
-    "	</g>\n" +
-    "</g>\n" +
-    "</svg>\n" +
-    "");
-  $templateCache.put("components/znkExercise/svg/wrong-icon.svg",
-    "<svg version=\"1.1\"\n" +
-    "     class=\"wrong-icon-svg\"\n" +
-    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
-    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
-    "     x=\"0px\"\n" +
-    "     y=\"0px\"\n" +
-    "	 viewBox=\"0 0 126.5 126.5\"\n" +
-    "     style=\"enable-background:new 0 0 126.5 126.5;\"\n" +
-    "     xml:space=\"preserve\">\n" +
-    "<style type=\"text/css\">\n" +
-    "	.wrong-icon-svg .st0 {\n" +
-    "        fill: none;\n" +
-    "        stroke: #231F20;\n" +
-    "        stroke-width: 15;\n" +
-    "        stroke-linecap: round;\n" +
-    "        stroke-linejoin: round;\n" +
-    "        stroke-miterlimit: 10;\n" +
-    "    }\n" +
-    "</style>\n" +
-    "<g>\n" +
-    "	<line class=\"st0\" x1=\"119\" y1=\"7.5\" x2=\"7.5\" y2=\"119\"/>\n" +
-    "	<line class=\"st0\" x1=\"7.5\" y1=\"7.5\" x2=\"119\" y2=\"119\"/>\n" +
-    "</g>\n" +
-    "</svg>\n" +
-    "");
-}]);
-
 'use strict';
 
 (function () {
@@ -2881,3 +2606,278 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
         }
     ]);
 })(angular);
+
+angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/znkExercise/answerTypes/templates/freeTextAnswerDrv.html",
+    "<div class=\"free-text-answer-wrapper\" ng-switch=\"showCorrectAnswer\">\n" +
+    "\n" +
+    "    <div ng-switch-when=\"true\" ng-class=\"userAnswerStatus\">\n" +
+    "        <div class=\"answer-status\">\n" +
+    "            <div class=\"user-answer\">{{d.userAnswer}}</div>\n" +
+    "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
+    "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
+    "        </div>\n" +
+    "        <div class=\"correct-answer\">Correct answer: <span>{{correctAnswer}}</span></div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-switch-when=\"false\">\n" +
+    "        <div class=\"input-wrapper\">\n" +
+    "            <input ng-model-options=\"{ getterSetter: true }\" ng-model=\"d.userAnswerGetterSetter\">\n" +
+    "            <div class=\"arrow-wrapper\" ng-click=\"clickHandler()\">\n" +
+    "                <svg-icon name=\"arrow\"></svg-icon>\n" +
+    "                <div class=\"svg-back\"></div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/answerTypes/templates/rateAnswerDrv.html",
+    "<div class=\"rate-answer-wrapper\">\n" +
+    "\n" +
+    "    <div class=\"checkbox-items-wrapper\" >\n" +
+    "\n" +
+    "        <div class=\"item-repeater\" ng-repeat=\"item in d.itemsArray track by $index\">\n" +
+    "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
+    "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
+    "            <div class=\"checkbox-item\" ng-click=\"clickHandler($index)\">\n" +
+    "                <div class=\"item-index\">{{$index +  2}}</div>\n" +
+    "            </div>\n" +
+    "            <div class=\"correct-answer-line\"></div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/answerTypes/templates/selectAnswerDrv.html",
+    "<div ng-repeat=\"answer in ::d.answers track by answer.id\"\n" +
+    "     class=\"answer\"\n" +
+    "     ng-click=\"d.click(answer)\"\n" +
+    "     tabindex=\"-1\">\n" +
+    "    <div class=\"content-wrapper\">\n" +
+    "        <div class=\"answer-index-wrapper\">\n" +
+    "            <span class=\"index-char\">{{::d.getIndexChar($index)}}</span>\n" +
+    "        </div>\n" +
+    "        <markup content=\"answer.content\" type=\"md\" class=\"content\"></markup>\n" +
+    "        <svg-icon class=\"correct-icon-drv\" name=\"correct\"></svg-icon>\n" +
+    "        <svg-icon class=\"wrong-icon-drv\" name=\"wrong\"></svg-icon>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/btnSectionDesktopTemplate.html",
+    "<div class=\"btn-container left-container ng-hide\"\n" +
+    "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
+    "    <button ng-click=\"vm.prevQuestion()\">\n" +
+    "        <svg-icon name=\"chevron\"></svg-icon>\n" +
+    "    </button>\n" +
+    "</div>\n" +
+    "<div class=\"btn-container right-container ng-hide\"\n" +
+    "     ng-show=\"vm.maxQuestionIndex !== vm.currentQuestionIndex && vm.slideLeftAllowed\"\n" +
+    "     ng-class=\"{'question-answered': vm.isCurrentQuestionAnswered}\">\n" +
+    "    <button ng-click=\"vm.nextQuestion()\">\n" +
+    "        <svg-icon name=\"chevron\"></svg-icon>\n" +
+    "    </button>\n" +
+    "</div>\n" +
+    "<div class=\"done-btn-wrap show-opacity-animate\" ng-if=\"vm.showDoneButton\">\n" +
+    "    <button tabindex=\"0\"\n" +
+    "            class=\"done-btn\"\n" +
+    "            ng-click=\"onDone()\">DONE\n" +
+    "    </button>\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/btnSectionMobileTemplate.html",
+    "<div ng-class=\"{ 'next-disabled' : settings.slideDirection === d.slideDirections.NONE ||  settings.slideDirection === d.slideDirections.RIGHT }\">\n" +
+    "    <div class=\"bookmark-icon-container only-tablet\"\n" +
+    "         ng-class=\"vm.questionsWithAnswers[vm.currentSlide].__questionStatus.bookmark ? 'bookmark-active-icon' : 'bookmark-icon'\"\n" +
+    "         ng-click=\"vm.bookmarkCurrentQuestion()\"\n" +
+    "         ng-hide=\"settings.viewMode === d.reviewModeId\"></div>\n" +
+    "    <ng-switch\n" +
+    "            on=\"vm.currentSlide !== vm.questionsWithAnswers.length - 1 && vm.answeredCount !== vm.questionsWithAnswers.length\"\n" +
+    "            ng-hide=\"settings.viewMode === d.reviewModeId\"\n" +
+    "            class=\"ng-hide\"\n" +
+    "            ng-click=\"d.next()\">\n" +
+    "        <button ng-switch-when=\"true\"\n" +
+    "                class=\"btn next\">\n" +
+    "            <div class=\"only-tablet\">\n" +
+    "                <span>NEXT</span>\n" +
+    "                <i class=\"question-arrow-right-icon\"></i>\n" +
+    "            </div>\n" +
+    "        </button>\n" +
+    "        <button ng-switch-when=\"false\"\n" +
+    "                class=\"btn finish\">\n" +
+    "            <div>DONE</div>\n" +
+    "        </button>\n" +
+    "    </ng-switch>\n" +
+    "    <button class=\"btn sum ng-hide\"\n" +
+    "            ng-click=\"settings.onSummary()\"\n" +
+    "            ng-show=\"settings.viewMode === d.reviewModeId\">\n" +
+    "        SUMMARY\n" +
+    "    </button>\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/questionSwiperDesktopTemplate.html",
+    "<znk-swiper class=\"znk-carousel\"\n" +
+    "            ng-model=\"vm.currSlideIndex\"\n" +
+    "            actions=\"vm.swiperActions\"\n" +
+    "            ng-change=\"vm.SlideChanged()\"\n" +
+    "            disable-swipe=\"{{vm.isLocked}}\">\n" +
+    "    <div class=\"swiper-slide\"\n" +
+    "        ng-repeat=\"question in vm.questions \">\n" +
+    "        <question-builder question=\"question\"\n" +
+    "                          rate-answer-formatter-parser\n" +
+    "                          ng-model=\"question.__questionStatus.userAnswer\"\n" +
+    "                          ng-change=\"onQuestionAnswered(question)\">\n" +
+    "        </question-builder>\n" +
+    "    </div>\n" +
+    "</znk-swiper>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/questionSwiperMobileTemplate.html",
+    "<ion-slide-box znk-slide=\"settings.slideDirection\" class=\"znk-carousel\"\n" +
+    "               show-pager=\"false\"\n" +
+    "               active-slide=\"vm.currentSlide\">\n" +
+    "    <question-builder slide-repeat-drv=\"question in vm.questionsWithAnswers\"\n" +
+    "                      question=\"question\"\n" +
+    "                      ng-model=\"question.__questionStatus.userAnswer\"\n" +
+    "                      ng-change=\"vm.questionAnswered(question)\">\n" +
+    "    </question-builder>\n" +
+    "</ion-slide-box>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/znkExerciseDrv.html",
+    "<div ng-transclude></div>\n" +
+    "<questions-carousel class=\"znk-carousel-container\"\n" +
+    "                    questions=\"vm.questionsWithAnswers\"\n" +
+    "                    disable-swipe=\"{{vm.slideDirection !== 2}}\"\n" +
+    "                    ng-model=\"vm.currentSlide\"\n" +
+    "                    on-question-answered=\"vm.questionAnswered()\"\n" +
+    "                    slide-direction=\"{{vm.slideDirection}}\">\n" +
+    "</questions-carousel>\n" +
+    "<div class=\"question-bottom-shadow\"></div>\n" +
+    "<znk-exercise-btn-section class=\"btn-section\"\n" +
+    "                          prev-question=\"vm.setCurrentIndexByOffset(-1)\"\n" +
+    "                          next-question=\"vm.setCurrentIndexByOffset(1)\"\n" +
+    "                          on-done=\"settings.onDone()\"\n" +
+    "                          actions=\"vm.btnSectionActions\">\n" +
+    "</znk-exercise-btn-section>\n" +
+    "<znk-exercise-pager class=\"ng-hide show-opacity-animate\"\n" +
+    "                    ng-show=\"vm.showPager\"\n" +
+    "                    questions=\"vm.questionsWithAnswers\"\n" +
+    "                    ng-model=\"vm.currentSlide\">\n" +
+    "</znk-exercise-pager>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/znkExercisePagerDrv.html",
+    "<znk-scroll>\n" +
+    "    <div class=\"pager-items-wrapper\">\n" +
+    "        <div class=\"pager-item noselect\"\n" +
+    "             ng-repeat=\"question in questions track by question.id\"\n" +
+    "             question-status=\"question.__questionStatus\"\n" +
+    "             question=\"question\"\n" +
+    "             ng-click=\"d.tap($index)\">\n" +
+    "            <div class=\"question-bookmark-icon\"></div>\n" +
+    "            <div class=\"question-status-indicator\">\n" +
+    "                <div class=\"index\">{{::$index + 1}}</div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</znk-scroll>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/znkSwiperTemplate.html",
+    "<div class=\"swiper-container\">\n" +
+    "    <!-- Additional required wrapper -->\n" +
+    "    <div class=\"swiper-wrapper\" ng-transclude>\n" +
+    "        <!-- Slides -->\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/arrow-icon.svg",
+    "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\" viewBox=\"-468.2 482.4 96 89.8\" class=\"arrow-icon-wrapper\">\n" +
+    "    <style type=\"text/css\">\n" +
+    "        .arrow-icon-wrapper .st0{fill:#109BAC;}\n" +
+    "        .arrow-icon-wrapper .st1{fill:none;stroke:#fff;stroke-width:5.1237;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
+    "    </style>\n" +
+    "    <path class=\"st0\" d=\"M-417.2,572.2h-6.2c-24.7,0-44.9-20.2-44.9-44.9v0c0-24.7,20.2-44.9,44.9-44.9h6.2c24.7,0,44.9,20.2,44.9,44.9\n" +
+    "    v0C-372.2,552-392.5,572.2-417.2,572.2z\"/>\n" +
+    "    <g>\n" +
+    "        <line class=\"st1\" x1=\"-442.8\" y1=\"527.3\" x2=\"-401.4\" y2=\"527.3\"/>\n" +
+    "        <line class=\"st1\" x1=\"-401.4\" y1=\"527.3\" x2=\"-414.3\" y2=\"514.4\"/>\n" +
+    "        <line class=\"st1\" x1=\"-401.4\" y1=\"527.3\" x2=\"-414.3\" y2=\"540.2\"/>\n" +
+    "    </g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/chevron-icon.svg",
+    "<svg x=\"0px\" y=\"0px\" viewBox=\"0 0 143.5 65.5\">\n" +
+    "    <polyline class=\"st0\" points=\"6,6 71.7,59.5 137.5,6 \"/>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/correct-icon.svg",
+    "<svg version=\"1.1\"\n" +
+    "     class=\"correct-icon-svg\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "	 viewBox=\"0 0 188.5 129\"\n" +
+    "     style=\"enable-background:new 0 0 188.5 129;\"\n" +
+    "     xml:space=\"preserve\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.correct-icon-svg .st0 {\n" +
+    "        fill: none;\n" +
+    "        stroke: #231F20;\n" +
+    "        stroke-width: 15;\n" +
+    "        stroke-linecap: round;\n" +
+    "        stroke-linejoin: round;\n" +
+    "        stroke-miterlimit: 10;\n" +
+    "    }\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<line class=\"st0\" x1=\"7.5\" y1=\"62\" x2=\"67\" y2=\"121.5\"/>\n" +
+    "	<line class=\"st0\" x1=\"67\" y1=\"121.5\" x2=\"181\" y2=\"7.5\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/info-icon.svg",
+    "<svg\n" +
+    "    version=\"1.1\"\n" +
+    "    xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "    x=\"0px\"\n" +
+    "    y=\"0px\"\n" +
+    "    viewBox=\"-497 499 28 28\"\n" +
+    "    class=\"info-icon\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.info-icon .st0{fill:none;stroke:#0A9BAD; stroke-width:2;}\n" +
+    "	.info-icon .st2{fill:#0A9BAD;}\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<circle class=\"st0\" cx=\"-483\" cy=\"513\" r=\"13.5\"/>\n" +
+    "	<g>\n" +
+    "		<path class=\"st2\" d=\"M-485.9,509.2h3.9v8.1h3v1.2h-7.6v-1.2h3v-6.9h-2.4V509.2z M-483.5,505.6h1.5v1.9h-1.5V505.6z\"/>\n" +
+    "	</g>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/wrong-icon.svg",
+    "<svg version=\"1.1\"\n" +
+    "     class=\"wrong-icon-svg\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "	 viewBox=\"0 0 126.5 126.5\"\n" +
+    "     style=\"enable-background:new 0 0 126.5 126.5;\"\n" +
+    "     xml:space=\"preserve\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.wrong-icon-svg .st0 {\n" +
+    "        fill: none;\n" +
+    "        stroke: #231F20;\n" +
+    "        stroke-width: 15;\n" +
+    "        stroke-linecap: round;\n" +
+    "        stroke-linejoin: round;\n" +
+    "        stroke-miterlimit: 10;\n" +
+    "    }\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<line class=\"st0\" x1=\"119\" y1=\"7.5\" x2=\"7.5\" y2=\"119\"/>\n" +
+    "	<line class=\"st0\" x1=\"7.5\" y1=\"7.5\" x2=\"119\" y2=\"119\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+}]);
