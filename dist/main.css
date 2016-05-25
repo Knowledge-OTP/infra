@@ -273,6 +273,9 @@ $blueBG8: #75cbe8;
 
 */
 /* full background image with retina */
+device-not-supported.disabled {
+  display: none; }
+
 device-not-supported .device-not-supported-inner {
   display: none; }
 
@@ -1280,8 +1283,9 @@ $blueBG8: #75cbe8;
 */
 /* full background image with retina */
 svg-icon {
-  display: block;
-  overflow: hidden; }
+  display: block; }
+  svg-icon svg {
+    display: block; }
 
 /* fonts size */
 /*
@@ -2123,14 +2127,3 @@ znk-exercise .show-opacity-animate.ng-hide-add, znk-exercise .show-opacity-anima
 
 znk-exercise .show-opacity-animate.ng-hide {
   opacity: 0; }
-
-/**
- * Disable element selection
- */
-.noselect {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none; }

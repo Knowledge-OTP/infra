@@ -16,11 +16,18 @@ describe('testing service "StatsEventsHandlerSrv":', function () {
         '$injector',
         function ($injector) {
             $rootScope = $injector.get('$rootScope');
+
             exerciseEventsConst = $injector.get('exerciseEventsConst');
-            testStorage = $injector.get('testStorage');
+
             TestUtilitySrv = $injector.get('TestUtilitySrv');
+
+            var InfraConfigSrv = $injector.get('InfraConfigSrv');
+            testStorage = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage, InfraConfigSrv)();
+
             TestUtilitySrv.general.printDebugLogs();
+
             StatsEventsHandlerSrv = $injector.get('StatsEventsHandlerSrv');
+            
             ExerciseTypeEnum = $injector.get('ExerciseTypeEnum');
         }]));
 

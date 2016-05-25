@@ -9,10 +9,13 @@
 
     angular.module('znk.infra.config').provider('InfraConfigSrv', [
         function () {
-            var storageServiceName;
-            var userDataFn;
-            this.setStorageServiceName = function(_storageServiceName){
-                storageServiceName = _storageServiceName;
+            var userDataFn,
+                storages = {};
+
+            this.setStorages = function(_globalStorageGetter, _studentStorageGetter, _teacherStorageGetter){
+                storages.globalGetter = _globalStorageGetter;
+                storages.studentGetter = _studentStorageGetter;
+                storages.teacherGetter = _teacherStorageGetter;
             };
 
             this.setUserDataFn = function(_userDataFn) {
@@ -24,13 +27,22 @@
                 function ($injector, $log, $q) {
                     var InfraConfigSrv = {};
 
-                    InfraConfigSrv.getStorageService = function(){
-                        if(!storageServiceName){
-                            $log.debug('InfraConfigSrv: storage service name was not defined');
-                            return;
+                    function _baseStorageGetter(name){
+                        var storageGetterKey = name + 'Getter';
+                        var storageGetter = storages[storageGetterKey];
+                        if(!storageGetter ){
+                            var errMsg = 'InfraConfigSrv: ' + name + ' Storage name was not defined';
+                            $log.error(errMsg);
+                            return $q.reject(errMsg);
                         }
-                        return $injector.get(storageServiceName);
-                    };
+                        return $q.when($injector.invoke(storageGetter));
+                    }
+
+                    InfraConfigSrv.getGlobalStorage = _baseStorageGetter.bind(InfraConfigSrv, 'global');
+
+                    InfraConfigSrv.getStudentStorage = _baseStorageGetter.bind(InfraConfigSrv, 'student');
+
+                    InfraConfigSrv.getTeacherStorage = _baseStorageGetter.bind(InfraConfigSrv, 'teacher');
 
                     InfraConfigSrv.getUserData = function(){
                         var userDataInjected;
