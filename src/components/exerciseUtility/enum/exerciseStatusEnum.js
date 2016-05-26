@@ -8,9 +8,9 @@
         COMING_SOON: 3
     };
 
-    angular.module('znk.infra.enum').constant('exerciseStatusConst', exerciseStatusEnum);
+    angular.module('znk.infra.exerciseUtility').constant('exerciseStatusConst', exerciseStatusEnum);
 
-    angular.module('znk.infra.enum').factory('ExerciseStatusEnum', [
+    angular.module('znk.infra.exerciseUtility').factory('ExerciseStatusEnum', [
         'EnumSrv',
         function (EnumSrv) {
             return new EnumSrv.BaseEnum([

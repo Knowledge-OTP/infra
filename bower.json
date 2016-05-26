@@ -1,6 +1,6 @@
 {
   "name": "infra",
-  "version": "v4.0.2",
+  "version": "v5.0.0",
   "authors": [
     "Zinkerz"
   ],
@@ -8,21 +8,18 @@
     "angular": "1.5.5",
     "angular-animate": "1.5.5",
     "Swiper": "swiper#~3.2.7",
-    "firebase": "~2.3.2"
+    "firebase": "^2.4.2"
   },
   "ignore": [
     ".*",
     "src",
     "test",
-    "demo"
+    "demo/"
   ],
   "main": [
-      "dist/znk.infra.js",
-      "dist/main.css"
+    "dist/znk.infra.js",
+    "dist/main.css"
   ],
-  "resolutions": {
-    "angular": "1.5.4"
-  },
   "devDependencies": {
     "es5-shim": "~4.4.1",
     "angular-mocks": "1.5.5",

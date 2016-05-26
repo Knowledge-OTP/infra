@@ -65,7 +65,7 @@
                 var alreadyRegisteredSvgIconNames = Object.keys(svgMap);
                 alreadyRegisteredSvgIconNames.forEach(function(svgIconName){
                     if(!!_svgMap[svgIconName]){
-                        console.log('SvgIconSrv: svg icon was already defined before ',svgIconName);
+                        console.error('SvgIconSrv: svg icon was already defined before ',svgIconName);
                     }
                 });
                 angular.extend(svgMap,_svgMap);

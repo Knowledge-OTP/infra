@@ -220,16 +220,17 @@ describe('testing service "StatsQuerySrv":', function () {
                 }
             };
 
-            StorageSrv = $injector.get('testStorage');
+            var TestUtilitySrv = $injector.get('TestUtilitySrv');
+            TestUtilitySrv.general.printDebugLogs();
+
+            var InfraConfigSrv = $injector.get('InfraConfigSrv');
+            StorageSrv = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage, InfraConfigSrv)();
             StorageSrv.db.users.$$uid.stats = {
                 level1Categories: level1,
                 level2Categories: level2,
                 level3Categories: level3,
                 usedExercises: []
             };
-
-            var TestUtilitySrv = $injector.get('TestUtilitySrv');
-            TestUtilitySrv.general.printDebugLogs();
 
             actions = TestUtilitySrv.general.convertAllAsyncToSync(StatsQuerySrv);
         }]));

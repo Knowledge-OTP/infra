@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body ng-app="demo" ng-controller="Main">
+
+    <style>
+        body{
+            background: #f2f2f2;
+        }
+
+        .container{
+            display: flex;
+        }
+
+        .item{
+            margin-right: 50px;
+        }
+
+        .workout{
+            margin-bottom: 20px;
+        }
+    </style>
+    <div style="text-align: center;font-size: 26px;">Workouts Service</div>
+    <div class="container">
+        <div class="item">
+            <button ng-click="getWorkouts()">Get all workouts</button>
+            <div ng-repeat="workout in workouts" class="workout">
+                <div>order: {{workout.workoutOrder}}</div>
+                <div>type: {{workout.exerciseTypeId}}</div>
+                <div>exercise id: {{workout.exerciseId}}</div>
+                <div>status: {{workout.status}}</div>
+            </div>
+        </div>
+        <div class="item">
+            <button ng-click="updateWorkout()">Update exercise</button>
+            <div>
+                <label>exercise order:</label>
+                <input type="text" ng-model="exerciseOrder">
+            </div>
+            <div>
+                <label>exercise status:</label>
+                <input type="number" ng-model="workoutData.status">
+            </div>
+        </div>
+        <div class="item">
+            <div>
+                <button ng-click="getWorkoutData()">get workout data</button>
+                <div>
+                    <label>workout id</label>
+                    <input type="number" ng-model="workoutIdToRetrieveData">
+                </div>
+                <div>id: {{exerciseContent.id}}</div>
+                <div>category id: {{exerciseContent.categoryId}}</div>
+                <div>name: {{exerciseContent.name}}</div>
+            </div>
+        </div>
+    </div>
+    <script src="angular/angular.js"></script>
+    <script src="firebase/firebase-debug.js"></script>
+
+    <script src="config/config.js"></script>
+    <script src="utility/utility.js"></script>
+    <script src="contentAvail/contentAvail.js"></script>
+    <script src="enum/enum.js"></script>
+    <script src="storage/storage.js"></script>
+    <script src="exerciseUtility/exerciseUtility.js"></script>
+    <script src="exerciseResult/exerciseResult.js"></script>
+    <script src="content/content.js"></script>
+
+    <script src="demoApp.js"></script>
+    <script src="storagesConfig.js"></script>
+    <script src="contentConfig.js"></script>
+</body>
+</html>

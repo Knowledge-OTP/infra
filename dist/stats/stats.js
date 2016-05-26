@@ -182,13 +182,12 @@
         };
 
         this.$get = [
-            'InfraConfigSrv', '$q', 'SubjectEnum', '$log', '$injector',
-            function (InfraConfigSrv, $q, SubjectEnum, $log, $injector) {
+            'InfraConfigSrv', '$q', 'SubjectEnum', '$log', '$injector', 'StorageSrv',
+            function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv) {
                 if (!getCategoryLookup) {
                     $log.error('StatsSrv: getCategoryLookup was not set !!!!');
                 }
 
-                var StorageSrv = InfraConfigSrv.getStorageService();
                 var STATS_PATH = StorageSrv.variables.appUserSpacePath + '/stats';
 
                 var StatsSrv = {};
@@ -236,11 +235,15 @@
                     var defaults = {
                         processedExercises:{}
                     };
-                    return StorageSrv.get(STATS_PATH, defaults);
+                    return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                        return StudentStorageSrv.get(STATS_PATH, defaults);
+                    });
                 }
 
                 function setStats(newStats) {
-                    return StorageSrv.set(STATS_PATH, newStats);
+                    return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                        return StudentStorageSrv.set(STATS_PATH, newStats);
+                    });
                 }
 
                 function _baseStatsUpdater(currStat, newStat) {
