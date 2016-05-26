@@ -15,11 +15,13 @@
             var auth = {};
 
             auth.getAuth = function() {
-                var x = {
+                return {
                     uid:231323
                 };
-                return x;
+
             };
+
+            return auth;
         });
 })(angular);
 
