@@ -20,7 +20,8 @@
         'znk.infra.hint',
         'znk.infra.znkTimeline',
         'znk.infra.analytics',
-        'znk.infra.deviceNotSupported'
+        'znk.infra.deviceNotSupported',
+        'znk.infra.user'
     ]);
 })(angular);
 
@@ -230,6 +231,26 @@
         };
     }]);
 })(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.auth', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.auth').factory('AuthService',
+        function () {
+            'ngInject';
+
+            var auth = {};
+
+            return auth;
+        });
+})(angular);
+
 
 /**
  * the HTML5 autofocus property can be finicky when it comes to dynamically loaded
@@ -4109,6 +4130,52 @@
             ];
         }]);
 })(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.user', []);
+})(angular);
+
+'use strict';
+
+angular.module('znk.infra.user').service('UserProfileService',
+    function (InfraConfigSrv, StorageSrv) {
+
+        var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
+
+        this.getProfile = function () {
+            return InfraConfigSrv.getGlobalStorage().then(function(globalStorage) {
+                return globalStorage.get(profilePath).then(function (profile) {
+                    if (profile && (angular.isDefined(profile.email) || angular.isDefined(profile.nickname))) {
+                        return profile;
+                    }
+                    return InfraConfigSrv.getUserData().then(function(authData) {
+                        var emailFromAuth = authData.password ? authData.password.email : '';
+                        var nickNameFromAuth = authData.auth ? authData.auth.name : emailFromAuth;
+
+                        if (!profile.email) {
+                            profile.email = emailFromAuth;
+                        }
+                        if (!profile.nickname) {
+                            profile.nickname = nickNameFromAuth;
+                        }
+                        if (!profile.createdTime) {
+                            profile.createdTime = StorageSrv.variables.currTimeStamp;
+                        }
+
+                        return globalStorage.set(profilePath, profile);
+                    });
+                });
+            });
+        };
+
+        this.setProfile = function (newProfile) {
+            return InfraConfigSrv.getGlobalStorage().then(function(globalStorage) {
+                return globalStorage.set(profilePath, newProfile);
+            });
+        };
+});
 
 (function (angular) {
     'use strict';
