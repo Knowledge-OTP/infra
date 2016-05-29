@@ -22,7 +22,9 @@
         'znk.infra.analytics',
         'znk.infra.deviceNotSupported',
         'znk.infra.user',
-        'znk.infra.exams'
+        'znk.infra.exams',
+        'znk.infra.scoring',
+        'znk.infra.category'
     ]);
 })(angular);
 
@@ -288,6 +290,232 @@
 
     angular.module('znk.infra.autofocus', ['znk.infra.enum', 'znk.infra.svgIcon']);
 })(angular);
+
+'use strict';
+
+angular.module('znk.infra.category').service('CategoryService', function (StorageRevSrv, $q, EnumSrv)  {
+        'ngInject';
+
+    var categoryEnum = {};
+
+    categoryEnum.categoryTypeEnum = new EnumSrv.BaseEnum([
+        ['TUTORIAL', 1, 'tutorial'],
+        ['EXERCISE', 2, 'exercise'],
+        ['MINI_CHALLENGE', 3, 'miniChallenge'],
+        ['SECTION', 4, 'section'],
+        ['DRILL', 5, 'drill'],
+        ['GENERAL', 6, 'general'],
+        ['SPECIFIC', 7, 'specific'],
+        ['STRATEGY', 8, 'strategy'],
+        ['SUBJECT', 9, 'subject'],
+        ['SUB_SCORE', 10, 'subScore'],
+        ['TEST_SCORE', 11, 'testScore']
+    ]);
+
+        var self = this;
+        this.get = function () {
+            return StorageRevSrv.getContent({ exerciseType: 'category' });
+        };
+
+        var categoryMapObj;
+        this.getCategoryMap = function () {
+            if (categoryMapObj) {
+                return $q.when(categoryMapObj);
+            }
+            return self.get().then(categories => {
+                var categoryMap = {};
+                angular.forEach(categories, item => {
+                    categoryMap[item.id] = item;
+                });
+                categoryMapObj = categoryMap;
+                return categoryMapObj;
+            });
+        };
+
+        self.getCategoryData = function (categoryId) {
+            return self.getCategoryMap().then(categoryMap => {
+                return categoryMap[categoryId];
+            });
+        };
+
+        self.getParentCategory = function (categoryId) {
+            return self.getCategoryMap().then(function (categories) {
+                var parentId = categories[categoryId].parentId;
+                return categories[parentId];
+            });
+        };
+
+        self.getSubjectIdByCategory = function (category) {
+            if (category.typeId === categoryEnum.categoryTypeEnum.SUBJECT.enum) {
+                return $q.when(category.id);
+            }
+            return self.getParentCategory(category.id).then(function (parentCategory) {
+                return self.getSubjectIdByCategory(parentCategory);
+            });
+        };
+
+
+        self.getTestScore = function (categoryId) {
+            return self.getCategoryMap().then(function (categories) {
+                var category = categories[categoryId];
+                if (categoryEnum.categoryTypeEnum.TEST_SCORE.enum === category.typeId) {
+                    return category;
+                }
+                return self.getTestScore(category.parentId);
+            });
+        };
+
+        self.getAllGeneralCategories = (function () {
+            var getAllGeneralCategoriesProm;
+            return function () {
+                if (!getAllGeneralCategoriesProm) {
+                    getAllGeneralCategoriesProm = self.getCategoryMap().then(function (categories) {
+                        var generalCategories = {};
+                        angular.forEach(categories, function (category) {
+                            if (category.typeId === categoryEnum.categoryTypeEnum.GENERAL.enum) {
+                                generalCategories[category.id] = category;
+                            }
+                        });
+                        return generalCategories;
+                    });
+                }
+                return getAllGeneralCategoriesProm;
+            };
+        })();
+
+        self.getAllGeneralCategoriesBySubjectId = (function () {
+            var getAllGeneralCategoriesBySubjectIdProm;
+            return function (subjectId) {
+                if (!getAllGeneralCategoriesBySubjectIdProm) {
+                    getAllGeneralCategoriesBySubjectIdProm = self.getAllGeneralCategories().then(function (categories) {
+                        var generalCategories = {};
+                        var promArray = [];
+                        angular.forEach(categories, function (generalCategory) {
+                            var prom = self.getSubjectIdByCategory(generalCategory).then(function (currentCategorySubjectId) {
+                                if (currentCategorySubjectId === subjectId) {
+                                    generalCategories[generalCategory.id] = generalCategory;
+                                }
+                            });
+                            promArray.push(prom);
+                        });
+                        return $q.all(promArray).then(function () {
+                            return generalCategories;
+                        });
+                    });
+                }
+                return getAllGeneralCategoriesBySubjectIdProm;
+            };
+        })();
+
+        self.getAllSpecificCategories = (function () {
+            var getAllSpecificCategoriesProm;
+            return function () {
+                if (!getAllSpecificCategoriesProm) {
+                    getAllSpecificCategoriesProm = self.getCategoryMap().then(function (categories) {
+                        var specificCategories = {};
+                        angular.forEach(categories, function (category) {
+                            if (category.typeId === categoryEnum.categoryTypeEnum.SPECIFIC.enum) {
+                                specificCategories[category.id] = category;
+                            }
+                        });
+                        return specificCategories;
+                    });
+                }
+                return getAllSpecificCategoriesProm;
+            };
+        })();
+});
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.category', ['znk.infra.storage', 'znk.infra.enum']);
+})(angular);
+
+'use strict';
+
+angular.module('znk.infra.category').service('SubScoreSrv', function(CategoryService, $q, StorageRevSrv, SubjectEnum) {
+    'ngInject';
+
+    function _getSubScoreCategoryData() {
+        return StorageRevSrv.getContent({
+            exerciseId: null,
+            exerciseType: 'subscoreCategory'
+        });
+    }
+
+    function _getSubScoreData(subScoreId) {
+        return _getSubScoreCategoryData().then(function (subScoresCategoryData) {
+            return subScoresCategoryData[subScoreId];
+        });
+    }
+
+    this.getSpecificCategorySubScores = function (specificCategoryId) {
+        return CategoryService.getCategoryData(specificCategoryId).then(function (specificCategoryData) {
+            var allProm = [];
+            var subScoreKeys = ['subScore1Id', 'subScore2Id'];
+            angular.forEach(subScoreKeys, function (subScoreKey) {
+                var subScoreId = specificCategoryData[subScoreKey];
+                if (subScoreId || subScoreId === 0) {
+                    allProm.push(_getSubScoreData(subScoreId));
+                }
+            });
+            return $q.all(allProm);
+        });
+    };
+
+    this.getAllSubScoresBySubject = (function () {
+        var getAllSubjectScoresBySubjectProm;
+        return function () {
+            function _getMathOrVerbalSubjectIdIfCategoryNotEssay(category) {
+                return CategoryService.getSubjectIdByCategory(category).then(function (subjectId) {
+                    if (subjectId === SubjectEnum.MATH.enum || subjectId === SubjectEnum.VERBAL.enum) {
+                        return subjectId;
+                    }
+                });
+            }
+
+            if (!getAllSubjectScoresBySubjectProm) {
+                var allSubScoresProm = _getSubScoreCategoryData();
+                var allSpecificCategoriesProm = CategoryService.getAllSpecificCategories();
+
+                getAllSubjectScoresBySubjectProm = $q.all([allSubScoresProm, allSpecificCategoriesProm]).then(function (res) {
+                    var allSubScores = res[0];
+                    var allSpecificCategories = res[1];
+                    var subScorePerSubject = {};
+                    subScorePerSubject[SubjectEnum.MATH.enum] = {};
+                    subScorePerSubject[SubjectEnum.VERBAL.enum] = {};
+                    var specificCategoryKeys = Object.keys(allSpecificCategories);
+                    var promArray = [];
+                    var subScoreKeys = ['subScore1Id', 'subScore2Id'];
+
+                    angular.forEach(specificCategoryKeys, function (specificCategoryId) {
+                        var specificCategory = allSpecificCategories[specificCategoryId];
+                        var prom = _getMathOrVerbalSubjectIdIfCategoryNotEssay(specificCategory).then(function (subjectId) {
+                            if (angular.isDefined(subjectId)) {
+                                angular.forEach(subScoreKeys, function (subScoreKey) {
+                                    var subScoreId = specificCategory[subScoreKey];
+                                    if (subScoreId !== null && angular.isUndefined(subScorePerSubject[subjectId][subScoreKey])) {
+                                        subScorePerSubject[subjectId][subScoreId] = allSubScores[subScoreId];
+                                    }
+                                });
+                            }
+                        });
+                        promArray.push(prom);
+                    });
+
+                    return $q.all(promArray).then(function () {
+                        return subScorePerSubject;
+                    });
+                });
+            }
+
+            return getAllSubjectScoresBySubjectProm;
+        };
+    })();
+
+    this.getSubScoreData = _getSubScoreData;
+});
 
 (function (angular) {
     'use strict';
@@ -3197,6 +3425,189 @@ angular.module('znk.infra.exams').service('ExamSrv', function(StorageRevSrv, $q,
         }
     ]);
 })();
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.scoring', ['znk.infra.storage', 'znk.infra.exerciseUtility']);
+})(angular);
+
+'use strict';
+var CROSS_TEST_SCORE_ENUM = {
+    0: { name: 'History / Social Studies' },
+    1: { name: 'Science' }
+};
+angular.module('znk.infra.scoring').service('ScoringService', function($q, ExamTypeEnum, StorageRevSrv, $log, SubScoreSrv) {
+    'ngInject';
+
+    var keysMapConst = {
+        crossTestScore: 'CrossTestScore',
+        subScore: 'Subscore',
+        miniTest: 'miniTest',
+        test: 'test'
+    };
+
+    function _getScoreTableProm() {
+        return StorageRevSrv.getContent({
+            exerciseType: 'scoretable'
+        }).then(function (scoreTable) {
+            if (!scoreTable || !angular.isObject(scoreTable)) {
+                var errMsg = 'ScoringService _getScoreTableProm: no scoreTable or scoreTable is not an object! scoreTable:' + scoreTable;
+                $log.error(errMsg);
+                return $q.reject(errMsg);
+            }
+            return scoreTable;
+        });
+    }
+
+    function _getRawScore(questionsResults) {
+        var score = 0;
+        angular.forEach(questionsResults, function (question) {
+            if (question.isAnsweredCorrectly) {
+                score += 1;
+            }
+        });
+        return score;
+    }
+
+    function _isTypeFull(typeId) {
+        return ExamTypeEnum['FULL TEST'].enum === typeId;
+    }
+
+    function _getScoreTableKeyByTypeId(typeId) {
+        return _isTypeFull(typeId) ? keysMapConst.test : keysMapConst.miniTest;
+    }
+
+    function _getDataFromTable(scoreTable, key, id, rawScore) {
+        var data = angular.copy(scoreTable);
+        if (angular.isDefined(key)) {
+            data = data[key];
+        }
+        if (angular.isDefined(id)) {
+            data = data[id];
+        }
+        if (angular.isDefined(rawScore)) {
+            data = data[rawScore];
+        }
+        return data;
+    }
+
+    function _mergeSectionsWithResults(sections, sectionsResults) {
+        return sections.reduce(function (previousValue, currentValue) {
+            var currentSectionResult = sectionsResults.find(function (sectionResult) { return +sectionResult.exerciseId === currentValue.id; });
+            previousValue.push(angular.extend({}, currentSectionResult, currentValue));
+            return previousValue;
+        }, []);
+    }
+
+    function _getResultsFn(scoreTable, questionsResults, typeId, id) {
+        var rawScore = _getRawScore(questionsResults);
+        var key = _getScoreTableKeyByTypeId(typeId);
+        return _getDataFromTable(scoreTable, key, id, rawScore);
+    }
+
+    function _getTestScoreResultFn(scoreTable, questionsResults, typeId, categoryId) {
+        var data = _getResultsFn(scoreTable, questionsResults, typeId, categoryId);
+        return {
+            testScore: data
+        };
+    }
+
+    function _getSectionScoreResultFn(scoreTable, questionsResults, typeId, subjectId) {
+        var data = _getResultsFn(scoreTable, questionsResults, typeId, subjectId);
+        return {
+            sectionScore: data
+        };
+    }
+
+    function _getFullExamSubAndCrossScoresFn(scoreTable, sections, sectionsResults) {
+        var mergeSections = _mergeSectionsWithResults(sections, sectionsResults);
+        var subScoresMap = {};
+        var crossTestScoresMap = {};
+        var subScoresArrProms = [];
+        angular.forEach(mergeSections, function (section) {
+            angular.forEach(section.questionResults, function (questionResult) {
+                var subScoresArrProm = SubScoreSrv.getSpecificCategorySubScores(questionResult.categoryId);
+                subScoresArrProm.then(function (subScoresArr) {
+                    if (subScoresArr.length > 0) {
+                        angular.forEach(subScoresArr, function (subScore) {
+                            if (!subScoresMap[subScore.id]) {
+                                subScoresMap[subScore.id] = { raw: 0, name: subScore.name, subjectId: section.subjectId };
+                            }
+                            if (questionResult.isAnsweredCorrectly) {
+                                subScoresMap[subScore.id].raw += 1;
+                            }
+                        });
+                    }
+                    return subScoresArr;
+                });
+                subScoresArrProms.push(subScoresArrProm);
+                var crossTestScoreId = questionResult.crossTestScoreId;
+                if (angular.isDefined(crossTestScoreId) && crossTestScoreId !== null) {
+                    if (!crossTestScoresMap[crossTestScoreId]) {
+                        crossTestScoresMap[crossTestScoreId] = { raw: 0, name: CROSS_TEST_SCORE_ENUM[crossTestScoreId].name };
+                    }
+                    if (questionResult.isAnsweredCorrectly) {
+                        crossTestScoresMap[crossTestScoreId].raw += 1;
+                    }
+                }
+            });
+        });
+
+        return $q.all(subScoresArrProms).then(function () {
+            angular.forEach(subScoresMap, function (subScore, key) {
+                subScoresMap[key].sum = _getDataFromTable(scoreTable, keysMapConst.subScore, key, subScore.raw);
+            });
+            angular.forEach(crossTestScoresMap, function (crossTestScores, key) {
+                crossTestScoresMap[key].sum = _getDataFromTable(scoreTable, keysMapConst.crossTestScore, key, crossTestScores.raw);
+            });
+            return {
+                subScores: subScoresMap,
+                crossTestScores: crossTestScoresMap
+            };
+        });
+    }
+
+    // api
+
+    this.isTypeFull = function (typeId) {
+        return ExamTypeEnum['FULL TEST'].enum === typeId;
+    };
+
+    this.getTestScoreResult = function (questionsResults, typeId, categoryId) {
+        return _getScoreTableProm().then(function (scoreTable) {
+            return _getTestScoreResultFn(scoreTable, questionsResults, typeId, categoryId);
+        });
+    };
+
+    this.getSectionScoreResult = function (questionsResults, typeId, subjectId) {
+        return _getScoreTableProm().then(function (scoreTable) {
+            return _getSectionScoreResultFn(scoreTable, questionsResults, typeId, subjectId);
+        });
+    };
+
+    this.getFullExamSubAndCrossScores = function (sections, sectionsResults) {
+        return _getScoreTableProm().then(function (scoreTable) {
+            return _getFullExamSubAndCrossScoresFn(scoreTable, sections, sectionsResults);
+        });
+    };
+
+    this.rawScoreToScore = function (subjectId, rawScore) {
+        return _getScoreTableProm().then(function (scoreTable) {
+            var roundedRawScore = Math.round(rawScore);
+            return _getDataFromTable(scoreTable, keysMapConst.test, subjectId, roundedRawScore);
+        });
+    };
+
+    this.getTotalScoreResult = function (scoresArr) {
+        var totalScores = 0;
+        angular.forEach(scoresArr, function (score) {
+            totalScores += score;
+        });
+        return $q.when(totalScores);
+    };
+});
+
 
 (function (angular) {
     'use strict';
