@@ -21,6 +21,7 @@
         'znk.infra.znkTimeline',
         'znk.infra.analytics',
         'znk.infra.deviceNotSupported',
-        'znk.infra.user'
+        'znk.infra.user',
+        'znk.infra.exams'
     ]);
 })(angular);
