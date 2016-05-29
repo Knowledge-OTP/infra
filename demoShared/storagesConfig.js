@@ -9,6 +9,9 @@
         var authProm = authRef.authWithPassword({
             email: 'tester@zinkerz.com',
             password: '111111'
+        }).then(function(res){
+            console.log('success');
+            return res;
         }).catch(function(err){
             console.error(err);
         });

@@ -2030,7 +2030,9 @@
                         promArr.push(_setIsAvailForWorkout(workoutToAdd));
                     }
                     return $q.all(promArr).then(function () {
-                        return workoutsArr;
+                        return workoutsArr.sort(function (workout1, workout2) {
+                            return workout1.workoutOrder - workout2.workoutOrder;
+                        });
                     });
                 });
             };
