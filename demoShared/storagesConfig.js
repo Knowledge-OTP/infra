@@ -10,7 +10,7 @@
             email: 'tester@zinkerz.com',
             password: '111111'
         }).then(function(res){
-            console.log('success');
+            console.log('success', res);
             return res;
         }).catch(function(err){
             console.error(err);
