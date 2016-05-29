@@ -1,5 +1,5 @@
-export class ExamSrv {
-    constructor(StorageRevSrv, $q, ContentAvailSrv) {
+"use strict";
+angular.module('znk.infra.exams').service('ExamSrv', function(StorageRevSrv, $q, ContentAvailSrv, $log) {
         'ngInject';
 
         var self = this;
@@ -62,5 +62,4 @@ export class ExamSrv {
                 return $q.all(examsProms);
             });
         };
-    }
-}
+});

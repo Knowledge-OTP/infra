@@ -21,7 +21,8 @@
         'znk.infra.znkTimeline',
         'znk.infra.analytics',
         'znk.infra.deviceNotSupported',
-        'znk.infra.user'
+        'znk.infra.user',
+        'znk.infra.exams'
     ]);
 })(angular);
 
@@ -513,6 +514,51 @@
 
     angular.module('znk.infra.content').provider('ContentSrv', ContentSrv);
 
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    /**
+     *  StorageRevSrv:
+     *      wrapper for ContentSrv, use for error handling and parsing data.
+     *      getContent(data={ exerciseType: 'type', exerciseId: '20' });
+     *      getAllContentByKey('type');
+     */
+    angular.module('znk.infra.content').service('StorageRevSrv', [
+        'ContentSrv', '$log', '$q',
+        function (ContentSrv, $log, $q) {
+            'ngInject';
+
+            var self = this;
+
+            this.getContent = function (data) {
+                return ContentSrv.getContent(data).then(function (result) {
+                    return angular.fromJson(result);
+                }, function (err) {
+                    if (err) {
+                        $log.error(err);
+                        return $q.reject(err);
+                    }
+                });
+            };
+
+            this.getAllContentByKey = function (key) {
+                var resultsProm = [];
+                return ContentSrv.getAllContentIdsByKey(key).then(function (results) {
+                    angular.forEach(results, function (keyValue) {
+                        resultsProm.push(self.getContent({ exerciseType: keyValue }));
+                    });
+                    return $q.all(resultsProm);
+                }, function (err) {
+                    if (err) {
+                        $log.error(err);
+                        return $q.reject(err);
+                    }
+                });
+            };
+        }
+    ]);
 })(angular);
 
 (function (angular) {
@@ -1367,6 +1413,78 @@
     });
 })(angular);
 
+"use strict";
+angular.module('znk.infra.exams').service('ExamSrv', function(StorageRevSrv, $q, ContentAvailSrv, $log) {
+        'ngInject';
+
+        var self = this;
+
+        function _getExamOrder() {
+            return StorageRevSrv.getContent({
+                exerciseType: 'personalization'
+            }).then(function (personalizationData) {
+                var errorMsg = 'ExamSrv getExamOrder: personalization.examOrder is not array or empty!';
+                if (!angular.isArray(personalizationData.examOrder) || personalizationData.examOrder.length === 0) {
+                    $log.error(errorMsg);
+                    return $q.reject(errorMsg);
+                }
+                return personalizationData.examOrder;
+            });
+        }
+
+        function _getContentFromStorage(data) {
+            return StorageRevSrv.getContent(data);
+        }
+
+        this.getExam = function (examId, setIsAvail) {
+            return _getContentFromStorage({
+                exerciseId: examId, exerciseType: 'exam'
+            }).then(function (exam) {
+                if (!setIsAvail) {
+                    return exam;
+                }
+
+                var getIsAvailPromArr = [];
+                var sections = exam.sections;
+                angular.forEach(sections, function (section) {
+                    var isSectionAvailProm = ContentAvailSrv.isSectionAvail(examId, section.id).then(function (isAvail) {
+                        section.isAvail = !!isAvail;
+                    });
+                    getIsAvailPromArr.push(isSectionAvailProm);
+                });
+
+                return $q.all(getIsAvailPromArr).then(function () {
+                    return exam;
+                });
+            });
+        };
+
+        this.getExamSection = function (sectionId) {
+            return _getContentFromStorage({
+                exerciseId: sectionId, exerciseType: 'section'
+            });
+        };
+
+        this.getAllExams = function (setIsAvail) {
+            return _getExamOrder().then(function (examOrder) {
+                var examsProms = [];
+                var examsByOrder = examOrder.sort((a, b) => {
+                    return a.order > b.order;
+                });
+                angular.forEach(examsByOrder, function (exam) {
+                    examsProms.push(self.getExam(exam.examId, setIsAvail));
+                });
+                return $q.all(examsProms);
+            });
+        };
+});
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.exams', []);
+})(angular);
+
 (function (angular) {
     'use strict';
 
@@ -1905,7 +2023,7 @@
     'use strict';
 
     angular.module('znk.infra.exerciseUtility').factory('BaseExerciseGetterSrv',
-        ["ContentSrv", "$log", "$q", function (ContentSrv, $log, $q) {
+        function (ContentSrv, $log, $q) {
             'ngInject';
             
             var BaseExerciseGetterSrvPrototype = {};
@@ -1958,7 +2076,7 @@
             BaseExerciseGetterSrv.prototype = BaseExerciseGetterSrvPrototype;
 
             return BaseExerciseGetterSrv;
-        }]
+        }
     );
 })(angular);
 
@@ -1980,7 +2098,7 @@
     'use strict';
 
     angular.module('znk.infra.exerciseUtility').service('WorkoutsSrv',
-        ["ExerciseStatusEnum", "ExerciseTypeEnum", "$log", "StorageSrv", "ExerciseResultSrv", "ContentAvailSrv", "$q", "InfraConfigSrv", "BaseExerciseGetterSrv", function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
+        function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
                   InfraConfigSrv, BaseExerciseGetterSrv) {
             'ngInject';
 
@@ -2069,7 +2187,7 @@
             };
 
             this.getWorkoutKey = getWorkoutKey;
-        }]
+        }
     );
 })(angular);
 
@@ -4133,7 +4251,7 @@
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
-    ["InfraConfigSrv", "StorageSrv", function (InfraConfigSrv, StorageSrv) {
+    function (InfraConfigSrv, StorageSrv) {
 
         var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
 
@@ -4168,7 +4286,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                 return globalStorage.set(profilePath, newProfile);
             });
         };
-}]);
+});
 
 (function (angular) {
     'use strict';
