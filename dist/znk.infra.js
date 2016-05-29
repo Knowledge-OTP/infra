@@ -331,7 +331,7 @@
                     InfraConfigSrv.getUserData = function(){
                         var userDataInjected;
                         if(!userDataFn){
-                            $log.debug('InfraConfigSrv: auth fn name was not defined');
+                            $log.error('InfraConfigSrv: get user data function was not defined');
                             return;
                         }
                         userDataInjected = $injector.invoke(userDataFn);
