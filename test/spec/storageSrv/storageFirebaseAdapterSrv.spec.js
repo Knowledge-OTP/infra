@@ -5,7 +5,7 @@ describe('testing service "storageFirebaseAdapter":', function () {
         MockFirebase.override();
     });
 
-    beforeEach(module('znk.infra.storage', 'htmlTemplates'));
+    beforeEach(module('env.mock','znk.infra.storage', 'htmlTemplates'));
 
     var $rootScope, storageFirebaseAdapter, StorageSrv;
     beforeEach(inject([
