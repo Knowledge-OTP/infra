@@ -2,8 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.storage').factory('storageFirebaseAdapter', [
-        '$log', '$q', 'StorageSrv',
-        function ($log, $q, StorageSrv) {
+        '$log', '$q', 'StorageSrv', 'ENV',
+        function ($log, $q, StorageSrv, ENV) {
             function processValuesToSet(source){
                 if(angular.isArray(source)){
                     source.forEach(function(item, index){
@@ -41,7 +41,7 @@
             function storageFirebaseAdapter (endPoint){
                 var refMap = {};
                 var authObj;
-                var rootRef = new Firebase(endPoint);
+                var rootRef = new Firebase(endPoint, ENV.firebaseAppScopeName);
                 refMap.rootRef = rootRef;
                 rootRef.onAuth(function(newAuthObj){
                     authObj = newAuthObj;
