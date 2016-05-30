@@ -7,16 +7,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.autofocus', ['znk.infra.enum', 'znk.infra.svgIcon'])
-        .config([
-        'SvgIconSrvProvider',
-        function (SvgIconSrvProvider) {
-            var svgMap = {
-                'clock-icon': 'components/general/svg/clock-icon.svg'
-            };
-            SvgIconSrvProvider.registerSvgSources(svgMap);
-        }]);
-
+    angular.module('znk.infra.autofocus', ['znk.infra.enum', 'znk.infra.svgIcon']);
 })(angular);
 
 (function (angular) {
@@ -3633,8 +3624,8 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
     'use strict';
 
     angular.module('znk.infra.storage').factory('storageFirebaseAdapter', [
-        '$log', '$q', 'StorageSrv',
-        function ($log, $q, StorageSrv) {
+        '$log', '$q', 'StorageSrv', 'ENV',
+        function ($log, $q, StorageSrv, ENV) {
             function processValuesToSet(source){
                 if(angular.isArray(source)){
                     source.forEach(function(item, index){
@@ -3672,7 +3663,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
             function storageFirebaseAdapter (endPoint){
                 var refMap = {};
                 var authObj;
-                var rootRef = new Firebase(endPoint);
+                var rootRef = new Firebase(endPoint, ENV.firebaseAppScopeName);
                 refMap.rootRef = rootRef;
                 rootRef.onAuth(function(newAuthObj){
                     authObj = newAuthObj;
