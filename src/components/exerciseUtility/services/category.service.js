@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('znk.infra.category').service('CategoryService', function (StorageRevSrv, $q, categoryEnum)  {
+angular.module('znk.infra.exerciseUtility').service('CategoryService', function (StorageRevSrv, $q, categoryEnum)  {
         'ngInject';
 
         var self = this;

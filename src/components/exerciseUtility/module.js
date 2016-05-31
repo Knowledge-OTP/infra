@@ -7,6 +7,6 @@
         'znk.infra.storage',
         'znk.infra.exerciseResult',
         'znk.infra.contentAvail',
-        'znk.infra.content',
+        'znk.infra.content'
     ]);
 })(angular);
