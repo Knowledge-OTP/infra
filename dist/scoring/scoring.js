@@ -5,11 +5,7 @@
 })(angular);
 
 'use strict';
-var CROSS_TEST_SCORE_ENUM = {
-    0: { name: 'History / Social Studies' },
-    1: { name: 'Science' }
-};
-angular.module('znk.infra.scoring').service('ScoringService', function($q, ExamTypeEnum, StorageRevSrv, $log, SubScoreSrv) {
+angular.module('znk.infra.scoring').service('ScoringService', function($q, ExamTypeEnum, StorageRevSrv, $log) {
     'ngInject';
 
     var keysMapConst = {
@@ -64,14 +60,6 @@ angular.module('znk.infra.scoring').service('ScoringService', function($q, ExamT
         return data;
     }
 
-    function _mergeSectionsWithResults(sections, sectionsResults) {
-        return sections.reduce(function (previousValue, currentValue) {
-            var currentSectionResult = sectionsResults.find(function (sectionResult) { return +sectionResult.exerciseId === currentValue.id; });
-            previousValue.push(angular.extend({}, currentSectionResult, currentValue));
-            return previousValue;
-        }, []);
-    }
-
     function _getResultsFn(scoreTable, questionsResults, typeId, id) {
         var rawScore = _getRawScore(questionsResults);
         var key = _getScoreTableKeyByTypeId(typeId);
@@ -92,54 +80,6 @@ angular.module('znk.infra.scoring').service('ScoringService', function($q, ExamT
         };
     }
 
-    function _getFullExamSubAndCrossScoresFn(scoreTable, sections, sectionsResults) {
-        var mergeSections = _mergeSectionsWithResults(sections, sectionsResults);
-        var subScoresMap = {};
-        var crossTestScoresMap = {};
-        var subScoresArrProms = [];
-        angular.forEach(mergeSections, function (section) {
-            angular.forEach(section.questionResults, function (questionResult) {
-                var subScoresArrProm = SubScoreSrv.getSpecificCategorySubScores(questionResult.categoryId);
-                subScoresArrProm.then(function (subScoresArr) {
-                    if (subScoresArr.length > 0) {
-                        angular.forEach(subScoresArr, function (subScore) {
-                            if (!subScoresMap[subScore.id]) {
-                                subScoresMap[subScore.id] = { raw: 0, name: subScore.name, subjectId: section.subjectId };
-                            }
-                            if (questionResult.isAnsweredCorrectly) {
-                                subScoresMap[subScore.id].raw += 1;
-                            }
-                        });
-                    }
-                    return subScoresArr;
-                });
-                subScoresArrProms.push(subScoresArrProm);
-                var crossTestScoreId = questionResult.crossTestScoreId;
-                if (angular.isDefined(crossTestScoreId) && crossTestScoreId !== null) {
-                    if (!crossTestScoresMap[crossTestScoreId]) {
-                        crossTestScoresMap[crossTestScoreId] = { raw: 0, name: CROSS_TEST_SCORE_ENUM[crossTestScoreId].name };
-                    }
-                    if (questionResult.isAnsweredCorrectly) {
-                        crossTestScoresMap[crossTestScoreId].raw += 1;
-                    }
-                }
-            });
-        });
-
-        return $q.all(subScoresArrProms).then(function () {
-            angular.forEach(subScoresMap, function (subScore, key) {
-                subScoresMap[key].sum = _getDataFromTable(scoreTable, keysMapConst.subScore, key, subScore.raw);
-            });
-            angular.forEach(crossTestScoresMap, function (crossTestScores, key) {
-                crossTestScoresMap[key].sum = _getDataFromTable(scoreTable, keysMapConst.crossTestScore, key, crossTestScores.raw);
-            });
-            return {
-                subScores: subScoresMap,
-                crossTestScores: crossTestScoresMap
-            };
-        });
-    }
-
     // api
 
     this.isTypeFull = function (typeId) {
@@ -155,12 +95,6 @@ angular.module('znk.infra.scoring').service('ScoringService', function($q, ExamT
     this.getSectionScoreResult = function (questionsResults, typeId, subjectId) {
         return _getScoreTableProm().then(function (scoreTable) {
             return _getSectionScoreResultFn(scoreTable, questionsResults, typeId, subjectId);
-        });
-    };
-
-    this.getFullExamSubAndCrossScores = function (sections, sectionsResults) {
-        return _getScoreTableProm().then(function (scoreTable) {
-            return _getFullExamSubAndCrossScoresFn(scoreTable, sections, sectionsResults);
         });
     };
 

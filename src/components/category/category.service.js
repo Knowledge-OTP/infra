@@ -1,23 +1,7 @@
 'use strict';
 
-angular.module('znk.infra.category').service('CategoryService', function (StorageRevSrv, $q, EnumSrv)  {
+angular.module('znk.infra.category').service('CategoryService', function (StorageRevSrv, $q, categoryEnum)  {
         'ngInject';
-
-    var categoryEnum = {};
-
-    categoryEnum.categoryTypeEnum = new EnumSrv.BaseEnum([
-        ['TUTORIAL', 1, 'tutorial'],
-        ['EXERCISE', 2, 'exercise'],
-        ['MINI_CHALLENGE', 3, 'miniChallenge'],
-        ['SECTION', 4, 'section'],
-        ['DRILL', 5, 'drill'],
-        ['GENERAL', 6, 'general'],
-        ['SPECIFIC', 7, 'specific'],
-        ['STRATEGY', 8, 'strategy'],
-        ['SUBJECT', 9, 'subject'],
-        ['SUB_SCORE', 10, 'subScore'],
-        ['TEST_SCORE', 11, 'testScore']
-    ]);
 
         var self = this;
         this.get = function () {
@@ -29,9 +13,9 @@ angular.module('znk.infra.category').service('CategoryService', function (Storag
             if (categoryMapObj) {
                 return $q.when(categoryMapObj);
             }
-            return self.get().then(categories => {
+            return self.get().then(function (categories) {
                 var categoryMap = {};
-                angular.forEach(categories, item => {
+                angular.forEach(categories, function (item) {
                     categoryMap[item.id] = item;
                 });
                 categoryMapObj = categoryMap;
@@ -40,7 +24,7 @@ angular.module('znk.infra.category').service('CategoryService', function (Storag
         };
 
         self.getCategoryData = function (categoryId) {
-            return self.getCategoryMap().then(categoryMap => {
+            return self.getCategoryMap().then(function (categoryMap) {
                 return categoryMap[categoryId];
             });
         };
@@ -53,7 +37,7 @@ angular.module('znk.infra.category').service('CategoryService', function (Storag
         };
 
         self.getSubjectIdByCategory = function (category) {
-            if (category.typeId === categoryEnum.categoryTypeEnum.SUBJECT.enum) {
+            if (category.typeId === categoryEnum.SUBJECT.enum) {
                 return $q.when(category.id);
             }
             return self.getParentCategory(category.id).then(function (parentCategory) {
@@ -65,7 +49,7 @@ angular.module('znk.infra.category').service('CategoryService', function (Storag
         self.getTestScore = function (categoryId) {
             return self.getCategoryMap().then(function (categories) {
                 var category = categories[categoryId];
-                if (categoryEnum.categoryTypeEnum.TEST_SCORE.enum === category.typeId) {
+                if (categoryEnum.TEST_SCORE.enum === category.typeId) {
                     return category;
                 }
                 return self.getTestScore(category.parentId);
@@ -79,7 +63,7 @@ angular.module('znk.infra.category').service('CategoryService', function (Storag
                     getAllGeneralCategoriesProm = self.getCategoryMap().then(function (categories) {
                         var generalCategories = {};
                         angular.forEach(categories, function (category) {
-                            if (category.typeId === categoryEnum.categoryTypeEnum.GENERAL.enum) {
+                            if (category.typeId === categoryEnum.GENERAL.enum) {
                                 generalCategories[category.id] = category;
                             }
                         });
@@ -121,7 +105,7 @@ angular.module('znk.infra.category').service('CategoryService', function (Storag
                     getAllSpecificCategoriesProm = self.getCategoryMap().then(function (categories) {
                         var specificCategories = {};
                         angular.forEach(categories, function (category) {
-                            if (category.typeId === categoryEnum.categoryTypeEnum.SPECIFIC.enum) {
+                            if (category.typeId === categoryEnum.SPECIFIC.enum) {
                                 specificCategories[category.id] = category;
                             }
                         });

@@ -2,10 +2,10 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise', [
-            'znk.infra.enum',
             'znk.infra.svgIcon',
             'znk.infra.scroll',
             'znk.infra.autofocus',
+            'znk.infra.exerciseUtility',
             'ngAnimate'
         ])
         .config([

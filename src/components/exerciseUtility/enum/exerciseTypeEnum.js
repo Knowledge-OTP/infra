@@ -9,7 +9,7 @@
         DRILL: 5
     };
 
-    angular.module('znk.infra.enum')
+    angular.module('znk.infra.exerciseUtility')
         .constant('exerciseTypeConst', exerciseTypeConst)
         .factory('ExerciseTypeEnum', [
             'EnumSrv',
