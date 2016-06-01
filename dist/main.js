@@ -3454,6 +3454,11 @@ angular.module('znk.infra.scroll').run(['$templateCache', function($templateCach
 
 }]);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.sharedScss', []);
+})(angular);
 
 angular.module('znk.infra.sharedScss').run(['$templateCache', function($templateCache) {
 
