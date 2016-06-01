@@ -3015,6 +3015,14 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function($templat
                 return basePopup('error-popup','exclamation-mark',title,content,buttons);
             };
 
+            PopUpSrv.confirmation = function confirmation(title, content, acceptBtnTitle,cancelBtnTitle){
+                var buttons = [
+                    new BaseButton(acceptBtnTitle,null,acceptBtnTitle),
+                    new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle, true)
+                ];
+                return basePopup('info-popup','exclamation-mark',title,content,buttons);
+            };
+
             PopUpSrv.success = function success(title,content){
                 var btn = new BaseButton('OK',null,'ok', undefined, true);
                 return basePopup('success-popup','correct',title || '',content,[btn]);
