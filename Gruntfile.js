@@ -185,7 +185,7 @@ module.exports = function (grunt) {
             },
             locale:{
                 files: ['<%= yeoman.src %>/**/locale/*.json'],
-                tasks:['copy:dist']
+                tasks:['copy:build']
             }
         },
         sass: {

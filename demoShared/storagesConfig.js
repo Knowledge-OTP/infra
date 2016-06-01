@@ -9,6 +9,9 @@
         var authProm = authRef.authWithPassword({
             email: 'tester@zinkerz.com',
             password: '111111'
+        }).then(function(res){
+            console.log('success');
+            return res;
         }).catch(function(err){
             console.error(err);
         });
@@ -17,7 +20,7 @@
         var dataAuthProm = dataRef.authWithCustomToken('TykqAPXV4zlTTG0v6UuOt4OF3HssDykhJd90dAIc');
 
         function storageGetter(path) {
-            return (storageFirebaseAdapter, StorageSrv, $q) => {
+            return function(storageFirebaseAdapter, StorageSrv, $q) {
                 return $q.all([authProm, dataAuthProm]).then(function(res){
                     var auth = res[0];
                     var fbAdapter = storageFirebaseAdapter(path);
