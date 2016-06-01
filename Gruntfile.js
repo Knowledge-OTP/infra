@@ -210,7 +210,12 @@ module.exports = function (grunt) {
                     cwd: '<%= yeoman.src %>/components',
                     src: '*/locale/*.*',
                     dest: '<%= yeoman.tmp %>'
-                }, {
+                } ,{
+                    expand: true,
+                    cwd: '<%= yeoman.src %>/components',
+                    src: '*/assets/**/*.*',
+                    dest: '<%= yeoman.tmp %>'
+                },{
                     src: '<%= yeoman.src %>/components/mixins/_mixins.scss',
                     dest: '<%= yeoman.tmp %>/mixins/_mixins.scss'
                 }]
@@ -219,22 +224,8 @@ module.exports = function (grunt) {
                 files: [{
                     expand: true,
                     cwd: '<%= yeoman.tmp %>/',
-                    src: '*/main.css',
+                    src: ['**/*.*', '!**/*.js'],
                     dest: '<%= yeoman.dist %>/'
-                },{
-                    expand: true,
-                    cwd: '<%= yeoman.tmp %>/',
-                    src: '*/locale/*.*',
-                    dest: '<%= yeoman.dist %>/'
-                }, {
-                    src: '<%= yeoman.tmp %>/mixins/_mixins.scss',
-                    dest: '<%= yeoman.dist %>/mixins/_mixins.scss'
-                }, {
-                    src: '<%= yeoman.tmp %>/' + appConfig.appName + '.js',
-                    dest: '<%= yeoman.dist %>/' + appConfig.appName + '.js'
-                }, {
-                    src: '<%= yeoman.tmp %>/main.css',
-                    dest: '<%= yeoman.dist %>/main.css'
                 }]
             }
         },
@@ -338,7 +329,6 @@ module.exports = function (grunt) {
         'sass',
         'html2js',
         'concat:build',
-        'concat:mainModule',
         'copy:build',
         'ngAnnotate'
     ]);
@@ -349,6 +339,7 @@ module.exports = function (grunt) {
         'clean:dist',
         'build',
         'copy:dist',
-        'concat:dist'
+        'concat:dist',
+        'concat:mainModule'
     ]);
 };
