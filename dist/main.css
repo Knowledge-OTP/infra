@@ -727,6 +727,20 @@ $blueBG8: #75cbe8;
   width: 12px;
   height: 46px; }
 
+.znk-popup .info-popup .znk-popup-wrapper .znk-popup-header {
+  background: #0a9bad; }
+  .znk-popup .info-popup .znk-popup-wrapper .znk-popup-header .icon-wrapper {
+    background: #0a9bad; }
+    .znk-popup .info-popup .znk-popup-wrapper .znk-popup-header .icon-wrapper .correct-answer-white {
+      width: 37px;
+      height: 24px; }
+
+.znk-popup .info-popup .znk-popup-wrapper .znk-popup-body .title {
+  color: #0a9bad; }
+
+.znk-popup .info-popup .znk-popup-wrapper .znk-popup-body .content {
+  margin-top: 0; }
+
 /* fonts size */
 /*
 //backgrounds

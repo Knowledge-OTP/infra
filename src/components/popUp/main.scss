@@ -233,4 +233,33 @@
             }
         }
     }
+
+    .info-popup{
+        .znk-popup-wrapper{
+            .znk-popup-header{
+                background: $bgColor3;
+
+                .icon-wrapper{
+                    background: $bgColor3;
+
+                    .correct-answer-white{
+                        @include dimension(37px, 24px);
+                    }
+                }
+            }
+
+            .znk-popup-body{
+                .title{
+                    color: $bgColor3;
+                }
+
+                .content{
+                    margin:{
+                        top: 0
+                    }
+
+                }
+            }
+        }
+    }
 }
