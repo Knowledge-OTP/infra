@@ -42,22 +42,5 @@
 
         InfraConfigSrvProvider.setStorages(storageGetter(dataDbPath), storageGetter(dataDbPath + '/sat_app'));
 
-    }).factory('AuthService', function() {
-        return {
-            getAuth: function() {
-                if (_authSuccess) {
-                    return _authSuccess;
-                }
-                return {
-                    uid: "21794e2b-3051-4016-8491-b3fe70e8212d",
-                    auth: {
-                        name: 'tester'
-                    },
-                    password: {
-                        email: 'tester@zinkerz.com'
-                    }
-                };
-            }
-        }
     });
 })(angular);
