@@ -8,13 +8,18 @@
 angular.module('znk.infra.scoring').provider('ScoringService', function() {
     'ngInject';
 
-    var _scoringSettings;
+    var _scoringLimits;
+    var _examScoreGetter;
 
-    this.setScoringSettings = function(scoringSettings) {
-        _scoringSettings = scoringSettings;
+    this.setScoringLimits = function(scoringLimits) {
+        _scoringLimits = scoringLimits;
     };
 
-    this.$get = function($q, ExamTypeEnum, StorageRevSrv, $log) {
+    this.setExamScoreGetter = function(examScoreGetter) {
+        _examScoreGetter = examScoreGetter;
+    };
+
+    this.$get = function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
         var scoringServiceObjApi = {};
         var keysMapConst = {
             crossTestScore: 'CrossTestScore',
@@ -47,20 +52,20 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
         }
 
         function _isTypeFull(typeId) {
-            return ExamTypeEnum['FULL TEST'].enum === typeId;
+            return ExamTypeEnum.FULL_TEST.enum === typeId;
         }
 
         function _getScoreTableKeyByTypeId(typeId) {
             return _isTypeFull(typeId) ? keysMapConst.test : keysMapConst.miniTest;
         }
 
-        function _getDataFromTable(scoreTable, key, id, rawScore) {
+        function _getDataFromTable(scoreTable, scoreTableKey, subjectId, rawScore) {
             var data = angular.copy(scoreTable);
-            if (angular.isDefined(key)) {
-                data = data[key];
+            if (angular.isDefined(scoreTableKey)) {
+                data = data[scoreTableKey];
             }
-            if (angular.isDefined(id)) {
-                data = data[id];
+            if (angular.isDefined(subjectId)) {
+                data = data[subjectId];
             }
             if (angular.isDefined(rawScore)) {
                 data = data[rawScore];
@@ -70,8 +75,8 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
 
         function _getResultsFn(scoreTable, questionsResults, typeId, id) {
             var rawScore = _getRawScore(questionsResults);
-            var key = _getScoreTableKeyByTypeId(typeId);
-            return _getDataFromTable(scoreTable, key, id, rawScore);
+            var scoreTableKey = _getScoreTableKeyByTypeId(typeId);
+            return _getDataFromTable(scoreTable, scoreTableKey, id, rawScore);
         }
 
         function _getTestScoreResultFn(scoreTable, questionsResults, typeId, categoryId) {
@@ -91,7 +96,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
         // api
 
         scoringServiceObjApi.isTypeFull = function (typeId) {
-            return ExamTypeEnum['FULL TEST'].enum === typeId;
+            return ExamTypeEnum.FULL_TEST.enum === typeId;
         };
 
         scoringServiceObjApi.getTestScoreResult = function (questionsResults, typeId, categoryId) {
@@ -100,7 +105,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
             });
         };
 
-        scoringServiceObjApi.getSectionScoreResult = function (questionsResults, typeId, subjectId) {
+        scoringServiceObjApi.getSectionScore = function (questionsResults, typeId, subjectId) {
             return _getScoreTableProm().then(function (scoreTable) {
                 return _getSectionScoreResultFn(scoreTable, questionsResults, typeId, subjectId);
             });
@@ -113,16 +118,12 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
             });
         };
 
-        scoringServiceObjApi.getTotalScoreResult = function (scoresArr) {
-            var totalScores = 0;
-            angular.forEach(scoresArr, function (score) {
-                totalScores += score;
-            });
-            return $q.when(totalScores);
+        scoringServiceObjApi.getExamScore = function () {
+            return $injector.invoke($q.when(_examScoreGetter));
         };
 
-        scoringServiceObjApi.getScoringSettings = function() {
-             return _scoringSettings;
+        scoringServiceObjApi.getScoringLimits = function() {
+             return _scoringLimits;
         };
 
         return scoringServiceObjApi;

@@ -1952,8 +1952,8 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
         'EnumSrv',
         function (EnumSrv) {
             return new EnumSrv.BaseEnum([
-                ['FULL TEST', 0, 'test'],
-                ['MINI TEST', 1, 'miniTest'],
+                ['FULL_TEST', 0, 'test'],
+                ['MINI_TEST', 1, 'miniTest'],
                 ['DIAGNOSTIC', 2, 'diagnostic']
             ]);
         }
@@ -2173,31 +2173,31 @@ angular.module('znk.infra.exerciseUtility').service('CategoryService', function 
             });
         };
 
-        self.getSubjectIdByCategory = function (category) {
+        self.getCategoryLevel1Parent = function (category) {
             if (category.typeId === categoryEnum.SUBJECT.enum) {
                 return $q.when(category.id);
             }
             return self.getParentCategory(category.id).then(function (parentCategory) {
-                return self.getSubjectIdByCategory(parentCategory);
+                return self.getCategoryLevel1Parent(parentCategory);
             });
         };
 
 
-        self.getTestScore = function (categoryId) {
+        self.getCategoryLevel2Parent = function (categoryId) {
             return self.getCategoryMap().then(function (categories) {
                 var category = categories[categoryId];
                 if (categoryEnum.TEST_SCORE.enum === category.typeId) {
                     return category;
                 }
-                return self.getTestScore(category.parentId);
+                return self.getCategoryLevel2Parent(category.parentId);
             });
         };
 
-        self.getAllGeneralCategories = (function () {
-            var getAllGeneralCategoriesProm;
+        self.getAllLevel3Categories = (function () {
+            var getAllLevel3CategoriesProm;
             return function () {
-                if (!getAllGeneralCategoriesProm) {
-                    getAllGeneralCategoriesProm = self.getCategoryMap().then(function (categories) {
+                if (!getAllLevel3CategoriesProm) {
+                    getAllLevel3CategoriesProm = self.getCategoryMap().then(function (categories) {
                         var generalCategories = {};
                         angular.forEach(categories, function (category) {
                             if (category.typeId === categoryEnum.GENERAL.enum) {
@@ -2207,19 +2207,19 @@ angular.module('znk.infra.exerciseUtility').service('CategoryService', function 
                         return generalCategories;
                     });
                 }
-                return getAllGeneralCategoriesProm;
+                return getAllLevel3CategoriesProm;
             };
         })();
 
-        self.getAllGeneralCategoriesBySubjectId = (function () {
-            var getAllGeneralCategoriesBySubjectIdProm;
+        self.getAllLevel3CategoriesGroupedByLevel1 = (function () {
+            var getAllLevel3CategoriesGroupedByLevel1Prom;
             return function (subjectId) {
-                if (!getAllGeneralCategoriesBySubjectIdProm) {
-                    getAllGeneralCategoriesBySubjectIdProm = self.getAllGeneralCategories().then(function (categories) {
+                if (!getAllLevel3CategoriesGroupedByLevel1Prom) {
+                    getAllLevel3CategoriesGroupedByLevel1Prom = self.getAllLevel3Categories().then(function (categories) {
                         var generalCategories = {};
                         var promArray = [];
                         angular.forEach(categories, function (generalCategory) {
-                            var prom = self.getSubjectIdByCategory(generalCategory).then(function (currentCategorySubjectId) {
+                            var prom = self.getCategoryLevel1Parent(generalCategory).then(function (currentCategorySubjectId) {
                                 if (currentCategorySubjectId === subjectId) {
                                     generalCategories[generalCategory.id] = generalCategory;
                                 }
@@ -2231,15 +2231,15 @@ angular.module('znk.infra.exerciseUtility').service('CategoryService', function 
                         });
                     });
                 }
-                return getAllGeneralCategoriesBySubjectIdProm;
+                return getAllLevel3CategoriesGroupedByLevel1Prom;
             };
         })();
 
-        self.getAllSpecificCategories = (function () {
-            var getAllSpecificCategoriesProm;
+        self.getAllLevel4Categories = (function () {
+            var getAllLevel4CategoriessProm;
             return function () {
-                if (!getAllSpecificCategoriesProm) {
-                    getAllSpecificCategoriesProm = self.getCategoryMap().then(function (categories) {
+                if (!getAllLevel4CategoriessProm) {
+                    getAllLevel4CategoriessProm = self.getCategoryMap().then(function (categories) {
                         var specificCategories = {};
                         angular.forEach(categories, function (category) {
                             if (category.typeId === categoryEnum.SPECIFIC.enum) {
@@ -2249,7 +2249,7 @@ angular.module('znk.infra.exerciseUtility').service('CategoryService', function 
                         return specificCategories;
                     });
                 }
-                return getAllSpecificCategoriesProm;
+                return getAllLevel4CategoriessProm;
             };
         })();
 });
@@ -3559,13 +3559,18 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
 angular.module('znk.infra.scoring').provider('ScoringService', function() {
     'ngInject';
 
-    var _scoringSettings;
+    var _scoringLimits;
+    var _examScoreGetter;
 
-    this.setScoringSettings = function(scoringSettings) {
-        _scoringSettings = scoringSettings;
+    this.setScoringLimits = function(scoringLimits) {
+        _scoringLimits = scoringLimits;
     };
 
-    this.$get = function($q, ExamTypeEnum, StorageRevSrv, $log) {
+    this.setExamScoreGetter = function(examScoreGetter) {
+        _examScoreGetter = examScoreGetter;
+    };
+
+    this.$get = function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
         var scoringServiceObjApi = {};
         var keysMapConst = {
             crossTestScore: 'CrossTestScore',
@@ -3598,20 +3603,20 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
         }
 
         function _isTypeFull(typeId) {
-            return ExamTypeEnum['FULL TEST'].enum === typeId;
+            return ExamTypeEnum.FULL_TEST.enum === typeId;
         }
 
         function _getScoreTableKeyByTypeId(typeId) {
             return _isTypeFull(typeId) ? keysMapConst.test : keysMapConst.miniTest;
         }
 
-        function _getDataFromTable(scoreTable, key, id, rawScore) {
+        function _getDataFromTable(scoreTable, scoreTableKey, subjectId, rawScore) {
             var data = angular.copy(scoreTable);
-            if (angular.isDefined(key)) {
-                data = data[key];
+            if (angular.isDefined(scoreTableKey)) {
+                data = data[scoreTableKey];
             }
-            if (angular.isDefined(id)) {
-                data = data[id];
+            if (angular.isDefined(subjectId)) {
+                data = data[subjectId];
             }
             if (angular.isDefined(rawScore)) {
                 data = data[rawScore];
@@ -3621,8 +3626,8 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
 
         function _getResultsFn(scoreTable, questionsResults, typeId, id) {
             var rawScore = _getRawScore(questionsResults);
-            var key = _getScoreTableKeyByTypeId(typeId);
-            return _getDataFromTable(scoreTable, key, id, rawScore);
+            var scoreTableKey = _getScoreTableKeyByTypeId(typeId);
+            return _getDataFromTable(scoreTable, scoreTableKey, id, rawScore);
         }
 
         function _getTestScoreResultFn(scoreTable, questionsResults, typeId, categoryId) {
@@ -3642,7 +3647,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
         // api
 
         scoringServiceObjApi.isTypeFull = function (typeId) {
-            return ExamTypeEnum['FULL TEST'].enum === typeId;
+            return ExamTypeEnum.FULL_TEST.enum === typeId;
         };
 
         scoringServiceObjApi.getTestScoreResult = function (questionsResults, typeId, categoryId) {
@@ -3651,7 +3656,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
             });
         };
 
-        scoringServiceObjApi.getSectionScoreResult = function (questionsResults, typeId, subjectId) {
+        scoringServiceObjApi.getSectionScore = function (questionsResults, typeId, subjectId) {
             return _getScoreTableProm().then(function (scoreTable) {
                 return _getSectionScoreResultFn(scoreTable, questionsResults, typeId, subjectId);
             });
@@ -3664,16 +3669,12 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
             });
         };
 
-        scoringServiceObjApi.getTotalScoreResult = function (scoresArr) {
-            var totalScores = 0;
-            angular.forEach(scoresArr, function (score) {
-                totalScores += score;
-            });
-            return $q.when(totalScores);
+        scoringServiceObjApi.getExamScore = function () {
+            return $injector.invoke($q.when(_examScoreGetter));
         };
 
-        scoringServiceObjApi.getScoringSettings = function() {
-             return _scoringSettings;
+        scoringServiceObjApi.getScoringLimits = function() {
+             return _scoringLimits;
         };
 
         return scoringServiceObjApi;
