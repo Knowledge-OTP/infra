@@ -36,31 +36,31 @@ angular.module('znk.infra.exerciseUtility').service('CategoryService', function 
             });
         };
 
-        self.getSubjectIdByCategory = function (category) {
+        self.getCategoryLevel1Parent = function (category) {
             if (category.typeId === categoryEnum.SUBJECT.enum) {
                 return $q.when(category.id);
             }
             return self.getParentCategory(category.id).then(function (parentCategory) {
-                return self.getSubjectIdByCategory(parentCategory);
+                return self.getCategoryLevel1Parent(parentCategory);
             });
         };
 
 
-        self.getTestScore = function (categoryId) {
+        self.getCategoryLevel2Parent = function (categoryId) {
             return self.getCategoryMap().then(function (categories) {
                 var category = categories[categoryId];
                 if (categoryEnum.TEST_SCORE.enum === category.typeId) {
                     return category;
                 }
-                return self.getTestScore(category.parentId);
+                return self.getCategoryLevel2Parent(category.parentId);
             });
         };
 
-        self.getAllGeneralCategories = (function () {
-            var getAllGeneralCategoriesProm;
+        self.getAllLevel3Categories = (function () {
+            var getAllLevel3CategoriesProm;
             return function () {
-                if (!getAllGeneralCategoriesProm) {
-                    getAllGeneralCategoriesProm = self.getCategoryMap().then(function (categories) {
+                if (!getAllLevel3CategoriesProm) {
+                    getAllLevel3CategoriesProm = self.getCategoryMap().then(function (categories) {
                         var generalCategories = {};
                         angular.forEach(categories, function (category) {
                             if (category.typeId === categoryEnum.GENERAL.enum) {
@@ -70,19 +70,19 @@ angular.module('znk.infra.exerciseUtility').service('CategoryService', function 
                         return generalCategories;
                     });
                 }
-                return getAllGeneralCategoriesProm;
+                return getAllLevel3CategoriesProm;
             };
         })();
 
-        self.getAllGeneralCategoriesBySubjectId = (function () {
-            var getAllGeneralCategoriesBySubjectIdProm;
+        self.getAllLevel3CategoriesGroupedByLevel1 = (function () {
+            var getAllLevel3CategoriesGroupedByLevel1Prom;
             return function (subjectId) {
-                if (!getAllGeneralCategoriesBySubjectIdProm) {
-                    getAllGeneralCategoriesBySubjectIdProm = self.getAllGeneralCategories().then(function (categories) {
+                if (!getAllLevel3CategoriesGroupedByLevel1Prom) {
+                    getAllLevel3CategoriesGroupedByLevel1Prom = self.getAllLevel3Categories().then(function (categories) {
                         var generalCategories = {};
                         var promArray = [];
                         angular.forEach(categories, function (generalCategory) {
-                            var prom = self.getSubjectIdByCategory(generalCategory).then(function (currentCategorySubjectId) {
+                            var prom = self.getCategoryLevel1Parent(generalCategory).then(function (currentCategorySubjectId) {
                                 if (currentCategorySubjectId === subjectId) {
                                     generalCategories[generalCategory.id] = generalCategory;
                                 }
@@ -94,15 +94,15 @@ angular.module('znk.infra.exerciseUtility').service('CategoryService', function 
                         });
                     });
                 }
-                return getAllGeneralCategoriesBySubjectIdProm;
+                return getAllLevel3CategoriesGroupedByLevel1Prom;
             };
         })();
 
-        self.getAllSpecificCategories = (function () {
-            var getAllSpecificCategoriesProm;
+        self.getAllLevel4Categories = (function () {
+            var getAllLevel4CategoriessProm;
             return function () {
-                if (!getAllSpecificCategoriesProm) {
-                    getAllSpecificCategoriesProm = self.getCategoryMap().then(function (categories) {
+                if (!getAllLevel4CategoriessProm) {
+                    getAllLevel4CategoriessProm = self.getCategoryMap().then(function (categories) {
                         var specificCategories = {};
                         angular.forEach(categories, function (category) {
                             if (category.typeId === categoryEnum.SPECIFIC.enum) {
@@ -112,7 +112,7 @@ angular.module('znk.infra.exerciseUtility').service('CategoryService', function 
                         return specificCategories;
                     });
                 }
-                return getAllSpecificCategoriesProm;
+                return getAllLevel4CategoriessProm;
             };
         })();
 });
