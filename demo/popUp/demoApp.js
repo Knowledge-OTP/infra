@@ -8,7 +8,7 @@
             $scope.showPopup = function(type){
                 switch (type){
                     case 'warning':
-                        PopUpSrv.warning('Warning', 'Bla Bla Bla', 'Accept', 'Cancel');
+                        PopUpSrv.warning('Conformation', 'Bla Bla Bla', 'Accept', 'Cancel');
                         break;
                     case 'error':
                         PopUpSrv.error('Error', 'Bla Bla Bla', 'Accept', 'Cancel');
