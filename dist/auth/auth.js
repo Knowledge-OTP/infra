@@ -8,12 +8,18 @@
     'use strict';
 
     angular.module('znk.infra.auth').factory('AuthService',
-        function () {
+        function (ENV) {
             'ngInject';
 
-            var auth = {};
+            var authService = {};
 
-            return auth;
+            var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
+
+            authService.getAuth = function(){
+                return rootRef.getAuth();
+            };
+
+            return authService;
         });
 })(angular);
 
