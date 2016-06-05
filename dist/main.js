@@ -3560,14 +3560,14 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
     'ngInject';
 
     var _scoringLimits;
-    var _examScoreGetter;
+    var _examScoreFnGetter;
 
     this.setScoringLimits = function(scoringLimits) {
         _scoringLimits = scoringLimits;
     };
 
-    this.setExamScoreGetter = function(examScoreGetter) {
-        _examScoreGetter = examScoreGetter;
+    this.setExamScoreFnGetter = function(examScoreFnGetter) {
+        _examScoreFnGetter = examScoreFnGetter;
     };
 
     this.$get = function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
@@ -3669,8 +3669,8 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
             });
         };
 
-        scoringServiceObjApi.getExamScore = function () {
-            return $q.when($injector.invoke(_examScoreGetter));
+        scoringServiceObjApi.getExamScoreFn = function () {
+            return $q.when($injector.invoke(_examScoreFnGetter));
         };
 
         scoringServiceObjApi.getScoringLimits = function() {
