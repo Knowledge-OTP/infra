@@ -1,6 +1,8 @@
 (function (angular) {
     'use strict';
 
+    var _authSuccess;
+
     angular.module('demo').config(function (InfraConfigSrvProvider) {
         var authDbPath = 'https://znk-dev.firebaseio.com/';
         var dataDbPath = 'https://sat-dev.firebaseio.com/';
@@ -10,7 +12,8 @@
             email: 'tester@zinkerz.com',
             password: '111111'
         }).then(function(res){
-            console.log('success');
+            _authSuccess = res;
+            console.log('success', res);
             return res;
         }).catch(function(err){
             console.error(err);
@@ -38,5 +41,6 @@
         }
 
         InfraConfigSrvProvider.setStorages(storageGetter(dataDbPath), storageGetter(dataDbPath + '/sat_app'));
+
     });
 })(angular);

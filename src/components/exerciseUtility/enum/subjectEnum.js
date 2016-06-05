@@ -13,9 +13,9 @@
         ESSAY: 8
     };
 
-    angular.module('znk.infra.enum').constant('SubjectEnumConst', subjectEnum);
+    angular.module('znk.infra.exerciseUtility').constant('SubjectEnumConst', subjectEnum);
 
-    angular.module('znk.infra.enum').factory('SubjectEnum', [
+    angular.module('znk.infra.exerciseUtility').factory('SubjectEnum', [
         'EnumSrv',
         function (EnumSrv) {
 

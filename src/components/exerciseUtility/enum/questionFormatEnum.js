@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.enum').factory('QuestionFormatEnum', [
+    angular.module('znk.infra.exerciseUtility').factory('QuestionFormatEnum', [
         'EnumSrv',
         function (EnumSrv) {
 
