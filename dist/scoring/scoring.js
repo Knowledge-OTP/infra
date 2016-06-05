@@ -119,7 +119,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
         };
 
         scoringServiceObjApi.getExamScore = function () {
-            return $injector.invoke($q.when(_examScoreGetter));
+            return $q.when($injector.invoke(_examScoreGetter));
         };
 
         scoringServiceObjApi.getScoringLimits = function() {
