@@ -10,7 +10,7 @@
             setContentFuncRef = func;
         };
 
-        this.$get = ['$q', '$injector', function($q, $injector) {
+        this.$get = ['$q', '$log', '$injector', function($q, $log, $injector) {
 
             function _getContentData() {
                 var contentData;
@@ -19,14 +19,15 @@
                         get: function() {
                             if(!contentData) {
                                 return _getContentFunc().then(function(dataObj) {
-
                                     contentData = dataObj;
-                                    contentData.updatePublication(function(updatePublication) {
-                                        if(updatePublication.key() !== contentData.key) {
-                                            contentData.latestRevisions = updatePublication.val();
-                                            contentData.key = updatePublication.key();
-                                        }
-                                    });
+                                    if (angular.isFunction(contentData.updatePublication)) {
+                                        contentData.updatePublication(function(updatePublication) {
+                                            if(updatePublication.key() !== contentData.key) {
+                                                contentData.latestRevisions = updatePublication.val();
+                                                contentData.key = updatePublication.key();
+                                            }
+                                        });
+                                    }
                                     return dataObj;
                                 });
                             }
@@ -51,6 +52,18 @@
                     contentFunc = $injector.invoke(setContentFuncRef);
                 }
                 return contentFunc;
+            }
+
+            function _getLatestRevision(contentBasePath, rev, dataObj) {
+                var content = dataObj.create(contentBasePath+rev);
+                var revContentProm = $q.when(content.get());
+                return revContentProm.then(function(contentData) {
+                    if (!contentData || angular.equals({}, contentData)) {
+                        $log.error('ContentSrv: _getLatestRevision: no revision content found! rev: ' + rev + ' contentBasePath: ' + contentBasePath);
+                        return _getLatestRevision(contentBasePath, rev - 1, dataObj);
+                    }
+                    return contentData;
+                });
             }
 
             ContentSrv.getRev = function(practiceName, dataObj) {
@@ -83,7 +96,7 @@
                     } else if (userManifest.rev === publicationManifest.rev) {
                         newRev = {rev: publicationManifest.rev, status: 'same'};
                     } else {
-                        newRev = {error: 'failed to get revision!', data: dataObj};
+                        newRev = {rev: userManifest.rev, status: 'weird'};
                     }
 
                     return newRev;
@@ -119,9 +132,9 @@
                             return $q.when({ error: 'Error: getContent require userRoot to be defined in config phase!' });
                         }
 
-                        var contentPath = dataObj.contentRoot+path+'-rev-'+result.rev;
-
-                        var content =  dataObj.create(contentPath);
+                        if(result.status === 'weird') {
+                            $log.error('ContentSrv: getContent: user revision is weird! rev: ' + result.rev);
+                        }
 
                         if(result.status === 'new') {
                             ContentSrv.setRev(path, result.rev).then(function() {
@@ -131,8 +144,9 @@
                             });
                         }
 
-                        return content.get();
+                        var contentBasePath = dataObj.contentRoot+path+'-rev-';
 
+                        return _getLatestRevision(contentBasePath, result.rev, dataObj);
                     });
                 });
             };
@@ -141,9 +155,9 @@
                 var arrayOfKeys = [];
                 return contentDataFunc().get().then(function(dataObj) {
                     for(var objKey in dataObj.latestRevisions) {
-                       if(objKey.indexOf(key) !== -1) {
-                           arrayOfKeys.push(objKey);
-                       }
+                        if(dataObj.latestRevisions.hasOwnProperty(objKey) && objKey.indexOf(key) !== -1) {
+                            arrayOfKeys.push(objKey);
+                        }
                     }
                     return arrayOfKeys;
                 });
