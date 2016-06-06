@@ -114,11 +114,11 @@ free-text-answer{
 
             .arrow-wrapper:active{
                 svg path{
-                    fill: #27727b;  //todo
+                    fill: $bgColor16;
                 }
 
                 .svg-back{
-                    background-color: #27727b;
+                    background-color: $bgColor16;
                 }
             }
 

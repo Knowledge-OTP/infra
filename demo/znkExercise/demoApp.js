@@ -24,7 +24,92 @@
             $scope.d = {};
             var id = 0;
             $scope.questions = [
+                {
+                    __type: 1,
+                    id: ++id,
+                    answerTypeId: 0,
+                    answers: [
+                        {
+                            id: 1,
+                            content: '<span>answer1</span>'
+                        },
+                        {
+                            id: 2,
+                            content: '<span>answer2</span>'
+                        },
+                        {
+                            id: 3,
+                            content: '<span>answer3</span>'
+                        }
+                    ],
+                    correctAnswerId: 1,
+                    content:
+                        '<div style="padding-left: 517px;">' +
+                            '<div>Header</div>' +
+                            '<div>Content</div>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                            '<br>test<br>' +
+                        '</div>'
+                },
+                {
+                    __type: 1,
+                    id: ++id,
+                    answerTypeId: 3,
+                    correctAnswerText: [
+                        {
+                            id: 4
 
+                        },
+                        {
+                            id: 5
+
+                        },
+                        {
+                            id: 6
+
+                        }
+                    ]
+                },
                 {
                     __type: 1,
                     id: ++id,
