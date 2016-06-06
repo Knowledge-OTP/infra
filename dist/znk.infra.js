@@ -512,13 +512,13 @@ angular.module('znk.infra.config').run(['$templateCache', function($templateCach
                 return contentFunc;
             }
 
-            function _getLatestRevision(contentBasePath, rev, dataObj) {
-                var content = dataObj.create(contentBasePath+rev);
-                var revContentProm = $q.when(content.get());
+            function _getLatestRevisionContent(contentBasePath, rev, dataObj) {
+                var contentInstance = dataObj.create(contentBasePath+rev);
+                var revContentProm = $q.when(contentInstance.get());
                 return revContentProm.then(function(contentData) {
                     if (!contentData || angular.equals({}, contentData)) {
                         $log.error('ContentSrv: _getLatestRevision: no revision content found! rev: ' + rev + ' contentBasePath: ' + contentBasePath);
-                        return _getLatestRevision(contentBasePath, rev - 1, dataObj);
+                        return _getLatestRevisionContent(contentBasePath, rev - 1, dataObj);
                     }
                     return contentData;
                 });
@@ -604,7 +604,7 @@ angular.module('znk.infra.config').run(['$templateCache', function($templateCach
 
                         var contentBasePath = dataObj.contentRoot+path+'-rev-';
 
-                        return _getLatestRevision(contentBasePath, result.rev, dataObj);
+                        return _getLatestRevisionContent(contentBasePath, result.rev, dataObj);
                     });
                 });
             };
