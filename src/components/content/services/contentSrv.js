@@ -54,18 +54,6 @@
                 return contentFunc;
             }
 
-            function _getLatestRevisionContent(contentBasePath, rev, dataObj) {
-                var contentInstance = dataObj.create(contentBasePath+rev);
-                var revContentProm = $q.when(contentInstance.get());
-                return revContentProm.then(function(contentData) {
-                    if (!contentData || angular.equals({}, contentData)) {
-                        $log.error('ContentSrv: _getLatestRevision: no revision content found! rev: ' + rev + ' contentBasePath: ' + contentBasePath);
-                        return _getLatestRevisionContent(contentBasePath, rev - 1, dataObj);
-                    }
-                    return contentData;
-                });
-            }
-
             ContentSrv.getRev = function(practiceName, dataObj) {
                 var getRevisionProm = $q.when(false);
 
@@ -96,7 +84,8 @@
                     } else if (userManifest.rev === publicationManifest.rev) {
                         newRev = {rev: publicationManifest.rev, status: 'same'};
                     } else {
-                        newRev = {rev: userManifest.rev, status: 'weird'};
+                        $log.error('ContentSrv: getContent: user revision is weird! rev: ' + userManifest.rev);
+                        newRev = {rev: publicationManifest.rev, status: 'new'};
                     }
 
                     return newRev;
@@ -132,10 +121,6 @@
                             return $q.when({ error: 'Error: getContent require userRoot to be defined in config phase!' });
                         }
 
-                        if(result.status === 'weird') {
-                            $log.error('ContentSrv: getContent: user revision is weird! rev: ' + result.rev);
-                        }
-
                         if(result.status === 'new') {
                             ContentSrv.setRev(path, result.rev).then(function() {
                                 var userPath = dataObj.userRoot+'/revisionManifest/'+path;
@@ -144,9 +129,11 @@
                             });
                         }
 
-                        var contentBasePath = dataObj.contentRoot+path+'-rev-';
+                        var contentPath = dataObj.contentRoot+path+'-rev-'+result.rev;
 
-                        return _getLatestRevisionContent(contentBasePath, result.rev, dataObj);
+                        var content =  dataObj.create(contentPath);
+
+                        return content.get();
                     });
                 });
             };
