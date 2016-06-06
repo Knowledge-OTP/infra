@@ -2816,7 +2816,6 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "<svg version=\"1.1\"\n" +
     "     class=\"correct-icon-svg\"\n" +
     "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
-    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
     "     x=\"0px\"\n" +
     "     y=\"0px\"\n" +
     "	 viewBox=\"0 0 188.5 129\"\n" +

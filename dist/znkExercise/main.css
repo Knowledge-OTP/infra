@@ -383,7 +383,7 @@ free-text-answer .free-text-answer-wrapper {
     display: none;
     position: absolute;
     z-index: 5;
-    top: 1.5px; }
+    top: 5.5px; }
     .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .correct-icon line, .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .wrong-icon line {
       stroke: #fff; }
   .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .correct-icon {
