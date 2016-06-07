@@ -4903,7 +4903,6 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                     chevron: 'components/znkExercise/svg/chevron-icon.svg',
                     correct: 'components/znkExercise/svg/correct-icon.svg',
                     wrong: 'components/znkExercise/svg/wrong-icon.svg',
-                    info: 'components/znkExercise/svg/info-icon.svg',
                     arrow: 'components/znkExercise/svg/arrow-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
@@ -7499,7 +7498,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
   $templateCache.put("components/znkExercise/answerTypes/templates/freeTextAnswerDrv.html",
     "<div class=\"free-text-answer-wrapper\" ng-switch=\"showCorrectAnswer\">\n" +
     "\n" +
-    "    <div ng-switch-when=\"true\" ng-class=\"userAnswerStatus\">\n" +
+    "    <div ng-switch-when=\"true\" class=\"answer-status-wrapper\" ng-class=\"userAnswerStatus\">\n" +
     "        <div class=\"answer-status\">\n" +
     "            <div class=\"user-answer\">{{d.userAnswer}}</div>\n" +
     "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
@@ -7508,13 +7507,11 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "        <div class=\"correct-answer\">Correct answer: <span>{{correctAnswer}}</span></div>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div ng-switch-when=\"false\">\n" +
-    "        <div class=\"input-wrapper\">\n" +
-    "            <input ng-model-options=\"{ getterSetter: true }\" ng-model=\"d.userAnswerGetterSetter\">\n" +
-    "            <div class=\"arrow-wrapper\" ng-click=\"clickHandler()\">\n" +
-    "                <svg-icon name=\"arrow\"></svg-icon>\n" +
-    "                <div class=\"svg-back\"></div>\n" +
-    "            </div>\n" +
+    "    <div  ng-switch-when=\"false\" class=\"input-wrapper\">\n" +
+    "        <input ng-model-options=\"{ getterSetter: true }\" ng-model=\"d.userAnswerGetterSetter\">\n" +
+    "        <div class=\"arrow-wrapper\" ng-click=\"clickHandler()\">\n" +
+    "            <svg-icon name=\"arrow\"></svg-icon>\n" +
+    "            <div class=\"svg-back\"></div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "\n" +
@@ -7679,6 +7676,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
   $templateCache.put("components/znkExercise/svg/arrow-icon.svg",
     "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\" viewBox=\"-468.2 482.4 96 89.8\" class=\"arrow-icon-wrapper\">\n" +
     "    <style type=\"text/css\">\n" +
+    "        .arrow-icon-wrapper{width: 48px;  height:auto;}\n" +
     "        .arrow-icon-wrapper .st0{fill:#109BAC;}\n" +
     "        .arrow-icon-wrapper .st1{fill:none;stroke:#fff;stroke-width:5.1237;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
     "    </style>\n" +
@@ -7692,7 +7690,13 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</svg>\n" +
     "");
   $templateCache.put("components/znkExercise/svg/chevron-icon.svg",
-    "<svg x=\"0px\" y=\"0px\" viewBox=\"0 0 143.5 65.5\">\n" +
+    "<svg x=\"0px\" y=\"0px\" viewBox=\"0 0 143.5 65.5\" xmlns=\"http://www.w3.org/2000/svg\" class=\"chevron-icon\">\n" +
+    "    <style>\n" +
+    "        .chevron-icon{\n" +
+    "            width: 33px;\n" +
+    "            height:auto;\n" +
+    "        }\n" +
+    "    </style>\n" +
     "    <polyline class=\"st0\" points=\"6,6 71.7,59.5 137.5,6 \"/>\n" +
     "</svg>\n" +
     "");
@@ -7700,7 +7704,6 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "<svg version=\"1.1\"\n" +
     "     class=\"correct-icon-svg\"\n" +
     "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
-    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
     "     x=\"0px\"\n" +
     "     y=\"0px\"\n" +
     "	 viewBox=\"0 0 188.5 129\"\n" +
@@ -7719,26 +7722,6 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "<g>\n" +
     "	<line class=\"st0\" x1=\"7.5\" y1=\"62\" x2=\"67\" y2=\"121.5\"/>\n" +
     "	<line class=\"st0\" x1=\"67\" y1=\"121.5\" x2=\"181\" y2=\"7.5\"/>\n" +
-    "</g>\n" +
-    "</svg>\n" +
-    "");
-  $templateCache.put("components/znkExercise/svg/info-icon.svg",
-    "<svg\n" +
-    "    version=\"1.1\"\n" +
-    "    xmlns=\"http://www.w3.org/2000/svg\"\n" +
-    "    x=\"0px\"\n" +
-    "    y=\"0px\"\n" +
-    "    viewBox=\"-497 499 28 28\"\n" +
-    "    class=\"info-icon\">\n" +
-    "<style type=\"text/css\">\n" +
-    "	.info-icon .st0{fill:none;stroke:#0A9BAD; stroke-width:2;}\n" +
-    "	.info-icon .st2{fill:#0A9BAD;}\n" +
-    "</style>\n" +
-    "<g>\n" +
-    "	<circle class=\"st0\" cx=\"-483\" cy=\"513\" r=\"13.5\"/>\n" +
-    "	<g>\n" +
-    "		<path class=\"st2\" d=\"M-485.9,509.2h3.9v8.1h3v1.2h-7.6v-1.2h3v-6.9h-2.4V509.2z M-483.5,505.6h1.5v1.9h-1.5V505.6z\"/>\n" +
-    "	</g>\n" +
     "</g>\n" +
     "</svg>\n" +
     "");

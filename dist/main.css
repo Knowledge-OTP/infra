@@ -1567,7 +1567,15 @@ $blueBG8: #75cbe8;
 free-text-answer .free-text-answer-wrapper {
   width: 520px;
   height: 115px;
+  position: relative;
   padding-left: 30px; }
+  free-text-answer .free-text-answer-wrapper .answer-status-wrapper, free-text-answer .free-text-answer-wrapper .input-wrapper {
+    position: absolute; }
+  free-text-answer .free-text-answer-wrapper .answer-status-wrapper.ng-enter {
+    transition: 0.5s linear;
+    opacity: 0; }
+  free-text-answer .free-text-answer-wrapper .answer-status-wrapper.ng-enter-active {
+    opacity: 1; }
   free-text-answer .free-text-answer-wrapper .answer-status {
     width: 85px;
     height: auto;
@@ -1596,7 +1604,7 @@ free-text-answer .free-text-answer-wrapper {
     display: block; }
   free-text-answer .free-text-answer-wrapper .wrong svg-icon.wrong-icon {
     position: relative;
-    top: 3px;
+    top: 1px;
     display: block; }
     free-text-answer .free-text-answer-wrapper .wrong svg-icon.wrong-icon svg {
       width: 18px;
@@ -1639,6 +1647,10 @@ free-text-answer .free-text-answer-wrapper {
         background-color: #6ac1cc;
         position: absolute;
         z-index: 1; }
+    free-text-answer .free-text-answer-wrapper .input-wrapper .arrow-wrapper:active svg path {
+      fill: #2c808a; }
+    free-text-answer .free-text-answer-wrapper .input-wrapper .arrow-wrapper:active .svg-back {
+      background-color: #2c808a; }
     free-text-answer .free-text-answer-wrapper .input-wrapper input {
       width: 244px;
       height: 43px;
@@ -1662,7 +1674,7 @@ free-text-answer .free-text-answer-wrapper {
     display: none;
     position: absolute;
     z-index: 5;
-    top: 1.5px; }
+    top: 5.5px; }
     .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .correct-icon line, .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .wrong-icon line {
       stroke: #fff; }
   .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .correct-icon {
