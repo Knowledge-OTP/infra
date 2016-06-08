@@ -1,11 +1,11 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demo').config(function (InfraConfigSrvProvider, ENV) {
+    angular.module('demo').config(function (InfraConfigSrvProvider) {
         var authDbPath = 'https://znk-dev.firebaseio.com/';
         var dataDbPath = 'https://sat-dev.firebaseio.com/';
 
-        var authRef = new Firebase(authDbPath, ENV.firebaseAppScopeName);
+        var authRef = new Firebase(authDbPath, 'sat_app');
         var authProm = authRef.authWithPassword({
             email: 'tester@zinkerz.com',
             password: '111111'
@@ -16,8 +16,8 @@
             console.error(err);
         });
 
-        var dataRef = new Firebase(dataDbPath, ENV.firebaseAppScopeName);
-        var dataAuthProm = dataRef.authWithCustomToken('TykqAPXV4zlTTG0v6UuOt4OF3HssDykhJd90dAIc', ENV.firebaseAppScopeName);
+        var dataRef = new Firebase(dataDbPath, 'sat_app');
+        var dataAuthProm = dataRef.authWithCustomToken('TykqAPXV4zlTTG0v6UuOt4OF3HssDykhJd90dAIc', 'sat_app');
 
         function storageGetter(path) {
             return function(storageFirebaseAdapter, StorageSrv, $q) {
