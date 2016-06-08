@@ -3,7 +3,9 @@
         './src/scss/imports/mixins';
 
 svg-icon {
-    display: block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 
     svg {
         display: block;

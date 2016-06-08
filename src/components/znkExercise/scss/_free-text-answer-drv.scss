@@ -1,7 +1,21 @@
 free-text-answer{
     .free-text-answer-wrapper {
         @include dimension(520px, 115px);
+        position: relative;
         padding-left: 30px;
+
+        .answer-status-wrapper, .input-wrapper{
+            position: absolute;
+        }
+
+        .answer-status-wrapper.ng-enter {
+            transition: 0.5s linear;
+            opacity: 0;
+        }
+
+        .answer-status-wrapper.ng-enter-active {
+            opacity: 1;
+        }
 
         .answer-status{
             @include dimension(85px, auto);
@@ -44,7 +58,7 @@ free-text-answer{
                     }
                 }
                 position: relative;
-                top: 3px;
+                top: 1px;
                 display: block;
             }
 
@@ -95,6 +109,16 @@ free-text-answer{
                     background-color: $bgColor14;
                     position: absolute;
                     z-index: 1;
+                }
+            }
+
+            .arrow-wrapper:active{
+                svg path{
+                    fill: $bgColor16;
+                }
+
+                .svg-back{
+                    background-color: $bgColor16;
                 }
             }
 

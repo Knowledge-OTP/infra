@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demo').config(function (InfraConfigSrvProvider, ENV) {
+    angular.module('demo').config(function (InfraConfigSrvProvider) {
         var authDbPath = 'https://znk-dev.firebaseio.com/';
         var dataDbPath = 'https://sat-dev.firebaseio.com/';
 
@@ -9,6 +9,9 @@
         var authProm = authRef.authWithPassword({
             email: 'tester@zinkerz.com',
             password: '111111'
+        }).then(function(res){
+            console.log('success', res);
+            return res;
         }).catch(function(err){
             console.error(err);
         });
