@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demo').config(function (InfraConfigSrvProvider) {
+    angular.module('demo').config(function (InfraConfigSrvProvider, ENV) {
         var authDbPath = 'https://znk-dev.firebaseio.com/';
         var dataDbPath = 'https://sat-dev.firebaseio.com/';
 
