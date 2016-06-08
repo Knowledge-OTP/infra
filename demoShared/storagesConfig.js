@@ -17,7 +17,7 @@
         });
 
         var dataRef = new Firebase(dataDbPath, 'sat_app');
-        var dataAuthProm = dataRef.authWithCustomToken('TykqAPXV4zlTTG0v6UuOt4OF3HssDykhJd90dAIc', 'sat_app');
+        var dataAuthProm = dataRef.authWithCustomToken('TykqAPXV4zlTTG0v6UuOt4OF3HssDykhJd90dAIc');
 
         function storageGetter(path) {
             return function(storageFirebaseAdapter, StorageSrv, $q) {
