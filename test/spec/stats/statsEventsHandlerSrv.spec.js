@@ -25,44 +25,6 @@ describe('testing service "StatsEventsHandlerSrv":', function () {
         }]));
 
     var actions = {};
-    actions.updateStat = function (stat, totalQuestions, correct, unanswered, id, subjectId, generalCategoryId) {
-        if (angular.isDefined(id)) {
-            stat.id = id;
-        }
-
-        if (angular.isDefined(subjectId)) {
-            stat.subjectId = subjectId;
-        }
-
-        if (angular.isDefined(generalCategoryId)) {
-            stat.generalCategoryId = generalCategoryId;
-        }
-
-        if (angular.isUndefined(stat.totalQuestions)) {
-            stat.totalQuestions = 5;
-        }
-        stat.totalQuestions += totalQuestions;
-
-        if (angular.isUndefined(stat.correct)) {
-            stat.correct = 1;
-
-        }
-        stat.correct += correct;
-
-        if (angular.isUndefined(stat.unanswered)) {
-            stat.unanswered = 0;
-        }
-        stat.unanswered += unanswered;
-
-        if (angular.isUndefined(stat.wrong)) {
-            stat.wrong = 4;
-
-        }
-        stat.wrong += totalQuestions - correct - unanswered;
-
-        stat.totalTime = 0;
-        return stat;
-    };
 
     actions.getCategoryParent = function (categoryId) {
         for (var i in content.category) {
@@ -71,27 +33,6 @@ describe('testing service "StatsEventsHandlerSrv":', function () {
                 return category.parentId;
             }
         }
-    };
-
-    actions.updateAllStats = function (specificStats, generalStats, subjectStats, totalQuestions, correct, unanswered, specificCategoryId) {
-        var generalCategoryId = actions.getCategoryParent(specificCategoryId);
-        var subjectId = actions.getCategoryParent(generalCategoryId);
-
-        if (!specificStats[specificCategoryId]) {
-            specificStats[specificCategoryId] = {};
-        }
-
-        if (!generalStats[generalCategoryId]) {
-            generalStats[generalCategoryId] = {};
-        }
-
-        if (!subjectStats[subjectId]) {
-            subjectStats[subjectId] = {};
-        }
-
-        actions.updateStat(specificStats[specificCategoryId], totalQuestions, correct, unanswered, specificCategoryId, subjectId, generalCategoryId);
-        actions.updateStat(generalStats[generalCategoryId], totalQuestions, correct, unanswered, generalCategoryId, subjectId);
-        actions.updateStat(subjectStats[subjectId], totalQuestions, correct, unanswered, subjectId);
     };
 
     it('when exercise is finished then all its results should be recorded once', function () {
@@ -104,20 +45,20 @@ describe('testing service "StatsEventsHandlerSrv":', function () {
         var expectedLevel1Stats = {
             id_1: {
                 id: 1,
-                correct: 3,
-                wrong: 15,
+                correct: 12,
+                wrong: 31,
                 unanswered: 2,
-                totalQuestions: 20
+                totalQuestions: 45
             }
         };
 
         var expectedLevel2Stats = {
             id_266: {
                 id: 266,
-                correct: 3,
-                wrong: 15,
+                correct: 12,
+                wrong: 31,
                 unanswered: 2,
-                totalQuestions: 20,
+                totalQuestions: 45,
                 parentsIds: [1]
             }
         };
@@ -125,42 +66,42 @@ describe('testing service "StatsEventsHandlerSrv":', function () {
         var expectedLevel3Stats = {
             id_275: {
                 id: 275,
-                correct: 1,
-                wrong: 9,
+                correct: 4,
+                wrong: 13,
                 unanswered: 0,
-                totalQuestions: 10,
+                totalQuestions: 17,
                 parentsIds: [266, 1]
             },
             id_276: {
                 id: 276,
-                correct: 2,
-                wrong: 6,
+                correct: 4,
+                wrong: 8,
                 unanswered: 0,
-                totalQuestions: 8,
+                totalQuestions: 12,
                 parentsIds: [266, 1]
             },
             id_277: {
                 id: 277,
                 correct: 2,
-                wrong: 5,
+                wrong: 3,
                 unanswered: 1,
-                totalQuestions: 8,
+                totalQuestions: 6,
                 parentsIds: [266, 1]
             },
             id_278: {
                 id: 278,
                 correct: 1,
-                wrong: 6,
+                wrong: 4,
                 unanswered: 1,
-                totalQuestions: 8,
+                totalQuestions: 6,
                 parentsIds: [266, 1]
             },
             id_279: {
                 id: 279,
                 correct: 1,
-                wrong: 5,
+                wrong: 3,
                 unanswered: 0,
-                totalQuestions: 6,
+                totalQuestions: 4,
                 parentsIds: [266, 1]
             }
         };
@@ -169,81 +110,81 @@ describe('testing service "StatsEventsHandlerSrv":', function () {
             id_316: {
                 id: 316,
                 correct: 1,
-                wrong: 6,
+                wrong: 4,
                 unanswered: 0,
-                totalQuestions: 7,
+                totalQuestions: 5,
                 parentsIds: [275, 266, 1]
             },
             id_318: {
                 id: 318,
                 correct: 1,
-                wrong: 5,
+                wrong: 3,
                 unanswered: 0,
-                totalQuestions: 6,
+                totalQuestions: 4,
                 parentsIds: [275, 266, 1]
             },
             id_319: {
                 id: 319,
                 correct: 1,
-                wrong: 5,
+                wrong: 3,
                 unanswered: 0,
-                totalQuestions: 6,
+                totalQuestions: 4,
                 parentsIds: [275, 266, 1]
             },
             id_321: {
                 id: 321,
                 correct: 1,
-                wrong: 5,
+                wrong: 3,
                 unanswered: 0,
-                totalQuestions: 6,
+                totalQuestions: 4,
                 parentsIds: [275, 266, 1]
             },
             id_322: {
                 id: 322,
                 correct: 1,
-                wrong: 5,
+                wrong: 3,
                 unanswered: 0,
-                totalQuestions: 6,
+                totalQuestions: 4,
                 parentsIds: [276, 266, 1]
             },
             id_323: {
                 id: 323,
                 correct: 1,
-                wrong: 5,
+                wrong: 3,
                 unanswered: 0,
-                totalQuestions: 6,
+                totalQuestions: 4,
                 parentsIds: [276, 266, 1]
             },
             id_324: {
                 id: 324,
                 correct: 2,
-                wrong: 4,
+                wrong: 2,
                 unanswered: 0,
-                totalQuestions: 6,
+                totalQuestions: 4,
                 parentsIds: [276, 266, 1]
             },
             id_325: {
                 id: 325,
                 correct: 2,
-                wrong: 5,
+                wrong: 3,
                 unanswered: 1,
-                totalQuestions: 8,
+                totalQuestions: 6,
                 parentsIds: [277, 266, 1]
             },
             id_326: {
                 id: 326,
                 correct: 1,
-                wrong: 6,
+                wrong: 4,
                 unanswered: 1,
-                totalQuestions: 8,
+                totalQuestions: 6,
                 parentsIds: [278, 266, 1]
             },
             id_328: {
                 id: 328,
                 correct: 1,
-                wrong: 5,
+                wrong: 3,
                 unanswered: 0,
-                totalQuestions: 6,
+                totalQuestions: 4,
                 parentsIds: [279, 266, 1]
             }
         };
