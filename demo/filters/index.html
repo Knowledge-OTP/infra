@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Content Demo App</title>
+    <title>Filters | Demo</title>
 </head>
 <body ng-app="demoApp">
-
-    <p><time>{{59 | formatTime}}</time></p>
-    <p><time>{{80 | formatTime}}</time></p>
-    <p><time>{{600 | formatTime}}</time></p>
-    <p><time>{{6000 | formatTime}}</time></p>
+    <h2>formatDuration Filter</h2>
+    <p><time>{{59 | formatDuration}}</time></p>
+    <p><time>{{80 | formatDuration}}</time></p>
+    <p><time>{{600 | formatDuration}}</time></p>
+    <p><time>{{3660 | formatDuration}}</time></p>
 
 <script src="angular/angular.js"></script>
 <script src="filters/filters.js"></script>
