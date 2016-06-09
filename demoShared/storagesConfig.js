@@ -38,7 +38,7 @@
                         console.error(err);
                     });
                     dataRef = new Firebase(dataDbPath, ENV.firebaseAppScopeName);
-                    dataAuthProm = dataRef.authWithCustomToken('TykqAPXV4zlTTG0v6UuOt4OF3HssDykhJd90dAIc');
+                    dataAuthProm = dataRef.authWithCustomToken('TykqAPXV4zlTTG0v6UuOt4OF3HssDykhJd90dAIc'); // get the token from local storage also?
                 }
 
                 return $q.all([authProm, dataAuthProm]).then(function(res){
