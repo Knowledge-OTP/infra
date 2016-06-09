@@ -5,6 +5,9 @@
         var authDbPath = 'https://znk-dev.firebaseio.com/';
         var dataDbPath = 'https://sat-dev.firebaseio.com/';
 
+        var APP_NAME_KEY = 'znkFbData';  // local storage key;
+        var appName = localStorage.getItem(APP_NAME_KEY);
+
         var authRef,
             dataAuthProm,
             authProm,
@@ -12,13 +15,12 @@
 
         function storageGetter(path) {
             return function(storageFirebaseAdapter, StorageSrv, $q, ENV) {
-                var APP_NAME_KEY = 'znkFbData';  // local storage keys;
-                var EMAIL_KEY = 'znkUser';
+                var EMAIL_KEY = 'znkUser';   // local storage keys.
                 var PASSWORD_KEY = 'znkPwd';
 
-                var appName = _returnValOrDefault(localStorage.getItem(APP_NAME_KEY), ENV.firebaseAppScopeName);
                 var email = _returnValOrDefault(localStorage.getItem(EMAIL_KEY),  'tester@zinkerz.com');
                 var password = _returnValOrDefault(localStorage.getItem(PASSWORD_KEY), '111111');
+                appName = _returnValOrDefault(appName, ENV.firebaseAppScopeName);
 
                 function _returnValOrDefault(val, defaultVal){
                     return angular.isDefined(val) ? val : defaultVal;
@@ -54,8 +56,8 @@
                 });
             };
         }
-        debugger;
-        InfraConfigSrvProvider.setStorages(storageGetter(dataDbPath), storageGetter(dataDbPath + '/sat_app'));
+
+        InfraConfigSrvProvider.setStorages(storageGetter(dataDbPath), storageGetter(dataDbPath + appName));
     });
 })(angular);
 
