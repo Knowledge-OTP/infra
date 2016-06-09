@@ -33,3 +33,7 @@
     angular.module('znk.infra.filters').filter('formatTime', formatTime);
 
 })(angular);
+
+angular.module('znk.infra.filters').run(['$templateCache', function($templateCache) {
+
+}]);
