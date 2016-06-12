@@ -3,29 +3,27 @@
 
     angular.module('demo').config(function (InfraConfigSrvProvider) {
         var authDbPath = 'https://znk-dev.firebaseio.com/';
-        var dataDbPath = 'https://sat-dev.firebaseio.com/';
-
-        var APP_NAME_KEY = 'znkFbData';  // local storage key;
-        var appName = localStorage.getItem(APP_NAME_KEY);
-
+        
         var authRef,
             dataAuthProm,
             authProm,
             dataRef;
 
+        // local storage keys
+        var APP_NAME_KEY = 'znkFbData',
+            EMAIL_KEY = 'znkUser',
+            PASSWORD_KEY = 'znkPwd';
+        
+        var dataDbPath = _returnValOrDefault(localStorage.getItem(APP_NAME_KEY), 'https://sat-dev.firebaseio.com/');  // app name or dataDbPath ?
+        var email = _returnValOrDefault(localStorage.getItem(EMAIL_KEY),  'tester@zinkerz.com');
+        var password = _returnValOrDefault(localStorage.getItem(PASSWORD_KEY), '111111');
+
+        function _returnValOrDefault(val, defaultVal){
+            return angular.isDefined(val) ? val : defaultVal;
+        }
+
         function storageGetter(path) {
             return function(storageFirebaseAdapter, StorageSrv, $q, ENV) {
-                var EMAIL_KEY = 'znkUser';   // local storage keys.
-                var PASSWORD_KEY = 'znkPwd';
-
-                var email = _returnValOrDefault(localStorage.getItem(EMAIL_KEY),  'tester@zinkerz.com');
-                var password = _returnValOrDefault(localStorage.getItem(PASSWORD_KEY), '111111');
-                appName = _returnValOrDefault(appName, ENV.firebaseAppScopeName);
-
-                function _returnValOrDefault(val, defaultVal){
-                    return angular.isDefined(val) ? val : defaultVal;
-                }
-
                 if(!authRef){
                     authRef = new Firebase(authDbPath, appName);
                     authProm = authRef.authWithPassword({
@@ -57,7 +55,7 @@
             };
         }
 
-        InfraConfigSrvProvider.setStorages(storageGetter(dataDbPath), storageGetter(dataDbPath + appName));
+        InfraConfigSrvProvider.setStorages(storageGetter(dataDbPath), storageGetter(dataDbPath + '/sat_app')); // local storage app name?
     });
 })(angular);
 
