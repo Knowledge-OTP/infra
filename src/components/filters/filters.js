@@ -19,23 +19,11 @@
             var minutes = parseInt(t / 60, 10);
             t = t - (minutes * 60);
             var seconds = time % 60;
-            var format;
+            var defaultFormat = 'hhh, mmm, sss';
 
             if (!exp) {
-                exp = myFilter;
-            } else {
-
+                exp = defaultFormat;
             }
-            //    if (hours) {
-            //        format = 'hh, mm';
-            //        format = format.replace('hh', hours + 'h').replace('mm', minutes + 'm');
-            //    } else if (minutes > 0) {
-            //        format = 'mm';
-            //        format = format.replace('mm', minutes + 'm');
-            //    } else if (time < 60) {
-            //        format = 'ss';
-            //        format = format.replace('ss', t + 's');
-            //    }
             return exp.replace(/hh/g,hours).replace(/mm/g,minutes).replace(/ss/g,seconds);
         };
     }
