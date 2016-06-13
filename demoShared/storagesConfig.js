@@ -37,7 +37,6 @@
                     dataAuthProm = dataRef.authWithCustomToken('TykqAPXV4zlTTG0v6UuOt4OF3HssDykhJd90dAIc');
                 }
 
-
                 return $q.all([authProm, dataAuthProm]).then(function(res){
                     var auth = res[0];
                     var fbAdapter = storageFirebaseAdapter(path);
