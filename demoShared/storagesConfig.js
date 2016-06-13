@@ -26,7 +26,7 @@
                     authRef = new Firebase(authDbPath, ENV.firebaseAppScopeName);
                     authProm = authRef.authWithPassword({
                         email: email,
-                        password: password
+                        password: '' + password
                     }).then(function(res){
                         console.log('success', res);
                         return res;
