@@ -1799,8 +1799,10 @@ select-answer {
     align-items: center;
     -webkit-align-items: center;
     margin-bottom: 20px; }
-    select-answer .answer .correct-icon-drv, select-answer .answer .wrong-icon-drv {
-      display: none; }
+    select-answer .answer .correct-icon-drv,
+    select-answer .answer .wrong-icon-drv {
+      display: none;
+      flex-shrink: 0; }
     select-answer .answer.wrong .content-wrapper .answer-index-wrapper {
       background-color: #ff6766;
       color: #fff;
