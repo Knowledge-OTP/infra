@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Filters | Demo</title>
+</head>
+<body ng-app="demoApp">
+<h2>formatDuration Filter</h2>
+<p><time>{{59 | formatDuration}}</time></p>
+<p><time>{{80 | formatDuration}}</time></p>
+<p><time>{{600 | formatDuration}}</time></p>
+<p><time>{{3660 | formatDuration}}</time></p>
+
+<p>With Custom Expression:<br>
+    <time>{{3660 | formatDuration:'Hours: hh, Minutes: mm, Seconds: ss'}}</time></p>
+
+<script src="angular/angular.js"></script>
+<script src="filters/filters.js"></script>
+<script src="demoApp.js"></script>
+</body>
+</html>
