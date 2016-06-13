@@ -17,8 +17,8 @@
         var DEFAULT_EMAIL = 'tester@zinkerz.com',
             DEFAULT_PASSWORD = 111111;
 
-        var email = angular.isDefined(localStorage.getItem(EMAIL_KEY)) ? localStorage.getItem(EMAIL_KEY) : DEFAULT_EMAIL;
-        var password = angular.isDefined(localStorage.getItem(PASSWORD_KEY)) ? localStorage.getItem(PASSWORD_KEY) : DEFAULT_PASSWORD;
+        var email = localStorage.getItem(EMAIL_KEY) ? localStorage.getItem(EMAIL_KEY) : DEFAULT_EMAIL;
+        var password = localStorage.getItem(PASSWORD_KEY) ? localStorage.getItem(PASSWORD_KEY) : DEFAULT_PASSWORD;
 
         function storageGetter(path) {
             return function(storageFirebaseAdapter, StorageSrv, $q, ENV) {
