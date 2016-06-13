@@ -3,29 +3,27 @@
 
     angular.module('demo').config(function (InfraConfigSrvProvider) {
         var authDbPath = 'https://znk-dev.firebaseio.com/';
-        
+        var dataDbPath = 'https://sat-dev.firebaseio.com/';
+
         var authRef,
             dataAuthProm,
             authProm,
             dataRef;
 
         // local storage keys
-        var APP_NAME_KEY = 'znkFbData',
-            EMAIL_KEY = 'znkUser',
+        var EMAIL_KEY = 'znkUser',
             PASSWORD_KEY = 'znkPwd';
-        
-        var dataDbPath = _returnValOrDefault(localStorage.getItem(APP_NAME_KEY), 'https://sat-dev.firebaseio.com/');  // app name or dataDbPath ?
-        var email = _returnValOrDefault(localStorage.getItem(EMAIL_KEY),  'tester@zinkerz.com');
-        var password = _returnValOrDefault(localStorage.getItem(PASSWORD_KEY), '111111');
 
-        function _returnValOrDefault(val, defaultVal){
-            return angular.isDefined(val) ? val : defaultVal;
-        }
+        var DEFAULT_EMAIL = 'tester@zinkerz.com',
+            DEFAULT_PASSWORD = 111111;
+
+        var email = angular.isDefined(localStorage.getItem(EMAIL_KEY)) ? localStorage.getItem(EMAIL_KEY) : DEFAULT_EMAIL;
+        var password = angular.isDefined(localStorage.getItem(PASSWORD_KEY)) ? localStorage.getItem(PASSWORD_KEY) : DEFAULT_PASSWORD;
 
         function storageGetter(path) {
             return function(storageFirebaseAdapter, StorageSrv, $q, ENV) {
                 if(!authRef){
-                    authRef = new Firebase(authDbPath, appName);
+                    authRef = new Firebase(authDbPath, ENV.firebaseAppScopeName);
                     authProm = authRef.authWithPassword({
                         email: email,
                         password: password
@@ -36,8 +34,9 @@
                         console.error(err);
                     });
                     dataRef = new Firebase(dataDbPath, ENV.firebaseAppScopeName);
-                    dataAuthProm = dataRef.authWithCustomToken('TykqAPXV4zlTTG0v6UuOt4OF3HssDykhJd90dAIc'); // get the token from local storage also?
+                    dataAuthProm = dataRef.authWithCustomToken('TykqAPXV4zlTTG0v6UuOt4OF3HssDykhJd90dAIc');
                 }
+
 
                 return $q.all([authProm, dataAuthProm]).then(function(res){
                     var auth = res[0];
@@ -55,7 +54,6 @@
             };
         }
 
-        InfraConfigSrvProvider.setStorages(storageGetter(dataDbPath), storageGetter(dataDbPath + '/sat_app')); // local storage app name?
+        InfraConfigSrvProvider.setStorages(storageGetter(dataDbPath), storageGetter(dataDbPath + '/sat_app'));
     });
 })(angular);
-
