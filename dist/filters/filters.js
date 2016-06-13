@@ -18,7 +18,7 @@
             t = t - (hours * 3600);
             var minutes = parseInt(t / 60, 10);
             t = t - (minutes * 60);
-            var seconds = time % 60;
+            var seconds =  Math.round(time % 60);
             var defaultFormat = 'mm:ss';
 
             if (!exp) {
