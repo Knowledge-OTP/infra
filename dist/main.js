@@ -219,7 +219,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.auth').factory('AuthService',
-        ["ENV", function (ENV) {
+        function (ENV) {
             'ngInject';
 
             var authService = {};
@@ -231,7 +231,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             };
 
             return authService;
-        }]);
+        });
 })(angular);
 
 
@@ -1443,7 +1443,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 })(angular);
 
 "use strict";
-angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "ContentAvailSrv", "$log", function(StorageRevSrv, $q, ContentAvailSrv, $log) {
+angular.module('znk.infra.exams').service('ExamSrv', function(StorageRevSrv, $q, ContentAvailSrv, $log) {
         'ngInject';
 
         var self = this;
@@ -1506,7 +1506,7 @@ angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "Co
                 return $q.all(examsProms);
             });
         };
-}]);
+});
 
 angular.module('znk.infra.exams').run(['$templateCache', function($templateCache) {
 
@@ -2078,7 +2078,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.exerciseUtility').factory('BaseExerciseGetterSrv',
-        ["ContentSrv", "$log", "$q", function (ContentSrv, $log, $q) {
+        function (ContentSrv, $log, $q) {
             'ngInject';
             
             var BaseExerciseGetterSrvPrototype = {};
@@ -2131,13 +2131,13 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
             BaseExerciseGetterSrv.prototype = BaseExerciseGetterSrvPrototype;
 
             return BaseExerciseGetterSrv;
-        }]
+        }
     );
 })(angular);
 
 'use strict';
 
-angular.module('znk.infra.exerciseUtility').service('CategoryService', ["StorageRevSrv", "$q", "categoryEnum", function (StorageRevSrv, $q, categoryEnum)  {
+angular.module('znk.infra.exerciseUtility').service('CategoryService', function (StorageRevSrv, $q, categoryEnum)  {
         'ngInject';
 
         var self = this;
@@ -2252,7 +2252,7 @@ angular.module('znk.infra.exerciseUtility').service('CategoryService', ["Storage
                 return getAllLevel4CategoriessProm;
             };
         })();
-}]);
+});
 
 (function (angular) {
     'use strict';
@@ -2272,7 +2272,7 @@ angular.module('znk.infra.exerciseUtility').service('CategoryService', ["Storage
     'use strict';
 
     angular.module('znk.infra.exerciseUtility').service('WorkoutsSrv',
-        ["ExerciseStatusEnum", "ExerciseTypeEnum", "$log", "StorageSrv", "ExerciseResultSrv", "ContentAvailSrv", "$q", "InfraConfigSrv", "BaseExerciseGetterSrv", function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
+        function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
                   InfraConfigSrv, BaseExerciseGetterSrv) {
             'ngInject';
 
@@ -2361,7 +2361,7 @@ angular.module('znk.infra.exerciseUtility').service('CategoryService', ["Storage
             };
 
             this.getWorkoutKey = getWorkoutKey;
-        }]
+        }
     );
 })(angular);
 
@@ -3570,7 +3570,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
         _examScoreFnGetter = examScoreFnGetter;
     };
 
-    this.$get = ["$q", "ExamTypeEnum", "StorageRevSrv", "$log", "$injector", function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
+    this.$get = function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
         var scoringServiceObjApi = {};
         var keysMapConst = {
             crossTestScore: 'CrossTestScore',
@@ -3678,7 +3678,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
         };
 
         return scoringServiceObjApi;
-    }];
+    };
 
 });
 
@@ -4766,7 +4766,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
-    ["InfraConfigSrv", "StorageSrv", function (InfraConfigSrv, StorageSrv) {
+    function (InfraConfigSrv, StorageSrv) {
 
         var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
 
@@ -4801,7 +4801,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                 return globalStorage.set(profilePath, newProfile);
             });
         };
-}]);
+});
 
 angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 
@@ -4916,14 +4916,17 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
+    var typeToViewMap;
     angular.module('znk.infra.znkExercise').directive('answerBuilder', [
         '$compile', 'AnswerTypeEnum', 'ZnkExerciseUtilitySrv', 'ZnkExerciseViewModeEnum',
         function ($compile, AnswerTypeEnum, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum) {
-            var typeToViewMap = {};
-
-            typeToViewMap[AnswerTypeEnum.SELECT_ANSWER.enum] = '<select-answer></select-answer>';
-            typeToViewMap[AnswerTypeEnum.FREE_TEXT_ANSWER.enum] = '<free-text-answer></free-text-answer>';
-            typeToViewMap[AnswerTypeEnum.RATE_ANSWER.enum] = '<rate-answer></rate-answer>';
+            if(!typeToViewMap) {
+                typeToViewMap = {};
+                angular.forEach(AnswerTypeEnum, function (enumData, enumName) {
+                    var directiveName = enumName.toLowerCase().replace('_', '-');
+                    typeToViewMap[enumData.enum] = '<' + directiveName + '></' + directiveName + '>';
+                });
+            }
 
             return {
                 require: ['answerBuilder','^questionBuilder', '^ngModel'],
