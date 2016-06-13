@@ -53,6 +53,6 @@
             };
         }
 
-        InfraConfigSrvProvider.setStorages(storageGetter(dataDbPath), storageGetter(dataDbPath + '/sat_app'));
+        InfraConfigSrvProvider.setStorages(storageGetter(dataDbPath), storageGetter(dataDbPath + '\'' + ENV.firebaseAppScopeName));
     });
 })(angular);
