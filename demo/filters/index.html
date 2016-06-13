@@ -6,10 +6,10 @@
 </head>
 <body ng-app="demoApp">
 <h2>formatDuration Filter</h2>
-<p><time>{{59 | formatDuration}}</time></p>
-<p><time>{{80 | formatDuration}}</time></p>
-<p><time>{{600 | formatDuration}}</time></p>
-<p><time>{{3660 | formatDuration}}</time></p>
+<p><time>{{'undefined' | formatDuration}}</time></p>
+<p><time>{{80.5 | formatDuration}}</time></p>
+<p><time>{{600.453 | formatDuration}}</time></p>
+<p><time>{{3660.9 | formatDuration}}</time></p>
 
 <p>With Custom Expression:<br>
     <time>{{3660 | formatDuration:'Hours: hh, Minutes: mm, Seconds: ss'}}</time></p>
