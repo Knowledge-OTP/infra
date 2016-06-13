@@ -7,8 +7,10 @@ select-answer{
         @include align-items(center);
         margin-bottom: 20px;
 
-        .correct-icon-drv, .wrong-icon-drv{
+        .correct-icon-drv,
+        .wrong-icon-drv {
             display: none;
+            flex-shrink: 0;
         }
 
         &.wrong{

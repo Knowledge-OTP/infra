@@ -92,7 +92,7 @@ module.exports = function (grunt) {
         concat: {
             mainModule:{
                 files:[{
-                    src: ['<%= yeoman.dist %>/**/*.js'],
+                    src: ['<%= yeoman.src %>/core/module.js','<%= yeoman.dist %>/**/*.js'],
                     dest: '<%= yeoman.dist %>/main.js'
                 },{
                     src: ['<%= yeoman.tmp %>/**/*.css'],
@@ -240,8 +240,13 @@ module.exports = function (grunt) {
             options: {
                 browsers: ['last 2 versions']
             },
-            main: {
-                src: ['.tmp/**/*.css']
+            main:{
+                files:[{
+                    expand: true,
+                    cwd: '<%= yeoman.tmp %>/',
+                    src: ['**/*.css'],
+                    dest: '<%= yeoman.tmp %>/'
+                }]
             }
         }
     });
@@ -327,6 +332,7 @@ module.exports = function (grunt) {
         'clean:server',
         'prepareConfiguration',
         'sass',
+        'autoprefixer:main',
         'html2js',
         'concat:build',
         'copy:build',

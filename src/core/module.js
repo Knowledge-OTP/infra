@@ -23,7 +23,6 @@
         'znk.infra.deviceNotSupported',
         'znk.infra.user',
         'znk.infra.exams',
-        'znk.infra.scoring',
-        'znk.infra.category'
+        'znk.infra.scoring'
     ]);
 })(angular);
