@@ -9,13 +9,24 @@
             dataAuthProm,
             authProm,
             dataRef;
+
+        // local storage keys
+        var EMAIL_KEY = 'znkUser',
+            PASSWORD_KEY = 'znkPwd';
+
+        var DEFAULT_EMAIL = 'tester@zinkerz.com',
+            DEFAULT_PASSWORD = 111111;
+
+        var email = angular.isDefined(localStorage.getItem(EMAIL_KEY)) ? localStorage.getItem(EMAIL_KEY) : DEFAULT_EMAIL;
+        var password = angular.isDefined(localStorage.getItem(PASSWORD_KEY)) ? localStorage.getItem(PASSWORD_KEY) : DEFAULT_PASSWORD;
+
         function storageGetter(path) {
             return function(storageFirebaseAdapter, StorageSrv, $q, ENV) {
                 if(!authRef){
                     authRef = new Firebase(authDbPath, ENV.firebaseAppScopeName);
                     authProm = authRef.authWithPassword({
-                        email: 'tester@zinkerz.com',
-                        password: '111111'
+                        email: email,
+                        password: password
                     }).then(function(res){
                         console.log('success', res);
                         return res;
@@ -25,7 +36,6 @@
                     dataRef = new Firebase(dataDbPath, ENV.firebaseAppScopeName);
                     dataAuthProm = dataRef.authWithCustomToken('TykqAPXV4zlTTG0v6UuOt4OF3HssDykhJd90dAIc');
                 }
-
 
                 return $q.all([authProm, dataAuthProm]).then(function(res){
                     var auth = res[0];

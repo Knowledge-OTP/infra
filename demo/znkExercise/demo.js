@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demoApp', ['znk.infra.znkExercise'])
+    angular.module('demo', ['znk.infra.znkExercise'])
         .config(function (QuestionTypesSrvProvider, $sceProvider) {
             $sceProvider.enabled(false);
 
