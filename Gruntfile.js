@@ -241,7 +241,7 @@ module.exports = function (grunt) {
                 browsers: ['last 2 versions']
             },
             main: {
-                src: ['.tmp/**/*.css']
+                src: ['<%= yeoman.src %>/**/*.css']
             }
         }
     });
@@ -338,6 +338,7 @@ module.exports = function (grunt) {
         'karma:build',
         'clean:dist',
         'build',
+        'autoprefixer:main',
         'copy:dist',
         'concat:dist',
         'concat:mainModule'
