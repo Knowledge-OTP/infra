@@ -1998,7 +1998,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
             var minutes = parseInt(t / 60, 10);
             t = t - (minutes * 60);
             var seconds = time % 60;
-            var defaultFormat = 'hhh, mmm, sss';
+            var defaultFormat = 'mm:ss';
 
             if (!exp) {
                 exp = defaultFormat;
@@ -2007,8 +2007,33 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
         };
     }
 
-    angular.module('znk.infra.filters').filter('formatDuration', formatDuration);
+    function dashboardReviewDuration($filter) {
+        return function(time) {
+            var t = parseInt(time, 10);
+            var hours = parseInt(t / 3600, 10);
+            var minutes = parseInt(t / 60, 10);
 
+            var exp = '';
+            if (hours) {
+                exp += 'hhh';
+            }
+            if (minutes) {
+                if (exp) {
+                    exp += ' ,mmm';
+                } else {
+                    exp += 'mmm';
+                }
+            }
+            if (time < 60) {
+                exp = 'ss sec';
+            }
+            return $filter('formatDuration')(time, exp);
+        };
+    }
+
+    angular.module('znk.infra.filters')
+        .filter('formatDuration', formatDuration)
+        .filter('dashboardReviewDuration', dashboardReviewDuration);
 })(angular);
 
 angular.module('znk.infra.filters').run(['$templateCache', function($templateCache) {
