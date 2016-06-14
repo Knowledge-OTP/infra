@@ -2,9 +2,12 @@
     'use strict';
 
     angular.module('demo').config(function (InfraConfigSrvProvider) {
-        InfraConfigSrvProvider.setUserDataFn(function () {
+        InfraConfigSrvProvider.setUserDataFn(function (ENV) {
+            var authDbPath = 'https://znk-dev.firebaseio.com/';
+            var ref = new Firebase(authDbPath, ENV.firebaseAppScopeName);
+            var userAuth = ref.getAuth();
             return {
-                uid: '21794e2b-3051-4016-8491-b3fe70e8212d'
+                uid: userAuth.uid
             };
         });
     });
