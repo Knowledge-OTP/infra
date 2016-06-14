@@ -5008,9 +5008,9 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('freeTextAnswer', ['ZnkExerciseViewModeEnum', '$timeout',
+    angular.module('znk.infra.znkExercise').directive('freeTextAnswer', ['ZnkExerciseViewModeEnum', '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseAnswersSrv',
 
-        function (ZnkExerciseViewModeEnum, $timeout) {
+        function (ZnkExerciseViewModeEnum, $timeout, ZnkExerciseEvents, ZnkExerciseAnswersSrv) {
             return {
                 templateUrl: 'components/znkExercise/answerTypes/templates/freeTextAnswerDrv.html',
                 require: ['^ngModel', '^answerBuilder'],
