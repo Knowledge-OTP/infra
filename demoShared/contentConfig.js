@@ -1,9 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demo').config((ContentSrvProvider)=> {
-        ContentSrvProvider.setContent(['$window', '$q', 'InfraConfigSrv',
-            function ($window, $q, InfraConfigSrv) {
+    angular.module('demo').config(function(ContentSrvProvider) {
+        ContentSrvProvider.setContent(
+            function ($window, $q, InfraConfigSrv, ENV) {
                 var publicationsPath = 'publications';
                 var promises = {};
 
@@ -32,7 +32,7 @@
                 }
 
                 function updatePublicationCb(cb) {
-                    var publicationRef = new $window.Firebase('https://sat-dev.firebaseio.com/' + publicationsPath);
+                    var publicationRef = new Firebase('https://sat-dev.firebaseio.com/' + publicationsPath, ENV.firebaseAppScopeName);
                     publicationRef.orderByChild('isPublic').equalTo(true).limitToLast(1).on('child_changed', function (snapshot) {
                         cb(snapshot);
                     });
@@ -64,6 +64,6 @@
                     };
                 });
             }
-        ]);
+        );
     });
 })(angular);
