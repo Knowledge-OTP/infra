@@ -180,7 +180,7 @@ module.exports = function (grunt) {
                 files: [
                     'src/**/*.js'
                 ],
-                tasks: ['prepareConfiguration', 'concat:build']
+                tasks: ['prepareConfiguration', 'concat:build', 'concat:mainModule']
             },
             html: {
                 files: [

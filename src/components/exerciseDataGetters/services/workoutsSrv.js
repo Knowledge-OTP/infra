@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.exerciseUtility').service('WorkoutsSrv',
+    angular.module('znk.infra.exerciseDataGetters').service('WorkoutsSrv',
         function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
                   InfraConfigSrv, BaseExerciseGetterSrv) {
             'ngInject';
