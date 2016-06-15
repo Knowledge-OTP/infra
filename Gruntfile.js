@@ -203,8 +203,8 @@ module.exports = function (grunt) {
                 files: ['<%= yeoman.src %>/**/locale/*.json', '<%= yeoman.src %>/**/*.{png}'],
                 tasks: ['copy:build']
             },
-            wiredep:{
-                files:['bower.json'],
+            wiredep: {
+                files: ['bower.json'],
                 tasks: ['wiredep']
             }
         },
