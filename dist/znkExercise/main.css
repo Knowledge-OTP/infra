@@ -288,12 +288,10 @@ free-text-answer .free-text-answer-wrapper {
   free-text-answer .free-text-answer-wrapper .answer-status {
     width: 85px;
     height: auto;
-    display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
-    -webkit-align-items: center;
-        -ms-flex-align: center;
-            align-items: center; }
+    -ms-flex-align: center;
+        align-items: center; }
     free-text-answer .free-text-answer-wrapper .answer-status .user-answer {
       font-size: 18px;
       color: #4f4d4d;
@@ -401,7 +399,6 @@ free-text-answer .free-text-answer-wrapper {
   .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .checkbox-item {
     width: 22px;
     height: 22px;
-    display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
     -ms-flex-pack: center;
@@ -506,7 +503,6 @@ select-answer {
   font-family: Lato;
   display: block; }
   select-answer .answer {
-    display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
     -ms-flex-align: center;
@@ -516,9 +512,8 @@ select-answer {
     select-answer .answer .correct-icon-drv,
     select-answer .answer .wrong-icon-drv {
       display: none;
-      -webkit-flex-shrink: 0;
-          -ms-flex-negative: 0;
-              flex-shrink: 0; }
+      -ms-flex-negative: 0;
+          flex-shrink: 0; }
     select-answer .answer.wrong .content-wrapper .answer-index-wrapper {
       background-color: #ff6766;
       color: #fff;
@@ -590,7 +585,6 @@ select-answer {
           flex-shrink: 0;
       -webkit-flex-shrink: 0; }
     select-answer .answer .content-wrapper {
-      display: -webkit-flex;
       display: -ms-flexbox;
       display: flex;
       -ms-flex-align: center;
@@ -600,7 +594,6 @@ select-answer {
         position: relative;
         background-color: #f6f6f6;
         border-radius: 50%;
-        display: -webkit-flex;
         display: -ms-flexbox;
         display: flex;
         -ms-flex-pack: center;
@@ -652,10 +645,8 @@ znk-exercise.desktop {
     position: absolute;
     top: 0;
     bottom: 0;
-    -webkit-align-items: center;
-        -ms-flex-align: center;
-            align-items: center;
-    display: -webkit-flex;
+    -ms-flex-align: center;
+        align-items: center;
     display: -ms-flexbox;
     display: flex;
     transition: all 0.2s linear; }
@@ -670,8 +661,7 @@ znk-exercise.desktop {
         border-bottom-right-radius: 42px;
         padding-left: 2px; }
         znk-exercise.desktop .btn-section .btn-container.right-container button .chevron {
-          -webkit-transform: rotate(-90deg);
-                  transform: rotate(-90deg); }
+          transform: rotate(-90deg); }
       znk-exercise.desktop .btn-section .btn-container.right-container.ng-hide-add, znk-exercise.desktop .btn-section .btn-container.right-container.ng-hide-remove {
         transition: all linear 0.2s; }
       znk-exercise.desktop .btn-section .btn-container.right-container.ng-hide {
@@ -683,8 +673,7 @@ znk-exercise.desktop {
         border-bottom-left-radius: 42px;
         padding-left: 5px; }
         znk-exercise.desktop .btn-section .btn-container.left-container button .chevron {
-          -webkit-transform: rotate(90deg);
-                  transform: rotate(90deg); }
+          transform: rotate(90deg); }
       znk-exercise.desktop .btn-section .btn-container.left-container.ng-hide-add, znk-exercise.desktop .btn-section .btn-container.left-container.ng-hide-remove {
         transition: all linear 0.2s; }
       znk-exercise.desktop .btn-section .btn-container.left-container.ng-hide {
@@ -725,7 +714,6 @@ znk-exercise.desktop {
     stroke-linejoin: round;
     stroke-miterlimit: 10; }
   znk-exercise.desktop questions-carousel.znk-carousel-container {
-    display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
     position: absolute;
@@ -784,7 +772,6 @@ znk-exercise-pager {
           border-radius: 50%;
           width: 25px;
           height: 25px;
-          display: -webkit-flex;
           display: -ms-flexbox;
           display: flex;
           -ms-flex-pack: center;
