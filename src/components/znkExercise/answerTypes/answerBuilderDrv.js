@@ -12,7 +12,7 @@
             if(!typeToViewMap) {
                 typeToViewMap = {};
                 angular.forEach(AnswerTypeEnum, function (enumData, enumName) {
-                    var directiveName = enumName.toLowerCase().replace('_', '-');
+                    var directiveName = enumName.toLowerCase().replace(/_/g, '-');
                     typeToViewMap[enumData.enum] = '<' + directiveName + '></' + directiveName + '>';
                 });
             }
