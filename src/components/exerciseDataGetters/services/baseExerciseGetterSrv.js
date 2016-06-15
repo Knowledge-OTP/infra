@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.exerciseUtility').factory('BaseExerciseGetterSrv',
+    angular.module('znk.infra.exerciseDataGetters').factory('BaseExerciseGetterSrv',
         function (ContentSrv, $log, $q) {
             'ngInject';
             

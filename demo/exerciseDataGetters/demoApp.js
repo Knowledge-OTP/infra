@@ -2,8 +2,7 @@
     'use strict';
 
     angular.module('demo', [
-        'znk.infra.exerciseUtility',
-        'znk.infra.config'
+        'znk.infra.exerciseDataGetters'
     ])
         .controller('Main', function (WorkoutsSrv, $scope) {
             $scope.workoutIdToRetrieveData = $scope.exerciseOrder = 1;
