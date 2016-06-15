@@ -211,10 +211,10 @@
 
 
                     if (addInitOffset) {
-                        totalQuestions = 5;
+                        totalQuestions = 3;
                         correct = 1;
                         unanswered = 0;
-                        wrong = 4;
+                        wrong = 2;
                         totalTime = 0;
                     } else {
                         totalQuestions = 0;
@@ -319,8 +319,12 @@
                                     var categoryKey = StatsSrv.getCategoryKey(categoryId);
                                     var categoryStats = levelStats[categoryKey];
                                     if(!categoryStats){
-                                        categoryStats = new BaseStats(categoryId,true);
-
+                                        categoryStats = new BaseStats(categoryId);
+                                        //need to add init offset only when working on lowest category,
+                                        if(level === deepestLevel){
+                                            var initStatWithOffset = new BaseStats(null,true);
+                                            _baseStatsUpdater(newStat, initStatWithOffset);
+                                        }
                                         var parentsIds = categoriesToUpdate.slice(index + 1);
                                         if(parentsIds.length){
                                             categoryStats.parentsIds = parentsIds;
