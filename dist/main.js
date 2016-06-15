@@ -3636,10 +3636,14 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
             });
         }
 
+        function _isShouldAddToScore(question) {
+            return (question.isAnsweredCorrectly && !question.afterAllowedTime);
+        }
+
         function _getRawScore(questionsResults) {
             var score = 0;
             angular.forEach(questionsResults, function (question) {
-                if (question.isAnsweredCorrectly) {
+                if (_isShouldAddToScore(question)) {
                     score += 1;
                 }
             });
@@ -5018,7 +5022,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('freeTextAnswer', ['ZnkExerciseViewModeEnum', '$timeout',
+    angular.module('znk.infra.znkExercise').directive('freeTextAnswer', ['ZnkExerciseViewModeEnum', '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseAnswersSrv',
 
         function (ZnkExerciseViewModeEnum, $timeout, ZnkExerciseEvents, ZnkExerciseAnswersSrv) {
             return {
