@@ -2,9 +2,7 @@
         './src/scss/imports/colors',
         './src/scss/imports/mixins';
 
-@import 'scss/rate-answer-drv',
-        'scss/select-answer-drv',
-        'scss/znk-exercise-drv-desktop',
+@import 'scss/znk-exercise-drv-desktop',
         'scss/znk-exercise-pager-drv';
 
 znk-exercise {
