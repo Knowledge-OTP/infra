@@ -78,6 +78,8 @@
     ]);
 })(angular);
 
+<<<<<<< HEAD
+=======
 /**
  * attrs:
  */
@@ -2339,6 +2341,60 @@
 })(angular);
 
 angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/znkExercise/answerTypes/templates/freeTextAnswerDrv.html",
+    "<div class=\"free-text-answer-wrapper\" ng-switch=\"showCorrectAnswer\">\n" +
+    "\n" +
+    "    <div ng-switch-when=\"true\" class=\"answer-status-wrapper\" ng-class=\"userAnswerStatus\">\n" +
+    "        <div class=\"answer-status\">\n" +
+    "            <div class=\"user-answer\">{{d.userAnswer}}</div>\n" +
+    "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
+    "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
+    "        </div>\n" +
+    "        <div class=\"correct-answer\">Correct answer: <span>{{correctAnswer}}</span></div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div  ng-switch-when=\"false\" class=\"input-wrapper\">\n" +
+    "        <input ng-model-options=\"{ getterSetter: true }\" ng-model=\"d.userAnswerGetterSetter\">\n" +
+    "        <div class=\"arrow-wrapper\" ng-click=\"clickHandler()\">\n" +
+    "            <svg-icon name=\"arrow\"></svg-icon>\n" +
+    "            <div class=\"svg-back\"></div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/answerTypes/templates/rateAnswerDrv.html",
+    "<div class=\"rate-answer-wrapper\">\n" +
+    "\n" +
+    "    <div class=\"checkbox-items-wrapper\" >\n" +
+    "\n" +
+    "        <div class=\"item-repeater\" ng-repeat=\"item in d.itemsArray track by $index\">\n" +
+    "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
+    "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
+    "            <div class=\"checkbox-item\" ng-click=\"clickHandler($index)\">\n" +
+    "                <div class=\"item-index\">{{$index +  2}}</div>\n" +
+    "            </div>\n" +
+    "            <div class=\"correct-answer-line\"></div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/answerTypes/templates/selectAnswerDrv.html",
+    "<div ng-repeat=\"answer in ::d.answers track by answer.id\"\n" +
+    "     class=\"answer\"\n" +
+    "     ng-click=\"d.click(answer)\"\n" +
+    "     tabindex=\"-1\">\n" +
+    "    <div class=\"content-wrapper\">\n" +
+    "        <div class=\"answer-index-wrapper\">\n" +
+    "            <span class=\"index-char\">{{::d.getIndexChar($index)}}</span>\n" +
+    "        </div>\n" +
+    "        <markup content=\"answer.content\" type=\"md\" class=\"content\"></markup>\n" +
+    "        <svg-icon class=\"correct-icon-drv\" name=\"correct\"></svg-icon>\n" +
+    "        <svg-icon class=\"wrong-icon-drv\" name=\"wrong\"></svg-icon>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
   $templateCache.put("components/znkExercise/core/template/btnSectionDesktopTemplate.html",
     "<div class=\"btn-container left-container ng-hide\"\n" +
     "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
