@@ -4964,14 +4964,17 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
+    var typeToViewMap;
     angular.module('znk.infra.znkExercise').directive('answerBuilder', [
         '$compile', 'AnswerTypeEnum', 'ZnkExerciseUtilitySrv', 'ZnkExerciseViewModeEnum',
         function ($compile, AnswerTypeEnum, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum) {
-            var typeToViewMap = {};
-
-            typeToViewMap[AnswerTypeEnum.SELECT_ANSWER.enum] = '<select-answer></select-answer>';
-            typeToViewMap[AnswerTypeEnum.FREE_TEXT_ANSWER.enum] = '<free-text-answer></free-text-answer>';
-            typeToViewMap[AnswerTypeEnum.RATE_ANSWER.enum] = '<rate-answer></rate-answer>';
+            if(!typeToViewMap) {
+                typeToViewMap = {};
+                angular.forEach(AnswerTypeEnum, function (enumData, enumName) {
+                    var directiveName = enumName.toLowerCase().replace(/_/g, '-');
+                    typeToViewMap[enumData.enum] = '<' + directiveName + '></' + directiveName + '>';
+                });
+            }
 
             return {
                 require: ['answerBuilder','^questionBuilder', '^ngModel'],
@@ -5152,247 +5155,6 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 })(angular);
 
 
-
-/**
- * attrs:
- *
- */
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkExercise').directive('rateAnswer', ['ZnkExerciseViewModeEnum',
-        function (ZnkExerciseViewModeEnum) {
-            return {
-                templateUrl: 'components/znkExercise/answerTypes/templates/rateAnswerDrv.html',
-                require: ['^answerBuilder', '^ngModel'],
-                scope: {},
-                link: function link(scope, element, attrs, ctrls) {
-                    var domElement = element[0];
-
-                    var answerBuilder = ctrls[0];
-                    var ngModelCtrl = ctrls[1];
-
-                    var viewMode = answerBuilder.getViewMode();
-                    var ANSWER_WITH_RESULT_MODE = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
-                        REVIEW_MODE = ZnkExerciseViewModeEnum.REVIEW.enum;
-                    var INDEX_OFFSET = 2;
-
-                    scope.d = {};
-                    scope.d.itemsArray = new Array(11);
-                    var answers = answerBuilder.question.correctAnswerText;
-
-                    var domItemsArray;
-
-                    var destroyWatcher = scope.$watch(
-                        function () {
-                            return element[0].querySelectorAll('.item-repeater');
-                        },
-                        function (val) {
-                            if (val) {
-                                destroyWatcher();
-                                domItemsArray = val;
-
-                                if (viewMode === REVIEW_MODE) {
-                                    scope.clickHandler = angular.noop;
-                                    updateItemsByCorrectAnswers(scope.d.answers);
-                                } else {
-                                    scope.clickHandler = clickHandler;
-                                }
-
-                                ngModelCtrl.$render = function(){
-                                    updateItemsByCorrectAnswers();
-                                };
-                                ngModelCtrl.$render();
-                            }
-                        }
-                    );
-
-                    function clickHandler(index) {
-                        if (answerBuilder.canUserAnswerBeChanged()) {
-                            return;
-                        }
-
-                        ngModelCtrl.$setViewValue(index);
-                        updateItemsByCorrectAnswers();
-                    }
-
-                    function updateItemsByCorrectAnswers() {
-                        var oldSelectedElement = angular.element(domElement.querySelector('.selected'));
-                        oldSelectedElement.removeClass('selected');
-
-                        var selectedAnswerId = ngModelCtrl.$viewValue;
-
-                        var newSelectedElement = angular.element(domItemsArray[selectedAnswerId]);
-                        newSelectedElement.addClass('selected');
-
-                        var lastElemIndex = answers.length - 1;
-
-                        if((viewMode === ANSWER_WITH_RESULT_MODE && angular.isNumber(selectedAnswerId))|| viewMode === REVIEW_MODE){
-                            for (var i = 0; i < lastElemIndex; i++) {
-                                angular.element(domItemsArray[answers[i].id - INDEX_OFFSET]).addClass('correct');
-                            }
-                            angular.element(domItemsArray[answers[lastElemIndex].id - INDEX_OFFSET]).addClass('correct-edge');
-                        }
-
-                        if (angular.isNumber(selectedAnswerId) && (viewMode === REVIEW_MODE || viewMode === ANSWER_WITH_RESULT_MODE)) {
-                            if (selectedAnswerId >= answers[0].id - INDEX_OFFSET && selectedAnswerId <= answers[lastElemIndex].id - INDEX_OFFSET) {
-                                angular.element(domItemsArray[selectedAnswerId]).addClass('selected-correct');
-                            } else {
-                                angular.element(domItemsArray[selectedAnswerId]).addClass('selected-wrong');
-                            }
-                        }
-                    }
-                }
-            };
-        }
-    ]);
-})(angular);
-
-
-
-/**
- * attrs:
- *
- */
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkExercise').directive('selectAnswer', [
-        '$timeout', 'ZnkExerciseViewModeEnum', 'ZnkExerciseAnswersSrv', 'ZnkExerciseEvents',
-        function ($timeout, ZnkExerciseViewModeEnum, ZnkExerciseAnswersSrv, ZnkExerciseEvents) {
-            return {
-                templateUrl: 'components/znkExercise/answerTypes/templates/selectAnswerDrv.html',
-                require: ['^answerBuilder', '^ngModel'],
-                restrict:'E',
-                scope: {},
-                link: function (scope, element, attrs, ctrls) {
-                    var answerBuilder = ctrls[0];
-                    var ngModelCtrl = ctrls[1];
-                    var questionIndex = answerBuilder.question.__questionStatus.index;
-                    var currentSlide = answerBuilder.getCurrentIndex();    // current question/slide in the viewport
-                    var body = document.body;
-
-
-                    var MODE_ANSWER_WITH_QUESTION = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
-                        MODE_ANSWER_ONLY = ZnkExerciseViewModeEnum.ONLY_ANSWER.enum,
-                        MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum,
-                        MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
-                    var keyMap = {};
-
-                    scope.d = {};
-
-                    scope.d.answers = answerBuilder.question.answers;
-
-                    scope.d.click = function (answer) {
-                        var viewMode = answerBuilder.getViewMode();
-
-                        if ((!isNaN(parseInt(ngModelCtrl.$viewValue)) && viewMode === MODE_ANSWER_WITH_QUESTION) || viewMode === MODE_REVIEW) {
-                            return;
-                        }
-                        ngModelCtrl.$setViewValue(answer.id);
-                        updateAnswersFollowingSelection(viewMode);
-                    };
-
-                    function keyboardHandler(key){
-                        key = String.fromCharCode(key.keyCode).toUpperCase();
-                        if(angular.isDefined(keyMap[key])){
-                            scope.d.click(scope.d.answers[keyMap[key]]);
-                        }
-                    }
-
-                    if(questionIndex === currentSlide){
-                        body.addEventListener('keydown',keyboardHandler);
-                    }
-
-                    scope.$on(ZnkExerciseEvents.QUESTION_CHANGED,function(event,value ,prevValue ,currQuestion){
-                        var currentSlide = currQuestion.__questionStatus.index;
-                        if(questionIndex !== currentSlide){
-                            body.removeEventListener('keydown',keyboardHandler);
-                        }else{
-                            body.addEventListener('keydown',keyboardHandler);
-                        }
-                    });
-
-
-
-                    scope.d.getIndexChar = function(answerIndex){
-                        var key = ZnkExerciseAnswersSrv.selectAnswer.getAnswerIndex(answerIndex,answerBuilder.question);
-                        keyMap[key] = answerIndex;
-                        return key;
-                    };
-
-                    function updateAnswersFollowingSelection(viewMode) {
-                        var selectedAnswerId = ngModelCtrl.$viewValue;
-                        var correctAnswerId = answerBuilder.question.correctAnswerId;
-                        var $answers = angular.element(element[0].querySelectorAll('.answer'));
-                        for (var i = 0; i < $answers.length; i++) {
-
-                            var $answerElem = angular.element($answers[i]);
-                            if(!$answerElem || !$answerElem.scope || !$answerElem.scope()){
-                                continue;
-                            }
-
-                            var answer = $answerElem.scope().answer;
-                            var classToAdd,
-                                classToRemove;
-
-                            if (answerBuilder.getViewMode() === MODE_ANSWER_ONLY || answerBuilder.getViewMode() === MODE_MUST_ANSWER) {
-                                // dont show correct / wrong indication
-                                classToRemove = 'answered';
-                                classToAdd = selectedAnswerId === answer.id ? 'answered' : 'neutral';
-                            } else {
-                                // the rest of the optional states involve correct / wrong indications
-                                if (angular.isUndefined(selectedAnswerId)) {
-                                    // unanswered question
-                                    if (answerBuilder.getViewMode() === MODE_REVIEW) {
-                                        classToAdd = correctAnswerId === answer.id ? 'answered-incorrect' : 'neutral';
-                                    }
-                                } else if (selectedAnswerId === answer.id) {
-                                    // this is the selected answer
-                                    classToAdd = correctAnswerId === answer.id ? 'correct' : 'wrong';
-                                } else {
-                                    // this is the correct answer but the user didn't select it
-                                    classToAdd = answer.id === correctAnswerId ? 'answered-incorrect' : 'neutral';
-                                }
-                            }
-                            $answerElem.removeClass(classToRemove);
-                            $answerElem.addClass(classToAdd);
-                            if (viewMode === MODE_ANSWER_WITH_QUESTION){
-                                if (classToAdd === 'correct'){
-
-                                }
-                                if (classToAdd === 'wrong'){
-
-                                }
-                            }
-                        }
-                    }
-
-                    ngModelCtrl.$render = function () {
-                        //skip one digest cycle in order to let the answers time to be compiled
-                        $timeout(function(){
-                            updateAnswersFollowingSelection();
-                        });
-                    };
-                    //ng model controller render function not triggered in case render function was set
-                    // after the model value was changed
-                    ngModelCtrl.$render();
-
-                    scope.$on('exercise:viewModeChanged', function () {
-                        ngModelCtrl.$render();
-                    });
-
-                    scope.$on('$destroy',function(){
-                        body.removeEventListener('keydown',keyboardHandler);
-                    });
-                }
-            };
-        }
-    ]);
-})(angular);
-
-
-
 (function (angular) {
     'use strict';
 
@@ -5433,58 +5195,6 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
         ];
     });
 })(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkExercise').directive('freeTextAnswerGrid', [
-        function () {
-            return {
-                templateUrl: 'scripts/exercise/templates/freeTextAnswerGridDrv.html',
-                restrict: 'E',
-                require: 'ngModel',
-                scope: {
-                    cellsNumGetter: '&cellsNum'
-                },
-                link: function (scope, element, attrs, ngModelCtrl) {
-
-                    scope.buttonArray = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-
-                    var numberOfCells = scope.cellsNumGetter() || 3;
-
-                    scope.d = {
-                        viewCells: new Array(numberOfCells)
-                    };
-
-                    function updateNgModelViewValue() {
-                        ngModelCtrl.$setViewValue(angular.copy(scope.d.cells));
-                    }
-
-                    scope.onClickNum = function (num) {
-                        if (attrs.disabled || scope.d.cells.length >= numberOfCells) {
-                            return;
-                        }
-
-                        scope.d.cells.push(num);
-                        updateNgModelViewValue();
-                    };
-
-                    scope.onClickErase = function () {
-                        if (attrs.disabled || !scope.d.cells.length) {
-                            return;
-                        }
-
-                        scope.d.cells.pop();
-                        updateNgModelViewValue();
-                    };
-
-                    ngModelCtrl.$render = function () {
-                        scope.d.cells = angular.isDefined(ngModelCtrl.$viewValue) ? ngModelCtrl.$viewValue : [];
-                    };
-                }
-            };
-        }]);
-}(angular));
 
 'use strict';
 
@@ -5800,36 +5510,6 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                         scope.vm.questions = notBindedQuestions;
                         scope.vm.swiperActions.updateFollowingSlideAddition();
                     });
-                }
-            };
-        }
-    ]);
-})(angular);
-
-
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkExercise').directive('rateAnswerFormatterParser', ['AnswerTypeEnum',
-        function (AnswerTypeEnum) {
-            return {
-                require: ['ngModel','questionBuilder'],
-                link: function(scope, elem, attrs, ctrls){
-                    var ngModelCtrl = ctrls[0];
-                    var questionBuilderCtrl = ctrls[1];
-                    var answerTypeId = questionBuilderCtrl.question.answerTypeId;
-
-                    if(answerTypeId === AnswerTypeEnum.RATE_ANSWER.enum){
-                        var INDEX_OFFSET = 2;
-                        ngModelCtrl.$formatters.push(function(answer){
-                            return angular.isDefined(answer) ? answer - INDEX_OFFSET : undefined;
-                        });
-                        ngModelCtrl.$parsers.push(function(index){
-                            return angular.isDefined(index) ? index + INDEX_OFFSET : undefined;
-                        });
-
-                    }
                 }
             };
         }
@@ -7595,60 +7275,6 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 })(angular);
 
 angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
-  $templateCache.put("components/znkExercise/answerTypes/templates/freeTextAnswerDrv.html",
-    "<div class=\"free-text-answer-wrapper\" ng-switch=\"showCorrectAnswer\">\n" +
-    "\n" +
-    "    <div ng-switch-when=\"true\" class=\"answer-status-wrapper\" ng-class=\"userAnswerStatus\">\n" +
-    "        <div class=\"answer-status\">\n" +
-    "            <div class=\"user-answer\">{{d.userAnswer}}</div>\n" +
-    "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
-    "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
-    "        </div>\n" +
-    "        <div class=\"correct-answer\">Correct answer: <span>{{correctAnswer}}</span></div>\n" +
-    "    </div>\n" +
-    "\n" +
-    "    <div  ng-switch-when=\"false\" class=\"input-wrapper\">\n" +
-    "        <input ng-model-options=\"{ getterSetter: true }\" ng-model=\"d.userAnswerGetterSetter\">\n" +
-    "        <div class=\"arrow-wrapper\" ng-click=\"clickHandler()\">\n" +
-    "            <svg-icon name=\"arrow\"></svg-icon>\n" +
-    "            <div class=\"svg-back\"></div>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "\n" +
-    "</div>\n" +
-    "");
-  $templateCache.put("components/znkExercise/answerTypes/templates/rateAnswerDrv.html",
-    "<div class=\"rate-answer-wrapper\">\n" +
-    "\n" +
-    "    <div class=\"checkbox-items-wrapper\" >\n" +
-    "\n" +
-    "        <div class=\"item-repeater\" ng-repeat=\"item in d.itemsArray track by $index\">\n" +
-    "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
-    "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
-    "            <div class=\"checkbox-item\" ng-click=\"clickHandler($index)\">\n" +
-    "                <div class=\"item-index\">{{$index +  2}}</div>\n" +
-    "            </div>\n" +
-    "            <div class=\"correct-answer-line\"></div>\n" +
-    "        </div>\n" +
-    "\n" +
-    "    </div>\n" +
-    "</div>\n" +
-    "");
-  $templateCache.put("components/znkExercise/answerTypes/templates/selectAnswerDrv.html",
-    "<div ng-repeat=\"answer in ::d.answers track by answer.id\"\n" +
-    "     class=\"answer\"\n" +
-    "     ng-click=\"d.click(answer)\"\n" +
-    "     tabindex=\"-1\">\n" +
-    "    <div class=\"content-wrapper\">\n" +
-    "        <div class=\"answer-index-wrapper\">\n" +
-    "            <span class=\"index-char\">{{::d.getIndexChar($index)}}</span>\n" +
-    "        </div>\n" +
-    "        <markup content=\"answer.content\" type=\"md\" class=\"content\"></markup>\n" +
-    "        <svg-icon class=\"correct-icon-drv\" name=\"correct\"></svg-icon>\n" +
-    "        <svg-icon class=\"wrong-icon-drv\" name=\"wrong\"></svg-icon>\n" +
-    "    </div>\n" +
-    "</div>\n" +
-    "");
   $templateCache.put("components/znkExercise/core/template/btnSectionDesktopTemplate.html",
     "<div class=\"btn-container left-container ng-hide\"\n" +
     "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +

@@ -273,371 +273,6 @@ $blueBG8: #75cbe8;
 
 */
 /* full background image with retina */
-free-text-answer .free-text-answer-wrapper {
-  width: 520px;
-  height: 115px;
-  position: relative;
-  padding-left: 30px; }
-  free-text-answer .free-text-answer-wrapper .answer-status-wrapper, free-text-answer .free-text-answer-wrapper .input-wrapper {
-    position: absolute; }
-  free-text-answer .free-text-answer-wrapper .answer-status-wrapper.ng-enter {
-    transition: 0.5s linear;
-    opacity: 0; }
-  free-text-answer .free-text-answer-wrapper .answer-status-wrapper.ng-enter-active {
-    opacity: 1; }
-  free-text-answer .free-text-answer-wrapper .answer-status {
-    width: 85px;
-    height: auto;
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-align: center;
-        align-items: center; }
-    free-text-answer .free-text-answer-wrapper .answer-status .user-answer {
-      font-size: 18px;
-      color: #4f4d4d;
-      font-family: Lato;
-      font-weight: 400;
-      display: inline-block; }
-    free-text-answer .free-text-answer-wrapper .answer-status svg-icon.correct, free-text-answer .free-text-answer-wrapper .answer-status svg-icon.wrong {
-      margin-left: 17px;
-      float: right;
-      display: none; }
-  free-text-answer .free-text-answer-wrapper .correct-answer {
-    font-size: 18px;
-    color: #757a83;
-    font-family: Lato;
-    font-weight: 400;
-    margin-top: 10px;
-    display: none; }
-    free-text-answer .free-text-answer-wrapper .correct-answer span {
-      color: #87ca4d; }
-  free-text-answer .free-text-answer-wrapper .neutral .correct-answer, free-text-answer .free-text-answer-wrapper .wrong .correct-answer {
-    display: block; }
-  free-text-answer .free-text-answer-wrapper .wrong svg-icon.wrong-icon {
-    position: relative;
-    top: 1px;
-    display: block; }
-    free-text-answer .free-text-answer-wrapper .wrong svg-icon.wrong-icon svg {
-      width: 18px;
-      height: auto; }
-      free-text-answer .free-text-answer-wrapper .wrong svg-icon.wrong-icon svg line {
-        stroke: #ff6766; }
-  free-text-answer .free-text-answer-wrapper .wrong .user-answer {
-    color: #ff6766; }
-  free-text-answer .free-text-answer-wrapper .correct svg-icon.correct-icon {
-    display: block; }
-    free-text-answer .free-text-answer-wrapper .correct svg-icon.correct-icon svg {
-      width: 26px;
-      height: auto; }
-      free-text-answer .free-text-answer-wrapper .correct svg-icon.correct-icon svg line {
-        stroke: #87ca4d; }
-  free-text-answer .free-text-answer-wrapper .correct .user-answer {
-    color: #87ca4d; }
-  free-text-answer .free-text-answer-wrapper .input-wrapper {
-    width: 261.5px;
-    height: 43px;
-    position: relative; }
-    free-text-answer .free-text-answer-wrapper .input-wrapper .arrow-wrapper {
-      width: 48px;
-      height: 48px;
-      position: absolute;
-      top: 1px;
-      right: -2px;
-      cursor: pointer; }
-      free-text-answer .free-text-answer-wrapper .input-wrapper .arrow-wrapper svg-icon.arrow {
-        width: 48px;
-        height: auto;
-        position: relative;
-        z-index: 2;
-        float: left; }
-        free-text-answer .free-text-answer-wrapper .input-wrapper .arrow-wrapper svg-icon.arrow path {
-          fill: #6ac1cc; }
-      free-text-answer .free-text-answer-wrapper .input-wrapper .arrow-wrapper .svg-back {
-        width: 24px;
-        height: 45px;
-        background-color: #6ac1cc;
-        position: absolute;
-        z-index: 1; }
-    free-text-answer .free-text-answer-wrapper .input-wrapper .arrow-wrapper:active svg path {
-      fill: #2c808a; }
-    free-text-answer .free-text-answer-wrapper .input-wrapper .arrow-wrapper:active .svg-back {
-      background-color: #2c808a; }
-    free-text-answer .free-text-answer-wrapper .input-wrapper input {
-      width: 244px;
-      height: 43px;
-      font-size: 21px;
-      color: #4f4d4d;
-      font-family: Lato;
-      font-weight: 400;
-      border-radius: 30px;
-      border: 1px solid #757a83;
-      background-color: #fafafa;
-      padding-left: 18px; }
-    free-text-answer .free-text-answer-wrapper .input-wrapper input:focus {
-      outline: none; }
-
-.rate-answer-wrapper .checkbox-items-wrapper .item-repeater {
-  width: 44px;
-  height: 22px;
-  position: relative;
-  float: left; }
-  .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .correct-icon, .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .wrong-icon {
-    display: none;
-    position: absolute;
-    z-index: 5;
-    top: 5.5px; }
-    .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .correct-icon line, .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .wrong-icon line {
-      stroke: #fff; }
-  .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .correct-icon {
-    width: 14px;
-    height: 15px;
-    left: 4px; }
-  .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .wrong-icon {
-    width: 10px;
-    height: 15px;
-    left: 6.4px; }
-  .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .checkbox-item {
-    width: 22px;
-    height: 22px;
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-pack: center;
-        justify-content: center;
-    -webkit-justify-content: center;
-    -ms-flex-align: center;
-        align-items: center;
-    -webkit-align-items: center;
-    position: relative;
-    z-index: 1;
-    cursor: pointer;
-    border-radius: 50px;
-    background-color: #e8e7e7;
-    float: left; }
-    .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .checkbox-item .item-index {
-      font-size: 12px;
-      color: #b7b7b7;
-      font-family: Lato;
-      font-weight: 400;
-      width: 20px;
-      height: 20px;
-      position: absolute;
-      top: 32px;
-      left: 2px;
-      text-align: center; }
-    .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .checkbox-item.selected .item-index {
-      color: #0a9bad;
-      font-weight: 700; }
-  .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .checkbox-item:before {
-    width: 8px;
-    height: 8px;
-    content: '';
-    border-radius: 50px;
-    background-color: #f7f6f6; }
-  .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .checkbox-item.selected:before {
-    background-color: #0a9bad; }
-  .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .correct-answer-line {
-    width: 38px;
-    height: 2px;
-    display: none;
-    position: absolute;
-    top: 10px;
-    left: 14px;
-    z-index: 2;
-    background-color: #87ca4d; }
-
-.rate-answer-wrapper .checkbox-items-wrapper .item-repeater:after {
-  width: 26px;
-  height: 8px;
-  position: absolute;
-  left: 20px;
-  top: 7px;
-  content: '';
-  background-color: #e8e7e7; }
-
-.rate-answer-wrapper .checkbox-items-wrapper .item-repeater:last-child:after, .rate-answer-wrapper .checkbox-items-wrapper .item-repeater:last-child .correct-answer-line {
-  display: none; }
-
-.rate-answer-wrapper .checkbox-items-wrapper .item-repeater.selected .checkbox-item .item-index {
-  color: #0a9bad;
-  font-weight: 700; }
-
-.rate-answer-wrapper .checkbox-items-wrapper .item-repeater.selected .checkbox-item:before {
-  background-color: #0a9bad; }
-
-.rate-answer-wrapper .checkbox-items-wrapper .item-repeater.selected-correct .checkbox-item, .rate-answer-wrapper .checkbox-items-wrapper .item-repeater.selected-correct .checkbox-item:before {
-  background-color: #87ca4d; }
-  .rate-answer-wrapper .checkbox-items-wrapper .item-repeater.selected-correct .checkbox-item .item-index, .rate-answer-wrapper .checkbox-items-wrapper .item-repeater.selected-correct .checkbox-item:before .item-index {
-    color: #b7b7b7;
-    font-weight: 700; }
-
-.rate-answer-wrapper .checkbox-items-wrapper .item-repeater.selected-wrong .checkbox-item, .rate-answer-wrapper .checkbox-items-wrapper .item-repeater.selected-wrong .checkbox-item:before {
-  background-color: #ff6766; }
-  .rate-answer-wrapper .checkbox-items-wrapper .item-repeater.selected-wrong .checkbox-item .item-index, .rate-answer-wrapper .checkbox-items-wrapper .item-repeater.selected-wrong .checkbox-item:before .item-index {
-    color: #ff6766;
-    font-weight: 700; }
-
-.rate-answer-wrapper .checkbox-items-wrapper .item-repeater.correct .checkbox-item:before, .rate-answer-wrapper .checkbox-items-wrapper .item-repeater.correct .correct-answer-line {
-  background-color: #87ca4d;
-  display: inline-block; }
-
-.rate-answer-wrapper .checkbox-items-wrapper .item-repeater.correct-edge .checkbox-item:before {
-  background-color: #87ca4d; }
-
-.rate-answer-wrapper .checkbox-items-wrapper .item-repeater.correct-edge .checkbox-item .item-index, .rate-answer-wrapper .checkbox-items-wrapper .item-repeater.correct .checkbox-item .item-index {
-  color: #b7b7b7;
-  font-weight: 700; }
-
-.rate-answer-wrapper .checkbox-items-wrapper .item-repeater.selected-wrong .checkbox-item, .rate-answer-wrapper .checkbox-items-wrapper .item-repeater.selected-correct .checkbox-item {
-  border: 1px solid #e8e7e7;
-  box-sizing: border-box; }
-
-.rate-answer-wrapper .checkbox-items-wrapper .item-repeater.selected-wrong .wrong-icon {
-  display: inline-block; }
-
-.rate-answer-wrapper .checkbox-items-wrapper .item-repeater.selected-correct .correct-icon {
-  display: inline-block; }
-
-select-answer {
-  font-size: 18px;
-  color: #363636;
-  font-family: Lato;
-  display: block; }
-  select-answer .answer {
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-align: center;
-        align-items: center;
-    -webkit-align-items: center;
-    margin-bottom: 20px; }
-    select-answer .answer .correct-icon-drv,
-    select-answer .answer .wrong-icon-drv {
-      display: none;
-      -ms-flex-negative: 0;
-          flex-shrink: 0; }
-    select-answer .answer.wrong .content-wrapper .answer-index-wrapper {
-      background-color: #ff6766;
-      color: #fff;
-      border-color: #ff6766; }
-      select-answer .answer.wrong .content-wrapper .answer-index-wrapper .inner-circle {
-        display: block;
-        border: 13px solid #ff6766; }
-      select-answer .answer.wrong .content-wrapper .answer-index-wrapper .answer-index {
-        color: #fff; }
-    select-answer .answer.wrong .content-wrapper .content {
-      color: #ff6766; }
-    select-answer .answer.wrong .content-wrapper .ion-ios-close-empty {
-      display: block; }
-    select-answer .answer.wrong .content-wrapper .wrong-icon-drv {
-      width: 13px;
-      height: 100%;
-      margin-left: 17px;
-      display: block; }
-      select-answer .answer.wrong .content-wrapper .wrong-icon-drv svg line {
-        stroke: #ff6766; }
-    select-answer .answer.correct .answer-solution-icon-wrapper {
-      visibility: visible; }
-    select-answer .answer.correct .content-wrapper .answer-index-wrapper {
-      background-color: #87ca4d;
-      color: #fff;
-      border-color: #87ca4d; }
-      select-answer .answer.correct .content-wrapper .answer-index-wrapper .inner-circle {
-        display: block;
-        border: 13px solid #87ca4d; }
-      select-answer .answer.correct .content-wrapper .answer-index-wrapper .answer-index {
-        color: #fff; }
-    select-answer .answer.correct .content-wrapper .content {
-      color: #87ca4d; }
-    select-answer .answer.correct .content-wrapper .ion-android-done {
-      display: block; }
-    select-answer .answer.correct .content-wrapper .correct-icon-drv {
-      width: 23px;
-      height: 100%;
-      margin-left: 17px;
-      display: block; }
-      select-answer .answer.correct .content-wrapper .correct-icon-drv svg line {
-        stroke: #87ca4d; }
-    select-answer .answer.answered-incorrect .answer-solution-icon-wrapper {
-      visibility: visible; }
-    select-answer .answer.answered-incorrect .content-wrapper .answer-index-wrapper {
-      background-color: #fff;
-      color: #87ca4d;
-      border-color: #87ca4d; }
-      select-answer .answer.answered-incorrect .content-wrapper .answer-index-wrapper .inner-circle {
-        display: block;
-        border: 13px solid #87ca4d; }
-      select-answer .answer.answered-incorrect .content-wrapper .answer-index-wrapper .answer-index {
-        color: #2AB79E; }
-    select-answer .answer.answered-incorrect .content-wrapper .content {
-      color: #87ca4d; }
-    select-answer .answer.answered-incorrect .answer-solution-icon-wrapper {
-      visibility: visible; }
-    select-answer .answer.answered .content-wrapper .answer-index-wrapper {
-      background: #0a9bad;
-      border-color: #0a9bad; }
-      select-answer .answer.answered .content-wrapper .answer-index-wrapper .index-char {
-        color: #fff; }
-    select-answer .answer.answered .content-wrapper markup {
-      color: #0a9bad; }
-    select-answer .answer .answer-solution-icon-wrapper {
-      visibility: hidden;
-      margin-right: 25px;
-      -ms-flex-negative: 0;
-          flex-shrink: 0;
-      -webkit-flex-shrink: 0; }
-    select-answer .answer .content-wrapper {
-      display: -ms-flexbox;
-      display: flex;
-      -ms-flex-align: center;
-          align-items: center;
-      -webkit-align-items: center; }
-      select-answer .answer .content-wrapper .answer-index-wrapper {
-        position: relative;
-        background-color: #f6f6f6;
-        border-radius: 50%;
-        display: -ms-flexbox;
-        display: flex;
-        -ms-flex-pack: center;
-            justify-content: center;
-        -webkit-justify-content: center;
-        -ms-flex-align: center;
-            align-items: center;
-        -webkit-align-items: center;
-        width: 38px;
-        height: 38px;
-        border: 1px solid #888888;
-        margin-right: 22.5px;
-        -ms-flex-negative: 0;
-            flex-shrink: 0;
-        -webkit-flex-shrink: 0; }
-        select-answer .answer .content-wrapper .answer-index-wrapper .inner-circle {
-          display: none;
-          position: absolute;
-          top: 5px;
-          left: 5px;
-          border-radius: 50%; }
-      select-answer .answer .content-wrapper .content p {
-        margin: 0; }
-      select-answer .answer .content-wrapper .ion-ios-close-empty {
-        font-size: 28px;
-        color: #fff;
-        font-size: 30px;
-        position: absolute;
-        left: 12.5px;
-        top: 3px;
-        z-index: 1;
-        display: none;
-        -ms-flex-negative: 0;
-            flex-shrink: 0;
-        -webkit-flex-shrink: 0; }
-      select-answer .answer .content-wrapper .ion-android-done {
-        position: absolute;
-        font-size: 22px;
-        display: none;
-        z-index: 1;
-        color: #fff;
-        top: 8px;
-        left: 9px; }
-
 znk-exercise.desktop {
   display: block;
   position: relative; }
@@ -645,8 +280,10 @@ znk-exercise.desktop {
     position: absolute;
     top: 0;
     bottom: 0;
-    -ms-flex-align: center;
-        align-items: center;
+    -webkit-align-items: center;
+        -ms-flex-align: center;
+            align-items: center;
+    display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
     transition: all 0.2s linear; }
@@ -661,7 +298,8 @@ znk-exercise.desktop {
         border-bottom-right-radius: 42px;
         padding-left: 2px; }
         znk-exercise.desktop .btn-section .btn-container.right-container button .chevron {
-          transform: rotate(-90deg); }
+          -webkit-transform: rotate(-90deg);
+                  transform: rotate(-90deg); }
       znk-exercise.desktop .btn-section .btn-container.right-container.ng-hide-add, znk-exercise.desktop .btn-section .btn-container.right-container.ng-hide-remove {
         transition: all linear 0.2s; }
       znk-exercise.desktop .btn-section .btn-container.right-container.ng-hide {
@@ -673,7 +311,8 @@ znk-exercise.desktop {
         border-bottom-left-radius: 42px;
         padding-left: 5px; }
         znk-exercise.desktop .btn-section .btn-container.left-container button .chevron {
-          transform: rotate(90deg); }
+          -webkit-transform: rotate(90deg);
+                  transform: rotate(90deg); }
       znk-exercise.desktop .btn-section .btn-container.left-container.ng-hide-add, znk-exercise.desktop .btn-section .btn-container.left-container.ng-hide-remove {
         transition: all linear 0.2s; }
       znk-exercise.desktop .btn-section .btn-container.left-container.ng-hide {
@@ -714,6 +353,7 @@ znk-exercise.desktop {
     stroke-linejoin: round;
     stroke-miterlimit: 10; }
   znk-exercise.desktop questions-carousel.znk-carousel-container {
+    display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
     position: absolute;
@@ -772,6 +412,7 @@ znk-exercise-pager {
           border-radius: 50%;
           width: 25px;
           height: 25px;
+          display: -webkit-flex;
           display: -ms-flexbox;
           display: flex;
           -ms-flex-pack: center;
