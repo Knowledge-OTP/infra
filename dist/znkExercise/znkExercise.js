@@ -913,6 +913,10 @@
                     });
                 };
 
+                QuestionTypesSrv.getQuestionType = function getQuestionType(question) {
+                    return questionTypeGetterFn(question);
+                };
+
                 return QuestionTypesSrv;
             }
         ];

@@ -5849,6 +5849,10 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                     });
                 };
 
+                QuestionTypesSrv.getQuestionType = function getQuestionType(question) {
+                    return questionTypeGetterFn(question);
+                };
+
                 return QuestionTypesSrv;
             }
         ];

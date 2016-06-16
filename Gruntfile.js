@@ -154,7 +154,6 @@ module.exports = function (grunt) {
                 singleRun: true,
                 browsers: [
                     'Chrome'
-
                 ]
             }
         },
@@ -197,7 +196,7 @@ module.exports = function (grunt) {
                 files: [
                     'src/**/*.scss'
                 ],
-                tasks: ['sass', 'autoprefixer:main']
+                tasks: ['sass', 'autoprefixer:main', 'concat:mainModule']
             },
             assets: {
                 files: ['<%= yeoman.src %>/**/locale/*.json', '<%= yeoman.src %>/**/*.{png}'],
