@@ -1,0 +1,27 @@
+<div class="wrapper" ng-class="{'no-footer': hideFooter}">
+    <div class="bg-img only-tablet" ng-style="{'background-image': 'url(' + d.blurredImage + ')'}"></div>
+     <div class="inner-section">
+        <img class="inner" ng-src="{{::d.image}}">
+     </div>
+    <div class="audio-footer inverted" ng-if="::!hideFooter">
+        <ng-switch on="audioPlayer.currState">
+            <div class="play-button-wrapper"
+                 ng-switch-when="1">
+                <button class="btn btn-outline"
+                        on-tap="audioPlayer.currState = audioPlayer.STATE_ENUM.PLAYING">
+                    <i class="ion-play"></i>
+                    PLAY AUDIO
+                </button>
+            </div>
+            <znk-audio-player-drv ng-switch-when="2"
+                                  source="source"
+                                  on-ended="audioPlayer.audioEnded(allowReplay)"
+                                  auto-play="true">
+            </znk-audio-player-drv>
+            <div class="ended-msg"
+                 ng-switch-when="3">
+                 This audio was already played
+            </div>
+        </ng-switch>
+    </div>
+</div>

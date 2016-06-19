@@ -1,0 +1,106 @@
+znk-audio-player {
+    display: flex;
+    align-items: center;
+
+    .time-display {
+        @include text-style(12px,$fcColor2,Lato);
+        min-width: 41px;
+
+        &.time-passed {
+            padding: {
+                right: 11px;
+            }
+        }
+
+        &.time-left {
+            padding: {
+                left: 11px;
+            }
+        }
+    }
+
+    .spiral {
+        display: none;
+        padding: 7px 13px 0 11px;
+    }
+
+    .progress-container {
+        @include flex-grow(1);
+        justify-content: center;
+        align-items: center;
+    }
+
+    &.grey-player {
+        border: {
+            radius: 50px;
+        }
+        height: 46px;
+        background: $bgColor17;
+        max-width: 380px;
+
+        .time-display {
+            padding: {
+                left: 11px;
+                right: 11px;
+            }
+            color: $fcColor6;
+        }
+    }
+
+    &.type-no-control {
+        .progress-container {
+            .only-progress-wrapper {
+                background: $tbgColor4;
+                @include flex-grow(1);
+                border: {
+                    radius: 3px;
+                }
+                overflow: hidden;
+
+                .audio-progress {
+                    background: $bcColor1;
+                    width: 0;
+                    height: 5px;
+                }
+            }
+        }
+    }
+
+    &.type-has-control {
+        .player-control {
+            color: $fcColor5;
+            font: {
+                size: 24px;
+            }
+            padding: 5px 15px;
+            width: 45px;
+        }
+
+        .progress-container {
+            .range-progress-wrapper {
+                @include flex-grow(1);
+                &.range {
+                    padding: 0;
+
+                    input {
+                        margin: 0;
+
+                        &::-webkit-slider-thumb {
+                            @include dimension(12px);
+
+                            &:before {
+                                background: $bcColor1;
+                                top: 6px;
+                            }
+                        }
+
+                        &::-ms-fill-lower {
+                            background: $bcColor1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+}
