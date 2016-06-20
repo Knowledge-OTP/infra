@@ -2,39 +2,52 @@
     'use strict';
 
     angular.module('demo').config(function (InfraConfigSrvProvider) {
-        var authDbPath = 'https://znk-dev.firebaseio.com/';
-        var dataDbPath = 'https://sat-dev.firebaseio.com/';
-
         var authRef,
             dataAuthProm,
             authProm,
             dataRef;
 
-        // local storage keys
-        var EMAIL_KEY = 'znkUser',
-            PASSWORD_KEY = 'znkPwd';
+        // default options
+        var options = {
+            email: 'tester@zinkerz.com',
+            password: 111111,
+            authDbPath: 'https://znk-dev.firebaseio.com/',
+            dataDbPath: 'https://sat-dev.firebaseio.com/',
+            dataAuthToken: 'TykqAPXV4zlTTG0v6UuOt4OF3HssDykhJd90dAIc',
+            studentPath: '/sat_app'
+        };
 
-        var DEFAULT_EMAIL = 'tester@zinkerz.com',
-            DEFAULT_PASSWORD = 111111;
+        var keysObj = {
+            email: 'znkUser',
+            password: 'znkPwd',
+            authDbPath: 'znkAuth',
+            dataDbPath: 'znkData',
+            dataAuthToken: 'znkAuthToken',
+            studentPath: 'znkStudentPath'
+        };
 
-        var email = localStorage.getItem(EMAIL_KEY) ? localStorage.getItem(EMAIL_KEY) : DEFAULT_EMAIL;
-        var password = localStorage.getItem(PASSWORD_KEY) ? localStorage.getItem(PASSWORD_KEY) : DEFAULT_PASSWORD;
+        angular.forEach(keysObj, function(keyValue, keyName) {
+            var localData = localStorage.getItem(keyValue);
+            if (localData) {
+                options[keyName] = localData;
+            }
+        });
 
         function storageGetter(path) {
             return function(storageFirebaseAdapter, StorageSrv, $q, ENV) {
                 if(!authRef){
-                    authRef = new Firebase(authDbPath, ENV.firebaseAppScopeName);
+                    authRef = new Firebase(options.authDbPath, ENV.firebaseAppScopeName);
                     authProm = authRef.authWithPassword({
-                        email: email,
-                        password: '' + password
+                        email: options.email,
+                        password: '' + options.password
                     }).then(function(res){
                         console.log('success', res);
                         return res;
                     }).catch(function(err){
                         console.error(err);
                     });
-                    dataRef = new Firebase(dataDbPath, ENV.firebaseAppScopeName);
-                    dataAuthProm = dataRef.authWithCustomToken('TykqAPXV4zlTTG0v6UuOt4OF3HssDykhJd90dAIc');
+                    dataRef = new Firebase(options.dataDbPath, ENV.firebaseAppScopeName);
+                    dataAuthProm = dataRef.authWithCustomToken(options.dataAuthToken);
                 }
 
                 return $q.all([authProm, dataAuthProm]).then(function(res){
@@ -53,6 +66,6 @@
             };
         }
 
-        InfraConfigSrvProvider.setStorages(storageGetter(dataDbPath), storageGetter(dataDbPath + '/sat_app'));
+        InfraConfigSrvProvider.setStorages(storageGetter(options.dataDbPath), storageGetter(options.dataDbPath + options.studentPath));
     });
 })(angular);
