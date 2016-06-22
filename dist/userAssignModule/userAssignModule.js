@@ -1,5 +1,14 @@
 (function (angular) {
     'use strict';
+    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.znkModuleResults']);
+})(angular);
+
+angular.module('znk.infra.userAssignModule').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
 
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
         'ZnkModuleService', 'ZnkModuleResultsService', '$q',
