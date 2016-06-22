@@ -10,7 +10,7 @@ angular.module('znk.infra.znkModule').run(['$templateCache', function($templateC
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkModule').provider('ZnkModuleService', [
+    angular.module('znk.infra.znkModule').service('ZnkModuleService', [
         'StorageRevSrv',
         function (StorageRevSrv) {
             var znkModuleService = {};

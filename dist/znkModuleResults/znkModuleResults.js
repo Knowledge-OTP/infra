@@ -10,7 +10,7 @@ angular.module('znk.infra.znkModuleResults').run(['$templateCache', function($te
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkModuleResults').provider('ZnkModuleResultsService', [
+    angular.module('znk.infra.znkModuleResults').service('ZnkModuleResultsService', [
         'InfraConfigSrv', '$log', '$q', 'StorageSrv', 'UtilitySrv',
         function (InfraConfigSrv, $log, $q, StorageSrv, UtilitySrv) {
 
@@ -36,7 +36,7 @@ angular.module('znk.infra.znkModuleResults').run(['$templateCache', function($te
                     "moduleId": moduleId,
                     "assign": false,
                     "contentAssign": false,
-                    "data": null,
+                    "date": null,
                     "tutorId": null,
                     guid: guid
                 });
