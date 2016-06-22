@@ -21,7 +21,7 @@
                 link: function (scope) {
                     scope.d = {
                         image: scope.imageGetter(),
-                        blurredImage: scope.blurredImageGetter(),
+                        blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined,
                         isMobile: AudioSrv.isMobile()
                     };
 

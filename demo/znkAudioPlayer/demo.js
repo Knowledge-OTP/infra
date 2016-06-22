@@ -6,7 +6,7 @@
 
         })
         .service('ENV', function () {
-            this.debug = true;
+            this.debug = false;
         })
         .controller('Main', function ($scope) {
             $scope.d = {};
