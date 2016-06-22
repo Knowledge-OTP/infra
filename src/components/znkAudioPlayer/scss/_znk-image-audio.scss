@@ -3,8 +3,8 @@ znk-image-audio {
     position: relative;
 
     .wrapper {
-        @include absolute-full-cover;
         @include dimension(458px,308px);
+        position: relative;
         min-height: 192px;
 
         &.no-footer {
@@ -12,24 +12,18 @@ znk-image-audio {
         }
 
         .bg-img{
-            @include absolute-full-cover;
-            @include full-background-image-retina('', null, null);
-
             overflow: hidden;
             top: 2px;
         }
 
         .inner-section {
-            @include dimension(458px,308px);           // todo - fixed size?
             position: relative;
             padding-top: 0;
-            //@include dimension(100%,calc(100% - 72px));
-            //padding-top: 9px;
             text-align: center;
 
             img{
-                @include dimension(458px,308px);           // todo - fixed size?
-                //height: 100%;
+                @include dimension(458px,308px);      // todo - fixed size?
+                border-radius: 5px;
             }
         }
 
@@ -39,40 +33,56 @@ znk-image-audio {
             align-items: center;
             position: absolute;
             bottom: 0;
-            height: 51px;
+            height: 55px;
             width: 100%;
             background-color: rgba(22, 22, 22, 0.6);
+            border-radius: 0 0 5px 5px;
 
             .play-button-wrapper {
-                text-align: center;
-                margin: 9px 0;
-
-                i {
-                    padding-right: 8px;
-                }
-
-                button.btn.btn-outline {
-                    float: none;
-                    border: {
-                        color: $bgColor6;
-                        width: 2px;
-                    }
-                    height: 45px;
-                    width: 180px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                .play-button {
                     @include text-style(16px, $bgColor6, Lato, $regularFontWeight);
-                    padding: {
-                        right: 36px;
-                        left: 16px;
-                    }
-                }
-            }
+                    @include dimension(180px, 45px);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    cursor: pointer;
+                    border-radius: 50px;
+                    background: transparent;
+                    border: 2px solid $bgColor6;
 
-            znk-audio-player{
-                width: 280px;
+                    svg-icon{
+                        width: 28px;
+                        height: auto;
+                        margin-right: 5px;
+
+                        path, polygon{
+                            fill: $bgColor6;
+                        }
+                    }
+
+                    .play-audio-text{
+                        margin-left: 10px;
+                    }
+
+                }
+
+                .play-button:focus, .play-button:active{
+                    outline: none;
+                }
             }
 
             .ended-msg {
                 @include text-style(18px, $bgColor6, Lato, $regularFontWeight);
+                text-align: center;
+            }
+
+            .znk-audio-player-wrapper{
+                display: flex;
+                justify-content: center;
+                width: 380px;
             }
         }
     }

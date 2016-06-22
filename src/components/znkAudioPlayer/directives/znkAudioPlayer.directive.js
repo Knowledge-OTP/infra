@@ -120,7 +120,7 @@
                                     break;
                             }
 
-                            timeLeftElement.innerHTML = $filter('secondsToTime')(duration - currPos,'-' + 'm:ss');
+                            timeLeftElement.innerHTML = $filter('secondsToTime')(duration - currPos,'- ' + 'm:ss');
                             if(ENV.debug && duration && currPos && (duration - currPos) > 20){
                                 sound.seekTo(1000 * (duration - 5));
                             }
@@ -190,9 +190,8 @@
                             //        });
                             //    });
                             },
-                            statusChanged,
+                            statusChanged
                             //HACK currently the recorded audio is not save in dataDirectory
-                            true
                         );
                     }
 

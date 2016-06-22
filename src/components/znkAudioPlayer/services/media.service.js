@@ -2,8 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.znkAudioPlayer').factory('MediaSrv', [
-        'ENV', '$q', '$window',
-        function (ENV, $q, $window) {
+        'ENV', '$q', '$window','AudioSrv',
+        function (ENV, $q, $window, AudioSrv) {
 
             var isRunningOnDevice = !!$window.cordova;
 
@@ -145,12 +145,12 @@
                     }else{
                         MediaConstructor = Html5Media;
 
-                        //if(ionic.Platform.isAndroid()){
-                        //    var isExternalGet = !!src.match(/^http/);
-                        //    if(!isExternalGet){
-                        //        src = '/android_asset/www/' + src;
-                        //    }
-                        //}
+                        if(AudioSrv.isAndroid()){
+                            var isExternalGet = !!src.match(/^http/);
+                            if(!isExternalGet){
+                                src = '/android_asset/www/' + src;
+                            }
+                        }
                     }
 
                 }
@@ -209,9 +209,9 @@
             };
 
             MediaSrv.playSound = function(soundSrc,elementId){
-                //if(ionic.Platform.isAndroid()){
-                //    soundSrc = '/android_asset/www/' + soundSrc;
-                //}
+                if(AudioSrv.isAndroid()){
+                    soundSrc = '/android_asset/www/' + soundSrc;
+                }
                 if(!MediaSrv.soundsEnabled){
                     return;
                 }
@@ -235,10 +235,10 @@
                 //    return ENV.contentDir + '/media/';
                 //}
                 //
-                //var path = 'offline/media/';
-                //if(ionic.Platform.isAndroid()){
-                //    path = '/android_asset/www/' + path;
-                //}
+                var path = 'offline/media/';
+                if(AudioSrv.isAndroid()){
+                    path = '/android_asset/www/' + path;
+                }
                 return path;
             };
 

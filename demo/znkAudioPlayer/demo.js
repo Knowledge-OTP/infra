@@ -6,15 +6,12 @@
 
         })
         .service('ENV', function () {
-            this.debug = false;
+            this.debug = true;
         })
         .controller('Main', function ($scope) {
             $scope.d = {};
             $scope.d.image = 'znkAudioPlayer.png';
             $scope.d.audio = 'test.mp3';
-            $scope.audioEnded = function(){
-                alert;
-            };
         });
 
 })(angular);

@@ -11,16 +11,10 @@
 
         .znk-image-audio-wrapper{
             width:450px;
-
+            margin: 100px auto;
+            display: block;
         }
     </style>
-
-    <script src="angular/angular.js"></script>
-
-    <script src="znkAudioPlayer/znkAudioPlayer.js"></script>
-    <script src="znkAudioPlayer/templates.js"></script>
-
-    <script src="demo.js"></script>
 </head>
 
 <body ng-app="demo" ng-controller="Main">
@@ -29,9 +23,18 @@
                      allow-replay="true"
                      blurred-image="d.blurredImage"
                      audio="d.audio"
-                     auto-play="true"
+                     auto-play="false"
                      on-ended="d.onAudioEnded()">
     </znk-image-audio>
 </dev>
+
+
+<script src="angular/angular.js"></script>
+
+<script src="svgIcon/svgIcon.js"></script>
+<script src="znkAudioPlayer/znkAudioPlayer.js"></script>
+<script src="znkAudioPlayer/templates.js"></script>
+
+<script src="demo.js"></script>
 </body>
 </html>

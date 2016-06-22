@@ -1,20 +1,22 @@
 znk-audio-player {
     display: flex;
     align-items: center;
+    width: 100%;
+    min-width: 150px;
 
     .time-display {
-        @include text-style(12px,$fcColor2,Lato);
+        @include text-style(14px,$fcColor2,Lato);
         min-width: 41px;
 
         &.time-passed {
             padding: {
-                right: 11px;
+                right: 10px;
             }
         }
 
         &.time-left {
             padding: {
-                left: 11px;
+                left: 22px;
             }
         }
     }
@@ -50,7 +52,7 @@ znk-audio-player {
     &.type-no-control {
         .progress-container {
             .only-progress-wrapper {
-                background: $tbgColor4;
+                background: $bgColor18;
                 @include flex-grow(1);
                 border: {
                     radius: 3px;

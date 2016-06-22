@@ -2,13 +2,13 @@
 
 (function (angular) {
 
-    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', [
-        'znkAudioPlayer',
-        function znkImageAudio(znkAudioPlayer) {
+    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', ['AudioSrv',
+        function znkImageAudio(AudioSrv) {
+
             return {
                 templateUrl: 'components/znkAudioPlayer/templates/znkImageAudio.template.html',
                 scope: {
-                    imageGetter: '&image',     // todo- need to use & ?
+                    imageGetter: '&image',
                     source: '=audio',
                     hideFooter: '=',
                     onEnded: '&',
@@ -22,7 +22,7 @@
                     scope.d = {
                         image: scope.imageGetter(),
                         blurredImage: scope.blurredImageGetter(),
-                        isMobile: znkAudioPlayer.isMobile()
+                        isMobile: AudioSrv.isMobile()
                     };
 
                     var STATE_ENUM = {
