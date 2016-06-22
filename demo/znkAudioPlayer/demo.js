@@ -6,10 +6,15 @@
 
         })
         .service('ENV', function () {
-            this.debug = true;
+            this.debug = false;
         })
-        .controller('Main', function () {
-
+        .controller('Main', function ($scope) {
+            $scope.d = {};
+            $scope.d.image = 'znkAudioPlayer.png';
+            $scope.d.audio = 'test.mp3';
+            $scope.audioEnded = function(){
+                alert;
+            };
         });
 
 })(angular);

@@ -3,8 +3,8 @@
     'use strict';
 
     angular.module('znk.infra.znkAudioPlayer').directive('znkAudioPlayer', [
-        '$timeout', '$window', '$interval', 'MediaSrv',
-        function znkAudioPlayerDrv($timeout, $window, $interval) {
+        '$timeout', '$window', '$interval', 'MediaSrv', '$filter', 'ENV',
+        function znkAudioPlayerDrv($timeout, $window, $interval, MediaSrv, $filter, ENV) {
             return {
                 templateUrl: 'components/znkAudioPlayer/templates/znkAudioPlayer.template.html',
                 scope: {
@@ -32,7 +32,7 @@
                         STARTING: $window.Media.MEDIA_STARTING
                     };
 
-                    var type = scope.typeGetter() || 1;
+                    var type =  angular.isDefined(scope.typeGetter) ? scope.typeGetter() : 1;
 
                     scope.d = {
                         type: type,
@@ -181,18 +181,18 @@
                         }
                         showLoadingSpinner();
                         sound = MediaSrv.loadSound(scope.sourceGetter(),
-                            function success(){}
-                            //function err(){
+                            function success(){},
+                            function err(){
                             //    $timeout(function(){
                             //        var errMsg = NetworkSrv.isDeviceOffline() ? ErrorHandlerSrv.messages.noInternetConnection : ErrorHandlerSrv.messages.defaultErrorMessage;
                             //        ErrorHandlerSrv.displayErrorMsg(errMsg).then(function() {
                             //            statusChanged(STATE_ENUM.STOPPED, true);
                             //        });
                             //    });
-                            //},
-                            //statusChanged,
+                            },
+                            statusChanged,
                             //HACK currently the recorded audio is not save in dataDirectory
-                            //!!scope.internalPath()
+                            true
                         );
                     }
 

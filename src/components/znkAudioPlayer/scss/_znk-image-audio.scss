@@ -1,0 +1,79 @@
+znk-image-audio {
+    display: block;
+    position: relative;
+
+    .wrapper {
+        @include absolute-full-cover;
+        @include dimension(458px,308px);
+        min-height: 192px;
+
+        &.no-footer {
+            min-height: 141px;
+        }
+
+        .bg-img{
+            @include absolute-full-cover;
+            @include full-background-image-retina('', null, null);
+
+            overflow: hidden;
+            top: 2px;
+        }
+
+        .inner-section {
+            @include dimension(458px,308px);           // todo - fixed size?
+            position: relative;
+            padding-top: 0;
+            //@include dimension(100%,calc(100% - 72px));
+            //padding-top: 9px;
+            text-align: center;
+
+            img{
+                @include dimension(458px,308px);           // todo - fixed size?
+                //height: 100%;
+            }
+        }
+
+        .audio-footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            bottom: 0;
+            height: 51px;
+            width: 100%;
+            background-color: rgba(22, 22, 22, 0.6);
+
+            .play-button-wrapper {
+                text-align: center;
+                margin: 9px 0;
+
+                i {
+                    padding-right: 8px;
+                }
+
+                button.btn.btn-outline {
+                    float: none;
+                    border: {
+                        color: $bgColor6;
+                        width: 2px;
+                    }
+                    height: 45px;
+                    width: 180px;
+                    @include text-style(16px, $bgColor6, Lato, $regularFontWeight);
+                    padding: {
+                        right: 36px;
+                        left: 16px;
+                    }
+                }
+            }
+
+            znk-audio-player{
+                width: 280px;
+            }
+
+            .ended-msg {
+                @include text-style(18px, $bgColor6, Lato, $regularFontWeight);
+            }
+        }
+    }
+}

@@ -8,7 +8,7 @@
             return {
                 templateUrl: 'components/znkAudioPlayer/templates/znkImageAudio.template.html',
                 scope: {
-                    imageGetter: '&image',
+                    imageGetter: '&image',     // todo- need to use & ?
                     source: '=audio',
                     hideFooter: '=',
                     onEnded: '&',
