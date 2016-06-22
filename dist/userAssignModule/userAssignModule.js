@@ -3,7 +3,7 @@
     angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.znkModuleResults']);
 })(angular);
 
-angular.module('znk.infra.userAssignModule').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
 
 }]);
 
