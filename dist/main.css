@@ -1574,12 +1574,10 @@ $blueBG8: #75cbe8;
 */
 /* full background image with retina */
 znk-audio-player {
-  display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  -webkit-align-items: center;
-      -ms-flex-align: center;
-          align-items: center;
+  -ms-flex-align: center;
+      align-items: center;
   width: 100%;
   min-width: 150px; }
   znk-audio-player .time-display {
@@ -1598,12 +1596,10 @@ znk-audio-player {
     -ms-flex-positive: 1;
         flex-grow: 1;
     -webkit-flex-grow: 1;
-    -webkit-justify-content: center;
-        -ms-flex-pack: center;
-            justify-content: center;
-    -webkit-align-items: center;
-        -ms-flex-align: center;
-            align-items: center; }
+    -ms-flex-pack: center;
+        justify-content: center;
+    -ms-flex-align: center;
+        align-items: center; }
   znk-audio-player.grey-player {
     border-radius: 50px;
     height: 46px;
@@ -1668,15 +1664,12 @@ znk-image-audio {
         height: 308px;
         border-radius: 5px; }
     znk-image-audio .wrapper .audio-footer {
-      display: -webkit-flex;
       display: -ms-flexbox;
       display: flex;
-      -webkit-justify-content: center;
-          -ms-flex-pack: center;
-              justify-content: center;
-      -webkit-align-items: center;
-          -ms-flex-align: center;
-              align-items: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+      -ms-flex-align: center;
+          align-items: center;
       position: absolute;
       bottom: 0;
       height: 55px;
@@ -1684,15 +1677,12 @@ znk-image-audio {
       background-color: rgba(22, 22, 22, 0.6);
       border-radius: 0 0 5px 5px; }
       znk-image-audio .wrapper .audio-footer .play-button-wrapper {
-        display: -webkit-flex;
         display: -ms-flexbox;
         display: flex;
-        -webkit-justify-content: center;
-            -ms-flex-pack: center;
-                justify-content: center;
-        -webkit-align-items: center;
-            -ms-flex-align: center;
-                align-items: center; }
+        -ms-flex-pack: center;
+            justify-content: center;
+        -ms-flex-align: center;
+            align-items: center; }
         znk-image-audio .wrapper .audio-footer .play-button-wrapper .play-button {
           font-size: 16px;
           color: #fff;
@@ -1700,15 +1690,12 @@ znk-image-audio {
           font-weight: 400;
           width: 180px;
           height: 45px;
-          display: -webkit-flex;
           display: -ms-flexbox;
           display: flex;
-          -webkit-justify-content: center;
-              -ms-flex-pack: center;
-                  justify-content: center;
-          -webkit-align-items: center;
-              -ms-flex-align: center;
-                  align-items: center;
+          -ms-flex-pack: center;
+              justify-content: center;
+          -ms-flex-align: center;
+              align-items: center;
           cursor: pointer;
           border-radius: 50px;
           background: transparent;
@@ -1730,12 +1717,10 @@ znk-image-audio {
         font-weight: 400;
         text-align: center; }
       znk-image-audio .wrapper .audio-footer .znk-audio-player-wrapper {
-        display: -webkit-flex;
         display: -ms-flexbox;
         display: flex;
-        -webkit-justify-content: center;
-            -ms-flex-pack: center;
-                justify-content: center;
+        -ms-flex-pack: center;
+            justify-content: center;
         width: 380px; }
 
 /* fonts size */
