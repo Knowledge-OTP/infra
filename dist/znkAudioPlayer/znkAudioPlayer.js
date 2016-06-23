@@ -262,8 +262,8 @@
 
 (function (angular) {
 
-    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', [
-        function znkImageAudio() {
+    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', ['$translatePartialLoader',
+        function znkImageAudio($translatePartialLoader) {
 
             return {
                 templateUrl: 'components/znkAudioPlayer/templates/znkImageAudio.template.html',
@@ -279,6 +279,8 @@
                     blurredImageGetter: '&?blurredImage'
                 },
                 link: function (scope) {
+                    $translatePartialLoader.addPart('znkAudioPlayer');
+
                     scope.d = {
                         image: scope.imageGetter(),
                         blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined
@@ -616,7 +618,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "\n" +
     "");
   $templateCache.put("components/znkAudioPlayer/templates/znkImageAudio.template.html",
-    "<div class=\"wrapper\" ng-class=\"{'no-footer': hideFooter}\">\n" +
+    "<div class=\"wrapper\" ng-class=\"{'no-footer': hideFooter}\" translate-namespace=\"ZNK_AUDIO_PLAYER\">\n" +
     "    <!--<div class=\"bg-img only-tablet\" ng-style=\"{'background-image': 'url(' + d.blurredImage + ')'}\"></div>-->\n" +
     "    <!--todo- do we need blurred image?-->\n" +
     "    <div class=\"inner-section\">\n" +
@@ -628,7 +630,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "                 ng-switch-when=\"1\">\n" +
     "                <button class=\"play-button\" ng-click=\"audioPlayer.currState = audioPlayer.STATE_ENUM.PLAYING\">\n" +
     "                    <svg-icon name=\"play\"></svg-icon>\n" +
-    "                    <span class=\"play-audio-text\">PLAY AUDIO</span>\n" +
+    "                    <span class=\"play-audio-text\" translate=\".PLAY_AUDIO\"></span>\n" +
     "                </button>\n" +
     "            </div>\n" +
     "            <div class=\"znk-audio-player-wrapper\">\n" +
@@ -640,7 +642,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "            </div>\n" +
     "            <div class=\"ended-msg\"\n" +
     "                 ng-switch-when=\"3\">\n" +
-    "                This audio was already played\n" +
+    "                <span translate=\".THIS_VIDEO_ALREADY_PLAYED\"></span>\n" +
     "            </div>\n" +
     "        </ng-switch>\n" +
     "    </div>\n" +
