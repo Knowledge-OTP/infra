@@ -1,0 +1,40 @@
+.play-button-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .play-button {
+        @include text-style(16px, $bgColor6, Lato, $regularFontWeight);
+        @include dimension(180px, 45px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        border-radius: 50px;
+        background: transparent;
+        border: 2px solid $bgColor6;
+
+        svg-icon{
+            width: 28px;
+            height: auto;
+            margin-right: 5px;
+
+            path, polygon{
+                fill: $bgColor6;
+            }
+        }
+
+        .play-audio-text{
+            margin-left: 10px;
+        }
+
+    }
+
+    .play-button:focus, .play-button:active{
+        outline: none;
+    }
+}
+
+.ended-msg {
+    @include text-style(18px, $bgColor6, Lato, $regularFontWeight);
+    text-align: center;
+}

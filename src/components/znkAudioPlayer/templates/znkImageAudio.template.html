@@ -1,29 +1,34 @@
 <div class="wrapper" ng-class="{'no-footer': hideFooter}" translate-namespace="ZNK_AUDIO_PLAYER">
     <!--<div class="bg-img only-tablet" ng-style="{'background-image': 'url(' + d.blurredImage + ')'}"></div>-->
-    <!--todo- do we need blurred image?-->
     <div class="inner-section">
         <img class="inner" ng-src="{{::d.image}}">
     </div>
     <div class="audio-footer inverted" ng-if="::!hideFooter">
-        <ng-switch on="audioPlayer.currState">
-            <div class="play-button-wrapper"
-                 ng-switch-when="1">
-                <button class="play-button" ng-click="audioPlayer.currState = audioPlayer.STATE_ENUM.PLAYING">
-                    <svg-icon name="play"></svg-icon>
-                    <span class="play-audio-text" translate=".PLAY_AUDIO"></span>
-                </button>
-            </div>
-            <div class="znk-audio-player-wrapper">
-                <znk-audio-player ng-switch-when="2"
-                                  source="source"
-                                  on-ended="audioPlayer.audioEnded(allowReplay)"
-                                  auto-play="true">
-                </znk-audio-player>
-            </div>
-            <div class="ended-msg"
-                 ng-switch-when="3">
-                <span translate=".THIS_VIDEO_ALREADY_PLAYED"></span>
-            </div>
-        </ng-switch>
+        <znk-audio-play-button
+            switch-init="audioPlayer.currState"
+            source="source"
+            on-ended="audioPlayer.audioEnded()"
+            auto-play="autoPlayGetter()">
+        </znk-audio-play-button>
+        <!--<ng-switch on="audioPlayer.currState">-->
+            <!--<div class="play-button-wrapper"-->
+                 <!--ng-switch-when="1">-->
+                <!--<button class="play-button" ng-click="audioPlayer.currState = audioPlayer.STATE_ENUM.PLAYING">-->
+                    <!--<svg-icon name="play"></svg-icon>-->
+                    <!--<span class="play-audio-text" translate=".PLAY_AUDIO"></span>-->
+                <!--</button>-->
+            <!--</div>-->
+            <!--<div class="znk-audio-player-wrapper">-->
+                <!--<znk-audio-player ng-switch-when="2"-->
+                                  <!--source="source"-->
+                                  <!--on-ended="audioPlayer.audioEnded(allowReplay)"-->
+                                  <!--auto-play="true">-->
+                <!--</znk-audio-player>-->
+            <!--</div>-->
+            <!--<div class="ended-msg"-->
+                 <!--ng-switch-when="3">-->
+                <!--<span translate=".THIS_VIDEO_ALREADY_PLAYED"></span>-->
+            <!--</div>-->
+        <!--</ng-switch>-->
     </div>
 </div>
