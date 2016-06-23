@@ -1,11 +1,16 @@
 (function (angular) {
     'use strict';
+    angular.module('znk.infra.moduleResults', []);
+})(angular);
 
-    angular.module('znk.infra.znkModuleResults').service('ZnkModuleResultsService', [
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.moduleResults').service('ModuleResultsService', [
         'InfraConfigSrv', '$log', '$q', 'StorageSrv', 'UtilitySrv',
         function (InfraConfigSrv, $log, $q, StorageSrv, UtilitySrv) {
 
-            var znkModuleResultsService = {};
+            var moduleResultsService = {};
             var MODULE_RESULTS_GUIDS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
             var MODULE_RESULTS_PATH = 'moduleResults';
 
@@ -53,7 +58,7 @@
                 });
             }
 
-            znkModuleResultsService.getModuleResult = function (moduleId, dontInitialize) {
+            moduleResultsService.getModuleResult = function (moduleId, dontInitialize) {
                 if(!_isValidNumber(moduleId)){
                     var errMsg = 'Module id is not a number !!!';
                     $log.error(errMsg);
@@ -89,8 +94,12 @@
                 });
             };
 
-            return znkModuleResultsService;
+            return moduleResultsService;
         }
     ]);
 })(angular);
 
+
+angular.module('znk.infra.moduleResults').run(['$templateCache', function($templateCache) {
+
+}]);

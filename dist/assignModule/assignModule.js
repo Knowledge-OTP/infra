@@ -1,21 +1,21 @@
 (function (angular) {
     'use strict';
-    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.znkModuleResults']);
+    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.moduleResults']);
 })(angular);
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', 'ZnkModuleResultsService', '$q',
-        function (ZnkModuleService, ZnkModuleResultsService, $q) {
+        'ZnkModuleService', 'ModuleResultsService', '$q',
+        function (ZnkModuleService, ModuleResultsService, $q) {
             var userAssignModuleService = {};
 
             userAssignModuleService.getAssignModules = function () {
                 return ZnkModuleService.getHeaders().then(function (headers) {
                     var getPromArr = [];
                     angular.forEach(headers, function (header) {
-                        var getProm = ZnkModuleResultsService.getModuleResult(header.id);
+                        var getProm = ModuleResultsService.getModuleResult(header.id);
                         getPromArr.push(getProm);
                     });
 
