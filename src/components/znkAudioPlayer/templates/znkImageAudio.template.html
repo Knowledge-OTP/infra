@@ -1,4 +1,4 @@
-<div class="wrapper" ng-class="{'no-footer': hideFooter}">
+<div class="wrapper" ng-class="{'no-footer': hideFooter}" translate-namespace="ZNK_AUDIO_PLAYER">
     <!--<div class="bg-img only-tablet" ng-style="{'background-image': 'url(' + d.blurredImage + ')'}"></div>-->
     <!--todo- do we need blurred image?-->
     <div class="inner-section">
@@ -10,7 +10,7 @@
                  ng-switch-when="1">
                 <button class="play-button" ng-click="audioPlayer.currState = audioPlayer.STATE_ENUM.PLAYING">
                     <svg-icon name="play"></svg-icon>
-                    <span class="play-audio-text">PLAY AUDIO</span>
+                    <span class="play-audio-text" translate=".PLAY_AUDIO"></span>
                 </button>
             </div>
             <div class="znk-audio-player-wrapper">
@@ -22,7 +22,7 @@
             </div>
             <div class="ended-msg"
                  ng-switch-when="3">
-                This audio was already played
+                <span translate=".THIS_VIDEO_ALREADY_PLAYED"></span>
             </div>
         </ng-switch>
     </div>
