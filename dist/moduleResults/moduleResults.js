@@ -76,7 +76,7 @@
                         var dataToSave = {};
                         var newModuleResultGuid = UtilitySrv.general.createGuid();
                         moduleResultsGuids[moduleId] = newModuleResultGuid;
-                        dataToSave[USER_MODULE_RESULTS_PATH] = moduleResultsGuids;
+                        angular.extend(dataToSave[USER_MODULE_RESULTS_PATH], moduleResultsGuids);
                         var moduleResultPath = MODULE_RESULTS_PATH + '/' + newModuleResultGuid;
                         return _getInitModuleResult(moduleId, newModuleResultGuid).then(function(initModuleResult) {
                             dataToSave[moduleResultPath] = initModuleResult;
