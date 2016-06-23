@@ -414,7 +414,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                         angular.forEach(headers, function (header) {
                             header.results = moduleResults.filter(function (result) {
                                 return header.id === result.moduleId;
-                            });
+                            })[0];
                         });
 
                         return headers;
