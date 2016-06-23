@@ -4159,7 +4159,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
 
 }]);
 
-angular.module('znk.infra.userAssignModule').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -7187,13 +7187,17 @@ angular.module('znk.infra.znkModuleResults').run(['$templateCache', function($te
             }
 
             function _getInitModuleResult(moduleId, guid){
-                return $q.when( {
-                    "moduleId": moduleId,
-                    "assign": false,
-                    "contentAssign": false,
-                    "date": null,
-                    "tutorId": null,
-                    guid: guid
+                var userProm = InfraConfigSrv.getUserData();
+                return userProm.then(function(user) {
+                    return {
+                        moduleId: moduleId,
+                        assign: false,
+                        contentAssign: false,
+                        date: Date.now(),
+                        tutorId: null,
+                        guid: guid,
+                        uid: user.uid
+                    };
                 });
             }
 
