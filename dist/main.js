@@ -248,7 +248,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.auth').factory('AuthService',
-        ["ENV", function (ENV) {
+        function (ENV) {
             'ngInject';
 
             var authService = {};
@@ -260,7 +260,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             };
 
             return authService;
-        }]);
+        });
 })(angular);
 
 
@@ -1473,7 +1473,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 })(angular);
 
 "use strict";
-angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "ContentAvailSrv", "$log", function(StorageRevSrv, $q, ContentAvailSrv, $log) {
+angular.module('znk.infra.exams').service('ExamSrv', function(StorageRevSrv, $q, ContentAvailSrv, $log) {
         'ngInject';
 
         var self = this;
@@ -1536,7 +1536,7 @@ angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "Co
                 return $q.all(examsProms);
             });
         };
-}]);
+});
 
 angular.module('znk.infra.exams').run(['$templateCache', function($templateCache) {
 
@@ -1556,7 +1556,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
     'use strict';
 
     angular.module('znk.infra.exerciseDataGetters').factory('BaseExerciseGetterSrv',
-        ["ContentSrv", "$log", "$q", function (ContentSrv, $log, $q) {
+        function (ContentSrv, $log, $q) {
             'ngInject';
             
             var BaseExerciseGetterSrvPrototype = {};
@@ -1609,13 +1609,13 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
             BaseExerciseGetterSrv.prototype = BaseExerciseGetterSrvPrototype;
 
             return BaseExerciseGetterSrv;
-        }]
+        }
     );
 })(angular);
 
 'use strict';
 
-angular.module('znk.infra.exerciseDataGetters').service('CategoryService', ["StorageRevSrv", "$q", "categoryEnum", function (StorageRevSrv, $q, categoryEnum)  {
+angular.module('znk.infra.exerciseDataGetters').service('CategoryService', function (StorageRevSrv, $q, categoryEnum)  {
         'ngInject';
 
         var self = this;
@@ -1730,13 +1730,13 @@ angular.module('znk.infra.exerciseDataGetters').service('CategoryService', ["Sto
                 return getAllLevel4CategoriessProm;
             };
         })();
-}]);
+});
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.exerciseDataGetters').service('WorkoutsSrv',
-        ["ExerciseStatusEnum", "ExerciseTypeEnum", "$log", "StorageSrv", "ExerciseResultSrv", "ContentAvailSrv", "$q", "InfraConfigSrv", "BaseExerciseGetterSrv", function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
+        function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
                   InfraConfigSrv, BaseExerciseGetterSrv) {
             'ngInject';
 
@@ -1825,7 +1825,7 @@ angular.module('znk.infra.exerciseDataGetters').service('CategoryService', ["Sto
             };
 
             this.getWorkoutKey = getWorkoutKey;
-        }]
+        }
     );
 })(angular);
 
@@ -3614,7 +3614,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
         _examScoreFnGetter = examScoreFnGetter;
     };
 
-    this.$get = ["$q", "ExamTypeEnum", "StorageRevSrv", "$log", "$injector", function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
+    this.$get = function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
         var scoringServiceObjApi = {};
         var keysMapConst = {
             crossTestScore: 'CrossTestScore',
@@ -3722,7 +3722,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
         };
 
         return scoringServiceObjApi;
-    }];
+    };
 
 });
 
@@ -4814,7 +4814,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
-    ["InfraConfigSrv", "StorageSrv", function (InfraConfigSrv, StorageSrv) {
+    function (InfraConfigSrv, StorageSrv) {
 
         var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
 
@@ -4849,7 +4849,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                 return globalStorage.set(profilePath, newProfile);
             });
         };
-}]);
+});
 
 angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 
@@ -5198,8 +5198,8 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 
 (function (angular) {
 
-    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', [
-        function znkImageAudio() {
+    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', ['$translatePartialLoader',
+        function znkImageAudio($translatePartialLoader) {
 
             return {
                 templateUrl: 'components/znkAudioPlayer/templates/znkImageAudio.template.html',
@@ -5215,6 +5215,8 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                     blurredImageGetter: '&?blurredImage'
                 },
                 link: function (scope) {
+                    $translatePartialLoader.addPart('znkAudioPlayer');
+
                     scope.d = {
                         image: scope.imageGetter(),
                         blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined
@@ -5552,7 +5554,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "\n" +
     "");
   $templateCache.put("components/znkAudioPlayer/templates/znkImageAudio.template.html",
-    "<div class=\"wrapper\" ng-class=\"{'no-footer': hideFooter}\">\n" +
+    "<div class=\"wrapper\" ng-class=\"{'no-footer': hideFooter}\" translate-namespace=\"ZNK_AUDIO_PLAYER\">\n" +
     "    <!--<div class=\"bg-img only-tablet\" ng-style=\"{'background-image': 'url(' + d.blurredImage + ')'}\"></div>-->\n" +
     "    <!--todo- do we need blurred image?-->\n" +
     "    <div class=\"inner-section\">\n" +
@@ -5564,7 +5566,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "                 ng-switch-when=\"1\">\n" +
     "                <button class=\"play-button\" ng-click=\"audioPlayer.currState = audioPlayer.STATE_ENUM.PLAYING\">\n" +
     "                    <svg-icon name=\"play\"></svg-icon>\n" +
-    "                    <span class=\"play-audio-text\">PLAY AUDIO</span>\n" +
+    "                    <span class=\"play-audio-text\" translate=\".PLAY_AUDIO\"></span>\n" +
     "                </button>\n" +
     "            </div>\n" +
     "            <div class=\"znk-audio-player-wrapper\">\n" +
@@ -5576,7 +5578,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "            </div>\n" +
     "            <div class=\"ended-msg\"\n" +
     "                 ng-switch-when=\"3\">\n" +
-    "                This audio was already played\n" +
+    "                <span translate=\".THIS_VIDEO_ALREADY_PLAYED\"></span>\n" +
     "            </div>\n" +
     "        </ng-switch>\n" +
     "    </div>\n" +
