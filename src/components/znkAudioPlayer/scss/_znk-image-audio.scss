@@ -22,7 +22,7 @@ znk-image-audio {
             text-align: center;
 
             img{
-                @include dimension(458px,308px);      // todo - fixed size?
+                @include dimension(458px,308px);
                 border-radius: 5px;
             }
         }

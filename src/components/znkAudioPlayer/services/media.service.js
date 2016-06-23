@@ -2,8 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.znkAudioPlayer').factory('MediaSrv', [
-        'ENV', '$q', '$window','AudioSrv',
-        function (ENV, $q, $window, AudioSrv) {
+        'ENV', '$q', '$window',
+        function (ENV, $q, $window) {
 
             var isRunningOnDevice = !!$window.cordova;
 
@@ -28,9 +28,9 @@
 
                 function canplayHandler(){
                     console.log('Html5 audio load end ' + src);
-                    //if (mediaStatus) {
-                    //    mediaStatus($window.Media.MEDIA_STARTING);
-                    //}
+                    if (mediaStatus) {
+                        mediaStatus($window.Media.MEDIA_STARTING);
+                    }
                 }
                 sound.addEventListener('canplay',canplayHandler, false);
 
@@ -145,12 +145,12 @@
                     }else{
                         MediaConstructor = Html5Media;
 
-                        if(AudioSrv.isAndroid()){
-                            var isExternalGet = !!src.match(/^http/);
-                            if(!isExternalGet){
-                                src = '/android_asset/www/' + src;
-                            }
-                        }
+                        //if(ionic.Platform.isAndroid()){
+                        //    var isExternalGet = !!src.match(/^http/);
+                        //    if(!isExternalGet){
+                        //        src = '/android_asset/www/' + src;
+                        //    }
+                        //}
                     }
 
                 }
@@ -209,9 +209,9 @@
             };
 
             MediaSrv.playSound = function(soundSrc,elementId){
-                if(AudioSrv.isAndroid()){
-                    soundSrc = '/android_asset/www/' + soundSrc;
-                }
+                //if(ionic.Platform.isAndroid()){
+                //    soundSrc = '/android_asset/www/' + soundSrc;
+                //}
                 if(!MediaSrv.soundsEnabled){
                     return;
                 }
@@ -235,11 +235,11 @@
                 //    return ENV.contentDir + '/media/';
                 //}
                 //
-                var path = 'offline/media/';
-                if(AudioSrv.isAndroid()){
-                    path = '/android_asset/www/' + path;
-                }
-                return path;
+                //var path = 'offline/media/';
+                //if(ionic.Platform.isAndroid()){
+                //    path = '/android_asset/www/' + path;
+                //}
+                //return path;
             };
 
             MediaSrv.newMedia = function newMedia(src, successCallback, errorCallback, statusCallback) {

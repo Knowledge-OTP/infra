@@ -248,7 +248,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.auth').factory('AuthService',
-        function (ENV) {
+        ["ENV", function (ENV) {
             'ngInject';
 
             var authService = {};
@@ -260,7 +260,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             };
 
             return authService;
-        });
+        }]);
 })(angular);
 
 
@@ -1473,7 +1473,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 })(angular);
 
 "use strict";
-angular.module('znk.infra.exams').service('ExamSrv', function(StorageRevSrv, $q, ContentAvailSrv, $log) {
+angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "ContentAvailSrv", "$log", function(StorageRevSrv, $q, ContentAvailSrv, $log) {
         'ngInject';
 
         var self = this;
@@ -1536,7 +1536,7 @@ angular.module('znk.infra.exams').service('ExamSrv', function(StorageRevSrv, $q,
                 return $q.all(examsProms);
             });
         };
-});
+}]);
 
 angular.module('znk.infra.exams').run(['$templateCache', function($templateCache) {
 
@@ -1556,7 +1556,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
     'use strict';
 
     angular.module('znk.infra.exerciseDataGetters').factory('BaseExerciseGetterSrv',
-        function (ContentSrv, $log, $q) {
+        ["ContentSrv", "$log", "$q", function (ContentSrv, $log, $q) {
             'ngInject';
             
             var BaseExerciseGetterSrvPrototype = {};
@@ -1609,13 +1609,13 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
             BaseExerciseGetterSrv.prototype = BaseExerciseGetterSrvPrototype;
 
             return BaseExerciseGetterSrv;
-        }
+        }]
     );
 })(angular);
 
 'use strict';
 
-angular.module('znk.infra.exerciseDataGetters').service('CategoryService', function (StorageRevSrv, $q, categoryEnum)  {
+angular.module('znk.infra.exerciseDataGetters').service('CategoryService', ["StorageRevSrv", "$q", "categoryEnum", function (StorageRevSrv, $q, categoryEnum)  {
         'ngInject';
 
         var self = this;
@@ -1730,13 +1730,13 @@ angular.module('znk.infra.exerciseDataGetters').service('CategoryService', funct
                 return getAllLevel4CategoriessProm;
             };
         })();
-});
+}]);
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.exerciseDataGetters').service('WorkoutsSrv',
-        function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
+        ["ExerciseStatusEnum", "ExerciseTypeEnum", "$log", "StorageSrv", "ExerciseResultSrv", "ContentAvailSrv", "$q", "InfraConfigSrv", "BaseExerciseGetterSrv", function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
                   InfraConfigSrv, BaseExerciseGetterSrv) {
             'ngInject';
 
@@ -1825,7 +1825,7 @@ angular.module('znk.infra.exerciseDataGetters').service('CategoryService', funct
             };
 
             this.getWorkoutKey = getWorkoutKey;
-        }
+        }]
     );
 })(angular);
 
@@ -3614,7 +3614,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
         _examScoreFnGetter = examScoreFnGetter;
     };
 
-    this.$get = function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
+    this.$get = ["$q", "ExamTypeEnum", "StorageRevSrv", "$log", "$injector", function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
         var scoringServiceObjApi = {};
         var keysMapConst = {
             crossTestScore: 'CrossTestScore',
@@ -3722,7 +3722,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
         };
 
         return scoringServiceObjApi;
-    };
+    }];
 
 });
 
@@ -4814,7 +4814,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
-    function (InfraConfigSrv, StorageSrv) {
+    ["InfraConfigSrv", "StorageSrv", function (InfraConfigSrv, StorageSrv) {
 
         var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
 
@@ -4849,7 +4849,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                 return globalStorage.set(profilePath, newProfile);
             });
         };
-});
+}]);
 
 angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 
@@ -5293,8 +5293,8 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkAudioPlayer').factory('MediaSrv', [
-        'ENV', '$q', '$window','AudioSrv',
-        function (ENV, $q, $window, AudioSrv) {
+        'ENV', '$q', '$window',
+        function (ENV, $q, $window) {
 
             var isRunningOnDevice = !!$window.cordova;
 
@@ -5319,9 +5319,9 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 
                 function canplayHandler(){
                     console.log('Html5 audio load end ' + src);
-                    //if (mediaStatus) {
-                    //    mediaStatus($window.Media.MEDIA_STARTING);
-                    //}
+                    if (mediaStatus) {
+                        mediaStatus($window.Media.MEDIA_STARTING);
+                    }
                 }
                 sound.addEventListener('canplay',canplayHandler, false);
 
@@ -5436,12 +5436,12 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                     }else{
                         MediaConstructor = Html5Media;
 
-                        if(AudioSrv.isAndroid()){
-                            var isExternalGet = !!src.match(/^http/);
-                            if(!isExternalGet){
-                                src = '/android_asset/www/' + src;
-                            }
-                        }
+                        //if(ionic.Platform.isAndroid()){
+                        //    var isExternalGet = !!src.match(/^http/);
+                        //    if(!isExternalGet){
+                        //        src = '/android_asset/www/' + src;
+                        //    }
+                        //}
                     }
 
                 }
@@ -5500,9 +5500,9 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
             };
 
             MediaSrv.playSound = function(soundSrc,elementId){
-                if(AudioSrv.isAndroid()){
-                    soundSrc = '/android_asset/www/' + soundSrc;
-                }
+                //if(ionic.Platform.isAndroid()){
+                //    soundSrc = '/android_asset/www/' + soundSrc;
+                //}
                 if(!MediaSrv.soundsEnabled){
                     return;
                 }
@@ -5526,11 +5526,11 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                 //    return ENV.contentDir + '/media/';
                 //}
                 //
-                var path = 'offline/media/';
-                if(AudioSrv.isAndroid()){
-                    path = '/android_asset/www/' + path;
-                }
-                return path;
+                //var path = 'offline/media/';
+                //if(ionic.Platform.isAndroid()){
+                //    path = '/android_asset/www/' + path;
+                //}
+                //return path;
             };
 
             MediaSrv.newMedia = function newMedia(src, successCallback, errorCallback, statusCallback) {
