@@ -6,6 +6,11 @@
 
 (function (angular) {
     'use strict';
+    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.znkModuleResults']);
+})(angular);
+
+(function (angular) {
+    'use strict';
 
     angular.module('znk.infra.autofocus', ['znk.infra.enum', 'znk.infra.svgIcon']);
 })(angular);
@@ -139,11 +144,6 @@
 
     angular.module('znk.infra.svgIcon', []);
 })(angular);
-(function (angular) {
-    'use strict';
-    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.znkModuleResults']);
-})(angular);
-
 (function (angular) {
     'use strict';
 
@@ -391,6 +391,44 @@
 })(angular);
 
 angular.module('znk.infra.analytics').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
+        'ZnkModuleService', 'ZnkModuleResultsService', '$q',
+        function (ZnkModuleService, ZnkModuleResultsService, $q) {
+            var userAssignModuleService = {};
+
+            userAssignModuleService.getAssignModules = function () {
+                return ZnkModuleService.getHeaders().then(function (headers) {
+                    var getPromArr = [];
+                    angular.forEach(headers, function (header) {
+                        var getProm = ZnkModuleResultsService.getModuleResult(header.id);
+                        getPromArr.push(getProm);
+                    });
+
+                    return $q.all(getPromArr).then(function (moduleResults) {
+                        angular.forEach(headers, function (header) {
+                            header.results = moduleResults.filter(function (result) {
+                                return header.id === result.moduleId;
+                            });
+                        });
+
+                        return headers;
+                    });
+                });
+            };
+
+            return userAssignModuleService;
+        }
+    ]);
+})(angular);
+
+
+angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -4158,41 +4196,6 @@ angular.module('znk.infra.storage').run(['$templateCache', function($templateCac
 angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCache) {
 
 }]);
-
-angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
-
-}]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', 'ZnkModuleResultsService', '$q',
-        function (ZnkModuleService, ZnkModuleResultsService, $q) {
-            var userAssignModuleService = {};
-
-            userAssignModuleService.getAssignModules = function () {
-                return ZnkModuleService.getHeaders().then(function (headers) {
-                    var getPromArr = [];
-                    angular.forEach(headers, function (header) {
-                        var getProm = ZnkModuleResultsService.getModuleResult(header.id);
-                        getPromArr.push(getProm);
-                    });
-
-                    return $q.all(getPromArr).then(function (moduleResults) {
-                        return {
-                            modules: headers,
-                            results: moduleResults
-                        };
-                    });
-                });
-            };
-
-            return userAssignModuleService;
-        }
-    ]);
-})(angular);
-
 
 (function (angular) {
     'use strict';

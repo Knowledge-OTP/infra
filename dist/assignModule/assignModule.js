@@ -3,10 +3,6 @@
     angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.znkModuleResults']);
 })(angular);
 
-angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
-
-}]);
-
 (function (angular) {
     'use strict';
 
@@ -24,10 +20,13 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
                     });
 
                     return $q.all(getPromArr).then(function (moduleResults) {
-                        return {
-                            modules: headers,
-                            results: moduleResults
-                        };
+                        angular.forEach(headers, function (header) {
+                            header.results = moduleResults.filter(function (result) {
+                                return header.id === result.moduleId;
+                            });
+                        });
+
+                        return headers;
                     });
                 });
             };
@@ -37,3 +36,7 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
     ]);
 })(angular);
 
+
+angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
+
+}]);

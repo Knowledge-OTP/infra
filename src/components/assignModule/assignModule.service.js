@@ -15,10 +15,13 @@
                     });
 
                     return $q.all(getPromArr).then(function (moduleResults) {
-                        return {
-                            modules: headers,
-                            results: moduleResults
-                        };
+                        angular.forEach(headers, function (header) {
+                            header.results = moduleResults.filter(function (result) {
+                                return header.id === result.moduleId;
+                            });
+                        });
+
+                        return headers;
                     });
                 });
             };
