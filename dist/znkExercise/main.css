@@ -470,7 +470,7 @@ znk-exercise-pager {
           opacity: 0.6; }
 
 znk-exercise:not(.done-btn-show) .question-bottom-shadow {
-  width: 0%; }
+  width: 0; }
 
 znk-exercise question-builder, znk-exercise questions-carousel, znk-exercise answer-builder {
   display: block; }
