@@ -61,24 +61,21 @@
                 }
                 moduleId = +moduleId;
 
-                var storage = InfraConfigSrv.getStorageService();
+
                 return _getModuleResultsGuids().then(function (moduleResultsGuids) {
                     var moduleResultGuid = moduleResultsGuids[moduleId];
                     if (!moduleResultGuid) {
                         if(dontInitialize){
                             return null;
                         }
-
                         var dataToSave = {};
                         var newModuleResultGuid = UtilitySrv.general.createGuid();
                         moduleResultsGuids[moduleId] = newModuleResultGuid;
                         dataToSave[MODULE_RESULTS_GUIDS_PATH] = moduleResultsGuids;
-
                         var moduleResultPath = MODULE_RESULTS_PATH + '/' + newModuleResultGuid;
-                        var initModuleResultProm = _getInitModuleResult(moduleId, newModuleResultGuid);
-                        return initModuleResultProm.then(function(initModuleResult) {
+                        return _getInitModuleResult(moduleId, newModuleResultGuid).then(function(initModuleResult) {
                             dataToSave[moduleResultPath] = initModuleResult;
-
+                            var storage = InfraConfigSrv.getStorageService();
                             return storage.set(dataToSave).then(function (res) {
                                 return res[moduleResultPath];
                             });
