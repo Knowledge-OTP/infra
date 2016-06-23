@@ -2,8 +2,8 @@
 
 (function (angular) {
 
-    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', ['AudioSrv',
-        function znkImageAudio(AudioSrv) {
+    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', [
+        function znkImageAudio() {
 
             return {
                 templateUrl: 'components/znkAudioPlayer/templates/znkImageAudio.template.html',
@@ -21,8 +21,7 @@
                 link: function (scope) {
                     scope.d = {
                         image: scope.imageGetter(),
-                        blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined,
-                        isMobile: AudioSrv.isMobile()
+                        blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined
                     };
 
                     var STATE_ENUM = {

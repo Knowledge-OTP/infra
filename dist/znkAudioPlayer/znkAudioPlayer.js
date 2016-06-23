@@ -262,8 +262,8 @@
 
 (function (angular) {
 
-    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', ['AudioSrv',
-        function znkImageAudio(AudioSrv) {
+    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', [
+        function znkImageAudio() {
 
             return {
                 templateUrl: 'components/znkAudioPlayer/templates/znkImageAudio.template.html',
@@ -281,8 +281,7 @@
                 link: function (scope) {
                     scope.d = {
                         image: scope.imageGetter(),
-                        blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined,
-                        isMobile: AudioSrv.isMobile()
+                        blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined
                     };
 
                     var STATE_ENUM = {
@@ -322,35 +321,6 @@
             };
         }]);
 
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkAudioPlayer').provider('AudioSrv', function () {
-
-        var isMobile = false;
-        var isAndroid = false;
-
-        this.setIsMobie = function(_isMobile){
-            isMobile = _isMobile;
-        };
-
-        this.setIsAndroid = function(_isAndroid) {
-            isAndroid = _isAndroid;
-        };
-
-        this.$get = [function () {
-            return {
-                isMobile: function(){
-                    return isMobile;
-                },
-                isAndroid: function() {
-                  return isAndroid;
-                }
-            };
-        }];
-    });
 })(angular);
 
 (function (angular) {
