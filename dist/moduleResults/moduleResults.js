@@ -11,7 +11,7 @@
         function (InfraConfigSrv, $log, $q, StorageSrv, UtilitySrv) {
 
             var moduleResultsService = {};
-            var MODULE_RESULTS_GUIDS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
+            var USER_MODULE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
             var MODULE_RESULTS_PATH = 'moduleResults';
 
             function _isValidNumber(number){
@@ -24,7 +24,7 @@
 
             function _getModuleResultsGuids(){
                 var storage = InfraConfigSrv.getStorageService();
-                return storage.get(MODULE_RESULTS_GUIDS_PATH);
+                return storage.get(USER_MODULE_RESULTS_PATH);
             }
 
             function _getInitModuleResult(moduleId, guid){
@@ -76,7 +76,7 @@
                         var dataToSave = {};
                         var newModuleResultGuid = UtilitySrv.general.createGuid();
                         moduleResultsGuids[moduleId] = newModuleResultGuid;
-                        dataToSave[MODULE_RESULTS_GUIDS_PATH] = moduleResultsGuids;
+                        dataToSave[USER_MODULE_RESULTS_PATH] = moduleResultsGuids;
                         var moduleResultPath = MODULE_RESULTS_PATH + '/' + newModuleResultGuid;
                         return _getInitModuleResult(moduleId, newModuleResultGuid).then(function(initModuleResult) {
                             dataToSave[moduleResultPath] = initModuleResult;
