@@ -1,0 +1,15 @@
+<div class="time-display time-passed" ng-if="::d.type === 1"></div>
+<!--<i ng-if="::d.type === 2"-->
+   <!--class="player-control"-->
+   <!--ng-click="d.playOrPause()">-->
+<!--</i>-->
+<ng-switch on="d.type" class="progress-container">
+    <div ng-switch-when="1" class="only-progress-wrapper">
+        <div class="audio-progress"></div>
+    </div>
+    <div ng-switch-when="2" class="range-progress-wrapper range">
+        <input type="range" min="0" max="0" step="1" value="0"/>
+    </div>
+</ng-switch>
+<div class="time-display time-left"></div>
+

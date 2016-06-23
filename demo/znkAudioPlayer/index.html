@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="main.css">
+    <style>
+        body {
+            background: #f2f2f2;
+        }
+
+        .znk-image-audio-wrapper{
+            width:450px;
+            margin: 100px auto;
+            display: block;
+        }
+    </style>
+</head>
+
+<body ng-app="demo" ng-controller="Main">
+<dev class="znk-image-audio-wrapper">
+    <znk-image-audio image="d.image"
+                     allow-replay="true"
+                     audio="d.audio"
+                     auto-play="false">
+    </znk-image-audio>
+</dev>
+
+
+<script src="angular/angular.js"></script>
+
+<script src="svgIcon/svgIcon.js"></script>
+<script src="znkAudioPlayer/znkAudioPlayer.js"></script>
+<script src="znkAudioPlayer/templates.js"></script>
+
+<script src="demo.js"></script>
+</body>
+</html>
