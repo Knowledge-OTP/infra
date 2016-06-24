@@ -403,22 +403,35 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             var userAssignModuleService = {};
 
             userAssignModuleService.getAssignModules = function () {
-                return ZnkModuleService.getHeaders().then(function (headers) {
+                return ZnkModuleService.getHeaders().then(function (moduleHeaders) {
                     var getPromArr = [];
-                    angular.forEach(headers, function (header) {
+                    angular.forEach(moduleHeaders, function (header) {
                         var getProm = ModuleResultsService.getModuleResult(header.id);
                         getPromArr.push(getProm);
                     });
 
                     return $q.all(getPromArr).then(function (moduleResults) {
-                        angular.forEach(headers, function (header) {
-                            header.results = moduleResults.filter(function (result) {
-                                return header.id === result.moduleId;
-                            })[0];
+                        var results = {};
+                        angular.forEach(moduleResults, function (result) {
+                            results[result.moduleId] = result;
                         });
-
-                        return headers;
+                        return {
+                            modules: moduleHeaders,
+                            results: results
+                        };
                     });
+                });
+            };
+
+            userAssignModuleService.setAssignModules = function (assignModules) {
+                var setPromArr = [];
+                angular.forEach(assignModules, function (assignModule) {
+                    var setProm = ModuleResultsService.setModuleResult(assignModule);
+                    setPromArr.push(setProm);
+                });
+
+                return $q.all(setPromArr).then(function () {
+                    return userAssignModuleService.getAssignModules();
                 });
             };
 
@@ -2900,7 +2913,6 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                 }
                 moduleId = +moduleId;
 
-
                 return _getModuleResultsGuids().then(function (moduleResultsGuids) {
                     var moduleResultGuid = moduleResultsGuids[moduleId];
                     if (!moduleResultGuid) {
@@ -2910,7 +2922,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                         var dataToSave = {};
                         var newModuleResultGuid = UtilitySrv.general.createGuid();
                         moduleResultsGuids[moduleId] = newModuleResultGuid;
-                        angular.extend(dataToSave[USER_MODULE_RESULTS_PATH], moduleResultsGuids);
+                        dataToSave[USER_MODULE_RESULTS_PATH] = moduleResultsGuids;
                         var moduleResultPath = MODULE_RESULTS_PATH + '/' + newModuleResultGuid;
                         return _getInitModuleResult(moduleId, newModuleResultGuid).then(function(initModuleResult) {
                             dataToSave[moduleResultPath] = initModuleResult;
@@ -2923,6 +2935,12 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
 
                     return _getModuleResultByGuid(moduleResultGuid, moduleId);
                 });
+            };
+
+            moduleResultsService.setModuleResult = function (newResult){
+                var storage = InfraConfigSrv.getStorageService();
+                var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
+                return storage.set(moduleResultPath, newResult);
             };
 
             return moduleResultsService;
