@@ -23,26 +23,23 @@
                         ALREADY_PLAYED: 3
                     };
 
-                    scope.d.source = angular.isDefined(scope.sourceGetter) ? scope.sourceGetter() : undefined;
-                    scope.d.type = angular.isDefined(scope.typeGetter) ? scope.typeGetter() : scope.d.statesEnum.START_PLAY;
-                    scope.d.audioCurrState = angular.isDefined(scope.switchInitGetter) ? scope.switchInitGetter() : undefined;
-
                     var STATE_ENUM = {
                         START_PLAY: 1,
                         PLAYING: 2,
                         ALREADY_PLAYED: 3
                     };
 
+                    scope.d.source = angular.isDefined(scope.sourceGetter) ? scope.sourceGetter() : undefined;
+                    scope.d.type = angular.isDefined(scope.typeGetter) ? scope.typeGetter() : scope.d.statesEnum.START_PLAY;
 
                     var allowReplay =  angular.isDefined(scope.allowReplay) ? scope.allowReplay() : false;
                     var autoPlay = angular.isDefined(scope.autoPlayGetter) ? scope.autoPlayGetter() : false;
                     scope.audioPlayer = {
                         STATE_ENUM: STATE_ENUM,
-                        audioEnded: function (allowReplayTemp){
+                        audioEnded: function (){
                             if(angular.isDefined(scope.onEnded)) {
                                 scope.onEnded();
                             }
-                            allowReplay = allowReplayTemp;
                             scope.audioPlayer.currState = allowReplay ? STATE_ENUM.START_PLAY : STATE_ENUM.ALREADY_PLAYED;
                         }
                     };
@@ -53,15 +50,8 @@
                         scope.audioPlayer.currState = autoPlay ? STATE_ENUM.PLAYING : STATE_ENUM.START_PLAY;
                     }
 
-
                     scope.$watch('audioPlayer.currState', function (state) {
                         scope.isPlaying = state === STATE_ENUM.PLAYING;
-                    });
-
-                    scope.$watch('showAsDone', function (showAsDone) {
-                        if(showAsDone && !allowReplay){
-                            scope.audioPlayer.currState = STATE_ENUM.ALREADY_PLAYED;
-                        }
                     });
                 }
             };

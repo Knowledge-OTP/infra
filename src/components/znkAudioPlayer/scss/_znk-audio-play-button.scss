@@ -32,9 +32,11 @@
     .play-button:focus, .play-button:active{
         outline: none;
     }
+
+    .ended-msg {
+        @include text-style(18px, $bgColor6, Lato, $regularFontWeight);
+        text-align: center;
+    }
+
 }
 
-.ended-msg {
-    @include text-style(18px, $bgColor6, Lato, $regularFontWeight);
-    text-align: center;
-}

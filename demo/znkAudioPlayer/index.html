@@ -9,10 +9,18 @@
             background: #f2f2f2;
         }
 
-        .znk-image-audio-wrapper{
-            width:450px;
+        .znk-image-audio-wrapper, .znk-audio-button-wrapper {
+            width: 450px;
             margin: 100px auto;
             display: block;
+        }
+
+        .znk-audio-button-wrapper znk-audio-player{
+            background-color: #887373;
+            height: 44px;
+            width: 355px;
+            padding: 0 20px;
+            border-radius: 24px;
         }
     </style>
 </head>
@@ -26,6 +34,14 @@
     </znk-image-audio>
 </dev>
 
+<dev class="znk-audio-button-wrapper">
+    <znk-audio-play-button
+        auto-play="false"
+        allow-replay="true"
+        source="d.audio">
+
+    </znk-audio-play-button>
+</dev>
 
 <script src="angular/angular.js"></script>
 
