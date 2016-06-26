@@ -1,3 +1,4 @@
 [0623/120943:ERROR:process_reader_win.cc(141)] SuspendThread: Access is denied. (0x5)
 [0623/120943:ERROR:exception_snapshot_win.cc(57)] thread ID 10184 not found in process
 [0623/120943:WARNING:crash_report_exception_handler.cc(60)] ProcessSnapshotWin::InitializeException failed
+[0626/220857:ERROR:scoped_process_suspend.cc(38)] NtResumeProcess, ntstatus=-1073741558
