@@ -35,14 +35,14 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
             });
         }
 
-        function _isShouldAddToScore(question) {
+        function _shouldAddToScore(question) {
             return (question.isAnsweredCorrectly && !question.afterAllowedTime);
         }
 
         function _getRawScore(questionsResults) {
             var score = 0;
             angular.forEach(questionsResults, function (question) {
-                if (_isShouldAddToScore(question)) {
+                if (_shouldAddToScore(question)) {
                     score += 1;
                 }
             });
