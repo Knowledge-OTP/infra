@@ -6,6 +6,11 @@
 
 (function (angular) {
     'use strict';
+    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.moduleResults']);
+})(angular);
+
+(function (angular) {
+    'use strict';
 
     angular.module('znk.infra.autofocus', ['znk.infra.enum', 'znk.infra.svgIcon']);
 })(angular);
@@ -89,6 +94,11 @@
 
 (function (angular) {
     'use strict';
+    angular.module('znk.infra.moduleResults', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
 
     angular.module('znk.infra.pngSequence', []);
 })(angular);
@@ -167,6 +177,11 @@
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.znkModule', []);
 })(angular);
 
 (function (angular) {
@@ -376,6 +391,57 @@
 })(angular);
 
 angular.module('znk.infra.analytics').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
+        'ZnkModuleService', 'ModuleResultsService', '$q',
+        function (ZnkModuleService, ModuleResultsService, $q) {
+            var userAssignModuleService = {};
+
+            userAssignModuleService.getAssignModules = function () {
+                return ZnkModuleService.getHeaders().then(function (moduleHeaders) {
+                    var results = {};
+                    var getProm = $q.when();
+                    angular.forEach(moduleHeaders, function (header) {
+                        getProm = getProm.then(function(){
+                            return ModuleResultsService.getModuleResult(header.id).then(function(moduleResult){
+                                results[moduleResult.moduleId] = moduleResult;
+                            });
+                        });
+                    });
+
+                    return getProm.then(function () {
+                        return {
+                            modules: moduleHeaders,
+                            results: results
+                        };
+                    });
+                });
+            };
+
+            userAssignModuleService.setAssignModules = function (assignModules) {
+                var setPromArr = [];
+                angular.forEach(assignModules, function (assignModule) {
+                    var setProm = ModuleResultsService.setModuleResult(assignModule);
+                    setPromArr.push(setProm);
+                });
+
+                return $q.all(setPromArr).then(function () {
+                    return userAssignModuleService.getAssignModules();
+                });
+            };
+
+            return userAssignModuleService;
+        }
+    ]);
+})(angular);
+
+
+angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -1990,25 +2056,23 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
      * @param exp (expression to display time)
      * @returns formatted time string
      */
-    angular.module('znk.infra.filters').filter('formatDuration', ['$log', function($log){
-        return function(time, exp) {
-            if (angular.isNumber(time) && !isNaN(time)) {
-                var t = Math.round(parseInt(time));
-                var hours = parseInt(t / 3600, 10);
-                t = t - (hours * 3600);
-                var minutes = parseInt(t / 60, 10);
-                t = t - (minutes * 60);
-                var seconds =  time % 60;
-                var defaultFormat = 'mm:ss';
-
-                if (!exp) {
-                    exp = defaultFormat;
-                }
-                return exp.replace(/hh/g,hours).replace(/mm/g,minutes).replace(/ss/g,seconds);
-            } else {
+    angular.module('znk.infra.filters').filter('formatDuration', ['$log', function ($log) {
+        return function (time, exp) {
+            if (!angular.isNumber(time) || isNaN(time)) {
                 $log.error('time is not a number:', time);
                 return '';
             }
+            var t = Math.round(parseInt(time));
+            var hours = parseInt(t / 3600, 10);
+            t = t - (hours * 3600);
+            var minutes = parseInt(t / 60, 10);
+            var seconds = time % 60;
+            var defaultFormat = 'mm:ss';
+
+            if (!exp) {
+                exp = defaultFormat;
+            }
+            return exp.replace(/hh/g, hours).replace(/mm/g, minutes).replace(/ss/g, seconds);
         };
     }]);
 })(angular);
@@ -2783,6 +2847,109 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
 })(angular);
 
 angular.module('znk.infra.hint').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.moduleResults').service('ModuleResultsService', [
+        'InfraConfigSrv', '$log', '$q', 'StorageSrv', 'UtilitySrv',
+        function (InfraConfigSrv, $log, $q, StorageSrv, UtilitySrv) {
+
+            var moduleResultsService = {};
+            var USER_MODULE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
+            var MODULE_RESULTS_PATH = 'moduleResults';
+
+            function _isValidNumber(number){
+                if(!angular.isNumber(number) && !angular.isString(number)){
+                    return false;
+                }
+
+                return !isNaN(+number);
+            }
+
+            function _getModuleResultsGuids(){
+                var storage = InfraConfigSrv.getStorageService();
+                return storage.get(USER_MODULE_RESULTS_PATH);
+            }
+
+            function _getInitModuleResult(moduleId, guid){
+                var userProm = InfraConfigSrv.getUserData();
+                return userProm.then(function(user) {
+                    return {
+                        moduleId: moduleId,
+                        assign: false,
+                        contentAssign: false,
+                        date: Date.now(),
+                        tutorId: null,
+                        guid: guid,
+                        uid: user.uid
+                    };
+                });
+            }
+
+            function _getModuleResultByGuid(guid, moduleId) {
+                var storage = InfraConfigSrv.getStorageService();
+                var path = MODULE_RESULTS_PATH + '/' + guid;
+                return storage.get(path).then(function(moduleResult){
+                    var initResultProm = _getInitModuleResult(moduleId, guid);
+                    return initResultProm.then(function(initResult) {
+                        if(moduleResult.guid !== guid){
+                            angular.extend(moduleResult,initResult);
+                        }else{
+                            UtilitySrv.object.extendWithoutOverride(moduleResult,initResult);
+                        }
+                        return moduleResult;
+                    });
+                });
+            }
+
+            moduleResultsService.getModuleResult = function (moduleId, dontInitialize) {
+                if(!_isValidNumber(moduleId)){
+                    var errMsg = 'Module id is not a number !!!';
+                    $log.error(errMsg);
+                    return $q.reject(errMsg);
+                }
+                moduleId = +moduleId;
+
+                return _getModuleResultsGuids().then(function (moduleResultsGuids) {
+                    var moduleResultGuid = moduleResultsGuids[moduleId];
+                    if (!moduleResultGuid) {
+                        if(dontInitialize){
+                            return null;
+                        }
+                        var dataToSave = {};
+                        var newModuleResultGuid = UtilitySrv.general.createGuid();
+                        moduleResultsGuids[moduleId] = newModuleResultGuid;
+                        dataToSave[USER_MODULE_RESULTS_PATH] = moduleResultsGuids;
+                        var moduleResultPath = MODULE_RESULTS_PATH + '/' + newModuleResultGuid;
+                        return _getInitModuleResult(moduleId, newModuleResultGuid).then(function(initModuleResult) {
+                            dataToSave[moduleResultPath] = initModuleResult;
+                            var storage = InfraConfigSrv.getStorageService();
+                            return storage.set(dataToSave).then(function (res) {
+                                return res[moduleResultPath];
+                            });
+                        });
+                    }
+
+                    return _getModuleResultByGuid(moduleResultGuid, moduleId);
+                });
+            };
+
+            moduleResultsService.setModuleResult = function (newResult){
+                var storage = InfraConfigSrv.getStorageService();
+                var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
+                return storage.set(moduleResultPath, newResult);
+            };
+
+            return moduleResultsService;
+        }
+    ]);
+})(angular);
+
+
+angular.module('znk.infra.moduleResults').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -7078,6 +7245,37 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
         }
     ]);
 })(angular);
+
+angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkModule').service('ZnkModuleService', [
+        'StorageRevSrv',
+        function (StorageRevSrv) {
+            var znkModuleService = {};
+
+            znkModuleService.getHeaders = function () {
+                return StorageRevSrv.getContent({
+                    exerciseType: 'moduleheaders'
+                });
+            };
+
+            znkModuleService.getById = function (moduleId) {
+                return StorageRevSrv.getContent({
+                    exerciseId: moduleId,
+                    exerciseType: 'module'
+                });
+            };
+
+            return znkModuleService;
+        }
+    ]);
+})(angular);
+
 
 angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg",
