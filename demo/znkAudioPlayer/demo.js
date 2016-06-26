@@ -9,7 +9,7 @@
                 .preferredLanguage('en');
         })
         .service('ENV', function () {
-            this.debug = false;
+            this.debug = true;
         })
         .controller('Main', function ($scope) {
             $scope.d = {};

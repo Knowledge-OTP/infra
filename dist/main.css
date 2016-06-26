@@ -1683,60 +1683,56 @@ znk-image-audio {
       width: 100%;
       background-color: rgba(22, 22, 22, 0.6);
       border-radius: 0 0 5px 5px; }
-      znk-image-audio .wrapper .audio-footer .play-button-wrapper {
-        display: -webkit-flex;
-        display: -ms-flexbox;
-        display: flex;
-        -webkit-justify-content: center;
-            -ms-flex-pack: center;
-                justify-content: center;
-        -webkit-align-items: center;
-            -ms-flex-align: center;
-                align-items: center; }
-        znk-image-audio .wrapper .audio-footer .play-button-wrapper .play-button {
-          font-size: 16px;
-          color: #fff;
-          font-family: Lato;
-          font-weight: 400;
-          width: 180px;
-          height: 45px;
-          display: -webkit-flex;
-          display: -ms-flexbox;
-          display: flex;
-          -webkit-justify-content: center;
-              -ms-flex-pack: center;
-                  justify-content: center;
-          -webkit-align-items: center;
-              -ms-flex-align: center;
-                  align-items: center;
-          cursor: pointer;
-          border-radius: 50px;
-          background: transparent;
-          border: 2px solid #fff; }
-          znk-image-audio .wrapper .audio-footer .play-button-wrapper .play-button svg-icon {
-            width: 28px;
-            height: auto;
-            margin-right: 5px; }
-            znk-image-audio .wrapper .audio-footer .play-button-wrapper .play-button svg-icon path, znk-image-audio .wrapper .audio-footer .play-button-wrapper .play-button svg-icon polygon {
-              fill: #fff; }
-          znk-image-audio .wrapper .audio-footer .play-button-wrapper .play-button .play-audio-text {
-            margin-left: 10px; }
-        znk-image-audio .wrapper .audio-footer .play-button-wrapper .play-button:focus, znk-image-audio .wrapper .audio-footer .play-button-wrapper .play-button:active {
-          outline: none; }
-      znk-image-audio .wrapper .audio-footer .ended-msg {
-        font-size: 18px;
-        color: #fff;
-        font-family: Lato;
-        font-weight: 400;
-        text-align: center; }
-      znk-image-audio .wrapper .audio-footer .znk-audio-player-wrapper {
-        display: -webkit-flex;
-        display: -ms-flexbox;
-        display: flex;
-        -webkit-justify-content: center;
-            -ms-flex-pack: center;
-                justify-content: center;
+      znk-image-audio .wrapper .audio-footer znk-audio-player {
         width: 380px; }
+
+znk-audio-button .play-button-wrapper {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-justify-content: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center; }
+  znk-audio-button .play-button-wrapper .play-button {
+    font-size: 16px;
+    color: #fff;
+    font-family: Lato;
+    font-weight: 400;
+    width: 180px;
+    height: 45px;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-justify-content: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+    -webkit-align-items: center;
+        -ms-flex-align: center;
+            align-items: center;
+    cursor: pointer;
+    border-radius: 50px;
+    background: transparent;
+    border: 2px solid #fff; }
+    znk-audio-button .play-button-wrapper .play-button svg-icon {
+      width: 28px;
+      height: auto;
+      margin-right: 5px; }
+      znk-audio-button .play-button-wrapper .play-button svg-icon path, znk-audio-button .play-button-wrapper .play-button svg-icon polygon {
+        fill: #fff; }
+    znk-audio-button .play-button-wrapper .play-button .play-audio-text {
+      margin-left: 10px; }
+  znk-audio-button .play-button-wrapper .play-button:focus, znk-audio-button .play-button-wrapper .play-button:active {
+    outline: none; }
+
+znk-audio-button .ended-msg {
+  font-size: 18px;
+  color: #fff;
+  font-family: Lato;
+  font-weight: 400;
+  text-align: center; }
 
 /* fonts size */
 /*
