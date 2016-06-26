@@ -1974,20 +1974,27 @@ angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function(
                     return avgTime;
                 }
 
+                var questionsNum = exerciseResult.questionResults.length;
+
+                exerciseResult.totalQuestionNum = questionsNum;
+
+                exerciseResult.totalAnsweredNum = countWrong + countCorrect;
+
+                exerciseResult.correctAnswersNum = countCorrect;
+                exerciseResult.wrongAnswersNum = countWrong;
+                exerciseResult.skippedAnswersNum = countSkipped;
+                
                 exerciseResult.duration = totalTimeSpentOnQuestions;
                 exerciseResult.correctAvgTime = _getAvgTime(countCorrect,correctTotalTime);
                 exerciseResult.wrongAvgTime = _getAvgTime(countWrong, wrongTotalTime);
                 exerciseResult.skippedAvgTime = _getAvgTime(countSkipped, skippedTotalTime);
-                exerciseResult.correctAnswersNum = countCorrect;
-                exerciseResult.wrongAnswersNum = countWrong;
-                exerciseResult.skippedAnswersNum = countSkipped;
+
 
                 if(exerciseResult.isComplete && angular.isUndefined(exerciseResult.endedTime)){
                     exerciseResult.endedTime = Date.now();
                 }
 
-                var numOfAnsweredQuestions = exerciseResult.questionResults.length;
-                exerciseResult.avgTimePerQuestion = numOfAnsweredQuestions ? Math.round(totalTimeSpentOnQuestions / numOfAnsweredQuestions) : 0;
+                exerciseResult.avgTimePerQuestion = questionsNum ? Math.round(totalTimeSpentOnQuestions / questionsNum) : 0;
                 var exerciseResultPath = _getExerciseResultPath(exerciseResult.guid);
 
                 dataToSave[exerciseResultPath] = exerciseResult;
@@ -2163,7 +2170,7 @@ angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function(
                     return $q.reject(errMsg);
                 }
                 examId = +examId;
-                
+
                 return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
                     return _getExamResultsGuids().then(function (examResultsGuids) {
                         var examResultGuid = examResultsGuids[examId];
