@@ -386,7 +386,7 @@ znk-image-audio {
       znk-image-audio .wrapper .audio-footer znk-audio-player {
         width: 380px; }
 
-znk-audio-button .play-button-wrapper {
+znk-audio-play-button .play-button-wrapper {
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
@@ -396,7 +396,7 @@ znk-audio-button .play-button-wrapper {
   -webkit-align-items: center;
       -ms-flex-align: center;
           align-items: center; }
-  znk-audio-button .play-button-wrapper .play-button {
+  znk-audio-play-button .play-button-wrapper .play-button {
     font-size: 16px;
     color: #fff;
     font-family: Lato;
@@ -416,18 +416,18 @@ znk-audio-button .play-button-wrapper {
     border-radius: 50px;
     background: transparent;
     border: 2px solid #fff; }
-    znk-audio-button .play-button-wrapper .play-button svg-icon {
+    znk-audio-play-button .play-button-wrapper .play-button svg-icon {
       width: 28px;
       height: auto;
       margin-right: 5px; }
-      znk-audio-button .play-button-wrapper .play-button svg-icon path, znk-audio-button .play-button-wrapper .play-button svg-icon polygon {
+      znk-audio-play-button .play-button-wrapper .play-button svg-icon path, znk-audio-play-button .play-button-wrapper .play-button svg-icon polygon {
         fill: #fff; }
-    znk-audio-button .play-button-wrapper .play-button .play-audio-text {
+    znk-audio-play-button .play-button-wrapper .play-button .play-audio-text {
       margin-left: 10px; }
-  znk-audio-button .play-button-wrapper .play-button:focus, znk-audio-button .play-button-wrapper .play-button:active {
+  znk-audio-play-button .play-button-wrapper .play-button:focus, znk-audio-play-button .play-button-wrapper .play-button:active {
     outline: none; }
 
-znk-audio-button .ended-msg {
+znk-audio-play-button .ended-msg {
   font-size: 18px;
   color: #fff;
   font-family: Lato;
