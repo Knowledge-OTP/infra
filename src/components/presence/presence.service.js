@@ -2,7 +2,7 @@
 
 (function (angular) {
     angular.module('znk.infra.presence').provider('PresenceService', function () {
-        
+
         var AuthSrvName;
 
         this.setAuthServiceName = function (authServiceName) {
@@ -26,6 +26,9 @@
                 PresenceService.addListeners = function () {
                     var authData = authService.getAuth();
                     if (authData) {
+
+                        addIdleScriptTag();
+
                         var amOnline = rootRef.child('.info/connected');
                         var userRef = rootRef.child('presence/' + authData.uid);
                         amOnline.on('value', function (snapshot) {
@@ -50,6 +53,13 @@
                 PresenceService.getUserStatus = function (userId) {
                     return rootRef.child('presence/' + userId);
                 };
+
+                function addIdleScriptTag () {
+                    var script = $document[0].createElement('script');
+                    script.type = 'text/javascript';
+                    script.src = 'https://www.firebase.com/js/libs/idle.js';
+                    $document[0].head.appendChild(script);
+                }
 
                 return PresenceService;
             }];
