@@ -439,6 +439,8 @@ describe('testing service "ExerciseResult":', function () {
             expectedResult.correctAnswersNum = 5;
             expectedResult.wrongAnswersNum =  3;
             expectedResult.skippedAnswersNum = 2;
+            expectedResult.totalQuestionNum = 10;
+            expectedResult.totalAnsweredNum = 8;
 
             expect(exerciseResult).toEqual(jasmine.objectContaining(expectedResult));
         });
