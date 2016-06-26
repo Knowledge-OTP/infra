@@ -28,8 +28,9 @@
 <body ng-app="demo" ng-controller="Main">
 <dev class="znk-image-audio-wrapper">
     <znk-image-audio image="d.image"
-                     allow-replay="true"
+                     allow-replay="false"
                      audio="d.audio"
+                     on-ended="d.onAudioEnded()"
                      auto-play="false">
     </znk-image-audio>
 </dev>
