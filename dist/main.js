@@ -5639,6 +5639,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "            switch-init=\"audioPlayer.currState\"\n" +
     "            source=\"source\"\n" +
     "            on-ended=\"onEnded()\"\n" +
+    "            allow-replay=\"allowReplay()\"\n" +
     "            auto-play=\"autoPlayGetter()\">\n" +
     "        </znk-audio-play-button>\n" +
     "    </div>\n" +
