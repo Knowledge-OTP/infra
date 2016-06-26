@@ -248,7 +248,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.auth').factory('AuthService',
-        ["ENV", function (ENV) {
+        function (ENV) {
             'ngInject';
 
             var authService = {};
@@ -260,7 +260,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             };
 
             return authService;
-        }]);
+        });
 })(angular);
 
 
@@ -1473,7 +1473,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 })(angular);
 
 "use strict";
-angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "ContentAvailSrv", "$log", function(StorageRevSrv, $q, ContentAvailSrv, $log) {
+angular.module('znk.infra.exams').service('ExamSrv', function(StorageRevSrv, $q, ContentAvailSrv, $log) {
         'ngInject';
 
         var self = this;
@@ -1536,7 +1536,7 @@ angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "Co
                 return $q.all(examsProms);
             });
         };
-}]);
+});
 
 angular.module('znk.infra.exams').run(['$templateCache', function($templateCache) {
 
@@ -1556,7 +1556,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
     'use strict';
 
     angular.module('znk.infra.exerciseDataGetters').factory('BaseExerciseGetterSrv',
-        ["ContentSrv", "$log", "$q", function (ContentSrv, $log, $q) {
+        function (ContentSrv, $log, $q) {
             'ngInject';
             
             var BaseExerciseGetterSrvPrototype = {};
@@ -1609,13 +1609,13 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
             BaseExerciseGetterSrv.prototype = BaseExerciseGetterSrvPrototype;
 
             return BaseExerciseGetterSrv;
-        }]
+        }
     );
 })(angular);
 
 'use strict';
 
-angular.module('znk.infra.exerciseDataGetters').service('CategoryService', ["StorageRevSrv", "$q", "categoryEnum", function (StorageRevSrv, $q, categoryEnum)  {
+angular.module('znk.infra.exerciseDataGetters').service('CategoryService', function (StorageRevSrv, $q, categoryEnum)  {
         'ngInject';
 
         var self = this;
@@ -1730,13 +1730,13 @@ angular.module('znk.infra.exerciseDataGetters').service('CategoryService', ["Sto
                 return getAllLevel4CategoriessProm;
             };
         })();
-}]);
+});
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.exerciseDataGetters').service('WorkoutsSrv',
-        ["ExerciseStatusEnum", "ExerciseTypeEnum", "$log", "StorageSrv", "ExerciseResultSrv", "ContentAvailSrv", "$q", "InfraConfigSrv", "BaseExerciseGetterSrv", function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
+        function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
                   InfraConfigSrv, BaseExerciseGetterSrv) {
             'ngInject';
 
@@ -1825,7 +1825,7 @@ angular.module('znk.infra.exerciseDataGetters').service('CategoryService', ["Sto
             };
 
             this.getWorkoutKey = getWorkoutKey;
-        }]
+        }
     );
 })(angular);
 
@@ -3621,7 +3621,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
         _examScoreFnGetter = examScoreFnGetter;
     };
 
-    this.$get = ["$q", "ExamTypeEnum", "StorageRevSrv", "$log", "$injector", function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
+    this.$get = function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
         var scoringServiceObjApi = {};
         var keysMapConst = {
             crossTestScore: 'CrossTestScore',
@@ -3733,7 +3733,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
         };
 
         return scoringServiceObjApi;
-    }];
+    };
 
 });
 
@@ -4825,7 +4825,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
-    ["InfraConfigSrv", "StorageSrv", function (InfraConfigSrv, StorageSrv) {
+    function (InfraConfigSrv, StorageSrv) {
 
         var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
 
@@ -4860,7 +4860,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                 return globalStorage.set(profilePath, newProfile);
             });
         };
-}]);
+});
 
 angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 
@@ -7998,11 +7998,23 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</svg>\n" +
     "");
   $templateCache.put("components/znkExercise/svg/chevron-icon.svg",
-    "<svg x=\"0px\" y=\"0px\" viewBox=\"0 0 143.5 65.5\" xmlns=\"http://www.w3.org/2000/svg\" class=\"chevron-icon\">\n" +
+    "<svg x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "     viewBox=\"0 0 143.5 65.5\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     class=\"znk-exercise-chevron-svg\">\n" +
     "    <style>\n" +
-    "        .chevron-icon{\n" +
-    "            width: 33px;\n" +
-    "            height:auto;\n" +
+    "        .znk-exercise-chevron-svg{\n" +
+    "            height: 16px;\n" +
+    "        }\n" +
+    "\n" +
+    "        .znk-exercise-chevron-svg .st0{\n" +
+    "            stroke: #0a9bad;\n" +
+    "            fill: none;\n" +
+    "            stroke-width: 12;\n" +
+    "            stroke-linecap: round;\n" +
+    "            stroke-linejoin: round;\n" +
+    "            stroke-miterlimit: 10;\n" +
     "        }\n" +
     "    </style>\n" +
     "    <polyline class=\"st0\" points=\"6,6 71.7,59.5 137.5,6 \"/>\n" +

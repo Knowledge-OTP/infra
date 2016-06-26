@@ -2042,12 +2042,10 @@ znk-exercise.desktop {
       right: -40px; }
       znk-exercise.desktop .btn-section .btn-container.right-container.question-answered button {
         background: #0a9bad; }
-        znk-exercise.desktop .btn-section .btn-container.right-container.question-answered button svg-icon.chevron .st0 {
-          stroke: #fff; }
       znk-exercise.desktop .btn-section .btn-container.right-container button {
         border-top-right-radius: 42px;
         border-bottom-right-radius: 42px;
-        padding-left: 2px; }
+        padding-right: 3px; }
         znk-exercise.desktop .btn-section .btn-container.right-container button .chevron {
           -webkit-transform: rotate(-90deg);
                   transform: rotate(-90deg); }
@@ -2075,10 +2073,6 @@ znk-exercise.desktop {
       cursor: pointer; }
       znk-exercise.desktop .btn-section .btn-container button:focus {
         outline: none; }
-      znk-exercise.desktop .btn-section .btn-container button svg-icon.chevron {
-        width: 33px; }
-        znk-exercise.desktop .btn-section .btn-container button svg-icon.chevron .st0 {
-          stroke: #0a9bad; }
   znk-exercise.desktop .btn-section .done-btn-wrap {
     z-index: 3;
     width: 160px;
@@ -2096,13 +2090,6 @@ znk-exercise.desktop {
       font-weight: normal;
       border-radius: 30px;
       cursor: pointer; }
-  znk-exercise.desktop svg-icon.chevron .st0 {
-    fill: none;
-    stroke: #231F20;
-    stroke-width: 12;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-miterlimit: 10; }
   znk-exercise.desktop questions-carousel.znk-carousel-container {
     display: -webkit-flex;
     display: -ms-flexbox;
