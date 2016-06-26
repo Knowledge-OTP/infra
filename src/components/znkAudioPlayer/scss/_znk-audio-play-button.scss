@@ -15,12 +15,18 @@ znk-audio-play-button {
             border: 2px solid $bgColor6;
 
             svg-icon {
-                width: 28px;
-                height: auto;
-                margin-right: 5px;
+                svg {
+                    width: 28px;
+                    height: auto;
+                    margin-right: 5px;
 
-                path, polygon {
-                    fill: $bgColor6;
+                    path {
+                        fill: $bgColor6;
+                    }
+
+                    circle{
+                        stroke: $bgColor6;
+                    }
                 }
             }
 

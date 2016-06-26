@@ -416,12 +416,14 @@ znk-audio-play-button .play-button-wrapper {
     border-radius: 50px;
     background: transparent;
     border: 2px solid #fff; }
-    znk-audio-play-button .play-button-wrapper .play-button svg-icon {
+    znk-audio-play-button .play-button-wrapper .play-button svg-icon svg {
       width: 28px;
       height: auto;
       margin-right: 5px; }
-      znk-audio-play-button .play-button-wrapper .play-button svg-icon path, znk-audio-play-button .play-button-wrapper .play-button svg-icon polygon {
+      znk-audio-play-button .play-button-wrapper .play-button svg-icon svg path {
         fill: #fff; }
+      znk-audio-play-button .play-button-wrapper .play-button svg-icon svg circle {
+        stroke: #fff; }
     znk-audio-play-button .play-button-wrapper .play-button .play-audio-text {
       margin-left: 10px; }
   znk-audio-play-button .play-button-wrapper .play-button:focus, znk-audio-play-button .play-button-wrapper .play-button:active {

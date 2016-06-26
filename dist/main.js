@@ -5565,7 +5565,23 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 
 angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkAudioPlayer/svg/play-icon.svg",
-    "<?xml version=\"1.0\" ?><!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg enable-background=\"new 0 0 34 34\" height=\"34px\" id=\"Layer_1\" version=\"1.1\" viewBox=\"0 0 34 34\" width=\"34px\" xml:space=\"preserve\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><g><path d=\"M17.078,0.25c-9.389,0-17,7.611-17,17s7.611,17,17,17c9.389,0,17-7.611,17-17S26.467,0.25,17.078,0.25z    M17.078,31.25c-7.732,0-14-6.268-14-14c0-7.732,6.268-14,14-14s14,6.268,14,14C31.078,24.982,24.81,31.25,17.078,31.25z\" fill=\"#231F20\"/><polygon fill=\"#231F20\" points=\"14,23.963 23,17.25 14,10.537  \"/></g></svg>");
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+    "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"0 0 55.7 55.7\" class=\"play-icon\">\n" +
+    "    <style>\n" +
+    "        .play-icon {\n" +
+    "            enable-background:new 0 0 55.7 55.7;\n" +
+    "        }\n" +
+    "    </style>\n" +
+    "<style type=\"text/css\">\n" +
+    "	.st0{fill:none;stroke:#231F20;stroke-width:3;stroke-miterlimit:10;}\n" +
+    "	.st1{fill:#231F20;}\n" +
+    "</style>\n" +
+    "<circle class=\"st0\" cx=\"27.8\" cy=\"27.8\" r=\"26.3\"/>\n" +
+    "<path class=\"st1\" d=\"M22.7,16.6L39,26.1c1.4,0.8,1.4,2.8,0,3.6L22.7,39c-1.4,0.8-3.1-0.2-3.1-1.8V18.4\n" +
+    "	C19.6,16.8,21.3,15.8,22.7,16.6z\"/>\n" +
+    "</svg>\n" +
+    "");
   $templateCache.put("components/znkAudioPlayer/templates/znkAudioPlayButton.template.html",
     "<ng-switch on=\"audioPlayer.currState\" translate-namespace=\"ZNK_AUDIO_PLAYER\">\n" +
     "    <div class=\"play-button-wrapper\"\n" +
