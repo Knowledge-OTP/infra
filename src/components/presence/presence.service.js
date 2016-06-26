@@ -57,8 +57,9 @@
                 function addIdleScriptTag () {
                     var script = $document[0].createElement('script');
                     script.type = 'text/javascript';
-                    script.src = 'https://www.firebase.com/js/libs/idle.js';
+                    script.src = './idle.js';
                     $document[0].head.appendChild(script);
+
                 }
 
                 return PresenceService;
