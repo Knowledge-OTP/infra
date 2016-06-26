@@ -248,7 +248,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.auth').factory('AuthService',
-        ["ENV", function (ENV) {
+        function (ENV) {
             'ngInject';
 
             var authService = {};
@@ -260,7 +260,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             };
 
             return authService;
-        }]);
+        });
 })(angular);
 
 
@@ -1473,7 +1473,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 })(angular);
 
 "use strict";
-angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "ContentAvailSrv", "$log", function(StorageRevSrv, $q, ContentAvailSrv, $log) {
+angular.module('znk.infra.exams').service('ExamSrv', function(StorageRevSrv, $q, ContentAvailSrv, $log) {
         'ngInject';
 
         var self = this;
@@ -1536,7 +1536,7 @@ angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "Co
                 return $q.all(examsProms);
             });
         };
-}]);
+});
 
 angular.module('znk.infra.exams').run(['$templateCache', function($templateCache) {
 
@@ -1556,7 +1556,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
     'use strict';
 
     angular.module('znk.infra.exerciseDataGetters').factory('BaseExerciseGetterSrv',
-        ["ContentSrv", "$log", "$q", function (ContentSrv, $log, $q) {
+        function (ContentSrv, $log, $q) {
             'ngInject';
             
             var BaseExerciseGetterSrvPrototype = {};
@@ -1609,13 +1609,13 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
             BaseExerciseGetterSrv.prototype = BaseExerciseGetterSrvPrototype;
 
             return BaseExerciseGetterSrv;
-        }]
+        }
     );
 })(angular);
 
 'use strict';
 
-angular.module('znk.infra.exerciseDataGetters').service('CategoryService', ["StorageRevSrv", "$q", "categoryEnum", function (StorageRevSrv, $q, categoryEnum)  {
+angular.module('znk.infra.exerciseDataGetters').service('CategoryService', function (StorageRevSrv, $q, categoryEnum)  {
         'ngInject';
 
         var self = this;
@@ -1730,13 +1730,13 @@ angular.module('znk.infra.exerciseDataGetters').service('CategoryService', ["Sto
                 return getAllLevel4CategoriessProm;
             };
         })();
-}]);
+});
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.exerciseDataGetters').service('WorkoutsSrv',
-        ["ExerciseStatusEnum", "ExerciseTypeEnum", "$log", "StorageSrv", "ExerciseResultSrv", "ContentAvailSrv", "$q", "InfraConfigSrv", "BaseExerciseGetterSrv", function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
+        function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
                   InfraConfigSrv, BaseExerciseGetterSrv) {
             'ngInject';
 
@@ -1825,7 +1825,7 @@ angular.module('znk.infra.exerciseDataGetters').service('CategoryService', ["Sto
             };
 
             this.getWorkoutKey = getWorkoutKey;
-        }]
+        }
     );
 })(angular);
 
@@ -3614,7 +3614,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
         _examScoreFnGetter = examScoreFnGetter;
     };
 
-    this.$get = ["$q", "ExamTypeEnum", "StorageRevSrv", "$log", "$injector", function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
+    this.$get = function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
         var scoringServiceObjApi = {};
         var keysMapConst = {
             crossTestScore: 'CrossTestScore',
@@ -3722,7 +3722,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
         };
 
         return scoringServiceObjApi;
-    }];
+    };
 
 });
 
@@ -4814,7 +4814,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
-    ["InfraConfigSrv", "StorageSrv", function (InfraConfigSrv, StorageSrv) {
+    function (InfraConfigSrv, StorageSrv) {
 
         var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
 
@@ -4849,7 +4849,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                 return globalStorage.set(profilePath, newProfile);
             });
         };
-}]);
+});
 
 angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 
@@ -4948,6 +4948,66 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }]);
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkAudioPlayer').directive('znkAudioPlayButton', [
+        function znkAudioPlayerDrv() {
+            return {
+                templateUrl: 'components/znkAudioPlayer/templates/znkAudioPlayButton.template.html',
+                scope: {
+                    sourceGetter: '&source',
+                    typeGetter: '&?type',
+                    autoPlayGetter: '&autoPlay',
+                    onEnded: '&',
+                    switchInitGetter: '&switchInit',
+                    allowReplay: '&?'
+                },
+                link:function(scope){
+                    scope.d = {};
+
+                    scope.d.statesEnum = {
+                        START_PLAY: 1,
+                        PLAYING: 2,
+                        ALREADY_PLAYED: 3
+                    };
+
+                    var STATE_ENUM = {
+                        START_PLAY: 1,
+                        PLAYING: 2,
+                        ALREADY_PLAYED: 3
+                    };
+
+                    scope.d.source = angular.isDefined(scope.sourceGetter) ? scope.sourceGetter() : undefined;
+                    scope.d.type = angular.isDefined(scope.typeGetter) ? scope.typeGetter() : scope.d.statesEnum.START_PLAY;
+
+                    var allowReplay =  angular.isDefined(scope.allowReplay) ? scope.allowReplay() : false;
+                    var autoPlay = angular.isDefined(scope.autoPlayGetter) ? scope.autoPlayGetter() : false;
+                    scope.audioPlayer = {
+                        STATE_ENUM: STATE_ENUM,
+                        audioEnded: function (){
+                            if(angular.isDefined(scope.onEnded)) {
+                                scope.onEnded();
+                            }
+                            scope.audioPlayer.currState = allowReplay ? STATE_ENUM.START_PLAY : STATE_ENUM.ALREADY_PLAYED;
+                        }
+                    };
+
+                    if(scope.showAsDone && !allowReplay){
+                        scope.audioPlayer.currState = STATE_ENUM.ALREADY_PLAYED;
+                    }else{
+                        scope.audioPlayer.currState = autoPlay ? STATE_ENUM.PLAYING : STATE_ENUM.START_PLAY;
+                    }
+
+                    scope.$watch('audioPlayer.currState', function (state) {
+                        scope.isPlaying = state === STATE_ENUM.PLAYING;
+                    });
+                }
+            };
+        }]);
 })(angular);
 
 
@@ -5221,40 +5281,6 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                         image: scope.imageGetter(),
                         blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined
                     };
-
-                    var STATE_ENUM = {
-                        START_PLAY: 1,
-                        PLAYING: 2,
-                        ALREADY_PLAYED: 3
-                    };
-
-                    var allowReplay = scope.allowReplay();
-
-                    scope.audioPlayer = {
-                        STATE_ENUM: STATE_ENUM,
-                        audioEnded: function (allowReplayTemp){
-                            scope.onEnded();
-                            allowReplay = allowReplayTemp;
-                            scope.audioPlayer.currState = allowReplay ? STATE_ENUM.START_PLAY : STATE_ENUM.ALREADY_PLAYED;
-                        }
-                    };
-
-                    if(scope.showAsDone && !allowReplay){
-                        scope.audioPlayer.currState = STATE_ENUM.ALREADY_PLAYED;
-                    }else{
-                        scope.audioPlayer.currState = scope.autoPlayGetter() ? STATE_ENUM.PLAYING : STATE_ENUM.START_PLAY;
-                    }
-
-
-                    scope.$watch('audioPlayer.currState', function (state) {
-                        scope.isPlaying = state === STATE_ENUM.PLAYING;
-                    });
-
-                    scope.$watch('showAsDone', function (showAsDone) {
-                        if(showAsDone && !allowReplay){
-                            scope.audioPlayer.currState = STATE_ENUM.ALREADY_PLAYED;
-                        }
-                    });
                 }
             };
         }]);
@@ -5536,6 +5562,29 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkAudioPlayer/svg/play-icon.svg",
     "<?xml version=\"1.0\" ?><!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'><svg enable-background=\"new 0 0 34 34\" height=\"34px\" id=\"Layer_1\" version=\"1.1\" viewBox=\"0 0 34 34\" width=\"34px\" xml:space=\"preserve\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><g><path d=\"M17.078,0.25c-9.389,0-17,7.611-17,17s7.611,17,17,17c9.389,0,17-7.611,17-17S26.467,0.25,17.078,0.25z    M17.078,31.25c-7.732,0-14-6.268-14-14c0-7.732,6.268-14,14-14s14,6.268,14,14C31.078,24.982,24.81,31.25,17.078,31.25z\" fill=\"#231F20\"/><polygon fill=\"#231F20\" points=\"14,23.963 23,17.25 14,10.537  \"/></g></svg>");
+  $templateCache.put("components/znkAudioPlayer/templates/znkAudioPlayButton.template.html",
+    "<ng-switch on=\"audioPlayer.currState\" translate-namespace=\"ZNK_AUDIO_PLAYER\">\n" +
+    "    <div class=\"play-button-wrapper\"\n" +
+    "         ng-switch-when=\"1\">\n" +
+    "        <button class=\"play-button\" ng-click=\"audioPlayer.currState = audioPlayer.STATE_ENUM.PLAYING\">\n" +
+    "            <svg-icon name=\"play\"></svg-icon>\n" +
+    "            <span class=\"play-audio-text\" translate=\".PLAY_AUDIO\"></span>\n" +
+    "        </button>\n" +
+    "    </div>\n" +
+    "    <div class=\"znk-audio-player-wrapper\">\n" +
+    "        <znk-audio-player ng-switch-when=\"2\"\n" +
+    "                          source=\"d.source\"\n" +
+    "                          type=\"d.type\"\n" +
+    "                          on-ended=\"audioPlayer.audioEnded(allowReplay)\"\n" +
+    "                          auto-play=\"true\">\n" +
+    "        </znk-audio-player>\n" +
+    "    </div>\n" +
+    "    <div class=\"ended-msg\"\n" +
+    "         ng-switch-when=\"3\">\n" +
+    "        <span translate=\".THIS_VIDEO_ALREADY_PLAYED\"></span>\n" +
+    "    </div>\n" +
+    "</ng-switch>\n" +
+    "");
   $templateCache.put("components/znkAudioPlayer/templates/znkAudioPlayer.template.html",
     "<div class=\"time-display time-passed\" ng-if=\"::d.type === 1\"></div>\n" +
     "<!--<i ng-if=\"::d.type === 2\"-->\n" +
@@ -5554,33 +5603,18 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "\n" +
     "");
   $templateCache.put("components/znkAudioPlayer/templates/znkImageAudio.template.html",
-    "<div class=\"wrapper\" ng-class=\"{'no-footer': hideFooter}\" translate-namespace=\"ZNK_AUDIO_PLAYER\">\n" +
+    "<div class=\"wrapper\" ng-class=\"{'no-footer': hideFooter}\">\n" +
     "    <!--<div class=\"bg-img only-tablet\" ng-style=\"{'background-image': 'url(' + d.blurredImage + ')'}\"></div>-->\n" +
-    "    <!--todo- do we need blurred image?-->\n" +
     "    <div class=\"inner-section\">\n" +
     "        <img class=\"inner\" ng-src=\"{{::d.image}}\">\n" +
     "    </div>\n" +
     "    <div class=\"audio-footer inverted\" ng-if=\"::!hideFooter\">\n" +
-    "        <ng-switch on=\"audioPlayer.currState\">\n" +
-    "            <div class=\"play-button-wrapper\"\n" +
-    "                 ng-switch-when=\"1\">\n" +
-    "                <button class=\"play-button\" ng-click=\"audioPlayer.currState = audioPlayer.STATE_ENUM.PLAYING\">\n" +
-    "                    <svg-icon name=\"play\"></svg-icon>\n" +
-    "                    <span class=\"play-audio-text\" translate=\".PLAY_AUDIO\"></span>\n" +
-    "                </button>\n" +
-    "            </div>\n" +
-    "            <div class=\"znk-audio-player-wrapper\">\n" +
-    "                <znk-audio-player ng-switch-when=\"2\"\n" +
-    "                                  source=\"source\"\n" +
-    "                                  on-ended=\"audioPlayer.audioEnded(allowReplay)\"\n" +
-    "                                  auto-play=\"true\">\n" +
-    "                </znk-audio-player>\n" +
-    "            </div>\n" +
-    "            <div class=\"ended-msg\"\n" +
-    "                 ng-switch-when=\"3\">\n" +
-    "                <span translate=\".THIS_VIDEO_ALREADY_PLAYED\"></span>\n" +
-    "            </div>\n" +
-    "        </ng-switch>\n" +
+    "        <znk-audio-play-button\n" +
+    "            switch-init=\"audioPlayer.currState\"\n" +
+    "            source=\"source\"\n" +
+    "            on-ended=\"audioPlayer.audioEnded()\"\n" +
+    "            auto-play=\"autoPlayGetter()\">\n" +
+    "        </znk-audio-play-button>\n" +
     "    </div>\n" +
     "</div>\n" +
     "");
