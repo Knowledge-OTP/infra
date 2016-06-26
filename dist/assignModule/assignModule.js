@@ -13,17 +13,17 @@
 
             userAssignModuleService.getAssignModules = function () {
                 return ZnkModuleService.getHeaders().then(function (moduleHeaders) {
-                    var getPromArr = [];
+                    var results = {};
+                    var getProm = $q.when();
                     angular.forEach(moduleHeaders, function (header) {
-                        var getProm = ModuleResultsService.getModuleResult(header.id);
-                        getPromArr.push(getProm);
+                        getProm = getProm.then(function(){
+                            return ModuleResultsService.getModuleResult(header.id).then(function(moduleResult){
+                                results[moduleResult.moduleId] = moduleResult;
+                            });
+                        });
                     });
 
-                    return $q.all(getPromArr).then(function (moduleResults) {
-                        var results = {};
-                        angular.forEach(moduleResults, function (result) {
-                            results[result.moduleId] = result;
-                        });
+                    return getProm.then(function () {
                         return {
                             modules: moduleHeaders,
                             results: results
