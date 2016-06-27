@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.presence', [])
+    angular.module('znk.infra.presence', ['ngIdle'])
         .config([
             'IdleProvider', 'KeepaliveProvider',
             function (IdleProvider, KeepaliveProvider) {
