@@ -13,8 +13,8 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
         _examScoreFnGetter = examScoreFnGetter;
     };
 
-    this.$get = function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
-        'ngInject';
+    this.$get = ['$q', 'ExamTypeEnum', 'StorageRevSrv', '$log', '$injector',
+        function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
         var scoringServiceObjApi = {};
         var keysMapConst = {
             crossTestScore: 'CrossTestScore',
@@ -126,7 +126,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
         };
 
         return scoringServiceObjApi;
-    };
+    }];
 
 });
 
