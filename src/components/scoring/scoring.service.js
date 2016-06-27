@@ -14,6 +14,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
     };
 
     this.$get = function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
+        'ngInject';
         var scoringServiceObjApi = {};
         var keysMapConst = {
             crossTestScore: 'CrossTestScore',
