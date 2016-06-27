@@ -19,6 +19,7 @@
 
     angular.module('znk.infra.estimatedScore').provider('EstimatedScoreEventsHandlerSrv', function EstimatedScoreEventsHandler() {
         function pointsMap(correctWithinAllowedTimeFrame, correctAfterAllowedTimeFrame, wrongWithinAllowedTimeFrame, wrongAfterAllowedTimeFrame) {
+            'ngInject';
             var ret = {};
 
             if (angular.isDefined(correctWithinAllowedTimeFrame)) {
