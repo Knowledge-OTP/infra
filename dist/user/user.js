@@ -7,7 +7,7 @@
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
-    function (InfraConfigSrv, StorageSrv) {
+    ["InfraConfigSrv", "StorageSrv", function (InfraConfigSrv, StorageSrv) {
         'ngInject';
         var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
 
@@ -42,7 +42,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                 return globalStorage.set(profilePath, newProfile);
             });
         };
-});
+}]);
 
 angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 

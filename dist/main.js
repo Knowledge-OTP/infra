@@ -248,7 +248,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.auth').factory('AuthService',
-        function (ENV) {
+        ["ENV", function (ENV) {
             'ngInject';
 
             var authService = {};
@@ -260,7 +260,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             };
 
             return authService;
-        });
+        }]);
 })(angular);
 
 
@@ -1014,6 +1014,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
     'use strict';
 
     angular.module('znk.infra.estimatedScore').provider('EstimatedScoreEventsHandlerSrv', function EstimatedScoreEventsHandler() {
+        pointsMap.$inject = ["correctWithinAllowedTimeFrame", "correctAfterAllowedTimeFrame", "wrongWithinAllowedTimeFrame", "wrongAfterAllowedTimeFrame"];
         function pointsMap(correctWithinAllowedTimeFrame, correctAfterAllowedTimeFrame, wrongWithinAllowedTimeFrame, wrongAfterAllowedTimeFrame) {
             'ngInject';
             var ret = {};
@@ -1474,7 +1475,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 })(angular);
 
 "use strict";
-angular.module('znk.infra.exams').service('ExamSrv', function(StorageRevSrv, $q, ContentAvailSrv, $log) {
+angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "ContentAvailSrv", "$log", function(StorageRevSrv, $q, ContentAvailSrv, $log) {
         'ngInject';
 
         var self = this;
@@ -1537,7 +1538,7 @@ angular.module('znk.infra.exams').service('ExamSrv', function(StorageRevSrv, $q,
                 return $q.all(examsProms);
             });
         };
-});
+}]);
 
 angular.module('znk.infra.exams').run(['$templateCache', function($templateCache) {
 
@@ -1557,7 +1558,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
     'use strict';
 
     angular.module('znk.infra.exerciseDataGetters').factory('BaseExerciseGetterSrv',
-        function (ContentSrv, $log, $q) {
+        ["ContentSrv", "$log", "$q", function (ContentSrv, $log, $q) {
             'ngInject';
             
             var BaseExerciseGetterSrvPrototype = {};
@@ -1610,13 +1611,13 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
             BaseExerciseGetterSrv.prototype = BaseExerciseGetterSrvPrototype;
 
             return BaseExerciseGetterSrv;
-        }
+        }]
     );
 })(angular);
 
 'use strict';
 
-angular.module('znk.infra.exerciseDataGetters').service('CategoryService', function (StorageRevSrv, $q, categoryEnum)  {
+angular.module('znk.infra.exerciseDataGetters').service('CategoryService', ["StorageRevSrv", "$q", "categoryEnum", function (StorageRevSrv, $q, categoryEnum)  {
         'ngInject';
 
         var self = this;
@@ -1731,13 +1732,13 @@ angular.module('znk.infra.exerciseDataGetters').service('CategoryService', funct
                 return getAllLevel4CategoriessProm;
             };
         })();
-});
+}]);
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.exerciseDataGetters').service('WorkoutsSrv',
-        function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
+        ["ExerciseStatusEnum", "ExerciseTypeEnum", "$log", "StorageSrv", "ExerciseResultSrv", "ContentAvailSrv", "$q", "InfraConfigSrv", "BaseExerciseGetterSrv", function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
                   InfraConfigSrv, BaseExerciseGetterSrv) {
             'ngInject';
 
@@ -1826,7 +1827,7 @@ angular.module('znk.infra.exerciseDataGetters').service('CategoryService', funct
             };
 
             this.getWorkoutKey = getWorkoutKey;
-        }
+        }]
     );
 })(angular);
 
@@ -4827,7 +4828,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
-    function (InfraConfigSrv, StorageSrv) {
+    ["InfraConfigSrv", "StorageSrv", function (InfraConfigSrv, StorageSrv) {
         'ngInject';
         var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
 
@@ -4862,7 +4863,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                 return globalStorage.set(profilePath, newProfile);
             });
         };
-});
+}]);
 
 angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 
