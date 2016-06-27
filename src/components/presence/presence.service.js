@@ -15,12 +15,12 @@
                 var PresenceService = {};
                 var authService = $injector.get(AuthSrvName);
                 var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
-
+                var PRESENCE_PATH = 'presence/';
+                
                 PresenceService.userStatus = {
                     'OFFLINE': 0,
                     'ONLINE': 1,
-                    'IDLE': 2,
-                    'AWAY': 3
+                    'IDLE': 2
                 };
 
                 PresenceService.addListeners = function () {
@@ -28,7 +28,7 @@
                     if (authData) {
 
                         var amOnline = rootRef.child('.info/connected');
-                        var userRef = rootRef.child('presence/' + authData.uid);
+                        var userRef = rootRef.child(PRESENCE_PATH + authData.uid);
                         amOnline.on('value', function (snapshot) {
                             if (snapshot.val()) {
                                 userRef.onDisconnect().remove();
@@ -43,15 +43,13 @@
                         $rootScope.$on('IdleEnd', function() {
                             userRef.set(PresenceService.userStatus.ONLINE);
                         });
-
-                        $rootScope.$on('IdleTimeout', function() {
-                            userRef.set(PresenceService.userStatus.AWAY);
-                        });
                     }
                 };
 
                 PresenceService.getUserStatus = function (userId) {
-                    return rootRef.child('presence/' + userId);
+                    return rootRef.child(PRESENCE_PATH + userId).once('value').then(function(snapshot) {
+                        return (snapshot.val()) || PresenceService.userStatus.OFFLINE;
+                    });
                 };
 
                 return PresenceService;
