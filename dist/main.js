@@ -4975,16 +4975,11 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                     autoPlayGetter: '&autoPlay',
                     onEnded: '&',
                     switchInitGetter: '&switchInit',
-                    allowReplay: '&?'
+                    allowReplay: '&?',
+                    showAsDone: '&?'
                 },
                 link:function(scope){
                     scope.d = {};
-
-                    scope.d.statesEnum = {
-                        START_PLAY: 1,
-                        PLAYING: 2,
-                        ALREADY_PLAYED: 3
-                    };
 
                     var STATE_ENUM = {
                         START_PLAY: 1,
@@ -4992,11 +4987,15 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                         ALREADY_PLAYED: 3
                     };
 
+                    scope.d.statesEnum = STATE_ENUM;
+
                     scope.d.source = angular.isDefined(scope.sourceGetter) ? scope.sourceGetter() : undefined;
                     scope.d.type = angular.isDefined(scope.typeGetter) ? scope.typeGetter() : scope.d.statesEnum.START_PLAY;
 
                     var allowReplay =  angular.isDefined(scope.allowReplay) ? scope.allowReplay() : false;
                     var autoPlay = angular.isDefined(scope.autoPlayGetter) ? scope.autoPlayGetter() : false;
+                    var showAsDone = angular.isDefined(scope.showAsDone) ? scope.showAsDone() : false;
+
                     scope.audioPlayer = {
                         STATE_ENUM: STATE_ENUM,
                         audioEnded: function (){
@@ -5007,7 +5006,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                         }
                     };
 
-                    if(scope.showAsDone && !allowReplay){
+                    if(showAsDone && !allowReplay){
                         scope.audioPlayer.currState = STATE_ENUM.ALREADY_PLAYED;
                     }else{
                         scope.audioPlayer.currState = autoPlay ? STATE_ENUM.PLAYING : STATE_ENUM.START_PLAY;
@@ -5280,7 +5279,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                     hideFooter: '=',
                     onEnded: '&',
                     isPlaying: '=?',
-                    showAsDone: '=?',
+                    showAsDone: '&?',
                     allowReplay: '&?',
                     autoPlayGetter: '&autoPlay',
                     blurredImageGetter: '&?blurredImage'
@@ -5602,7 +5601,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "        <znk-audio-player ng-switch-when=\"2\"\n" +
     "                          source=\"d.source\"\n" +
     "                          type=\"d.type\"\n" +
-    "                          on-ended=\"audioPlayer.audioEnded(allowReplay)\"\n" +
+    "                          on-ended=\"audioPlayer.audioEnded()\"\n" +
     "                          auto-play=\"true\">\n" +
     "        </znk-audio-player>\n" +
     "    </div>\n" +
@@ -5639,7 +5638,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "        <znk-audio-play-button\n" +
     "            switch-init=\"audioPlayer.currState\"\n" +
     "            source=\"source\"\n" +
-    "            on-ended=\"audioPlayer.audioEnded()\"\n" +
+    "            on-ended=\"onEnded()\"\n" +
+    "            allow-replay=\"allowReplay()\"\n" +
+    "            show-as-done=\"showAsDone()\"\n" +
     "            auto-play=\"autoPlayGetter()\">\n" +
     "        </znk-audio-play-button>\n" +
     "    </div>\n" +

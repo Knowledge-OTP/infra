@@ -13,7 +13,7 @@
                     hideFooter: '=',
                     onEnded: '&',
                     isPlaying: '=?',
-                    showAsDone: '=?',
+                    showAsDone: '&?',
                     allowReplay: '&?',
                     autoPlayGetter: '&autoPlay',
                     blurredImageGetter: '&?blurredImage'

@@ -7,7 +7,9 @@
         <znk-audio-play-button
             switch-init="audioPlayer.currState"
             source="source"
-            on-ended="audioPlayer.audioEnded()"
+            on-ended="onEnded()"
+            allow-replay="allowReplay()"
+            show-as-done="showAsDone()"
             auto-play="autoPlayGetter()">
         </znk-audio-play-button>
     </div>
