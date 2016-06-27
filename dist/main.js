@@ -1014,9 +1014,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
     'use strict';
 
     angular.module('znk.infra.estimatedScore').provider('EstimatedScoreEventsHandlerSrv', function EstimatedScoreEventsHandler() {
-        pointsMap.$inject = ["correctWithinAllowedTimeFrame", "correctAfterAllowedTimeFrame", "wrongWithinAllowedTimeFrame", "wrongAfterAllowedTimeFrame"];
         function pointsMap(correctWithinAllowedTimeFrame, correctAfterAllowedTimeFrame, wrongWithinAllowedTimeFrame, wrongAfterAllowedTimeFrame) {
-            'ngInject';
             var ret = {};
 
             if (angular.isDefined(correctWithinAllowedTimeFrame)) {
