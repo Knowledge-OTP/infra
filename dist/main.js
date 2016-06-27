@@ -4828,7 +4828,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
 
 angular.module('znk.infra.user').service('UserProfileService',
     function (InfraConfigSrv, StorageSrv) {
-
+        'ngInject';
         var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
 
         this.getProfile = function () {
