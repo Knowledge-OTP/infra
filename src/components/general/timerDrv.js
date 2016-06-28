@@ -68,6 +68,12 @@
                     }
 
                     function updateTime(currentTime) {
+                        if (scope.config.countDown && scope.config && scope.config.max) {
+                            scope.timeElapsed = scope.config.max - currentTime;
+                        } else {
+                            scope.timeElapsed = currentTime;
+                        }
+
                         var displayedTime = getDisplayedTime(currentTime, scope.config.format);
                         var timeDisplayDomElem;
                         switch (scope.type) {
@@ -91,10 +97,10 @@
                     scope.config = scope.configGetter() || {};
                     var configDefaults = {
                         format: 'mm:ss',
-                        stopOnZero: true
+                        stopOnZero: true,
+                        stroke: 2
                     };
                     scope.config = angular.extend(configDefaults, scope.config);
-                    scope.currentProgress = 0;
 
                     switch (scope.type) {
                         case timerTypes.ROUND_PROGRESSBAR:
@@ -118,12 +124,6 @@
                         }
 
                         currentTime += scope.config.countDown ? -INTERVAL_TIME : INTERVAL_TIME;
-
-                        if (scope.config.countDown && scope.config && scope.config.max) {
-                            scope.timeElapsed = scope.config.max - currentTime;
-                        } else {
-                            scope.timeElapsed = currentTime;
-                        }
 
                         if (scope.config.stopOnZero && currentTime <= 0) {
                             scope.play = false;

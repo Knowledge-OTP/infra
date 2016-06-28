@@ -44,6 +44,7 @@
 
                     scope.d.source = angular.isDefined(scope.sourceGetter) ? scope.sourceGetter() : undefined;
                     scope.d.type = angular.isDefined(scope.typeGetter) ? scope.typeGetter() : scope.d.statesEnum.START_PLAY;
+
                     var allowReplay =  angular.isDefined(scope.allowReplay) ? scope.allowReplay() : false;
                     var autoPlay = angular.isDefined(scope.autoPlayGetter) ? scope.autoPlayGetter() : false;
                     var showAsDone = angular.isDefined(scope.showAsDone) ? scope.showAsDone() : false;

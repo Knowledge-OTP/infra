@@ -31,13 +31,14 @@
 
         .timer-display-wrapper {
             @include absolute-full-cover;
-            flex-direction: column;
+            padding-top: 20px;
 
             .timer-display {
                 @include text-style(57px, $fcColor5, Lato, $boldFontWeight);
             }
 
             .seconds-text{
+                margin-top: -10px;
                 @include text-style(16px, $fcColor5, Lato, $regularFontWeight);
 
             }
