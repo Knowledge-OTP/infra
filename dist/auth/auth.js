@@ -8,7 +8,7 @@
     'use strict';
 
     angular.module('znk.infra.auth').factory('AuthService',
-        function (ENV) {
+        ["ENV", function (ENV) {
             'ngInject';
 
             var authService = {};
@@ -20,7 +20,7 @@
             };
 
             return authService;
-        });
+        }]);
 })(angular);
 
 

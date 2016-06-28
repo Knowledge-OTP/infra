@@ -5,7 +5,7 @@
 })(angular);
 
 "use strict";
-angular.module('znk.infra.exams').service('ExamSrv', function(StorageRevSrv, $q, ContentAvailSrv, $log) {
+angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "ContentAvailSrv", "$log", function(StorageRevSrv, $q, ContentAvailSrv, $log) {
         'ngInject';
 
         var self = this;
@@ -68,7 +68,7 @@ angular.module('znk.infra.exams').service('ExamSrv', function(StorageRevSrv, $q,
                 return $q.all(examsProms);
             });
         };
-});
+}]);
 
 angular.module('znk.infra.exams').run(['$templateCache', function($templateCache) {
 

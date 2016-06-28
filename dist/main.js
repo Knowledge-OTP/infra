@@ -2456,10 +2456,10 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
                     if(_childScope){
                         _childScope.$destroy();
                         _childScope = null;
+                        $animate.leave(element.children());
+                        element.empty();
                     }
 
-                    $animate.leave(element.children());
-                    element.empty();
 
                     if(typeof newVal === 'undefined'){
                         return;
@@ -3621,7 +3621,8 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
         _examScoreFnGetter = examScoreFnGetter;
     };
 
-    this.$get = ["$q", "ExamTypeEnum", "StorageRevSrv", "$log", "$injector", function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
+    this.$get = ['$q', 'ExamTypeEnum', 'StorageRevSrv', '$log', '$injector',
+        function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
         var scoringServiceObjApi = {};
         var keysMapConst = {
             crossTestScore: 'CrossTestScore',
@@ -4826,7 +4827,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
 
 angular.module('znk.infra.user').service('UserProfileService',
     ["InfraConfigSrv", "StorageSrv", function (InfraConfigSrv, StorageSrv) {
-
+        'ngInject';
         var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
 
         this.getProfile = function () {
@@ -4975,16 +4976,11 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                     autoPlayGetter: '&autoPlay',
                     onEnded: '&',
                     switchInitGetter: '&switchInit',
-                    allowReplay: '&?'
+                    allowReplay: '&?',
+                    showAsDone: '&?'
                 },
                 link:function(scope){
                     scope.d = {};
-
-                    scope.d.statesEnum = {
-                        START_PLAY: 1,
-                        PLAYING: 2,
-                        ALREADY_PLAYED: 3
-                    };
 
                     var STATE_ENUM = {
                         START_PLAY: 1,
@@ -4992,10 +4988,15 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                         ALREADY_PLAYED: 3
                     };
 
+                    scope.d.statesEnum = STATE_ENUM;
+
                     scope.d.source = angular.isDefined(scope.sourceGetter) ? scope.sourceGetter() : undefined;
                     scope.d.type = angular.isDefined(scope.typeGetter) ? scope.typeGetter() : scope.d.statesEnum.START_PLAY;
+
                     var allowReplay =  angular.isDefined(scope.allowReplay) ? scope.allowReplay() : false;
                     var autoPlay = angular.isDefined(scope.autoPlayGetter) ? scope.autoPlayGetter() : false;
+                    var showAsDone = angular.isDefined(scope.showAsDone) ? scope.showAsDone() : false;
+
                     scope.audioPlayer = {
                         STATE_ENUM: STATE_ENUM,
                         audioEnded: function (){
@@ -5006,7 +5007,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                         }
                     };
 
-                    if(scope.showAsDone && !allowReplay){
+                    if(showAsDone && !allowReplay){
                         scope.audioPlayer.currState = STATE_ENUM.ALREADY_PLAYED;
                     }else{
                         scope.audioPlayer.currState = autoPlay ? STATE_ENUM.PLAYING : STATE_ENUM.START_PLAY;
@@ -5279,7 +5280,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                     hideFooter: '=',
                     onEnded: '&',
                     isPlaying: '=?',
-                    showAsDone: '=?',
+                    showAsDone: '&?',
                     allowReplay: '&?',
                     autoPlayGetter: '&autoPlay',
                     blurredImageGetter: '&?blurredImage'
@@ -5640,6 +5641,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "            source=\"source\"\n" +
     "            on-ended=\"onEnded()\"\n" +
     "            allow-replay=\"allowReplay()\"\n" +
+    "            show-as-done=\"showAsDone()\"\n" +
     "            auto-play=\"autoPlayGetter()\">\n" +
     "        </znk-audio-play-button>\n" +
     "    </div>\n" +
@@ -7998,11 +8000,23 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</svg>\n" +
     "");
   $templateCache.put("components/znkExercise/svg/chevron-icon.svg",
-    "<svg x=\"0px\" y=\"0px\" viewBox=\"0 0 143.5 65.5\" xmlns=\"http://www.w3.org/2000/svg\" class=\"chevron-icon\">\n" +
+    "<svg x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "     viewBox=\"0 0 143.5 65.5\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     class=\"znk-exercise-chevron-svg\">\n" +
     "    <style>\n" +
-    "        .chevron-icon{\n" +
-    "            width: 33px;\n" +
-    "            height:auto;\n" +
+    "        .znk-exercise-chevron-svg{\n" +
+    "            height: 16px;\n" +
+    "        }\n" +
+    "\n" +
+    "        .znk-exercise-chevron-svg .st0{\n" +
+    "            stroke: #0a9bad;\n" +
+    "            fill: none;\n" +
+    "            stroke-width: 12;\n" +
+    "            stroke-linecap: round;\n" +
+    "            stroke-linejoin: round;\n" +
+    "            stroke-miterlimit: 10;\n" +
     "        }\n" +
     "    </style>\n" +
     "    <polyline class=\"st0\" points=\"6,6 71.7,59.5 137.5,6 \"/>\n" +

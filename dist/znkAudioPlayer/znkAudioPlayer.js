@@ -28,16 +28,11 @@
                     autoPlayGetter: '&autoPlay',
                     onEnded: '&',
                     switchInitGetter: '&switchInit',
-                    allowReplay: '&?'
+                    allowReplay: '&?',
+                    showAsDone: '&?'
                 },
                 link:function(scope){
                     scope.d = {};
-
-                    scope.d.statesEnum = {
-                        START_PLAY: 1,
-                        PLAYING: 2,
-                        ALREADY_PLAYED: 3
-                    };
 
                     var STATE_ENUM = {
                         START_PLAY: 1,
@@ -45,10 +40,14 @@
                         ALREADY_PLAYED: 3
                     };
 
+                    scope.d.statesEnum = STATE_ENUM;
+
                     scope.d.source = angular.isDefined(scope.sourceGetter) ? scope.sourceGetter() : undefined;
                     scope.d.type = angular.isDefined(scope.typeGetter) ? scope.typeGetter() : scope.d.statesEnum.START_PLAY;
                     var allowReplay =  angular.isDefined(scope.allowReplay) ? scope.allowReplay() : false;
                     var autoPlay = angular.isDefined(scope.autoPlayGetter) ? scope.autoPlayGetter() : false;
+                    var showAsDone = angular.isDefined(scope.showAsDone) ? scope.showAsDone() : false;
+
                     scope.audioPlayer = {
                         STATE_ENUM: STATE_ENUM,
                         audioEnded: function (){
@@ -59,7 +58,7 @@
                         }
                     };
 
-                    if(scope.showAsDone && !allowReplay){
+                    if(showAsDone && !allowReplay){
                         scope.audioPlayer.currState = STATE_ENUM.ALREADY_PLAYED;
                     }else{
                         scope.audioPlayer.currState = autoPlay ? STATE_ENUM.PLAYING : STATE_ENUM.START_PLAY;
@@ -332,7 +331,7 @@
                     hideFooter: '=',
                     onEnded: '&',
                     isPlaying: '=?',
-                    showAsDone: '=?',
+                    showAsDone: '&?',
                     allowReplay: '&?',
                     autoPlayGetter: '&autoPlay',
                     blurredImageGetter: '&?blurredImage'
@@ -693,6 +692,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "            source=\"source\"\n" +
     "            on-ended=\"onEnded()\"\n" +
     "            allow-replay=\"allowReplay()\"\n" +
+    "            show-as-done=\"showAsDone()\"\n" +
     "            auto-play=\"autoPlayGetter()\">\n" +
     "        </znk-audio-play-button>\n" +
     "    </div>\n" +
