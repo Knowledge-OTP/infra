@@ -176,7 +176,7 @@
 
 (function (angular) {
     'use strict';
-    angular.module('znk.infra.znkModuleResults', []);
+    angular.module('znk.infra.znkModuleResults', ['znk.infra.utility']);
 })(angular);
 
 (function (angular) {
@@ -4217,7 +4217,15 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
                     return prom;
                 };
             };
-            
+
+            UtilitySrv.fn.isValidNumber = function(number){
+                if(!angular.isNumber(number) && !angular.isString(number)){
+                    return false;
+                }
+
+                return !isNaN(+number);
+            };
+
             return UtilitySrv;
         }
     ]);
@@ -7130,19 +7138,11 @@ angular.module('znk.infra.znkModuleResults').run(['$templateCache', function($te
         function (InfraConfigSrv, $log, $q, StorageSrv, UtilitySrv) {
 
             var znkModuleResultsService = {};
+            var storage = InfraConfigSrv.getStorageService();
             var MODULE_RESULTS_GUIDS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
             var MODULE_RESULTS_PATH = 'moduleResults';
 
-            function _isValidNumber(number){
-                if(!angular.isNumber(number) && !angular.isString(number)){
-                    return false;
-                }
-
-                return !isNaN(+number);
-            }
-
             function _getModuleResultsGuids(){
-                var storage = InfraConfigSrv.getStorageService();
                 return storage.get(MODULE_RESULTS_GUIDS_PATH);
             }
 
@@ -7158,7 +7158,6 @@ angular.module('znk.infra.znkModuleResults').run(['$templateCache', function($te
             }
 
             function _getModuleResultByGuid(guid, moduleId) {
-                var storage = InfraConfigSrv.getStorageService();
                 var path = MODULE_RESULTS_PATH + '/' + guid;
                 return storage.get(path).then(function(moduleResult){
                     var initResultProm = _getInitModuleResult(moduleId, guid);
@@ -7174,14 +7173,12 @@ angular.module('znk.infra.znkModuleResults').run(['$templateCache', function($te
             }
 
             znkModuleResultsService.getModuleResult = function (moduleId, dontInitialize) {
-                if(!_isValidNumber(moduleId)){
+                if(!UtilitySrv.isValidNumber(moduleId)){
                     var errMsg = 'Module id is not a number !!!';
                     $log.error(errMsg);
                     return $q.reject(errMsg);
                 }
                 moduleId = +moduleId;
-
-                var storage = InfraConfigSrv.getStorageService();
                 return _getModuleResultsGuids().then(function (moduleResultsGuids) {
                     var moduleResultGuid = moduleResultsGuids[moduleId];
                     if (!moduleResultGuid) {
