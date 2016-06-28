@@ -78,6 +78,7 @@
                                 timeDisplayDomElem = domElement.querySelector('.timer-display');
                                 break;
                         }
+
                         if (timeDisplayDomElem) {
                             timeDisplayDomElem.innerText = displayedTime;
                         }
@@ -140,7 +141,7 @@
                         }
                         $timeout(function(){
                             updateTime(currentTime);
-                        })
+                        });
                     };
 
                     scope.$watch('play', function (play) {
