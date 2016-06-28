@@ -171,6 +171,16 @@
 
 (function (angular) {
     'use strict';
+    angular.module('znk.infra.znkModule', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.znkModuleResults', ['znk.infra.utility']);
+})(angular);
+
+(function (angular) {
+    'use strict';
     angular.module('znk.infra.znkTimeline', ['znk.infra.svgIcon', 'znk.infra.enum']);
 })(angular);
 
@@ -1990,25 +2000,23 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
      * @param exp (expression to display time)
      * @returns formatted time string
      */
-    angular.module('znk.infra.filters').filter('formatDuration', ['$log', function($log){
-        return function(time, exp) {
-            if (angular.isNumber(time) && !isNaN(time)) {
-                var t = Math.round(parseInt(time));
-                var hours = parseInt(t / 3600, 10);
-                t = t - (hours * 3600);
-                var minutes = parseInt(t / 60, 10);
-                t = t - (minutes * 60);
-                var seconds =  time % 60;
-                var defaultFormat = 'mm:ss';
-
-                if (!exp) {
-                    exp = defaultFormat;
-                }
-                return exp.replace(/hh/g,hours).replace(/mm/g,minutes).replace(/ss/g,seconds);
-            } else {
+    angular.module('znk.infra.filters').filter('formatDuration', ['$log', function ($log) {
+        return function (time, exp) {
+            if (!angular.isNumber(time) || isNaN(time)) {
                 $log.error('time is not a number:', time);
                 return '';
             }
+            var t = Math.round(parseInt(time));
+            var hours = parseInt(t / 3600, 10);
+            t = t - (hours * 3600);
+            var minutes = parseInt(t / 60, 10);
+            var seconds = time % 60;
+            var defaultFormat = 'mm:ss';
+
+            if (!exp) {
+                exp = defaultFormat;
+            }
+            return exp.replace(/hh/g, hours).replace(/mm/g, minutes).replace(/ss/g, seconds);
         };
     }]);
 })(angular);
@@ -4209,7 +4217,15 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
                     return prom;
                 };
             };
-            
+
+            UtilitySrv.fn.isValidNumber = function(number){
+                if(!angular.isNumber(number) && !angular.isString(number)){
+                    return false;
+                }
+
+                return !isNaN(+number);
+            };
+
             return UtilitySrv;
         }
     ]);
@@ -7078,6 +7094,123 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
         }
     ]);
 })(angular);
+
+angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkModule').service('ZnkModuleService', [
+        'StorageRevSrv',
+        function (StorageRevSrv) {
+            var znkModuleService = {};
+
+            znkModuleService.getHeaders = function () {
+                return StorageRevSrv.getContent({
+                    exerciseType: 'moduleheaders'
+                });
+            };
+
+            znkModuleService.getById = function (moduleId) {
+                return StorageRevSrv.getContent({
+                    exerciseId: moduleId,
+                    exerciseType: 'module'
+                });
+            };
+
+            return znkModuleService;
+        }
+    ]);
+})(angular);
+
+
+angular.module('znk.infra.znkModuleResults').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkModuleResults').service('ZnkModuleResultsService', [
+        'InfraConfigSrv', '$log', '$q', 'StorageSrv', 'UtilitySrv',
+        function (InfraConfigSrv, $log, $q, StorageSrv, UtilitySrv) {
+
+            var znkModuleResultsService = {};
+            var storage = InfraConfigSrv.getStorageService();
+            var MODULE_RESULTS_GUIDS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
+            var MODULE_RESULTS_PATH = 'moduleResults';
+
+            function _getModuleResultsGuids(){
+                return storage.get(MODULE_RESULTS_GUIDS_PATH);
+            }
+
+            function _getInitModuleResult(moduleId, guid){
+                return $q.when( {
+                    "moduleId": moduleId,
+                    "assign": false,
+                    "contentAssign": false,
+                    "date": null,
+                    "tutorId": null,
+                    guid: guid
+                });
+            }
+
+            function _getModuleResultByGuid(guid, moduleId) {
+                var path = MODULE_RESULTS_PATH + '/' + guid;
+                return storage.get(path).then(function(moduleResult){
+                    var initResultProm = _getInitModuleResult(moduleId, guid);
+                    return initResultProm.then(function(initResult) {
+                        if(moduleResult.guid !== guid){
+                            angular.extend(moduleResult,initResult);
+                        }else{
+                            UtilitySrv.object.extendWithoutOverride(moduleResult,initResult);
+                        }
+                        return moduleResult;
+                    });
+                });
+            }
+
+            znkModuleResultsService.getModuleResult = function (moduleId, dontInitialize) {
+                if(!UtilitySrv.isValidNumber(moduleId)){
+                    var errMsg = 'Module id is not a number !!!';
+                    $log.error(errMsg);
+                    return $q.reject(errMsg);
+                }
+                moduleId = +moduleId;
+                return _getModuleResultsGuids().then(function (moduleResultsGuids) {
+                    var moduleResultGuid = moduleResultsGuids[moduleId];
+                    if (!moduleResultGuid) {
+                        if(dontInitialize){
+                            return null;
+                        }
+
+                        var dataToSave = {};
+                        var newModuleResultGuid = UtilitySrv.general.createGuid();
+                        moduleResultsGuids[moduleId] = newModuleResultGuid;
+                        dataToSave[MODULE_RESULTS_GUIDS_PATH] = moduleResultsGuids;
+
+                        var moduleResultPath = MODULE_RESULTS_PATH + '/' + newModuleResultGuid;
+                        var initModuleResultProm = _getInitModuleResult(moduleId, newModuleResultGuid);
+                        return initModuleResultProm.then(function(initModuleResult) {
+                            dataToSave[moduleResultPath] = initModuleResult;
+
+                            return storage.set(dataToSave).then(function (res) {
+                                return res[moduleResultPath];
+                            });
+                        });
+                    }
+
+                    return _getModuleResultByGuid(moduleResultGuid, moduleId);
+                });
+            };
+
+            return znkModuleResultsService;
+        }
+    ]);
+})(angular);
+
 
 angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg",
