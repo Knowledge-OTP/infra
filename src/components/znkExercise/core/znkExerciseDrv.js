@@ -13,7 +13,6 @@
  *      viewMode
  *      onExerciseReady
  *      onSlideChange
- *      onStateChange
  *      initSlideIndex
  *      toolBoxWrapperClass
  *      initSlideDirection
@@ -62,7 +61,6 @@
                                 onQuestionAnswered: angular.noop,
                                 viewMode: ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
                                 onSlideChange: angular.noop,
-                                onStateChange: angular.noop,
                                 initSlideDirection: ZnkExerciseSlideDirectionEnum.ALL.enum,
                                 initForceDoneBtnDisplay: null,
                                 initPagerDisplay: true,
@@ -368,12 +366,15 @@
                              *  INIT END
                              * */
 
-                            scope.$on(ZnkExerciseEvents.STATE_CHANGED, function (e, stateId) {
-                                var currQuestion = getCurrentQuestion();
-                                currQuestion.__questionStatus.stateId = stateId;
-                                setViewValue();
-                                scope.settings.onStateChange(stateId);
-                            });
+                            /**
+                             * EXERCISE CTRL ADDITIONAL API
+                             */
+
+                            znkExerciseDrvCtrl.setViewValue = setViewValue;
+
+                            /**
+                             * EXERCISE CTRL ADDITIONAL END
+                             */
 
                             scope.$watch('vm.currentSlide', function (value, prevValue) {
                                 if(angular.isUndefined(value)){
