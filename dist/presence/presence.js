@@ -75,7 +75,7 @@
 
                 PresenceService.startTrackUserPresence = function (userId, cb) {
                     var userRef = rootRef.child(PRESENCE_PATH + userId);
-                    userRef.on('value', trackUserPresenceCB.bind(null, cb));
+                    userRef.on('value', trackUserPresenceCB.bind(null, cb, userId));
                 };
 
                 PresenceService.stopTrackUserPresence = function (userId) {
@@ -83,13 +83,13 @@
                     userRef.off('value', trackUserPresenceCB);
                 };
 
-                function trackUserPresenceCB(cb, snapshot) {
+                function trackUserPresenceCB(cb, userId, snapshot) {
                     if (angular.isFunction(cb)) {
                         var status = PresenceService.userStatus.OFFLINE;
                         if (snapshot && snapshot.val()){
                             status = snapshot.val();
                         }
-                        cb(status);
+                        cb(status, userId);
                     }
                 }
 
