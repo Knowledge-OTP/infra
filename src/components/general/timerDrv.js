@@ -22,8 +22,8 @@
 (function (angular) {
 
     angular.module('znk.infra.general').directive('timer', [
-        '$interval',
-        function ($interval) {
+        '$interval', '$translatePartialLoader', '$timeout',
+        function ($interval, $translatePartialLoader, $timeout) {
             var timerTypes = {
                 'REGULAR': 1,
                 'ROUND_PROGRESSBAR': 2
@@ -39,19 +39,21 @@
                 replace: true,
                 templateUrl: 'components/general/templates/timerDrv.html',
                 link: function link(scope, element, attrs, ngModelCtrl) {
+                    $translatePartialLoader.addPart('general');
                     var domElement = element[0];
 
                     scope.ngModelCtrl = ngModelCtrl;
 
-                    function padNum(num){
-                        if(('' + Math.abs(+num)).length < 2){
+
+                    function padNum(num) {
+                        if (('' + Math.abs(+num)).length < 2) {
                             return (num < 0 ? '-' : '') + '0' + Math.abs(+num);
-                        }else{
+                        } else {
                             return num;
                         }
                     }
 
-                    function getDisplayedTime(currentTime,format){
+                    function getDisplayedTime(currentTime, format) {
                         var totalSeconds = currentTime / 1000;
                         var seconds = Math.floor(totalSeconds % 60);
                         var minutes = Math.floor(Math.abs(totalSeconds) / 60) * (totalSeconds < 0 ? -1 : 1);
@@ -59,16 +61,16 @@
                         var paddedMinutes = padNum(minutes);
 
                         return format
-                            .replace('tss',totalSeconds)
-                            .replace('ss',paddedSeconds)
-                            .replace('mm',paddedMinutes);
+                            .replace('tss', totalSeconds)
+                            .replace('ss', paddedSeconds)
+                            .replace('mm', paddedMinutes);
 
                     }
 
                     function updateTime(currentTime) {
-                        var displayedTime = getDisplayedTime(currentTime,scope.config.format);
+                        var displayedTime = getDisplayedTime(currentTime, scope.config.format);
                         var timeDisplayDomElem;
-                        switch(scope.type){
+                        switch (scope.type) {
                             case 1:
                                 timeDisplayDomElem = domElement.querySelector('.timer-view');
                                 break;
@@ -76,7 +78,7 @@
                                 timeDisplayDomElem = domElement.querySelector('.timer-display');
                                 break;
                         }
-                        if(timeDisplayDomElem){
+                        if (timeDisplayDomElem) {
                             timeDisplayDomElem.innerText = displayedTime;
                         }
                     }
@@ -91,6 +93,7 @@
                         stopOnZero: true
                     };
                     scope.config = angular.extend(configDefaults, scope.config);
+                    scope.currentProgress = 0;
 
                     switch (scope.type) {
                         case timerTypes.ROUND_PROGRESSBAR:
@@ -115,7 +118,13 @@
 
                         currentTime += scope.config.countDown ? -INTERVAL_TIME : INTERVAL_TIME;
 
-                        if(scope.config.stopOnZero && currentTime <= 0){
+                        if (scope.config.countDown && scope.config && scope.config.max) {
+                            scope.timeElapsed = scope.config.max - currentTime;
+                        } else {
+                            scope.timeElapsed = currentTime;
+                        }
+
+                        if (scope.config.stopOnZero && currentTime <= 0) {
                             scope.play = false;
                             currentTime = 0;
                         }
@@ -129,7 +138,9 @@
                         if (angular.isUndefined(currentTime)) {
                             return;
                         }
-                        updateTime(currentTime);
+                        $timeout(function(){
+                            updateTime(currentTime);
+                        })
                     };
 
                     scope.$watch('play', function (play) {

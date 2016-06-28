@@ -19,7 +19,7 @@
                     blurredImageGetter: '&?blurredImage'
                 },
                 link: function (scope) {
-                    $translatePartialLoader.addPart('znkAudioPlayer');
+                    $translatePartialLoader.addPart('GENERAL');
 
                     scope.d = {
                         image: scope.imageGetter(),

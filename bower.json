@@ -10,7 +10,8 @@
         "Swiper": "swiper#~3.2.7",
         "firebase": "^2.4.2",
         "angular-translate": "^2.11.0",
-        "angular-translate-loader-partial": "^2.11.0"
+        "angular-translate-loader-partial": "^2.11.0",
+        "angular-svg-round-progressbar": "~0.2.7"
     },
     "ignore": [
         ".*",

@@ -6,7 +6,7 @@
         @include display-flex;
 
         i {
-            color: $fontColor1;
+            color: $fcColor2;
             font: {
                 size: 17px;
             }
@@ -14,7 +14,7 @@
         }
 
         .timer-view {
-            @include text-style(17px, $fontColor1, Lato, $regularFontWeight);
+            @include text-style(17px, $fcColor2, Lato, $regularFontWeight);
             display: inline-block;
             margin: {
                 left: 10px;
@@ -30,11 +30,16 @@
         position: relative;
 
         .timer-display-wrapper {
-            @include flex-middle;
             @include absolute-full-cover;
+            flex-direction: column;
 
             .timer-display {
-                @include text-style(25px, $fontColor5, Lato, $boldFontWeight);
+                @include text-style(57px, $fcColor5, Lato, $boldFontWeight);
+            }
+
+            .seconds-text{
+                @include text-style(16px, $fcColor5, Lato, $regularFontWeight);
+
             }
         }
     }
