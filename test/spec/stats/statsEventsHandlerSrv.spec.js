@@ -1,15 +1,8 @@
 describe('testing service "StatsEventsHandlerSrv":', function () {
     'use strict';
 
-    beforeEach(module('znk.infra.stats', 'znk.infra.utility', 'htmlTemplates', 'storage.mock', 'testUtility'));
-
-    beforeEach(module(function (StatsSrvProvider) {
-        function getCategoryLookup($q, UtilitySrv) {
-            return $q.when(UtilitySrv.array.convertToMap(content.category));
-        }
-
-        StatsSrvProvider.setCategoryLookup(getCategoryLookup);
-    }));
+    beforeEach(module('znk.infra.stats', 'znk.infra.utility', 'htmlTemplates', 'storage.mock', 'testUtility',
+        'content.mock'));
 
     var $rootScope, exerciseEventsConst, TestUtilitySrv, testStorage, StatsEventsHandlerSrv, ExerciseTypeEnum;
     beforeEach(inject([
@@ -27,7 +20,7 @@ describe('testing service "StatsEventsHandlerSrv":', function () {
             TestUtilitySrv.general.printDebugLogs();
 
             StatsEventsHandlerSrv = $injector.get('StatsEventsHandlerSrv');
-            
+
             ExerciseTypeEnum = $injector.get('ExerciseTypeEnum');
         }]));
 
@@ -202,22 +195,22 @@ describe('testing service "StatsEventsHandlerSrv":', function () {
         StatsEventsHandlerSrv.addNewExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseMock, resultMock);
         $rootScope.$digest();
 
-        angular.forEach(expectedLevel4Stats,function(expectedResult, key){
+        angular.forEach(expectedLevel4Stats, function (expectedResult, key) {
             var value = testStorage.db.users.$$uid.stats.level4Categories[key];
             expect(value).toEqual(jasmine.objectContaining(expectedResult));
         });
 
-        angular.forEach(expectedLevel3Stats,function(expectedResult, key){
+        angular.forEach(expectedLevel3Stats, function (expectedResult, key) {
             var value = testStorage.db.users.$$uid.stats.level3Categories[key];
             expect(value).toEqual(jasmine.objectContaining(expectedResult));
         });
 
-        angular.forEach(expectedLevel2Stats,function(expectedResult, key){
+        angular.forEach(expectedLevel2Stats, function (expectedResult, key) {
             var value = testStorage.db.users.$$uid.stats.level2Categories[key];
             expect(value).toEqual(jasmine.objectContaining(expectedResult));
         });
 
-        angular.forEach(expectedLevel1Stats,function(expectedResult, key){
+        angular.forEach(expectedLevel1Stats, function (expectedResult, key) {
             var value = testStorage.db.users.$$uid.stats.level1Categories[key];
             expect(value).toEqual(jasmine.objectContaining(expectedResult));
         });
