@@ -422,7 +422,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
             };
 
-            userAssignModuleService.setAssignModules = function (assignModules) {
+            userAssignModuleService.setAssignModules = function (assignModules, userId) {
                 var setPromArr = [];
                 angular.forEach(assignModules, function (assignModule) {
                     var setProm = ModuleResultsService.setModuleResult(assignModule);
@@ -430,7 +430,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
 
                 return $q.all(setPromArr).then(function () {
-                    return userAssignModuleService.getAssignModules();
+                    return userAssignModuleService.getUserAssignModules(userId);
                 });
             };
 
