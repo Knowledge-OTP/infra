@@ -2423,7 +2423,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.general', ['znk.infra.enum', 'znk.infra.svgIcon'])
+    angular.module('znk.infra.general', ['znk.infra.enum', 'znk.infra.svgIcon', 'angular-svg-round-progress'])
         .config([
         'SvgIconSrvProvider',
         function (SvgIconSrvProvider) {
