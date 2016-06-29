@@ -49,6 +49,8 @@
                             });
                         },0,false);
 
+                        questionBuilderCtrl.setViewValue = znkExerciseCtrl.setViewValue;
+
                         scope.$on('$destroy', function(){
                             $timeout.cancel(innerTimeout);
                         });
