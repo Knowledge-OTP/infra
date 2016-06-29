@@ -6,6 +6,11 @@
 
 (function (angular) {
     'use strict';
+    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.moduleResults']);
+})(angular);
+
+(function (angular) {
+    'use strict';
 
     angular.module('znk.infra.autofocus', ['znk.infra.enum', 'znk.infra.svgIcon']);
 })(angular);
@@ -89,6 +94,11 @@
 
 (function (angular) {
     'use strict';
+    angular.module('znk.infra.moduleResults', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
 
     angular.module('znk.infra.pngSequence', []);
 })(angular);
@@ -105,6 +115,27 @@
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.presence', ['ngIdle'])
+        .config([
+            'IdleProvider', 'KeepaliveProvider',
+            function (IdleProvider, KeepaliveProvider) {
+                // time in sec
+                IdleProvider.idle(5);
+                IdleProvider.timeout(0);
+                KeepaliveProvider.interval(2);
+            }])
+        .run([
+            'PresenceService', 'Idle',
+            function (PresenceService, Idle) {
+                PresenceService.addListeners();
+                Idle.watch();
+            }
+        ]);
 })(angular);
 
 (function (angular) {
@@ -167,6 +198,11 @@
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.znkModule', []);
 })(angular);
 
 (function (angular) {
@@ -376,6 +412,59 @@
 })(angular);
 
 angular.module('znk.infra.analytics').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
+        'ZnkModuleService', 'ModuleResultsService', '$q',
+        function (ZnkModuleService, ModuleResultsService, $q) {
+            var userAssignModuleService = {};
+
+            userAssignModuleService.getAssignModules = function (userId) {
+                return ZnkModuleService.getModuleHeaders().then(function (moduleHeaders) {
+                    var results = {};
+                    var getProm = $q.when();
+                    angular.forEach(moduleHeaders, function (header) {
+                        getProm = getProm.then(function(){
+                            return ModuleResultsService.getModuleResult(header.id, userId, true).then(function(moduleResult){
+                                if(moduleResult) {
+                                    results[moduleResult.moduleId] = moduleResult;
+                                }
+                            });
+                        });
+                    });
+
+                    return getProm.then(function () {
+                        return {
+                            modules: moduleHeaders,
+                            results: results
+                        };
+                    });
+                });
+            };
+
+            userAssignModuleService.setAssignModules = function (assignModules) {
+                var setPromArr = [];
+                angular.forEach(assignModules, function (assignModule) {
+                    var setProm = ModuleResultsService.setModuleResult(assignModule);
+                    setPromArr.push(setProm);
+                });
+
+                return $q.all(setPromArr).then(function () {
+                    return userAssignModuleService.getAssignModules();
+                });
+            };
+
+            return userAssignModuleService;
+        }
+    ]);
+})(angular);
+
+
+angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -1990,25 +2079,23 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
      * @param exp (expression to display time)
      * @returns formatted time string
      */
-    angular.module('znk.infra.filters').filter('formatDuration', ['$log', function($log){
-        return function(time, exp) {
-            if (angular.isNumber(time) && !isNaN(time)) {
-                var t = Math.round(parseInt(time));
-                var hours = parseInt(t / 3600, 10);
-                t = t - (hours * 3600);
-                var minutes = parseInt(t / 60, 10);
-                t = t - (minutes * 60);
-                var seconds =  time % 60;
-                var defaultFormat = 'mm:ss';
-
-                if (!exp) {
-                    exp = defaultFormat;
-                }
-                return exp.replace(/hh/g,hours).replace(/mm/g,minutes).replace(/ss/g,seconds);
-            } else {
+    angular.module('znk.infra.filters').filter('formatDuration', ['$log', function ($log) {
+        return function (time, exp) {
+            if (!angular.isNumber(time) || isNaN(time)) {
                 $log.error('time is not a number:', time);
                 return '';
             }
+            var t = Math.round(parseInt(time));
+            var hours = parseInt(t / 3600, 10);
+            t = t - (hours * 3600);
+            var minutes = parseInt(t / 60, 10);
+            var seconds = time % 60;
+            var defaultFormat = 'mm:ss';
+
+            if (!exp) {
+                exp = defaultFormat;
+            }
+            return exp.replace(/hh/g, hours).replace(/mm/g, minutes).replace(/ss/g, seconds);
         };
     }]);
 })(angular);
@@ -2786,6 +2873,87 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
 
 }]);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.moduleResults').service('ModuleResultsService', [
+        'InfraConfigSrv', '$log', '$q', 'StorageSrv', 'UtilitySrv',
+        function (InfraConfigSrv, $log, $q, StorageSrv, UtilitySrv) {
+
+            var moduleResultsService = {};
+            var USER_MODULE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
+            var MODULE_RESULTS_PATH = 'moduleResults';
+            var storage = InfraConfigSrv.getStorageService();
+
+            function _getModuleResultsGuids(userId){
+                USER_MODULE_RESULTS_PATH = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
+                return storage.get(USER_MODULE_RESULTS_PATH);
+            }
+
+            function _initModuleResultObject(moduleResultsGuids, moduleId, userId){
+                var dataToSave = {};
+                var newModuleResultGuid = UtilitySrv.general.createGuid();
+                moduleResultsGuids[moduleId] = newModuleResultGuid;
+                dataToSave[USER_MODULE_RESULTS_PATH] = moduleResultsGuids;
+                var moduleResultPath = MODULE_RESULTS_PATH + '/' + newModuleResultGuid;
+                dataToSave[moduleResultPath] =  {
+                    moduleId: moduleId,
+                    assign: false,
+                    contentAssign: false,
+                    guid: newModuleResultGuid,
+                    uid: userId
+                };
+
+                return dataToSave;
+            }
+
+            function _getModuleResultObjectByGuid(guid) {
+                var path = MODULE_RESULTS_PATH + '/' + guid;
+                return storage.get(path);
+            }
+
+            moduleResultsService.getModuleResult = function (moduleId, userId, dontInitialize) {
+                if(!UtilitySrv.fn.isValidNumber(moduleId)){
+                    var errMsg = 'Module id is not a number !!!';
+                    $log.error(errMsg);
+                    return $q.reject(errMsg);
+                }
+                moduleId = +moduleId;
+
+                return _getModuleResultsGuids(userId).then(function (moduleResultsGuids) {
+                    var moduleResultGuid = moduleResultsGuids[moduleId];
+                    if (!moduleResultGuid) {
+                        if(dontInitialize){
+                            return null;
+                        }
+
+                        var dataToSave = _initModuleResultObject(moduleResultsGuids, moduleId, userId);
+                        return storage.set(dataToSave).then(function (res) {
+                            // todo: return res[moduleResultPath]
+                            //return res[moduleResultPath];
+                            return res;
+                        });
+                    }
+
+                    return _getModuleResultObjectByGuid(moduleResultGuid);
+                });
+            };
+
+            moduleResultsService.setModuleResult = function (newResult){
+                var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
+                return storage.set(moduleResultPath, newResult);
+            };
+
+            return moduleResultsService;
+        }
+    ]);
+})(angular);
+
+
+angular.module('znk.infra.moduleResults').run(['$templateCache', function($templateCache) {
+
+}]);
+
 /**
  * Created by Igor on 8/19/2015.
  */
@@ -3119,6 +3287,89 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
     "</g>\n" +
     "</svg>\n" +
     "");
+}]);
+
+'use strict';
+
+(function (angular) {
+    angular.module('znk.infra.presence').provider('PresenceService', function () {
+
+        var AuthSrvName;
+
+        this.setAuthServiceName = function (authServiceName) {
+            AuthSrvName = authServiceName;
+        };
+
+        this.$get = [
+            '$log', '$injector', 'ENV', '$rootScope',
+            function ($log, $injector, ENV, $rootScope) {
+                var PresenceService = {};
+                var authService = $injector.get(AuthSrvName);
+                var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
+                var PRESENCE_PATH = 'presence/';
+
+                PresenceService.userStatus = {
+                    'OFFLINE': 0,
+                    'ONLINE': 1,
+                    'IDLE': 2
+                };
+
+                PresenceService.addCurrentUserListeners = function () {
+                    var authData = authService.getAuth();
+                    if (authData) {
+
+                        var amOnline = rootRef.child('.info/connected');
+                        var userRef = rootRef.child(PRESENCE_PATH + authData.uid);
+                        amOnline.on('value', function (snapshot) {
+                            if (snapshot.val()) {
+                                userRef.onDisconnect().remove();
+                                userRef.set(PresenceService.userStatus.ONLINE);
+                            }
+                        });
+
+                        $rootScope.$on('IdleStart', function() {
+                            userRef.set(PresenceService.userStatus.IDLE);
+                        });
+
+                        $rootScope.$on('IdleEnd', function() {
+                            userRef.set(PresenceService.userStatus.ONLINE);
+                        });
+                    }
+                };
+
+                PresenceService.getCurrentUserStatus = function (userId) {
+                    return rootRef.child(PRESENCE_PATH + userId).once('value').then(function(snapshot) {
+                        return (snapshot.val()) || PresenceService.userStatus.OFFLINE;
+                    });
+                };
+
+                PresenceService.startTrackUserPresence = function (userId, cb) {
+                    var userRef = rootRef.child(PRESENCE_PATH + userId);
+                    userRef.on('value', trackUserPresenceCB.bind(null, cb, userId));
+                };
+
+                PresenceService.stopTrackUserPresence = function (userId) {
+                    var userRef = rootRef.child(PRESENCE_PATH + userId);
+                    userRef.off('value', trackUserPresenceCB);
+                };
+
+                function trackUserPresenceCB(cb, userId, snapshot) {
+                    if (angular.isFunction(cb)) {
+                        var status = PresenceService.userStatus.OFFLINE;
+                        if (snapshot && snapshot.val()){
+                            status = snapshot.val();
+                        }
+                        cb(status, userId);
+                    }
+                }
+
+                return PresenceService;
+            }];
+    });
+})(angular);
+
+angular.module('znk.infra.presence').run(['$templateCache', function($templateCache) {
+
 }]);
 
 angular.module('znk.infra.scroll').run(['$templateCache', function($templateCache) {
@@ -4209,7 +4460,15 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
                     return prom;
                 };
             };
-            
+
+            UtilitySrv.fn.isValidNumber = function(number){
+                if(!angular.isNumber(number) && !angular.isString(number)){
+                    return false;
+                }
+
+                return !isNaN(+number);
+            };
+
             return UtilitySrv;
         }
     ]);
@@ -7078,6 +7337,37 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
         }
     ]);
 })(angular);
+
+angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkModule').service('ZnkModuleService', [
+        'StorageRevSrv',
+        function (StorageRevSrv) {
+            var znkModuleService = {};
+
+            znkModuleService.getModuleHeaders = function () {
+                return StorageRevSrv.getContent({
+                    exerciseType: 'moduleheaders'
+                });
+            };
+
+            znkModuleService.getModuleById = function (moduleId) {
+                return StorageRevSrv.getContent({
+                    exerciseId: moduleId,
+                    exerciseType: 'module'
+                });
+            };
+
+            return znkModuleService;
+        }
+    ]);
+})(angular);
+
 
 angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg",
