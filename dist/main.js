@@ -6006,6 +6006,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                             });
                         },0,false);
 
+                        questionBuilderCtrl.setViewValue = znkExerciseCtrl.setViewValue;
+
                         scope.$on('$destroy', function(){
                             $timeout.cancel(innerTimeout);
                         });
