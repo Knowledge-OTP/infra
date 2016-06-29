@@ -6,13 +6,13 @@
         function (StorageRevSrv) {
             var znkModuleService = {};
 
-            znkModuleService.getHeaders = function () {
+            znkModuleService.getModuleHeaders = function () {
                 return StorageRevSrv.getContent({
                     exerciseType: 'moduleheaders'
                 });
             };
 
-            znkModuleService.getById = function (moduleId) {
+            znkModuleService.getModuleById = function (moduleId) {
                 return StorageRevSrv.getContent({
                     exerciseId: moduleId,
                     exerciseType: 'module'

@@ -8,85 +8,63 @@
             var moduleResultsService = {};
             var USER_MODULE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
             var MODULE_RESULTS_PATH = 'moduleResults';
+            var storage = InfraConfigSrv.getStorageService();
 
-            function _isValidNumber(number){
-                if(!angular.isNumber(number) && !angular.isString(number)){
-                    return false;
-                }
-
-                return !isNaN(+number);
-            }
-
-            function _getModuleResultsGuids(){
-                var storage = InfraConfigSrv.getStorageService();
+            function _getModuleResultsGuids(userId){
+                USER_MODULE_RESULTS_PATH = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
                 return storage.get(USER_MODULE_RESULTS_PATH);
             }
 
-            function _getInitModuleResult(moduleId, guid){
-                var userProm = InfraConfigSrv.getUserData();
-                return userProm.then(function(user) {
-                    return {
-                        moduleId: moduleId,
-                        assign: false,
-                        contentAssign: false,
-                        date: Date.now(),
-                        tutorId: null,
-                        guid: guid,
-                        uid: user.uid
-                    };
-                });
+            function _initModuleResultObject(moduleResultsGuids, moduleId, userId){
+                var dataToSave = {};
+                var newModuleResultGuid = UtilitySrv.general.createGuid();
+                moduleResultsGuids[moduleId] = newModuleResultGuid;
+                dataToSave[USER_MODULE_RESULTS_PATH] = moduleResultsGuids;
+                var moduleResultPath = MODULE_RESULTS_PATH + '/' + newModuleResultGuid;
+                dataToSave[moduleResultPath] =  {
+                    moduleId: moduleId,
+                    assign: false,
+                    contentAssign: false,
+                    guid: newModuleResultGuid,
+                    uid: userId
+                };
+
+                return dataToSave;
             }
 
-            function _getModuleResultByGuid(guid, moduleId) {
-                var storage = InfraConfigSrv.getStorageService();
+            function _getModuleResultObjectByGuid(guid) {
                 var path = MODULE_RESULTS_PATH + '/' + guid;
-                return storage.get(path).then(function(moduleResult){
-                    var initResultProm = _getInitModuleResult(moduleId, guid);
-                    return initResultProm.then(function(initResult) {
-                        if(moduleResult.guid !== guid){
-                            angular.extend(moduleResult,initResult);
-                        }else{
-                            UtilitySrv.object.extendWithoutOverride(moduleResult,initResult);
-                        }
-                        return moduleResult;
-                    });
-                });
+                return storage.get(path);
             }
 
-            moduleResultsService.getModuleResult = function (moduleId, dontInitialize) {
-                if(!_isValidNumber(moduleId)){
+            moduleResultsService.getModuleResult = function (moduleId, userId, dontInitialize) {
+                if(!UtilitySrv.fn.isValidNumber(moduleId)){
                     var errMsg = 'Module id is not a number !!!';
                     $log.error(errMsg);
                     return $q.reject(errMsg);
                 }
                 moduleId = +moduleId;
 
-                return _getModuleResultsGuids().then(function (moduleResultsGuids) {
+                return _getModuleResultsGuids(userId).then(function (moduleResultsGuids) {
                     var moduleResultGuid = moduleResultsGuids[moduleId];
                     if (!moduleResultGuid) {
                         if(dontInitialize){
                             return null;
                         }
-                        var dataToSave = {};
-                        var newModuleResultGuid = UtilitySrv.general.createGuid();
-                        moduleResultsGuids[moduleId] = newModuleResultGuid;
-                        dataToSave[USER_MODULE_RESULTS_PATH] = moduleResultsGuids;
-                        var moduleResultPath = MODULE_RESULTS_PATH + '/' + newModuleResultGuid;
-                        return _getInitModuleResult(moduleId, newModuleResultGuid).then(function(initModuleResult) {
-                            dataToSave[moduleResultPath] = initModuleResult;
-                            var storage = InfraConfigSrv.getStorageService();
-                            return storage.set(dataToSave).then(function (res) {
-                                return res[moduleResultPath];
-                            });
+
+                        var dataToSave = _initModuleResultObject(moduleResultsGuids, moduleId, userId);
+                        return storage.set(dataToSave).then(function (res) {
+                            // todo: return res[moduleResultPath]
+                            //return res[moduleResultPath];
+                            return res;
                         });
                     }
 
-                    return _getModuleResultByGuid(moduleResultGuid, moduleId);
+                    return _getModuleResultObjectByGuid(moduleResultGuid);
                 });
             };
 
             moduleResultsService.setModuleResult = function (newResult){
-                var storage = InfraConfigSrv.getStorageService();
                 var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
                 return storage.set(moduleResultPath, newResult);
             };

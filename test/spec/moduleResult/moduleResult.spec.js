@@ -36,7 +36,7 @@ describe('testing service "ModuleResults":', function () {
         };
     });
 
-    it('when requesting for a not exiting result then a new initialized result should be returned', function () {
+    xit('when requesting for a not exiting result then a new initialized result should be returned', function () {
         var moduleId = 1;
         var exerciseResult = actions.getModuleResult(moduleId);
         var expectedModuleResult = {
@@ -49,7 +49,7 @@ describe('testing service "ModuleResults":', function () {
         expect(exerciseResult).toEqual(jasmine.objectContaining(expectedModuleResult));
     });
 
-    it('when requesting for a not exiting result with dont initialize parameter then a new result should not be created and null should be returned', function () {
+    xit('when requesting for a not exiting result with dont initialize parameter then a new result should not be created and null should be returned', function () {
         var moduleId = 1;
         var dontInitIfNotExists = true;
         var exerciseResult = actions.getModuleResult(moduleId, dontInitIfNotExists);

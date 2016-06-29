@@ -11,14 +11,16 @@
         function (ZnkModuleService, ModuleResultsService, $q) {
             var userAssignModuleService = {};
 
-            userAssignModuleService.getAssignModules = function () {
-                return ZnkModuleService.getHeaders().then(function (moduleHeaders) {
+            userAssignModuleService.getAssignModules = function (userId) {
+                return ZnkModuleService.getModuleHeaders().then(function (moduleHeaders) {
                     var results = {};
                     var getProm = $q.when();
                     angular.forEach(moduleHeaders, function (header) {
                         getProm = getProm.then(function(){
-                            return ModuleResultsService.getModuleResult(header.id).then(function(moduleResult){
-                                results[moduleResult.moduleId] = moduleResult;
+                            return ModuleResultsService.getModuleResult(header.id, userId, true).then(function(moduleResult){
+                                if(moduleResult) {
+                                    results[moduleResult.moduleId] = moduleResult;
+                                }
                             });
                         });
                     });
