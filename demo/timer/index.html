@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="main.css">
+
+    <style>
+        .timer-wrapper {
+            width: 100px;
+            margin: 300px auto;
+        }
+    </style>
+
+</head>
+<body ng-app="demoApp" ng-controller="ctrl">
+
+<div class="timer-wrapper">
+    <timer type="2" ng-model="d.timer.timeLeft" play="d.timer.play" config="d.timer.config"></timer>
+</div>
+
+<script src="angular/angular.js"></script>
+<script src="angular-svg-round-progressbar/build/roundProgress.js"></script>
+<script src="angular-translate/angular-translate.js"></script>
+<script src="angular-translate-loader-partial/angular-translate-loader-partial.js"></script>
+
+<script src="general/general.js"></script>
+<script src="enum/enum.js"></script>
+<script src="svgIcon/svgIcon.js"></script>
+<script src="general/templates.js"></script>
+
+<script src="demoApp.js"></script>
+<script>
+
+</script>
+</body>
+</html>

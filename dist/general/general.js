@@ -34,10 +34,10 @@
                     if(_childScope){
                         _childScope.$destroy();
                         _childScope = null;
+                        $animate.leave(element.children());
+                        element.empty();
                     }
 
-                    $animate.leave(element.children());
-                    element.empty();
 
                     if(typeof newVal === 'undefined'){
                         return;
@@ -261,8 +261,8 @@
 (function (angular) {
 
     angular.module('znk.infra.general').directive('timer', [
-        '$interval',
-        function ($interval) {
+        '$interval', '$translatePartialLoader', '$timeout',
+        function ($interval, $translatePartialLoader, $timeout) {
             var timerTypes = {
                 'REGULAR': 1,
                 'ROUND_PROGRESSBAR': 2
@@ -278,19 +278,21 @@
                 replace: true,
                 templateUrl: 'components/general/templates/timerDrv.html',
                 link: function link(scope, element, attrs, ngModelCtrl) {
+                    $translatePartialLoader.addPart('general');
                     var domElement = element[0];
 
                     scope.ngModelCtrl = ngModelCtrl;
 
-                    function padNum(num){
-                        if(('' + Math.abs(+num)).length < 2){
+
+                    function padNum(num) {
+                        if (('' + Math.abs(+num)).length < 2) {
                             return (num < 0 ? '-' : '') + '0' + Math.abs(+num);
-                        }else{
+                        } else {
                             return num;
                         }
                     }
 
-                    function getDisplayedTime(currentTime,format){
+                    function getDisplayedTime(currentTime, format) {
                         var totalSeconds = currentTime / 1000;
                         var seconds = Math.floor(totalSeconds % 60);
                         var minutes = Math.floor(Math.abs(totalSeconds) / 60) * (totalSeconds < 0 ? -1 : 1);
@@ -298,16 +300,22 @@
                         var paddedMinutes = padNum(minutes);
 
                         return format
-                            .replace('tss',totalSeconds)
-                            .replace('ss',paddedSeconds)
-                            .replace('mm',paddedMinutes);
+                            .replace('tss', totalSeconds)
+                            .replace('ss', paddedSeconds)
+                            .replace('mm', paddedMinutes);
 
                     }
 
                     function updateTime(currentTime) {
-                        var displayedTime = getDisplayedTime(currentTime,scope.config.format);
+                        if (scope.config.countDown && scope.config && scope.config.max) {
+                            scope.timeElapsed = scope.config.max - currentTime;
+                        } else {
+                            scope.timeElapsed = currentTime;
+                        }
+
+                        var displayedTime = getDisplayedTime(currentTime, scope.config.format);
                         var timeDisplayDomElem;
-                        switch(scope.type){
+                        switch (scope.type) {
                             case 1:
                                 timeDisplayDomElem = domElement.querySelector('.timer-view');
                                 break;
@@ -315,7 +323,8 @@
                                 timeDisplayDomElem = domElement.querySelector('.timer-display');
                                 break;
                         }
-                        if(timeDisplayDomElem){
+
+                        if (timeDisplayDomElem) {
                             timeDisplayDomElem.innerText = displayedTime;
                         }
                     }
@@ -327,7 +336,8 @@
                     scope.config = scope.configGetter() || {};
                     var configDefaults = {
                         format: 'mm:ss',
-                        stopOnZero: true
+                        stopOnZero: true,
+                        stroke: 2
                     };
                     scope.config = angular.extend(configDefaults, scope.config);
 
@@ -354,7 +364,7 @@
 
                         currentTime += scope.config.countDown ? -INTERVAL_TIME : INTERVAL_TIME;
 
-                        if(scope.config.stopOnZero && currentTime <= 0){
+                        if (scope.config.stopOnZero && currentTime <= 0) {
                             scope.play = false;
                             currentTime = 0;
                         }
@@ -368,7 +378,9 @@
                         if (angular.isUndefined(currentTime)) {
                             return;
                         }
-                        updateTime(currentTime);
+                        $timeout(function(){
+                            updateTime(currentTime);
+                        });
                     };
 
                     scope.$watch('play', function (play) {
@@ -698,10 +710,11 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
     "    </div>\n" +
     "    <div ng-switch-when=\"2\" class=\"timer-type2\">\n" +
     "        <div class=\"timer-display-wrapper\">\n" +
-    "            <span class=\"timer-display\"></span>\n" +
+    "            <div class=\"timer-display\"></div>\n" +
+    "            <div class=\"seconds-text\" translate=\"TIMER.SECONDS\"></div>\n" +
     "        </div>\n" +
     "        <div round-progress\n" +
-    "             current=\"ngModelCtrl.$viewValue\"\n" +
+    "             current=\"timeElapsed\"\n" +
     "             max=\"config.max\"\n" +
     "             color=\"{{config.color}}\"\n" +
     "             bgcolor=\"{{config.bgcolor}}\"\n" +
