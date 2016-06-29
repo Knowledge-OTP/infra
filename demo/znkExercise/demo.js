@@ -252,5 +252,20 @@
                 $scope.settings.initForceDoneBtnDisplay = !$scope.settings.initForceDoneBtnDisplay;
                 $scope.d.actions.forceDoneBtnDisplay($scope.settings.initForceDoneBtnDisplay);
             };
-        });
+        })
+        .directive('rateAnswer',
+            function(){
+                return {
+                    template: '<div ng-repeat="item in [1,2,3,4,5]">' +
+                            '<span ng-click="answerSelected(item)">answer {{item}}</span>' +
+                        '</div>',
+                    require: '^ngModel',
+                    link: function(scope,element,attrs,ngModelCtrl){
+                        scope.answerSelected = function(answer){
+                            ngModelCtrl.$setViewValue(answer);
+                        };
+                    }
+                };
+            }
+        );
 })(angular);

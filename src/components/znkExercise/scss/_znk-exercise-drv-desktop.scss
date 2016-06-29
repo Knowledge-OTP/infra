@@ -17,6 +17,9 @@ znk-exercise.desktop {
                 &.question-answered{
                     button{
                         background: $bgColor3;
+                        svg-icon.chevron .st0{
+                            stroke: $bgColor6;
+                        }
                     }
                 }
 

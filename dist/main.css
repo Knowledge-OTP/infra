@@ -281,14 +281,18 @@ device-not-supported .device-not-supported-inner {
 
 @media screen and (max-width: 1024px) {
   device-not-supported .device-not-supported-inner {
+    display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
-    -ms-flex-direction: column;
-        flex-direction: column;
-    -ms-flex-align: center;
-        align-items: center;
-    -ms-flex-pack: center;
-        justify-content: center;
+    -webkit-flex-direction: column;
+        -ms-flex-direction: column;
+            flex-direction: column;
+    -webkit-align-items: center;
+        -ms-flex-align: center;
+            align-items: center;
+    -webkit-justify-content: center;
+        -ms-flex-pack: center;
+            justify-content: center;
     padding: 40px;
     position: fixed;
     width: 100%;
@@ -909,12 +913,15 @@ $blueBG8: #75cbe8;
   right: 0;
   background: rgba(0, 0, 0, 0.7);
   text-align: center;
+  display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  -ms-flex-direction: column;
-      flex-direction: column;
-  -ms-flex-pack: center;
-      justify-content: center; }
+  -webkit-flex-direction: column;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-justify-content: center;
+      -ms-flex-pack: center;
+          justify-content: center; }
   .znk-popup .base-popup .znk-popup-wrapper {
     width: 390px;
     margin-right: auto;
@@ -931,6 +938,7 @@ $blueBG8: #75cbe8;
         top: -12px;
         right: 50%;
         margin-right: -28.5px;
+        display: -webkit-flex;
         display: -ms-flexbox;
         display: flex;
         -ms-flex-pack: center;
@@ -966,6 +974,7 @@ $blueBG8: #75cbe8;
         font-weight: 400;
         margin-top: 6px; }
     .znk-popup .base-popup .znk-popup-wrapper .znk-popup-buttons {
+      display: -webkit-flex;
       display: -ms-flexbox;
       display: flex;
       -ms-flex-pack: center;
@@ -986,6 +995,7 @@ $blueBG8: #75cbe8;
         font-weight: 400;
         border: 1px solid #0a9bad;
         border-radius: 20px;
+        display: -webkit-flex;
         display: -ms-flexbox;
         display: flex;
         -ms-flex-pack: center;
@@ -1997,12 +2007,15 @@ $blueBG8: #75cbe8;
 */
 /* full background image with retina */
 svg-icon {
+  display: -webkit-inline-flex;
   display: -ms-inline-flexbox;
   display: inline-flex;
-  -ms-flex-align: center;
-      align-items: center;
-  -ms-flex-pack: center;
-      justify-content: center; }
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-justify-content: center;
+      -ms-flex-pack: center;
+          justify-content: center; }
   svg-icon svg {
     display: block; }
 
@@ -2282,10 +2295,12 @@ $blueBG8: #75cbe8;
 */
 /* full background image with retina */
 znk-audio-player {
+  display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  -ms-flex-align: center;
-      align-items: center;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
   width: 100%;
   min-width: 150px; }
   znk-audio-player .time-display {
@@ -2304,10 +2319,12 @@ znk-audio-player {
     -ms-flex-positive: 1;
         flex-grow: 1;
     -webkit-flex-grow: 1;
-    -ms-flex-pack: center;
-        justify-content: center;
-    -ms-flex-align: center;
-        align-items: center; }
+    -webkit-justify-content: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+    -webkit-align-items: center;
+        -ms-flex-align: center;
+            align-items: center; }
   znk-audio-player.grey-player {
     border-radius: 50px;
     height: 46px;
@@ -2372,12 +2389,15 @@ znk-image-audio {
         height: 308px;
         border-radius: 5px; }
     znk-image-audio .wrapper .audio-footer {
+      display: -webkit-flex;
       display: -ms-flexbox;
       display: flex;
-      -ms-flex-pack: center;
-          justify-content: center;
-      -ms-flex-align: center;
-          align-items: center;
+      -webkit-justify-content: center;
+          -ms-flex-pack: center;
+              justify-content: center;
+      -webkit-align-items: center;
+          -ms-flex-align: center;
+              align-items: center;
       position: absolute;
       bottom: 0;
       height: 55px;
@@ -2388,12 +2408,15 @@ znk-image-audio {
         width: 380px; }
 
 znk-audio-play-button .play-button-wrapper {
+  display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  -ms-flex-pack: center;
-      justify-content: center;
-  -ms-flex-align: center;
-      align-items: center; }
+  -webkit-justify-content: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center; }
   znk-audio-play-button .play-button-wrapper .play-button {
     font-size: 16px;
     color: #fff;
@@ -2401,12 +2424,15 @@ znk-audio-play-button .play-button-wrapper {
     font-weight: 400;
     width: 180px;
     height: 45px;
+    display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
-    -ms-flex-pack: center;
-        justify-content: center;
-    -ms-flex-align: center;
-        align-items: center;
+    -webkit-justify-content: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+    -webkit-align-items: center;
+        -ms-flex-align: center;
+            align-items: center;
     cursor: pointer;
     border-radius: 50px;
     background: transparent;
@@ -2713,8 +2739,10 @@ znk-exercise.desktop {
     position: absolute;
     top: 0;
     bottom: 0;
-    -ms-flex-align: center;
-        align-items: center;
+    -webkit-align-items: center;
+        -ms-flex-align: center;
+            align-items: center;
+    display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
     transition: all 0.2s linear; }
@@ -2722,12 +2750,15 @@ znk-exercise.desktop {
       right: -40px; }
       znk-exercise.desktop .btn-section .btn-container.right-container.question-answered button {
         background: #0a9bad; }
+        znk-exercise.desktop .btn-section .btn-container.right-container.question-answered button svg-icon.chevron .st0 {
+          stroke: #fff; }
       znk-exercise.desktop .btn-section .btn-container.right-container button {
         border-top-right-radius: 42px;
         border-bottom-right-radius: 42px;
         padding-right: 3px; }
         znk-exercise.desktop .btn-section .btn-container.right-container button .chevron {
-          transform: rotate(-90deg); }
+          -webkit-transform: rotate(-90deg);
+                  transform: rotate(-90deg); }
       znk-exercise.desktop .btn-section .btn-container.right-container.ng-hide-add, znk-exercise.desktop .btn-section .btn-container.right-container.ng-hide-remove {
         transition: all linear 0.2s; }
       znk-exercise.desktop .btn-section .btn-container.right-container.ng-hide {
@@ -2739,7 +2770,8 @@ znk-exercise.desktop {
         border-bottom-left-radius: 42px;
         padding-left: 5px; }
         znk-exercise.desktop .btn-section .btn-container.left-container button .chevron {
-          transform: rotate(90deg); }
+          -webkit-transform: rotate(90deg);
+                  transform: rotate(90deg); }
       znk-exercise.desktop .btn-section .btn-container.left-container.ng-hide-add, znk-exercise.desktop .btn-section .btn-container.left-container.ng-hide-remove {
         transition: all linear 0.2s; }
       znk-exercise.desktop .btn-section .btn-container.left-container.ng-hide {
@@ -2769,6 +2801,7 @@ znk-exercise.desktop {
       border-radius: 30px;
       cursor: pointer; }
   znk-exercise.desktop questions-carousel.znk-carousel-container {
+    display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
     position: absolute;
@@ -2827,6 +2860,7 @@ znk-exercise-pager {
           border-radius: 50%;
           width: 25px;
           height: 25px;
+          display: -webkit-flex;
           display: -ms-flexbox;
           display: flex;
           -ms-flex-pack: center;
