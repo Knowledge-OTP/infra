@@ -122,7 +122,7 @@
 
     angular.module('znk.infra.presence', ['ngIdle'])
         .config([
-            'IdleProvider', 'KeepaliveProvider',
+            'IdleProvider', 'KeepaliveProvider', 'ENV',
             function (IdleProvider, KeepaliveProvider, ENV) {
                 // userIdleTime: how many sec until user is 'IDLE'
                 // idleTimeout: how many sec after idle to stop track the user, 0: keep track
@@ -135,7 +135,7 @@
         .run([
             'PresenceService', 'Idle',
             function (PresenceService, Idle) {
-                PresenceService.addListeners();
+                PresenceService.addCurrentUserListeners();
                 Idle.watch();
             }
         ]);
