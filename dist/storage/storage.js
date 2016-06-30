@@ -108,6 +108,7 @@
                 return {
                     get: get,
                     set: set,
+                    getRef: getRef,
                     __refMap: refMap//for testing
                 };
             }

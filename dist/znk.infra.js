@@ -3299,8 +3299,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
             '$log', '$injector', 'ENV', '$rootScope', 'storageFirebaseAdapter',
             function ($log, $injector, ENV, $rootScope, storageFirebaseAdapter) {
                 var PresenceService = {};
-                var fbAdapter = storageFirebaseAdapter(ENV.fbDataEndPoint);
-                var rootRef = fbAdapter.__refMap.rootRef;
+                var rootRef = storageFirebaseAdapter.getRef();
                 var PRESENCE_PATH = 'presence/';
 
                 PresenceService.userStatus = {
@@ -4023,6 +4022,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                 return {
                     get: get,
                     set: set,
+                    getRef: getRef,
                     __refMap: refMap//for testing
                 };
             }
