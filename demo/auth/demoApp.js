@@ -2,9 +2,6 @@
     'use strict';
 
     angular.module('demo', ['znk.infra.auth'])
-        .controller('main', function (AuthService) {
-            var x;
-        })
         .service('ENV', function () {
             this.fbGlobalEndPoint = "https://znk-dev.firebaseio.com/";
             this.backendEndpoint = "https://znk-web-backend-dev.azurewebsites.net/";
