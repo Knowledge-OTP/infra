@@ -37,7 +37,8 @@
             '$log', '$injector', 'ENV', '$rootScope', 'storageFirebaseAdapter',
             function ($log, $injector, ENV, $rootScope, storageFirebaseAdapter) {
                 var PresenceService = {};
-                var rootRef = storageFirebaseAdapter.getRef();
+                var storageRef = storageFirebaseAdapter(ENV.fbDataEndPoint);
+                var rootRef = storageRef.getRef();
                 var PRESENCE_PATH = 'presence/';
 
                 PresenceService.userStatus = {
