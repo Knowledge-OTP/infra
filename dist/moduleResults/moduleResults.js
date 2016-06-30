@@ -53,7 +53,7 @@
             moduleResultsService.setModuleResult = function (newResult){
                 return  moduleResultsService.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
                     var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
-                   if (!userGuidLists[newResult.guid]) {
+                   if (userGuidLists[newResult.guid]) {
                        return  moduleResultsService.getModuleResultByGuid(newResult.guid).then(function (moduleResult) {
                            angular.extend(moduleResult, newResult);
                            return storage.set(moduleResultPath, moduleResult);
