@@ -422,15 +422,21 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
             };
 
-            userAssignModuleService.setAssignModules = function (assignModules, userId) {
-                var setPromArr = [];
+            userAssignModuleService.setAssignModules = function (assignModules) {
+                var moduleResults = {};
+                var setProm = $q.when();
                 angular.forEach(assignModules, function (assignModule) {
-                    var setProm = ModuleResultsService.setModuleResult(assignModule);
-                    setPromArr.push(setProm);
+                    setProm = setProm.then(function(){
+                        return ModuleResultsService.setModuleResult(assignModule).then(function(moduleResult){
+                            if(moduleResult) {
+                                moduleResults[moduleResult.moduleId] = moduleResult;
+                            }
+                        });
+                    });
                 });
 
-                return $q.all(setPromArr).then(function () {
-                    return userAssignModuleService.getUserAssignModules(userId);
+                return setProm.then(function () {
+                    return moduleResults;
                 });
             };
 
@@ -2905,8 +2911,10 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                            return storage.set(moduleResultPath, moduleResult);
                        });
                    }
+
+                    userGuidLists[newResult.id] = newResult.guid;
                     var dataToSave = {};
-                    dataToSave[USER_MODULE_RESULTS_PATH] = newResult.guid;
+                    dataToSave[USER_MODULE_RESULTS_PATH] = userGuidLists;
                     dataToSave[moduleResultPath] = newResult;
                     return storage.set(dataToSave);
                 });

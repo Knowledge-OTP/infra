@@ -59,8 +59,10 @@
                            return storage.set(moduleResultPath, moduleResult);
                        });
                    }
+
+                    userGuidLists[newResult.id] = newResult.guid;
                     var dataToSave = {};
-                    dataToSave[USER_MODULE_RESULTS_PATH] = newResult.guid;
+                    dataToSave[USER_MODULE_RESULTS_PATH] = userGuidLists;
                     dataToSave[moduleResultPath] = newResult;
                     return storage.set(dataToSave);
                 });
