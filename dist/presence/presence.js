@@ -37,8 +37,7 @@
             '$log', '$injector', 'ENV', '$rootScope', 'storageFirebaseAdapter',
             function ($log, $injector, ENV, $rootScope, storageFirebaseAdapter) {
                 var PresenceService = {};
-                var storageRef = storageFirebaseAdapter(ENV.fbDataEndPoint);
-                var rootRef = storageRef.getRef();
+                var rootRef = storageFirebaseAdapter(ENV.fbDataEndPoint);
                 var PRESENCE_PATH = 'presence/';
 
                 PresenceService.userStatus = {
@@ -59,8 +58,8 @@
                 PresenceService.addCurrentUserListeners = function () {
                     var authData = getAuthData();
                     if (authData) {
-                        var amOnline = rootRef.child('.info/connected');
-                        var userRef = rootRef.child(PRESENCE_PATH + authData.uid);
+                        var amOnline = rootRef.getRef('.info/connected');
+                        var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
                         amOnline.on('value', function (snapshot) {
                             if (snapshot.val()) {
                                 userRef.onDisconnect().remove();
@@ -79,18 +78,18 @@
                 };
 
                 PresenceService.getCurrentUserStatus = function (userId) {
-                    return rootRef.child(PRESENCE_PATH + userId).once('value').then(function(snapshot) {
+                    return rootRef.getRef(PRESENCE_PATH + userId).once('value').then(function(snapshot) {
                         return (snapshot.val()) || PresenceService.userStatus.OFFLINE;
                     });
                 };
 
                 PresenceService.startTrackUserPresence = function (userId, cb) {
-                    var userRef = rootRef.child(PRESENCE_PATH + userId);
+                    var userRef = rootRef.getRef(PRESENCE_PATH + userId);
                     userRef.on('value', trackUserPresenceCB.bind(null, cb, userId));
                 };
 
                 PresenceService.stopTrackUserPresence = function (userId) {
-                    var userRef = rootRef.child(PRESENCE_PATH + userId);
+                    var userRef = rootRef.getRef(PRESENCE_PATH + userId);
                     userRef.off('value', trackUserPresenceCB);
                 };
 
