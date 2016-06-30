@@ -34,11 +34,11 @@
         };
 
         this.$get = [
-            '$log', '$injector', 'ENV', '$rootScope',
-            function ($log, $injector, ENV, $rootScope) {
+            '$log', '$injector', 'ENV', '$rootScope', 'storageFirebaseAdapter',
+            function ($log, $injector, ENV, $rootScope, storageFirebaseAdapter) {
                 var PresenceService = {};
-                // @todo: can we use storageFirebaseAdapter here???
-                var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
+                var fbAdapter = storageFirebaseAdapter(ENV.fbDataEndPoint);
+                var rootRef = fbAdapter.__refMap.rootRef;
                 var PRESENCE_PATH = 'presence/';
 
                 PresenceService.userStatus = {
@@ -50,7 +50,7 @@
                 function getAuthData() {
                     var authData;
                     var authService = $injector.get(AuthSrvName);
-                    if (angular.isFunction(authService)) {
+                    if (angular.isObject(authService)) {
                         authData =  authService.getAuth();
                     }
                     return authData;
