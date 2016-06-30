@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demo', ['znk.infra.auth', 'firebase'])
+    angular.module('demo', ['znk.infra.auth'])
         .controller('main', function (AuthService) {
             var x;
         })

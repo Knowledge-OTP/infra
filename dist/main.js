@@ -241,7 +241,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.auth', ['znk.infra.config', 'znk.infra.storage']);
+    angular.module('znk.infra.auth', ['znk.infra.config']);
 })(angular);
 
 (function (angular) {
@@ -265,6 +265,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 rootRef.unauth();
             };
 
+            authService.logout();
             return authService;
         }]);
 })(angular);

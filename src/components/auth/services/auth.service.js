@@ -19,6 +19,7 @@
                 rootRef.unauth();
             };
 
+            authService.logout();
             return authService;
         });
 })(angular);

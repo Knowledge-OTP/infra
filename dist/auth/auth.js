@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.auth', ['znk.infra.config', 'znk.infra.storage']);
+    angular.module('znk.infra.auth', ['znk.infra.config']);
 })(angular);
 
 (function (angular) {
@@ -25,6 +25,7 @@
                 rootRef.unauth();
             };
 
+            authService.logout();
             return authService;
         }]);
 })(angular);
