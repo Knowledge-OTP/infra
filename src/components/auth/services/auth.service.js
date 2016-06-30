@@ -2,31 +2,22 @@
     'use strict';
 
     angular.module('znk.infra.auth').factory('AuthService',
-        function (ENV, $rootScope, $firebaseAuth, $window) {
+        function (ENV) {
             'ngInject';
 
-            var refAuthDB = new $window.Firebase(ENV.fbGlobalEndPoint, ENV.firebaseAppScopeName);
-            //var refDataDB = new $window.Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
+            var refAuthDB = new Firebase(ENV.fbGlobalEndPoint, ENV.firebaseAppScopeName);
+            var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
 
             var authService = {};
-            var fbAuth = $firebaseAuth(refAuthDB);
-
-
 
             authService.getAuth = function(){
                 return rootRef.getAuth();
             };
 
             authService.logout = function () {
-                debugger;
-                $rootScope.$broadcast('auth:beforeLogout');
-                fbAuth.$unauth();
-
-                //var actAuth = $firebaseAuth(refDataDB);
-                //actAuth.$unauth();
+                refAuthDB.unauth();
+                rootRef.unauth();
             };
-            authService.logout();
-
 
             return authService;
         });
