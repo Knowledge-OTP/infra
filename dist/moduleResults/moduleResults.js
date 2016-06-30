@@ -60,7 +60,7 @@
                        });
                    }
 
-                    userGuidLists[newResult.id] = newResult.guid;
+                    userGuidLists[newResult.moduleId] = newResult.guid;
                     var dataToSave = {};
                     dataToSave[USER_MODULE_RESULTS_PATH] = userGuidLists;
                     dataToSave[moduleResultPath] = newResult;

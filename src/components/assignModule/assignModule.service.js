@@ -26,21 +26,16 @@
                 });
             };
 
-            userAssignModuleService.setAssignModules = function (assignModules) {
-                var moduleResults = {};
+            userAssignModuleService.setAssignModules = function (assignModules, userId) {
                 var setProm = $q.when();
                 angular.forEach(assignModules, function (assignModule) {
                     setProm = setProm.then(function(){
-                        return ModuleResultsService.setModuleResult(assignModule).then(function(moduleResult){
-                            if(moduleResult) {
-                                moduleResults[moduleResult.moduleId] = moduleResult;
-                            }
-                        });
+                        return ModuleResultsService.setModuleResult(assignModule);
                     });
                 });
 
                 return setProm.then(function () {
-                    return moduleResults;
+                    return userAssignModuleService.getUserAssignModules(userId);
                 });
             };
 

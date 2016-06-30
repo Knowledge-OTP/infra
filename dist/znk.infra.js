@@ -422,21 +422,16 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
             };
 
-            userAssignModuleService.setAssignModules = function (assignModules) {
-                var moduleResults = {};
+            userAssignModuleService.setAssignModules = function (assignModules, userId) {
                 var setProm = $q.when();
                 angular.forEach(assignModules, function (assignModule) {
                     setProm = setProm.then(function(){
-                        return ModuleResultsService.setModuleResult(assignModule).then(function(moduleResult){
-                            if(moduleResult) {
-                                moduleResults[moduleResult.moduleId] = moduleResult;
-                            }
-                        });
+                        return ModuleResultsService.setModuleResult(assignModule);
                     });
                 });
 
                 return setProm.then(function () {
-                    return moduleResults;
+                    return userAssignModuleService.getUserAssignModules(userId);
                 });
             };
 
@@ -2912,7 +2907,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                        });
                    }
 
-                    userGuidLists[newResult.id] = newResult.guid;
+                    userGuidLists[newResult.moduleId] = newResult.guid;
                     var dataToSave = {};
                     dataToSave[USER_MODULE_RESULTS_PATH] = userGuidLists;
                     dataToSave[moduleResultPath] = newResult;
