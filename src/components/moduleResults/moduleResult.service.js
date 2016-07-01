@@ -20,7 +20,7 @@
                 return storage.get(resultPath, defaultValue);
             };
 
-            moduleResultsService.getModuleResultById = function (moduleId, userId, withDefaultResult) {
+            moduleResultsService.getModuleResultByModuleId = function (moduleId, userId, withDefaultResult) {
                 return moduleResultsService.getUserModuleResultsGuids(userId).then(function (moduleResultsGuids) {
                     var defaultResult = {};
                     var moduleResultGuid = moduleResultsGuids[moduleId];

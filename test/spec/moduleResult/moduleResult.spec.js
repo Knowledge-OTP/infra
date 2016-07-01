@@ -1,16 +1,15 @@
 describe('testing service "ModuleResults":', function () {
     'use strict';
 
-    //beforeEach(module('znk.infra.moduleResults', 'znk.infra.storage', 'znk.infra.enum', 'htmlTemplates', 'testUtility', 'storage.mock', 'user.mock'));
     beforeEach(module('znk.infra.moduleResults', 'znk.infra.utility', 'znk.infra.config', 'znk.infra.storage', 'testUtility', 'storage.mock'));
 
-
-    var ModuleResultsService, UtilitySrv, actions, testStorage, InfraConfigSrv, $q, TEST_UID;
+    var ModuleResultsService, UtilitySrv, actions, testStorage, InfraConfigSrv, $q, TEST_UID, MODULE_RESULT_GUID;
     beforeEach(inject([
         '$injector',
         function ($injector) {
+            MODULE_RESULT_GUID = 'f63f4964-b111-4c46-aef5-320d58aeabf1';
             TEST_UID = '68639c20-f951-47a4-b4e7-de0c9142e39f';
-            var UtilitySrv = $injector.get('UtilitySrv');
+            UtilitySrv = $injector.get('UtilitySrv');
             ModuleResultsService = $injector.get('ModuleResultsService');
 
             var TestUtilitySrv = $injector.get('TestUtilitySrv');
@@ -36,9 +35,9 @@ describe('testing service "ModuleResults":', function () {
         };
     });
 
-    it('when requesting for a not exiting result then a new initialized result should be returned', function () {
+    it('when requesting for a not existing result then a new initialized result should be returned', function () {
         var moduleId = 1;
-        var exerciseResult = actions.getModuleResultById(moduleId, TEST_UID, true);
+        var exerciseResult = actions.getModuleResultByModuleId(moduleId, TEST_UID, true);
         var expectedModuleResult = {
             moduleId: moduleId,
             tutorId: null,
@@ -51,16 +50,16 @@ describe('testing service "ModuleResults":', function () {
 
     it('when requesting for a not exiting result with dont initialize parameter then a new result should not be created and null should be returned', function () {
         var moduleId = 1;
-        var exerciseResult = actions.getModuleResultById(moduleId, TEST_UID, false);
-        expect(exerciseResult).toBeNull();
+        var moduleResults = actions.getModuleResultByModuleId(moduleId, TEST_UID, false);
+        expect(moduleResults).toBeNull();
         expect(testStorage.db.moduleResults[moduleId]).toBeUndefined();
     });
 
     it('when requesting for a not exiting result By Guid with no default, null should return', function () {
         var moduleId = 1;
-        var exerciseResult = actions.getModuleResultByGuid('123-456-789');
+        var moduleResults = actions.getModuleResultByGuid(MODULE_RESULT_GUID);
         var expectedModuleResult = {};
-        expect(exerciseResult).toEqual(expectedModuleResult);
+        expect(moduleResults).toEqual(expectedModuleResult);
         expect(testStorage.db.moduleResults[moduleId]).toBeUndefined();
     });
 
@@ -68,12 +67,15 @@ describe('testing service "ModuleResults":', function () {
         var moduleId = 1;
         var expectedModuleResult = {
             moduleId: moduleId,
+            guid: MODULE_RESULT_GUID,
             tutorId: null,
             assign: false,
             contentAssign: false,
             uid: TEST_UID
         };
-        var exerciseResult = actions.getModuleResultByGuid('123-456-789', expectedModuleResult);
-        expect(exerciseResult).toEqual(expectedModuleResult);
+        var moduleResults = actions.getModuleResultByGuid(MODULE_RESULT_GUID, expectedModuleResult);
+        expect(moduleResults).toEqual(expectedModuleResult);
     });
+
+
 });
