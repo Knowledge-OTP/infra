@@ -5585,15 +5585,15 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
   $templateCache.put("components/znkAudioPlayer/svg/play-icon.svg",
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
     "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
-    "	 viewBox=\"0 0 55.7 55.7\" class=\"play-icon\">\n" +
+    "	 viewBox=\"0 0 55.7 55.7\" class=\"znk-audio-player-play-svg\">\n" +
     "    <style>\n" +
-    "        .play-icon {\n" +
+    "        .znk-audio-player-play-svg {\n" +
     "            enable-background:new 0 0 55.7 55.7;\n" +
     "        }\n" +
     "    </style>\n" +
     "<style type=\"text/css\">\n" +
-    "	.st0{fill:none;stroke:#231F20;stroke-width:3;stroke-miterlimit:10;}\n" +
-    "	.st1{fill:#231F20;}\n" +
+    "	.znk-audio-player-play-svg .st0{fill:none;stroke:#231F20;stroke-width:3;stroke-miterlimit:10;}\n" +
+    "	.znk-audio-player-play-svg .st1{fill:#231F20;}\n" +
     "</style>\n" +
     "<circle class=\"st0\" cx=\"27.8\" cy=\"27.8\" r=\"26.3\"/>\n" +
     "<path class=\"st1\" d=\"M22.7,16.6L39,26.1c1.4,0.8,1.4,2.8,0,3.6L22.7,39c-1.4,0.8-3.1-0.2-3.1-1.8V18.4\n" +
