@@ -265,7 +265,6 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 rootRef.unauth();
             };
 
-            authService.logout();
             return authService;
         }]);
 })(angular);
