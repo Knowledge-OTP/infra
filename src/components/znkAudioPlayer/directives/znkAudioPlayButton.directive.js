@@ -13,9 +13,9 @@
                     onEnded: '&',
                     switchInitGetter: '&switchInit',
                     allowReplay: '&?',
-                    showAsDone: '&?'
+                    showAsDone: '=?'
                 },
-                link:function(scope){
+                link:function(scope, element, attrs){
                     scope.d = {};
 
                     var STATE_ENUM = {
@@ -31,7 +31,7 @@
 
                     var allowReplay =  angular.isDefined(scope.allowReplay) ? scope.allowReplay() : false;
                     var autoPlay = angular.isDefined(scope.autoPlayGetter) ? scope.autoPlayGetter() : false;
-                    var showAsDone = angular.isDefined(scope.showAsDone) ? scope.showAsDone() : false;
+                    var showAsDone = !!scope.showAsDone;
 
                     scope.audioPlayer = {
                         STATE_ENUM: STATE_ENUM,
@@ -51,6 +51,12 @@
 
                     scope.$watch('audioPlayer.currState', function (state) {
                         scope.isPlaying = state === STATE_ENUM.PLAYING;
+                    });
+
+                    scope.$watch('showAsDone', function (showAsDone) {
+                        if(showAsDone && !allowReplay){
+                            scope.audioPlayer.currState = STATE_ENUM.ALREADY_PLAYED;
+                        }
                     });
                 }
             };
