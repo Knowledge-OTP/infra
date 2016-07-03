@@ -19,10 +19,10 @@
                     if(_childScope){
                         _childScope.$destroy();
                         _childScope = null;
+                        $animate.leave(element.children());
+                        element.empty();
                     }
 
-                    $animate.leave(element.children());
-                    element.empty();
 
                     if(typeof newVal === 'undefined'){
                         return;

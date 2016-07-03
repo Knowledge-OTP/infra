@@ -26,7 +26,7 @@ znk-exercise.desktop {
                 button {
                     border-top-right-radius: 42px;
                     border-bottom-right-radius: 42px;
-                    padding-left: 2px;
+                    padding-right: 3px;
 
                     .chevron {
                         transform: rotate(-90deg);
@@ -73,14 +73,6 @@ znk-exercise.desktop {
                 &:focus {
                     outline: none;
                 }
-
-                svg-icon.chevron {
-                    width: 33px;
-
-                    .st0 {
-                        stroke: #0a9bad;
-                    }
-                }
             }
         }
 
@@ -107,17 +99,6 @@ znk-exercise.desktop {
                 }
                 cursor: pointer;
             }
-        }
-    }
-
-    svg-icon.chevron {
-        .st0 {
-            fill: none;
-            stroke: #231F20;
-            stroke-width: 12;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            stroke-miterlimit: 10;
         }
     }
 

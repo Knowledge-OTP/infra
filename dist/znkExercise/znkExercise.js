@@ -286,8 +286,7 @@
         READY: 'znk exercise: exercise ready',
         QUESTION_CHANGED: 'znk exercise: question changed',
         QUESTIONS_NUM_CHANGED: 'znk exercise: questions num changed',
-        SLIDE_DIRECTION_CHANGED: 'znk exercise: slide direction changed',
-        STATE_CHANGED: 'znk exercise: question state changed'
+        SLIDE_DIRECTION_CHANGED: 'znk exercise: slide direction changed'
     };
     angular.module('znk.infra.znkExercise').constant('ZnkExerciseEvents', ZnkExerciseEvents);
 })(angular);
@@ -342,6 +341,8 @@
                                 znkExerciseCtrl.notifyQuestionBuilderReady(questionBuilderCtrl.question.__questionStatus.index);
                             });
                         },0,false);
+
+                        questionBuilderCtrl.setViewValue = znkExerciseCtrl.setViewValue;
 
                         scope.$on('$destroy', function(){
                             $timeout.cancel(innerTimeout);
@@ -839,7 +840,6 @@
  *      viewMode
  *      onExerciseReady
  *      onSlideChange
- *      onStateChange
  *      initSlideIndex
  *      toolBoxWrapperClass
  *      initSlideDirection
@@ -888,7 +888,6 @@
                                 onQuestionAnswered: angular.noop,
                                 viewMode: ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
                                 onSlideChange: angular.noop,
-                                onStateChange: angular.noop,
                                 initSlideDirection: ZnkExerciseSlideDirectionEnum.ALL.enum,
                                 initForceDoneBtnDisplay: null,
                                 initPagerDisplay: true,
@@ -1194,12 +1193,15 @@
                              *  INIT END
                              * */
 
-                            scope.$on(ZnkExerciseEvents.STATE_CHANGED, function (e, stateId) {
-                                var currQuestion = getCurrentQuestion();
-                                currQuestion.__questionStatus.stateId = stateId;
-                                setViewValue();
-                                scope.settings.onStateChange(stateId);
-                            });
+                            /**
+                             * EXERCISE CTRL ADDITIONAL API
+                             */
+
+                            znkExerciseDrvCtrl.setViewValue = setViewValue;
+
+                            /**
+                             * EXERCISE CTRL ADDITIONAL END
+                             */
 
                             scope.$watch('vm.currentSlide', function (value, prevValue) {
                                 if(angular.isUndefined(value)){
@@ -2349,11 +2351,23 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</svg>\n" +
     "");
   $templateCache.put("components/znkExercise/svg/chevron-icon.svg",
-    "<svg x=\"0px\" y=\"0px\" viewBox=\"0 0 143.5 65.5\" xmlns=\"http://www.w3.org/2000/svg\" class=\"chevron-icon\">\n" +
+    "<svg x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "     viewBox=\"0 0 143.5 65.5\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     class=\"znk-exercise-chevron-svg\">\n" +
     "    <style>\n" +
-    "        .chevron-icon{\n" +
-    "            width: 33px;\n" +
-    "            height:auto;\n" +
+    "        .znk-exercise-chevron-svg{\n" +
+    "            height: 16px;\n" +
+    "        }\n" +
+    "\n" +
+    "        .znk-exercise-chevron-svg .st0{\n" +
+    "            stroke: #0a9bad;\n" +
+    "            fill: none;\n" +
+    "            stroke-width: 12;\n" +
+    "            stroke-linecap: round;\n" +
+    "            stroke-linejoin: round;\n" +
+    "            stroke-miterlimit: 10;\n" +
     "        }\n" +
     "    </style>\n" +
     "    <polyline class=\"st0\" points=\"6,6 71.7,59.5 137.5,6 \"/>\n" +

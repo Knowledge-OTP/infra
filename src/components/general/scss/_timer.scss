@@ -1,0 +1,47 @@
+.timer-drv {
+    display: inline-block;
+    position: relative;
+
+    .timer-type1 {
+        @include display-flex;
+
+        i {
+            color: $fcColor2;
+            font: {
+                size: 17px;
+            }
+            vertical-align: top;
+        }
+
+        .timer-view {
+            @include text-style(17px, $fcColor2, Lato, $regularFontWeight);
+            display: inline-block;
+            margin: {
+                left: 10px;
+            }
+            vertical-align: top;
+            position: relative;
+            top: 2px;
+        }
+    }
+
+    .timer-type2 {
+        text-align: center;
+        position: relative;
+
+        .timer-display-wrapper {
+            @include absolute-full-cover;
+            padding-top: 20px;
+
+            .timer-display {
+                @include text-style(57px, $fcColor5, Lato, $boldFontWeight);
+            }
+
+            .seconds-text{
+                margin-top: -10px;
+                @include text-style(16px, $fcColor5, Lato, $regularFontWeight);
+
+            }
+        }
+    }
+}

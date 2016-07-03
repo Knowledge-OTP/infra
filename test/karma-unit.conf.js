@@ -30,6 +30,7 @@ module.exports = function (config) {
             'bower_components/firebase/firebase.js',
             'bower_components/angular-translate/angular-translate.js',
             'bower_components/angular-translate-loader-partial/angular-translate-loader-partial.js',
+            'bower_components/angular-svg-round-progressbar/build/roundProgress.min.js',
             'bower_components/angular-mocks/angular-mocks.js',
             'bower_components/mockfirebase/browser/mockfirebase.js',
             'bower_components/jasmine/lib/jasmine-core/jasmine.js',
@@ -62,7 +63,7 @@ module.exports = function (config) {
             'test/mock/**/*.js',
 
             //tests
-            'test/spec/**/exerciseResult.spec.js'
+            'test/spec/**/*.spec.js'
         ],
 
         // list of files / patterns to exclude

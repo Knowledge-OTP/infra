@@ -1,76 +1,7 @@
 describe('testing service "StatsQuerySrv":', function () {
     'use strict';
 
-    beforeEach(module('znk.infra.stats', 'htmlTemplates','storage.mock', 'testUtility'));
-
-    beforeEach(module(function(StatsSrvProvider) {
-        function getCategoryLookup($q) {
-            return $q.when({
-                0:{
-                    id: 0,
-                    parentId: null
-                },
-                1:{
-                    id: 1,
-                    parentId: null
-                },
-                2:{
-                    id: 2,
-                    parentId: null
-                },
-                4:{
-                    id: 4,
-                    parentId: 0
-                },
-                8:{
-                    id: 8,
-                    parentId: 1
-                },
-                11:{
-                    id: 11,
-                    parentId: 1
-                },
-                12:{
-                    id: 12,
-                    parentId: 2
-                },
-                20:{
-                    id: 20,
-                    parentId: 4
-                },
-                23:{
-                    id: 23,
-                    parentId: 4
-                },
-                75:{
-                    id: 75,
-                    parentId: 8
-                },
-                76:{
-                    id: 76,
-                    parentId: 8
-                },
-                85:{
-                    id: 85,
-                    parentId: 11
-                },
-                93:{
-                    id: 93,
-                    parentId: 12
-                },
-                102:{
-                    id: 102,
-                    parentId: 11
-                },
-                106:{
-                    id: 106,
-                    parentId: 11
-                }
-            });
-        }
-
-        StatsSrvProvider.setCategoryLookup(getCategoryLookup);
-    }));
+    beforeEach(module('znk.infra.stats', 'htmlTemplates','storage.mock', 'testUtility', 'content.mock'));
 
     var $rootScope, StatsQuerySrv, SubjectEnum, StorageSrv;
     var actions;
@@ -109,8 +40,8 @@ describe('testing service "StatsQuerySrv":', function () {
             };
 
             var level2 = {
-                id_4:{//weakness: 0.24
-                    id: 4,
+                id_263:{//weakness: 0.24
+                    id: 263,
                     subjectId: 0,
                     totalQuestions: 25,
                     correct: 15,
@@ -119,8 +50,8 @@ describe('testing service "StatsQuerySrv":', function () {
                     totalTime: 0,
                     parentsIds: [0]
                 },
-                id_8:{//weakness 0.076
-                    id: 8,
+                id_266:{//weakness 0.076
+                    id: 266,
                     subjectId: 1,
                     totalQuestions: 66,
                     correct: 57,
@@ -129,8 +60,8 @@ describe('testing service "StatsQuerySrv":', function () {
                     totalTime: 0,
                     parentsIds: [1]
                 },
-                id_11:{//weakness 0.385
-                    id: 11,
+                id_267:{//weakness 0.385
+                    id: 267,
                     subjectId: 1,
                     totalQuestions: 13,
                     correct: 8,
@@ -139,8 +70,8 @@ describe('testing service "StatsQuerySrv":', function () {
                     totalTime: 0,
                     parentsIds: [1]
                 },
-                id_12:{//weakness 0.517
-                    id: 12,
+                id_271:{//weakness 0.517
+                    id: 271,
                     subjectId: 2,
                     totalQuestions: 29,
                     correct: 14,
@@ -154,69 +85,63 @@ describe('testing service "StatsQuerySrv":', function () {
             var level3 = {
                 id_20:{//weakness 0.6
                     id: 20,
-                    generalCategoryId: 4,
                     subjectId: 0,
                     totalQuestions: 10,
                     correct: 4,
                     unanswered: 2,
                     wrong: 4,
                     totalTime: 0,
-                    parentsIds: [4, 0]
+                    parentsIds: [263, 0]
                 },
                 id_23:{//weakness 0.266
                     id: 23,
-                    generalCategoryId: 4,
                     subjectId: 0,
                     totalQuestions: 15,
                     correct: 11,
                     unanswered: 2,
                     wrong: 2,
                     totalTime: 0,
-                    parentsIds: [4, 0]
+                    parentsIds: [263, 0]
                 },
                 id_75:{//weakness 0.121
                     id: 75,
-                    generalCategoryId: 8,
                     subjectId: 1,
                     totalQuestions: 33,
                     correct: 29,
                     unanswered: 2,
                     wrong: 2,
                     totalTime: 0,
-                    parentsIds: [8, 1]
+                    parentsIds: [266, 1]
                 },
                 id_76:{//weakness 0.151
                     id: 76,
-                    generalCategoryId: 8,
                     subjectId: 1,
                     totalQuestions: 33,
                     correct: 28,
                     unanswered: 2,
                     wrong: 3,
                     totalTime: 0,
-                    parentsIds: [8, 1]
+                    parentsIds: [266, 1]
                 },
                 id_85:{//weakness 0.385
                     id: 85,
-                    generalCategoryId: 11,
                     subjectId: 1,
                     totalQuestions: 13,
                     correct: 8,
                     unanswered: 1,
                     wrong: 4,
                     totalTime: 0,
-                    parentsIds: [11, 1]
+                    parentsIds: [267, 1]
                 },
                 id_93:{//weakness 0.517
                     id: 93,
-                    generalCategoryId: 12,
                     subjectId: 2,
                     totalQuestions: 29,
                     correct: 14,
                     unanswered: 3,
                     wrong: 12,
                     totalTime: 0,
-                    parentsIds: [12, 2]
+                    parentsIds: [271, 2]
                 }
             };
 
@@ -239,7 +164,7 @@ describe('testing service "StatsQuerySrv":', function () {
         var LEVEL = 2;
         var weakestGeneralCategory = actions.getWeakestCategoryInLevel(LEVEL);
         var expectedResult = {
-            id:12
+            id:271
         };
         expect(weakestGeneralCategory).toEqual(jasmine.objectContaining(expectedResult));
     });
@@ -278,7 +203,7 @@ describe('testing service "StatsQuerySrv":', function () {
         delete StorageSrv.db.users.$$uid.stats;
         var parentId = 1;
         var LEVEL = 3;
-        var optionalCategories = [102, 106];
+        var optionalCategories = [275, 277];
         var weakestCategory = actions.getWeakestCategoryInLevel(LEVEL, optionalCategories, parentId);
         expect(optionalCategories).toEqual(jasmine.arrayContaining([weakestCategory.id]));
     });
