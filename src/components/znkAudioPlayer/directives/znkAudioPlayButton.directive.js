@@ -15,7 +15,7 @@
                     allowReplay: '&?',
                     showAsDone: '=?'
                 },
-                link:function(scope, element, attrs){
+                link:function(scope){
                     scope.d = {};
 
                     var STATE_ENUM = {
