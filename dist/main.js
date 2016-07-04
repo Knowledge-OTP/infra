@@ -3,6 +3,7 @@
 
     angular.module('znk.infra', [
         'znk.infra.analytics',
+        'znk.infra.assignModule',
         'znk.infra.auth',
         'znk.infra.autofocus',
         'znk.infra.config',
@@ -15,11 +16,14 @@
         'znk.infra.exerciseDataGetters',
         'znk.infra.exerciseResult',
         'znk.infra.exerciseUtility',
+        'znk.infra.filters',
         'znk.infra.general',
         'znk.infra.hint',
+        'znk.infra.moduleResults',
         'znk.infra.personalization',
         'znk.infra.pngSequence',
         'znk.infra.popUp',
+        'znk.infra.presence',
         'znk.infra.scoring',
         'znk.infra.scroll',
         'znk.infra.sharedScss',
@@ -30,6 +34,7 @@
         'znk.infra.utility',
         'znk.infra.znkAudioPlayer',
         'znk.infra.znkExercise',
+        'znk.infra.znkModule',
         'znk.infra.znkTimeline'
     ]);
 })(angular);
@@ -242,6 +247,62 @@
 })(angular);
 
 angular.module('znk.infra.analytics').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.moduleResults']);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
+        'ZnkModuleService', 'ModuleResultsService', '$q',
+        function (ZnkModuleService, ModuleResultsService, $q) {
+            var userAssignModuleService = {};
+
+            userAssignModuleService.getUserAssignModules = function (userId) {
+                return ModuleResultsService.getUserModuleResultsGuids(userId).then(function (resultsGuids) {
+                    var moduleResults = {};
+                    var getProm = $q.when();
+                    angular.forEach(resultsGuids, function (resultGuid) {
+                        getProm = getProm.then(function(){
+                            return ModuleResultsService.getModuleResultByGuid(resultGuid).then(function(moduleResult){
+                                if(moduleResult) {
+                                    moduleResults[moduleResult.moduleId] = moduleResult;
+                                }
+                            });
+                        });
+                    });
+
+                    return getProm.then(function () {
+                        return moduleResults;
+                    });
+                });
+            };
+
+            userAssignModuleService.setAssignModules = function (assignModules, userId) {
+                var setProm = $q.when();
+                angular.forEach(assignModules, function (assignModule) {
+                    setProm = setProm.then(function(){
+                        return ModuleResultsService.setModuleResult(assignModule);
+                    });
+                });
+
+                return setProm.then(function () {
+                    return userAssignModuleService.getUserAssignModules(userId);
+                });
+            };
+
+            return userAssignModuleService;
+        }
+    ]);
+})(angular);
+
+
+angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -2436,6 +2497,44 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.filters', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+    /**
+     * @param time (in seconds)
+     * @param exp (expression to display time)
+     * @returns formatted time string
+     */
+    angular.module('znk.infra.filters').filter('formatDuration', ['$log', function ($log) {
+        return function (time, exp) {
+            if (!angular.isNumber(time) || isNaN(time)) {
+                $log.error('time is not a number:', time);
+                return '';
+            }
+            var t = Math.round(parseInt(time));
+            var hours = parseInt(t / 3600, 10);
+            t = t - (hours * 3600);
+            var minutes = parseInt(t / 60, 10);
+            var seconds = time % 60;
+            var defaultFormat = 'mm:ss';
+
+            if (!exp) {
+                exp = defaultFormat;
+            }
+            return exp.replace(/hh/g, hours).replace(/mm/g, minutes).replace(/ss/g, seconds);
+        };
+    }]);
+})(angular);
+
+angular.module('znk.infra.filters').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.general', ['znk.infra.enum', 'znk.infra.svgIcon', 'angular-svg-round-progress'])
         .config([
         'SvgIconSrvProvider',
@@ -3273,6 +3372,93 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
 
 (function (angular) {
     'use strict';
+    angular.module('znk.infra.moduleResults', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.moduleResults').service('ModuleResultsService', [
+        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'StorageSrv',
+        function (InfraConfigSrv, $log, $q, UtilitySrv, StorageSrv) {
+
+            var moduleResultsService = {};
+            var USER_MODULE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
+            var MODULE_RESULTS_PATH = 'moduleResults';
+
+            moduleResultsService.getUserModuleResultsGuids = function (userId) {
+                var userResultsPath = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
+                return InfraConfigSrv.getStudentStorage().then(function (storage) {
+                    return storage.get(userResultsPath);
+                });
+            };
+
+            moduleResultsService.getModuleResultByGuid = function (resultGuid, defaultValue) {
+                var resultPath = MODULE_RESULTS_PATH + '/' + resultGuid;
+                return InfraConfigSrv.getStudentStorage().then(function (storage) {
+                    return storage.get(resultPath, defaultValue);
+                });
+            };
+
+            moduleResultsService.getModuleResultByModuleId = function (moduleId, userId, withDefaultResult) {
+                return moduleResultsService.getUserModuleResultsGuids(userId).then(function (moduleResultsGuids) {
+                    var defaultResult = {};
+                    var moduleResultGuid = moduleResultsGuids[moduleId];
+
+                    if (!moduleResultGuid) {
+                        if (!withDefaultResult) {
+                            return null;
+                        } else {
+                            moduleResultGuid = UtilitySrv.general.createGuid();
+                            defaultResult = {
+                                moduleId: moduleId,
+                                tutorId: null,
+                                assign: false,
+                                contentAssign: false,
+                                guid: moduleResultGuid,
+                                uid: userId
+                            };
+                        }
+                    }
+
+                    return moduleResultsService.getModuleResultByGuid(moduleResultGuid, defaultResult);
+                });
+            };
+
+            moduleResultsService.setModuleResult = function (newResult) {
+                return moduleResultsService.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
+                    var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
+                    if (userGuidLists[newResult.guid]) {
+                        return moduleResultsService.getModuleResultByGuid(newResult.guid).then(function (moduleResult) {
+                            angular.extend(moduleResult, newResult);
+                            return InfraConfigSrv.getStudentStorage().then(function (storage) {
+                                return storage.set(moduleResultPath, moduleResult);
+                            });
+                        });
+                    }
+
+                    userGuidLists[newResult.moduleId] = newResult.guid;
+                    var dataToSave = {};
+                    dataToSave[USER_MODULE_RESULTS_PATH] = userGuidLists;
+                    dataToSave[moduleResultPath] = newResult;
+                    return InfraConfigSrv.getStudentStorage().then(function(storage){
+                        return storage.set(dataToSave);
+                    });
+                });
+            };
+
+            return moduleResultsService;
+        }
+    ]);
+})(angular);
+
+
+angular.module('znk.infra.moduleResults').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
 
     angular.module('znk.infra.personalization', ['znk.infra.content']);
 })(angular);
@@ -3667,6 +3853,120 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
     "</g>\n" +
     "</svg>\n" +
     "");
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.presence', ['ngIdle'])
+        .config([
+            'IdleProvider', 'KeepaliveProvider', 'ENV',
+            function (IdleProvider, KeepaliveProvider, ENV) {
+                // userIdleTime: how many sec until user is 'IDLE'
+                // idleTimeout: how many sec after idle to stop track the user, 0: keep track
+                // idleKeepalive: keepalive interval in sec
+
+                IdleProvider.idle(ENV.userIdleTime || 30);
+                IdleProvider.timeout(ENV.idleTimeout || 0);
+                KeepaliveProvider.interval(ENV.idleKeepalive || 2);
+            }])
+        .run([
+            'PresenceService', 'Idle',
+            function (PresenceService, Idle) {
+                PresenceService.addCurrentUserListeners();
+                Idle.watch();
+            }
+        ]);
+})(angular);
+
+'use strict';
+
+(function (angular) {
+    angular.module('znk.infra.presence').provider('PresenceService', function () {
+
+        var AuthSrvName;
+
+        this.setAuthServiceName = function (authServiceName) {
+            AuthSrvName = authServiceName;
+        };
+
+        this.$get = [
+            '$log', '$injector', 'ENV', '$rootScope', 'storageFirebaseAdapter',
+            function ($log, $injector, ENV, $rootScope, storageFirebaseAdapter) {
+                var PresenceService = {};
+                var rootRef = storageFirebaseAdapter(ENV.fbDataEndPoint);
+                var PRESENCE_PATH = 'presence/';
+
+                PresenceService.userStatus = {
+                    'OFFLINE': 0,
+                    'ONLINE': 1,
+                    'IDLE': 2
+                };
+
+                function getAuthData() {
+                    var authData;
+                    var authService = $injector.get(AuthSrvName);
+                    if (angular.isObject(authService)) {
+                        authData =  authService.getAuth();
+                    }
+                    return authData;
+                }
+
+                PresenceService.addCurrentUserListeners = function () {
+                    var authData = getAuthData();
+                    if (authData) {
+                        var amOnline = rootRef.getRef('.info/connected');
+                        var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
+                        amOnline.on('value', function (snapshot) {
+                            if (snapshot.val()) {
+                                userRef.onDisconnect().remove();
+                                userRef.set(PresenceService.userStatus.ONLINE);
+                            }
+                        });
+
+                        $rootScope.$on('IdleStart', function() {
+                            userRef.set(PresenceService.userStatus.IDLE);
+                        });
+
+                        $rootScope.$on('IdleEnd', function() {
+                            userRef.set(PresenceService.userStatus.ONLINE);
+                        });
+                    }
+                };
+
+                PresenceService.getCurrentUserStatus = function (userId) {
+                    return rootRef.getRef(PRESENCE_PATH + userId).once('value').then(function(snapshot) {
+                        return (snapshot.val()) || PresenceService.userStatus.OFFLINE;
+                    });
+                };
+
+                PresenceService.startTrackUserPresence = function (userId, cb) {
+                    var userRef = rootRef.getRef(PRESENCE_PATH + userId);
+                    userRef.on('value', trackUserPresenceCB.bind(null, cb, userId));
+                };
+
+                PresenceService.stopTrackUserPresence = function (userId) {
+                    var userRef = rootRef.getRef(PRESENCE_PATH + userId);
+                    userRef.off('value', trackUserPresenceCB);
+                };
+
+                function trackUserPresenceCB(cb, userId, snapshot) {
+                    if (angular.isFunction(cb)) {
+                        var status = PresenceService.userStatus.OFFLINE;
+                        if (snapshot && snapshot.val()){
+                            status = snapshot.val();
+                        }
+                        cb(status, userId);
+                    }
+                }
+
+                return PresenceService;
+            }];
+    });
+})(angular);
+
+angular.module('znk.infra.presence').run(['$templateCache', function($templateCache) {
+
 }]);
 
 (function (angular) {
@@ -4495,6 +4795,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                 return {
                     get: get,
                     set: set,
+                    getRef: getRef,
                     __refMap: refMap//for testing
                 };
             }
@@ -4924,6 +5225,32 @@ angular.module('znk.infra.user').service('UserProfileService',
 }]);
 
 angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.userSession', ['znk.infra.config']);
+})(angular);
+
+(function(angular, Firebase){
+    'use strict';
+    
+    angular.module('znk.infra.userSession')
+        .run(["ENV", "InfraConfigSrv", function(ENV, InfraConfigSrv){
+            'ngInject';
+
+            InfraConfigSrv.getUserData().then(function(userData){
+                var globalLastSessionRef = new Firebase(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
+                globalLastSessionRef.child('began').set(Firebase.ServerValue.TIMESTAMP);
+                globalLastSessionRef.child('ended').set(null);
+                globalLastSessionRef.child('ended').onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
+            });
+        }]);
+})(angular, Firebase);
+
+angular.module('znk.infra.userSession').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -8141,6 +8468,42 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</g>\n" +
     "</svg>\n" +
     "");
+}]);
+
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.znkModule', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkModule').service('ZnkModuleService', [
+        'StorageRevSrv',
+        function (StorageRevSrv) {
+            var znkModuleService = {};
+
+            znkModuleService.getModuleHeaders = function () {
+                return StorageRevSrv.getContent({
+                    exerciseType: 'moduleheaders'
+                });
+            };
+
+            znkModuleService.getModuleById = function (moduleId) {
+                return StorageRevSrv.getContent({
+                    exerciseId: moduleId,
+                    exerciseType: 'module'
+                });
+            };
+
+            return znkModuleService;
+        }
+    ]);
+})(angular);
+
+
+angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
+
 }]);
 
 (function (angular) {
