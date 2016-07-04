@@ -2,22 +2,25 @@
     'use strict';
 
     angular.module('znk.infra.moduleResults').service('ModuleResultsService', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv',
-        function (InfraConfigSrv, $log, $q, UtilitySrv) {
+        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'StorageSrv',
+        function (InfraConfigSrv, $log, $q, UtilitySrv, StorageSrv) {
 
             var moduleResultsService = {};
-            var storage = InfraConfigSrv.getStorageService();
-            var USER_MODULE_RESULTS_PATH = storage.variables.appUserSpacePath + '/moduleResults';
+            var USER_MODULE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
             var MODULE_RESULTS_PATH = 'moduleResults';
 
-            moduleResultsService.getUserModuleResultsGuids = function (userId){
+            moduleResultsService.getUserModuleResultsGuids = function (userId) {
                 var userResultsPath = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
-                return storage.get(userResultsPath);
+                return InfraConfigSrv.getStudentStorage().then(function (storage) {
+                    return storage.get(userResultsPath);
+                });
             };
 
             moduleResultsService.getModuleResultByGuid = function (resultGuid, defaultValue) {
                 var resultPath = MODULE_RESULTS_PATH + '/' + resultGuid;
-                return storage.get(resultPath, defaultValue);
+                return InfraConfigSrv.getStudentStorage().then(function (storage) {
+                    return storage.get(resultPath, defaultValue);
+                });
             };
 
             moduleResultsService.getModuleResultByModuleId = function (moduleId, userId, withDefaultResult) {
@@ -25,12 +28,12 @@
                     var defaultResult = {};
                     var moduleResultGuid = moduleResultsGuids[moduleId];
 
-                    if(!moduleResultGuid) {
+                    if (!moduleResultGuid) {
                         if (!withDefaultResult) {
                             return null;
                         } else {
                             moduleResultGuid = UtilitySrv.general.createGuid();
-                            defaultResult =  {
+                            defaultResult = {
                                 moduleId: moduleId,
                                 tutorId: null,
                                 assign: false,
@@ -45,21 +48,25 @@
                 });
             };
 
-            moduleResultsService.setModuleResult = function (newResult){
-                return  moduleResultsService.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
+            moduleResultsService.setModuleResult = function (newResult) {
+                return moduleResultsService.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
                     var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
-                   if (userGuidLists[newResult.guid]) {
-                       return  moduleResultsService.getModuleResultByGuid(newResult.guid).then(function (moduleResult) {
-                           angular.extend(moduleResult, newResult);
-                           return storage.set(moduleResultPath, moduleResult);
-                       });
-                   }
+                    if (userGuidLists[newResult.guid]) {
+                        return moduleResultsService.getModuleResultByGuid(newResult.guid).then(function (moduleResult) {
+                            angular.extend(moduleResult, newResult);
+                            return InfraConfigSrv.getStudentStorage().then(function (storage) {
+                                return storage.set(moduleResultPath, moduleResult);
+                            });
+                        });
+                    }
 
                     userGuidLists[newResult.moduleId] = newResult.guid;
                     var dataToSave = {};
                     dataToSave[USER_MODULE_RESULTS_PATH] = userGuidLists;
                     dataToSave[moduleResultPath] = newResult;
-                    return storage.set(dataToSave);
+                    return InfraConfigSrv.getStudentStorage().then(function(storage){
+                        return storage.set(dataToSave);
+                    });
                 });
             };
 

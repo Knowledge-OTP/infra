@@ -15,10 +15,10 @@ describe('testing service "ModuleResults":', function () {
             var TestUtilitySrv = $injector.get('TestUtilitySrv');
             actions = TestUtilitySrv.general.convertAllAsyncToSync(ModuleResultsService);
 
-            testStorage = $injector.get('testStorage');
             $q = $injector.get('$q');
 
             InfraConfigSrv = $injector.get('InfraConfigSrv');
+            testStorage = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage,InfraConfigSrv)();
             InfraConfigSrv.getUserData = function () {
                 return $q.when({
                     uid: TEST_UID
