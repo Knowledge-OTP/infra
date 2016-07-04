@@ -17,7 +17,6 @@
         'znk.infra.exerciseUtility',
         'znk.infra.general',
         'znk.infra.hint',
-        'znk.infra.mixins',
         'znk.infra.personalization',
         'znk.infra.pngSequence',
         'znk.infra.popUp',
