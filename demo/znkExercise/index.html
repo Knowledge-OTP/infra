@@ -30,32 +30,19 @@
         }
 
     </style>
-    <div style="float: left;">
-        <button ng-click="addQuestion()">Add question</button>
-        <button ng-click="removeQuestion()">remove question</button>
-        <div></div>
-        <button ng-click="setSlideDirection(1)">set slide direction none</button>
-        <button ng-click="setSlideDirection(2)">set slide direction all</button>
-        <button ng-click="setSlideDirection(3)">set slide direction right</button>
-        <button ng-click="setSlideDirection(4)">set slide direction left</button>
-        <div></div>
-        <button ng-click="setViewMode(1)">ANSWER_WITH_RESULT</button>
-        <button ng-click="setViewMode(2)">ONLY_ANSWER</button>
-        <button ng-click="setViewMode(3)">REVIEW</button>
-        <button ng-click="setViewMode(4)">MUST_ANSWER</button>
-        <div></div>
-        <button ng-click="showOrHidePager()">show hide pager</button>
-        <div></div>
-        <button ng-click="showOrHideDoneBtn()">show hide done button</button>
-    </div>
+
     <znk-exercise ng-model="results"
                   questions="questions"
                   settings="settings"
                   actions="d.actions">
     </znk-exercise>
+
+
     <script src="angular/angular.js"></script>
     <script src="angular-animate/angular-animate.js"></script>
     <script src="Swiper/dist/js/swiper.js"></script>
+    <script src="firebase/firebase-debug.js"></script>
+
 
     <script src="config/config.js"></script>
     <script src="storage/storage.js"></script>
@@ -76,5 +63,11 @@
 
     <script src="demo.js"></script>
     <script src="storagesConfig.js"></script>
+    <script src="contentConfig.js"></script>
+    <script src="env.service.js"></script>
+    <script src="env.service.js"></script>
+    <script src="infraSrvUserDataConfig.js"></script>
+
+
 </body>
 </html>
