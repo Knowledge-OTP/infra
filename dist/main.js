@@ -31,6 +31,7 @@
         'znk.infra.storage',
         'znk.infra.svgIcon',
         'znk.infra.user',
+        'znk.infra.userSession',
         'znk.infra.utility',
         'znk.infra.znkAudioPlayer',
         'znk.infra.znkExercise',
