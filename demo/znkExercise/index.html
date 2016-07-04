@@ -30,18 +30,20 @@
         }
 
     </style>
-
+<div ng-if="questionReady">
     <znk-exercise ng-model="results"
                   questions="questions"
                   settings="settings"
                   actions="d.actions">
     </znk-exercise>
-
+</div>
 
     <script src="angular/angular.js"></script>
     <script src="angular-animate/angular-animate.js"></script>
     <script src="Swiper/dist/js/swiper.js"></script>
     <script src="firebase/firebase-debug.js"></script>
+    <script src="angular-ui-router/release/angular-ui-router.js"></script>
+    <script src="angulartics/dist/angulartics.min.js"></script>
 
 
     <script src="config/config.js"></script>
@@ -55,6 +57,10 @@
     <script src="svgIcon/svgIcon.js"></script>
     <script src="znkExercise/znkExercise.js"></script>
     <script src="znkExercise/templates.js"></script>
+    <script src="analytics/analytics.js"></script>
+    <script src="popUp/popUp.js"></script>
+    <script src="exerciseDataGetters/exerciseDataGetters.js"></script>
+    <script src="stats/stats.js"></script>
 
     <script src="exerciseUtility/exerciseUtility.js"></script>
 
@@ -67,6 +73,7 @@
     <script src="env.service.js"></script>
     <script src="env.service.js"></script>
     <script src="infraSrvUserDataConfig.js"></script>
+    <script src="analyticsConfig.js"></script>
 
 
 </body>

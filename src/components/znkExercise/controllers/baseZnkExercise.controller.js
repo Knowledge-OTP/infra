@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('BaseZnkExerciseController',
-        function ($scope, exerciseData, exerciseSettings, $state, ZnkExerciseDrvSrv, $q, ExerciseTypeEnum, $filter, $location, ScoringService, ExerciseResultSrv,
+        function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, /*ScoringService,*/ ExerciseResultSrv,
                   PopUpSrv, exerciseEventsConst, $rootScope, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum, SubjectEnum, znkAnalyticsSrv, StatsEventsHandlerSrv) {
 
             'ngInject';
@@ -12,25 +12,11 @@
             var exerciseTypeId = exerciseData.exerciseTypeId;
             var isSection = exerciseTypeId === ExerciseTypeEnum.SECTION.enum;
 
-            var translateFilter = $filter('translate');
+            // var translateFilter = $filter('translate');
             var initSlideIndex;
 
             if (!$scope.baseZnkExerciseCtrl) {
                 $scope.baseZnkExerciseCtrl = {};
-            }
-
-            if (exercise.subjectId === SubjectEnum.READING.enum) {     // adding passage title to reading questions
-                var groupDataTypeTitle = {};
-                var PASSAGE = translateFilter('ZNK_EXERCISE.PASSAGE');
-                var groupDataCounter = 0;
-                for (var j = 0; j < exercise.questions.length; j++) {
-                    var groupDataId = exercise.questions[j].groupDataId;
-                    if (angular.isUndefined(groupDataTypeTitle[groupDataId])) {
-                        groupDataCounter++;
-                        groupDataTypeTitle[groupDataId] = PASSAGE + groupDataCounter;
-                    }
-                    exercise.questions[j].passageTitle = groupDataTypeTitle[groupDataId];
-                }
             }
 
             function getNumOfUnansweredQuestions(questionsResults) {
@@ -89,9 +75,9 @@
                         };
                     })
                 };
-                return ScoringService.getScoreSectionResult(resultForScoring).then(function (scoreObj) {
-                    return scoreObj.scoreSection;
-                });
+                // return ScoringService.getScoreSectionResult(resultForScoring).then(function (scoreObj) {
+                //     return scoreObj.scoreSection;
+                // });
             }
 
             function _calcExamScoring() {
@@ -132,11 +118,11 @@
                                 sectionResults.push(exerciseResult.score);
                             }
                             // if there's score on 4 sections except WRITING
-                            if (sectionResults.length === exam.sections.length - 1) {
-                                innerProm = ScoringService.getScoreCompositeResult(sectionResults).then(function (score) {
-                                    return score.compositeScoreResults;
-                                });
-                            }
+                            // if (sectionResults.length === exam.sections.length - 1) {
+                            //     innerProm = ScoringService.getScoreCompositeResult(sectionResults).then(function (score) {
+                            //         return score.compositeScoreResults;
+                            //     });
+                            // }
                             return innerProm;
                         });
                     }
@@ -166,7 +152,7 @@
 
                     var exam = isSection ? exerciseData.examData : undefined;
                     $rootScope.$broadcast(broadcastEventName, exercise, exerciseResult, exam ? exam : null);
-                    $scope.baseZnkExerciseCtrl.settings.viewMode = ZnkExerciseDrvSrv.viewModeEnum.review.enum;
+                    $scope.baseZnkExerciseCtrl.settings.viewMode = ZnkExerciseViewModeEnum.REVIEW.enum;
 
                     _saveAnalytics();
 
@@ -187,10 +173,10 @@
             }
 
             function _getAllowedTimeForExercise() {
-                var allowedTimeForQuestionByExercise = {
-                    [ExerciseTypeEnum.TUTORIAL.enum]: 1.5 * 60 * 1000,
-                    [ExerciseTypeEnum.DRILL.enum]: 40 * 1000
-                };
+                var allowedTimeForQuestionByExercise = {};
+                allowedTimeForQuestionByExercise[ExerciseTypeEnum.TUTORIAL.enum] = 1.5 * 60 * 1000;
+                allowedTimeForQuestionByExercise[ExerciseTypeEnum.DRILL.enum] = 40 * 1000;
+
                 var allowedTimeForQuestion = allowedTimeForQuestionByExercise[exerciseTypeId];
                 if (angular.isDefined(allowedTimeForQuestion)) {
                     return allowedTimeForQuestion * exercise.questions.length;
@@ -238,10 +224,10 @@
                     var numOfUnansweredQuestions = getNumOfUnansweredQuestions(exerciseResult.questionResults);
                     var areAllQuestionsAnsweredProm = $q.when(true);
                     if (numOfUnansweredQuestions) {
-                        var content = translateFilter('ZNK_EXERCISE.SOME_ANSWER_LEFT_CONTENT');
-                        var title = translateFilter('ZNK_EXERCISE.FINISH_TITLE');
-                        var buttonGoTo = translateFilter('ZNK_EXERCISE.GO_TO_SUMMARY_BTN');
-                        var buttonStay = translateFilter('ZNK_EXERCISE.STAY_BTN');
+                        // var content = translateFilter('ZNK_EXERCISE.SOME_ANSWER_LEFT_CONTENT');
+                        // var title = translateFilter('ZNK_EXERCISE.FINISH_TITLE');
+                        // var buttonGoTo = translateFilter('ZNK_EXERCISE.GO_TO_SUMMARY_BTN');
+                        // var buttonStay = translateFilter('ZNK_EXERCISE.STAY_BTN');
                         areAllQuestionsAnsweredProm = PopUpSrv.warning(title, content, buttonGoTo, buttonStay).promise;
                     }
                     areAllQuestionsAnsweredProm.then(function () {
@@ -283,10 +269,10 @@
             };
 
             $scope.baseZnkExerciseCtrl.onFinishTime = function () {
-                var content = translateFilter('ZNK_EXERCISE.TIME_UP_CONTENT');
-                var title = translateFilter('ZNK_EXERCISE.TIME_UP_TITLE');
-                var buttonFinish = translateFilter('ZNK_EXERCISE.STOP');
-                var buttonContinue = translateFilter('ZNK_EXERCISE.CONTINUE_BTN');
+                // var content = translateFilter('ZNK_EXERCISE.TIME_UP_CONTENT');
+                // var title = translateFilter('ZNK_EXERCISE.TIME_UP_TITLE');
+                // var buttonFinish = translateFilter('ZNK_EXERCISE.STOP');
+                // var buttonContinue = translateFilter('ZNK_EXERCISE.CONTINUE_BTN');
                 var timeOverPopupPromise = PopUpSrv.ErrorConfirmation(title, content, buttonFinish, buttonContinue).promise;
 
                 timeOverPopupPromise.then(function () {

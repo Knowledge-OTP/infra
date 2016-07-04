@@ -1,7 +1,14 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demo', ['znk.infra.znkExercise', 'znk.infra.content'])
+    angular.module('demo',
+        ['znk.infra.znkExercise',
+            'znk.infra.content',
+            'ui.router',
+            'angulartics',
+            'znk.infra.stats',
+            'znk.infra.analytics',
+            'znk.infra.popUp'])
         .config(function (QuestionTypesSrvProvider, $sceProvider) {
             $sceProvider.enabled(false);
 
@@ -42,7 +49,6 @@
 
                     ExerciseResultSrv.getExerciseResult(exerciseType, +exercise.id, examId).then(function (results) {
                         resultsData = results;
-                        $scope.resultsForAudioManager = results;
                         $scope.questions = exercise.questions;
                         if (results.questionResults.length === 0) {
                             results.questionResults = exercise.questions.map(function (question) {
@@ -72,13 +78,13 @@
                 });
             }
 
-            setExercise('practice', '119');
+            setExercise('practice', '165');
 
 
             $scope.d = {};
 
             $scope.settings = {
-                viewMode: 1,
+                viewMode: 2,
                 allowedTimeForExercise: 10000,
                 onDone: function () {
                     alert('On done was invoked');
