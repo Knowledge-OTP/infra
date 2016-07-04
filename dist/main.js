@@ -2,28 +2,36 @@
     'use strict';
 
     angular.module('znk.infra', [
-        'znk.infra.config',
-        'znk.infra.pngSequence',
-        'znk.infra.enum',
-        'znk.infra.svgIcon',
-        'znk.infra.general',
-        'znk.infra.scroll',
-        'znk.infra.content',
-        'znk.infra.znkExercise',
-        'znk.infra.storage',
-        'znk.infra.utility',
-        'znk.infra.exerciseResult',
-        'znk.infra.contentAvail',
-        'znk.infra.popUp',
-        'znk.infra.estimatedScore',
-        'znk.infra.stats',
-        'znk.infra.hint',
-        'znk.infra.znkTimeline',
         'znk.infra.analytics',
+        'znk.infra.auth',
+        'znk.infra.autofocus',
+        'znk.infra.config',
+        'znk.infra.content',
+        'znk.infra.contentAvail',
         'znk.infra.deviceNotSupported',
-        'znk.infra.user',
+        'znk.infra.enum',
+        'znk.infra.estimatedScore',
         'znk.infra.exams',
-        'znk.infra.scoring'
+        'znk.infra.exerciseDataGetters',
+        'znk.infra.exerciseResult',
+        'znk.infra.exerciseUtility',
+        'znk.infra.general',
+        'znk.infra.hint',
+        'znk.infra.mixins',
+        'znk.infra.personalization',
+        'znk.infra.pngSequence',
+        'znk.infra.popUp',
+        'znk.infra.scoring',
+        'znk.infra.scroll',
+        'znk.infra.sharedScss',
+        'znk.infra.stats',
+        'znk.infra.storage',
+        'znk.infra.svgIcon',
+        'znk.infra.user',
+        'znk.infra.utility',
+        'znk.infra.znkAudioPlayer',
+        'znk.infra.znkExercise',
+        'znk.infra.znkTimeline'
     ]);
 })(angular);
 
@@ -3255,6 +3263,49 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
 })(angular);
 
 angular.module('znk.infra.hint').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.personalization', ['znk.infra.content']);
+})(angular);
+
+(function (angular) {
+    'use strict';
+    
+    angular.module('znk.infra.personalization')
+        .service('PersonalizationSrv',
+            ["StorageRevSrv", "$log", "$q", function (StorageRevSrv, $log, $q) {
+                'ngInject';
+
+                var self = this;
+
+                this.getPersonalizationData = function () {
+                    var data = {
+                        exerciseType: 'personalization'
+                    };
+
+                    return StorageRevSrv.getContent(data);
+                };
+
+                this.getExamOrder = function () {
+                    return self.getPersonalizationData().then(function (personalizationData) {
+                        var errorMsg = 'PersonalizationSrv getExamOrder: personalization.examOrder is not array or empty!';
+                        if (!angular.isArray(personalizationData.examOrder) || personalizationData.examOrder.length === 0) {
+                            $log.error(errorMsg);
+                            return $q.reject(errorMsg);
+                        }
+                        return personalizationData.examOrder;
+                    });
+                };
+            }]
+        );
+})(angular);
+
+
+angular.module('znk.infra.personalization').run(['$templateCache', function($templateCache) {
 
 }]);
 
