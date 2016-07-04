@@ -4987,7 +4987,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                     onEnded: '&',
                     switchInitGetter: '&switchInit',
                     allowReplay: '&?',
-                    showAsDone: '&?'
+                    showAsDone: '=?'
                 },
                 link:function(scope){
                     scope.d = {};
@@ -5005,7 +5005,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 
                     var allowReplay =  angular.isDefined(scope.allowReplay) ? scope.allowReplay() : false;
                     var autoPlay = angular.isDefined(scope.autoPlayGetter) ? scope.autoPlayGetter() : false;
-                    var showAsDone = angular.isDefined(scope.showAsDone) ? scope.showAsDone() : false;
+                    var showAsDone = !!scope.showAsDone;
 
                     scope.audioPlayer = {
                         STATE_ENUM: STATE_ENUM,
@@ -5025,6 +5025,12 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 
                     scope.$watch('audioPlayer.currState', function (state) {
                         scope.isPlaying = state === STATE_ENUM.PLAYING;
+                    });
+
+                    scope.$watch('showAsDone', function (showAsDone) {
+                        if(showAsDone && !allowReplay){
+                            scope.audioPlayer.currState = STATE_ENUM.ALREADY_PLAYED;
+                        }
                     });
                 }
             };
