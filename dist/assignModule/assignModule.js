@@ -11,6 +11,19 @@
         function (ZnkModuleService, ModuleResultsService, $q) {
             var userAssignModuleService = {};
 
+            userAssignModuleService.setAssignModules = function (assignModules, userId) {
+                var setProm = $q.when();
+                angular.forEach(assignModules, function (assignModule) {
+                    setProm = setProm.then(function(){
+                        return ModuleResultsService.setModuleResult(assignModule);
+                    });
+                });
+
+                return setProm.then(function () {
+                    return userAssignModuleService.getUserAssignModules(userId);
+                });
+            };
+
             userAssignModuleService.getUserAssignModules = function (userId) {
                 return ModuleResultsService.getUserModuleResultsGuids(userId).then(function (resultsGuids) {
                     var moduleResults = {};
@@ -28,19 +41,6 @@
                     return getProm.then(function () {
                         return moduleResults;
                     });
-                });
-            };
-
-            userAssignModuleService.setAssignModules = function (assignModules, userId) {
-                var setProm = $q.when();
-                angular.forEach(assignModules, function (assignModule) {
-                    setProm = setProm.then(function(){
-                        return ModuleResultsService.setModuleResult(assignModule);
-                    });
-                });
-
-                return setProm.then(function () {
-                    return userAssignModuleService.getUserAssignModules(userId);
                 });
             };
 
