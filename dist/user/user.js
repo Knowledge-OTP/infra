@@ -66,20 +66,25 @@ angular.module('znk.infra.user').service('UserProfileService',
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.user').provider('UserSessionSrv', 
+    angular.module('znk.infra.user').provider('UserSessionSrv',
         function () {
             'ngInject';
-            
+
             var isLastSessionRecordDisabled = false;
             this.disableLastSessionRecord = function(isDisbaled){
                 isLastSessionRecordDisabled = !!isDisbaled;
             };
-            
+
             this.$get = function(){
                 // 'ngInject';
-                this.isLastSessionRecordDisabled = function(){
+
+                var UserSessionSrv = {};
+
+                UserSessionSrv.isLastSessionRecordDisabled = function(){
                     return isLastSessionRecordDisabled;
                 };
+
+                return UserSessionSrv;
             };
         }
     );
