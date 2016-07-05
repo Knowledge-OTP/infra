@@ -3,6 +3,7 @@
 
     angular.module('znk.infra', [
         'znk.infra.analytics',
+        'znk.infra.assignModule',
         'znk.infra.auth',
         'znk.infra.autofocus',
         'znk.infra.config',
@@ -15,11 +16,14 @@
         'znk.infra.exerciseDataGetters',
         'znk.infra.exerciseResult',
         'znk.infra.exerciseUtility',
+        'znk.infra.filters',
         'znk.infra.general',
         'znk.infra.hint',
+        'znk.infra.moduleResults',
         'znk.infra.personalization',
         'znk.infra.pngSequence',
         'znk.infra.popUp',
+        'znk.infra.presence',
         'znk.infra.scoring',
         'znk.infra.scroll',
         'znk.infra.sharedScss',
@@ -30,6 +34,7 @@
         'znk.infra.utility',
         'znk.infra.znkAudioPlayer',
         'znk.infra.znkExercise',
+        'znk.infra.znkModule',
         'znk.infra.znkTimeline'
     ]);
 })(angular);
