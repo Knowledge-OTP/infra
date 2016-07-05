@@ -5185,6 +5185,25 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
     angular.module('znk.infra.user', []);
 })(angular);
 
+(function(angular, Firebase){
+    'use strict';
+
+    angular.module('znk.infra.user')
+        .run(["UserSessionSrv", "ENV", "InfraConfigSrv", function(UserSessionSrv, ENV, InfraConfigSrv){
+            'ngInject';
+
+            var isLastSessionRecordEnabled = !UserSessionSrv.isLastSessionRecordDisabled();
+            if(isLastSessionRecordEnabled){
+                InfraConfigSrv.getUserData().then(function(userData){
+                    var globalLastSessionRef = new Firebase(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
+                    globalLastSessionRef.child('began').set(Firebase.ServerValue.TIMESTAMP);
+                    globalLastSessionRef.child('ended').set(null);
+                    globalLastSessionRef.child('ended').onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
+                });
+            }
+        }]);
+})(angular, Firebase);
+
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
@@ -5225,33 +5244,29 @@ angular.module('znk.infra.user').service('UserProfileService',
         };
 }]);
 
-angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
-
-}]);
-
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.userSession', ['znk.infra.config']);
+    angular.module('znk.infra.user').provider('UserSessionSrv', 
+        function () {
+            'ngInject';
+            
+            var isLastSessionRecordDisabled = false;
+            this.disableLastSessionRecord = function(isDisbaled){
+                isLastSessionRecordDisabled = !!isDisbaled;
+            };
+            
+            this.$get = function(){
+                // 'ngInject';
+                this.isLastSessionRecordDisabled = function(){
+                    return isLastSessionRecordDisabled;
+                };
+            };
+        }
+    );
 })(angular);
 
-(function(angular, Firebase){
-    'use strict';
-    
-    angular.module('znk.infra.userSession')
-        .run(["ENV", "InfraConfigSrv", function(ENV, InfraConfigSrv){
-            'ngInject';
-
-            InfraConfigSrv.getUserData().then(function(userData){
-                var globalLastSessionRef = new Firebase(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
-                globalLastSessionRef.child('began').set(Firebase.ServerValue.TIMESTAMP);
-                globalLastSessionRef.child('ended').set(null);
-                globalLastSessionRef.child('ended').onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
-            });
-        }]);
-})(angular, Firebase);
-
-angular.module('znk.infra.userSession').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 
 }]);
 
