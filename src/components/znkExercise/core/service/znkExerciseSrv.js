@@ -38,7 +38,7 @@
                         //    }
                         //};
                         //return ZnkModalSrv.modal(modalOptions);
-                    };
+                    }
 
 
                     // return ZnkExerciseSrv;

@@ -27,35 +27,7 @@
                 });
                 return numOfUnansweredQuestions;
             }
-
-            function _saveAnalytics() {
-                if (isSection) {
-                    znkAnalyticsSrv.eventTrack({
-                        eventName: 'sectionCompleted',
-                        questionsArr: exerciseResult.questionResults,
-                        props: {
-                            testId: exerciseData.examData.id,
-                            exerciseType: exerciseResult.exerciseTypeId,
-                            subjectType: exercise.subjectId,
-                            sectionId: exerciseResult.exerciseId,
-                            name: exercise.name
-                        }
-                    });
-                } else {
-                    znkAnalyticsSrv.eventTrack({
-                        eventName: 'workoutCompleted',
-                        questionsArr: exerciseResult.questionResults,
-                        props: {
-                            timeBundle: exercise.userTimePreference,
-                            typeId: exercise.typeId,
-                            exerciseType: exerciseResult.exerciseTypeId,
-                            subjectType: exercise.subjectId,
-                            exerciseId: exerciseResult.exerciseId
-                        }
-                    });
-                }
-            }
-
+            
             function _getAllowedTimeForExercise() {
                 var allowedTimeMapByExercise = ZnkExerciseSrv.getAllowedTimeForQuestionByExercise();
                 var allowedTimeForQuestion = allowedTimeMapByExercise[exerciseTypeId];
@@ -118,9 +90,9 @@
                             var buttonStay = results[3];
                             areAllQuestionsAnsweredProm = PopUpSrv.warning(title, content, buttonGoTo, buttonStay).promise;
                             areAllQuestionsAnsweredProm.then(function () {
-                                finishExercise(exerciseResult);
+                                // finishExercise(exerciseResult);
                             });
-                        })
+                        });
                     }
                 },
                 onQuestionAnswered: function onQuestionAnswered() {
@@ -159,10 +131,10 @@
 
             $scope.baseZnkExerciseCtrl.onFinishTime = function () {
                 
-                var contentProm = translateFilter('ZNK_EXERCISE.TIME_UP_CONTENT');
-                var titleProm = translateFilter('ZNK_EXERCISE.TIME_UP_TITLE');
-                var buttonFinishProm = translateFilter('ZNK_EXERCISE.STOP');
-                var buttonContinueProm = translateFilter('ZNK_EXERCISE.CONTINUE_BTN');
+                var contentProm = $translate('ZNK_EXERCISE.TIME_UP_CONTENT');
+                var titleProm = $translate('ZNK_EXERCISE.TIME_UP_TITLE');
+                var buttonFinishProm = $translate('ZNK_EXERCISE.STOP');
+                var buttonContinueProm = $translate('ZNK_EXERCISE.CONTINUE_BTN');
 
                 $q.all([contentProm, titleProm, buttonFinishProm, buttonContinueProm]).then(function(results){
                     var content = results[0];
@@ -172,19 +144,14 @@
                     var timeOverPopupPromise = PopUpSrv.ErrorConfirmation(title, content, buttonFinish, buttonContinue).promise;
 
                     timeOverPopupPromise.then(function () {
-                        finishExercise(exerciseResult);
+                        // finishExercise(exerciseResult);
                     });
-                });
-                var timeOverPopupPromise = PopUpSrv.ErrorConfirmation(title, content, buttonFinish, buttonContinue).promise;
-
-                timeOverPopupPromise.then(function () {
-                    finishExercise();
                 });
             };
 
             $scope.baseZnkExerciseCtrl.onChangeTime = function (passedTime) {
                 exerciseResult.duration = passedTime;
             };
-        })
+        });
 
 })(angular);
