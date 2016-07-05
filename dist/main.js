@@ -2539,6 +2539,34 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
 })(angular);
 
 
+'use strict';
+
+(function (angular) {
+    angular.module('znk.infra.general').directive('disableClickDrv', [
+        function () {
+            return {
+                priority: 200,
+                link: {
+                    pre: function (scope, element, attrs) {
+                        function clickHandler(evt){
+                            if(attrs.disabled){
+                                evt.stopImmediatePropagation();
+                                evt.preventDefault();
+                                return false;
+                            }
+                        }
+                        var eventName = 'click';
+                        element[0].addEventListener (eventName, clickHandler);
+                        scope.$on('$destroy',function(){
+                            element[0].removeEventListener (eventName, clickHandler);
+                        });
+                    }
+                }
+            };
+        }
+    ]);
+})(angular);
+
 /**
  *  @directive subjectIdToAttrDrv
  *  This directive is an evolution of 'subjectIdToClassDrv'
