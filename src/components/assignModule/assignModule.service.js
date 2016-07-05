@@ -6,6 +6,29 @@
         function (ZnkModuleService, ModuleResultsService, $q) {
             var userAssignModuleService = {};
 
+            userAssignModuleService.getModuleHeadersWithAssign = function (userId) {
+                return ZnkModuleService.getModuleHeaders().then(function (headers) {
+                    var moduleResults = {};
+                    var getProm = $q.when();
+                    angular.forEach(headers, function (header) {
+                        getProm = getProm.then(function(){
+                            return ModuleResultsService.getModuleResultByModuleId(header.id, userId, true).then(function(moduleResult){
+                                if(moduleResult) {
+                                    moduleResults[moduleResult.moduleId] = moduleResult;
+                                }
+                            });
+                        });
+                    });
+
+                    return getProm.then(function () {
+                        return {
+                            moduleHeaders: headers,
+                            moduleResults: moduleResults
+                        };
+                    });
+                });
+            };
+
             userAssignModuleService.getUserAssignModules = function (userId) {
                 return ModuleResultsService.getUserModuleResultsGuids(userId).then(function (resultsGuids) {
                     var moduleResults = {};
