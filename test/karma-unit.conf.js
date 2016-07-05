@@ -29,6 +29,8 @@ module.exports = function (config) {
             'bower_components/Swiper/dist/js/swiper.js',
             'bower_components/firebase/firebase.js',
             'bower_components/angular-translate/angular-translate.js',
+            'bower_components/SHA-1/sha1.js',
+            'bower_components/angulartics/src/angulartics.js',
             'bower_components/angular-translate-loader-partial/angular-translate-loader-partial.js',
             'bower_components/angular-svg-round-progressbar/build/roundProgress.min.js',
             'bower_components/angular-ui-router/release/angular-ui-router.js',

@@ -7,10 +7,17 @@
             'ui.router',
             'angulartics',
             'znk.infra.stats',
+            'pascalprecht.translate',
             'znk.infra.analytics',
             'znk.infra.popUp'])
-        .config(function (QuestionTypesSrvProvider, $sceProvider) {
+        .config(function (QuestionTypesSrvProvider, $sceProvider, ZnkExerciseSrvProvider, exerciseTypeConst, $translateProvider) {
             $sceProvider.enabled(false);
+
+            var allowedTimeForQuestionByExercise = {};
+            allowedTimeForQuestionByExercise[exerciseTypeConst.TUTORIAL] = 1.5 * 60 * 1000;
+            allowedTimeForQuestionByExercise[exerciseTypeConst.DRILL] = 40 * 1000;
+            allowedTimeForQuestionByExercise[exerciseTypeConst.PRACTICE] = 40 * 1000;
+            ZnkExerciseSrvProvider.setAllowedTimeForQuestionByExercise(allowedTimeForQuestionByExercise);
 
             var map = {
                 1: '<div>question Type 1</div><span>{{$parent.questionGetter().id}}</span>' +
@@ -24,6 +31,11 @@
             }
 
             QuestionTypesSrvProvider.setQuestionTypeGetter(questionTypeGetter);
+
+            $translateProvider.useLoader('$translatePartialLoader', {
+                urlTemplate: '/{part}/locale/{lang}.json'
+            })
+                .preferredLanguage('en');
         })
 
         .controller('Main', function ($scope, $timeout, ContentSrv, ZnkExerciseUtilitySrv, ExerciseResultSrv, $controller) {
@@ -119,6 +131,14 @@
                 $scope.settings.initForceDoneBtnDisplay = !$scope.settings.initForceDoneBtnDisplay;
                 $scope.d.actions.forceDoneBtnDisplay($scope.settings.initForceDoneBtnDisplay);
             };
+        })
+        .run(function ($rootScope, $translate, $translatePartialLoader) {
+            $translatePartialLoader.addPart('znkExercise');
+
+            $rootScope.$on('$translatePartialLoaderStructureChanged', function () {
+                $translate.refresh();
+            });
+            $translatePartialLoader.addPart('demo');
         })
 
 })(angular);

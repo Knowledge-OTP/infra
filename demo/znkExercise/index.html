@@ -30,13 +30,12 @@
         }
 
     </style>
-<div ng-if="questionReady">
     <znk-exercise ng-model="results"
                   questions="questions"
                   settings="settings"
                   actions="d.actions">
     </znk-exercise>
-</div>
+    <div translate="ZNK_EXERCISE.SOME_ANSWER_LEFT_CONTENT"></div>
 
     <script src="angular/angular.js"></script>
     <script src="angular-animate/angular-animate.js"></script>
@@ -44,6 +43,9 @@
     <script src="firebase/firebase-debug.js"></script>
     <script src="angular-ui-router/release/angular-ui-router.js"></script>
     <script src="angulartics/dist/angulartics.min.js"></script>
+    <script src="angular-translate/angular-translate.js"></script>
+    <script src="angular-translate-loader-partial/angular-translate-loader-partial.js"></script>
+
 
 
     <script src="config/config.js"></script>

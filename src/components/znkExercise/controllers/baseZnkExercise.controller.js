@@ -2,17 +2,19 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('BaseZnkExerciseController',
-        function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, /*ScoringService,*/ ExerciseResultSrv,
-                  PopUpSrv, exerciseEventsConst, $rootScope, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum, SubjectEnum, znkAnalyticsSrv, StatsEventsHandlerSrv) {
-
+        function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, ExerciseResultSrv, ZnkExerciseSrv, $filter,
+                  PopUpSrv, exerciseEventsConst, $rootScope, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum, SubjectEnum, znkAnalyticsSrv, $translatePartialLoader) {
             'ngInject';
+            $translatePartialLoader.addPart('znkExercise');
 
             var exercise = exerciseData.exercise;
             var exerciseResult = exerciseData.exerciseResult;
             var exerciseTypeId = exerciseData.exerciseTypeId;
             var isSection = exerciseTypeId === ExerciseTypeEnum.SECTION.enum;
 
-            // var translateFilter = $filter('translate');
+            var translateFilter = $filter('translate');
+            var t = translateFilter('ZNK_EXERCISE.SOME_ANSWER_LEFT_CONTENT');
+            debugger;
             var initSlideIndex;
 
             if (!$scope.baseZnkExerciseCtrl) {
@@ -57,27 +59,6 @@
                         }
                     });
                 }
-            }
-
-            function _calcSectionScoring() {
-                if (!isSection) {
-                    return $q.when(false);
-                }
-                var resultForScoring = {
-                    subjectId: exerciseData.exercise.subjectId,
-                    typeId: exerciseData.examData.typeId,
-                    questions: exerciseData.exercise.questions,
-                    answers: exerciseData.exerciseResult.questionResults.map(function (result) {
-                        return {
-                            userAnswerId: result.questionId,
-                            isAnswerCorrectly: result.isAnsweredCorrectly,
-                            afterAllowedTime: result.afterAllowedTime
-                        };
-                    })
-                };
-                // return ScoringService.getScoreSectionResult(resultForScoring).then(function (scoreObj) {
-                //     return scoreObj.scoreSection;
-                // });
             }
 
             function _calcExamScoring() {
@@ -131,53 +112,9 @@
                 return prom;
             }
 
-
-            function finishExercise() {
-                _calcSectionScoring().then(function (scoreSection) {
-                    exerciseResult.isComplete = true;
-                    exerciseResult.endedTime = Date.now();
-                    exerciseResult.categoryId = exerciseData.exercise.categoryId;
-                    exerciseResult.subjectId = exerciseData.exercise.subjectId;
-                    exerciseResult.exerciseName = exerciseData.headerTitlePrefix;
-                    exerciseResult.exerciseOrder = exerciseData.workoutId;
-                    exerciseResult.exerciseDescription = exerciseData.exerciseTypeId === ExerciseTypeEnum.SECTION.enum ? exerciseData.examData.name : exerciseData.exercise.name;
-                    if (scoreSection) {
-                        exerciseResult.score = scoreSection;
-                    }
-                    exerciseResult.$save();
-
-                    var exerciseTypeValue = ExerciseTypeEnum.getValByEnum(exerciseData.exerciseTypeId);
-                    exerciseTypeValue = exerciseTypeValue.toLowerCase();
-                    var broadcastEventName = exerciseEventsConst[exerciseTypeValue].FINISH;
-
-                    var exam = isSection ? exerciseData.examData : undefined;
-                    $rootScope.$broadcast(broadcastEventName, exercise, exerciseResult, exam ? exam : null);
-                    $scope.baseZnkExerciseCtrl.settings.viewMode = ZnkExerciseViewModeEnum.REVIEW.enum;
-
-                    _saveAnalytics();
-
-                    var promsArr = [
-                        _calcExamScoring(),
-                        StatsEventsHandlerSrv.addNewExerciseResult(exerciseData.exerciseTypeId, exercise, exerciseResult)
-                    ];
-
-                    $q.all(promsArr).then(function (promsArrResult) {
-                        var scoreExam = promsArrResult[0];
-                        if (scoreExam) {
-                            exerciseData.examResult.score = scoreExam;
-                            exerciseData.examResult.$save();
-                        }
-                        $state.go('^.summary');
-                    });
-                });
-            }
-
             function _getAllowedTimeForExercise() {
-                var allowedTimeForQuestionByExercise = {};
-                allowedTimeForQuestionByExercise[ExerciseTypeEnum.TUTORIAL.enum] = 1.5 * 60 * 1000;
-                allowedTimeForQuestionByExercise[ExerciseTypeEnum.DRILL.enum] = 40 * 1000;
-
-                var allowedTimeForQuestion = allowedTimeForQuestionByExercise[exerciseTypeId];
+                var allowedTimeMapByExercise = ZnkExerciseSrv.getAllowedTimeForQuestionByExercise();
+                var allowedTimeForQuestion = allowedTimeMapByExercise[exerciseTypeId];
                 if (angular.isDefined(allowedTimeForQuestion)) {
                     return allowedTimeForQuestion * exercise.questions.length;
                 }
@@ -224,10 +161,10 @@
                     var numOfUnansweredQuestions = getNumOfUnansweredQuestions(exerciseResult.questionResults);
                     var areAllQuestionsAnsweredProm = $q.when(true);
                     if (numOfUnansweredQuestions) {
-                        // var content = translateFilter('ZNK_EXERCISE.SOME_ANSWER_LEFT_CONTENT');
-                        // var title = translateFilter('ZNK_EXERCISE.FINISH_TITLE');
-                        // var buttonGoTo = translateFilter('ZNK_EXERCISE.GO_TO_SUMMARY_BTN');
-                        // var buttonStay = translateFilter('ZNK_EXERCISE.STAY_BTN');
+                        var content = translateFilter('ZNK_EXERCISE.SOME_ANSWER_LEFT_CONTENT');
+                        var title = translateFilter('ZNK_EXERCISE.FINISH_TITLE');
+                        var buttonGoTo = translateFilter('ZNK_EXERCISE.GO_TO_SUMMARY_BTN');
+                        var buttonStay = translateFilter('ZNK_EXERCISE.STAY_BTN');
                         areAllQuestionsAnsweredProm = PopUpSrv.warning(title, content, buttonGoTo, buttonStay).promise;
                     }
                     areAllQuestionsAnsweredProm.then(function () {
@@ -269,10 +206,10 @@
             };
 
             $scope.baseZnkExerciseCtrl.onFinishTime = function () {
-                // var content = translateFilter('ZNK_EXERCISE.TIME_UP_CONTENT');
-                // var title = translateFilter('ZNK_EXERCISE.TIME_UP_TITLE');
-                // var buttonFinish = translateFilter('ZNK_EXERCISE.STOP');
-                // var buttonContinue = translateFilter('ZNK_EXERCISE.CONTINUE_BTN');
+                var content = translateFilter('ZNK_EXERCISE.TIME_UP_CONTENT');
+                var title = translateFilter('ZNK_EXERCISE.TIME_UP_TITLE');
+                var buttonFinish = translateFilter('ZNK_EXERCISE.STOP');
+                var buttonContinue = translateFilter('ZNK_EXERCISE.CONTINUE_BTN');
                 var timeOverPopupPromise = PopUpSrv.ErrorConfirmation(title, content, buttonFinish, buttonContinue).promise;
 
                 timeOverPopupPromise.then(function () {
