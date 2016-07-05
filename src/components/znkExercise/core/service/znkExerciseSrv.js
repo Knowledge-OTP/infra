@@ -39,7 +39,7 @@
                         //};
                         //return ZnkModalSrv.modal(modalOptions);
                     }
-                    
+
                     // return ZnkExerciseSrv;
                     return {
                         getPlatform: function () {
@@ -48,7 +48,14 @@
                         getAllowedTimeForQuestionByExercise: function () {
                             return allowedTimeForQuestionByExercise;
                         },
-                        openExerciseToolBoxModal: openExerciseToolBoxModal
+                        openExerciseToolBoxModal: openExerciseToolBoxModal,
+                        toolBoxTools: {
+                            BLACKBOARD: 'blackboard',
+                            MARKER: 'mar',
+                            CALCULATOR: 'cal',
+                            BOOKMARK: 'bookmark',
+                            SHOW_PAGER: 'show pager'
+                        }
                     };
 
 
