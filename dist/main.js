@@ -5231,7 +5231,7 @@ angular.module('znk.infra.user').service('UserProfileService',
     'use strict';
 
     angular.module('znk.infra.user').provider('UserSessionSrv',
-        ["InfraConfigSrv", "ENV", function (InfraConfigSrv, ENV) {
+        function () {
             'ngInject';
 
             var isLastSessionRecordDisabled = false;
@@ -5239,8 +5239,8 @@ angular.module('znk.infra.user').service('UserProfileService',
                 isLastSessionRecordDisabled = !!isDisbaled;
             };
 
-            this.$get = function () {
-                // 'ngInject';
+            this.$get = ["InfraConfigSrv", "ENV", function (InfraConfigSrv, ENV) {
+                'ngInject';// jshint ignore:line
 
                 var initProm,lastSessionData;
 
@@ -5251,7 +5251,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                 };
 
                 UserSessionSrv.getLastSessionData = function () {
-                    return initProm().then(function(){
+                    return initProm.then(function(){
                         return lastSessionData;
                     });
                 };
@@ -5272,8 +5272,8 @@ angular.module('znk.infra.user').service('UserProfileService',
                 initProm = init();
 
                 return UserSessionSrv;
-            };
-        }]
+            }];
+        }
     );
 })(angular);
 

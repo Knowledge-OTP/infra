@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.user').provider('UserSessionSrv',
-        function (InfraConfigSrv, ENV) {
+        function () {
             'ngInject';
 
             var isLastSessionRecordDisabled = false;
@@ -10,8 +10,8 @@
                 isLastSessionRecordDisabled = !!isDisbaled;
             };
 
-            this.$get = function () {
-                // 'ngInject';
+            this.$get = function (InfraConfigSrv, ENV) {
+                'ngInject';// jshint ignore:line
 
                 var initProm,lastSessionData;
 
@@ -22,7 +22,7 @@
                 };
 
                 UserSessionSrv.getLastSessionData = function () {
-                    return initProm().then(function(){
+                    return initProm.then(function(){
                         return lastSessionData;
                     });
                 };
