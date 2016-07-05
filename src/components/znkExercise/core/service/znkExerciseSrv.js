@@ -39,8 +39,7 @@
                         //};
                         //return ZnkModalSrv.modal(modalOptions);
                     }
-
-
+                    
                     // return ZnkExerciseSrv;
                     return {
                         getPlatform: function () {
