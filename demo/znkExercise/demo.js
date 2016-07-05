@@ -10,8 +10,9 @@
             'pascalprecht.translate',
             'znk.infra.analytics',
             'znk.infra.popUp'])
-        .config(function (QuestionTypesSrvProvider, $sceProvider, ZnkExerciseSrvProvider, exerciseTypeConst, $translateProvider) {
+        .config(function (QuestionTypesSrvProvider, $sceProvider, ZnkExerciseSrvProvider, exerciseTypeConst, $translateProvider, $translatePartialLoaderProvider) {
             $sceProvider.enabled(false);
+
 
             var allowedTimeForQuestionByExercise = {};
             allowedTimeForQuestionByExercise[exerciseTypeConst.TUTORIAL] = 1.5 * 60 * 1000;
@@ -34,15 +35,16 @@
 
             $translateProvider.useLoader('$translatePartialLoader', {
                 urlTemplate: '/{part}/locale/{lang}.json'
-            })
-                .preferredLanguage('en');
+            });
+            $translateProvider.preferredLanguage('en');
+            $translatePartialLoaderProvider.addPart('znkExercise');
         })
 
-        .controller('Main', function ($scope, $timeout, ContentSrv, ZnkExerciseUtilitySrv, ExerciseResultSrv, $controller) {
+        .controller('Main', function ($scope, $timeout, ContentSrv, ZnkExerciseUtilitySrv, ExerciseResultSrv, $controller ) {
 
             var resultsData;
 
-            function setExercise(exerciseName, exerciseId, settings) {
+            function setExercise(exerciseName, exerciseId) {
                 /**
                  add this params to local storage for content {key, value}
                  znkAuthToken   UTuQGrDsSazNNJrnGTTmDlvGzztZe8E0zbo0A4kw
@@ -120,25 +122,13 @@
                     $scope.hideExercise = false;
                 });
             }
-
-
-            $scope.showOrHidePager = function () {
-                $scope.settings.initPagerDisplay = !$scope.settings.initPagerDisplay;
-                $scope.d.actions.pagerDisplay($scope.settings.initPagerDisplay);
-            };
-
-            $scope.showOrHideDoneBtn = function () {
-                $scope.settings.initForceDoneBtnDisplay = !$scope.settings.initForceDoneBtnDisplay;
-                $scope.d.actions.forceDoneBtnDisplay($scope.settings.initForceDoneBtnDisplay);
-            };
+            
+       
         })
-        .run(function ($rootScope, $translate, $translatePartialLoader) {
-            $translatePartialLoader.addPart('znkExercise');
-
+        .run(function ($rootScope, $translate) {
             $rootScope.$on('$translatePartialLoaderStructureChanged', function () {
                 $translate.refresh();
-            });
-            $translatePartialLoader.addPart('demo');
-        })
+            })
+        });
 
 })(angular);

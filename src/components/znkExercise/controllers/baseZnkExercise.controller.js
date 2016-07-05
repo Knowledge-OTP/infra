@@ -3,19 +3,15 @@
 
     angular.module('znk.infra.znkExercise').controller('BaseZnkExerciseController',
         function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, ExerciseResultSrv, ZnkExerciseSrv, $filter,
-                  PopUpSrv, exerciseEventsConst, $rootScope, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum, SubjectEnum, znkAnalyticsSrv, $translatePartialLoader) {
+                  PopUpSrv, exerciseEventsConst, $rootScope, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum, SubjectEnum, znkAnalyticsSrv, $translatePartialLoader, $translate) {
             'ngInject';
-
-            $translatePartialLoader.addPart('znkExercise');
 
             var exercise = exerciseData.exercise;
             var exerciseResult = exerciseData.exerciseResult;
             var exerciseTypeId = exerciseData.exerciseTypeId;
             var isSection = exerciseTypeId === ExerciseTypeEnum.SECTION.enum;
 
-            var translateFilter = $filter('translate');
             var initSlideIndex;
-
             if (!$scope.baseZnkExerciseCtrl) {
                 $scope.baseZnkExerciseCtrl = {};
             }
@@ -106,18 +102,26 @@
 
             var defExerciseSettings = {
                 onDone: function onDone() {
+                    
                     var numOfUnansweredQuestions = getNumOfUnansweredQuestions(exerciseResult.questionResults);
                     var areAllQuestionsAnsweredProm = $q.when(true);
                     if (numOfUnansweredQuestions) {
-                        var content = translateFilter('ZNK_EXERCISE.SOME_ANSWER_LEFT_CONTENT');
-                        var title = translateFilter('ZNK_EXERCISE.FINISH_TITLE');
-                        var buttonGoTo = translateFilter('ZNK_EXERCISE.GO_TO_SUMMARY_BTN');
-                        var buttonStay = translateFilter('ZNK_EXERCISE.STAY_BTN');
-                        areAllQuestionsAnsweredProm = PopUpSrv.warning(title, content, buttonGoTo, buttonStay).promise;
+                        var contentProm = $translate('ZNK_EXERCISE.SOME_ANSWER_LEFT_CONTENT');
+                        var titleProm = $translate('ZNK_EXERCISE.FINISH_TITLE');
+                        var buttonGoToProm = $translate('ZNK_EXERCISE.GO_TO_SUMMARY_BTN');
+                        var buttonStayProm = $translate('ZNK_EXERCISE.STAY_BTN');
+                        
+                        $q.all([contentProm, titleProm, buttonGoToProm, buttonStayProm]).then(function(results){
+                            var content = results[0];
+                            var title = results[1];
+                            var buttonGoTo = results[2];
+                            var buttonStay = results[3];
+                            areAllQuestionsAnsweredProm = PopUpSrv.warning(title, content, buttonGoTo, buttonStay).promise;
+                            areAllQuestionsAnsweredProm.then(function () {
+                                finishExercise(exerciseResult);
+                            });
+                        })
                     }
-                    areAllQuestionsAnsweredProm.then(function () {
-                        finishExercise(exerciseResult);
-                    });
                 },
                 onQuestionAnswered: function onQuestionAnswered() {
                     exerciseResult.$save();
@@ -154,10 +158,23 @@
             };
 
             $scope.baseZnkExerciseCtrl.onFinishTime = function () {
-                var content = translateFilter('ZNK_EXERCISE.TIME_UP_CONTENT');
-                var title = translateFilter('ZNK_EXERCISE.TIME_UP_TITLE');
-                var buttonFinish = translateFilter('ZNK_EXERCISE.STOP');
-                var buttonContinue = translateFilter('ZNK_EXERCISE.CONTINUE_BTN');
+                
+                var contentProm = translateFilter('ZNK_EXERCISE.TIME_UP_CONTENT');
+                var titleProm = translateFilter('ZNK_EXERCISE.TIME_UP_TITLE');
+                var buttonFinishProm = translateFilter('ZNK_EXERCISE.STOP');
+                var buttonContinueProm = translateFilter('ZNK_EXERCISE.CONTINUE_BTN');
+
+                $q.all([contentProm, titleProm, buttonFinishProm, buttonContinueProm]).then(function(results){
+                    var content = results[0];
+                    var title = results[1];
+                    var buttonFinish = results[2];
+                    var buttonContinue = results[3];
+                    var timeOverPopupPromise = PopUpSrv.ErrorConfirmation(title, content, buttonFinish, buttonContinue).promise;
+
+                    timeOverPopupPromise.then(function () {
+                        finishExercise(exerciseResult);
+                    });
+                });
                 var timeOverPopupPromise = PopUpSrv.ErrorConfirmation(title, content, buttonFinish, buttonContinue).promise;
 
                 timeOverPopupPromise.then(function () {

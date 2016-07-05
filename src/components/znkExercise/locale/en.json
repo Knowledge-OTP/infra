@@ -1,4 +1,5 @@
 {
+    "TEST": "works",
     "ZNK_EXERCISE": {
         "SOME_ANSWER_LEFT_CONTENT": "You’ve left some questions unanswered…",
         "FINISH_TITLE": "Finished?",

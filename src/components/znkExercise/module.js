@@ -2,7 +2,6 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise', [
-        'pascalprecht.translate',
         'znk.infra.svgIcon',
         'znk.infra.scroll',
         'znk.infra.autofocus',
