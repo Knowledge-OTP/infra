@@ -1,229 +1,110 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demo', ['znk.infra.znkExercise'])
-        .config(function (QuestionTypesSrvProvider, $sceProvider) {
+    angular.module('demo',
+        ['znk.infra.znkExercise',
+            'znk.infra.content',
+            'ui.router',
+            'angulartics',
+            'znk.infra.stats',
+            'pascalprecht.translate',
+            'znk.infra.analytics',
+            'znk.infra.popUp'])
+        .config(function (QuestionTypesSrvProvider, $sceProvider, ZnkExerciseSrvProvider, exerciseTypeConst, $translateProvider, $translatePartialLoaderProvider) {
             $sceProvider.enabled(false);
+
+
+            var allowedTimeForQuestionByExercise = {};
+            allowedTimeForQuestionByExercise[exerciseTypeConst.TUTORIAL] = 1.5 * 60 * 1000;
+            allowedTimeForQuestionByExercise[exerciseTypeConst.DRILL] = 40 * 1000;
+            allowedTimeForQuestionByExercise[exerciseTypeConst.PRACTICE] = 40 * 1000;
+            ZnkExerciseSrvProvider.setAllowedTimeForQuestionByExercise(allowedTimeForQuestionByExercise);
 
             var map = {
                 1: '<div>question Type 1</div><span>{{$parent.questionGetter().id}}</span>' +
                    '<div ng-bind-html="$parent.questionGetter().content"></div>' +
-                   '<answer-builder></answer-builder>',
-                2: '<div>question Type 2</div><span>{{$parent.questionGetter().id}}</span>',
-                3: '<div>question Type 3</div><span>{{$parent.questionGetter().id}}</span>'
+                   '<answer-builder></answer-builder>'
             };
             QuestionTypesSrvProvider.setQuestionTypesHtmlTemplate(map);
 
-            function questionTypeGetter(question) {
-                return question.__type;
+            function questionTypeGetter() {
+                return '1';
             }
 
             QuestionTypesSrvProvider.setQuestionTypeGetter(questionTypeGetter);
+
+            $translateProvider.useLoader('$translatePartialLoader', {
+                urlTemplate: '/{part}/locale/{lang}.json'
+            });
+            $translateProvider.preferredLanguage('en');
+            $translatePartialLoaderProvider.addPart('znkExercise');
         })
-        .controller('Main', function ($scope, $timeout) {
+
+        .controller('Main', function ($scope, $timeout, ContentSrv, ZnkExerciseUtilitySrv, ExerciseResultSrv, $controller ) {
+
+            var resultsData;
+
+            function setExercise(exerciseName, exerciseId) {
+                /**
+                 add this params to local storage for content {key, value}
+                 znkAuthToken   UTuQGrDsSazNNJrnGTTmDlvGzztZe8E0zbo0A4kw
+                 znkData       https://znk-toefl-dev.firebaseio.com/
+                 znkStudentPath      /toefl_app
+                 */
+                ContentSrv.getContent({
+                    exerciseType: exerciseName,
+                    exerciseId: exerciseId
+                }).then(function (exerciseJson) {
+                    var exercise = angular.fromJson(exerciseJson);
+                    ZnkExerciseUtilitySrv.setQuestionsGroupData(exercise.questions, exercise.questionsGroupData);
+
+                    var examId = angular.isDefined(exercise.examId) ? exercise.examId : null;
+                    var exerciseType = angular.isDefined(exercise.examId) ? 4 : +exercise.parentTypeId;
+
+                    ExerciseResultSrv.getExerciseResult(exerciseType, +exercise.id, examId).then(function (results) {
+                        resultsData = results;
+                        $scope.questions = exercise.questions;
+                        if (results.questionResults.length === 0) {
+                            results.questionResults = exercise.questions.map(function (question) {
+                                return {questionId: question.id};
+                            });
+                            results.$save();
+                        }
+                        $scope.results = results.questionResults;
+                        $scope.subjectId = exercise.subjectId;
+                        $scope.questionReady = true;
+                        if (!$scope.$$phase) {
+                            $scope.$apply();
+                        }
+
+                        var exerciseData = {
+                            exercise: exercise,
+                            exerciseResult : results,
+                            exerciseTypeId: exerciseType
+                        };
+
+                        $controller('BaseZnkExerciseController', {
+                            $scope: $scope,
+                            exerciseData: exerciseData,
+                            exerciseSettings: $scope.settings
+                        });
+                    });
+                });
+            }
+
+            setExercise('practice', '165');
+
+
             $scope.d = {};
-            var id = 0;
-            $scope.questions = [
-                {
-                    __type: 1,
-                    id: ++id,
-                    answerTypeId: 0,
-                    answers: [
-                        {
-                            id: 1,
-                            content: '<span>answer1</span>'
-                        },
-                        {
-                            id: 2,
-                            content: '<span>answer2</span>'
-                        },
-                        {
-                            id: 3,
-                            content: '<span>answer3</span>'
-                        }
-                    ],
-                    correctAnswerId: 1,
-                    content:
-                        '<div style="padding-left: 517px;">' +
-                            '<div>Header</div>' +
-                            '<div>Content</div>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                            '<br>test<br>' +
-                        '</div>'
-                },
-                {
-                    __type: 1,
-                    id: ++id,
-                    answerTypeId: 3,
-                    correctAnswerText: [
-                        {
-                            id: 4
-
-                        },
-                        {
-                            id: 5
-
-                        },
-                        {
-                            id: 6
-
-                        }
-                    ]
-                },
-                {
-                    __type: 1,
-                    id: ++id,
-                    answerTypeId: 1,
-                    answers: [
-                        {
-                            id: 1,
-                            content: '<span>answer1</span>'
-                        },
-                        {
-                            id: 2,
-                            content: '<span>answer2</span>'
-                        },
-                        {
-                            id: 3,
-                            content: '<span>answer3</span>'
-                        }
-                    ],
-                    correctAnswerId: 1,
-                    correctAnswerText: [{
-                        content:'14/5'
-                    },{
-                        content:'2.8'
-                    }]
-
-                },
-                {__type: 3, id: ++id},
-                {__type: 1, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id},
-                {__type: 2, id: ++id}
-            ];
 
             $scope.settings = {
-                viewMode: 1,
+                viewMode: 2,
                 allowedTimeForExercise: 10000,
-                onQuestionAnswered: function () {
-
-                },
                 onDone: function () {
                     alert('On done was invoked');
                 },
                 initPagerDisplay: false,
                 initForceDoneBtnDisplay: true
-            };
-
-            $scope.results = [{
-                questionId: 1
-            }, {
-                questionId: 2
-            }];
-            $scope.addQuestion = function () {
-                $scope.results.push({});
-                $scope.results = angular.copy($scope.results);
-
-                $scope.questions.push({
-                    __type: 1,
-                    id: $scope.questions.length + 1,
-                    answerTypeId: 0,
-                    answers: [
-                        {
-                            id: 1,
-                            content: '<span>answer1</span>'
-                        },
-                        {
-                            id: 2,
-                            content: '<span>answer2</span>'
-                        },
-                        {
-                            id: 3,
-                            content: '<span>answer3</span>'
-                        }
-                    ]
-                });
-            };
-
-            $scope.removeQuestion = function () {
-                $scope.questions.pop();
-                $scope.results.pop();
-                $scope.results = angular.copy($scope.results);
             };
 
             $scope.setSlideDirection = function (slideDirection) {
@@ -241,31 +122,13 @@
                     $scope.hideExercise = false;
                 });
             }
-
-
-            $scope.showOrHidePager = function () {
-                $scope.settings.initPagerDisplay = !$scope.settings.initPagerDisplay;
-                $scope.d.actions.pagerDisplay($scope.settings.initPagerDisplay);
-            };
-
-            $scope.showOrHideDoneBtn = function () {
-                $scope.settings.initForceDoneBtnDisplay = !$scope.settings.initForceDoneBtnDisplay;
-                $scope.d.actions.forceDoneBtnDisplay($scope.settings.initForceDoneBtnDisplay);
-            };
+            
+       
         })
-        .directive('rateAnswer',
-            function(){
-                return {
-                    template: '<div ng-repeat="item in [1,2,3,4,5]">' +
-                            '<span ng-click="answerSelected(item)">answer {{item}}</span>' +
-                        '</div>',
-                    require: '^ngModel',
-                    link: function(scope,element,attrs,ngModelCtrl){
-                        scope.answerSelected = function(answer){
-                            ngModelCtrl.$setViewValue(answer);
-                        };
-                    }
-                };
-            }
-        );
+        .run(function ($rootScope, $translate) {
+            $rootScope.$on('$translatePartialLoaderStructureChanged', function () {
+                $translate.refresh();
+            })
+        });
+
 })(angular);
