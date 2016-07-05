@@ -11,8 +11,7 @@
                     sourceGetter: '&source',
                     typeGetter: '&?type',
                     autoPlayGetter: '&autoPlay',
-                    onEnded: '&',
-                    internalPath: '&'
+                    onEnded: '&'
                 },
                 link:function(scope,element,attrs){
                     var sound;
@@ -46,6 +45,9 @@
                             }else{
                                 sound.play();
                             }
+                        },
+                        stop: function() {
+                            sound.stop();
                         }
                     };
 

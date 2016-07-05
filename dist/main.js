@@ -2638,6 +2638,34 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
 })(angular);
 
 
+'use strict';
+
+(function (angular) {
+    angular.module('znk.infra.general').directive('disableClickDrv', [
+        function () {
+            return {
+                priority: 200,
+                link: {
+                    pre: function (scope, element, attrs) {
+                        function clickHandler(evt){
+                            if(attrs.disabled){
+                                evt.stopImmediatePropagation();
+                                evt.preventDefault();
+                                return false;
+                            }
+                        }
+                        var eventName = 'click';
+                        element[0].addEventListener (eventName, clickHandler);
+                        scope.$on('$destroy',function(){
+                            element[0].removeEventListener (eventName, clickHandler);
+                        });
+                    }
+                }
+            };
+        }
+    ]);
+})(angular);
+
 /**
  *  @directive subjectIdToAttrDrv
  *  This directive is an evolution of 'subjectIdToClassDrv'
@@ -5369,7 +5397,9 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    play: 'components/znkAudioPlayer/svg/play-icon.svg'
+                    'znk-audio-player-play': 'components/znkAudioPlayer/svg/play-icon.svg',
+                    'znk-audio-player-pause': 'components/znkAudioPlayer/svg/pause-icon.svg',
+                    'znk-audio-player-close': 'components/znkAudioPlayer/svg/close-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }]);
@@ -5488,8 +5518,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                     sourceGetter: '&source',
                     typeGetter: '&?type',
                     autoPlayGetter: '&autoPlay',
-                    onEnded: '&',
-                    internalPath: '&'
+                    onEnded: '&'
                 },
                 link:function(scope,element,attrs){
                     var sound;
@@ -5523,6 +5552,9 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                             }else{
                                 sound.play();
                             }
+                        },
+                        stop: function() {
+                            sound.stop();
                         }
                     };
 
@@ -6025,6 +6057,36 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 })(angular);
 
 angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/znkAudioPlayer/svg/close-icon.svg",
+    "<svg\n" +
+    "    x=\"0px\"\n" +
+    "    y=\"0px\"\n" +
+    "    class=\"znk-audio-player-close-svg\"\n" +
+    "    viewBox=\"-596.6 492.3 133.2 133.5\">\n" +
+    "    <style>\n" +
+    "        .znk-audio-player-close-svg {\n" +
+    "        }\n" +
+    "    </style>\n" +
+    "<path class=\"st0\"/>\n" +
+    "<g>\n" +
+    "	<line class=\"st1\" x1=\"-592.6\" y1=\"496.5\" x2=\"-467.4\" y2=\"621.8\"/>\n" +
+    "	<line class=\"st1\" x1=\"-592.6\" y1=\"621.5\" x2=\"-467.4\" y2=\"496.3\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkAudioPlayer/svg/pause-icon.svg",
+    "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"-359 103.4 28 36.6\" class=\"znk-audio-player-pause-svg\">\n" +
+    "    <style>\n" +
+    "        .znk-audio-player-pause-svg  .znk-audio-player-pause-svg-rect {\n" +
+    "            width: 7px;\n" +
+    "            height: 20px;\n" +
+    "        }\n" +
+    "    </style>\n" +
+    "<rect class=\"znk-audio-player-pause-svg-rect\" x=\"-353\" y=\"110\" />\n" +
+    "<rect class=\"znk-audio-player-pause-svg-rect\" x=\"-340.8\" y=\"110\" />\n" +
+    "</svg>\n" +
+    "");
   $templateCache.put("components/znkAudioPlayer/svg/play-icon.svg",
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
     "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
@@ -6048,7 +6110,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "    <div class=\"play-button-wrapper\"\n" +
     "         ng-switch-when=\"1\">\n" +
     "        <button class=\"play-button\" ng-click=\"audioPlayer.currState = audioPlayer.STATE_ENUM.PLAYING\">\n" +
-    "            <svg-icon name=\"play\"></svg-icon>\n" +
+    "            <svg-icon name=\"znk-audio-player-play\"></svg-icon>\n" +
     "            <span class=\"play-audio-text\" translate=\".PLAY_AUDIO\"></span>\n" +
     "        </button>\n" +
     "    </div>\n" +
@@ -6068,10 +6130,28 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "");
   $templateCache.put("components/znkAudioPlayer/templates/znkAudioPlayer.template.html",
     "<div class=\"time-display time-passed\" ng-if=\"::d.type === 1\"></div>\n" +
-    "<!--<i ng-if=\"::d.type === 2\"-->\n" +
-    "   <!--class=\"player-control\"-->\n" +
-    "   <!--ng-click=\"d.playOrPause()\">-->\n" +
-    "<!--</i>-->\n" +
+    "<div ng-if=\"::d.type === 2\"\n" +
+    "     class=\"player-close-svg-wrapper\"\n" +
+    "     ng-click=\"d.stop()\">\n" +
+    "    <svg-icon\n" +
+    "        class=\"player-close-svg\"\n" +
+    "        name=\"znk-audio-player-close\">\n" +
+    "    </svg-icon>\n" +
+    "</div>\n" +
+    "<div ng-if=\"::d.type === 2\"\n" +
+    "   class=\"player-control\"\n" +
+    "   ng-init=\"d.playStatus = false\"\n" +
+    "   ng-switch=\"d.playStatus\"\n" +
+    "   ng-click=\"d.playOrPause(); d.playStatus = !d.playStatus\">\n" +
+    "  <svg-icon ng-switch-when=\"true\"\n" +
+    "            class=\"player-play-svg\"\n" +
+    "            name=\"znk-audio-player-play\">\n" +
+    "  </svg-icon>\n" +
+    "  <svg-icon ng-switch-when=\"false\"\n" +
+    "              class=\"player-pause-svg\"\n" +
+    "              name=\"znk-audio-player-pause\">\n" +
+    "  </svg-icon>\n" +
+    "</div>\n" +
     "<ng-switch on=\"d.type\" class=\"progress-container\">\n" +
     "    <div ng-switch-when=\"1\" class=\"only-progress-wrapper\">\n" +
     "        <div class=\"audio-progress\"></div>\n" +
