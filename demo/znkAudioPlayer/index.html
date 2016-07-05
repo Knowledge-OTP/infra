@@ -26,21 +26,30 @@
 </head>
 
 <body ng-app="demo" ng-controller="Main">
-<dev class="znk-image-audio-wrapper">
+<div class="znk-image-audio-wrapper">
     <znk-image-audio image="d.image"
                      audio="d.audio"
                      on-ended="d.onAudioEnded()"
                      auto-play="false">
     </znk-image-audio>
-</dev>
+</div>
 
-<dev class="znk-audio-button-wrapper">
+<div class="znk-audio-button-wrapper">
     <znk-audio-play-button
         auto-play="false"
         allow-replay="true"
         source="d.audio">
     </znk-audio-play-button>
-</dev>
+</div>
+
+<div class="znk-audio-button-wrapper">
+    <znk-audio-player
+        auto-play="true"
+        type="2"
+        source="d.audio">
+    </znk-audio-player>
+</div>
+
 
 <script src="angular/angular.js"></script>
 

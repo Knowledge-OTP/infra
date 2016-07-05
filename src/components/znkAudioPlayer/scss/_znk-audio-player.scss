@@ -68,36 +68,117 @@ znk-audio-player {
         }
     }
 
-    &.type-has-control {
+    &.type-has-control{
         .player-control {
-            color: $fcColor5;
-            font: {
-                size: 24px;
+            display: flex;
+            align-items: center;
+            margin: {
+                right: 15px;
+                top: 4px;
             }
-            padding: 5px 15px;
-            width: 45px;
+            cursor: pointer;
+            .player-play-svg {
+                svg {
+                    width:25px;
+                    path {
+                        fill: $fcColor5;
+                    }
+                    circle {
+                        stroke: $fcColor5;
+                    }
+                }
+            }
+            .player-pause-svg {
+                svg {
+                    width:25px;
+                    * {
+                        fill: $fcColor5;
+                    }
+                }
+            }
         }
 
-        .progress-container {
-            .range-progress-wrapper {
+        .player-close-svg-wrapper {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            border-radius: 100%;
+            border: 1px solid $fcColor11;
+            margin: {
+                right: 25px;
+                left: -10px;
+                top: 0;
+            }
+            .player-close-svg {
+                svg {
+                    width:15px;
+                    line {
+                        stroke: $fcColor11;
+                        stroke-width: 5px;
+                    }
+                }
+            }
+        }
+
+        .progress-container{
+            margin-top: -4px;
+            .range-progress-wrapper{
                 @include flex-grow(1);
-                &.range {
+                &.range{
                     padding: 0;
 
-                    input {
+                    input[type="range"] {
                         margin: 0;
+                        -webkit-appearance: none;
+                        width: 100%;
+                        background: transparent;
 
-                        &::-webkit-slider-thumb {
-                            @include dimension(12px);
-
-                            &:before {
-                                background: $bcColor1;
-                                top: 6px;
-                            }
+                        &:focus {
+                            outline: none;
                         }
 
-                        &::-ms-fill-lower {
-                            background: $bcColor1;
+                       &::-ms-track {
+                            width: 100%;
+                            cursor: pointer;
+                            background: transparent;
+                            border-color: transparent;
+                            color: transparent;
+                        }
+
+                        &::-webkit-slider-thumb {
+                            -webkit-appearance: none;
+                            margin-top: -3px;
+                            @include dimension(11px, 11px);
+                            background: $bgColor6;
+                            border-radius: 100%;
+                            border: none;
+                            cursor: pointer;
+                            box-shadow: none;
+                        }
+
+                        &::-moz-range-thumb, &::-ms-thumb {
+                            @include dimension(11px, 11px);
+                            background: $bgColor6;
+                            border-radius: 100%;
+                            border: none;
+                            cursor: pointer;
+                            box-shadow: none;
+                        }
+
+                        &::-webkit-slider-runnable-track {
+                            width: 100%;
+                            height: 5px;
+                            cursor: pointer;
+                            background: $bgColor2;
+                            border-radius: 3px;
+                            border: none;
+                            box-shadow: none;
+                        }
+
+                        &:focus::-webkit-slider-runnable-track {
+                            opacity: 0.6;
                         }
                     }
                 }
