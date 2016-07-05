@@ -5,6 +5,7 @@
         function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, ExerciseResultSrv, ZnkExerciseSrv, $filter,
                   PopUpSrv, exerciseEventsConst, $rootScope, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum, SubjectEnum, znkAnalyticsSrv, $translatePartialLoader) {
             'ngInject';
+
             $translatePartialLoader.addPart('znkExercise');
 
             var exercise = exerciseData.exercise;
@@ -13,8 +14,6 @@
             var isSection = exerciseTypeId === ExerciseTypeEnum.SECTION.enum;
 
             var translateFilter = $filter('translate');
-            var t = translateFilter('ZNK_EXERCISE.SOME_ANSWER_LEFT_CONTENT');
-            debugger;
             var initSlideIndex;
 
             if (!$scope.baseZnkExerciseCtrl) {
@@ -59,57 +58,6 @@
                         }
                     });
                 }
-            }
-
-            function _calcExamScoring() {
-                var prom = $q.when(false);
-                var examResult, exam;
-                var scoreResultsArr;
-                var examResultsProms;
-                if (!isSection) {
-                    return prom;
-                }
-
-                examResult = exerciseData.examResult;
-                exam = exerciseData.examData;
-                scoreResultsArr = (examResult) ? Object.keys(examResult.sectionResults) : [];
-                // if there no 4 section results, return false
-                if (scoreResultsArr.length >= exam.sections.length - 1) {
-                    if (!examResult.score) {
-                        examResultsProms = [];
-
-                        angular.forEach(scoreResultsArr, function (sectionResultKey) {
-                            var sectionResultKeyNum = +sectionResultKey;
-                            if (exerciseResult.exerciseId !== sectionResultKeyNum) {
-                                var sectionProm = ExerciseResultSrv.getExerciseResult(ExerciseTypeEnum.SECTION.enum, sectionResultKeyNum,
-                                    exerciseData.examData.id, exerciseData.examData.sections.length);
-                                examResultsProms.push(sectionProm);
-                            }
-                        });
-
-                        return $q.all(examResultsProms).then(function (sections) {
-                            var sectionResults = [];
-                            var innerProm = false;
-                            angular.forEach(sections, function (section) {
-                                if (section.score && section.subjectId !== SubjectEnum.WRITING.enum) {
-                                    sectionResults.push(section.score);
-                                }
-                            });
-                            if (exerciseResult.score && exerciseResult.subjectId !== SubjectEnum.WRITING.enum) {
-                                sectionResults.push(exerciseResult.score);
-                            }
-                            // if there's score on 4 sections except WRITING
-                            // if (sectionResults.length === exam.sections.length - 1) {
-                            //     innerProm = ScoringService.getScoreCompositeResult(sectionResults).then(function (score) {
-                            //         return score.compositeScoreResults;
-                            //     });
-                            // }
-                            return innerProm;
-                        });
-                    }
-                }
-
-                return prom;
             }
 
             function _getAllowedTimeForExercise() {
