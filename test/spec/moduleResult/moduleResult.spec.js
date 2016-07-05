@@ -63,7 +63,7 @@ describe('testing service "ModuleResults":', function () {
         expect(testStorage.db.moduleResults[moduleId]).toBeUndefined();
     });
 
-    it('when requesting for a not exiting result By Guid with default value, default should return', function () {
+    it('when requesting for a not existing result By Guid with default value, default should return', function () {
         var moduleId = 1;
         var expectedModuleResult = {
             moduleId: moduleId,
