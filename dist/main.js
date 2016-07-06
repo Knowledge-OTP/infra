@@ -6189,6 +6189,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
     angular.module('znk.infra.znkExercise', [
         'ngAnimate',
+        'pascalprecht.translate',
         'znk.infra.svgIcon',
         'znk.infra.scroll',
         'znk.infra.autofocus',
