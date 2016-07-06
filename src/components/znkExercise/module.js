@@ -8,7 +8,8 @@
         'znk.infra.scroll',
         'znk.infra.autofocus',
         'znk.infra.exerciseUtility',
-        'znk.infra.analytics'
+        'znk.infra.analytics',
+        'znk.infra.popUp'
     ])
         .config([
             'SvgIconSrvProvider',
