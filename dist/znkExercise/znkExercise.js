@@ -2,12 +2,12 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise', [
-            'znk.infra.svgIcon',
-            'znk.infra.scroll',
-            'znk.infra.autofocus',
-            'znk.infra.exerciseUtility',
-            'ngAnimate'
-        ])
+        'znk.infra.svgIcon',
+        'znk.infra.scroll',
+        'znk.infra.autofocus',
+        'znk.infra.exerciseUtility',
+        'ngAnimate'
+    ])
         .config([
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
@@ -275,6 +275,164 @@
             };
         }
     ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').controller('BaseZnkExerciseController',
+        ["$scope", "exerciseData", "exerciseSettings", "$state", "$q", "ExerciseTypeEnum", "$location", "ExerciseResultSrv", "ZnkExerciseSrv", "$filter", "PopUpSrv", "exerciseEventsConst", "$rootScope", "ZnkExerciseUtilitySrv", "ZnkExerciseViewModeEnum", "SubjectEnum", "znkAnalyticsSrv", "$translatePartialLoader", "$translate", function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, ExerciseResultSrv, ZnkExerciseSrv, $filter,
+                  PopUpSrv, exerciseEventsConst, $rootScope, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum, SubjectEnum, znkAnalyticsSrv, $translatePartialLoader, $translate) {
+            'ngInject';
+
+            var exercise = exerciseData.exercise;
+            var exerciseResult = exerciseData.exerciseResult;
+            var exerciseTypeId = exerciseData.exerciseTypeId;
+            var isSection = exerciseTypeId === ExerciseTypeEnum.SECTION.enum;
+
+            var initSlideIndex;
+            if (!$scope.baseZnkExerciseCtrl) {
+                $scope.baseZnkExerciseCtrl = {};
+            }
+
+            function getNumOfUnansweredQuestions(questionsResults) {
+                var numOfUnansweredQuestions = questionsResults.length;
+                var keysArr = Object.keys(questionsResults);
+                angular.forEach(keysArr, function (i) {
+                    var questionAnswer = questionsResults[i];
+                    if (angular.isDefined(questionAnswer.userAnswer)) {
+                        numOfUnansweredQuestions--;
+                    }
+                });
+                return numOfUnansweredQuestions;
+            }
+            
+            function _getAllowedTimeForExercise() {
+                var allowedTimeMapByExercise = ZnkExerciseSrv.getAllowedTimeForQuestionByExercise();
+                var allowedTimeForQuestion = allowedTimeMapByExercise[exerciseTypeId];
+                if (angular.isDefined(allowedTimeForQuestion)) {
+                    return allowedTimeForQuestion * exercise.questions.length;
+                }
+                return exercise.time;
+            }
+
+            if (angular.isUndefined(exerciseResult.startedTime)) {
+                exerciseResult.startedTime = Date.now();
+            }
+
+            exerciseData.exercise.questions = exerciseData.exercise.questions.sort(function (a, b) {
+                return a.order - b.order;
+            });
+
+            if (!angular.isArray(exerciseResult.questionResults) || exerciseResult.questionResults.length === 0) {
+                exerciseResult.questionResults = exercise.questions.map(function (question) {
+                    return {
+                        questionId: question.id,
+                        categoryId: question.categoryId
+                    };
+                });
+            }
+
+            ZnkExerciseUtilitySrv.setQuestionsGroupData(exercise.questions, exercise.questionsGroupData);
+
+            $scope.baseZnkExerciseCtrl.exercise = exercise;
+            $scope.baseZnkExerciseCtrl.resultsData = exerciseResult;
+
+            $scope.baseZnkExerciseCtrl.numberOfQuestions = $scope.baseZnkExerciseCtrl.exercise.questions.length;
+
+            var viewMode;
+            if (exerciseResult.isComplete) {
+                viewMode = ZnkExerciseViewModeEnum.REVIEW.enum;
+                initSlideIndex = 0;
+            } else {
+                viewMode = isSection ? ZnkExerciseViewModeEnum.ONLY_ANSWER.enum : ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum;
+                initSlideIndex = exerciseResult.questionResults.findIndex(function (question) {
+                    return !question.userAnswer;
+                });
+            }
+
+            var defExerciseSettings = {
+                onDone: function onDone() {
+                    
+                    var numOfUnansweredQuestions = getNumOfUnansweredQuestions(exerciseResult.questionResults);
+                    var areAllQuestionsAnsweredProm = $q.when(true);
+                    if (numOfUnansweredQuestions) {
+                        var contentProm = $translate('ZNK_EXERCISE.SOME_ANSWER_LEFT_CONTENT');
+                        var titleProm = $translate('ZNK_EXERCISE.FINISH_TITLE');
+                        var buttonGoToProm = $translate('ZNK_EXERCISE.GO_TO_SUMMARY_BTN');
+                        var buttonStayProm = $translate('ZNK_EXERCISE.STAY_BTN');
+                        
+                        $q.all([contentProm, titleProm, buttonGoToProm, buttonStayProm]).then(function(results){
+                            var content = results[0];
+                            var title = results[1];
+                            var buttonGoTo = results[2];
+                            var buttonStay = results[3];
+                            areAllQuestionsAnsweredProm = PopUpSrv.warning(title, content, buttonGoTo, buttonStay).promise;
+                            areAllQuestionsAnsweredProm.then(function () {
+                                // finishExercise(exerciseResult);
+                            });
+                        });
+                    }
+                },
+                onQuestionAnswered: function onQuestionAnswered() {
+                    exerciseResult.$save();
+                },
+                onSlideChange: function (currQuestion, currentIndex) {
+                    var indexPlusOne = currentIndex + 1;
+                    znkAnalyticsSrv.pageTrack({
+                        props: {
+                            url: $location.url() + '/index/' + indexPlusOne + '/questionId/' + (currQuestion.id || '')
+                        }
+                    });
+                    $scope.baseZnkExerciseCtrl.currentIndex = indexPlusOne;
+                },
+                viewMode: viewMode,
+                initSlideIndex: initSlideIndex || 0,
+                allowedTimeForExercise: _getAllowedTimeForExercise()
+            };
+
+            $scope.baseZnkExerciseCtrl.settings = angular.extend(defExerciseSettings, exerciseSettings);
+            $scope.baseZnkExerciseCtrl.settings.onExerciseReady = function () {
+                if (exerciseSettings.onExerciseReady) {
+                    exerciseSettings.onExerciseReady();
+                }
+            };
+
+            $scope.baseZnkExerciseCtrl.startTime = exerciseResult.duration || 0;
+            $scope.baseZnkExerciseCtrl.maxTime = exercise.time;
+
+            $scope.baseZnkExerciseCtrl.timerData = {
+                timeLeft: exercise.time - (exerciseResult.duration || 0),
+                config: {
+                    countDown: true
+                }
+            };
+
+            $scope.baseZnkExerciseCtrl.onFinishTime = function () {
+                
+                var contentProm = $translate('ZNK_EXERCISE.TIME_UP_CONTENT');
+                var titleProm = $translate('ZNK_EXERCISE.TIME_UP_TITLE');
+                var buttonFinishProm = $translate('ZNK_EXERCISE.STOP');
+                var buttonContinueProm = $translate('ZNK_EXERCISE.CONTINUE_BTN');
+
+                $q.all([contentProm, titleProm, buttonFinishProm, buttonContinueProm]).then(function(results){
+                    var content = results[0];
+                    var title = results[1];
+                    var buttonFinish = results[2];
+                    var buttonContinue = results[3];
+                    var timeOverPopupPromise = PopUpSrv.ErrorConfirmation(title, content, buttonFinish, buttonContinue).promise;
+
+                    timeOverPopupPromise.then(function () {
+                        // finishExercise(exerciseResult);
+                    });
+                });
+            };
+
+            $scope.baseZnkExerciseCtrl.onChangeTime = function (passedTime) {
+                exerciseResult.duration = passedTime;
+            };
+        }]);
+
 })(angular);
 
 (function (angular) {
@@ -787,40 +945,65 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').factory('ZnkExerciseSrv', [
-        /*'ZnkModalSrv',*/ 'EnumSrv', '$window', 'PlatformEnum',
-        function (/*ZnkModalSrv, */EnumSrv, $window, PlatformEnum) {
-            var ZnkExerciseSrv = {};
+    angular.module('znk.infra.znkExercise').provider('ZnkExerciseSrv', [
+        /*'ZnkModalSrv',*/
+        function (/*ZnkModalSrv,*/) {
+            var allowedTimeForQuestionByExercise = {};
 
-            var platform = !!$window.ionic ? PlatformEnum.MOBILE.enum : PlatformEnum.DESKTOP.enum;
-            ZnkExerciseSrv.getPlatform = function(){
-                return platform;
+            this.setAllowedTimeForQuestionByExercise = function (allowedTime) {
+                allowedTimeForQuestionByExercise = allowedTime;
             };
 
-            ZnkExerciseSrv.openExerciseToolBoxModal = function openExerciseToolBoxModal(/*toolBoxModalSettings*/) {
-                //var modalOptions = {
-                //    templateUrl: 'scripts/exercise/templates/znkExerciseToolBoxModal.html',
-                //    hideBackdrop: true,
-                //    ctrl: 'ZnkExerciseToolBoxModalCtrl',
-                //    ctrlAs: 'toolBoxCtrl',
-                //    dontCentralize: true,
-                //    wrapperClass: 'znk-exercise-toolbox ' + toolBoxModalSettings.wrapperCls,
-                //    resolve: {
-                //        Settings: toolBoxModalSettings
-                //    }
-                //};
-                //return ZnkModalSrv.modal(modalOptions);
-            };
 
-            ZnkExerciseSrv.toolBoxTools = {
-                BLACKBOARD: 'blackboard',
-                MARKER: 'mar',
-                CALCULATOR: 'cal',
-                BOOKMARK: 'bookmark',
-                SHOW_PAGER: 'show pager'
-            };
+            this.$get = ['EnumSrv', '$window', 'PlatformEnum',
+                function (EnumSrv, $window, PlatformEnum) {
 
-            return ZnkExerciseSrv;
+                    var platform = !!$window.ionic ? PlatformEnum.MOBILE.enum : PlatformEnum.DESKTOP.enum;
+                    var ZnkExerciseSrv = {};
+
+                    ZnkExerciseSrv.toolBoxTools = {
+                        BLACKBOARD: 'blackboard',
+                        MARKER: 'mar',
+                        CALCULATOR: 'cal',
+                        BOOKMARK: 'bookmark',
+                        SHOW_PAGER: 'show pager'
+                    };
+
+                    function openExerciseToolBoxModal(/*toolBoxModalSettings*/) {
+                        //var modalOptions = {
+                        //    templateUrl: 'scripts/exercise/templates/znkExerciseToolBoxModal.html',
+                        //    hideBackdrop: true,
+                        //    ctrl: 'ZnkExerciseToolBoxModalCtrl',
+                        //    ctrlAs: 'toolBoxCtrl',
+                        //    dontCentralize: true,
+                        //    wrapperClass: 'znk-exercise-toolbox ' + toolBoxModalSettings.wrapperCls,
+                        //    resolve: {
+                        //        Settings: toolBoxModalSettings
+                        //    }
+                        //};
+                        //return ZnkModalSrv.modal(modalOptions);
+                    }
+
+                    // return ZnkExerciseSrv;
+                    return {
+                        getPlatform: function () {
+                            return platform;
+                        },
+                        getAllowedTimeForQuestionByExercise: function () {
+                            return allowedTimeForQuestionByExercise;
+                        },
+                        openExerciseToolBoxModal: openExerciseToolBoxModal,
+                        toolBoxTools: {
+                            BLACKBOARD: 'blackboard',
+                            MARKER: 'mar',
+                            CALCULATOR: 'cal',
+                            BOOKMARK: 'bookmark',
+                            SHOW_PAGER: 'show pager'
+                        }
+                    };
+
+
+                }];
         }
     ]);
 })(angular);
