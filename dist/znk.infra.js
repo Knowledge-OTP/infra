@@ -446,40 +446,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
             };
 
-            userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId) {
-                var moduleResults = {};
-                var getProm = $q.when();
-                angular.forEach(moduleIds, function (moduleId) {
-                    getProm = getProm.then(function(){
-                        return ModuleResultsService.getModuleResultByModuleId(moduleId, userId, false);
-                    });
-
-                });
-                return getProm.then(function () {
-                    var saveProm = $q.when();
-                    angular.forEach(moduleIds, function (moduleId) {
-                        if(!moduleResults[moduleId]) {
-                            moduleResults[moduleId] =  ModuleResultsService.getDefaultModuleResult(moduleId, userId);
-                            moduleResults[moduleId].tutorId = tutorId;
-                        }
-                        moduleResults[moduleId].assign = true;
-
-                        saveProm = saveProm.then(function(){
-                            return ModuleResultsService.setModuleResult(moduleResults[moduleId]).then(function(savedResults){
-                                moduleResults[moduleId] = savedResults;
-                            });
-                        });
-
-                    });
-
-                    return saveProm.then(function () {
-                        return moduleResults;
-                    });
-
-                });
-            };
-
-            userAssignModuleService.setAssignModules_old = function (assignModules, userId) {
+            userAssignModuleService.setAssignModules = function (assignModules, userId) {
                 var setProm = $q.when();
                 angular.forEach(assignModules, function (assignModule) {
                     setProm = setProm.then(function(){
@@ -2919,17 +2886,6 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
             var USER_MODULE_RESULTS_PATH = storage.variables.appUserSpacePath + '/moduleResults';
             var MODULE_RESULTS_PATH = 'moduleResults';
 
-            moduleResultsService.getDefaultModuleResult = function (moduleId, userId) {
-                return {
-                    moduleId: moduleId,
-                    uid: userId,
-                    tutorId: null,
-                    assign: false,
-                    contentAssign: false,
-                    guid: UtilitySrv.general.createGuid()
-                };
-            };
-
             moduleResultsService.getUserModuleResultsGuids = function (userId){
                 var userResultsPath = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
                 return storage.get(userResultsPath);
@@ -2949,8 +2905,15 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                         if (!withDefaultResult) {
                             return null;
                         } else {
-                            defaultResult =  moduleResultsService.getDefaultModuleResult(moduleId, userId);
-                            moduleResultGuid = defaultResult.guid;
+                            moduleResultGuid = UtilitySrv.general.createGuid();
+                            defaultResult =  {
+                                moduleId: moduleId,
+                                tutorId: null,
+                                assign: false,
+                                contentAssign: false,
+                                guid: moduleResultGuid,
+                                uid: userId
+                            };
                         }
                     }
 
@@ -2961,12 +2924,12 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
             moduleResultsService.setModuleResult = function (newResult){
                 return  moduleResultsService.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
                     var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
-                    if (userGuidLists[newResult.guid]) {
-                        return  moduleResultsService.getModuleResultByGuid(newResult.guid).then(function (moduleResult) {
-                            angular.extend(moduleResult, newResult);
-                            return storage.set(moduleResultPath, moduleResult);
-                        });
-                    }
+                   if (userGuidLists[newResult.guid]) {
+                       return  moduleResultsService.getModuleResultByGuid(newResult.guid).then(function (moduleResult) {
+                           angular.extend(moduleResult, newResult);
+                           return storage.set(moduleResultPath, moduleResult);
+                       });
+                   }
 
                     userGuidLists[newResult.moduleId] = newResult.guid;
                     var dataToSave = {};

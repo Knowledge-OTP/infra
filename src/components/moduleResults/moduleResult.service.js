@@ -10,17 +10,6 @@
             var USER_MODULE_RESULTS_PATH = storage.variables.appUserSpacePath + '/moduleResults';
             var MODULE_RESULTS_PATH = 'moduleResults';
 
-            moduleResultsService.getDefaultModuleResult = function (moduleId, userId) {
-                return {
-                    moduleId: moduleId,
-                    uid: userId,
-                    tutorId: null,
-                    assign: false,
-                    contentAssign: false,
-                    guid: UtilitySrv.general.createGuid()
-                };
-            };
-
             moduleResultsService.getUserModuleResultsGuids = function (userId){
                 var userResultsPath = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
                 return storage.get(userResultsPath);
@@ -40,8 +29,15 @@
                         if (!withDefaultResult) {
                             return null;
                         } else {
-                            defaultResult =  moduleResultsService.getDefaultModuleResult(moduleId, userId);
-                            moduleResultGuid = defaultResult.guid;
+                            moduleResultGuid = UtilitySrv.general.createGuid();
+                            defaultResult =  {
+                                moduleId: moduleId,
+                                tutorId: null,
+                                assign: false,
+                                contentAssign: false,
+                                guid: moduleResultGuid,
+                                uid: userId
+                            };
                         }
                     }
 
@@ -52,12 +48,12 @@
             moduleResultsService.setModuleResult = function (newResult){
                 return  moduleResultsService.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
                     var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
-                    if (userGuidLists[newResult.guid]) {
-                        return  moduleResultsService.getModuleResultByGuid(newResult.guid).then(function (moduleResult) {
-                            angular.extend(moduleResult, newResult);
-                            return storage.set(moduleResultPath, moduleResult);
-                        });
-                    }
+                   if (userGuidLists[newResult.guid]) {
+                       return  moduleResultsService.getModuleResultByGuid(newResult.guid).then(function (moduleResult) {
+                           angular.extend(moduleResult, newResult);
+                           return storage.set(moduleResultPath, moduleResult);
+                       });
+                   }
 
                     userGuidLists[newResult.moduleId] = newResult.guid;
                     var dataToSave = {};
