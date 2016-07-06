@@ -8568,7 +8568,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 });
 
                 angular.forEach(questions, function (question) {
-                    if (!groupDataMap[question.groupDataId]) {
+                    if (question.groupDataId && !groupDataMap[question.groupDataId]) {
                         $log.debug('Group data is missing for the following question id ' + question.id);
                     }
 
