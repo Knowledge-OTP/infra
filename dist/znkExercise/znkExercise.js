@@ -2,11 +2,12 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise', [
+        'ngAnimate',
         'znk.infra.svgIcon',
         'znk.infra.scroll',
         'znk.infra.autofocus',
         'znk.infra.exerciseUtility',
-        'ngAnimate'
+        'znk.infra.analytics'
     ])
         .config([
             'SvgIconSrvProvider',

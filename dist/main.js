@@ -131,6 +131,7 @@
 
             if(!eventsHandler) {
                 $log.error('znkAnalyticsSrv eventsHandler is missing!');
+                return api;
             }
 
             var eventsFn = $injector.invoke(eventsHandler);
@@ -6187,11 +6188,12 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkExercise', [
+        'ngAnimate',
         'znk.infra.svgIcon',
         'znk.infra.scroll',
         'znk.infra.autofocus',
         'znk.infra.exerciseUtility',
-        'ngAnimate'
+        'znk.infra.analytics'
     ])
         .config([
             'SvgIconSrvProvider',
