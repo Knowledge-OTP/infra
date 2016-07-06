@@ -26,16 +26,36 @@
                 });
             };
 
-            userAssignModuleService.setAssignModules = function (assignModules, userId) {
-                var setProm = $q.when();
-                angular.forEach(assignModules, function (assignModule) {
-                    setProm = setProm.then(function(){
-                        return ModuleResultsService.setModuleResult(assignModule);
+            userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId) {
+                var moduleResults = {};
+                var getProm = $q.when();
+                angular.forEach(moduleIds, function (moduleId) {
+                    getProm = getProm.then(function(){
+                        return ModuleResultsService.getModuleResultByModuleId(moduleId, userId, false);
                     });
-                });
 
-                return setProm.then(function () {
-                    return userAssignModuleService.getUserAssignModules(userId);
+                });
+                return getProm.then(function () {
+                    var saveProm = $q.when();
+                    angular.forEach(moduleIds, function (moduleId) {
+                        if(!moduleResults[moduleId]) {
+                            moduleResults[moduleId] =  ModuleResultsService.getDefaultModuleResult(moduleId, userId);
+                            moduleResults[moduleId].tutorId = tutorId;
+                        }
+                        moduleResults[moduleId].assign = true;
+
+                        saveProm = saveProm.then(function(){
+                            return ModuleResultsService.setModuleResult(moduleResults[moduleId]).then(function(savedResults){
+                                moduleResults[moduleId] = savedResults;
+                            });
+                        });
+
+                    });
+
+                    return saveProm.then(function () {
+                        return moduleResults;
+                    });
+
                 });
             };
 
