@@ -2,8 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', 'ModuleResultsService', '$q',
-        function (ZnkModuleService, ModuleResultsService, $q) {
+        'ZnkModuleService', 'ModuleResultsService', '$q', '$log',
+        function (ZnkModuleService, ModuleResultsService, $q, $log) {
             var userAssignModuleService = {};
 
             userAssignModuleService.getUserAssignModules = function (userId) {
@@ -27,11 +27,19 @@
             };
 
             userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId) {
+                if(!angular.isArray(moduleIds)){
+                    var errMSg = 'UserAssignModuleService: 1st argument should be array of module ids';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
                 var moduleResults = {};
                 var getProm = $q.when();
                 angular.forEach(moduleIds, function (moduleId) {
                     getProm = getProm.then(function(){
-                        return ModuleResultsService.getModuleResultByModuleId(moduleId, userId, false);
+                        return ModuleResultsService.getModuleResultByModuleId(moduleId, userId, false).then(function (moduleResult) {
+                            moduleResults[moduleId] = moduleResult;
+                            return moduleResults;
+                        });
                     });
 
                 });
@@ -40,7 +48,7 @@
                     angular.forEach(moduleIds, function (moduleId) {
                         if(!moduleResults[moduleId]) {
                             moduleResults[moduleId] =  ModuleResultsService.getDefaultModuleResult(moduleId, userId);
-                            moduleResults[moduleId].tutorId = tutorId;
+                            moduleResults[moduleId].assignedTutorId = tutorId;
                         }
                         moduleResults[moduleId].assign = true;
 
