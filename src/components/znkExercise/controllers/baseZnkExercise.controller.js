@@ -39,15 +39,14 @@
                 exerciseResult.endedTime = Date.now();
                 exerciseResult.$save();
 
-                var exerciseTypeValue = ExerciseTypeEnum.getValByEnum(exerciseData.exerciseTypeId);
-                exerciseTypeValue = exerciseTypeValue.toLowerCase();
-                var broadcastEventName = exerciseEventsConst[exerciseTypeValue].FINISH;
-
-                $rootScope.$broadcast(broadcastEventName, exercise, exerciseResult, exerciseData.examData);
-
                 //  stats exercise data
                 StatsEventsHandlerSrv.addNewExerciseResult(exerciseTypeId, exercise, exerciseResult).then(function () {
                     $scope.baseZnkExerciseCtrl.settings.viewMode = ZnkExerciseViewModeEnum.REVIEW.enum;
+
+                    var exerciseTypeValue = ExerciseTypeEnum.getValByEnum(exerciseData.exerciseTypeId).toLowerCase();
+                    var broadcastEventName = exerciseEventsConst[exerciseTypeValue].FINISH;
+                    $rootScope.$broadcast(broadcastEventName, exercise, exerciseResult, exerciseData.examData);
+
                     $state.go('^.summary');
                 });
             }
