@@ -2,8 +2,24 @@
     'use strict';
 
     angular.module('znk.infra.contentGetters').factory('BaseExerciseGetterSrv',
-        function (ContentSrv, $log, $q) {
+        function (ContentSrv, $log, $q, ExerciseTypeEnum) {
             'ngInject';
+
+            function BaseExerciseGetterSrv(exerciseTypeName) {
+                this.typeName = exerciseTypeName;
+            }
+
+            BaseExerciseGetterSrv.getExerciseByNameAndId = function (exerciseId, exerciseTypeName) {
+                var context = {
+                    typeName: exerciseTypeName
+                }; 
+                return BaseExerciseGetterSrvPrototype.get.call(context, exerciseId);
+            };
+
+            BaseExerciseGetterSrv.getExerciseByTypeAndId = function (exerciseId, exerciseTypeId) {
+                var exerciseTypeName = ExerciseTypeEnum.getValByEnum(exerciseTypeId).toLowerCase();
+                return BaseExerciseGetterSrv.getExerciseByNameAndId(exerciseId, exerciseTypeName);
+            };
 
             var BaseExerciseGetterSrvPrototype = {};
 
@@ -23,7 +39,7 @@
                 });
             };
 
-            BaseExerciseGetterSrvPrototype.getAll = function(){
+            BaseExerciseGetterSrvPrototype.getAll = function () {
                 var self = this;
                 var resultsProm = [];
                 return ContentSrv.getAllContentIdsByKey(self.typeName).then(function (results) {
@@ -39,17 +55,6 @@
                         return $q.reject(err);
                     }
                 });
-            };
-
-            function BaseExerciseGetterSrv(exerciseTypeName) {
-                this.typeName = exerciseTypeName;
-            }
-
-            BaseExerciseGetterSrv.getExerciseByNameAndId = function(exerciseId, exerciseTypeName){
-                var context = {
-                    typeName: exerciseTypeName
-                };
-                return BaseExerciseGetterSrvPrototype.get.call(context,exerciseId);
             };
 
             BaseExerciseGetterSrv.prototype = BaseExerciseGetterSrvPrototype;
