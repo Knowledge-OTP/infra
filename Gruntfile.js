@@ -64,6 +64,13 @@ module.exports = function (grunt) {
                     ]
                 }]
             },
+            html2JsTemplates: {
+                files: [{
+                    src: [
+                        '<%= yeoman.tmp %>/*/templates.js'
+                    ]
+                }]
+            },
             server: '.tmp'
         },
 
@@ -111,8 +118,11 @@ module.exports = function (grunt) {
             mainModule: {
                 //js files configuration is generated in prepareConfiguration
                 files: [{
-                    src: ['<%= yeoman.tmp %>/**/*.css'],
+                    src: ['<%= yeoman.tmp %>/*/main.css'],
                     dest: '<%= yeoman.tmp %>/main.css'
+                },{
+                    src: ['<%= yeoman.src %>/core/module.js', '<%= yeoman.tmp %>/*/*.js'],
+                    dest: '<%= yeoman.tmp %>/main.js'
                 }]
             }
         },
@@ -215,7 +225,7 @@ module.exports = function (grunt) {
                 files: [{
                     expand: true,
                     cwd: '<%= yeoman.src %>/components',
-                    src: '**/main.scss',
+                    src: '*/main.scss',
                     dest: '<%= yeoman.tmp %>/',
                     ext: '.css'
                 }]
@@ -252,11 +262,8 @@ module.exports = function (grunt) {
                 files: [{
                     expand: true,
                     cwd: '<%= yeoman.tmp %>/',
-                    src: ['**/*.*', '!**/*.js'],
+                    src: ['**/*.*'],
                     dest: '<%= yeoman.dist %>/'
-                }, {
-                    '<%= yeoman.dist %>/main.js': '<%= yeoman.tmp %>/main.js',
-                    '<%= yeoman.dist %>/main.css': '<%= yeoman.tmp %>/main.css'
                 }]
             }
         },
@@ -278,6 +285,24 @@ module.exports = function (grunt) {
                     src: ['**/*.css'],
                     dest: '<%= yeoman.tmp %>/'
                 }]
+            }
+        },
+        replace: {
+            allModulesInMainJs: {
+                options: {
+                    patterns: [
+                        {
+                            match: /\/\*\* allModules \*\*\//g,
+                            replacement: ''// will be set in prepareConfiguration task
+                        }
+                    ]
+                },
+                files: [
+                    {
+                        src: '<%= yeoman.tmp %>/main.js',
+                        dest: '<%= yeoman.tmp %>/main.js'
+                    }
+                ]
             }
         }
     });
@@ -318,20 +343,13 @@ module.exports = function (grunt) {
     grunt.registerTask('prepareConfiguration', 'preparing html2js and concat configuration for each component', function () {
         var concat = grunt.config.get('concat') || {};
 
-        var jsMainModuleFilesSrcArr = ['<%= yeoman.src %>/core/module.js'];
-        concat.mainModule.files.push({
-            src: jsMainModuleFilesSrcArr,
-            dest: '<%= yeoman.tmp %>/main.js'
-        });
-
         concat.build = {
-            files: []
-        };
-        concat.dist = {
             files: []
         };
 
         var html2js = grunt.config.get('html2js') || {};
+
+        var allModulesReplaceStr = '';
 
         grunt.file.expand("src/components/*").forEach(function (dir) {
             // get the module name from the directory name
@@ -351,23 +369,27 @@ module.exports = function (grunt) {
             };
 
             // create a subtask for each module, find all src files
-            // and combine into a single js file per component
+            // and combine into a single js file per component, should be running after html2js task
             concat.build.files.push({
-                src: [dir + '/module.js', dir + '/**/*.js'],
-                dest: '.tmp/' + dirName + '/' + dirName + '.js'
+                src: [dir + '/module.js', dir + '/**/*.js', '<%= yeoman.tmp %>/' + dirName + '/templates.js'],
+                dest: '<%= yeoman.tmp %>/' + dirName + '/' + dirName + '.js'
             });
 
-            var componentPathInTmp = '.tmp/' + dirName + '/';
-            concat.dist.files.push({
-                src: [componentPathInTmp + dirName + '.js', componentPathInTmp + 'templates.js'],
-                dest: 'dist/' + dirName + '/' + dirName + '.js'
-            });
-
-            jsMainModuleFilesSrcArr.push(componentPathInTmp + dirName + '.js', componentPathInTmp + 'templates.js');
+            if(allModulesReplaceStr !== ''){
+                allModulesReplaceStr += ',\n';
+            }
+            allModulesReplaceStr += '"' + appConfig.appName + '.' + dirName + '"';
         });
-        // add module subtasks to the concat task in initConfig
+        //setting new html2js config
         grunt.config.set('html2js', html2js);
+
+        // add module subtasks to the concat task in initConfig
         grunt.config.set('concat', concat);
+
+        //setting all modules replace string
+        var replace = grunt.config.get('replace') || {};
+        replace.allModulesInMainJs.options.patterns[0].replacement = allModulesReplaceStr;
+        grunt.config.set('replace', replace);
     });
 
     grunt.registerTask('build', [
@@ -377,7 +399,9 @@ module.exports = function (grunt) {
         'autoprefixer:main',
         'html2js',
         'concat:build',
+        'clean:html2JsTemplates',
         'concat:mainModule',
+        'replace:allModulesInMainJs',
         'copy:build',
         'ngAnnotate'
     ]);
@@ -388,7 +412,6 @@ module.exports = function (grunt) {
         'clean:dist',
         'build',
         'copy:dist',
-        'concat:dist',
         'ngAnnotate'
     ]);
 };

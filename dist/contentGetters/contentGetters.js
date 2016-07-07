@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.exerciseDataGetters', [
+    angular.module('znk.infra.contentGetters', [
         'znk.infra.config',
         'znk.infra.content',
         'znk.infra.exerciseUtility'
@@ -11,7 +11,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.exerciseDataGetters').factory('BaseExerciseGetterSrv',
+    angular.module('znk.infra.contentGetters').factory('BaseExerciseGetterSrv',
         ["ContentSrv", "$log", "$q", function (ContentSrv, $log, $q) {
             'ngInject';
 
@@ -71,7 +71,7 @@
 
 'use strict';
 
-angular.module('znk.infra.exerciseDataGetters').service('CategoryService', ["StorageRevSrv", "$q", "categoryEnum", function (StorageRevSrv, $q, categoryEnum)  {
+angular.module('znk.infra.contentGetters').service('CategoryService', ["StorageRevSrv", "$q", "categoryEnum", function (StorageRevSrv, $q, categoryEnum)  {
         'ngInject';
 
         var self = this;
@@ -188,6 +188,6 @@ angular.module('znk.infra.exerciseDataGetters').service('CategoryService', ["Sto
         })();
 }]);
 
-angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.contentGetters').run(['$templateCache', function($templateCache) {
 
 }]);

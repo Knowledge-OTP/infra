@@ -4,7 +4,7 @@
     angular.module('demo', [
         'znk.infra.exerciseDataGetters'
     ])
-        .controller('Main', function (WorkoutsSrv, $scope) {
+        .controller('Main', function (WorkoutsSrv, $scope, BaseExerciseGetterSrv) {
             $scope.workoutIdToRetrieveData = $scope.exerciseOrder = 1;
 
             $scope.getWorkouts = function () {
@@ -27,9 +27,10 @@
             $scope.getWorkoutData = function(){
                 var workoutId = $scope.workoutIdToRetrieveData;
                 WorkoutsSrv.getWorkoutData(workoutId).then(function(workoutData){
-                    workoutData.exerciseProm.then(function(exerciseContent){
-                        $scope.exerciseContent = exerciseContent;
-                    });
+                    BaseExerciseGetterSrv.get
+                    // workoutData.exerciseProm.then(function(exerciseContent){
+                    //     $scope.exerciseContent = exerciseContent;
+                    // });
                 });
             };
         });

@@ -5,7 +5,7 @@
             'znk.infra.enum',
             'znk.infra.znkExercise',
             'znk.infra.utility',
-            'znk.infra.exerciseDataGetters'
+            'znk.infra.contentGetters'
         ])
         .run([
             'StatsEventsHandlerSrv',
