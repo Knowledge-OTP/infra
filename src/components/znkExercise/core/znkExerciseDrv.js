@@ -5,7 +5,7 @@
  *  ngModel: results array
  *
  *  settings:
- *      allowedTimeForExercise
+ *      allowedTimeForExercise: in milliseconds
  *      onDone
  *      onQuestionAnswered
  *      wrapperCls
