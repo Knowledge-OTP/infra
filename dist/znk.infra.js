@@ -62,7 +62,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.exerciseResult', ['znk.infra.config','znk.infra.utility']);
+    angular.module('znk.infra.exerciseResult', ['znk.infra.config','znk.infra.utility', 'znk.infra.moduleResults']);
 })(angular);
 
 (function (angular) {
@@ -469,7 +469,6 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                                 moduleResults[moduleId] = savedResults;
                             });
                         });
-
                     });
 
                     return saveProm.then(function () {
@@ -1732,26 +1731,15 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum',
-        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum) {
+        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum', 'ModuleResultsService',
+        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum, ModuleResultsService) {
             var ExerciseResultSrv = this;
 
             var EXERCISE_RESULTS_PATH = 'exerciseResults';
-            var EXERCISE_RESULTS_GUIDS_PATH = StorageSrv.variables.appUserSpacePath + '/exerciseResults';
-
-
             var EXAM_RESULTS_PATH = 'examResults';
-            var EXAM_RESULTS_GUIDS_PATH = StorageSrv.variables.appUserSpacePath + '/examResults';
-
-            var EXERCISES_STATUS_PATH = StorageSrv.variables.appUserSpacePath + '/exercisesStatus';
-
-            function _isValidNumber(number){
-                if(!angular.isNumber(number) && !angular.isString(number)){
-                    return false;
-                }
-
-                return !isNaN(+number);
-            }
+            var USER_EXERCISE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/exerciseResults';
+            var USER_EXAM_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/examResults';
+            var USER_EXERCISES_STATUS_PATH = StorageSrv.variables.appUserSpacePath + '/exercisesStatus';
 
             function _getExerciseResultPath(guid) {
                 return EXERCISE_RESULTS_PATH + '/' + guid;
@@ -1779,7 +1767,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 
             function _getExerciseResultsGuids(){
                 var storage = InfraConfigSrv.getStorageService();
-                return storage.get(EXERCISE_RESULTS_GUIDS_PATH);
+                return storage.get(USER_EXERCISE_RESULTS_PATH);
             }
 
             function _getExamResultPath(guid) {
@@ -1818,7 +1806,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 
             function _getExamResultsGuids(){
                 var storage = InfraConfigSrv.getStorageService();
-                return storage.get(EXAM_RESULTS_GUIDS_PATH);
+                return storage.get(USER_EXAM_RESULTS_PATH);
             }
 
             function exerciseSaveFn(){
@@ -1881,7 +1869,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
                     var exerciseNewStatus = exerciseResult.isComplete ?
                         ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
                     exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId] = new ExerciseStatus(exerciseNewStatus, totalTimeSpentOnQuestions);
-                    dataToSave[EXERCISES_STATUS_PATH] = exercisesStatusData;
+                    dataToSave[USER_EXERCISES_STATUS_PATH] = exercisesStatusData;
 
                     var getSectionAggregatedDataProm = $q.when();
                     if(exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
@@ -1937,7 +1925,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 
             function _getExercisesStatusData(){
                 var storage = InfraConfigSrv.getStorageService();
-                return storage.get(EXERCISES_STATUS_PATH);
+                return storage.get(USER_EXERCISES_STATUS_PATH);
             }
 
             function ExerciseStatus(status, duration){
@@ -1946,7 +1934,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
             }
 
             this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum, dontInitialize) {
-                if(!_isValidNumber(exerciseTypeId) || !_isValidNumber(exerciseId)){
+                if(!UtilitySrv.fn.isValidNumber(exerciseTypeId) || !UtilitySrv.fn.isValidNumber(exerciseId)){
                     var errMSg = 'ExerciseResultSrv: exercise type id, exercise id should be number !!!';
                     $log.error(errMSg);
                     return $q.reject(errMSg);
@@ -1954,7 +1942,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
                 exerciseTypeId = +exerciseTypeId;
                 exerciseId = +exerciseId;
 
-                if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum && !_isValidNumber(examId)){
+                if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum && !UtilitySrv.fn.isValidNumber(examId)){
                     var examErrMSg = 'ExerciseResultSrv: exam id should be provided when asking for section result and should' +
                         ' be a number!!!';
                     $log.error(examErrMSg);
@@ -1985,7 +1973,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
                         var dataToSave = {};
 
                         exerciseResultsGuids[exerciseTypeId][exerciseId] = newGuid;
-                        dataToSave[EXERCISE_RESULTS_GUIDS_PATH] = exerciseResultsGuids;
+                        dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
 
                         var exerciseResultPath = _getExerciseResultPath(newGuid);
                         var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,newGuid);
@@ -2038,7 +2026,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
             };
 
             this.getExamResult = function (examId, dontInitialize) {
-                if(!_isValidNumber(examId)){
+                if(!UtilitySrv.fn.isValidNumber(examId)){
                     var errMsg = 'Exam id is not a number !!!';
                     $log.error(errMsg);
                     return $q.reject(errMsg);
@@ -2056,7 +2044,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
                         var dataToSave = {};
                         var newExamResultGuid = UtilitySrv.general.createGuid();
                         examResultsGuids[examId] = newExamResultGuid;
-                        dataToSave[EXAM_RESULTS_GUIDS_PATH] = examResultsGuids;
+                        dataToSave[USER_EXAM_RESULTS_PATH] = examResultsGuids;
 
                         var examResultPath = _getExamResultPath(newExamResultGuid);
                         var initExamResultProm = _getInitExamResult(examId, newExamResultGuid);
@@ -2084,6 +2072,83 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 
             this.getExercisesStatusMap = function(){
                 return _getExercisesStatusData();
+            };
+
+            this.getModuleExerciseResults = function (moduleId, exerciseTypeId, exerciseId, dontInitialize) {
+                if(!UtilitySrv.fn.isValidNumber(exerciseTypeId) || !UtilitySrv.fn.isValidNumber(exerciseId)){
+                    var errMSg = 'ExerciseResultSrv: exercise type id, exercise id should be number !!!';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                exerciseTypeId = +exerciseTypeId;
+                exerciseId = +exerciseId;
+
+                if(UtilitySrv.fn.isValidNumber(moduleId)){
+                    var examErrMSg = 'ExerciseResultSrv: module id should be provided when asking for exercise result and should be a number!!!';
+                    $log.error(examErrMSg);
+                    return $q.reject(examErrMSg);
+                }
+                moduleId = +moduleId;
+
+                return $q.all([ModuleResultsService.getModuleResultByModuleId(moduleId), _getExerciseResultsGuids()]).then(function (results) {
+                    var moduleResultsObj = results[0];
+                    var exerciseResultsGuids = results[1];
+                    var resultGuid = exerciseResultsGuids[exerciseTypeId] && exerciseResultsGuids[exerciseTypeId][exerciseId];
+                    if (!resultGuid) {
+                        if(dontInitialize){
+                            return null;
+                        }
+
+                        if(!exerciseResultsGuids[exerciseTypeId]){
+                            exerciseResultsGuids[exerciseTypeId] = {};
+                        }
+
+                        var storage = InfraConfigSrv.getStorageService();
+                        var newGuid = UtilitySrv.general.createGuid();
+                        var dataToSave = {};
+
+                        exerciseResultsGuids[exerciseTypeId][exerciseId] = newGuid;
+                        dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
+
+                        var exerciseResultPath = _getExerciseResultPath(newGuid);
+                        var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,newGuid);
+                        return initResultProm.then(function(initResult) {
+                            dataToSave[exerciseResultPath] = initResult;
+
+                            if(moduleResultsObj){
+                                moduleResultsObj.moduleId = moduleId;
+
+                                if(!moduleResultsObj.exerciseResults){
+                                    moduleResultsObj.exerciseResults = {};
+                                }
+                                moduleResultsObj.exerciseResults[exerciseId] = newGuid;
+                                var moduleResultPath = ModuleResultsService.getModuleResultPath(moduleResultsObj.guid);
+                                dataToSave[moduleResultPath] = moduleResultsObj;
+                            }
+
+                            return storage.set(dataToSave).then(function (res) {
+                                return res[exerciseResultPath];
+                            });
+                        });
+                    }
+
+                    return _getExerciseResultByGuid(resultGuid).then(function(result){
+                        var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,resultGuid);
+                        return initResultProm.then(function(initResult) {
+                            if(result.guid !== resultGuid){
+                                angular.extend(result,initResult);
+                            }else{
+                                UtilitySrv.object.extendWithoutOverride(result, initResult);
+                            }
+                            return result;
+                        });
+                    });
+                }).then(function(exerciseResult){
+                    if(angular.isObject(exerciseResult)){
+                        exerciseResult.$save = exerciseSaveFn;
+                    }
+                    return exerciseResult;
+                });
             };
         }
     ]);
@@ -2913,6 +2978,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                     tutorId: null,
                     assign: false,
                     contentAssign: false,
+                    exerciseResults: [],
                     guid: UtilitySrv.general.createGuid()
                 };
             };
@@ -2923,7 +2989,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
             };
 
             moduleResultsService.getModuleResultByGuid = function (resultGuid, defaultValue) {
-                var resultPath = MODULE_RESULTS_PATH + '/' + resultGuid;
+                var resultPath = moduleResultsService.getModuleResultPath(resultGuid);
                 return storage.get(resultPath, defaultValue);
             };
 
@@ -2947,7 +3013,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
 
             moduleResultsService.setModuleResult = function (newResult){
                 return  moduleResultsService.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
-                    var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
+                    var moduleResultPath = moduleResultsService.getModuleResultPath(newResult.guid);
                     if (userGuidLists[newResult.guid]) {
                         return  moduleResultsService.getModuleResultByGuid(newResult.guid).then(function (moduleResult) {
                             angular.extend(moduleResult, newResult);
@@ -2962,6 +3028,12 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                     return storage.set(dataToSave);
                 });
             };
+
+            moduleResultsService.getModuleResultPath = function (guid){
+                return MODULE_RESULTS_PATH + '/' + guid;
+            };
+
+
 
             return moduleResultsService;
         }
@@ -4487,7 +4559,15 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
                     return prom;
                 };
             };
-            
+
+            UtilitySrv.fn.isValidNumber = function(number){
+                if(!angular.isNumber(number) && !angular.isString(number)){
+                    return false;
+                }
+
+                return !isNaN(+number);
+            };
+
             return UtilitySrv;
         }
     ]);

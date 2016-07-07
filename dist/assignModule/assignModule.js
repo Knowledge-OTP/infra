@@ -54,7 +54,6 @@
                                 moduleResults[moduleId] = savedResults;
                             });
                         });
-
                     });
 
                     return saveProm.then(function () {

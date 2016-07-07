@@ -22,6 +22,7 @@
                     tutorId: null,
                     assign: false,
                     contentAssign: false,
+                    exerciseResults: [],
                     guid: UtilitySrv.general.createGuid()
                 };
             };
@@ -32,7 +33,7 @@
             };
 
             moduleResultsService.getModuleResultByGuid = function (resultGuid, defaultValue) {
-                var resultPath = MODULE_RESULTS_PATH + '/' + resultGuid;
+                var resultPath = moduleResultsService.getModuleResultPath(resultGuid);
                 return storage.get(resultPath, defaultValue);
             };
 
@@ -56,7 +57,7 @@
 
             moduleResultsService.setModuleResult = function (newResult){
                 return  moduleResultsService.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
-                    var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
+                    var moduleResultPath = moduleResultsService.getModuleResultPath(newResult.guid);
                     if (userGuidLists[newResult.guid]) {
                         return  moduleResultsService.getModuleResultByGuid(newResult.guid).then(function (moduleResult) {
                             angular.extend(moduleResult, newResult);
@@ -71,6 +72,12 @@
                     return storage.set(dataToSave);
                 });
             };
+
+            moduleResultsService.getModuleResultPath = function (guid){
+                return MODULE_RESULTS_PATH + '/' + guid;
+            };
+
+
 
             return moduleResultsService;
         }
