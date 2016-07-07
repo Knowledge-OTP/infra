@@ -21,5 +21,10 @@
                     arrow: 'components/znkExercise/svg/arrow-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
-            }]);
+            }])
+        .run(function ($translatePartialLoader) {
+            'ngInject';
+            
+            $translatePartialLoader.addPart('general');
+        });
 })(angular);
