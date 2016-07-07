@@ -26,12 +26,12 @@
             }
 
             function _getAllowedTimeForExercise() {
-                var allowedTimeMapByExercise = ZnkExerciseSrv.getAllowedTimeForQuestionByExercise();
-                var allowedTimeForQuestion = allowedTimeMapByExercise[exerciseTypeId];
-                if (angular.isDefined(allowedTimeForQuestion)) {
-                    return allowedTimeForQuestion * exercise.questions.length;
+                if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
+                    return exercise.time;
                 }
-                return exercise.time;
+
+                var allowedTimeForQuestion  = ZnkExerciseSrv.getAllowedTimeForQuestion(exerciseTypeId);
+                return allowedTimeForQuestion * exercise.questions.length;
             }
 
             function _finishExercise() {
