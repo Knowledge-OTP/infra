@@ -7212,7 +7212,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                 ZnkExerciseSrv.getAllowedTimeForQuestion = function (exerciseType) {
                     if(!exerciseTypeToAllowedQuestionTimeMap || !exerciseTypeToAllowedQuestionTimeMap[exerciseType]){
-                        $log.error('ZnkExerciseSrv: the following exercise type has no question allowed time');
+                        $log.error('ZnkExerciseSrv: the following exercise type:' + exerciseType +' has no question allowed time');
                     }
                     return exerciseTypeToAllowedQuestionTimeMap[exerciseType];
                 };
@@ -7238,7 +7238,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
  *  ngModel: results array
  *
  *  settings:
- *      allowedTimeForExercise
+ *      allowedTimeForExercise: in milliseconds
  *      onDone
  *      onQuestionAnswered
  *      wrapperCls

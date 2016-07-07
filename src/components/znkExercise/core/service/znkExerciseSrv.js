@@ -47,7 +47,7 @@
 
                 ZnkExerciseSrv.getAllowedTimeForQuestion = function (exerciseType) {
                     if(!exerciseTypeToAllowedQuestionTimeMap || !exerciseTypeToAllowedQuestionTimeMap[exerciseType]){
-                        $log.error('ZnkExerciseSrv: the following exercise type has no question allowed time');
+                        $log.error('ZnkExerciseSrv: the following exercise type:' + exerciseType +' has no question allowed time');
                     }
                     return exerciseTypeToAllowedQuestionTimeMap[exerciseType];
                 };
