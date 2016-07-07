@@ -393,11 +393,12 @@
                             var buttonGoTo = results[2];
                             var buttonStay = results[3];
                             areAllQuestionsAnsweredProm = PopUpSrv.warning(title, content, buttonGoTo, buttonStay).promise;
-                            areAllQuestionsAnsweredProm.then(function () {
-                                _finishExercise(exerciseResult);
-                            });
                         }, function (err) {
                             $log.error(err);
+                        });
+                        
+                        areAllQuestionsAnsweredProm.then(function () {
+                            _finishExercise(exerciseResult);
                         });
                     }
                 },
