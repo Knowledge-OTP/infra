@@ -90,6 +90,7 @@
 
             if(!eventsHandler) {
                 $log.error('znkAnalyticsSrv eventsHandler is missing!');
+                return api;
             }
 
             var eventsFn = $injector.invoke(eventsHandler);

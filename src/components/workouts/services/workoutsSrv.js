@@ -1,9 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.exerciseDataGetters').service('WorkoutsSrv',
+    angular.module('znk.infra.contentGetters').service('WorkoutsSrv',
         function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
-                  InfraConfigSrv, BaseExerciseGetterSrv) {
+                  InfraConfigSrv) {
             'ngInject';
 
             var workoutsDataPath = StorageSrv.variables.appUserSpacePath + '/workouts';
@@ -63,21 +63,7 @@
                 if (angular.isUndefined(workoutId)) {
                     $log.error('workoutSrv: getWorkoutData function was invoked without workout id');
                 }
-                return _getWorkout(workoutId).then(function (workout) {
-                    if (workout) {
-                        var getExerciseProm;
-                        var exerciseTypeName = ExerciseTypeEnum.getValByEnum(workout.exerciseTypeId).toLowerCase();
-                        getExerciseProm = BaseExerciseGetterSrv.getExerciseByNameAndId(workout.exerciseId, exerciseTypeName);
-
-                        return {
-                            workoutId: workoutId,
-                            exerciseTypeId: workout.exerciseTypeId,
-                            exerciseProm: getExerciseProm,
-                            exerciseResultProm: ExerciseResultSrv.getExerciseResult(workout.exerciseTypeId, workout.exerciseId)
-                        };
-                    }
-                    return null;
-                });
+                return _getWorkout(workoutId);
             };
 
             this.setWorkout = function (workoutId, newWorkoutValue) {

@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.exerciseDataGetters', [
+    angular.module('znk.infra.contentGetters', [
         'znk.infra.config',
         'znk.infra.content',
         'znk.infra.exerciseUtility'
@@ -11,10 +11,26 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.exerciseDataGetters').factory('BaseExerciseGetterSrv',
-        ["ContentSrv", "$log", "$q", function (ContentSrv, $log, $q) {
+    angular.module('znk.infra.contentGetters').factory('BaseExerciseGetterSrv',
+        ["ContentSrv", "$log", "$q", "ExerciseTypeEnum", function (ContentSrv, $log, $q, ExerciseTypeEnum) {
             'ngInject';
-            
+
+            function BaseExerciseGetterSrv(exerciseTypeName) {
+                this.typeName = exerciseTypeName;
+            }
+
+            BaseExerciseGetterSrv.getExerciseByNameAndId = function (exerciseTypeName, exerciseId) {
+                var context = {
+                    typeName: exerciseTypeName
+                };
+                return BaseExerciseGetterSrvPrototype.get.call(context, exerciseId);
+            };
+
+            BaseExerciseGetterSrv.getExerciseByTypeAndId = function (exerciseTypeId, exerciseId) {
+                var exerciseTypeName = ExerciseTypeEnum.getValByEnum(exerciseTypeId).toLowerCase();
+                return BaseExerciseGetterSrv.getExerciseByNameAndId(exerciseTypeName, exerciseId);
+            };
+
             var BaseExerciseGetterSrvPrototype = {};
 
             BaseExerciseGetterSrvPrototype.get = function (exerciseId) {
@@ -33,7 +49,7 @@
                 });
             };
 
-            BaseExerciseGetterSrvPrototype.getAll = function(){
+            BaseExerciseGetterSrvPrototype.getAll = function () {
                 var self = this;
                 var resultsProm = [];
                 return ContentSrv.getAllContentIdsByKey(self.typeName).then(function (results) {
@@ -51,17 +67,6 @@
                 });
             };
 
-            function BaseExerciseGetterSrv(exerciseTypeName) {
-                this.typeName = exerciseTypeName;
-            }
-
-            BaseExerciseGetterSrv.getExerciseByNameAndId = function(exerciseId, exerciseTypeName){
-                var context = {
-                    typeName: exerciseTypeName
-                };
-                return BaseExerciseGetterSrvPrototype.get.call(context,exerciseId);
-            };
-
             BaseExerciseGetterSrv.prototype = BaseExerciseGetterSrvPrototype;
 
             return BaseExerciseGetterSrv;
@@ -71,7 +76,7 @@
 
 'use strict';
 
-angular.module('znk.infra.exerciseDataGetters').service('CategoryService', ["StorageRevSrv", "$q", "categoryEnum", function (StorageRevSrv, $q, categoryEnum)  {
+angular.module('znk.infra.contentGetters').service('CategoryService', ["StorageRevSrv", "$q", "categoryEnum", function (StorageRevSrv, $q, categoryEnum)  {
         'ngInject';
 
         var self = this;
@@ -188,103 +193,6 @@ angular.module('znk.infra.exerciseDataGetters').service('CategoryService', ["Sto
         })();
 }]);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.exerciseDataGetters').service('WorkoutsSrv',
-        ["ExerciseStatusEnum", "ExerciseTypeEnum", "$log", "StorageSrv", "ExerciseResultSrv", "ContentAvailSrv", "$q", "InfraConfigSrv", "BaseExerciseGetterSrv", function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
-                  InfraConfigSrv, BaseExerciseGetterSrv) {
-            'ngInject';
-
-            var workoutsDataPath = StorageSrv.variables.appUserSpacePath + '/workouts';
-
-            function _getWorkoutsData() {
-                var defaultValue = {
-                    workouts: {}
-                };
-                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
-                    return StudentStorageSrv.get(workoutsDataPath, defaultValue);
-                });
-            }
-
-            function getWorkoutKey(workoutId) {
-                return 'workout_' + workoutId;
-            }
-
-            function _getWorkout(workoutId) {
-                var workoutKey = getWorkoutKey(workoutId);
-                return _getWorkoutsData().then(function (workoutsData) {
-                    return workoutsData.workouts[workoutKey];
-                });
-            }
-
-            function _setIsAvailForWorkout(workout) {
-                return ContentAvailSrv.isDailyAvail(workout.workoutOrder).then(function (isAvail) {
-                    workout.isAvail = isAvail;
-                });
-            }
-
-            this.getAllWorkouts = function () {
-                return _getWorkoutsData().then(function (workoutsData) {
-                    var workoutsArr = [],
-                        promArr = [];
-                    angular.forEach(workoutsData.workouts, function (workout) {
-                        workoutsArr.push(workout);
-                        promArr.push(_setIsAvailForWorkout(workout));
-                    });
-
-                    for (var i = 0; i < 5; i++) {
-                        var workoutToAdd = {
-                            status: ExerciseStatusEnum.NEW.enum,
-                            workoutOrder: workoutsArr.length + 1
-                        };
-                        workoutsArr.push(workoutToAdd);
-                        promArr.push(_setIsAvailForWorkout(workoutToAdd));
-                    }
-                    return $q.all(promArr).then(function () {
-                        return workoutsArr.sort(function (workout1, workout2) {
-                            return workout1.workoutOrder - workout2.workoutOrder;
-                        });
-                    });
-                });
-            };
-
-            this.getWorkoutData = function (workoutId) {
-                if (angular.isUndefined(workoutId)) {
-                    $log.error('workoutSrv: getWorkoutData function was invoked without workout id');
-                }
-                return _getWorkout(workoutId).then(function (workout) {
-                    if (workout) {
-                        var getExerciseProm;
-                        var exerciseTypeName = ExerciseTypeEnum.getValByEnum(workout.exerciseTypeId).toLowerCase();
-                        getExerciseProm = BaseExerciseGetterSrv.getExerciseByNameAndId(workout.exerciseId, exerciseTypeName);
-
-                        return {
-                            workoutId: workoutId,
-                            exerciseTypeId: workout.exerciseTypeId,
-                            exerciseProm: getExerciseProm,
-                            exerciseResultProm: ExerciseResultSrv.getExerciseResult(workout.exerciseTypeId, workout.exerciseId)
-                        };
-                    }
-                    return null;
-                });
-            };
-
-            this.setWorkout = function (workoutId, newWorkoutValue) {
-                return _getWorkoutsData().then(function (workoutsData) {
-                    var workoutKey = getWorkoutKey(workoutId);
-                    workoutsData.workouts[workoutKey] = newWorkoutValue;
-                    InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
-                        StudentStorageSrv.set(workoutsDataPath, workoutsData);
-                    });
-                });
-            };
-
-            this.getWorkoutKey = getWorkoutKey;
-        }]
-    );
-})(angular);
-
-angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.contentGetters').run(['$templateCache', function($templateCache) {
 
 }]);

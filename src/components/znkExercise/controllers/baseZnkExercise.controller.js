@@ -2,19 +2,16 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('BaseZnkExerciseController',
-        function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, ExerciseResultSrv, ZnkExerciseSrv, $filter,
-                  PopUpSrv, exerciseEventsConst, $rootScope, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum, SubjectEnum, znkAnalyticsSrv, $translatePartialLoader, $translate) {
+        function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, ExerciseResultSrv, ZnkExerciseSrv,
+                  $filter, PopUpSrv, exerciseEventsConst, $rootScope, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum, SubjectEnum,
+                  znkAnalyticsSrv, $translate, $log, StatsEventsHandlerSrv) {
             'ngInject';
 
             var exercise = exerciseData.exercise;
             var exerciseResult = exerciseData.exerciseResult;
             var exerciseTypeId = exerciseData.exerciseTypeId;
             var isSection = exerciseTypeId === ExerciseTypeEnum.SECTION.enum;
-
             var initSlideIndex;
-            if (!$scope.baseZnkExerciseCtrl) {
-                $scope.baseZnkExerciseCtrl = {};
-            }
 
             function getNumOfUnansweredQuestions(questionsResults) {
                 var numOfUnansweredQuestions = questionsResults.length;
@@ -27,7 +24,7 @@
                 });
                 return numOfUnansweredQuestions;
             }
-            
+
             function _getAllowedTimeForExercise() {
                 var allowedTimeMapByExercise = ZnkExerciseSrv.getAllowedTimeForQuestionByExercise();
                 var allowedTimeForQuestion = allowedTimeMapByExercise[exerciseTypeId];
@@ -35,6 +32,27 @@
                     return allowedTimeForQuestion * exercise.questions.length;
                 }
                 return exercise.time;
+            }
+
+            function _finishExercise() {
+                exerciseResult.isComplete = true;
+                exerciseResult.endedTime = Date.now();
+                exerciseResult.$save();
+
+                //  stats exercise data
+                StatsEventsHandlerSrv.addNewExerciseResult(exerciseTypeId, exercise, exerciseResult).then(function () {
+                    $scope.baseZnkExerciseCtrl.settings.viewMode = ZnkExerciseViewModeEnum.REVIEW.enum;
+
+                    var exerciseTypeValue = ExerciseTypeEnum.getValByEnum(exerciseData.exerciseTypeId).toLowerCase();
+                    var broadcastEventName = exerciseEventsConst[exerciseTypeValue].FINISH;
+                    $rootScope.$broadcast(broadcastEventName, exercise, exerciseResult, exerciseData.examData);
+
+                    $state.go('^.summary');
+                });
+            }
+
+            if (!$scope.baseZnkExerciseCtrl) {
+                $scope.baseZnkExerciseCtrl = {};
             }
 
             if (angular.isUndefined(exerciseResult.startedTime)) {
@@ -58,7 +76,6 @@
 
             $scope.baseZnkExerciseCtrl.exercise = exercise;
             $scope.baseZnkExerciseCtrl.resultsData = exerciseResult;
-
             $scope.baseZnkExerciseCtrl.numberOfQuestions = $scope.baseZnkExerciseCtrl.exercise.questions.length;
 
             var viewMode;
@@ -74,26 +91,28 @@
 
             var defExerciseSettings = {
                 onDone: function onDone() {
-                    
                     var numOfUnansweredQuestions = getNumOfUnansweredQuestions(exerciseResult.questionResults);
+
                     var areAllQuestionsAnsweredProm = $q.when(true);
                     if (numOfUnansweredQuestions) {
                         var contentProm = $translate('ZNK_EXERCISE.SOME_ANSWER_LEFT_CONTENT');
                         var titleProm = $translate('ZNK_EXERCISE.FINISH_TITLE');
                         var buttonGoToProm = $translate('ZNK_EXERCISE.GO_TO_SUMMARY_BTN');
                         var buttonStayProm = $translate('ZNK_EXERCISE.STAY_BTN');
-                        
-                        $q.all([contentProm, titleProm, buttonGoToProm, buttonStayProm]).then(function(results){
+
+                        $q.all([contentProm, titleProm, buttonGoToProm, buttonStayProm]).then(function (results) {
                             var content = results[0];
                             var title = results[1];
                             var buttonGoTo = results[2];
                             var buttonStay = results[3];
                             areAllQuestionsAnsweredProm = PopUpSrv.warning(title, content, buttonGoTo, buttonStay).promise;
-                            areAllQuestionsAnsweredProm.then(function () {
-                                // finishExercise(exerciseResult);
-                            });
+                        }, function (err) {
+                            $log.error(err);
                         });
                     }
+                    areAllQuestionsAnsweredProm.then(function () {
+                        _finishExercise(exerciseResult);
+                    });
                 },
                 onQuestionAnswered: function onQuestionAnswered() {
                     exerciseResult.$save();
@@ -130,13 +149,13 @@
             };
 
             $scope.baseZnkExerciseCtrl.onFinishTime = function () {
-                
+
                 var contentProm = $translate('ZNK_EXERCISE.TIME_UP_CONTENT');
                 var titleProm = $translate('ZNK_EXERCISE.TIME_UP_TITLE');
                 var buttonFinishProm = $translate('ZNK_EXERCISE.STOP');
                 var buttonContinueProm = $translate('ZNK_EXERCISE.CONTINUE_BTN');
 
-                $q.all([contentProm, titleProm, buttonFinishProm, buttonContinueProm]).then(function(results){
+                $q.all([contentProm, titleProm, buttonFinishProm, buttonContinueProm]).then(function (results) {
                     var content = results[0];
                     var title = results[1];
                     var buttonFinish = results[2];
@@ -144,7 +163,7 @@
                     var timeOverPopupPromise = PopUpSrv.ErrorConfirmation(title, content, buttonFinish, buttonContinue).promise;
 
                     timeOverPopupPromise.then(function () {
-                        // finishExercise(exerciseResult);
+                        _finishExercise(exerciseResult);
                     });
                 });
             };

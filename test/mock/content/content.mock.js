@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('content.mock', ['znk.infra.exerciseDataGetters'])
+    angular.module('content.mock', ['znk.infra.contentGetters'])
         .decorator('ContentSrv', function($delegate, $q){
             $delegate.getContent = function(data){
                 var retContent = content[data.exerciseType];

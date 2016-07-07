@@ -2,40 +2,42 @@
     'use strict';
 
     angular.module('znk.infra', [
-        'znk.infra.analytics',
-        'znk.infra.assignModule',
-        'znk.infra.auth',
-        'znk.infra.autofocus',
-        'znk.infra.config',
-        'znk.infra.content',
-        'znk.infra.contentAvail',
-        'znk.infra.deviceNotSupported',
-        'znk.infra.enum',
-        'znk.infra.estimatedScore',
-        'znk.infra.exams',
-        'znk.infra.exerciseDataGetters',
-        'znk.infra.exerciseResult',
-        'znk.infra.exerciseUtility',
-        'znk.infra.filters',
-        'znk.infra.general',
-        'znk.infra.hint',
-        'znk.infra.moduleResults',
-        'znk.infra.personalization',
-        'znk.infra.pngSequence',
-        'znk.infra.popUp',
-        'znk.infra.presence',
-        'znk.infra.scoring',
-        'znk.infra.scroll',
-        'znk.infra.sharedScss',
-        'znk.infra.stats',
-        'znk.infra.storage',
-        'znk.infra.svgIcon',
-        'znk.infra.user',
-        'znk.infra.utility',
-        'znk.infra.znkAudioPlayer',
-        'znk.infra.znkExercise',
-        'znk.infra.znkModule',
-        'znk.infra.znkTimeline'
+        //all modules will be injected here
+        "znk.infra.analytics",
+"znk.infra.assignModule",
+"znk.infra.auth",
+"znk.infra.autofocus",
+"znk.infra.config",
+"znk.infra.content",
+"znk.infra.contentAvail",
+"znk.infra.contentGetters",
+"znk.infra.deviceNotSupported",
+"znk.infra.enum",
+"znk.infra.estimatedScore",
+"znk.infra.exams",
+"znk.infra.exerciseResult",
+"znk.infra.exerciseUtility",
+"znk.infra.filters",
+"znk.infra.general",
+"znk.infra.hint",
+"znk.infra.moduleResults",
+"znk.infra.personalization",
+"znk.infra.pngSequence",
+"znk.infra.popUp",
+"znk.infra.presence",
+"znk.infra.scoring",
+"znk.infra.scroll",
+"znk.infra.sharedScss",
+"znk.infra.stats",
+"znk.infra.storage",
+"znk.infra.svgIcon",
+"znk.infra.user",
+"znk.infra.utility",
+"znk.infra.workouts",
+"znk.infra.znkAudioPlayer",
+"znk.infra.znkExercise",
+"znk.infra.znkModule",
+"znk.infra.znkTimeline"
     ]);
 })(angular);
 
@@ -131,6 +133,7 @@
 
             if(!eventsHandler) {
                 $log.error('znkAnalyticsSrv eventsHandler is missing!');
+                return api;
             }
 
             var eventsFn = $injector.invoke(eventsHandler);
@@ -920,6 +923,205 @@ angular.module('znk.infra.contentAvail').run(['$templateCache', function($templa
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.contentGetters', [
+        'znk.infra.config',
+        'znk.infra.content',
+        'znk.infra.exerciseUtility'
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.contentGetters').factory('BaseExerciseGetterSrv',
+        ["ContentSrv", "$log", "$q", "ExerciseTypeEnum", function (ContentSrv, $log, $q, ExerciseTypeEnum) {
+            'ngInject';
+
+            function BaseExerciseGetterSrv(exerciseTypeName) {
+                this.typeName = exerciseTypeName;
+            }
+
+            BaseExerciseGetterSrv.getExerciseByNameAndId = function (exerciseTypeName, exerciseId) {
+                var context = {
+                    typeName: exerciseTypeName
+                };
+                return BaseExerciseGetterSrvPrototype.get.call(context, exerciseId);
+            };
+
+            BaseExerciseGetterSrv.getExerciseByTypeAndId = function (exerciseTypeId, exerciseId) {
+                var exerciseTypeName = ExerciseTypeEnum.getValByEnum(exerciseTypeId).toLowerCase();
+                return BaseExerciseGetterSrv.getExerciseByNameAndId(exerciseTypeName, exerciseId);
+            };
+
+            var BaseExerciseGetterSrvPrototype = {};
+
+            BaseExerciseGetterSrvPrototype.get = function (exerciseId) {
+                var contentData = {
+                    exerciseId: exerciseId,
+                    exerciseType: this.typeName
+                };
+
+                return ContentSrv.getContent(contentData).then(function (result) {
+                    return angular.fromJson(result);
+                }, function (err) {
+                    if (err) {
+                        $log.error(err);
+                        return $q.reject(err);
+                    }
+                });
+            };
+
+            BaseExerciseGetterSrvPrototype.getAll = function () {
+                var self = this;
+                var resultsProm = [];
+                return ContentSrv.getAllContentIdsByKey(self.typeName).then(function (results) {
+                    angular.forEach(results, function (keyValue) {
+                        resultsProm.push(self.getContent({
+                            exerciseType: keyValue
+                        }));
+                    });
+                    return $q.all(resultsProm);
+                }, function (err) {
+                    if (err) {
+                        $log.error(err);
+                        return $q.reject(err);
+                    }
+                });
+            };
+
+            BaseExerciseGetterSrv.prototype = BaseExerciseGetterSrvPrototype;
+
+            return BaseExerciseGetterSrv;
+        }]
+    );
+})(angular);
+
+'use strict';
+
+angular.module('znk.infra.contentGetters').service('CategoryService', ["StorageRevSrv", "$q", "categoryEnum", function (StorageRevSrv, $q, categoryEnum)  {
+        'ngInject';
+
+        var self = this;
+        this.get = function () {
+            return StorageRevSrv.getContent({ exerciseType: 'category' });
+        };
+
+        var categoryMapObj;
+        this.getCategoryMap = function () {
+            if (categoryMapObj) {
+                return $q.when(categoryMapObj);
+            }
+            return self.get().then(function (categories) {
+                var categoryMap = {};
+                angular.forEach(categories, function (item) {
+                    categoryMap[item.id] = item;
+                });
+                categoryMapObj = categoryMap;
+                return categoryMapObj;
+            });
+        };
+
+        self.getCategoryData = function (categoryId) {
+            return self.getCategoryMap().then(function (categoryMap) {
+                return categoryMap[categoryId];
+            });
+        };
+
+        self.getParentCategory = function (categoryId) {
+            return self.getCategoryMap().then(function (categories) {
+                var parentId = categories[categoryId].parentId;
+                return categories[parentId];
+            });
+        };
+
+        self.getCategoryLevel1Parent = function (category) {
+            if (category.typeId === categoryEnum.SUBJECT.enum) {
+                return $q.when(category.id);
+            }
+            return self.getParentCategory(category.id).then(function (parentCategory) {
+                return self.getCategoryLevel1Parent(parentCategory);
+            });
+        };
+
+
+        self.getCategoryLevel2Parent = function (categoryId) {
+            return self.getCategoryMap().then(function (categories) {
+                var category = categories[categoryId];
+                if (categoryEnum.TEST_SCORE.enum === category.typeId) {
+                    return category;
+                }
+                return self.getCategoryLevel2Parent(category.parentId);
+            });
+        };
+
+        self.getAllLevel3Categories = (function () {
+            var getAllLevel3CategoriesProm;
+            return function () {
+                if (!getAllLevel3CategoriesProm) {
+                    getAllLevel3CategoriesProm = self.getCategoryMap().then(function (categories) {
+                        var generalCategories = {};
+                        angular.forEach(categories, function (category) {
+                            if (category.typeId === categoryEnum.GENERAL.enum) {
+                                generalCategories[category.id] = category;
+                            }
+                        });
+                        return generalCategories;
+                    });
+                }
+                return getAllLevel3CategoriesProm;
+            };
+        })();
+
+        self.getAllLevel3CategoriesGroupedByLevel1 = (function () {
+            var getAllLevel3CategoriesGroupedByLevel1Prom;
+            return function (subjectId) {
+                if (!getAllLevel3CategoriesGroupedByLevel1Prom) {
+                    getAllLevel3CategoriesGroupedByLevel1Prom = self.getAllLevel3Categories().then(function (categories) {
+                        var generalCategories = {};
+                        var promArray = [];
+                        angular.forEach(categories, function (generalCategory) {
+                            var prom = self.getCategoryLevel1Parent(generalCategory).then(function (currentCategorySubjectId) {
+                                if (currentCategorySubjectId === subjectId) {
+                                    generalCategories[generalCategory.id] = generalCategory;
+                                }
+                            });
+                            promArray.push(prom);
+                        });
+                        return $q.all(promArray).then(function () {
+                            return generalCategories;
+                        });
+                    });
+                }
+                return getAllLevel3CategoriesGroupedByLevel1Prom;
+            };
+        })();
+
+        self.getAllLevel4Categories = (function () {
+            var getAllLevel4CategoriessProm;
+            return function () {
+                if (!getAllLevel4CategoriessProm) {
+                    getAllLevel4CategoriessProm = self.getCategoryMap().then(function (categories) {
+                        var specificCategories = {};
+                        angular.forEach(categories, function (category) {
+                            if (category.typeId === categoryEnum.SPECIFIC.enum) {
+                                specificCategories[category.id] = category;
+                            }
+                        });
+                        return specificCategories;
+                    });
+                }
+                return getAllLevel4CategoriessProm;
+            };
+        })();
+}]);
+
+angular.module('znk.infra.contentGetters').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.deviceNotSupported', []);
 })(angular);
 
@@ -1613,297 +1815,6 @@ angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "Co
 }]);
 
 angular.module('znk.infra.exams').run(['$templateCache', function($templateCache) {
-
-}]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.exerciseDataGetters', [
-        'znk.infra.config',
-        'znk.infra.content',
-        'znk.infra.exerciseUtility'
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.exerciseDataGetters').factory('BaseExerciseGetterSrv',
-        ["ContentSrv", "$log", "$q", function (ContentSrv, $log, $q) {
-            'ngInject';
-            
-            var BaseExerciseGetterSrvPrototype = {};
-
-            BaseExerciseGetterSrvPrototype.get = function (exerciseId) {
-                var contentData = {
-                    exerciseId: exerciseId,
-                    exerciseType: this.typeName
-                };
-
-                return ContentSrv.getContent(contentData).then(function (result) {
-                    return angular.fromJson(result);
-                }, function (err) {
-                    if (err) {
-                        $log.error(err);
-                        return $q.reject(err);
-                    }
-                });
-            };
-
-            BaseExerciseGetterSrvPrototype.getAll = function(){
-                var self = this;
-                var resultsProm = [];
-                return ContentSrv.getAllContentIdsByKey(self.typeName).then(function (results) {
-                    angular.forEach(results, function (keyValue) {
-                        resultsProm.push(self.getContent({
-                            exerciseType: keyValue
-                        }));
-                    });
-                    return $q.all(resultsProm);
-                }, function (err) {
-                    if (err) {
-                        $log.error(err);
-                        return $q.reject(err);
-                    }
-                });
-            };
-
-            function BaseExerciseGetterSrv(exerciseTypeName) {
-                this.typeName = exerciseTypeName;
-            }
-
-            BaseExerciseGetterSrv.getExerciseByNameAndId = function(exerciseId, exerciseTypeName){
-                var context = {
-                    typeName: exerciseTypeName
-                };
-                return BaseExerciseGetterSrvPrototype.get.call(context,exerciseId);
-            };
-
-            BaseExerciseGetterSrv.prototype = BaseExerciseGetterSrvPrototype;
-
-            return BaseExerciseGetterSrv;
-        }]
-    );
-})(angular);
-
-'use strict';
-
-angular.module('znk.infra.exerciseDataGetters').service('CategoryService', ["StorageRevSrv", "$q", "categoryEnum", function (StorageRevSrv, $q, categoryEnum)  {
-        'ngInject';
-
-        var self = this;
-        this.get = function () {
-            return StorageRevSrv.getContent({ exerciseType: 'category' });
-        };
-
-        var categoryMapObj;
-        this.getCategoryMap = function () {
-            if (categoryMapObj) {
-                return $q.when(categoryMapObj);
-            }
-            return self.get().then(function (categories) {
-                var categoryMap = {};
-                angular.forEach(categories, function (item) {
-                    categoryMap[item.id] = item;
-                });
-                categoryMapObj = categoryMap;
-                return categoryMapObj;
-            });
-        };
-
-        self.getCategoryData = function (categoryId) {
-            return self.getCategoryMap().then(function (categoryMap) {
-                return categoryMap[categoryId];
-            });
-        };
-
-        self.getParentCategory = function (categoryId) {
-            return self.getCategoryMap().then(function (categories) {
-                var parentId = categories[categoryId].parentId;
-                return categories[parentId];
-            });
-        };
-
-        self.getCategoryLevel1Parent = function (category) {
-            if (category.typeId === categoryEnum.SUBJECT.enum) {
-                return $q.when(category.id);
-            }
-            return self.getParentCategory(category.id).then(function (parentCategory) {
-                return self.getCategoryLevel1Parent(parentCategory);
-            });
-        };
-
-
-        self.getCategoryLevel2Parent = function (categoryId) {
-            return self.getCategoryMap().then(function (categories) {
-                var category = categories[categoryId];
-                if (categoryEnum.TEST_SCORE.enum === category.typeId) {
-                    return category;
-                }
-                return self.getCategoryLevel2Parent(category.parentId);
-            });
-        };
-
-        self.getAllLevel3Categories = (function () {
-            var getAllLevel3CategoriesProm;
-            return function () {
-                if (!getAllLevel3CategoriesProm) {
-                    getAllLevel3CategoriesProm = self.getCategoryMap().then(function (categories) {
-                        var generalCategories = {};
-                        angular.forEach(categories, function (category) {
-                            if (category.typeId === categoryEnum.GENERAL.enum) {
-                                generalCategories[category.id] = category;
-                            }
-                        });
-                        return generalCategories;
-                    });
-                }
-                return getAllLevel3CategoriesProm;
-            };
-        })();
-
-        self.getAllLevel3CategoriesGroupedByLevel1 = (function () {
-            var getAllLevel3CategoriesGroupedByLevel1Prom;
-            return function (subjectId) {
-                if (!getAllLevel3CategoriesGroupedByLevel1Prom) {
-                    getAllLevel3CategoriesGroupedByLevel1Prom = self.getAllLevel3Categories().then(function (categories) {
-                        var generalCategories = {};
-                        var promArray = [];
-                        angular.forEach(categories, function (generalCategory) {
-                            var prom = self.getCategoryLevel1Parent(generalCategory).then(function (currentCategorySubjectId) {
-                                if (currentCategorySubjectId === subjectId) {
-                                    generalCategories[generalCategory.id] = generalCategory;
-                                }
-                            });
-                            promArray.push(prom);
-                        });
-                        return $q.all(promArray).then(function () {
-                            return generalCategories;
-                        });
-                    });
-                }
-                return getAllLevel3CategoriesGroupedByLevel1Prom;
-            };
-        })();
-
-        self.getAllLevel4Categories = (function () {
-            var getAllLevel4CategoriessProm;
-            return function () {
-                if (!getAllLevel4CategoriessProm) {
-                    getAllLevel4CategoriessProm = self.getCategoryMap().then(function (categories) {
-                        var specificCategories = {};
-                        angular.forEach(categories, function (category) {
-                            if (category.typeId === categoryEnum.SPECIFIC.enum) {
-                                specificCategories[category.id] = category;
-                            }
-                        });
-                        return specificCategories;
-                    });
-                }
-                return getAllLevel4CategoriessProm;
-            };
-        })();
-}]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.exerciseDataGetters').service('WorkoutsSrv',
-        ["ExerciseStatusEnum", "ExerciseTypeEnum", "$log", "StorageSrv", "ExerciseResultSrv", "ContentAvailSrv", "$q", "InfraConfigSrv", "BaseExerciseGetterSrv", function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
-                  InfraConfigSrv, BaseExerciseGetterSrv) {
-            'ngInject';
-
-            var workoutsDataPath = StorageSrv.variables.appUserSpacePath + '/workouts';
-
-            function _getWorkoutsData() {
-                var defaultValue = {
-                    workouts: {}
-                };
-                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
-                    return StudentStorageSrv.get(workoutsDataPath, defaultValue);
-                });
-            }
-
-            function getWorkoutKey(workoutId) {
-                return 'workout_' + workoutId;
-            }
-
-            function _getWorkout(workoutId) {
-                var workoutKey = getWorkoutKey(workoutId);
-                return _getWorkoutsData().then(function (workoutsData) {
-                    return workoutsData.workouts[workoutKey];
-                });
-            }
-
-            function _setIsAvailForWorkout(workout) {
-                return ContentAvailSrv.isDailyAvail(workout.workoutOrder).then(function (isAvail) {
-                    workout.isAvail = isAvail;
-                });
-            }
-
-            this.getAllWorkouts = function () {
-                return _getWorkoutsData().then(function (workoutsData) {
-                    var workoutsArr = [],
-                        promArr = [];
-                    angular.forEach(workoutsData.workouts, function (workout) {
-                        workoutsArr.push(workout);
-                        promArr.push(_setIsAvailForWorkout(workout));
-                    });
-
-                    for (var i = 0; i < 5; i++) {
-                        var workoutToAdd = {
-                            status: ExerciseStatusEnum.NEW.enum,
-                            workoutOrder: workoutsArr.length + 1
-                        };
-                        workoutsArr.push(workoutToAdd);
-                        promArr.push(_setIsAvailForWorkout(workoutToAdd));
-                    }
-                    return $q.all(promArr).then(function () {
-                        return workoutsArr.sort(function (workout1, workout2) {
-                            return workout1.workoutOrder - workout2.workoutOrder;
-                        });
-                    });
-                });
-            };
-
-            this.getWorkoutData = function (workoutId) {
-                if (angular.isUndefined(workoutId)) {
-                    $log.error('workoutSrv: getWorkoutData function was invoked without workout id');
-                }
-                return _getWorkout(workoutId).then(function (workout) {
-                    if (workout) {
-                        var getExerciseProm;
-                        var exerciseTypeName = ExerciseTypeEnum.getValByEnum(workout.exerciseTypeId).toLowerCase();
-                        getExerciseProm = BaseExerciseGetterSrv.getExerciseByNameAndId(workout.exerciseId, exerciseTypeName);
-
-                        return {
-                            workoutId: workoutId,
-                            exerciseTypeId: workout.exerciseTypeId,
-                            exerciseProm: getExerciseProm,
-                            exerciseResultProm: ExerciseResultSrv.getExerciseResult(workout.exerciseTypeId, workout.exerciseId)
-                        };
-                    }
-                    return null;
-                });
-            };
-
-            this.setWorkout = function (workoutId, newWorkoutValue) {
-                return _getWorkoutsData().then(function (workoutsData) {
-                    var workoutKey = getWorkoutKey(workoutId);
-                    workoutsData.workouts[workoutKey] = newWorkoutValue;
-                    InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
-                        StudentStorageSrv.set(workoutsDataPath, workoutsData);
-                    });
-                });
-            };
-
-            this.getWorkoutKey = getWorkoutKey;
-        }]
-    );
-})(angular);
-
-angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -4364,7 +4275,7 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
             'znk.infra.enum',
             'znk.infra.znkExercise',
             'znk.infra.utility',
-            'znk.infra.exerciseDataGetters'
+            'znk.infra.contentGetters'
         ])
         .run([
             'StatsEventsHandlerSrv',
@@ -5390,6 +5301,104 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.workouts', [
+        'znk.infra.exerciseUtility',
+        'znk.infra.config',
+        'znk.infra.exerciseResult',
+        'znk.infra.contentAvail'
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.contentGetters').service('WorkoutsSrv',
+        ["ExerciseStatusEnum", "ExerciseTypeEnum", "$log", "StorageSrv", "ExerciseResultSrv", "ContentAvailSrv", "$q", "InfraConfigSrv", function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
+                  InfraConfigSrv) {
+            'ngInject';
+
+            var workoutsDataPath = StorageSrv.variables.appUserSpacePath + '/workouts';
+
+            function _getWorkoutsData() {
+                var defaultValue = {
+                    workouts: {}
+                };
+                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                    return StudentStorageSrv.get(workoutsDataPath, defaultValue);
+                });
+            }
+
+            function getWorkoutKey(workoutId) {
+                return 'workout_' + workoutId;
+            }
+
+            function _getWorkout(workoutId) {
+                var workoutKey = getWorkoutKey(workoutId);
+                return _getWorkoutsData().then(function (workoutsData) {
+                    return workoutsData.workouts[workoutKey];
+                });
+            }
+
+            function _setIsAvailForWorkout(workout) {
+                return ContentAvailSrv.isDailyAvail(workout.workoutOrder).then(function (isAvail) {
+                    workout.isAvail = isAvail;
+                });
+            }
+
+            this.getAllWorkouts = function () {
+                return _getWorkoutsData().then(function (workoutsData) {
+                    var workoutsArr = [],
+                        promArr = [];
+                    angular.forEach(workoutsData.workouts, function (workout) {
+                        workoutsArr.push(workout);
+                        promArr.push(_setIsAvailForWorkout(workout));
+                    });
+
+                    for (var i = 0; i < 5; i++) {
+                        var workoutToAdd = {
+                            status: ExerciseStatusEnum.NEW.enum,
+                            workoutOrder: workoutsArr.length + 1
+                        };
+                        workoutsArr.push(workoutToAdd);
+                        promArr.push(_setIsAvailForWorkout(workoutToAdd));
+                    }
+                    return $q.all(promArr).then(function () {
+                        return workoutsArr.sort(function (workout1, workout2) {
+                            return workout1.workoutOrder - workout2.workoutOrder;
+                        });
+                    });
+                });
+            };
+
+            this.getWorkoutData = function (workoutId) {
+                if (angular.isUndefined(workoutId)) {
+                    $log.error('workoutSrv: getWorkoutData function was invoked without workout id');
+                }
+                return _getWorkout(workoutId);
+            };
+
+            this.setWorkout = function (workoutId, newWorkoutValue) {
+                return _getWorkoutsData().then(function (workoutsData) {
+                    var workoutKey = getWorkoutKey(workoutId);
+                    workoutsData.workouts[workoutKey] = newWorkoutValue;
+                    InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                        StudentStorageSrv.set(workoutsDataPath, workoutsData);
+                    });
+                });
+            };
+
+            this.getWorkoutKey = getWorkoutKey;
+        }]
+    );
+})(angular);
+
+angular.module('znk.infra.workouts').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.znkAudioPlayer', [
         'znk.infra.svgIcon'
     ])
@@ -6187,11 +6196,14 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkExercise', [
+        'ngAnimate',
+        'pascalprecht.translate',
         'znk.infra.svgIcon',
         'znk.infra.scroll',
         'znk.infra.autofocus',
         'znk.infra.exerciseUtility',
-        'ngAnimate'
+        'znk.infra.analytics',
+        'znk.infra.popUp'
     ])
         .config([
             'SvgIconSrvProvider',
@@ -6203,7 +6215,12 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     arrow: 'components/znkExercise/svg/arrow-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
-            }]);
+            }])
+        .run(["$translatePartialLoader", function ($translatePartialLoader) {
+            'ngInject';
+
+            $translatePartialLoader.addPart('znkExercise');
+        }]);
 })(angular);
 
 /**
@@ -6466,19 +6483,16 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('BaseZnkExerciseController',
-        ["$scope", "exerciseData", "exerciseSettings", "$state", "$q", "ExerciseTypeEnum", "$location", "ExerciseResultSrv", "ZnkExerciseSrv", "$filter", "PopUpSrv", "exerciseEventsConst", "$rootScope", "ZnkExerciseUtilitySrv", "ZnkExerciseViewModeEnum", "SubjectEnum", "znkAnalyticsSrv", "$translatePartialLoader", "$translate", function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, ExerciseResultSrv, ZnkExerciseSrv, $filter,
-                  PopUpSrv, exerciseEventsConst, $rootScope, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum, SubjectEnum, znkAnalyticsSrv, $translatePartialLoader, $translate) {
+        ["$scope", "exerciseData", "exerciseSettings", "$state", "$q", "ExerciseTypeEnum", "$location", "ExerciseResultSrv", "ZnkExerciseSrv", "$filter", "PopUpSrv", "exerciseEventsConst", "$rootScope", "ZnkExerciseUtilitySrv", "ZnkExerciseViewModeEnum", "SubjectEnum", "znkAnalyticsSrv", "$translate", "$log", "StatsEventsHandlerSrv", function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, ExerciseResultSrv, ZnkExerciseSrv,
+                  $filter, PopUpSrv, exerciseEventsConst, $rootScope, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum, SubjectEnum,
+                  znkAnalyticsSrv, $translate, $log, StatsEventsHandlerSrv) {
             'ngInject';
 
             var exercise = exerciseData.exercise;
             var exerciseResult = exerciseData.exerciseResult;
             var exerciseTypeId = exerciseData.exerciseTypeId;
             var isSection = exerciseTypeId === ExerciseTypeEnum.SECTION.enum;
-
             var initSlideIndex;
-            if (!$scope.baseZnkExerciseCtrl) {
-                $scope.baseZnkExerciseCtrl = {};
-            }
 
             function getNumOfUnansweredQuestions(questionsResults) {
                 var numOfUnansweredQuestions = questionsResults.length;
@@ -6491,7 +6505,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 });
                 return numOfUnansweredQuestions;
             }
-            
+
             function _getAllowedTimeForExercise() {
                 var allowedTimeMapByExercise = ZnkExerciseSrv.getAllowedTimeForQuestionByExercise();
                 var allowedTimeForQuestion = allowedTimeMapByExercise[exerciseTypeId];
@@ -6499,6 +6513,27 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     return allowedTimeForQuestion * exercise.questions.length;
                 }
                 return exercise.time;
+            }
+
+            function _finishExercise() {
+                exerciseResult.isComplete = true;
+                exerciseResult.endedTime = Date.now();
+                exerciseResult.$save();
+
+                //  stats exercise data
+                StatsEventsHandlerSrv.addNewExerciseResult(exerciseTypeId, exercise, exerciseResult).then(function () {
+                    $scope.baseZnkExerciseCtrl.settings.viewMode = ZnkExerciseViewModeEnum.REVIEW.enum;
+
+                    var exerciseTypeValue = ExerciseTypeEnum.getValByEnum(exerciseData.exerciseTypeId).toLowerCase();
+                    var broadcastEventName = exerciseEventsConst[exerciseTypeValue].FINISH;
+                    $rootScope.$broadcast(broadcastEventName, exercise, exerciseResult, exerciseData.examData);
+
+                    $state.go('^.summary');
+                });
+            }
+
+            if (!$scope.baseZnkExerciseCtrl) {
+                $scope.baseZnkExerciseCtrl = {};
             }
 
             if (angular.isUndefined(exerciseResult.startedTime)) {
@@ -6522,7 +6557,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
             $scope.baseZnkExerciseCtrl.exercise = exercise;
             $scope.baseZnkExerciseCtrl.resultsData = exerciseResult;
-
             $scope.baseZnkExerciseCtrl.numberOfQuestions = $scope.baseZnkExerciseCtrl.exercise.questions.length;
 
             var viewMode;
@@ -6538,26 +6572,28 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
             var defExerciseSettings = {
                 onDone: function onDone() {
-                    
                     var numOfUnansweredQuestions = getNumOfUnansweredQuestions(exerciseResult.questionResults);
+
                     var areAllQuestionsAnsweredProm = $q.when(true);
                     if (numOfUnansweredQuestions) {
                         var contentProm = $translate('ZNK_EXERCISE.SOME_ANSWER_LEFT_CONTENT');
                         var titleProm = $translate('ZNK_EXERCISE.FINISH_TITLE');
                         var buttonGoToProm = $translate('ZNK_EXERCISE.GO_TO_SUMMARY_BTN');
                         var buttonStayProm = $translate('ZNK_EXERCISE.STAY_BTN');
-                        
-                        $q.all([contentProm, titleProm, buttonGoToProm, buttonStayProm]).then(function(results){
+
+                        $q.all([contentProm, titleProm, buttonGoToProm, buttonStayProm]).then(function (results) {
                             var content = results[0];
                             var title = results[1];
                             var buttonGoTo = results[2];
                             var buttonStay = results[3];
                             areAllQuestionsAnsweredProm = PopUpSrv.warning(title, content, buttonGoTo, buttonStay).promise;
-                            areAllQuestionsAnsweredProm.then(function () {
-                                // finishExercise(exerciseResult);
-                            });
+                        }, function (err) {
+                            $log.error(err);
                         });
                     }
+                    areAllQuestionsAnsweredProm.then(function () {
+                        _finishExercise(exerciseResult);
+                    });
                 },
                 onQuestionAnswered: function onQuestionAnswered() {
                     exerciseResult.$save();
@@ -6594,13 +6630,13 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             };
 
             $scope.baseZnkExerciseCtrl.onFinishTime = function () {
-                
+
                 var contentProm = $translate('ZNK_EXERCISE.TIME_UP_CONTENT');
                 var titleProm = $translate('ZNK_EXERCISE.TIME_UP_TITLE');
                 var buttonFinishProm = $translate('ZNK_EXERCISE.STOP');
                 var buttonContinueProm = $translate('ZNK_EXERCISE.CONTINUE_BTN');
 
-                $q.all([contentProm, titleProm, buttonFinishProm, buttonContinueProm]).then(function(results){
+                $q.all([contentProm, titleProm, buttonFinishProm, buttonContinueProm]).then(function (results) {
                     var content = results[0];
                     var title = results[1];
                     var buttonFinish = results[2];
@@ -6608,7 +6644,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     var timeOverPopupPromise = PopUpSrv.ErrorConfirmation(title, content, buttonFinish, buttonContinue).promise;
 
                     timeOverPopupPromise.then(function () {
-                        // finishExercise(exerciseResult);
+                        _finishExercise(exerciseResult);
                     });
                 });
             };
@@ -8564,7 +8600,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 });
 
                 angular.forEach(questions, function (question) {
-                    if (!groupDataMap[question.groupDataId]) {
+                    if (question.groupDataId && !groupDataMap[question.groupDataId]) {
                         $log.debug('Group data is missing for the following question id ' + question.id);
                     }
 
