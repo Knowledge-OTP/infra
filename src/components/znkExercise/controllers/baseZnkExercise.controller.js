@@ -55,7 +55,7 @@
             if (!$scope.baseZnkExerciseCtrl) {
                 $scope.baseZnkExerciseCtrl = {};
             }
-            
+
             if (angular.isUndefined(exerciseResult.startedTime)) {
                 exerciseResult.startedTime = Date.now();
             }
@@ -93,6 +93,7 @@
             var defExerciseSettings = {
                 onDone: function onDone() {
                     var numOfUnansweredQuestions = getNumOfUnansweredQuestions(exerciseResult.questionResults);
+
                     var areAllQuestionsAnsweredProm = $q.when(true);
                     if (numOfUnansweredQuestions) {
                         var contentProm = $translate('ZNK_EXERCISE.SOME_ANSWER_LEFT_CONTENT');
@@ -109,11 +110,10 @@
                         }, function (err) {
                             $log.error(err);
                         });
-                        
-                        areAllQuestionsAnsweredProm.then(function () {
-                            _finishExercise(exerciseResult);
-                        });
                     }
+                    areAllQuestionsAnsweredProm.then(function () {
+                        _finishExercise(exerciseResult);
+                    });
                 },
                 onQuestionAnswered: function onQuestionAnswered() {
                     exerciseResult.$save();
