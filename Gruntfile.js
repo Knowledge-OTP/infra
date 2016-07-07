@@ -189,13 +189,13 @@ module.exports = function (grunt) {
                 files: [
                     'src/**/*.js'
                 ],
-                tasks: ['prepareConfiguration', 'concat:build', 'concat:mainModule']
+                tasks: ['build']
             },
             html: {
                 files: [
                     'src/**/*.{html,svg}'
                 ],
-                tasks: ['prepareConfiguration', 'html2js']
+                tasks: ['build']
             },
             demo: {
                 files: [
@@ -210,7 +210,7 @@ module.exports = function (grunt) {
             },
             assets: {
                 files: ['<%= yeoman.src %>/**/locale/*.json', '<%= yeoman.src %>/**/*.{png}'],
-                tasks: ['copy:build']
+                tasks: ['build']
             },
             wiredep: {
                 files: ['bower.json'],
