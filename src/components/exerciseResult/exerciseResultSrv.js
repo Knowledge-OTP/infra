@@ -345,7 +345,7 @@
                 return _getExercisesStatusData();
             };
 
-            this.getModuleExerciseResults = function (moduleId, exerciseTypeId, exerciseId, dontInitialize) {
+            this.getModuleExerciseResults = function (userId, moduleId, exerciseTypeId, exerciseId, dontInitialize) {
                 if(!UtilitySrv.fn.isValidNumber(exerciseTypeId) || !UtilitySrv.fn.isValidNumber(exerciseId)){
                     var errMSg = 'ExerciseResultSrv: exercise type id, exercise id should be number !!!';
                     $log.error(errMSg);
@@ -354,14 +354,14 @@
                 exerciseTypeId = +exerciseTypeId;
                 exerciseId = +exerciseId;
 
-                if(UtilitySrv.fn.isValidNumber(moduleId)){
+                if(!UtilitySrv.fn.isValidNumber(moduleId)){
                     var examErrMSg = 'ExerciseResultSrv: module id should be provided when asking for exercise result and should be a number!!!';
                     $log.error(examErrMSg);
                     return $q.reject(examErrMSg);
                 }
                 moduleId = +moduleId;
 
-                return $q.all([ModuleResultsService.getModuleResultByModuleId(moduleId), _getExerciseResultsGuids()]).then(function (results) {
+                return $q.all([ModuleResultsService.getModuleResultByModuleId(moduleId, userId), _getExerciseResultsGuids()]).then(function (results) {
                     var moduleResultsObj = results[0];
                     var exerciseResultsGuids = results[1];
                     var resultGuid = exerciseResultsGuids[exerciseTypeId] && exerciseResultsGuids[exerciseTypeId][exerciseId];
