@@ -24,7 +24,7 @@
             }])
         .run(function ($translatePartialLoader) {
             'ngInject';
-            
-            $translatePartialLoader.addPart('general');
+
+            $translatePartialLoader.addPart('znkExercise');
         });
 })(angular);
