@@ -19,7 +19,7 @@
                 return {
                     moduleId: moduleId,
                     uid: userId,
-                    tutorId: null,
+                    assignedTutorId: null,
                     assign: false,
                     contentAssign: false,
                     guid: UtilitySrv.general.createGuid()
