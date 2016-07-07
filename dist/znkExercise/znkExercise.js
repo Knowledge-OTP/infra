@@ -284,8 +284,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('BaseZnkExerciseController',
-        ["$scope", "exerciseData", "exerciseSettings", "$state", "$q", "ExerciseTypeEnum", "$location", "ExerciseResultSrv", "ZnkExerciseSrv", "$filter", "PopUpSrv", "exerciseEventsConst", "$rootScope", "ZnkExerciseUtilitySrv", "ZnkExerciseViewModeEnum", "SubjectEnum", "znkAnalyticsSrv", "$translatePartialLoader", "$translate", function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, ExerciseResultSrv, ZnkExerciseSrv, $filter,
-                  PopUpSrv, exerciseEventsConst, $rootScope, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum, SubjectEnum, znkAnalyticsSrv, $translatePartialLoader, $translate) {
+        ["$scope", "exerciseData", "exerciseSettings", "$state", "$q", "ExerciseTypeEnum", "$location", "ExerciseResultSrv", "ZnkExerciseSrv", "$filter", "PopUpSrv", "exerciseEventsConst", "$rootScope", "ZnkExerciseUtilitySrv", "ZnkExerciseViewModeEnum", "SubjectEnum", "znkAnalyticsSrv", "$translatePartialLoader", "$translate", "$log", function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, ExerciseResultSrv, ZnkExerciseSrv, $filter,
+                  PopUpSrv, exerciseEventsConst, $rootScope, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum, SubjectEnum, znkAnalyticsSrv, $translatePartialLoader, $translate,$log) {
             'ngInject';
 
             var exercise = exerciseData.exercise;
@@ -309,7 +309,7 @@
                 });
                 return numOfUnansweredQuestions;
             }
-            
+
             function _getAllowedTimeForExercise() {
                 var allowedTimeMapByExercise = ZnkExerciseSrv.getAllowedTimeForQuestionByExercise();
                 var allowedTimeForQuestion = allowedTimeMapByExercise[exerciseTypeId];
@@ -356,7 +356,6 @@
 
             var defExerciseSettings = {
                 onDone: function onDone() {
-                    
                     var numOfUnansweredQuestions = getNumOfUnansweredQuestions(exerciseResult.questionResults);
                     var areAllQuestionsAnsweredProm = $q.when(true);
                     if (numOfUnansweredQuestions) {
@@ -364,7 +363,7 @@
                         var titleProm = $translate('ZNK_EXERCISE.FINISH_TITLE');
                         var buttonGoToProm = $translate('ZNK_EXERCISE.GO_TO_SUMMARY_BTN');
                         var buttonStayProm = $translate('ZNK_EXERCISE.STAY_BTN');
-                        
+
                         $q.all([contentProm, titleProm, buttonGoToProm, buttonStayProm]).then(function(results){
                             var content = results[0];
                             var title = results[1];
@@ -374,6 +373,8 @@
                             areAllQuestionsAnsweredProm.then(function () {
                                 // finishExercise(exerciseResult);
                             });
+                        },function(err){
+                            $log.error(err);
                         });
                     }
                 },
@@ -412,7 +413,7 @@
             };
 
             $scope.baseZnkExerciseCtrl.onFinishTime = function () {
-                
+
                 var contentProm = $translate('ZNK_EXERCISE.TIME_UP_CONTENT');
                 var titleProm = $translate('ZNK_EXERCISE.TIME_UP_TITLE');
                 var buttonFinishProm = $translate('ZNK_EXERCISE.STOP');

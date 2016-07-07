@@ -14,7 +14,7 @@
     angular.module('znk.infra.exerciseDataGetters').factory('BaseExerciseGetterSrv',
         ["ContentSrv", "$log", "$q", function (ContentSrv, $log, $q) {
             'ngInject';
-            
+
             var BaseExerciseGetterSrvPrototype = {};
 
             BaseExerciseGetterSrvPrototype.get = function (exerciseId) {
