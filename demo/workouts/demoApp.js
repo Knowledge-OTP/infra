@@ -27,7 +27,7 @@
             $scope.getWorkoutData = function () {
                 var workoutId = $scope.workoutIdToRetrieveData;
                 return WorkoutsSrv.getWorkoutData(workoutId).then(function (workoutData) {
-                    return BaseExerciseGetterSrv.getExerciseByTypeAndId(workoutData.exerciseId, workoutData.exerciseTypeId).then(function (exerciseContent) {
+                    return BaseExerciseGetterSrv.getExerciseByTypeAndId(workoutData.exerciseTypeId, workoutData.exerciseId).then(function (exerciseContent) {
                         $scope.exerciseContent = exerciseContent;
                     });
                 });

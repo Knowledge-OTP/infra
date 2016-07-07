@@ -9,16 +9,16 @@
                 this.typeName = exerciseTypeName;
             }
 
-            BaseExerciseGetterSrv.getExerciseByNameAndId = function (exerciseId, exerciseTypeName) {
+            BaseExerciseGetterSrv.getExerciseByNameAndId = function (exerciseTypeName, exerciseId) {
                 var context = {
                     typeName: exerciseTypeName
-                }; 
+                };
                 return BaseExerciseGetterSrvPrototype.get.call(context, exerciseId);
             };
 
-            BaseExerciseGetterSrv.getExerciseByTypeAndId = function (exerciseId, exerciseTypeId) {
+            BaseExerciseGetterSrv.getExerciseByTypeAndId = function (exerciseTypeId, exerciseId) {
                 var exerciseTypeName = ExerciseTypeEnum.getValByEnum(exerciseTypeId).toLowerCase();
-                return BaseExerciseGetterSrv.getExerciseByNameAndId(exerciseId, exerciseTypeName);
+                return BaseExerciseGetterSrv.getExerciseByNameAndId(exerciseTypeName, exerciseId);
             };
 
             var BaseExerciseGetterSrvPrototype = {};
