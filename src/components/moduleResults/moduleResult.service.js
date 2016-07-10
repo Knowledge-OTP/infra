@@ -58,7 +58,9 @@
                     if (userGuidLists[newResult.guid]) {
                         return  moduleResultsService.getModuleResultByGuid(newResult.guid).then(function (moduleResult) {
                             angular.extend(moduleResult, newResult);
-                            return storage.set(moduleResultPath, moduleResult);
+                            return InfraConfigSrv.getStudentStorage().then(function (storage) {
+                                return storage.set(moduleResultPath, moduleResult);
+                            });
                         });
                     }
 
