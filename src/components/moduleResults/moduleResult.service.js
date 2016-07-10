@@ -9,7 +9,18 @@
             var USER_MODULE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
             var MODULE_RESULTS_PATH = 'moduleResults';
 
-            moduleResultsService.getUserModuleResultsGuids = function (userId) {
+            moduleResultsService.getDefaultModuleResult = function (moduleId, userId) {
+                return {
+                    moduleId: moduleId,
+                    uid: userId,
+                    assignedTutorId: null,
+                    assign: false,
+                    contentAssign: false,
+                    guid: UtilitySrv.general.createGuid()
+                };
+            };
+
+            moduleResultsService.getUserModuleResultsGuids = function (userId){
                 var userResultsPath = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
                 return InfraConfigSrv.getStudentStorage().then(function (storage) {
                     return storage.get(userResultsPath);
@@ -32,15 +43,8 @@
                         if (!withDefaultResult) {
                             return null;
                         } else {
-                            moduleResultGuid = UtilitySrv.general.createGuid();
-                            defaultResult = {
-                                moduleId: moduleId,
-                                tutorId: null,
-                                assign: false,
-                                contentAssign: false,
-                                guid: moduleResultGuid,
-                                uid: userId
-                            };
+                            defaultResult =  moduleResultsService.getDefaultModuleResult(moduleId, userId);
+                            moduleResultGuid = defaultResult.guid;
                         }
                     }
 
@@ -52,11 +56,9 @@
                 return moduleResultsService.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
                     var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
                     if (userGuidLists[newResult.guid]) {
-                        return moduleResultsService.getModuleResultByGuid(newResult.guid).then(function (moduleResult) {
+                        return  moduleResultsService.getModuleResultByGuid(newResult.guid).then(function (moduleResult) {
                             angular.extend(moduleResult, newResult);
-                            return InfraConfigSrv.getStudentStorage().then(function (storage) {
-                                return storage.set(moduleResultPath, moduleResult);
-                            });
+                            return storage.set(moduleResultPath, moduleResult);
                         });
                     }
 

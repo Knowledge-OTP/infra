@@ -1,50 +1,216 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra', [
-        //all modules will be injected here
-        "znk.infra.analytics",
-"znk.infra.assignModule",
-"znk.infra.auth",
-"znk.infra.autofocus",
-"znk.infra.config",
-"znk.infra.content",
-"znk.infra.contentAvail",
-"znk.infra.contentGetters",
-"znk.infra.deviceNotSupported",
-"znk.infra.enum",
-"znk.infra.estimatedScore",
-"znk.infra.exams",
-"znk.infra.exerciseResult",
-"znk.infra.exerciseUtility",
-"znk.infra.filters",
-"znk.infra.general",
-"znk.infra.hint",
-"znk.infra.moduleResults",
-"znk.infra.personalization",
-"znk.infra.pngSequence",
-"znk.infra.popUp",
-"znk.infra.presence",
-"znk.infra.scoring",
-"znk.infra.scroll",
-"znk.infra.sharedScss",
-"znk.infra.stats",
-"znk.infra.storage",
-"znk.infra.svgIcon",
-"znk.infra.user",
-"znk.infra.utility",
-"znk.infra.workouts",
-"znk.infra.znkAudioPlayer",
-"znk.infra.znkExercise",
-"znk.infra.znkModule",
-"znk.infra.znkTimeline"
-    ]);
+    angular.module('znk.infra.analytics', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.moduleResults']);
 })(angular);
 
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.analytics', []);
+    angular.module('znk.infra.autofocus', ['znk.infra.enum', 'znk.infra.svgIcon']);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.config', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.content', []);
+})(angular);
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.contentAvail', ['znk.infra.config']);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.deviceNotSupported', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.enum', []);
+})(angular);
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.estimatedScore', [
+            'znk.infra.config',
+            'znk.infra.znkExercise',
+            'znk.infra.utility'
+        ])
+        .run([
+            'EstimatedScoreEventsHandlerSrv',
+            function (EstimatedScoreEventsHandlerSrv) {
+                EstimatedScoreEventsHandlerSrv.init();
+            }
+        ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.exerciseResult', ['znk.infra.config','znk.infra.utility']);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.filters', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.general', ['znk.infra.enum', 'znk.infra.svgIcon'])
+        .config([
+        'SvgIconSrvProvider',
+        function (SvgIconSrvProvider) {
+            var svgMap = {
+                'clock-icon': 'components/general/svg/clock-icon.svg'
+            };
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+        }]);
+
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.hint', ['znk.infra.config']);
+})(angular);
+
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.moduleResults', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.pngSequence', []);
+})(angular);
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.popUp', ['znk.infra.svgIcon', 'znk.infra.autofocus'])
+        .config([
+            'SvgIconSrvProvider',
+            function (SvgIconSrvProvider) {
+                var svgMap = {
+                    'exclamation-mark': 'components/popUp/svg/exclamation-mark-icon.svg',
+                    'correct': 'components/popUp/svg/correct-icon.svg'
+                };
+                SvgIconSrvProvider.registerSvgSources(svgMap);
+            }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.presence', ['ngIdle'])
+        .config([
+            'IdleProvider', 'KeepaliveProvider', 'ENV',
+            function (IdleProvider, KeepaliveProvider, ENV) {
+                // userIdleTime: how many sec until user is 'IDLE'
+                // idleTimeout: how many sec after idle to stop track the user, 0: keep track
+                // idleKeepalive: keepalive interval in sec
+
+                IdleProvider.idle(ENV.userIdleTime || 30);
+                IdleProvider.timeout(ENV.idleTimeout || 0);
+                KeepaliveProvider.interval(ENV.idleKeepalive || 2);
+            }])
+        .run([
+            'PresenceService', 'Idle',
+            function (PresenceService, Idle) {
+                PresenceService.addCurrentUserListeners();
+                Idle.watch();
+            }
+        ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.scroll', []);
+})(angular);
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.stats', [
+            'znk.infra.enum',
+            'znk.infra.znkExercise',
+            'znk.infra.utility'
+        ])
+        .run([
+            'StatsEventsHandlerSrv',
+            function (StatsEventsHandlerSrv) {
+                StatsEventsHandlerSrv.init();
+            }
+        ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.storage', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.svgIcon', []);
+})(angular);
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.utility', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise', [
+            'znk.infra.enum',
+            'znk.infra.svgIcon',
+            'znk.infra.scroll',
+            'znk.infra.autofocus',
+            'ngAnimate'
+        ])
+        .config([
+            'SvgIconSrvProvider',
+            function (SvgIconSrvProvider) {
+                var svgMap = {
+                    chevron: 'components/znkExercise/svg/chevron-icon.svg',
+                    correct: 'components/znkExercise/svg/correct-icon.svg',
+                    wrong: 'components/znkExercise/svg/wrong-icon.svg',
+                    info: 'components/znkExercise/svg/info-icon.svg',
+                    arrow: 'components/znkExercise/svg/arrow-icon.svg'
+                };
+                SvgIconSrvProvider.registerSvgSources(svgMap);
+            }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.znkModule', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.znkTimeline', ['znk.infra.svgIcon', 'znk.infra.enum']);
 })(angular);
 
 /**
@@ -133,7 +299,6 @@
 
             if(!eventsHandler) {
                 $log.error('znkAnalyticsSrv eventsHandler is missing!');
-                return api;
             }
 
             var eventsFn = $injector.invoke(eventsHandler);
@@ -255,15 +420,10 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
 (function (angular) {
     'use strict';
-    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.moduleResults']);
-})(angular);
-
-(function (angular) {
-    'use strict';
 
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', 'ModuleResultsService', '$q',
-        function (ZnkModuleService, ModuleResultsService, $q) {
+        'ZnkModuleService', 'ModuleResultsService', '$q', '$log',
+        function (ZnkModuleService, ModuleResultsService, $q, $log) {
             var userAssignModuleService = {};
 
             userAssignModuleService.getUserAssignModules = function (userId) {
@@ -286,16 +446,43 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
             };
 
-            userAssignModuleService.setAssignModules = function (assignModules, userId) {
-                var setProm = $q.when();
-                angular.forEach(assignModules, function (assignModule) {
-                    setProm = setProm.then(function(){
-                        return ModuleResultsService.setModuleResult(assignModule);
+            userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId) {
+                if(!angular.isArray(moduleIds)){
+                    var errMSg = 'UserAssignModuleService: 1st argument should be array of module ids';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                var moduleResults = {};
+                var getProm = $q.when();
+                angular.forEach(moduleIds, function (moduleId) {
+                    getProm = getProm.then(function(){
+                        return ModuleResultsService.getModuleResultByModuleId(moduleId, userId, false).then(function (moduleResult) {
+                            moduleResults[moduleId] = moduleResult;
+                            return moduleResults;
+                        });
                     });
-                });
 
-                return setProm.then(function () {
-                    return userAssignModuleService.getUserAssignModules(userId);
+                });
+                return getProm.then(function () {
+                    var saveProm = $q.when();
+                    angular.forEach(moduleIds, function (moduleId) {
+                        if(!moduleResults[moduleId]) {
+                            moduleResults[moduleId] =  ModuleResultsService.getDefaultModuleResult(moduleId, userId);
+                            moduleResults[moduleId].assignedTutorId = tutorId;
+                        }
+                        moduleResults[moduleId].assign = true;
+
+                        saveProm = saveProm.then(function(){
+                            return ModuleResultsService.setModuleResult(moduleResults[moduleId]).then(function(savedResults){
+                                moduleResults[moduleId] = savedResults;
+                            });
+                        });
+                    });
+
+                    return saveProm.then(function () {
+                        return moduleResults;
+                    });
+
                 });
             };
 
@@ -308,48 +495,6 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
 
 }]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.auth', ['znk.infra.config']);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.auth').factory('AuthService',
-        ["ENV", function (ENV) {
-            'ngInject';
-
-            var refAuthDB = new Firebase(ENV.fbGlobalEndPoint, ENV.firebaseAppScopeName);
-            var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
-
-            var authService = {};
-
-            authService.getAuth = function(){
-                return rootRef.getAuth();
-            };
-
-            authService.logout = function () {
-                refAuthDB.unauth();
-                rootRef.unauth();
-            };
-
-            return authService;
-        }]);
-})(angular);
-
-
-angular.module('znk.infra.auth').run(['$templateCache', function($templateCache) {
-
-}]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.autofocus', ['znk.infra.enum', 'znk.infra.svgIcon']);
-})(angular);
 
 /**
  * the HTML5 autofocus property can be finicky when it comes to dynamically loaded
@@ -388,21 +533,12 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.config', []);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.config').provider('InfraConfigSrv', [
         function () {
-            var userDataFn,
-                storages = {};
-
-            this.setStorages = function(_globalStorageGetter, _studentStorageGetter, _teacherStorageGetter){
-                storages.globalGetter = _globalStorageGetter;
-                storages.studentGetter = _studentStorageGetter;
-                storages.teacherGetter = _teacherStorageGetter;
+            var storageServiceName;
+            var userDataFn;
+            this.setStorageServiceName = function(_storageServiceName){
+                storageServiceName = _storageServiceName;
             };
 
             this.setUserDataFn = function(_userDataFn) {
@@ -414,27 +550,18 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 function ($injector, $log, $q) {
                     var InfraConfigSrv = {};
 
-                    function _baseStorageGetter(name){
-                        var storageGetterKey = name + 'Getter';
-                        var storageGetter = storages[storageGetterKey];
-                        if(!storageGetter ){
-                            var errMsg = 'InfraConfigSrv: ' + name + ' Storage name was not defined';
-                            $log.error(errMsg);
-                            return $q.reject(errMsg);
+                    InfraConfigSrv.getStorageService = function(){
+                        if(!storageServiceName){
+                            $log.debug('InfraConfigSrv: storage service name was not defined');
+                            return;
                         }
-                        return $q.when($injector.invoke(storageGetter));
-                    }
-
-                    InfraConfigSrv.getGlobalStorage = _baseStorageGetter.bind(InfraConfigSrv, 'global');
-
-                    InfraConfigSrv.getStudentStorage = _baseStorageGetter.bind(InfraConfigSrv, 'student');
-
-                    InfraConfigSrv.getTeacherStorage = _baseStorageGetter.bind(InfraConfigSrv, 'teacher');
+                        return $injector.get(storageServiceName);
+                    };
 
                     InfraConfigSrv.getUserData = function(){
                         var userDataInjected;
                         if(!userDataFn){
-                            $log.error('InfraConfigSrv: get user data function was not defined');
+                            $log.debug('InfraConfigSrv: auth fn name was not defined');
                             return;
                         }
                         userDataInjected = $injector.invoke(userDataFn);
@@ -452,11 +579,6 @@ angular.module('znk.infra.config').run(['$templateCache', function($templateCach
 
 }]);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.content', []);
-})(angular);
 'use strict';
 
 (function (angular) {
@@ -617,66 +739,9 @@ angular.module('znk.infra.config').run(['$templateCache', function($templateCach
 
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    /**
-     *  StorageRevSrv:
-     *      wrapper for ContentSrv, use for error handling and parsing data.
-     *      getContent(data={ exerciseType: 'type', exerciseId: '20' });
-     *      getAllContentByKey('type');
-     */
-    angular.module('znk.infra.content').service('StorageRevSrv', [
-        'ContentSrv', '$log', '$q',
-        function (ContentSrv, $log, $q) {
-            'ngInject';
-
-            var self = this;
-
-            this.getContent = function (data) {
-                return ContentSrv.getContent(data).then(function (result) {
-                    return angular.fromJson(result);
-                }, function (err) {
-                    if (err) {
-                        $log.error(err);
-                        return $q.reject(err);
-                    }
-                });
-            };
-
-            this.getAllContentByKey = function (key) {
-                var resultsProm = [];
-                return ContentSrv.getAllContentIdsByKey(key).then(function (results) {
-                    angular.forEach(results, function (keyValue) {
-                        resultsProm.push(self.getContent({ exerciseType: keyValue }));
-                    });
-                    return $q.all(resultsProm);
-                }, function (err) {
-                    if (err) {
-                        $log.error(err);
-                        return $q.reject(err);
-                    }
-                });
-            };
-        }
-    ]);
-})(angular);
-
 angular.module('znk.infra.content').run(['$templateCache', function($templateCache) {
 
 }]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.contentAvail', ['znk.infra.config', 'znk.infra.exerciseUtility']);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.contentAvail', ['znk.infra.config']);
-})(angular);
 
 (function (angular) {
     'use strict';
@@ -697,31 +762,29 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                 var ContentAvailSrvObj = {};
 
                 function getUserPurchaseData(){
-                    return InfraConfigSrv.getStudentStorage().then(function(studentStorageSrv){
-                        var purchaseDataPath = studentStorageSrv.variables.appUserSpacePath + '/purchase';
-                        var defValues = {
-                            daily: 0,
-                            exam: {},
-                            tutorial: {},
-                            section: {},
-                            subscription: {}
-                        };
-                        return studentStorageSrv.get(purchaseDataPath,defValues);
-                    });
+                    var StorageService = InfraConfigSrv.getStorageService();
+                    var purchaseDataPath = StorageService.variables.appUserSpacePath + '/purchase';
+                    var defValues = {
+                        daily: 0,
+                        exam: {},
+                        tutorial: {},
+                        section: {},
+                        subscription: {}
+                    };
+                    return StorageService.get(purchaseDataPath,defValues);
                 }
 
                 function getFreeContentData(){
-                    return InfraConfigSrv.getStudentStorage().then(function(studentStorageSrv){
-                        var freeContentPath = 'freeContent';
-                        var defValues = {
-                            daily: 0,
-                            exam: {},
-                            tutorial: {},
-                            section: {},
-                            specials: {}
-                        };
-                        return studentStorageSrv.get(freeContentPath,defValues);
-                    });
+                    var StorageService = InfraConfigSrv.getStorageService();
+                    var freeContentPath = 'freeContent';
+                    var defValues = {
+                        daily: 0,
+                        exam: {},
+                        tutorial: {},
+                        section: {},
+                        specials: {}
+                    };
+                    return StorageService.get(freeContentPath,defValues);
                 }
 
                 function getUserSpecialsData(){
@@ -914,216 +977,11 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
             }];
         }
     ]);
-})(angular);  
+})(angular);
 
 angular.module('znk.infra.contentAvail').run(['$templateCache', function($templateCache) {
 
 }]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.contentGetters', [
-        'znk.infra.config',
-        'znk.infra.content',
-        'znk.infra.exerciseUtility'
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.contentGetters').factory('BaseExerciseGetterSrv',
-        ["ContentSrv", "$log", "$q", "ExerciseTypeEnum", function (ContentSrv, $log, $q, ExerciseTypeEnum) {
-            'ngInject';
-
-            function BaseExerciseGetterSrv(exerciseTypeName) {
-                this.typeName = exerciseTypeName;
-            }
-
-            BaseExerciseGetterSrv.getExerciseByNameAndId = function (exerciseTypeName, exerciseId) {
-                var context = {
-                    typeName: exerciseTypeName
-                };
-                return BaseExerciseGetterSrvPrototype.get.call(context, exerciseId);
-            };
-
-            BaseExerciseGetterSrv.getExerciseByTypeAndId = function (exerciseTypeId, exerciseId) {
-                var exerciseTypeName = ExerciseTypeEnum.getValByEnum(exerciseTypeId).toLowerCase();
-                return BaseExerciseGetterSrv.getExerciseByNameAndId(exerciseTypeName, exerciseId);
-            };
-
-            var BaseExerciseGetterSrvPrototype = {};
-
-            BaseExerciseGetterSrvPrototype.get = function (exerciseId) {
-                var contentData = {
-                    exerciseId: exerciseId,
-                    exerciseType: this.typeName
-                };
-
-                return ContentSrv.getContent(contentData).then(function (result) {
-                    return angular.fromJson(result);
-                }, function (err) {
-                    if (err) {
-                        $log.error(err);
-                        return $q.reject(err);
-                    }
-                });
-            };
-
-            BaseExerciseGetterSrvPrototype.getAll = function () {
-                var self = this;
-                var resultsProm = [];
-                return ContentSrv.getAllContentIdsByKey(self.typeName).then(function (results) {
-                    angular.forEach(results, function (keyValue) {
-                        resultsProm.push(self.getContent({
-                            exerciseType: keyValue
-                        }));
-                    });
-                    return $q.all(resultsProm);
-                }, function (err) {
-                    if (err) {
-                        $log.error(err);
-                        return $q.reject(err);
-                    }
-                });
-            };
-
-            BaseExerciseGetterSrv.prototype = BaseExerciseGetterSrvPrototype;
-
-            return BaseExerciseGetterSrv;
-        }]
-    );
-})(angular);
-
-'use strict';
-
-angular.module('znk.infra.contentGetters').service('CategoryService', ["StorageRevSrv", "$q", "categoryEnum", function (StorageRevSrv, $q, categoryEnum)  {
-        'ngInject';
-
-        var self = this;
-        this.get = function () {
-            return StorageRevSrv.getContent({ exerciseType: 'category' });
-        };
-
-        var categoryMapObj;
-        this.getCategoryMap = function () {
-            if (categoryMapObj) {
-                return $q.when(categoryMapObj);
-            }
-            return self.get().then(function (categories) {
-                var categoryMap = {};
-                angular.forEach(categories, function (item) {
-                    categoryMap[item.id] = item;
-                });
-                categoryMapObj = categoryMap;
-                return categoryMapObj;
-            });
-        };
-
-        self.getCategoryData = function (categoryId) {
-            return self.getCategoryMap().then(function (categoryMap) {
-                return categoryMap[categoryId];
-            });
-        };
-
-        self.getParentCategory = function (categoryId) {
-            return self.getCategoryMap().then(function (categories) {
-                var parentId = categories[categoryId].parentId;
-                return categories[parentId];
-            });
-        };
-
-        self.getCategoryLevel1Parent = function (category) {
-            if (category.typeId === categoryEnum.SUBJECT.enum) {
-                return $q.when(category.id);
-            }
-            return self.getParentCategory(category.id).then(function (parentCategory) {
-                return self.getCategoryLevel1Parent(parentCategory);
-            });
-        };
-
-
-        self.getCategoryLevel2Parent = function (categoryId) {
-            return self.getCategoryMap().then(function (categories) {
-                var category = categories[categoryId];
-                if (categoryEnum.TEST_SCORE.enum === category.typeId) {
-                    return category;
-                }
-                return self.getCategoryLevel2Parent(category.parentId);
-            });
-        };
-
-        self.getAllLevel3Categories = (function () {
-            var getAllLevel3CategoriesProm;
-            return function () {
-                if (!getAllLevel3CategoriesProm) {
-                    getAllLevel3CategoriesProm = self.getCategoryMap().then(function (categories) {
-                        var generalCategories = {};
-                        angular.forEach(categories, function (category) {
-                            if (category.typeId === categoryEnum.GENERAL.enum) {
-                                generalCategories[category.id] = category;
-                            }
-                        });
-                        return generalCategories;
-                    });
-                }
-                return getAllLevel3CategoriesProm;
-            };
-        })();
-
-        self.getAllLevel3CategoriesGroupedByLevel1 = (function () {
-            var getAllLevel3CategoriesGroupedByLevel1Prom;
-            return function (subjectId) {
-                if (!getAllLevel3CategoriesGroupedByLevel1Prom) {
-                    getAllLevel3CategoriesGroupedByLevel1Prom = self.getAllLevel3Categories().then(function (categories) {
-                        var generalCategories = {};
-                        var promArray = [];
-                        angular.forEach(categories, function (generalCategory) {
-                            var prom = self.getCategoryLevel1Parent(generalCategory).then(function (currentCategorySubjectId) {
-                                if (currentCategorySubjectId === subjectId) {
-                                    generalCategories[generalCategory.id] = generalCategory;
-                                }
-                            });
-                            promArray.push(prom);
-                        });
-                        return $q.all(promArray).then(function () {
-                            return generalCategories;
-                        });
-                    });
-                }
-                return getAllLevel3CategoriesGroupedByLevel1Prom;
-            };
-        })();
-
-        self.getAllLevel4Categories = (function () {
-            var getAllLevel4CategoriessProm;
-            return function () {
-                if (!getAllLevel4CategoriessProm) {
-                    getAllLevel4CategoriessProm = self.getCategoryMap().then(function (categories) {
-                        var specificCategories = {};
-                        angular.forEach(categories, function (category) {
-                            if (category.typeId === categoryEnum.SPECIFIC.enum) {
-                                specificCategories[category.id] = category;
-                            }
-                        });
-                        return specificCategories;
-                    });
-                }
-                return getAllLevel4CategoriessProm;
-            };
-        })();
-}]);
-
-angular.module('znk.infra.contentGetters').run(['$templateCache', function($templateCache) {
-
-}]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.deviceNotSupported', []);
-})(angular);
 
 /**
  * Device Not Supported
@@ -1181,8 +1039,163 @@ angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function($
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.enum', []);
+    angular.module('znk.infra.enum').factory('AnswerTypeEnum', [
+        'EnumSrv',
+        function (EnumSrv) {
+            return new EnumSrv.BaseEnum([
+                ['SELECT_ANSWER',0 ,'select answer'],
+                ['FREE_TEXT_ANSWER',1 ,'free text answer'],
+                ['RATE_ANSWER',3 ,'rate answer']
+            ]);
+        }
+    ]);
 })(angular);
+
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.enum').factory('ExamTypeEnum', [
+        'EnumSrv',
+        function (EnumSrv) {
+            return new EnumSrv.BaseEnum([
+                ['FULL TEST', 0, 'test'],
+                ['MINI TEST', 1, 'miniTest'],
+                ['DIAGNOSTIC', 2, 'diagnostic']
+            ]);
+        }
+    ]);
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
+    var exerciseStatusEnum = {
+        NEW: 0,
+        ACTIVE: 1,
+        COMPLETED: 2,
+        COMING_SOON: 3
+    };
+
+    angular.module('znk.infra.enum').constant('exerciseStatusConst', exerciseStatusEnum);
+
+    angular.module('znk.infra.enum').factory('ExerciseStatusEnum', [
+        'EnumSrv',
+        function (EnumSrv) {
+            return new EnumSrv.BaseEnum([
+                ['NEW', exerciseStatusEnum.NEW, 'new'],
+                ['ACTIVE', exerciseStatusEnum.ACTIVE, 'active'],
+                ['COMPLETED', exerciseStatusEnum.COMPLETED, 'completed'],
+                ['COMING_SOON', exerciseStatusEnum.COMING_SOON, 'coming soon']
+            ]);
+        }
+    ]);
+})(angular);
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.enum').factory('ExerciseTimeEnum', [
+        'EnumSrv',
+        function (EnumSrv) {
+            return new EnumSrv.BaseEnum([
+                ['5_MIN', 5, '5 min'],
+                ['10_MIN', 10, '10 min'],
+                ['15_MIN', 15, '15 min']
+            ]);
+        }
+    ]);
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
+    var exerciseTypeConst = {
+        TUTORIAL: 1,
+        PRACTICE: 2,
+        GAME: 3,
+        SECTION: 4,
+        DRILL: 5
+    };
+
+    angular.module('znk.infra.enum')
+        .constant('exerciseTypeConst', exerciseTypeConst)
+        .factory('ExerciseTypeEnum', [
+            'EnumSrv',
+            function (EnumSrv) {
+                return new EnumSrv.BaseEnum([
+                    ['TUTORIAL', 1, 'Tutorial'],
+                    ['PRACTICE', 2, 'Practice'],
+                    ['GAME', 3, 'Game'],
+                    ['SECTION', 4, 'Section'],
+                    ['DRILL', 5, 'Drill']
+                ]);
+            }
+        ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.enum').factory('QuestionFormatEnum', [
+        'EnumSrv',
+        function (EnumSrv) {
+
+            var QuestionFormatEnum = new EnumSrv.BaseEnum([
+                ['TEXT',1,'text'],
+                ['AUDIO',2, 'audio'],
+                ['TEXT_AUDIO', 3, 'text audio'],
+                ['PROSE_SUMMARY', 4, 'prose Summary'],
+                ['FILL_IN_TABLE', 5, 'fill in a table'],
+                ['CONNECTING_CONTENT', 6, 'connecting content'],
+                ['INDEPENDENT', 7, 'independent'],
+                ['STANDARD', 8, 'standard']
+            ]);
+
+            return QuestionFormatEnum;
+        }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    var subjectEnum = {
+        MATH: 0,
+        READING: 1,
+        WRITING: 2,
+        LISTENING: 3,
+        SPEAKING: 4,
+        ENGLISH: 5,
+        SCIENCE: 6,
+        VERBAL: 7,
+        ESSAY: 8
+    };
+
+    angular.module('znk.infra.enum').constant('SubjectEnumConst', subjectEnum);
+
+    angular.module('znk.infra.enum').factory('SubjectEnum', [
+        'EnumSrv',
+        function (EnumSrv) {
+
+            var SubjectEnum = new EnumSrv.BaseEnum([
+                ['MATH', subjectEnum.MATH, 'math'],
+                ['READING', subjectEnum.READING, 'reading'],
+                ['WRITING', subjectEnum.WRITING, 'writing'],
+                ['LISTENING', subjectEnum.LISTENING, 'listening'],
+                ['SPEAKING', subjectEnum.SPEAKING, 'speaking'],
+                ['ENGLISH', subjectEnum.ENGLISH, 'english'],
+                ['SCIENCE', subjectEnum.SCIENCE, 'science'],
+                ['VERBAL', subjectEnum.VERBAL, 'verbal'],
+                ['ESSAY', subjectEnum.ESSAY, 'essay']
+            ]);
+
+            return SubjectEnum;
+        }
+    ]);
+})(angular);
+
 'use strict';
 (function (angular) {
     angular.module('znk.infra.enum').factory('EnumSrv', [
@@ -1269,22 +1282,6 @@ angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function($
 angular.module('znk.infra.enum').run(['$templateCache', function($templateCache) {
 
 }]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.estimatedScore', [
-            'znk.infra.config',
-            'znk.infra.znkExercise',
-            'znk.infra.utility'
-        ])
-        .run([
-            'EstimatedScoreEventsHandlerSrv',
-            function (EstimatedScoreEventsHandlerSrv) {
-                EstimatedScoreEventsHandlerSrv.init();
-            }
-        ]);
-})(angular);
 
 (function (angular) {
     'use strict';
@@ -1468,11 +1465,11 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
     'use strict';
 
     angular.module('znk.infra.estimatedScore').service('EstimatedScoreHelperSrv', [
-        'SubjectEnum', 'InfraConfigSrv', 'StorageSrv',
-        function (SubjectEnum, InfraConfigSrv, StorageSrv) {
+        'SubjectEnum', 'InfraConfigSrv',
+        function (SubjectEnum, InfraConfigSrv) {
             var EstimatedScoreHelperSrv = this;
 
-            // var StorageSrv = InfraConfigSrv.getStorageService();
+            var StorageSrv = InfraConfigSrv.getStorageService();
 
             var ESTIMATE_SCORE_PATH = StorageSrv.variables.appUserSpacePath + '/estimatedScore';
 
@@ -1485,47 +1482,43 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
             }
 
             EstimatedScoreHelperSrv.getEstimatedScoreData = function(){
-                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                    return StudentStorageSrv.get(ESTIMATE_SCORE_PATH).then(function(estimatedScore){
-                        var defaultValues = {
-                            estimatedScores: {},
-                            sectionsRawScores:{},
-                            exercisesRawScores: {},
-                            processedExercises: []
-                        };
+                return StorageSrv.get(ESTIMATE_SCORE_PATH).then(function(estimatedScore){
+                    var defaultValues = {
+                        estimatedScores: {},
+                        sectionsRawScores:{},
+                        exercisesRawScores: {},
+                        processedExercises: []
+                    };
 
-                        _SetSubjectInitialVal(defaultValues.estimatedScores,[]);
-                        _SetSubjectInitialVal(defaultValues.sectionsRawScores,[]);
-                        var rawScoreInitialObject = {
-                            total: 0,
-                            earned: 0
-                        };
-                        _SetSubjectInitialVal(defaultValues.exercisesRawScores,rawScoreInitialObject);
+                    _SetSubjectInitialVal(defaultValues.estimatedScores,[]);
+                    _SetSubjectInitialVal(defaultValues.sectionsRawScores,[]);
+                    var rawScoreInitialObject = {
+                        total: 0,
+                        earned: 0
+                    };
+                    _SetSubjectInitialVal(defaultValues.exercisesRawScores,rawScoreInitialObject);
 
-                        angular.forEach(defaultValues, function(defaultVal, defaultValKey){
-                            if(angular.isUndefined(estimatedScore[defaultValKey])){
-                                estimatedScore[defaultValKey] = defaultVal ;
-                            }
+                    angular.forEach(defaultValues, function(defaultVal, defaultValKey){
+                        if(angular.isUndefined(estimatedScore[defaultValKey])){
+                            estimatedScore[defaultValKey] = defaultVal ;
+                        }
 
-                            if(estimatedScore[defaultValKey] !== defaultVal && angular.isObject(defaultVal)){
-                                var currVal = estimatedScore[defaultValKey];
-                                angular.forEach(defaultVal, function(innerDefaultVal, innerDefaultValueKey){
-                                    if(angular.isUndefined(currVal[innerDefaultValueKey])){
-                                        currVal[innerDefaultValueKey] = innerDefaultVal;
-                                    }
-                                });
-                            }
-                        });
-
-                        return estimatedScore;
+                        if(estimatedScore[defaultValKey] !== defaultVal && angular.isObject(defaultVal)){
+                            var currVal = estimatedScore[defaultValKey];
+                            angular.forEach(defaultVal, function(innerDefaultVal, innerDefaultValueKey){
+                                if(angular.isUndefined(currVal[innerDefaultValueKey])){
+                                    currVal[innerDefaultValueKey] = innerDefaultVal;
+                                }
+                            });
+                        }
                     });
+
+                    return estimatedScore;
                 });
             };
 
             EstimatedScoreHelperSrv.setEstimateScoreData = function (newEstimateScoreData){
-                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                    return StudentStorageSrv.set(ESTIMATE_SCORE_PATH,newEstimateScoreData);
-                });
+                return StorageSrv.set(ESTIMATE_SCORE_PATH,newEstimateScoreData);
             };
         }
     ]);
@@ -1745,92 +1738,6 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.exams', []);
-})(angular);
-
-"use strict";
-angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "ContentAvailSrv", "$log", function(StorageRevSrv, $q, ContentAvailSrv, $log) {
-        'ngInject';
-
-        var self = this;
-
-        function _getExamOrder() {
-            return StorageRevSrv.getContent({
-                exerciseType: 'personalization'
-            }).then(function (personalizationData) {
-                var errorMsg = 'ExamSrv getExamOrder: personalization.examOrder is not array or empty!';
-                if (!angular.isArray(personalizationData.examOrder) || personalizationData.examOrder.length === 0) {
-                    $log.error(errorMsg);
-                    return $q.reject(errorMsg);
-                }
-                return personalizationData.examOrder;
-            });
-        }
-
-        function _getContentFromStorage(data) {
-            return StorageRevSrv.getContent(data);
-        }
-
-        this.getExam = function (examId, setIsAvail) {
-            return _getContentFromStorage({
-                exerciseId: examId, exerciseType: 'exam'
-            }).then(function (exam) {
-                if (!setIsAvail) {
-                    return exam;
-                }
-
-                var getIsAvailPromArr = [];
-                var sections = exam.sections;
-                angular.forEach(sections, function (section) {
-                    var isSectionAvailProm = ContentAvailSrv.isSectionAvail(examId, section.id).then(function (isAvail) {
-                        section.isAvail = !!isAvail;
-                    });
-                    getIsAvailPromArr.push(isSectionAvailProm);
-                });
-
-                return $q.all(getIsAvailPromArr).then(function () {
-                    return exam;
-                });
-            });
-        };
-
-        this.getExamSection = function (sectionId) {
-            return _getContentFromStorage({
-                exerciseId: sectionId, exerciseType: 'section'
-            });
-        };
-
-        this.getAllExams = function (setIsAvail) {
-            return _getExamOrder().then(function (examOrder) {
-                var examsProms = [];
-                var examsByOrder = examOrder.sort(function (a, b) {
-                    return a.order > b.order;
-                });
-                angular.forEach(examsByOrder, function (exam) {
-                    examsProms.push(self.getExam(exam.examId, setIsAvail));
-                });
-                return $q.all(examsProms);
-            });
-        };
-}]);
-
-angular.module('znk.infra.exams').run(['$templateCache', function($templateCache) {
-
-}]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.exerciseResult', [
-        'znk.infra.config',
-        'znk.infra.utility',
-        'znk.infra.exerciseUtility'
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
         'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum',
         function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum) {
@@ -1873,15 +1780,13 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
             function _getExerciseResultByGuid(guid) {
                 var exerciseResultPath = _getExerciseResultPath(guid);
-                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                    return StudentStorageSrv.get(exerciseResultPath);
-                });
+                var storage = InfraConfigSrv.getStorageService();
+                return storage.get(exerciseResultPath);
             }
 
             function _getExerciseResultsGuids(){
-                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                    return StudentStorageSrv.get(EXERCISE_RESULTS_GUIDS_PATH);
-                });
+                var storage = InfraConfigSrv.getStorageService();
+                return storage.get(EXERCISE_RESULTS_GUIDS_PATH);
             }
 
             function _getExamResultPath(guid) {
@@ -1889,18 +1794,17 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
             }
 
             function _getExamResultByGuid(guid,examId) {
-                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                    var path = _getExamResultPath(guid);
-                    return StudentStorageSrv.get(path).then(function(examResult){
-                        var initResultProm = _getInitExamResult(examId, guid);
-                        return initResultProm.then(function(initResult) {
-                            if(examResult.guid !== guid){
-                                angular.extend(examResult,initResult);
-                            }else{
-                                UtilitySrv.object.extendWithoutOverride(examResult,initResult);
-                            }
-                            return examResult;
-                        });
+                var storage = InfraConfigSrv.getStorageService();
+                var path = _getExamResultPath(guid);
+                return storage.get(path).then(function(examResult){
+                    var initResultProm = _getInitExamResult(examId, guid);
+                    return initResultProm.then(function(initResult) {
+                        if(examResult.guid !== guid){
+                            angular.extend(examResult,initResult);
+                        }else{
+                            UtilitySrv.object.extendWithoutOverride(examResult,initResult);
+                        }
+                        return examResult;
                     });
                 });
             }
@@ -1920,9 +1824,8 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
             }
 
             function _getExamResultsGuids(){
-                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                    return StudentStorageSrv.get(EXAM_RESULTS_GUIDS_PATH);
-                });
+                var storage = InfraConfigSrv.getStorageService();
+                return storage.get(EXAM_RESULTS_GUIDS_PATH);
             }
 
             function exerciseSaveFn(){
@@ -1959,27 +1862,20 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                     return avgTime;
                 }
 
-                var questionsNum = exerciseResult.questionResults.length;
-
-                exerciseResult.totalQuestionNum = questionsNum;
-
-                exerciseResult.totalAnsweredNum = countWrong + countCorrect;
-
-                exerciseResult.correctAnswersNum = countCorrect;
-                exerciseResult.wrongAnswersNum = countWrong;
-                exerciseResult.skippedAnswersNum = countSkipped;
-                
                 exerciseResult.duration = totalTimeSpentOnQuestions;
                 exerciseResult.correctAvgTime = _getAvgTime(countCorrect,correctTotalTime);
                 exerciseResult.wrongAvgTime = _getAvgTime(countWrong, wrongTotalTime);
                 exerciseResult.skippedAvgTime = _getAvgTime(countSkipped, skippedTotalTime);
-
+                exerciseResult.correctAnswersNum = countCorrect;
+                exerciseResult.wrongAnswersNum = countWrong;
+                exerciseResult.skippedAnswersNum = countSkipped;
 
                 if(exerciseResult.isComplete && angular.isUndefined(exerciseResult.endedTime)){
                     exerciseResult.endedTime = Date.now();
                 }
 
-                exerciseResult.avgTimePerQuestion = questionsNum ? Math.round(totalTimeSpentOnQuestions / questionsNum) : 0;
+                var numOfAnsweredQuestions = exerciseResult.questionResults.length;
+                exerciseResult.avgTimePerQuestion = numOfAnsweredQuestions ? Math.round(totalTimeSpentOnQuestions / numOfAnsweredQuestions) : 0;
                 var exerciseResultPath = _getExerciseResultPath(exerciseResult.guid);
 
                 dataToSave[exerciseResultPath] = exerciseResult;
@@ -2011,10 +1907,10 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                     }
 
                     return getSectionAggregatedDataProm.then(function() {
-                        return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                            StudentStorageSrv.set(dataToSave);
-                            return exerciseResult;
-                        });
+                        var storage = InfraConfigSrv.getStorageService();
+                        storage.set(dataToSave);
+
+                        return exerciseResult;
                     });
 
                 });
@@ -2047,9 +1943,8 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
             }
 
             function _getExercisesStatusData(){
-                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                    return StudentStorageSrv.get(EXERCISES_STATUS_PATH);
-                });
+                var storage = InfraConfigSrv.getStorageService();
+                return storage.get(EXERCISES_STATUS_PATH);
             }
 
             function ExerciseStatus(status, duration){
@@ -2089,42 +1984,43 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                             exerciseResultsGuids[exerciseTypeId] = {};
                         }
 
-                        return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                            var newGuid = UtilitySrv.general.createGuid();
+                        var storage = InfraConfigSrv.getStorageService();
 
-                            var dataToSave = {};
 
-                            exerciseResultsGuids[exerciseTypeId][exerciseId] = newGuid;
-                            dataToSave[EXERCISE_RESULTS_GUIDS_PATH] = exerciseResultsGuids;
+                        var newGuid = UtilitySrv.general.createGuid();
 
-                            var exerciseResultPath = _getExerciseResultPath(newGuid);
-                            var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,newGuid);
-                            return initResultProm.then(function(initResult) {
-                                dataToSave[exerciseResultPath] = initResult;
+                        var dataToSave = {};
 
-                                var setProm;
-                                if(getExamResultProm){
-                                    initResult.examId = examId;
-                                    setProm = getExamResultProm.then(function(examResult){
-                                        if(examSectionsNum && !examResult.examSectionsNum) {
-                                            examResult.examSectionsNum = examSectionsNum;
-                                        }
+                        exerciseResultsGuids[exerciseTypeId][exerciseId] = newGuid;
+                        dataToSave[EXERCISE_RESULTS_GUIDS_PATH] = exerciseResultsGuids;
 
-                                        if(!examResult.sectionResults){
-                                            examResult.sectionResults = {};
-                                        }
-                                        examResult.sectionResults[exerciseId] = newGuid;
+                        var exerciseResultPath = _getExerciseResultPath(newGuid);
+                        var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,newGuid);
+                        return initResultProm.then(function(initResult) {
+                            dataToSave[exerciseResultPath] = initResult;
 
-                                        var examResultPath = _getExamResultPath(examResult.guid);
-                                        dataToSave[examResultPath] = examResult;
-                                    });
-                                }
+                            var setProm;
+                            if(getExamResultProm){
+                                initResult.examId = examId;
+                                setProm = getExamResultProm.then(function(examResult){
+                                    if(examSectionsNum && !examResult.examSectionsNum) {
+                                        examResult.examSectionsNum = examSectionsNum;
+                                    }
 
-                                return $q.when(setProm).then(function(){
-                                    return StudentStorageSrv.set(dataToSave);
-                                }).then(function(res){
-                                    return res[exerciseResultPath];
+                                    if(!examResult.sectionResults){
+                                        examResult.sectionResults = {};
+                                    }
+                                    examResult.sectionResults[exerciseId] = newGuid;
+
+                                    var examResultPath = _getExamResultPath(examResult.guid);
+                                    dataToSave[examResultPath] = examResult;
                                 });
+                            }
+
+                            return $q.when(setProm).then(function(){
+                                return storage.set(dataToSave);
+                            }).then(function(res){
+                                return res[exerciseResultPath];
                             });
                         });
                     }
@@ -2156,32 +2052,31 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 }
                 examId = +examId;
 
-                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                    return _getExamResultsGuids().then(function (examResultsGuids) {
-                        var examResultGuid = examResultsGuids[examId];
-                        if (!examResultGuid) {
-                            if(dontInitialize){
-                                return null;
-                            }
-
-                            var dataToSave = {};
-                            var newExamResultGuid = UtilitySrv.general.createGuid();
-                            examResultsGuids[examId] = newExamResultGuid;
-                            dataToSave[EXAM_RESULTS_GUIDS_PATH] = examResultsGuids;
-
-                            var examResultPath = _getExamResultPath(newExamResultGuid);
-                            var initExamResultProm = _getInitExamResult(examId, newExamResultGuid);
-                            return initExamResultProm.then(function(initExamResult) {
-                                dataToSave[examResultPath] = initExamResult;
-
-                                return StudentStorageSrv.set(dataToSave).then(function (res) {
-                                    return res[examResultPath];
-                                });
-                            });
+                var storage = InfraConfigSrv.getStorageService();
+                return _getExamResultsGuids().then(function (examResultsGuids) {
+                    var examResultGuid = examResultsGuids[examId];
+                    if (!examResultGuid) {
+                        if(dontInitialize){
+                            return null;
                         }
 
-                        return _getExamResultByGuid(examResultGuid, examId);
-                    });
+                        var dataToSave = {};
+                        var newExamResultGuid = UtilitySrv.general.createGuid();
+                        examResultsGuids[examId] = newExamResultGuid;
+                        dataToSave[EXAM_RESULTS_GUIDS_PATH] = examResultsGuids;
+
+                        var examResultPath = _getExamResultPath(newExamResultGuid);
+                        var initExamResultProm = _getInitExamResult(examId, newExamResultGuid);
+                        return initExamResultProm.then(function(initExamResult) {
+                            dataToSave[examResultPath] = initExamResult;
+
+                            return storage.set(dataToSave).then(function (res) {
+                                return res[examResultPath];
+                            });
+                        });
+                    }
+
+                    return _getExamResultByGuid(examResultGuid, examId);
                 });
             };
 
@@ -2208,207 +2103,17 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.exerciseUtility', [
-        'znk.infra.config',
-        'znk.infra.enum',
-        'znk.infra.storage',
-        'znk.infra.exerciseResult',
-        'znk.infra.contentAvail',
-        'znk.infra.content'
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.exerciseUtility').factory('AnswerTypeEnum', [
-        'EnumSrv',
-        function (EnumSrv) {
-            return new EnumSrv.BaseEnum([
-                ['SELECT_ANSWER',0 ,'select answer'],
-                ['FREE_TEXT_ANSWER',1 ,'free text answer'],
-                ['RATE_ANSWER',3 ,'rate answer']
-            ]);
-        }
-    ]);
-})(angular);
-
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.exerciseUtility').factory('categoryEnum', [
-        'EnumSrv',
-        function (EnumSrv) {
-            return new EnumSrv.BaseEnum([
-                ['TUTORIAL', 1, 'tutorial'],
-                ['EXERCISE', 2, 'exercise'],
-                ['MINI_CHALLENGE', 3, 'miniChallenge'],
-                ['SECTION', 4, 'section'],
-                ['DRILL', 5, 'drill'],
-                ['GENERAL', 6, 'general'],
-                ['SPECIFIC', 7, 'specific'],
-                ['STRATEGY', 8, 'strategy'],
-                ['SUBJECT', 9, 'subject'],
-                ['SUB_SCORE', 10, 'subScore'],
-                ['TEST_SCORE', 11, 'testScore']
-            ]);
-        }
-    ]);
-})(angular);
-
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.exerciseUtility').factory('ExamTypeEnum', [
-        'EnumSrv',
-        function (EnumSrv) {
-            return new EnumSrv.BaseEnum([
-                ['FULL_TEST', 0, 'test'],
-                ['MINI_TEST', 1, 'miniTest'],
-                ['DIAGNOSTIC', 2, 'diagnostic']
-            ]);
-        }
-    ]);
-})(angular);
-
-
-(function (angular) {
-    'use strict';
-
-    var exerciseStatusEnum = {
-        NEW: 0,
-        ACTIVE: 1,
-        COMPLETED: 2,
-        COMING_SOON: 3
-    };
-
-    angular.module('znk.infra.exerciseUtility').constant('exerciseStatusConst', exerciseStatusEnum);
-
-    angular.module('znk.infra.exerciseUtility').factory('ExerciseStatusEnum', [
-        'EnumSrv',
-        function (EnumSrv) {
-            return new EnumSrv.BaseEnum([
-                ['NEW', exerciseStatusEnum.NEW, 'new'],
-                ['ACTIVE', exerciseStatusEnum.ACTIVE, 'active'],
-                ['COMPLETED', exerciseStatusEnum.COMPLETED, 'completed'],
-                ['COMING_SOON', exerciseStatusEnum.COMING_SOON, 'coming soon']
-            ]);
-        }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    var exerciseTypeConst = {
-        TUTORIAL: 1,
-        PRACTICE: 2,
-        GAME: 3,
-        SECTION: 4,
-        DRILL: 5
-    };
-
-    angular.module('znk.infra.exerciseUtility')
-        .constant('exerciseTypeConst', exerciseTypeConst)
-        .factory('ExerciseTypeEnum', [
-            'EnumSrv',
-            function (EnumSrv) {
-                return new EnumSrv.BaseEnum([
-                    ['TUTORIAL', 1, 'Tutorial'],
-                    ['PRACTICE', 2, 'Practice'],
-                    ['GAME', 3, 'Game'],
-                    ['SECTION', 4, 'Section'],
-                    ['DRILL', 5, 'Drill']
-                ]);
-            }
-        ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.exerciseUtility').factory('QuestionFormatEnum', [
-        'EnumSrv',
-        function (EnumSrv) {
-
-            var QuestionFormatEnum = new EnumSrv.BaseEnum([
-                ['TEXT',1,'text'],
-                ['AUDIO',2, 'audio'],
-                ['TEXT_AUDIO', 3, 'text audio'],
-                ['PROSE_SUMMARY', 4, 'prose Summary'],
-                ['FILL_IN_TABLE', 5, 'fill in a table'],
-                ['CONNECTING_CONTENT', 6, 'connecting content'],
-                ['INDEPENDENT', 7, 'independent'],
-                ['STANDARD', 8, 'standard']
-            ]);
-
-            return QuestionFormatEnum;
-        }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    var subjectEnum = {
-        MATH: 0,
-        READING: 1,
-        WRITING: 2,
-        LISTENING: 3,
-        SPEAKING: 4,
-        ENGLISH: 5,
-        SCIENCE: 6,
-        VERBAL: 7,
-        ESSAY: 8
-    };
-
-    angular.module('znk.infra.exerciseUtility').constant('SubjectEnumConst', subjectEnum);
-
-    angular.module('znk.infra.exerciseUtility').factory('SubjectEnum', [
-        'EnumSrv',
-        function (EnumSrv) {
-
-            var SubjectEnum = new EnumSrv.BaseEnum([
-                ['MATH', subjectEnum.MATH, 'math'],
-                ['READING', subjectEnum.READING, 'reading'],
-                ['WRITING', subjectEnum.WRITING, 'writing'],
-                ['LISTENING', subjectEnum.LISTENING, 'listening'],
-                ['SPEAKING', subjectEnum.SPEAKING, 'speaking'],
-                ['ENGLISH', subjectEnum.ENGLISH, 'english'],
-                ['SCIENCE', subjectEnum.SCIENCE, 'science'],
-                ['VERBAL', subjectEnum.VERBAL, 'verbal'],
-                ['ESSAY', subjectEnum.ESSAY, 'essay']
-            ]);
-
-            return SubjectEnum;
-        }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.exerciseUtility').factory('ExerciseUtilitySrv',
+    angular.module('znk.infra.filters').filter('capitalize', [
         function () {
-            'ngInject';
-            
-            var ExerciseUtilitySrv = {};
-
-            return ExerciseUtilitySrv;
+            return function (str) {
+                if(!angular.isString(str) || !str.length){
+                    return '';
+                }
+                
+                return str[0].toUpperCase() + str.substr(1);
+            };
         }
-    );
-})(angular);
-
-angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($templateCache) {
-
-}]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.filters', []);
+    ]);
 })(angular);
 
 (function (angular) {
@@ -2443,21 +2148,6 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
 
 }]);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.general', ['znk.infra.enum', 'znk.infra.svgIcon', 'angular-svg-round-progress'])
-        .config([
-        'SvgIconSrvProvider',
-        function (SvgIconSrvProvider) {
-            var svgMap = {
-                'clock-icon': 'components/general/svg/clock-icon.svg'
-            };
-            SvgIconSrvProvider.registerSvgSources(svgMap);
-        }]);
-
-})(angular);
-
 /**
  * evaluates content , then it appended it to the DOM , and finally it compiles it with scope which was created out of the directive scope.
  * attrs-
@@ -2479,10 +2169,10 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
                     if(_childScope){
                         _childScope.$destroy();
                         _childScope = null;
-                        $animate.leave(element.children());
-                        element.empty();
                     }
 
+                    $animate.leave(element.children());
+                    element.empty();
 
                     if(typeof newVal === 'undefined'){
                         return;
@@ -2515,66 +2205,6 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
             }
         };
     }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.general').filter('cutString', function cutStringFilter() {
-        return function (str, length, onlyFullWords) {
-            length = +length;
-            if (!str || length <= 0) {
-                return '';
-            }
-            if (isNaN(length) || str.length < length) {
-                return str;
-            }
-            var words = str.split(' ');
-            var newStr = '';
-            if (onlyFullWords) {
-                for (var i = 0; i < words.length; i++) {
-                    if (newStr.length + words[i].length <= length) {
-                        newStr = newStr + words[i] + ' ';
-                    } else {
-                        break;
-                    }
-                }
-            } else {
-                newStr = str.substr(0, length);
-            }
-
-            return newStr + '...';
-        };
-    });
-})(angular);
-
-
-'use strict';
-
-(function (angular) {
-    angular.module('znk.infra.general').directive('disableClickDrv', [
-        function () {
-            return {
-                priority: 200,
-                link: {
-                    pre: function (scope, element, attrs) {
-                        function clickHandler(evt){
-                            if(attrs.disabled){
-                                evt.stopImmediatePropagation();
-                                evt.preventDefault();
-                                return false;
-                            }
-                        }
-                        var eventName = 'click';
-                        element[0].addEventListener (eventName, clickHandler);
-                        scope.$on('$destroy',function(){
-                            element[0].removeEventListener (eventName, clickHandler);
-                        });
-                    }
-                }
-            };
-        }
-    ]);
 })(angular);
 
 /**
@@ -2710,6 +2340,96 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
 })(angular);
 
 
+angular.module('znk.infra.general').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/general/svg/clock-icon.svg",
+    "<svg version=\"1.1\" class=\"clock-icon-svg\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "     viewBox=\"0 0 183 208.5\">\n" +
+    "    <style>\n" +
+    "        .clock-icon-svg .st0 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 10.5417;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon-svg .st1 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 12.3467;\n" +
+    "            stroke-linecap: round;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon-svg .st2 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 11.8313;\n" +
+    "            stroke-linecap: round;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon-svg .st3 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 22.9416;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon-svg .st4 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 14;\n" +
+    "            stroke-linecap: round;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon-svg .st5 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 18;\n" +
+    "            stroke-linejoin: round;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "\n" +
+    "    </style>\n" +
+    "    <g>\n" +
+    "        <circle class=\"st0\" cx=\"91.5\" cy=\"117\" r=\"86.2\"/>\n" +
+    "        <line class=\"st1\" x1=\"92.1\" y1=\"121.5\" x2=\"92.1\" y2=\"61\"/>\n" +
+    "        <line class=\"st2\" x1=\"92.1\" y1=\"121.5\" x2=\"131.4\" y2=\"121.5\"/>\n" +
+    "        <line class=\"st3\" x1=\"78.2\" y1=\"18.2\" x2=\"104.9\" y2=\"18.2\"/>\n" +
+    "        <line class=\"st4\" x1=\"61.4\" y1=\"7\" x2=\"121.7\" y2=\"7\"/>\n" +
+    "        <line class=\"st5\" x1=\"156.1\" y1=\"43\" x2=\"171.3\" y2=\"61\"/>\n" +
+    "    </g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/general/templates/timerDrv.html",
+    "<div ng-switch=\"type\" class=\"timer-drv\">\n" +
+    "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +
+    "        <svg-icon class=\"icon-wrapper\" name=\"clock-icon\"></svg-icon>\n" +
+    "        <div class=\"timer-view\"></div>\n" +
+    "    </div>\n" +
+    "    <div ng-switch-when=\"2\" class=\"timer-type2\">\n" +
+    "        <div class=\"timer-display-wrapper\">\n" +
+    "            <span class=\"timer-display\"></span>\n" +
+    "        </div>\n" +
+    "        <div round-progress\n" +
+    "             current=\"ngModelCtrl.$viewValue\"\n" +
+    "             max=\"config.max\"\n" +
+    "             color=\"{{config.color}}\"\n" +
+    "             bgcolor=\"{{config.bgcolor}}\"\n" +
+    "             stroke=\"{{config.stroke}}\"\n" +
+    "             radius=\"{{config.radius}}\"\n" +
+    "             clockwise=\"config.clockwise\">\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
+}]);
+
 /**
  * attrs -
  *      ng-model
@@ -2734,8 +2454,8 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
 (function (angular) {
 
     angular.module('znk.infra.general').directive('timer', [
-        '$interval', '$translatePartialLoader', '$timeout',
-        function ($interval, $translatePartialLoader, $timeout) {
+        '$interval',
+        function ($interval) {
             var timerTypes = {
                 'REGULAR': 1,
                 'ROUND_PROGRESSBAR': 2
@@ -2751,21 +2471,19 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
                 replace: true,
                 templateUrl: 'components/general/templates/timerDrv.html',
                 link: function link(scope, element, attrs, ngModelCtrl) {
-                    $translatePartialLoader.addPart('general');
                     var domElement = element[0];
 
                     scope.ngModelCtrl = ngModelCtrl;
 
-
-                    function padNum(num) {
-                        if (('' + Math.abs(+num)).length < 2) {
+                    function padNum(num){
+                        if(('' + Math.abs(+num)).length < 2){
                             return (num < 0 ? '-' : '') + '0' + Math.abs(+num);
-                        } else {
+                        }else{
                             return num;
                         }
                     }
 
-                    function getDisplayedTime(currentTime, format) {
+                    function getDisplayedTime(currentTime,format){
                         var totalSeconds = currentTime / 1000;
                         var seconds = Math.floor(totalSeconds % 60);
                         var minutes = Math.floor(Math.abs(totalSeconds) / 60) * (totalSeconds < 0 ? -1 : 1);
@@ -2773,22 +2491,16 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
                         var paddedMinutes = padNum(minutes);
 
                         return format
-                            .replace('tss', totalSeconds)
-                            .replace('ss', paddedSeconds)
-                            .replace('mm', paddedMinutes);
+                            .replace('tss',totalSeconds)
+                            .replace('ss',paddedSeconds)
+                            .replace('mm',paddedMinutes);
 
                     }
 
                     function updateTime(currentTime) {
-                        if (scope.config.countDown && scope.config && scope.config.max) {
-                            scope.timeElapsed = scope.config.max - currentTime;
-                        } else {
-                            scope.timeElapsed = currentTime;
-                        }
-
-                        var displayedTime = getDisplayedTime(currentTime, scope.config.format);
+                        var displayedTime = getDisplayedTime(currentTime,scope.config.format);
                         var timeDisplayDomElem;
-                        switch (scope.type) {
+                        switch(scope.type){
                             case 1:
                                 timeDisplayDomElem = domElement.querySelector('.timer-view');
                                 break;
@@ -2796,8 +2508,7 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
                                 timeDisplayDomElem = domElement.querySelector('.timer-display');
                                 break;
                         }
-
-                        if (timeDisplayDomElem) {
+                        if(timeDisplayDomElem){
                             timeDisplayDomElem.innerText = displayedTime;
                         }
                     }
@@ -2809,8 +2520,7 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
                     scope.config = scope.configGetter() || {};
                     var configDefaults = {
                         format: 'mm:ss',
-                        stopOnZero: true,
-                        stroke: 2
+                        stopOnZero: true
                     };
                     scope.config = angular.extend(configDefaults, scope.config);
 
@@ -2837,7 +2547,7 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
 
                         currentTime += scope.config.countDown ? -INTERVAL_TIME : INTERVAL_TIME;
 
-                        if (scope.config.stopOnZero && currentTime <= 0) {
+                        if(scope.config.stopOnZero && currentTime <= 0){
                             scope.play = false;
                             currentTime = 0;
                         }
@@ -2851,9 +2561,7 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
                         if (angular.isUndefined(currentTime)) {
                             return;
                         }
-                        $timeout(function(){
-                            updateTime(currentTime);
-                        });
+                        updateTime(currentTime);
                     };
 
                     scope.$watch('play', function (play) {
@@ -3109,103 +2817,6 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
     ]);
 })(angular);
 
-angular.module('znk.infra.general').run(['$templateCache', function($templateCache) {
-  $templateCache.put("components/general/svg/clock-icon.svg",
-    "<svg version=\"1.1\" class=\"clock-icon-svg\"\n" +
-    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
-    "     x=\"0px\"\n" +
-    "     y=\"0px\"\n" +
-    "     viewBox=\"0 0 183 208.5\">\n" +
-    "    <style>\n" +
-    "        .clock-icon-svg .st0 {\n" +
-    "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
-    "            stroke-width: 10.5417;\n" +
-    "            stroke-miterlimit: 10;\n" +
-    "        }\n" +
-    "\n" +
-    "        .clock-icon-svg .st1 {\n" +
-    "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
-    "            stroke-width: 12.3467;\n" +
-    "            stroke-linecap: round;\n" +
-    "            stroke-miterlimit: 10;\n" +
-    "        }\n" +
-    "\n" +
-    "        .clock-icon-svg .st2 {\n" +
-    "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
-    "            stroke-width: 11.8313;\n" +
-    "            stroke-linecap: round;\n" +
-    "            stroke-miterlimit: 10;\n" +
-    "        }\n" +
-    "\n" +
-    "        .clock-icon-svg .st3 {\n" +
-    "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
-    "            stroke-width: 22.9416;\n" +
-    "            stroke-miterlimit: 10;\n" +
-    "        }\n" +
-    "\n" +
-    "        .clock-icon-svg .st4 {\n" +
-    "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
-    "            stroke-width: 14;\n" +
-    "            stroke-linecap: round;\n" +
-    "            stroke-miterlimit: 10;\n" +
-    "        }\n" +
-    "\n" +
-    "        .clock-icon-svg .st5 {\n" +
-    "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
-    "            stroke-width: 18;\n" +
-    "            stroke-linejoin: round;\n" +
-    "            stroke-miterlimit: 10;\n" +
-    "        }\n" +
-    "\n" +
-    "\n" +
-    "    </style>\n" +
-    "    <g>\n" +
-    "        <circle class=\"st0\" cx=\"91.5\" cy=\"117\" r=\"86.2\"/>\n" +
-    "        <line class=\"st1\" x1=\"92.1\" y1=\"121.5\" x2=\"92.1\" y2=\"61\"/>\n" +
-    "        <line class=\"st2\" x1=\"92.1\" y1=\"121.5\" x2=\"131.4\" y2=\"121.5\"/>\n" +
-    "        <line class=\"st3\" x1=\"78.2\" y1=\"18.2\" x2=\"104.9\" y2=\"18.2\"/>\n" +
-    "        <line class=\"st4\" x1=\"61.4\" y1=\"7\" x2=\"121.7\" y2=\"7\"/>\n" +
-    "        <line class=\"st5\" x1=\"156.1\" y1=\"43\" x2=\"171.3\" y2=\"61\"/>\n" +
-    "    </g>\n" +
-    "</svg>\n" +
-    "");
-  $templateCache.put("components/general/templates/timerDrv.html",
-    "<div ng-switch=\"type\" class=\"timer-drv\">\n" +
-    "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +
-    "        <svg-icon class=\"icon-wrapper\" name=\"clock-icon\"></svg-icon>\n" +
-    "        <div class=\"timer-view\"></div>\n" +
-    "    </div>\n" +
-    "    <div ng-switch-when=\"2\" class=\"timer-type2\">\n" +
-    "        <div class=\"timer-display-wrapper\">\n" +
-    "            <div class=\"timer-display\"></div>\n" +
-    "            <div class=\"seconds-text\" translate=\"TIMER.SECONDS\"></div>\n" +
-    "        </div>\n" +
-    "        <div round-progress\n" +
-    "             current=\"timeElapsed\"\n" +
-    "             max=\"config.max\"\n" +
-    "             color=\"{{config.color}}\"\n" +
-    "             bgcolor=\"{{config.bgcolor}}\"\n" +
-    "             stroke=\"{{config.stroke}}\"\n" +
-    "             radius=\"{{config.radius}}\"\n" +
-    "             clockwise=\"config.clockwise\">\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "</div>\n" +
-    "");
-}]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.hint', ['znk.infra.config']);
-})(angular);
-
 (function (angular) {
     'use strict';
 
@@ -3226,9 +2837,10 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
         };
 
         this.$get = [
-            'InfraConfigSrv', '$q', '$log', '$injector', 'StorageSrv',
-            function (InfraConfigSrv, $q, $log, $injector, StorageSrv) {
+            'InfraConfigSrv', '$q', '$log', '$injector',
+            function (InfraConfigSrv, $q, $log, $injector) {
                 var HintSrv = {};
+                var StorageSrv = InfraConfigSrv.getStorageService();
                 var hintPath = StorageSrv.variables.appUserSpacePath + '/hint';
                 var defaultHints = {
                     hintsStatus:{}
@@ -3279,17 +2891,13 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
                 };
 
                 function getHints(){
-                    return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                        return StudentStorageSrv.get(hintPath, defaultHints).then(function (hint) {
-                            return hint;
-                        });
+                    return StorageSrv.get(hintPath, defaultHints).then(function (hint) {
+                        return hint;
                     });
                 }
 
                 function saveHints(newHint){
-                    return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                        return StudentStorageSrv.set(hintPath, newHint);
-                    });
+                    return StorageSrv.set(hintPath, newHint);
                 }
 
                 function getHintLastValue(hintStatus){
@@ -3311,32 +2919,35 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
 
 (function (angular) {
     'use strict';
-    angular.module('znk.infra.moduleResults', []);
-})(angular);
-
-(function (angular) {
-    'use strict';
 
     angular.module('znk.infra.moduleResults').service('ModuleResultsService', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'StorageSrv',
-        function (InfraConfigSrv, $log, $q, UtilitySrv, StorageSrv) {
+        'InfraConfigSrv', '$log', '$q', 'UtilitySrv',
+        function (InfraConfigSrv, $log, $q, UtilitySrv) {
 
             var moduleResultsService = {};
-            var USER_MODULE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
+            var storage = InfraConfigSrv.getStorageService();
+            var USER_MODULE_RESULTS_PATH = storage.variables.appUserSpacePath + '/moduleResults';
             var MODULE_RESULTS_PATH = 'moduleResults';
 
-            moduleResultsService.getUserModuleResultsGuids = function (userId) {
+            moduleResultsService.getDefaultModuleResult = function (moduleId, userId) {
+                return {
+                    moduleId: moduleId,
+                    uid: userId,
+                    assignedTutorId: null,
+                    assign: false,
+                    contentAssign: false,
+                    guid: UtilitySrv.general.createGuid()
+                };
+            };
+
+            moduleResultsService.getUserModuleResultsGuids = function (userId){
                 var userResultsPath = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
-                return InfraConfigSrv.getStudentStorage().then(function (storage) {
-                    return storage.get(userResultsPath);
-                });
+                return storage.get(userResultsPath);
             };
 
             moduleResultsService.getModuleResultByGuid = function (resultGuid, defaultValue) {
                 var resultPath = MODULE_RESULTS_PATH + '/' + resultGuid;
-                return InfraConfigSrv.getStudentStorage().then(function (storage) {
-                    return storage.get(resultPath, defaultValue);
-                });
+                return storage.get(resultPath, defaultValue);
             };
 
             moduleResultsService.getModuleResultByModuleId = function (moduleId, userId, withDefaultResult) {
@@ -3344,19 +2955,12 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                     var defaultResult = {};
                     var moduleResultGuid = moduleResultsGuids[moduleId];
 
-                    if (!moduleResultGuid) {
+                    if(!moduleResultGuid) {
                         if (!withDefaultResult) {
                             return null;
                         } else {
-                            moduleResultGuid = UtilitySrv.general.createGuid();
-                            defaultResult = {
-                                moduleId: moduleId,
-                                tutorId: null,
-                                assign: false,
-                                contentAssign: false,
-                                guid: moduleResultGuid,
-                                uid: userId
-                            };
+                            defaultResult =  moduleResultsService.getDefaultModuleResult(moduleId, userId);
+                            moduleResultGuid = defaultResult.guid;
                         }
                     }
 
@@ -3364,15 +2968,13 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                 });
             };
 
-            moduleResultsService.setModuleResult = function (newResult) {
-                return moduleResultsService.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
+            moduleResultsService.setModuleResult = function (newResult){
+                return  moduleResultsService.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
                     var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
                     if (userGuidLists[newResult.guid]) {
-                        return moduleResultsService.getModuleResultByGuid(newResult.guid).then(function (moduleResult) {
+                        return  moduleResultsService.getModuleResultByGuid(newResult.guid).then(function (moduleResult) {
                             angular.extend(moduleResult, newResult);
-                            return InfraConfigSrv.getStudentStorage().then(function (storage) {
-                                return storage.set(moduleResultPath, moduleResult);
-                            });
+                            return storage.set(moduleResultPath, moduleResult);
                         });
                     }
 
@@ -3380,9 +2982,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                     var dataToSave = {};
                     dataToSave[USER_MODULE_RESULTS_PATH] = userGuidLists;
                     dataToSave[moduleResultPath] = newResult;
-                    return InfraConfigSrv.getStudentStorage().then(function(storage){
-                        return storage.set(dataToSave);
-                    });
+                    return storage.set(dataToSave);
                 });
             };
 
@@ -3396,54 +2996,6 @@ angular.module('znk.infra.moduleResults').run(['$templateCache', function($templ
 
 }]);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.personalization', ['znk.infra.content']);
-})(angular);
-
-(function (angular) {
-    'use strict';
-    
-    angular.module('znk.infra.personalization')
-        .service('PersonalizationSrv',
-            ["StorageRevSrv", "$log", "$q", function (StorageRevSrv, $log, $q) {
-                'ngInject';
-
-                var self = this;
-
-                this.getPersonalizationData = function () {
-                    var data = {
-                        exerciseType: 'personalization'
-                    };
-
-                    return StorageRevSrv.getContent(data);
-                };
-
-                this.getExamOrder = function () {
-                    return self.getPersonalizationData().then(function (personalizationData) {
-                        var errorMsg = 'PersonalizationSrv getExamOrder: personalization.examOrder is not array or empty!';
-                        if (!angular.isArray(personalizationData.examOrder) || personalizationData.examOrder.length === 0) {
-                            $log.error(errorMsg);
-                            return $q.reject(errorMsg);
-                        }
-                        return personalizationData.examOrder;
-                    });
-                };
-            }]
-        );
-})(angular);
-
-
-angular.module('znk.infra.personalization').run(['$templateCache', function($templateCache) {
-
-}]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.pngSequence', []);
-})(angular);
 /**
  * Created by Igor on 8/19/2015.
  */
@@ -3562,21 +3114,6 @@ angular.module('znk.infra.personalization').run(['$templateCache', function($tem
 angular.module('znk.infra.pngSequence').run(['$templateCache', function($templateCache) {
 
 }]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.popUp', ['znk.infra.svgIcon', 'znk.infra.autofocus'])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
-                var svgMap = {
-                    'exclamation-mark': 'components/popUp/svg/exclamation-mark-icon.svg',
-                    'correct': 'components/popUp/svg/correct-icon.svg'
-                };
-                SvgIconSrvProvider.registerSvgSources(svgMap);
-            }]);
-})(angular);
 
 'use strict';
 
@@ -3794,30 +3331,6 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
     "");
 }]);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.presence', ['ngIdle'])
-        .config([
-            'IdleProvider', 'KeepaliveProvider', 'ENV',
-            function (IdleProvider, KeepaliveProvider, ENV) {
-                // userIdleTime: how many sec until user is 'IDLE'
-                // idleTimeout: how many sec after idle to stop track the user, 0: keep track
-                // idleKeepalive: keepalive interval in sec
-
-                IdleProvider.idle(ENV.userIdleTime || 30);
-                IdleProvider.timeout(ENV.idleTimeout || 0);
-                KeepaliveProvider.interval(ENV.idleKeepalive || 2);
-            }])
-        .run([
-            'PresenceService', 'Idle',
-            function (PresenceService, Idle) {
-                PresenceService.addCurrentUserListeners();
-                Idle.watch();
-            }
-        ]);
-})(angular);
-
 'use strict';
 
 (function (angular) {
@@ -3908,154 +3421,10 @@ angular.module('znk.infra.presence').run(['$templateCache', function($templateCa
 
 }]);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.scoring', ['znk.infra.storage', 'znk.infra.exerciseUtility']);
-})(angular);
-
-'use strict';
-angular.module('znk.infra.scoring').provider('ScoringService', function() {
-    'ngInject';
-
-    var _scoringLimits;
-    var _examScoreFnGetter;
-
-    this.setScoringLimits = function(scoringLimits) {
-        _scoringLimits = scoringLimits;
-    };
-
-    this.setExamScoreFnGetter = function(examScoreFnGetter) {
-        _examScoreFnGetter = examScoreFnGetter;
-    };
-
-    this.$get = ['$q', 'ExamTypeEnum', 'StorageRevSrv', '$log', '$injector',
-        function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
-        var scoringServiceObjApi = {};
-        var keysMapConst = {
-            crossTestScore: 'CrossTestScore',
-            subScore: 'Subscore',
-            miniTest: 'miniTest',
-            test: 'test'
-        };
-
-        function _getScoreTableProm() {
-            return StorageRevSrv.getContent({
-                exerciseType: 'scoretable'
-            }).then(function (scoreTable) {
-                if (!scoreTable || !angular.isObject(scoreTable)) {
-                    var errMsg = 'ScoringService _getScoreTableProm: no scoreTable or scoreTable is not an object! scoreTable:' + scoreTable;
-                    $log.error(errMsg);
-                    return $q.reject(errMsg);
-                }
-                return scoreTable;
-            });
-        }
-
-        function _shouldAddToScore(question) {
-            return (question.isAnsweredCorrectly && !question.afterAllowedTime);
-        }
-
-        function _getRawScore(questionsResults) {
-            var score = 0;
-            angular.forEach(questionsResults, function (question) {
-                if (_shouldAddToScore(question)) {
-                    score += 1;
-                }
-            });
-            return score;
-        }
-
-        function _isTypeFull(typeId) {
-            return ExamTypeEnum.FULL_TEST.enum === typeId;
-        }
-
-        function _getScoreTableKeyByTypeId(typeId) {
-            return _isTypeFull(typeId) ? keysMapConst.test : keysMapConst.miniTest;
-        }
-
-        function _getDataFromTable(scoreTable, scoreTableKey, subjectId, rawScore) {
-            var data = angular.copy(scoreTable);
-            if (angular.isDefined(scoreTableKey)) {
-                data = data[scoreTableKey];
-            }
-            if (angular.isDefined(subjectId)) {
-                data = data[subjectId];
-            }
-            if (angular.isDefined(rawScore)) {
-                data = data[rawScore];
-            }
-            return data;
-        }
-
-        function _getResultsFn(scoreTable, questionsResults, typeId, id) {
-            var rawScore = _getRawScore(questionsResults);
-            var scoreTableKey = _getScoreTableKeyByTypeId(typeId);
-            return _getDataFromTable(scoreTable, scoreTableKey, id, rawScore);
-        }
-
-        function _getTestScoreResultFn(scoreTable, questionsResults, typeId, categoryId) {
-            var data = _getResultsFn(scoreTable, questionsResults, typeId, categoryId);
-            return {
-                testScore: data
-            };
-        }
-
-        function _getSectionScoreResultFn(scoreTable, questionsResults, typeId, subjectId) {
-            var data = _getResultsFn(scoreTable, questionsResults, typeId, subjectId);
-            return {
-                sectionScore: data
-            };
-        }
-
-        // api
-
-        scoringServiceObjApi.isTypeFull = function (typeId) {
-            return ExamTypeEnum.FULL_TEST.enum === typeId;
-        };
-
-        scoringServiceObjApi.getTestScoreResult = function (questionsResults, typeId, categoryId) {
-            return _getScoreTableProm().then(function (scoreTable) {
-                return _getTestScoreResultFn(scoreTable, questionsResults, typeId, categoryId);
-            });
-        };
-
-        scoringServiceObjApi.getSectionScore = function (questionsResults, typeId, subjectId) {
-            return _getScoreTableProm().then(function (scoreTable) {
-                return _getSectionScoreResultFn(scoreTable, questionsResults, typeId, subjectId);
-            });
-        };
-
-        scoringServiceObjApi.rawScoreToScore = function (subjectId, rawScore) {
-            return _getScoreTableProm().then(function (scoreTable) {
-                var roundedRawScore = Math.round(rawScore);
-                return _getDataFromTable(scoreTable, keysMapConst.test, subjectId, roundedRawScore);
-            });
-        };
-
-        scoringServiceObjApi.getExamScoreFn = function () {
-            return $q.when($injector.invoke(_examScoreFnGetter));
-        };
-
-        scoringServiceObjApi.getScoringLimits = function() {
-             return _scoringLimits;
-        };
-
-        return scoringServiceObjApi;
-    }];
-
-});
-
-
-angular.module('znk.infra.scoring').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.scroll').run(['$templateCache', function($templateCache) {
 
 }]);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.scroll', []);
-})(angular);
 /**
  * attrs:
  *      actions:
@@ -4130,10 +3499,6 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                         currMousePoint.x = evt.pageX;
                         currMousePoint.y = evt.pageY;
                         moveScroll(xOffset,containerWidth,childWidth);
-                        //stop event bubbling
-                        evt.preventDefault();
-                        evt.stopPropagation();
-                        return false;
                     }
                     function mouseUpEventHandler(){
                         //$log.debug('mouse up',evt.pageX);
@@ -4253,37 +3618,6 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
 })(angular);
 
-
-angular.module('znk.infra.scroll').run(['$templateCache', function($templateCache) {
-
-}]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.sharedScss', []);
-})(angular);
-
-angular.module('znk.infra.sharedScss').run(['$templateCache', function($templateCache) {
-
-}]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.stats', [
-            'znk.infra.enum',
-            'znk.infra.znkExercise',
-            'znk.infra.utility',
-            'znk.infra.contentGetters'
-        ])
-        .run([
-            'StatsEventsHandlerSrv',
-            function (StatsEventsHandlerSrv) {
-                StatsEventsHandlerSrv.init();
-            }
-        ]);
-})(angular);
 
 (function (angular) {
     'use strict';
@@ -4447,188 +3781,189 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
     'use strict';
 
     angular.module('znk.infra.stats').provider('StatsSrv', function () {
-        this.$get = ["InfraConfigSrv", "$q", "SubjectEnum", "$log", "$injector", "StorageSrv", "CategoryService", function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv, CategoryService) {
-            'ngInject';
+        var getCategoryLookup;
+        this.setCategoryLookup = function (_getCategoryLookup) {
+            getCategoryLookup = _getCategoryLookup;
+        };
 
-            var STATS_PATH = StorageSrv.variables.appUserSpacePath + '/stats';
-
-            var StatsSrv = {};
-
-            var _getCategoryLookup = function () {
-                return CategoryService.getCategoryMap().then(function (categoryMap) {
-                    return categoryMap;
-                });
-            };
-
-            function BaseStats(id, addInitOffset) {
-                if (angular.isDefined(id)) {
-                    this.id = +id;
+        this.$get = [
+            'InfraConfigSrv', '$q', 'SubjectEnum', '$log', '$injector',
+            function (InfraConfigSrv, $q, SubjectEnum, $log, $injector) {
+                if (!getCategoryLookup) {
+                    $log.error('StatsSrv: getCategoryLookup was not set !!!!');
                 }
 
-                var totalQuestions;
-                var correct;
-                var unanswered;
-                var wrong;
-                var totalTime;
+                var StorageSrv = InfraConfigSrv.getStorageService();
+                var STATS_PATH = StorageSrv.variables.appUserSpacePath + '/stats';
 
+                var StatsSrv = {};
 
-                if (addInitOffset) {
-                    totalQuestions = 3;
-                    correct = 1;
-                    unanswered = 0;
-                    wrong = 2;
-                    totalTime = 0;
-                } else {
-                    totalQuestions = 0;
-                    correct = 0;
-                    unanswered = 0;
-                    wrong = 0;
-                    totalTime = 0;
-                }
-
-                this.totalQuestions = totalQuestions;
-                this.correct = correct;
-                this.unanswered = unanswered;
-                this.wrong = wrong;
-                this.totalTime = totalTime;
-            }
-
-            function getStats() {
-                var defaults = {
-                    processedExercises: {}
+                var _getCategoryLookup = function() {
+                    return $injector.invoke(getCategoryLookup).then(function(categoryMap){
+                        return categoryMap;
+                    });
                 };
-                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
-                    return StudentStorageSrv.get(STATS_PATH, defaults);
-                });
-            }
 
-            function setStats(newStats) {
-                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
-                    return StudentStorageSrv.set(STATS_PATH, newStats);
-                });
-            }
-
-            function _baseStatsUpdater(currStat, newStat) {
-                currStat.totalQuestions += newStat.totalQuestions;
-                currStat.correct += newStat.correct;
-                currStat.unanswered += newStat.unanswered;
-                currStat.wrong += newStat.wrong;
-                currStat.totalTime += newStat.totalTime;
-            }
-
-            function _getParentCategoryId(lookUp, categoryId) {
-                return lookUp[categoryId] ? lookUp[categoryId].parentId : lookUp[categoryId];
-            }
-
-            function _getProcessedExerciseKey(exerciseType, exerciseId) {
-                return exerciseType + '_' + exerciseId;
-            }
-
-            StatsSrv.getLevelKey = function (level) {
-                return 'level' + level + 'Categories';
-            };
-
-            StatsSrv.getCategoryKey = function (categoryId) {
-                return 'id_' + categoryId;
-            };
-
-            StatsSrv.getAncestorIds = function (categoryId) {
-                var parentIds = [];
-                return _getCategoryLookup().then(function (categoryLookUp) {
-                    var categoryIdToAdd = _getParentCategoryId(categoryLookUp, +categoryId);
-                    while (categoryIdToAdd !== null && angular.isDefined(categoryIdToAdd)) {
-                        parentIds.push(categoryIdToAdd);
-                        categoryIdToAdd = _getParentCategoryId(categoryLookUp, categoryIdToAdd);
-                    }
-                    return parentIds;
-                });
-            };
-
-            StatsSrv.getStats = getStats;
-
-            StatsSrv.getLevelStats = function (level) {
-                var levelKey = StatsSrv.getLevelKey(level);
-                return getStats().then(function (statsData) {
-                    return statsData[levelKey];
-                });
-            };
-
-            StatsSrv.BaseStats = BaseStats;
-
-            StatsSrv.updateStats = function (newStats, exerciseType, exerciseId) {
-                var processedExerciseKey = _getProcessedExerciseKey(exerciseType, exerciseId);
-                return getStats().then(function (stats) {
-                    var isExerciseRecorded = stats.processedExercises[processedExerciseKey];
-                    if (isExerciseRecorded) {
-                        return;
+                function BaseStats(id, addInitOffset) {
+                    if (angular.isDefined(id)) {
+                        this.id = +id;
                     }
 
-                    var allProm = [];
-                    angular.forEach(newStats, function (newStat, processedCategoryId) {
-                        var prom = StatsSrv.getAncestorIds(processedCategoryId).then(function (categoriesToUpdate) {
-                            categoriesToUpdate.unshift(+processedCategoryId);
-                            var deepestLevel = categoriesToUpdate.length;
-                            categoriesToUpdate.forEach(function (categoryId, index) {
-                                var level = deepestLevel - index;
-                                var levelKey = StatsSrv.getLevelKey(level);
-                                var levelStats = stats[levelKey];
-                                if (!levelStats) {
-                                    levelStats = {};
+                    var totalQuestions;
+                    var correct;
+                    var unanswered;
+                    var wrong;
+                    var totalTime;
 
-                                    stats[levelKey] = levelStats;
-                                }
 
-                                var categoryKey = StatsSrv.getCategoryKey(categoryId);
-                                var categoryStats = levelStats[categoryKey];
-                                if (!categoryStats) {
-                                    categoryStats = new BaseStats(categoryId);
-                                    //need to add init offset only when working on lowest category,
-                                    if (level === deepestLevel) {
-                                        var initStatWithOffset = new BaseStats(null, true);
-                                        _baseStatsUpdater(newStat, initStatWithOffset);
-                                    }
-                                    var parentsIds = categoriesToUpdate.slice(index + 1);
-                                    if (parentsIds.length) {
-                                        categoryStats.parentsIds = parentsIds;
-                                    }
+                    if (addInitOffset) {
+                        totalQuestions = 3;
+                        correct = 1;
+                        unanswered = 0;
+                        wrong = 2;
+                        totalTime = 0;
+                    } else {
+                        totalQuestions = 0;
+                        correct = 0;
+                        unanswered = 0;
+                        wrong = 0;
+                        totalTime = 0;
+                    }
 
-                                    levelStats[categoryKey] = categoryStats;
-                                }
+                    this.totalQuestions = totalQuestions;
+                    this.correct = correct;
+                    this.unanswered = unanswered;
+                    this.wrong = wrong;
+                    this.totalTime = totalTime;
+                }
 
-                                _baseStatsUpdater(categoryStats, newStat);
-                            });
-                        });
-                        allProm.push(prom);
+                function getStats() {
+                    var defaults = {
+                        processedExercises:{}
+                    };
+                    return StorageSrv.get(STATS_PATH, defaults);
+                }
+
+                function setStats(newStats) {
+                    return StorageSrv.set(STATS_PATH, newStats);
+                }
+
+                function _baseStatsUpdater(currStat, newStat) {
+                    currStat.totalQuestions += newStat.totalQuestions;
+                    currStat.correct += newStat.correct;
+                    currStat.unanswered += newStat.unanswered;
+                    currStat.wrong += newStat.wrong;
+                    currStat.totalTime += newStat.totalTime;
+                }
+
+                function _getParentCategoryId(lookUp, categoryId) {
+                    return lookUp[categoryId] ? lookUp[categoryId].parentId : lookUp[categoryId];
+                }
+
+                function _getProcessedExerciseKey(exerciseType, exerciseId){
+                    return exerciseType + '_' + exerciseId;
+                }
+
+                StatsSrv.getLevelKey = function(level) {
+                    return 'level' + level + 'Categories';
+                };
+
+                StatsSrv.getCategoryKey = function (categoryId){
+                    return 'id_' + categoryId;
+                };
+
+                StatsSrv.getAncestorIds = function(categoryId){
+                    var parentIds = [];
+                    return _getCategoryLookup().then(function(categoryLookUp){
+                        var categoryIdToAdd = _getParentCategoryId(categoryLookUp, +categoryId);
+                        while (categoryIdToAdd !== null && angular.isDefined(categoryIdToAdd)) {
+                            parentIds.push(categoryIdToAdd);
+                            categoryIdToAdd = _getParentCategoryId(categoryLookUp, categoryIdToAdd);
+                        }
+                        return parentIds;
                     });
-                    return $q.all(allProm).then(function () {
-                        stats.processedExercises[processedExerciseKey] = true;
-                        return setStats(stats);
+                };
+
+                StatsSrv.getStats = getStats;
+
+                StatsSrv.getLevelStats = function(level){
+                    var levelKey = StatsSrv.getLevelKey(level);
+                    return getStats().then(function(statsData){
+                        return statsData[levelKey];
                     });
-                });
+                };
 
-            };
+                StatsSrv.BaseStats = BaseStats;
 
-            StatsSrv.isExerciseStatsRecorded = function (exerciseType, exerciseId) {
-                return StatsSrv.getStats().then(function (stats) {
+                StatsSrv.updateStats = function (newStats, exerciseType, exerciseId) {
                     var processedExerciseKey = _getProcessedExerciseKey(exerciseType, exerciseId);
-                    return !!stats.processedExercises[processedExerciseKey];
-                });
-            };
+                    return getStats().then(function (stats) {
+                        var isExerciseRecorded = stats.processedExercises[processedExerciseKey];
+                        if(isExerciseRecorded){
+                            return;
+                        }
 
-            return StatsSrv;
-        }];
+                        var allProm = [];
+                        angular.forEach(newStats, function (newStat, processedCategoryId) {
+                            var prom = StatsSrv.getAncestorIds(processedCategoryId).then(function(categoriesToUpdate){
+                                categoriesToUpdate.unshift(+processedCategoryId);
+                                var deepestLevel = categoriesToUpdate.length;
+                                categoriesToUpdate.forEach(function (categoryId, index) {
+                                    var level = deepestLevel - index;
+                                    var levelKey = StatsSrv.getLevelKey(level);
+                                    var levelStats = stats[levelKey];
+                                    if (!levelStats) {
+                                        levelStats = {};
+
+                                        stats[levelKey] = levelStats;
+                                    }
+
+                                    var categoryKey = StatsSrv.getCategoryKey(categoryId);
+                                    var categoryStats = levelStats[categoryKey];
+                                    if(!categoryStats){
+                                        categoryStats = new BaseStats(categoryId);
+                                        //need to add init offset only when working on lowest category,
+                                        if(level === deepestLevel){
+                                            var initStatWithOffset = new BaseStats(null,true);
+                                            _baseStatsUpdater(newStat, initStatWithOffset);
+                                        }
+                                        var parentsIds = categoriesToUpdate.slice(index + 1);
+                                        if(parentsIds.length){
+                                            categoryStats.parentsIds = parentsIds;
+                                        }
+
+                                        levelStats[categoryKey] = categoryStats;
+                                    }
+
+                                    _baseStatsUpdater(categoryStats,newStat);
+                                });
+                            });
+                            allProm.push(prom);
+                        });
+                        return $q.all(allProm).then(function(){
+                            stats.processedExercises[processedExerciseKey] = true;
+                            return setStats(stats);
+                        });
+                    });
+
+                };
+
+                StatsSrv.isExerciseStatsRecorded = function(exerciseType, exerciseId){
+                    return StatsSrv.getStats().then(function(stats){
+                        var processedExerciseKey = _getProcessedExerciseKey(exerciseType, exerciseId);
+                        return !!stats.processedExercises[processedExerciseKey];
+                    });
+                };
+
+                return StatsSrv;
+            }
+        ];
     });
 })(angular);
 
 angular.module('znk.infra.stats').run(['$templateCache', function($templateCache) {
 
 }]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.storage', []);
-})(angular);
 
 (function (angular) {
     'use strict';
@@ -4999,11 +4334,6 @@ angular.module('znk.infra.storage').run(['$templateCache', function($templateCac
 
 }]);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.svgIcon', []);
-})(angular);
 /**
  * attrs:
  *  name: svg icon name
@@ -5066,7 +4396,7 @@ angular.module('znk.infra.storage').run(['$templateCache', function($templateCac
                 var alreadyRegisteredSvgIconNames = Object.keys(svgMap);
                 alreadyRegisteredSvgIconNames.forEach(function(svgIconName){
                     if(!!_svgMap[svgIconName]){
-                        console.error('SvgIconSrv: svg icon was already defined before ',svgIconName);
+                        console.log('SvgIconSrv: svg icon was already defined before ',svgIconName);
                     }
                 });
                 angular.extend(svgMap,_svgMap);
@@ -5116,114 +4446,6 @@ angular.module('znk.infra.storage').run(['$templateCache', function($templateCac
 angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCache) {
 
 }]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.user', [
-        'znk.infra.config'
-    ]);
-})(angular);
-
-'use strict';
-
-angular.module('znk.infra.user').service('UserProfileService',
-    ["InfraConfigSrv", "StorageSrv", function (InfraConfigSrv, StorageSrv) {
-        'ngInject';
-        var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
-
-        this.getProfile = function () {
-            return InfraConfigSrv.getGlobalStorage().then(function(globalStorage) {
-                return globalStorage.get(profilePath).then(function (profile) {
-                    if (profile && (angular.isDefined(profile.email) || angular.isDefined(profile.nickname))) {
-                        return profile;
-                    }
-                    return InfraConfigSrv.getUserData().then(function(authData) {
-                        var emailFromAuth = authData.password ? authData.password.email : '';
-                        var nickNameFromAuth = authData.auth ? authData.auth.name : emailFromAuth;
-
-                        if (!profile.email) {
-                            profile.email = emailFromAuth;
-                        }
-                        if (!profile.nickname) {
-                            profile.nickname = nickNameFromAuth;
-                        }
-                        if (!profile.createdTime) {
-                            profile.createdTime = StorageSrv.variables.currTimeStamp;
-                        }
-
-                        return globalStorage.set(profilePath, profile);
-                    });
-                });
-            });
-        };
-
-        this.setProfile = function (newProfile) {
-            return InfraConfigSrv.getGlobalStorage().then(function(globalStorage) {
-                return globalStorage.set(profilePath, newProfile);
-            });
-        };
-}]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.user').provider('UserSessionSrv',
-        function () {
-            'ngInject';
-
-            var isLastSessionRecordDisabled = false;
-            this.disableLastSessionRecord = function (isDisbaled) {
-                isLastSessionRecordDisabled = !!isDisbaled;
-            };
-
-            this.$get = ["InfraConfigSrv", "ENV", function (InfraConfigSrv, ENV) {
-                'ngInject';// jshint ignore:line
-
-                var initProm,lastSessionData;
-
-                var UserSessionSrv = {};
-
-                UserSessionSrv.isLastSessionRecordDisabled = function () {
-                    return isLastSessionRecordDisabled;
-                };
-
-                UserSessionSrv.getLastSessionData = function () {
-                    return initProm.then(function(){
-                        return lastSessionData;
-                    });
-                };
-
-                function init() {
-                    return InfraConfigSrv.getUserData().then(function (userData) {
-                        var globalLastSessionRef = new Firebase(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
-                        return globalLastSessionRef.once('value').then(function(snapshot){
-                            lastSessionData = snapshot.val();
-                            if(!isLastSessionRecordDisabled){
-                                globalLastSessionRef.child('began').set(Firebase.ServerValue.TIMESTAMP);
-                                globalLastSessionRef.child('ended').set(null);
-                                globalLastSessionRef.child('ended').onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
-                            }
-                        });
-                    });
-                }
-                initProm = init();
-
-                return UserSessionSrv;
-            }];
-        }
-    );
-})(angular);
-
-angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
-
-}]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.utility', []);
-})(angular);
 
 (function (angular) {
     'use strict';
@@ -5298,931 +4520,6 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 
 }]);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.workouts', [
-        'znk.infra.exerciseUtility',
-        'znk.infra.config',
-        'znk.infra.exerciseResult',
-        'znk.infra.contentAvail'
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.contentGetters').service('WorkoutsSrv',
-        ["ExerciseStatusEnum", "ExerciseTypeEnum", "$log", "StorageSrv", "ExerciseResultSrv", "ContentAvailSrv", "$q", "InfraConfigSrv", function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
-                  InfraConfigSrv) {
-            'ngInject';
-
-            var workoutsDataPath = StorageSrv.variables.appUserSpacePath + '/workouts';
-
-            function _getWorkoutsData() {
-                var defaultValue = {
-                    workouts: {}
-                };
-                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
-                    return StudentStorageSrv.get(workoutsDataPath, defaultValue);
-                });
-            }
-
-            function getWorkoutKey(workoutId) {
-                return 'workout_' + workoutId;
-            }
-
-            function _getWorkout(workoutId) {
-                var workoutKey = getWorkoutKey(workoutId);
-                return _getWorkoutsData().then(function (workoutsData) {
-                    return workoutsData.workouts[workoutKey];
-                });
-            }
-
-            function _setIsAvailForWorkout(workout) {
-                return ContentAvailSrv.isDailyAvail(workout.workoutOrder).then(function (isAvail) {
-                    workout.isAvail = isAvail;
-                });
-            }
-
-            this.getAllWorkouts = function () {
-                return _getWorkoutsData().then(function (workoutsData) {
-                    var workoutsArr = [],
-                        promArr = [];
-                    angular.forEach(workoutsData.workouts, function (workout) {
-                        workoutsArr.push(workout);
-                        promArr.push(_setIsAvailForWorkout(workout));
-                    });
-
-                    for (var i = 0; i < 5; i++) {
-                        var workoutToAdd = {
-                            status: ExerciseStatusEnum.NEW.enum,
-                            workoutOrder: workoutsArr.length + 1
-                        };
-                        workoutsArr.push(workoutToAdd);
-                        promArr.push(_setIsAvailForWorkout(workoutToAdd));
-                    }
-                    return $q.all(promArr).then(function () {
-                        return workoutsArr.sort(function (workout1, workout2) {
-                            return workout1.workoutOrder - workout2.workoutOrder;
-                        });
-                    });
-                });
-            };
-
-            this.getWorkoutData = function (workoutId) {
-                if (angular.isUndefined(workoutId)) {
-                    $log.error('workoutSrv: getWorkoutData function was invoked without workout id');
-                }
-                return _getWorkout(workoutId);
-            };
-
-            this.setWorkout = function (workoutId, newWorkoutValue) {
-                return _getWorkoutsData().then(function (workoutsData) {
-                    var workoutKey = getWorkoutKey(workoutId);
-                    workoutsData.workouts[workoutKey] = newWorkoutValue;
-                    InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
-                        StudentStorageSrv.set(workoutsDataPath, workoutsData);
-                    });
-                });
-            };
-
-            this.getWorkoutKey = getWorkoutKey;
-        }]
-    );
-})(angular);
-
-angular.module('znk.infra.workouts').run(['$templateCache', function($templateCache) {
-
-}]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkAudioPlayer', [
-        'znk.infra.svgIcon'
-    ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
-                var svgMap = {
-                    'znk-audio-player-play': 'components/znkAudioPlayer/svg/play-icon.svg',
-                    'znk-audio-player-pause': 'components/znkAudioPlayer/svg/pause-icon.svg',
-                    'znk-audio-player-close': 'components/znkAudioPlayer/svg/close-icon.svg'
-                };
-                SvgIconSrvProvider.registerSvgSources(svgMap);
-            }]);
-})(angular);
-
-'use strict';
-
-(function (angular) {
-
-    angular.module('znk.infra.znkAudioPlayer').directive('audioManager',
-        function () {
-            return {
-                require: 'audioManager',
-                controller: [
-                    '$scope', '$attrs',
-                    function ($scope, $attrs) {
-                        var resultData = $scope.$eval($attrs.audioManager);
-
-                        this.saveAsPlayedThrough = function saveAsPlayedThrough(groupData) {
-                            resultData.playedAudioArticles = resultData.playedAudioArticles || {};
-                            if (angular.isUndefined(resultData.playedAudioArticles[groupData.id])) {
-                                resultData.playedAudioArticles[groupData.id] = groupData.id;
-                                resultData.playedAudioArticles = angular.copy(resultData.playedAudioArticles);
-                                resultData.$save();
-                            }
-                        };
-
-                        this.wasPlayedThrough = function (groupData) {
-                            return !!resultData.playedAudioArticles && angular.isDefined(resultData.playedAudioArticles[groupData.id]);
-                        };
-
-                        this.canReplayAudio = function canReplayAudio() {
-                            return resultData.isComplete;
-                        };
-                    }]
-            };
-        });
-
-})(angular);
-
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkAudioPlayer').directive('znkAudioPlayButton', [
-        function znkAudioPlayerDrv() {
-            return {
-                templateUrl: 'components/znkAudioPlayer/templates/znkAudioPlayButton.template.html',
-                scope: {
-                    sourceGetter: '&source',
-                    typeGetter: '&?type',
-                    autoPlayGetter: '&autoPlay',
-                    onEnded: '&',
-                    switchInitGetter: '&switchInit',
-                    allowReplay: '&?',
-                    showAsDone: '=?'
-                },
-                link:function(scope){
-                    scope.d = {};
-
-                    var STATE_ENUM = {
-                        START_PLAY: 1,
-                        PLAYING: 2,
-                        ALREADY_PLAYED: 3
-                    };
-
-                    scope.d.statesEnum = STATE_ENUM;
-
-                    scope.d.source = angular.isDefined(scope.sourceGetter) ? scope.sourceGetter() : undefined;
-                    scope.d.type = angular.isDefined(scope.typeGetter) ? scope.typeGetter() : scope.d.statesEnum.START_PLAY;
-
-                    var allowReplay =  angular.isDefined(scope.allowReplay) ? scope.allowReplay() : false;
-                    var autoPlay = angular.isDefined(scope.autoPlayGetter) ? scope.autoPlayGetter() : false;
-                    var showAsDone = !!scope.showAsDone;
-
-                    scope.audioPlayer = {
-                        STATE_ENUM: STATE_ENUM,
-                        audioEnded: function (){
-                            if(angular.isDefined(scope.onEnded)) {
-                                scope.onEnded();
-                            }
-                            scope.audioPlayer.currState = allowReplay ? STATE_ENUM.START_PLAY : STATE_ENUM.ALREADY_PLAYED;
-                        }
-                    };
-
-                    if(showAsDone && !allowReplay){
-                        scope.audioPlayer.currState = STATE_ENUM.ALREADY_PLAYED;
-                    }else{
-                        scope.audioPlayer.currState = autoPlay ? STATE_ENUM.PLAYING : STATE_ENUM.START_PLAY;
-                    }
-
-                    scope.$watch('audioPlayer.currState', function (state) {
-                        scope.isPlaying = state === STATE_ENUM.PLAYING;
-                    });
-
-                    scope.$watch('showAsDone', function (showAsDone) {
-                        if(showAsDone && !allowReplay){
-                            scope.audioPlayer.currState = STATE_ENUM.ALREADY_PLAYED;
-                        }
-                    });
-                }
-            };
-        }]);
-})(angular);
-
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkAudioPlayer').directive('znkAudioPlayer', [
-        '$timeout', '$window', '$interval', 'MediaSrv', '$filter', 'ENV',
-        function znkAudioPlayerDrv($timeout, $window, $interval, MediaSrv, $filter, ENV) {
-            return {
-                templateUrl: 'components/znkAudioPlayer/templates/znkAudioPlayer.template.html',
-                scope: {
-                    sourceGetter: '&source',
-                    typeGetter: '&?type',
-                    autoPlayGetter: '&autoPlay',
-                    onEnded: '&'
-                },
-                link:function(scope,element,attrs){
-                    var sound;
-
-                    var TYPES_ENUM = {
-                        'NO_CONTROL': 1,
-                        'HAS_CONTROL': 2
-                    };
-
-                    var domElement = element[0];
-
-                    var STATE_ENUM = {
-                        NONE: $window.Media.MEDIA_NONE,
-                        PAUSE: $window.Media.MEDIA_PAUSED,
-                        RUNNING: $window.Media.MEDIA_RUNNING,
-                        STOPPED: $window.Media.MEDIA_STOPPED,
-                        STARTING: $window.Media.MEDIA_STARTING
-                    };
-
-                    var type =  angular.isDefined(scope.typeGetter) ? scope.typeGetter() : 1;
-
-                    scope.d = {
-                        type: type,
-                        STATE_ENUM: STATE_ENUM,
-                        playOrPause: function(){
-                            if(!sound){
-                                return;
-                            }
-                            if(scope.d.currState === STATE_ENUM.RUNNING){
-                                sound.pause();
-                            }else{
-                                sound.play();
-                            }
-                        },
-                        stop: function() {
-                            sound.stop();
-                        }
-                    };
-
-                    switch(type){
-                        case TYPES_ENUM.NO_CONTROL:
-                            element.addClass('type-no-control');
-                            break;
-                        case TYPES_ENUM.HAS_CONTROL:
-                            element.addClass('type-has-control');
-                            break;
-                    }
-
-                    if(attrs.actions){
-                        scope.$parent.$eval(attrs.actions + '=' + attrs.actions + '|| {}');
-                        var actions = scope.$parent.$eval(attrs.actions);
-                        actions.play = function(){
-                            sound.play();
-                        };
-                    }
-
-                    function resumePlayingAudio(){
-                        switch (scope.d.type){
-                            case TYPES_ENUM.NO_CONTROL:
-                                var audioProgressDomElement = domElement.querySelector('.audio-progress');
-                                audioProgressDomElement.style['-webkit-transition'] = audioProgressDomElement.style.transition = '';
-                                break;
-                            case TYPES_ENUM.HAS_CONTROL:
-                                break;
-                        }
-                        startUpdatingTimeAndProgress();
-                    }
-
-                    function startUpdatingTimeAndProgress(){
-                        if(startUpdatingTimeAndProgress.intervalProm){
-                            $interval.cancel(startUpdatingTimeAndProgress.intervalProm);
-                        }
-                        setTimeAndProgress();
-                        startUpdatingTimeAndProgress.intervalProm = $interval(function(){
-                            setTimeAndProgress();
-                        },1000,0,false);
-                    }
-
-                    function setTimeAndProgress() {
-                        var timePassedElement = domElement.querySelector('.time-passed');
-                        var timeLeftElement = domElement.querySelector('.time-left');
-                        var duration = sound.getDuration();
-                        if(duration <= 0){
-                            return;
-                        }
-                        sound.getCurrentPosition(function(currPos){
-                            currPos = Math.max(currPos,0);
-                            switch(scope.d.type){
-                                case TYPES_ENUM.NO_CONTROL:
-                                    var audioProgressDomElement = domElement.querySelector('.audio-progress');
-                                    if(audioProgressDomElement.style.transition === ''){
-                                        var initWidthInPercent = currPos / duration * 100;
-                                        audioProgressDomElement.style.width = initWidthInPercent + '%';
-
-                                        var timeLeft = duration - currPos;
-                                        audioProgressDomElement.style['-webkit-transition'] = audioProgressDomElement.style.transition = 'width ' + timeLeft +'s linear';
-                                        audioProgressDomElement.style.width = '100%';
-                                    }
-                                    timePassedElement.innerHTML = $filter('secondsToTime')(currPos,'m:ss');
-                                    break;
-                                case TYPES_ENUM.HAS_CONTROL:
-                                    var inputRangeDomElem = domElement.querySelector('input[type="range"]');
-                                    inputRangeDomElem.value = currPos;
-                                    inputRangeDomElem.max = Math.round(duration);
-                                    if(inputRangeDomElem.value < inputRangeDomElem.max){
-                                        inputRangeDomElem.stepUp(1);
-                                    }
-                                    break;
-                            }
-
-                            timeLeftElement.innerHTML = $filter('secondsToTime')(duration - currPos,'- ' + 'm:ss');
-                            if(ENV.debug && duration && currPos && (duration - currPos) > 20){
-                                sound.seekTo(1000 * (duration - 5));
-                            }
-                        },angular.noop);
-                    }
-
-                    function audioPositionChangedHandler(){
-                        /* jshint validthis: true */
-                        sound.seekTo(+this.value * 1000);
-                    }
-
-                    var statusChanged = function statusChanged(status, allowReplay){
-                        scope.d.currState = status;
-                        var playerControlElem = angular.element(domElement.querySelector('.player-control'));
-                        console.log('audio status changed, status: ' + status + ' src:' + scope.sourceGetter());
-                        switch(status){
-                            case STATE_ENUM.STOPPED:
-                                //$apply causing exceptions ...
-                                $timeout(function(){
-                                    scope.onEnded({allowReplay : allowReplay});
-                                });
-                                $interval.cancel(startUpdatingTimeAndProgress.intervalProm);
-                                if(playerControlElem.length){
-                                    playerControlElem.removeClass('ion-pause');
-                                    playerControlElem.addClass('ion-play');
-                                }
-                                break;
-                            case STATE_ENUM.NONE:
-                            case STATE_ENUM.PAUSE:
-                                $interval.cancel(startUpdatingTimeAndProgress.intervalProm);
-                                if(playerControlElem.length){
-                                    playerControlElem.removeClass('ion-pause');
-                                    playerControlElem.addClass('ion-play');
-                                }
-                                break;
-                            case STATE_ENUM.RUNNING:
-                                resumePlayingAudio();
-                                hideLoadingSpinner();
-                                if(playerControlElem.length){
-                                    playerControlElem.removeClass('ion-play');
-                                    playerControlElem.addClass('ion-pause');
-                                }
-                                break;
-                            case STATE_ENUM.STARTING:
-                                hideLoadingSpinner();
-                                if(playerControlElem.length){
-                                    playerControlElem.removeClass('ion-play');
-                                    playerControlElem.addClass('ion-pause');
-                                }
-                                break;
-                        }
-                    };
-
-                    function loadSound(){
-                        if(sound){
-                            sound.stop();
-                            sound.release();
-                        }
-                        showLoadingSpinner();
-                        sound = MediaSrv.loadSound(scope.sourceGetter(),
-                            function success(){},
-                            function err(){
-                            //    $timeout(function(){
-                            //        var errMsg = NetworkSrv.isDeviceOffline() ? ErrorHandlerSrv.messages.noInternetConnection : ErrorHandlerSrv.messages.defaultErrorMessage;
-                            //        ErrorHandlerSrv.displayErrorMsg(errMsg).then(function() {
-                            //            statusChanged(STATE_ENUM.STOPPED, true);
-                            //        });
-                            //    });
-                            },
-                            statusChanged
-                            //HACK currently the recorded audio is not save in dataDirectory
-                        );
-                    }
-
-                    function hideShowLoadingSpinner(displayedElemSelector,hiddenElemSelector){
-                        var displayedDomElement = domElement.querySelector(displayedElemSelector);
-                        if(displayedDomElement){
-                            displayedDomElement.style.display = 'block';
-                        }
-
-                        var hiddenDomElement = domElement.querySelector(hiddenElemSelector);
-                        if(hiddenDomElement){
-                            hiddenDomElement.style.display = 'none';
-                        }
-                    }
-                    var showLoadingSpinner = hideShowLoadingSpinner.bind(this,'ion-spinner','.time-left');
-
-                    var hideLoadingSpinner = hideShowLoadingSpinner.bind(this,'.time-left','ion-spinner');
-
-                    $timeout(function(){
-                        if(type === TYPES_ENUM.HAS_CONTROL) {
-                            var inputRangeDomElem = domElement.querySelector('input[type="range"]');
-                            inputRangeDomElem.addEventListener('change', audioPositionChangedHandler);
-                        }
-                    });
-
-                    scope.$watch('sourceGetter()',function(newSrc){
-                        if(newSrc){
-                            loadSound();
-
-                            if(scope.autoPlayGetter()){
-                                sound.play();
-                            }
-                        }
-                    });
-
-                    scope.$on('$destroy',function(){
-                        if(sound){
-                            sound.release();
-                        }
-                        $interval.cancel(startUpdatingTimeAndProgress.intervalProm);
-                        if(type === TYPES_ENUM.HAS_CONTROL){
-                            var inputRangeDomElem = domElement.querySelector('input[type="range"]');
-                            inputRangeDomElem.removeEventListener('change',audioPositionChangedHandler);
-                        }
-                    });
-                }
-            };
-        }]);
-})(angular);
-
-'use strict';
-
-(function (angular) {
-
-    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', ['$translatePartialLoader',
-        function znkImageAudio($translatePartialLoader) {
-
-            return {
-                templateUrl: 'components/znkAudioPlayer/templates/znkImageAudio.template.html',
-                scope: {
-                    imageGetter: '&image',
-                    source: '=audio',
-                    hideFooter: '=',
-                    onEnded: '&',
-                    isPlaying: '=?',
-                    showAsDone: '&?',
-                    allowReplay: '&?',
-                    autoPlayGetter: '&autoPlay',
-                    blurredImageGetter: '&?blurredImage'
-                },
-                link: function (scope) {
-                    $translatePartialLoader.addPart('znkAudioPlayer');
-
-                    scope.d = {
-                        image: scope.imageGetter(),
-                        blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined
-                    };
-                }
-            };
-        }]);
-
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkAudioPlayer').factory('MediaSrv', [
-        'ENV', '$q', '$window',
-        function (ENV, $q, $window) {
-
-            var isRunningOnDevice = !!$window.cordova;
-
-            var sound = window.Audio && new Audio();
-            function Html5Media(src, mediaSuccess, mediaError, mediaStatus) {
-                if (typeof $window.Audio !== 'function' && typeof $window.Audio !== 'object') {
-                    console.warn('HTML5 Audio is not supported in this browser');
-                }
-                sound.src = src;
-
-                sound.addEventListener('error', mediaError, false);
-
-                function endedHandler(){
-                    if (mediaStatus) {
-                        mediaStatus($window.Media.MEDIA_STOPPED);
-                    }
-                    if (mediaSuccess) {
-                        mediaSuccess();
-                    }
-                }
-                sound.addEventListener('ended', endedHandler, false);
-
-                function canplayHandler(){
-                    console.log('Html5 audio load end ' + src);
-                    if (mediaStatus) {
-                        mediaStatus($window.Media.MEDIA_STARTING);
-                    }
-                }
-                sound.addEventListener('canplay',canplayHandler, false);
-
-                function canplaythroughHandler(){
-                    console.log('Html5 audio load fully ended ' + src);
-                    if (!playingHandler.wasInvoked) {
-                        mediaStatus($window.Media.MEDIA_STARTING);
-                    }
-                }
-                sound.addEventListener('canplaythrough',canplaythroughHandler, false);
-
-                function playingHandler(){
-                    playingHandler.wasInvoked = true;
-                    if (mediaStatus) {
-                        mediaStatus($window.Media.MEDIA_RUNNING);
-                    }
-                }
-                sound.addEventListener('playing',playingHandler,false);
-
-                console.log('starting Html5 audio load ' + src);
-                sound.load();
-
-                return {
-                    // Returns the current position within an audio file (in seconds).
-                    getCurrentPosition: function (successFn) {
-                        successFn(sound.currentTime);
-                    },
-                    // Returns the duration of an audio file (in seconds) or -1.
-                    getDuration: function () {
-                        return isNaN(sound.duration) ? -1 : sound.duration;
-                    },
-                    // Start or resume playing an audio file.
-                    play: function () {
-                        sound.play();
-                    },
-                    // Pause playback of an audio file.
-                    pause: function () {
-                        sound.pause();
-                        if (mediaStatus) {
-                            mediaStatus($window.Media.MEDIA_PAUSED);
-                        }
-                    },
-                    // Releases the underlying operating system's audio resources. Should be called on a ressource when it's no longer needed !
-                    release: function () {
-                        sound.removeEventListener('error', mediaError);
-                        sound.removeEventListener('ended', endedHandler);
-                        sound.removeEventListener('canplay',canplayHandler);
-                        sound.removeEventListener('playing',playingHandler);
-                        sound.removeEventListener('canplaythrough',canplaythroughHandler);
-                        sound.src = '';
-                        console.log('Html5 Audio object was destroyed ' + src);
-                    },
-                    // Moves the position within the audio file.
-                    seekTo: function (milliseconds) {
-                        sound.currentTime = milliseconds / 1000;
-                    },
-                    // Set the volume for audio playback (between 0.0 and 1.0).
-                    setVolume: function (volume) {
-                        sound.volume = volume;
-                    },
-                    // Start recording an audio file.
-                    startRecord: function () {
-                    },
-                    // Stop recording an audio file.
-                    stopRecord: function () {
-                    },
-                    // Stop playing an audio file.
-                    stop: function () {
-                        sound.pause();
-                        if (mediaStatus) {
-                            mediaStatus($window.Media.MEDIA_STOPPED);
-                        }
-                        if (mediaSuccess) {
-                            mediaSuccess();
-                        }
-                    }
-                };
-            }
-
-            // media fallback: only when not running on device
-            if (!isRunningOnDevice ) {
-                $window.Media = Html5Media;
-                $window.Media.MEDIA_NONE = 0;
-                $window.Media.MEDIA_STARTING = 1;
-                $window.Media.MEDIA_RUNNING = 2;
-                $window.Media.MEDIA_PAUSED = 3;
-                $window.Media.MEDIA_STOPPED = 4;
-            }
-
-
-            var mediaOptions = { playAudioWhenScreenIsLocked : false };
-
-            var MediaSrv = {
-                soundsEnabled: true//@todo(igor) should be set in config phase
-            };
-
-            MediaSrv.enableSounds = function enableSounds(shouldEnable){
-                MediaSrv.soundsEnabled = shouldEnable;
-            };
-
-            MediaSrv.loadSound = function loadMedia(src,successFn,failFn,statusCheckFn,isInternalPath) {
-                var MediaConstructor;
-
-                if(!isRunningOnDevice){
-                    MediaConstructor  = Html5Media;
-                }
-
-                if(!MediaConstructor){
-                    var INTERNAL_PATH_PREFIX_REGEX = /^(cdvfile:\/\/|documents:\/\/)/;
-                    if(isInternalPath || src.match(INTERNAL_PATH_PREFIX_REGEX)){
-                        MediaConstructor = $window.Media;
-                    }else{
-                        MediaConstructor = Html5Media;
-
-                        //if(ionic.Platform.isAndroid()){
-                        //    var isExternalGet = !!src.match(/^http/);
-                        //    if(!isExternalGet){
-                        //        src = '/android_asset/www/' + src;
-                        //    }
-                        //}
-                    }
-
-                }
-
-                function failFnMain(e) {
-                    var errMsg = 'MediaSrv: fail to load sound, src: '+src;
-                    console.error(errMsg, e);
-                    if(angular.isDefined($window.atatus) && angular.isFunction($window.atatus.notify)) {
-                        $window.atatus.notify(errMsg);
-                    }
-                    // call failFn pass to loadSound
-                    if(angular.isDefined(failFn) && angular.isFunction(failFn)) {
-                        failFn(e);
-                    }
-                }
-
-                var sound = new MediaConstructor(src,
-                    successFn || angular.noop,
-                    failFnMain || failFn || angular.noop,
-                    statusCheckFn || angular.noop
-                );
-
-                return sound;
-            };
-
-            MediaSrv.setVolume = function setVolume(media, volume) {
-                if (!MediaSrv.soundsEnabled){
-                    return;
-                }
-
-                if (media.setVolume) {
-                    media.setVolume(volume);
-                }
-                else {
-                    media.volume = volume;
-                }
-            };
-
-            MediaSrv.playMedia = function playMedia(media, options) {
-
-                if (!MediaSrv.soundsEnabled) {
-                    return;
-                }
-
-                if (typeof $window.Media === 'undefined') {
-                    media.load();
-                    media.play();
-                }
-                else {
-                    if (!options){
-                        options = mediaOptions;
-                    }
-
-                    media.play(options);
-                }
-            };
-
-            MediaSrv.playSound = function(soundSrc,elementId){
-                //if(ionic.Platform.isAndroid()){
-                //    soundSrc = '/android_asset/www/' + soundSrc;
-                //}
-                if(!MediaSrv.soundsEnabled){
-                    return;
-                }
-
-                var audioSelector = 'audio#' + elementId;
-                if(!document.querySelector(audioSelector)){
-                    var bodyElement = angular.element(document.querySelector('body'));
-                    var template = '<audio id="%elementId%" webkit-playsinline><source src="%src%" type="audio/mp3"></audio>';
-                    template = template.replace('%elementId%',elementId);
-                    template = template.replace('%src%',soundSrc);
-                    bodyElement.append(template);
-                }
-                var soundAudio = MediaSrv.loadMedia(soundSrc, elementId);
-                MediaSrv.setVolume(soundAudio, 0.1);
-                MediaSrv.playMedia(soundAudio);
-
-            };
-
-            MediaSrv.getContentPath = function getContentPath() {
-                //if (!ionic.Platform.device().platform) {
-                //    return ENV.contentDir + '/media/';
-                //}
-                //
-                //var path = 'offline/media/';
-                //if(ionic.Platform.isAndroid()){
-                //    path = '/android_asset/www/' + path;
-                //}
-                //return path;
-            };
-
-            MediaSrv.newMedia = function newMedia(src, successCallback, errorCallback, statusCallback) {
-                return new $window.Media(src, successCallback, errorCallback, statusCallback);
-            };
-
-            return MediaSrv;
-        }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkAudioPlayer').filter('secondsToTime', [
-        function () {
-            return function (totalSeconds,format) {
-                var min = parseInt(totalSeconds / 60);
-                var paddedMin = min >= 10 ? min : '0' + min;
-                var sec = parseInt(totalSeconds % 60);
-                var paddedSec = sec >= 10 ? sec: '0' + sec;
-                return format.replace('mm',paddedMin)
-                    .replace('m',min)
-                    .replace('ss',paddedSec)
-                    .replace('s',sec);
-            };
-        }
-    ]);
-})(angular);
-
-angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($templateCache) {
-  $templateCache.put("components/znkAudioPlayer/svg/close-icon.svg",
-    "<svg\n" +
-    "    x=\"0px\"\n" +
-    "    y=\"0px\"\n" +
-    "    class=\"znk-audio-player-close-svg\"\n" +
-    "    viewBox=\"-596.6 492.3 133.2 133.5\">\n" +
-    "    <style>\n" +
-    "        .znk-audio-player-close-svg {\n" +
-    "        }\n" +
-    "    </style>\n" +
-    "<path class=\"st0\"/>\n" +
-    "<g>\n" +
-    "	<line class=\"st1\" x1=\"-592.6\" y1=\"496.5\" x2=\"-467.4\" y2=\"621.8\"/>\n" +
-    "	<line class=\"st1\" x1=\"-592.6\" y1=\"621.5\" x2=\"-467.4\" y2=\"496.3\"/>\n" +
-    "</g>\n" +
-    "</svg>\n" +
-    "");
-  $templateCache.put("components/znkAudioPlayer/svg/pause-icon.svg",
-    "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
-    "	 viewBox=\"-359 103.4 28 36.6\" class=\"znk-audio-player-pause-svg\">\n" +
-    "    <style>\n" +
-    "        .znk-audio-player-pause-svg  .znk-audio-player-pause-svg-rect {\n" +
-    "            width: 7px;\n" +
-    "            height: 20px;\n" +
-    "        }\n" +
-    "    </style>\n" +
-    "<rect class=\"znk-audio-player-pause-svg-rect\" x=\"-353\" y=\"110\" />\n" +
-    "<rect class=\"znk-audio-player-pause-svg-rect\" x=\"-340.8\" y=\"110\" />\n" +
-    "</svg>\n" +
-    "");
-  $templateCache.put("components/znkAudioPlayer/svg/play-icon.svg",
-    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-    "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
-    "	 viewBox=\"0 0 55.7 55.7\" class=\"znk-audio-player-play-svg\">\n" +
-    "    <style>\n" +
-    "        .znk-audio-player-play-svg {\n" +
-    "            enable-background:new 0 0 55.7 55.7;\n" +
-    "        }\n" +
-    "    </style>\n" +
-    "<style type=\"text/css\">\n" +
-    "	.znk-audio-player-play-svg .st0{fill:none;stroke:#231F20;stroke-width:3;stroke-miterlimit:10;}\n" +
-    "	.znk-audio-player-play-svg .st1{fill:#231F20;}\n" +
-    "</style>\n" +
-    "<circle class=\"st0\" cx=\"27.8\" cy=\"27.8\" r=\"26.3\"/>\n" +
-    "<path class=\"st1\" d=\"M22.7,16.6L39,26.1c1.4,0.8,1.4,2.8,0,3.6L22.7,39c-1.4,0.8-3.1-0.2-3.1-1.8V18.4\n" +
-    "	C19.6,16.8,21.3,15.8,22.7,16.6z\"/>\n" +
-    "</svg>\n" +
-    "");
-  $templateCache.put("components/znkAudioPlayer/templates/znkAudioPlayButton.template.html",
-    "<ng-switch on=\"audioPlayer.currState\" translate-namespace=\"ZNK_AUDIO_PLAYER\">\n" +
-    "    <div class=\"play-button-wrapper\"\n" +
-    "         ng-switch-when=\"1\">\n" +
-    "        <button class=\"play-button\" ng-click=\"audioPlayer.currState = audioPlayer.STATE_ENUM.PLAYING\">\n" +
-    "            <svg-icon name=\"znk-audio-player-play\"></svg-icon>\n" +
-    "            <span class=\"play-audio-text\" translate=\".PLAY_AUDIO\"></span>\n" +
-    "        </button>\n" +
-    "    </div>\n" +
-    "    <div class=\"znk-audio-player-wrapper\">\n" +
-    "        <znk-audio-player ng-switch-when=\"2\"\n" +
-    "                          source=\"d.source\"\n" +
-    "                          type=\"d.type\"\n" +
-    "                          on-ended=\"audioPlayer.audioEnded()\"\n" +
-    "                          auto-play=\"true\">\n" +
-    "        </znk-audio-player>\n" +
-    "    </div>\n" +
-    "    <div class=\"ended-msg\"\n" +
-    "         ng-switch-when=\"3\">\n" +
-    "        <span translate=\".THIS_VIDEO_ALREADY_PLAYED\"></span>\n" +
-    "    </div>\n" +
-    "</ng-switch>\n" +
-    "");
-  $templateCache.put("components/znkAudioPlayer/templates/znkAudioPlayer.template.html",
-    "<div class=\"time-display time-passed\" ng-if=\"::d.type === 1\"></div>\n" +
-    "<div ng-if=\"::d.type === 2\"\n" +
-    "     class=\"player-close-svg-wrapper\"\n" +
-    "     ng-click=\"d.stop()\">\n" +
-    "    <svg-icon\n" +
-    "        class=\"player-close-svg\"\n" +
-    "        name=\"znk-audio-player-close\">\n" +
-    "    </svg-icon>\n" +
-    "</div>\n" +
-    "<div ng-if=\"::d.type === 2\"\n" +
-    "   class=\"player-control\"\n" +
-    "   ng-init=\"d.playStatus = false\"\n" +
-    "   ng-switch=\"d.playStatus\"\n" +
-    "   ng-click=\"d.playOrPause(); d.playStatus = !d.playStatus\">\n" +
-    "  <svg-icon ng-switch-when=\"true\"\n" +
-    "            class=\"player-play-svg\"\n" +
-    "            name=\"znk-audio-player-play\">\n" +
-    "  </svg-icon>\n" +
-    "  <svg-icon ng-switch-when=\"false\"\n" +
-    "              class=\"player-pause-svg\"\n" +
-    "              name=\"znk-audio-player-pause\">\n" +
-    "  </svg-icon>\n" +
-    "</div>\n" +
-    "<ng-switch on=\"d.type\" class=\"progress-container\">\n" +
-    "    <div ng-switch-when=\"1\" class=\"only-progress-wrapper\">\n" +
-    "        <div class=\"audio-progress\"></div>\n" +
-    "    </div>\n" +
-    "    <div ng-switch-when=\"2\" class=\"range-progress-wrapper range\">\n" +
-    "        <input type=\"range\" min=\"0\" max=\"0\" step=\"1\" value=\"0\"/>\n" +
-    "    </div>\n" +
-    "</ng-switch>\n" +
-    "<div class=\"time-display time-left\"></div>\n" +
-    "\n" +
-    "");
-  $templateCache.put("components/znkAudioPlayer/templates/znkImageAudio.template.html",
-    "<div class=\"wrapper\" ng-class=\"{'no-footer': hideFooter}\">\n" +
-    "    <!--<div class=\"bg-img only-tablet\" ng-style=\"{'background-image': 'url(' + d.blurredImage + ')'}\"></div>-->\n" +
-    "    <div class=\"inner-section\">\n" +
-    "        <img class=\"inner\" ng-src=\"{{::d.image}}\">\n" +
-    "    </div>\n" +
-    "    <div class=\"audio-footer inverted\" ng-if=\"::!hideFooter\">\n" +
-    "        <znk-audio-play-button\n" +
-    "            switch-init=\"audioPlayer.currState\"\n" +
-    "            source=\"source\"\n" +
-    "            on-ended=\"onEnded()\"\n" +
-    "            allow-replay=\"allowReplay()\"\n" +
-    "            show-as-done=\"showAsDone()\"\n" +
-    "            auto-play=\"autoPlayGetter()\">\n" +
-    "        </znk-audio-play-button>\n" +
-    "    </div>\n" +
-    "</div>\n" +
-    "");
-}]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkExercise', [
-        'ngAnimate',
-        'pascalprecht.translate',
-        'znk.infra.svgIcon',
-        'znk.infra.scroll',
-        'znk.infra.autofocus',
-        'znk.infra.exerciseUtility',
-        'znk.infra.analytics',
-        'znk.infra.popUp'
-    ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
-                var svgMap = {
-                    chevron: 'components/znkExercise/svg/chevron-icon.svg',
-                    correct: 'components/znkExercise/svg/correct-icon.svg',
-                    wrong: 'components/znkExercise/svg/wrong-icon.svg',
-                    arrow: 'components/znkExercise/svg/arrow-icon.svg'
-                };
-                SvgIconSrvProvider.registerSvgSources(svgMap);
-            }])
-        .run(["$translatePartialLoader", function ($translatePartialLoader) {
-            'ngInject';
-
-            $translatePartialLoader.addPart('znkExercise');
-        }]);
-})(angular);
-
 /**
  * attrs:
  *
@@ -6230,17 +4527,14 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
-    var typeToViewMap;
     angular.module('znk.infra.znkExercise').directive('answerBuilder', [
         '$compile', 'AnswerTypeEnum', 'ZnkExerciseUtilitySrv', 'ZnkExerciseViewModeEnum',
         function ($compile, AnswerTypeEnum, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum) {
-            if(!typeToViewMap) {
-                typeToViewMap = {};
-                angular.forEach(AnswerTypeEnum, function (enumData, enumName) {
-                    var directiveName = enumName.toLowerCase().replace(/_/g, '-');
-                    typeToViewMap[enumData.enum] = '<' + directiveName + '></' + directiveName + '>';
-                });
-            }
+            var typeToViewMap = {};
+
+            typeToViewMap[AnswerTypeEnum.SELECT_ANSWER.enum] = '<select-answer></select-answer>';
+            typeToViewMap[AnswerTypeEnum.FREE_TEXT_ANSWER.enum] = '<free-text-answer></free-text-answer>';
+            typeToViewMap[AnswerTypeEnum.RATE_ANSWER.enum] = '<rate-answer></rate-answer>';
 
             return {
                 require: ['answerBuilder','^questionBuilder', '^ngModel'],
@@ -6279,6 +4573,340 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
         }
     ]);
 })(angular);
+
+/**
+ * attrs:
+ */
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('freeTextAnswer', ['ZnkExerciseViewModeEnum', '$timeout',
+
+        function (ZnkExerciseViewModeEnum, $timeout) {
+            return {
+                templateUrl: 'components/znkExercise/answerTypes/templates/freeTextAnswerDrv.html',
+                require: ['^ngModel', '^answerBuilder'],
+                scope:{},
+                link: function (scope, element, attrs, ctrls) {
+                    var ngModelCtrl = ctrls[0];
+                    var answerBuilderCtrl = ctrls[1];
+                    var userAnswerValidation = /^[0-9\/\.]{0,4}$/;
+
+                    scope.d = {};
+
+                    scope.d.userAnswer = '';  // stores the current userAnswer
+                    scope.d.userAnswerGetterSetter = function(newUserAnswer){
+                        if(arguments.length && _isAnswerValid(newUserAnswer)){
+                            scope.d.userAnswer = newUserAnswer;
+                            return scope.d.userAnswer;
+                        }
+                        return scope.d.userAnswer;
+                    };
+
+                    function _isAnswerValid(answerToCheck){
+                        return userAnswerValidation.test(answerToCheck);
+                    }
+
+                    var MODE_ANSWER_ONLY = ZnkExerciseViewModeEnum.ONLY_ANSWER.enum,
+                        MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum,
+                        MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
+
+                    scope.clickHandler = function(){
+                        ngModelCtrl.$setViewValue(scope.d.userAnswer);
+                        updateViewByCorrectAnswers(scope.d.userAnswer);
+                    };
+
+                    function updateViewByCorrectAnswers(userAnswer) {
+                        var correctAnswers = answerBuilderCtrl.question.correctAnswerText;
+                        var viewMode = answerBuilderCtrl.getViewMode();
+                        scope.correctAnswer = correctAnswers[0].content;
+
+                        if (viewMode === MODE_ANSWER_ONLY || viewMode === MODE_MUST_ANSWER) {
+                            scope.d.userAnswer = angular.isDefined(userAnswer) ? userAnswer : '';
+                            scope.showCorrectAnswer = false;
+                        } else {
+
+                            if (angular.isUndefined(userAnswer)) {
+                                // unanswered question
+                                    scope.userAnswerStatus = 'neutral';
+                                    scope.showCorrectAnswer = viewMode === MODE_REVIEW;
+                            } else {
+                                if (_isAnsweredCorrectly(userAnswer, correctAnswers)) {
+                                    scope.userAnswerStatus = 'correct';
+                                } else {
+                                    scope.userAnswerStatus = 'wrong';
+                                }
+                                scope.showCorrectAnswer = true;
+                                scope.d.userAnswer = userAnswer;
+                            }
+                        }
+                    }
+
+                    function _isAnsweredCorrectly(userAnswer,correctAnswers) {
+                        for (var i = 0; i < correctAnswers.length; i++) {
+                            if (userAnswer === correctAnswers[i].content) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+
+                    ngModelCtrl.$render = function () {
+                        //skip one digest cycle in order to let the answers time to be compiled
+                        $timeout(function(){
+                            updateViewByCorrectAnswers(ngModelCtrl.$viewValue);
+                        });
+                    };
+
+                    ngModelCtrl.$render();
+                }
+            };
+        }
+    ]);
+})(angular);
+
+
+
+/**
+ * attrs:
+ *
+ */
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('rateAnswer', ['ZnkExerciseViewModeEnum',
+        function (ZnkExerciseViewModeEnum) {
+            return {
+                templateUrl: 'components/znkExercise/answerTypes/templates/rateAnswerDrv.html',
+                require: ['^answerBuilder', '^ngModel'],
+                scope: {},
+                link: function link(scope, element, attrs, ctrls) {
+                    var domElement = element[0];
+
+                    var answerBuilder = ctrls[0];
+                    var ngModelCtrl = ctrls[1];
+
+                    var viewMode = answerBuilder.getViewMode();
+                    var ANSWER_WITH_RESULT_MODE = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
+                        REVIEW_MODE = ZnkExerciseViewModeEnum.REVIEW.enum;
+                    var INDEX_OFFSET = 2;
+
+                    scope.d = {};
+                    scope.d.itemsArray = new Array(11);
+                    var answers = answerBuilder.question.correctAnswerText;
+
+                    var domItemsArray;
+
+                    var destroyWatcher = scope.$watch(
+                        function () {
+                            return element[0].querySelectorAll('.item-repeater');
+                        },
+                        function (val) {
+                            if (val) {
+                                destroyWatcher();
+                                domItemsArray = val;
+
+                                if (viewMode === REVIEW_MODE) {
+                                    scope.clickHandler = angular.noop;
+                                    updateItemsByCorrectAnswers(scope.d.answers);
+                                } else {
+                                    scope.clickHandler = clickHandler;
+                                }
+
+                                ngModelCtrl.$render = function(){
+                                    updateItemsByCorrectAnswers();
+                                };
+                                ngModelCtrl.$render();
+                            }
+                        }
+                    );
+
+                    function clickHandler(index) {
+                        if (answerBuilder.canUserAnswerBeChanged()) {
+                            return;
+                        }
+
+                        ngModelCtrl.$setViewValue(index);
+                        updateItemsByCorrectAnswers();
+                    }
+
+                    function updateItemsByCorrectAnswers() {
+                        var oldSelectedElement = angular.element(domElement.querySelector('.selected'));
+                        oldSelectedElement.removeClass('selected');
+
+                        var selectedAnswerId = ngModelCtrl.$viewValue;
+
+                        var newSelectedElement = angular.element(domItemsArray[selectedAnswerId]);
+                        newSelectedElement.addClass('selected');
+
+                        var lastElemIndex = answers.length - 1;
+
+                        if((viewMode === ANSWER_WITH_RESULT_MODE && angular.isNumber(selectedAnswerId))|| viewMode === REVIEW_MODE){
+                            for (var i = 0; i < lastElemIndex; i++) {
+                                angular.element(domItemsArray[answers[i].id - INDEX_OFFSET]).addClass('correct');
+                            }
+                            angular.element(domItemsArray[answers[lastElemIndex].id - INDEX_OFFSET]).addClass('correct-edge');
+                        }
+
+                        if (angular.isNumber(selectedAnswerId) && (viewMode === REVIEW_MODE || viewMode === ANSWER_WITH_RESULT_MODE)) {
+                            if (selectedAnswerId >= answers[0].id - INDEX_OFFSET && selectedAnswerId <= answers[lastElemIndex].id - INDEX_OFFSET) {
+                                angular.element(domItemsArray[selectedAnswerId]).addClass('selected-correct');
+                            } else {
+                                angular.element(domItemsArray[selectedAnswerId]).addClass('selected-wrong');
+                            }
+                        }
+                    }
+                }
+            };
+        }
+    ]);
+})(angular);
+
+
+
+/**
+ * attrs:
+ *
+ */
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('selectAnswer', [
+        '$timeout', 'ZnkExerciseViewModeEnum', 'ZnkExerciseAnswersSrv', 'ZnkExerciseEvents',
+        function ($timeout, ZnkExerciseViewModeEnum, ZnkExerciseAnswersSrv, ZnkExerciseEvents) {
+            return {
+                templateUrl: 'components/znkExercise/answerTypes/templates/selectAnswerDrv.html',
+                require: ['^answerBuilder', '^ngModel'],
+                restrict:'E',
+                scope: {},
+                link: function (scope, element, attrs, ctrls) {
+                    var answerBuilder = ctrls[0];
+                    var ngModelCtrl = ctrls[1];
+                    var questionIndex = answerBuilder.question.__questionStatus.index;
+                    var currentSlide = answerBuilder.getCurrentIndex();    // current question/slide in the viewport
+                    var body = document.body;
+
+
+                    var MODE_ANSWER_WITH_QUESTION = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
+                        MODE_ANSWER_ONLY = ZnkExerciseViewModeEnum.ONLY_ANSWER.enum,
+                        MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum,
+                        MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
+                    var keyMap = {};
+
+                    scope.d = {};
+
+                    scope.d.answers = answerBuilder.question.answers;
+
+                    scope.d.click = function (answer) {
+                        var viewMode = answerBuilder.getViewMode();
+
+                        if ((!isNaN(parseInt(ngModelCtrl.$viewValue)) && viewMode === MODE_ANSWER_WITH_QUESTION) || viewMode === MODE_REVIEW) {
+                            return;
+                        }
+                        ngModelCtrl.$setViewValue(answer.id);
+                        updateAnswersFollowingSelection(viewMode);
+                    };
+
+                    function keyboardHandler(key){
+                        key = String.fromCharCode(key.keyCode).toUpperCase();
+                        if(angular.isDefined(keyMap[key])){
+                            scope.d.click(scope.d.answers[keyMap[key]]);
+                        }
+                    }
+
+                    if(questionIndex === currentSlide){
+                        body.addEventListener('keydown',keyboardHandler);
+                    }
+
+                    scope.$on(ZnkExerciseEvents.QUESTION_CHANGED,function(event,value ,prevValue ,currQuestion){
+                        var currentSlide = currQuestion.__questionStatus.index;
+                        if(questionIndex !== currentSlide){
+                            body.removeEventListener('keydown',keyboardHandler);
+                        }else{
+                            body.addEventListener('keydown',keyboardHandler);
+                        }
+                    });
+
+
+
+                    scope.d.getIndexChar = function(answerIndex){
+                        var key = ZnkExerciseAnswersSrv.selectAnswer.getAnswerIndex(answerIndex,answerBuilder.question);
+                        keyMap[key] = answerIndex;
+                        return key;
+                    };
+
+                    function updateAnswersFollowingSelection(viewMode) {
+                        var selectedAnswerId = ngModelCtrl.$viewValue;
+                        var correctAnswerId = answerBuilder.question.correctAnswerId;
+                        var $answers = angular.element(element[0].querySelectorAll('.answer'));
+                        for (var i = 0; i < $answers.length; i++) {
+
+                            var $answerElem = angular.element($answers[i]);
+                            if(!$answerElem || !$answerElem.scope || !$answerElem.scope()){
+                                continue;
+                            }
+
+                            var answer = $answerElem.scope().answer;
+                            var classToAdd,
+                                classToRemove;
+
+                            if (answerBuilder.getViewMode() === MODE_ANSWER_ONLY || answerBuilder.getViewMode() === MODE_MUST_ANSWER) {
+                                // dont show correct / wrong indication
+                                classToRemove = 'answered';
+                                classToAdd = selectedAnswerId === answer.id ? 'answered' : 'neutral';
+                            } else {
+                                // the rest of the optional states involve correct / wrong indications
+                                if (angular.isUndefined(selectedAnswerId)) {
+                                    // unanswered question
+                                    if (answerBuilder.getViewMode() === MODE_REVIEW) {
+                                        classToAdd = correctAnswerId === answer.id ? 'answered-incorrect' : 'neutral';
+                                    }
+                                } else if (selectedAnswerId === answer.id) {
+                                    // this is the selected answer
+                                    classToAdd = correctAnswerId === answer.id ? 'correct' : 'wrong';
+                                } else {
+                                    // this is the correct answer but the user didn't select it
+                                    classToAdd = answer.id === correctAnswerId ? 'answered-incorrect' : 'neutral';
+                                }
+                            }
+                            $answerElem.removeClass(classToRemove);
+                            $answerElem.addClass(classToAdd);
+                            if (viewMode === MODE_ANSWER_WITH_QUESTION){
+                                if (classToAdd === 'correct'){
+
+                                }
+                                if (classToAdd === 'wrong'){
+
+                                }
+                            }
+                        }
+                    }
+
+                    ngModelCtrl.$render = function () {
+                        //skip one digest cycle in order to let the answers time to be compiled
+                        $timeout(function(){
+                            updateAnswersFollowingSelection();
+                        });
+                    };
+                    //ng model controller render function not triggered in case render function was set
+                    // after the model value was changed
+                    ngModelCtrl.$render();
+
+                    scope.$on('exercise:viewModeChanged', function () {
+                        ngModelCtrl.$render();
+                    });
+
+                    scope.$on('$destroy',function(){
+                        body.removeEventListener('keydown',keyboardHandler);
+                    });
+                }
+            };
+        }
+    ]);
+})(angular);
+
+
 
 (function (angular) {
     'use strict';
@@ -6320,6 +4948,58 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
         ];
     });
 })(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('freeTextAnswerGrid', [
+        function () {
+            return {
+                templateUrl: 'scripts/exercise/templates/freeTextAnswerGridDrv.html',
+                restrict: 'E',
+                require: 'ngModel',
+                scope: {
+                    cellsNumGetter: '&cellsNum'
+                },
+                link: function (scope, element, attrs, ngModelCtrl) {
+
+                    scope.buttonArray = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+                    var numberOfCells = scope.cellsNumGetter() || 3;
+
+                    scope.d = {
+                        viewCells: new Array(numberOfCells)
+                    };
+
+                    function updateNgModelViewValue() {
+                        ngModelCtrl.$setViewValue(angular.copy(scope.d.cells));
+                    }
+
+                    scope.onClickNum = function (num) {
+                        if (attrs.disabled || scope.d.cells.length >= numberOfCells) {
+                            return;
+                        }
+
+                        scope.d.cells.push(num);
+                        updateNgModelViewValue();
+                    };
+
+                    scope.onClickErase = function () {
+                        if (attrs.disabled || !scope.d.cells.length) {
+                            return;
+                        }
+
+                        scope.d.cells.pop();
+                        updateNgModelViewValue();
+                    };
+
+                    ngModelCtrl.$render = function () {
+                        scope.d.cells = angular.isDefined(ngModelCtrl.$viewValue) ? ngModelCtrl.$viewValue : [];
+                    };
+                }
+            };
+        }]);
+}(angular));
 
 'use strict';
 
@@ -6482,183 +5162,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').controller('BaseZnkExerciseController',
-        ["$scope", "exerciseData", "exerciseSettings", "$state", "$q", "ExerciseTypeEnum", "$location", "ExerciseResultSrv", "ZnkExerciseSrv", "$filter", "PopUpSrv", "exerciseEventsConst", "$rootScope", "ZnkExerciseUtilitySrv", "ZnkExerciseViewModeEnum", "SubjectEnum", "znkAnalyticsSrv", "$translate", "$log", "StatsEventsHandlerSrv", function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, ExerciseResultSrv, ZnkExerciseSrv,
-                  $filter, PopUpSrv, exerciseEventsConst, $rootScope, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum, SubjectEnum,
-                  znkAnalyticsSrv, $translate, $log, StatsEventsHandlerSrv) {
-            'ngInject';
-
-            var exercise = exerciseData.exercise;
-            var exerciseResult = exerciseData.exerciseResult;
-            var exerciseTypeId = exerciseData.exerciseTypeId;
-            var isSection = exerciseTypeId === ExerciseTypeEnum.SECTION.enum;
-            var initSlideIndex;
-
-            function getNumOfUnansweredQuestions(questionsResults) {
-                var numOfUnansweredQuestions = questionsResults.length;
-                var keysArr = Object.keys(questionsResults);
-                angular.forEach(keysArr, function (i) {
-                    var questionAnswer = questionsResults[i];
-                    if (angular.isDefined(questionAnswer.userAnswer)) {
-                        numOfUnansweredQuestions--;
-                    }
-                });
-                return numOfUnansweredQuestions;
-            }
-
-            function _getAllowedTimeForExercise() {
-                if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
-                    return exercise.time;
-                }
-
-                var allowedTimeForQuestion  = ZnkExerciseSrv.getAllowedTimeForQuestion(exerciseTypeId);
-                return allowedTimeForQuestion * exercise.questions.length;
-            }
-
-            function _finishExercise() {
-                exerciseResult.isComplete = true;
-                exerciseResult.endedTime = Date.now();
-                exerciseResult.$save();
-
-                //  stats exercise data
-                StatsEventsHandlerSrv.addNewExerciseResult(exerciseTypeId, exercise, exerciseResult).then(function () {
-                    $scope.baseZnkExerciseCtrl.settings.viewMode = ZnkExerciseViewModeEnum.REVIEW.enum;
-
-                    var exerciseTypeValue = ExerciseTypeEnum.getValByEnum(exerciseData.exerciseTypeId).toLowerCase();
-                    var broadcastEventName = exerciseEventsConst[exerciseTypeValue].FINISH;
-                    $rootScope.$broadcast(broadcastEventName, exercise, exerciseResult, exerciseData.examData);
-
-                    $state.go('^.summary');
-                });
-            }
-
-            if (!$scope.baseZnkExerciseCtrl) {
-                $scope.baseZnkExerciseCtrl = {};
-            }
-
-            if (angular.isUndefined(exerciseResult.startedTime)) {
-                exerciseResult.startedTime = Date.now();
-            }
-
-            exerciseData.exercise.questions = exerciseData.exercise.questions.sort(function (a, b) {
-                return a.order - b.order;
-            });
-
-            if (!angular.isArray(exerciseResult.questionResults) || exerciseResult.questionResults.length === 0) {
-                exerciseResult.questionResults = exercise.questions.map(function (question) {
-                    return {
-                        questionId: question.id,
-                        categoryId: question.categoryId
-                    };
-                });
-            }
-
-            ZnkExerciseUtilitySrv.setQuestionsGroupData(exercise.questions, exercise.questionsGroupData);
-
-            $scope.baseZnkExerciseCtrl.exercise = exercise;
-            $scope.baseZnkExerciseCtrl.resultsData = exerciseResult;
-            $scope.baseZnkExerciseCtrl.numberOfQuestions = $scope.baseZnkExerciseCtrl.exercise.questions.length;
-
-            var viewMode;
-            if (exerciseResult.isComplete) {
-                viewMode = ZnkExerciseViewModeEnum.REVIEW.enum;
-                initSlideIndex = 0;
-            } else {
-                viewMode = isSection ? ZnkExerciseViewModeEnum.ONLY_ANSWER.enum : ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum;
-                initSlideIndex = exerciseResult.questionResults.findIndex(function (question) {
-                    return !question.userAnswer;
-                });
-            }
-
-            var defExerciseSettings = {
-                onDone: function onDone() {
-                    var numOfUnansweredQuestions = getNumOfUnansweredQuestions(exerciseResult.questionResults);
-
-                    var areAllQuestionsAnsweredProm = $q.when(true);
-                    if (numOfUnansweredQuestions) {
-                        var contentProm = $translate('ZNK_EXERCISE.SOME_ANSWER_LEFT_CONTENT');
-                        var titleProm = $translate('ZNK_EXERCISE.FINISH_TITLE');
-                        var buttonGoToProm = $translate('ZNK_EXERCISE.GO_TO_SUMMARY_BTN');
-                        var buttonStayProm = $translate('ZNK_EXERCISE.STAY_BTN');
-
-                        $q.all([contentProm, titleProm, buttonGoToProm, buttonStayProm]).then(function (results) {
-                            var content = results[0];
-                            var title = results[1];
-                            var buttonGoTo = results[2];
-                            var buttonStay = results[3];
-                            areAllQuestionsAnsweredProm = PopUpSrv.warning(title, content, buttonGoTo, buttonStay).promise;
-                        }, function (err) {
-                            $log.error(err);
-                        });
-                    }
-                    areAllQuestionsAnsweredProm.then(function () {
-                        _finishExercise(exerciseResult);
-                    });
-                },
-                onQuestionAnswered: function onQuestionAnswered() {
-                    exerciseResult.$save();
-                },
-                onSlideChange: function (currQuestion, currentIndex) {
-                    var indexPlusOne = currentIndex + 1;
-                    znkAnalyticsSrv.pageTrack({
-                        props: {
-                            url: $location.url() + '/index/' + indexPlusOne + '/questionId/' + (currQuestion.id || '')
-                        }
-                    });
-                    $scope.baseZnkExerciseCtrl.currentIndex = indexPlusOne;
-                },
-                viewMode: viewMode,
-                initSlideIndex: initSlideIndex || 0,
-                allowedTimeForExercise: _getAllowedTimeForExercise()
-            };
-
-            $scope.baseZnkExerciseCtrl.settings = angular.extend(defExerciseSettings, exerciseSettings);
-            $scope.baseZnkExerciseCtrl.settings.onExerciseReady = function () {
-                if (exerciseSettings.onExerciseReady) {
-                    exerciseSettings.onExerciseReady();
-                }
-            };
-
-            $scope.baseZnkExerciseCtrl.startTime = exerciseResult.duration || 0;
-            $scope.baseZnkExerciseCtrl.maxTime = exercise.time;
-
-            $scope.baseZnkExerciseCtrl.timerData = {
-                timeLeft: exercise.time - (exerciseResult.duration || 0),
-                config: {
-                    countDown: true
-                }
-            };
-
-            $scope.baseZnkExerciseCtrl.onFinishTime = function () {
-
-                var contentProm = $translate('ZNK_EXERCISE.TIME_UP_CONTENT');
-                var titleProm = $translate('ZNK_EXERCISE.TIME_UP_TITLE');
-                var buttonFinishProm = $translate('ZNK_EXERCISE.STOP');
-                var buttonContinueProm = $translate('ZNK_EXERCISE.CONTINUE_BTN');
-
-                $q.all([contentProm, titleProm, buttonFinishProm, buttonContinueProm]).then(function (results) {
-                    var content = results[0];
-                    var title = results[1];
-                    var buttonFinish = results[2];
-                    var buttonContinue = results[3];
-                    var timeOverPopupPromise = PopUpSrv.ErrorConfirmation(title, content, buttonFinish, buttonContinue).promise;
-
-                    timeOverPopupPromise.then(function () {
-                        _finishExercise(exerciseResult);
-                    });
-                });
-            };
-
-            $scope.baseZnkExerciseCtrl.onChangeTime = function (passedTime) {
-                exerciseResult.duration = passedTime;
-            };
-        }]);
-
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     var ZnkExerciseEvents = {
         BOOKMARK: 'znk exercise:bookmark',
         QUESTION_ANSWERED: 'znk exercise:question answered',
@@ -6720,8 +5223,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                                 znkExerciseCtrl.notifyQuestionBuilderReady(questionBuilderCtrl.question.__questionStatus.index);
                             });
                         },0,false);
-
-                        questionBuilderCtrl.setViewValue = znkExerciseCtrl.setViewValue;
 
                         scope.$on('$destroy', function(){
                             $timeout.cancel(innerTimeout);
@@ -6814,6 +5315,36 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         scope.vm.questions = notBindedQuestions;
                         scope.vm.swiperActions.updateFollowingSlideAddition();
                     });
+                }
+            };
+        }
+    ]);
+})(angular);
+
+
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('rateAnswerFormatterParser', ['AnswerTypeEnum',
+        function (AnswerTypeEnum) {
+            return {
+                require: ['ngModel','questionBuilder'],
+                link: function(scope, elem, attrs, ctrls){
+                    var ngModelCtrl = ctrls[0];
+                    var questionBuilderCtrl = ctrls[1];
+                    var answerTypeId = questionBuilderCtrl.question.answerTypeId;
+
+                    if(answerTypeId === AnswerTypeEnum.RATE_ANSWER.enum){
+                        var INDEX_OFFSET = 2;
+                        ngModelCtrl.$formatters.push(function(answer){
+                            return angular.isDefined(answer) ? answer - INDEX_OFFSET : undefined;
+                        });
+                        ngModelCtrl.$parsers.push(function(index){
+                            return angular.isDefined(index) ? index + INDEX_OFFSET : undefined;
+                        });
+
+                    }
                 }
             };
         }
@@ -7153,10 +5684,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     });
                 };
 
-                QuestionTypesSrv.getQuestionType = function getQuestionType(question) {
-                    return questionTypeGetterFn(question);
-                };
-
                 return QuestionTypesSrv;
             }
         ];
@@ -7166,69 +5693,42 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').provider('ZnkExerciseSrv',
-        function () {
-            'ngInject';
+    angular.module('znk.infra.znkExercise').factory('ZnkExerciseSrv', [
+        /*'ZnkModalSrv',*/ 'EnumSrv', '$window', 'PlatformEnum',
+        function (/*ZnkModalSrv, */EnumSrv, $window, PlatformEnum) {
+            var ZnkExerciseSrv = {};
 
-            var exerciseTypeToAllowedQuestionTimeMap;
-            this.setAllowedTimeForQuestionMap = function (_exerciseTypeToAllowedQuestionTimeMap) {
-                exerciseTypeToAllowedQuestionTimeMap = _exerciseTypeToAllowedQuestionTimeMap;
+            var platform = !!$window.ionic ? PlatformEnum.MOBILE.enum : PlatformEnum.DESKTOP.enum;
+            ZnkExerciseSrv.getPlatform = function(){
+                return platform;
             };
 
-            this.$get = ["EnumSrv", "$window", "PlatformEnum", "$log", function (EnumSrv, $window, PlatformEnum, $log) {
-                'ngInject';//jshint ignore:line
+            ZnkExerciseSrv.openExerciseToolBoxModal = function openExerciseToolBoxModal(/*toolBoxModalSettings*/) {
+                //var modalOptions = {
+                //    templateUrl: 'scripts/exercise/templates/znkExerciseToolBoxModal.html',
+                //    hideBackdrop: true,
+                //    ctrl: 'ZnkExerciseToolBoxModalCtrl',
+                //    ctrlAs: 'toolBoxCtrl',
+                //    dontCentralize: true,
+                //    wrapperClass: 'znk-exercise-toolbox ' + toolBoxModalSettings.wrapperCls,
+                //    resolve: {
+                //        Settings: toolBoxModalSettings
+                //    }
+                //};
+                //return ZnkModalSrv.modal(modalOptions);
+            };
 
-                var platform = !!$window.ionic ? PlatformEnum.MOBILE.enum : PlatformEnum.DESKTOP.enum;
-                var ZnkExerciseSrv = {};
+            ZnkExerciseSrv.toolBoxTools = {
+                BLACKBOARD: 'blackboard',
+                MARKER: 'mar',
+                CALCULATOR: 'cal',
+                BOOKMARK: 'bookmark',
+                SHOW_PAGER: 'show pager'
+            };
 
-                ZnkExerciseSrv.toolBoxTools = {
-                    BLACKBOARD: 'blackboard',
-                    MARKER: 'mar',
-                    CALCULATOR: 'cal',
-                    BOOKMARK: 'bookmark',
-                    SHOW_PAGER: 'show pager'
-                };
-
-                function openExerciseToolBoxModal(/*toolBoxModalSettings*/) {
-                    //var modalOptions = {
-                    //    templateUrl: 'scripts/exercise/templates/znkExerciseToolBoxModal.html',
-                    //    hideBackdrop: true,
-                    //    ctrl: 'ZnkExerciseToolBoxModalCtrl',
-                    //    ctrlAs: 'toolBoxCtrl',
-                    //    dontCentralize: true,
-                    //    wrapperClass: 'znk-exercise-toolbox ' + toolBoxModalSettings.wrapperCls,
-                    //    resolve: {
-                    //        Settings: toolBoxModalSettings
-                    //    }
-                    //};
-                    //return ZnkModalSrv.modal(modalOptions);
-                }
-
-                ZnkExerciseSrv.openExerciseToolBoxModal = openExerciseToolBoxModal;
-
-                ZnkExerciseSrv.getPlatform = function () {
-                    return platform;
-                };
-
-                ZnkExerciseSrv.getAllowedTimeForQuestion = function (exerciseType) {
-                    if(!exerciseTypeToAllowedQuestionTimeMap || !exerciseTypeToAllowedQuestionTimeMap[exerciseType]){
-                        $log.error('ZnkExerciseSrv: the following exercise type:' + exerciseType +' has no question allowed time');
-                    }
-                    return exerciseTypeToAllowedQuestionTimeMap[exerciseType];
-                };
-
-                ZnkExerciseSrv.toolBoxTools = {
-                    BLACKBOARD: 'blackboard',
-                    MARKER: 'mar',
-                    CALCULATOR: 'cal',
-                    BOOKMARK: 'bookmark',
-                    SHOW_PAGER: 'show pager'
-                };
-
-                return ZnkExerciseSrv;
-            }];
+            return ZnkExerciseSrv;
         }
-    );
+    ]);
 })(angular);
 
 /**
@@ -7238,7 +5738,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
  *  ngModel: results array
  *
  *  settings:
- *      allowedTimeForExercise: in milliseconds
+ *      allowedTimeForExercise
  *      onDone
  *      onQuestionAnswered
  *      wrapperCls
@@ -7599,16 +6099,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                              *  INIT END
                              * */
 
-                            /**
-                             * EXERCISE CTRL ADDITIONAL API
-                             */
-
-                            znkExerciseDrvCtrl.setViewValue = setViewValue;
-
-                            /**
-                             * EXERCISE CTRL ADDITIONAL END
-                             */
-
                             scope.$watch('vm.currentSlide', function (value, prevValue) {
                                 if(angular.isUndefined(value)){
                                     return;
@@ -7902,6 +6392,281 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     ]);
 })(angular);
 
+
+angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/znkExercise/answerTypes/templates/freeTextAnswerDrv.html",
+    "<div class=\"free-text-answer-wrapper\" ng-switch=\"showCorrectAnswer\">\n" +
+    "\n" +
+    "    <div ng-switch-when=\"true\" ng-class=\"userAnswerStatus\">\n" +
+    "        <div class=\"answer-status\">\n" +
+    "            <div class=\"user-answer\">{{d.userAnswer}}</div>\n" +
+    "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
+    "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
+    "        </div>\n" +
+    "        <div class=\"correct-answer\">Correct answer: <span>{{correctAnswer}}</span></div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-switch-when=\"false\">\n" +
+    "        <div class=\"input-wrapper\">\n" +
+    "            <input ng-model-options=\"{ getterSetter: true }\" ng-model=\"d.userAnswerGetterSetter\">\n" +
+    "            <div class=\"arrow-wrapper\" ng-click=\"clickHandler()\">\n" +
+    "                <svg-icon name=\"arrow\"></svg-icon>\n" +
+    "                <div class=\"svg-back\"></div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/answerTypes/templates/rateAnswerDrv.html",
+    "<div class=\"rate-answer-wrapper\">\n" +
+    "\n" +
+    "    <div class=\"checkbox-items-wrapper\" >\n" +
+    "\n" +
+    "        <div class=\"item-repeater\" ng-repeat=\"item in d.itemsArray track by $index\">\n" +
+    "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
+    "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
+    "            <div class=\"checkbox-item\" ng-click=\"clickHandler($index)\">\n" +
+    "                <div class=\"item-index\">{{$index +  2}}</div>\n" +
+    "            </div>\n" +
+    "            <div class=\"correct-answer-line\"></div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/answerTypes/templates/selectAnswerDrv.html",
+    "<div ng-repeat=\"answer in ::d.answers track by answer.id\"\n" +
+    "     class=\"answer\"\n" +
+    "     ng-click=\"d.click(answer)\"\n" +
+    "     tabindex=\"-1\">\n" +
+    "    <div class=\"content-wrapper\">\n" +
+    "        <div class=\"answer-index-wrapper\">\n" +
+    "            <span class=\"index-char\">{{::d.getIndexChar($index)}}</span>\n" +
+    "        </div>\n" +
+    "        <markup content=\"answer.content\" type=\"md\" class=\"content\"></markup>\n" +
+    "        <svg-icon class=\"correct-icon-drv\" name=\"correct\"></svg-icon>\n" +
+    "        <svg-icon class=\"wrong-icon-drv\" name=\"wrong\"></svg-icon>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/btnSectionDesktopTemplate.html",
+    "<div class=\"btn-container left-container ng-hide\"\n" +
+    "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
+    "    <button ng-click=\"vm.prevQuestion()\">\n" +
+    "        <svg-icon name=\"chevron\"></svg-icon>\n" +
+    "    </button>\n" +
+    "</div>\n" +
+    "<div class=\"btn-container right-container ng-hide\"\n" +
+    "     ng-show=\"vm.maxQuestionIndex !== vm.currentQuestionIndex && vm.slideLeftAllowed\"\n" +
+    "     ng-class=\"{'question-answered': vm.isCurrentQuestionAnswered}\">\n" +
+    "    <button ng-click=\"vm.nextQuestion()\">\n" +
+    "        <svg-icon name=\"chevron\"></svg-icon>\n" +
+    "    </button>\n" +
+    "</div>\n" +
+    "<div class=\"done-btn-wrap show-opacity-animate\" ng-if=\"vm.showDoneButton\">\n" +
+    "    <button tabindex=\"0\"\n" +
+    "            class=\"done-btn\"\n" +
+    "            ng-click=\"onDone()\">DONE\n" +
+    "    </button>\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/btnSectionMobileTemplate.html",
+    "<div ng-class=\"{ 'next-disabled' : settings.slideDirection === d.slideDirections.NONE ||  settings.slideDirection === d.slideDirections.RIGHT }\">\n" +
+    "    <div class=\"bookmark-icon-container only-tablet\"\n" +
+    "         ng-class=\"vm.questionsWithAnswers[vm.currentSlide].__questionStatus.bookmark ? 'bookmark-active-icon' : 'bookmark-icon'\"\n" +
+    "         ng-click=\"vm.bookmarkCurrentQuestion()\"\n" +
+    "         ng-hide=\"settings.viewMode === d.reviewModeId\"></div>\n" +
+    "    <ng-switch\n" +
+    "            on=\"vm.currentSlide !== vm.questionsWithAnswers.length - 1 && vm.answeredCount !== vm.questionsWithAnswers.length\"\n" +
+    "            ng-hide=\"settings.viewMode === d.reviewModeId\"\n" +
+    "            class=\"ng-hide\"\n" +
+    "            ng-click=\"d.next()\">\n" +
+    "        <button ng-switch-when=\"true\"\n" +
+    "                class=\"btn next\">\n" +
+    "            <div class=\"only-tablet\">\n" +
+    "                <span>NEXT</span>\n" +
+    "                <i class=\"question-arrow-right-icon\"></i>\n" +
+    "            </div>\n" +
+    "        </button>\n" +
+    "        <button ng-switch-when=\"false\"\n" +
+    "                class=\"btn finish\">\n" +
+    "            <div>DONE</div>\n" +
+    "        </button>\n" +
+    "    </ng-switch>\n" +
+    "    <button class=\"btn sum ng-hide\"\n" +
+    "            ng-click=\"settings.onSummary()\"\n" +
+    "            ng-show=\"settings.viewMode === d.reviewModeId\">\n" +
+    "        SUMMARY\n" +
+    "    </button>\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/questionSwiperDesktopTemplate.html",
+    "<znk-swiper class=\"znk-carousel\"\n" +
+    "            ng-model=\"vm.currSlideIndex\"\n" +
+    "            actions=\"vm.swiperActions\"\n" +
+    "            ng-change=\"vm.SlideChanged()\"\n" +
+    "            disable-swipe=\"{{vm.isLocked}}\">\n" +
+    "    <div class=\"swiper-slide\"\n" +
+    "        ng-repeat=\"question in vm.questions \">\n" +
+    "        <question-builder question=\"question\"\n" +
+    "                          rate-answer-formatter-parser\n" +
+    "                          ng-model=\"question.__questionStatus.userAnswer\"\n" +
+    "                          ng-change=\"onQuestionAnswered(question)\">\n" +
+    "        </question-builder>\n" +
+    "    </div>\n" +
+    "</znk-swiper>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/questionSwiperMobileTemplate.html",
+    "<ion-slide-box znk-slide=\"settings.slideDirection\" class=\"znk-carousel\"\n" +
+    "               show-pager=\"false\"\n" +
+    "               active-slide=\"vm.currentSlide\">\n" +
+    "    <question-builder slide-repeat-drv=\"question in vm.questionsWithAnswers\"\n" +
+    "                      question=\"question\"\n" +
+    "                      ng-model=\"question.__questionStatus.userAnswer\"\n" +
+    "                      ng-change=\"vm.questionAnswered(question)\">\n" +
+    "    </question-builder>\n" +
+    "</ion-slide-box>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/znkExerciseDrv.html",
+    "<div ng-transclude></div>\n" +
+    "<questions-carousel class=\"znk-carousel-container\"\n" +
+    "                    questions=\"vm.questionsWithAnswers\"\n" +
+    "                    disable-swipe=\"{{vm.slideDirection !== 2}}\"\n" +
+    "                    ng-model=\"vm.currentSlide\"\n" +
+    "                    on-question-answered=\"vm.questionAnswered()\"\n" +
+    "                    slide-direction=\"{{vm.slideDirection}}\">\n" +
+    "</questions-carousel>\n" +
+    "<div class=\"question-bottom-shadow\"></div>\n" +
+    "<znk-exercise-btn-section class=\"btn-section\"\n" +
+    "                          prev-question=\"vm.setCurrentIndexByOffset(-1)\"\n" +
+    "                          next-question=\"vm.setCurrentIndexByOffset(1)\"\n" +
+    "                          on-done=\"settings.onDone()\"\n" +
+    "                          actions=\"vm.btnSectionActions\">\n" +
+    "</znk-exercise-btn-section>\n" +
+    "<znk-exercise-pager class=\"ng-hide show-opacity-animate\"\n" +
+    "                    ng-show=\"vm.showPager\"\n" +
+    "                    questions=\"vm.questionsWithAnswers\"\n" +
+    "                    ng-model=\"vm.currentSlide\">\n" +
+    "</znk-exercise-pager>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/znkExercisePagerDrv.html",
+    "<znk-scroll>\n" +
+    "    <div class=\"pager-items-wrapper\">\n" +
+    "        <div class=\"pager-item noselect\"\n" +
+    "             ng-repeat=\"question in questions track by question.id\"\n" +
+    "             question-status=\"question.__questionStatus\"\n" +
+    "             question=\"question\"\n" +
+    "             ng-click=\"d.tap($index)\">\n" +
+    "            <div class=\"question-bookmark-icon\"></div>\n" +
+    "            <div class=\"question-status-indicator\">\n" +
+    "                <div class=\"index\">{{::$index + 1}}</div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</znk-scroll>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/znkSwiperTemplate.html",
+    "<div class=\"swiper-container\">\n" +
+    "    <!-- Additional required wrapper -->\n" +
+    "    <div class=\"swiper-wrapper\" ng-transclude>\n" +
+    "        <!-- Slides -->\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/arrow-icon.svg",
+    "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\" viewBox=\"-468.2 482.4 96 89.8\" class=\"arrow-icon-wrapper\">\n" +
+    "    <style type=\"text/css\">\n" +
+    "        .arrow-icon-wrapper .st0{fill:#109BAC;}\n" +
+    "        .arrow-icon-wrapper .st1{fill:none;stroke:#fff;stroke-width:5.1237;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
+    "    </style>\n" +
+    "    <path class=\"st0\" d=\"M-417.2,572.2h-6.2c-24.7,0-44.9-20.2-44.9-44.9v0c0-24.7,20.2-44.9,44.9-44.9h6.2c24.7,0,44.9,20.2,44.9,44.9\n" +
+    "    v0C-372.2,552-392.5,572.2-417.2,572.2z\"/>\n" +
+    "    <g>\n" +
+    "        <line class=\"st1\" x1=\"-442.8\" y1=\"527.3\" x2=\"-401.4\" y2=\"527.3\"/>\n" +
+    "        <line class=\"st1\" x1=\"-401.4\" y1=\"527.3\" x2=\"-414.3\" y2=\"514.4\"/>\n" +
+    "        <line class=\"st1\" x1=\"-401.4\" y1=\"527.3\" x2=\"-414.3\" y2=\"540.2\"/>\n" +
+    "    </g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/chevron-icon.svg",
+    "<svg x=\"0px\" y=\"0px\" viewBox=\"0 0 143.5 65.5\">\n" +
+    "    <polyline class=\"st0\" points=\"6,6 71.7,59.5 137.5,6 \"/>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/correct-icon.svg",
+    "<svg version=\"1.1\"\n" +
+    "     class=\"correct-icon-svg\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "	 viewBox=\"0 0 188.5 129\"\n" +
+    "     style=\"enable-background:new 0 0 188.5 129;\"\n" +
+    "     xml:space=\"preserve\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.correct-icon-svg .st0 {\n" +
+    "        fill: none;\n" +
+    "        stroke: #231F20;\n" +
+    "        stroke-width: 15;\n" +
+    "        stroke-linecap: round;\n" +
+    "        stroke-linejoin: round;\n" +
+    "        stroke-miterlimit: 10;\n" +
+    "    }\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<line class=\"st0\" x1=\"7.5\" y1=\"62\" x2=\"67\" y2=\"121.5\"/>\n" +
+    "	<line class=\"st0\" x1=\"67\" y1=\"121.5\" x2=\"181\" y2=\"7.5\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/info-icon.svg",
+    "<svg\n" +
+    "    version=\"1.1\"\n" +
+    "    xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "    x=\"0px\"\n" +
+    "    y=\"0px\"\n" +
+    "    viewBox=\"-497 499 28 28\"\n" +
+    "    class=\"info-icon\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.info-icon .st0{fill:none;stroke:#0A9BAD; stroke-width:2;}\n" +
+    "	.info-icon .st2{fill:#0A9BAD;}\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<circle class=\"st0\" cx=\"-483\" cy=\"513\" r=\"13.5\"/>\n" +
+    "	<g>\n" +
+    "		<path class=\"st2\" d=\"M-485.9,509.2h3.9v8.1h3v1.2h-7.6v-1.2h3v-6.9h-2.4V509.2z M-483.5,505.6h1.5v1.9h-1.5V505.6z\"/>\n" +
+    "	</g>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/wrong-icon.svg",
+    "<svg version=\"1.1\"\n" +
+    "     class=\"wrong-icon-svg\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "	 viewBox=\"0 0 126.5 126.5\"\n" +
+    "     style=\"enable-background:new 0 0 126.5 126.5;\"\n" +
+    "     xml:space=\"preserve\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.wrong-icon-svg .st0 {\n" +
+    "        fill: none;\n" +
+    "        stroke: #231F20;\n" +
+    "        stroke-width: 15;\n" +
+    "        stroke-linecap: round;\n" +
+    "        stroke-linejoin: round;\n" +
+    "        stroke-miterlimit: 10;\n" +
+    "    }\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<line class=\"st0\" x1=\"119\" y1=\"7.5\" x2=\"7.5\" y2=\"119\"/>\n" +
+    "	<line class=\"st0\" x1=\"7.5\" y1=\"7.5\" x2=\"119\" y2=\"119\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+}]);
 
 'use strict';
 
@@ -8602,7 +7367,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 });
 
                 angular.forEach(questions, function (question) {
-                    if (question.groupDataId && !groupDataMap[question.groupDataId]) {
+                    if (!groupDataMap[question.groupDataId]) {
                         $log.debug('Group data is missing for the following question id ' + question.id);
                     }
 
@@ -8615,227 +7380,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     ]);
 })(angular);
 
-angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
-  $templateCache.put("components/znkExercise/core/template/btnSectionDesktopTemplate.html",
-    "<div class=\"btn-container left-container ng-hide\"\n" +
-    "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
-    "    <button ng-click=\"vm.prevQuestion()\">\n" +
-    "        <svg-icon name=\"chevron\"></svg-icon>\n" +
-    "    </button>\n" +
-    "</div>\n" +
-    "<div class=\"btn-container right-container ng-hide\"\n" +
-    "     ng-show=\"vm.maxQuestionIndex !== vm.currentQuestionIndex && vm.slideLeftAllowed\"\n" +
-    "     ng-class=\"{'question-answered': vm.isCurrentQuestionAnswered}\">\n" +
-    "    <button ng-click=\"vm.nextQuestion()\">\n" +
-    "        <svg-icon name=\"chevron\"></svg-icon>\n" +
-    "    </button>\n" +
-    "</div>\n" +
-    "<div class=\"done-btn-wrap show-opacity-animate\" ng-if=\"vm.showDoneButton\">\n" +
-    "    <button tabindex=\"0\"\n" +
-    "            class=\"done-btn\"\n" +
-    "            ng-click=\"onDone()\">DONE\n" +
-    "    </button>\n" +
-    "</div>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/btnSectionMobileTemplate.html",
-    "<div ng-class=\"{ 'next-disabled' : settings.slideDirection === d.slideDirections.NONE ||  settings.slideDirection === d.slideDirections.RIGHT }\">\n" +
-    "    <div class=\"bookmark-icon-container only-tablet\"\n" +
-    "         ng-class=\"vm.questionsWithAnswers[vm.currentSlide].__questionStatus.bookmark ? 'bookmark-active-icon' : 'bookmark-icon'\"\n" +
-    "         ng-click=\"vm.bookmarkCurrentQuestion()\"\n" +
-    "         ng-hide=\"settings.viewMode === d.reviewModeId\"></div>\n" +
-    "    <ng-switch\n" +
-    "            on=\"vm.currentSlide !== vm.questionsWithAnswers.length - 1 && vm.answeredCount !== vm.questionsWithAnswers.length\"\n" +
-    "            ng-hide=\"settings.viewMode === d.reviewModeId\"\n" +
-    "            class=\"ng-hide\"\n" +
-    "            ng-click=\"d.next()\">\n" +
-    "        <button ng-switch-when=\"true\"\n" +
-    "                class=\"btn next\">\n" +
-    "            <div class=\"only-tablet\">\n" +
-    "                <span>NEXT</span>\n" +
-    "                <i class=\"question-arrow-right-icon\"></i>\n" +
-    "            </div>\n" +
-    "        </button>\n" +
-    "        <button ng-switch-when=\"false\"\n" +
-    "                class=\"btn finish\">\n" +
-    "            <div>DONE</div>\n" +
-    "        </button>\n" +
-    "    </ng-switch>\n" +
-    "    <button class=\"btn sum ng-hide\"\n" +
-    "            ng-click=\"settings.onSummary()\"\n" +
-    "            ng-show=\"settings.viewMode === d.reviewModeId\">\n" +
-    "        SUMMARY\n" +
-    "    </button>\n" +
-    "</div>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/questionSwiperDesktopTemplate.html",
-    "<znk-swiper class=\"znk-carousel\"\n" +
-    "            ng-model=\"vm.currSlideIndex\"\n" +
-    "            actions=\"vm.swiperActions\"\n" +
-    "            ng-change=\"vm.SlideChanged()\"\n" +
-    "            disable-swipe=\"{{vm.isLocked}}\">\n" +
-    "    <div class=\"swiper-slide\"\n" +
-    "        ng-repeat=\"question in vm.questions \">\n" +
-    "        <question-builder question=\"question\"\n" +
-    "                          rate-answer-formatter-parser\n" +
-    "                          ng-model=\"question.__questionStatus.userAnswer\"\n" +
-    "                          ng-change=\"onQuestionAnswered(question)\">\n" +
-    "        </question-builder>\n" +
-    "    </div>\n" +
-    "</znk-swiper>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/questionSwiperMobileTemplate.html",
-    "<ion-slide-box znk-slide=\"settings.slideDirection\" class=\"znk-carousel\"\n" +
-    "               show-pager=\"false\"\n" +
-    "               active-slide=\"vm.currentSlide\">\n" +
-    "    <question-builder slide-repeat-drv=\"question in vm.questionsWithAnswers\"\n" +
-    "                      question=\"question\"\n" +
-    "                      ng-model=\"question.__questionStatus.userAnswer\"\n" +
-    "                      ng-change=\"vm.questionAnswered(question)\">\n" +
-    "    </question-builder>\n" +
-    "</ion-slide-box>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/znkExerciseDrv.html",
-    "<div ng-transclude></div>\n" +
-    "<questions-carousel class=\"znk-carousel-container\"\n" +
-    "                    questions=\"vm.questionsWithAnswers\"\n" +
-    "                    disable-swipe=\"{{vm.slideDirection !== 2}}\"\n" +
-    "                    ng-model=\"vm.currentSlide\"\n" +
-    "                    on-question-answered=\"vm.questionAnswered()\"\n" +
-    "                    slide-direction=\"{{vm.slideDirection}}\">\n" +
-    "</questions-carousel>\n" +
-    "<div class=\"question-bottom-shadow\"></div>\n" +
-    "<znk-exercise-btn-section class=\"btn-section\"\n" +
-    "                          prev-question=\"vm.setCurrentIndexByOffset(-1)\"\n" +
-    "                          next-question=\"vm.setCurrentIndexByOffset(1)\"\n" +
-    "                          on-done=\"settings.onDone()\"\n" +
-    "                          actions=\"vm.btnSectionActions\">\n" +
-    "</znk-exercise-btn-section>\n" +
-    "<znk-exercise-pager class=\"ng-hide show-opacity-animate\"\n" +
-    "                    ng-show=\"vm.showPager\"\n" +
-    "                    questions=\"vm.questionsWithAnswers\"\n" +
-    "                    ng-model=\"vm.currentSlide\">\n" +
-    "</znk-exercise-pager>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/znkExercisePagerDrv.html",
-    "<znk-scroll>\n" +
-    "    <div class=\"pager-items-wrapper\">\n" +
-    "        <div class=\"pager-item noselect\"\n" +
-    "             ng-repeat=\"question in questions track by question.id\"\n" +
-    "             question-status=\"question.__questionStatus\"\n" +
-    "             question=\"question\"\n" +
-    "             ng-click=\"d.tap($index)\">\n" +
-    "            <div class=\"question-bookmark-icon\"></div>\n" +
-    "            <div class=\"question-status-indicator\">\n" +
-    "                <div class=\"index\">{{::$index + 1}}</div>\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "</znk-scroll>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/znkSwiperTemplate.html",
-    "<div class=\"swiper-container\">\n" +
-    "    <!-- Additional required wrapper -->\n" +
-    "    <div class=\"swiper-wrapper\" ng-transclude>\n" +
-    "        <!-- Slides -->\n" +
-    "    </div>\n" +
-    "</div>\n" +
-    "");
-  $templateCache.put("components/znkExercise/svg/arrow-icon.svg",
-    "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\" viewBox=\"-468.2 482.4 96 89.8\" class=\"arrow-icon-wrapper\">\n" +
-    "    <style type=\"text/css\">\n" +
-    "        .arrow-icon-wrapper{width: 48px;  height:auto;}\n" +
-    "        .arrow-icon-wrapper .st0{fill:#109BAC;}\n" +
-    "        .arrow-icon-wrapper .st1{fill:none;stroke:#fff;stroke-width:5.1237;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
-    "    </style>\n" +
-    "    <path class=\"st0\" d=\"M-417.2,572.2h-6.2c-24.7,0-44.9-20.2-44.9-44.9v0c0-24.7,20.2-44.9,44.9-44.9h6.2c24.7,0,44.9,20.2,44.9,44.9\n" +
-    "    v0C-372.2,552-392.5,572.2-417.2,572.2z\"/>\n" +
-    "    <g>\n" +
-    "        <line class=\"st1\" x1=\"-442.8\" y1=\"527.3\" x2=\"-401.4\" y2=\"527.3\"/>\n" +
-    "        <line class=\"st1\" x1=\"-401.4\" y1=\"527.3\" x2=\"-414.3\" y2=\"514.4\"/>\n" +
-    "        <line class=\"st1\" x1=\"-401.4\" y1=\"527.3\" x2=\"-414.3\" y2=\"540.2\"/>\n" +
-    "    </g>\n" +
-    "</svg>\n" +
-    "");
-  $templateCache.put("components/znkExercise/svg/chevron-icon.svg",
-    "<svg x=\"0px\"\n" +
-    "     y=\"0px\"\n" +
-    "     viewBox=\"0 0 143.5 65.5\"\n" +
-    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
-    "     class=\"znk-exercise-chevron-svg\">\n" +
-    "    <style>\n" +
-    "        .znk-exercise-chevron-svg{\n" +
-    "            height: 16px;\n" +
-    "        }\n" +
-    "\n" +
-    "        .znk-exercise-chevron-svg .st0{\n" +
-    "            stroke: #0a9bad;\n" +
-    "            fill: none;\n" +
-    "            stroke-width: 12;\n" +
-    "            stroke-linecap: round;\n" +
-    "            stroke-linejoin: round;\n" +
-    "            stroke-miterlimit: 10;\n" +
-    "        }\n" +
-    "    </style>\n" +
-    "    <polyline class=\"st0\" points=\"6,6 71.7,59.5 137.5,6 \"/>\n" +
-    "</svg>\n" +
-    "");
-  $templateCache.put("components/znkExercise/svg/correct-icon.svg",
-    "<svg version=\"1.1\"\n" +
-    "     class=\"correct-icon-svg\"\n" +
-    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
-    "     x=\"0px\"\n" +
-    "     y=\"0px\"\n" +
-    "	 viewBox=\"0 0 188.5 129\"\n" +
-    "     style=\"enable-background:new 0 0 188.5 129;\"\n" +
-    "     xml:space=\"preserve\">\n" +
-    "<style type=\"text/css\">\n" +
-    "	.correct-icon-svg .st0 {\n" +
-    "        fill: none;\n" +
-    "        stroke: #231F20;\n" +
-    "        stroke-width: 15;\n" +
-    "        stroke-linecap: round;\n" +
-    "        stroke-linejoin: round;\n" +
-    "        stroke-miterlimit: 10;\n" +
-    "    }\n" +
-    "</style>\n" +
-    "<g>\n" +
-    "	<line class=\"st0\" x1=\"7.5\" y1=\"62\" x2=\"67\" y2=\"121.5\"/>\n" +
-    "	<line class=\"st0\" x1=\"67\" y1=\"121.5\" x2=\"181\" y2=\"7.5\"/>\n" +
-    "</g>\n" +
-    "</svg>\n" +
-    "");
-  $templateCache.put("components/znkExercise/svg/wrong-icon.svg",
-    "<svg version=\"1.1\"\n" +
-    "     class=\"wrong-icon-svg\"\n" +
-    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
-    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
-    "     x=\"0px\"\n" +
-    "     y=\"0px\"\n" +
-    "	 viewBox=\"0 0 126.5 126.5\"\n" +
-    "     style=\"enable-background:new 0 0 126.5 126.5;\"\n" +
-    "     xml:space=\"preserve\">\n" +
-    "<style type=\"text/css\">\n" +
-    "	.wrong-icon-svg .st0 {\n" +
-    "        fill: none;\n" +
-    "        stroke: #231F20;\n" +
-    "        stroke-width: 15;\n" +
-    "        stroke-linecap: round;\n" +
-    "        stroke-linejoin: round;\n" +
-    "        stroke-miterlimit: 10;\n" +
-    "    }\n" +
-    "</style>\n" +
-    "<g>\n" +
-    "	<line class=\"st0\" x1=\"119\" y1=\"7.5\" x2=\"7.5\" y2=\"119\"/>\n" +
-    "	<line class=\"st0\" x1=\"7.5\" y1=\"7.5\" x2=\"119\" y2=\"119\"/>\n" +
-    "</g>\n" +
-    "</svg>\n" +
-    "");
-}]);
+angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
 
-(function (angular) {
-    'use strict';
-    angular.module('znk.infra.znkModule', []);
-})(angular);
+}]);
 
 (function (angular) {
     'use strict';
@@ -8861,264 +7408,6 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
             return znkModuleService;
         }
     ]);
-})(angular);
-
-
-angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
-
-}]);
-
-(function (angular) {
-    'use strict';
-    angular.module('znk.infra.znkTimeline', ['znk.infra.svgIcon', 'znk.infra.enum']);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkTimeline').directive('znkTimeline', ['$window', '$templateCache', 'TimelineSrv',
-        function ($window, $templateCache, TimelineSrv) {
-            var directive = {
-                restrict: 'A',
-                scope: {
-                    timelineData: '=',
-                    timelineSettings: '='
-                },
-                link: function (scope, element) {
-
-                    var settings = angular.extend({
-                        width: $window.innerWidth,
-                        height: $window.innerHeight,
-                        images: TimelineSrv.getImages()
-                    }, scope.timelineSettings || {});
-
-                    var dataObj;
-
-                    var canvasElem = element[0];
-
-                    var ctx = canvasElem.getContext('2d');
-
-                    var lastLine;
-
-                    var nextFlag = false;
-
-                    scope.$watch('timelineData', function (val, oldVal) {
-                        if (angular.isDefined(val)) {
-                            if (val !== oldVal) {
-                                ctx.clearRect(0, 0, canvasElem.width, canvasElem.height);
-                                if (val.data.length) {
-                                    start(val);
-                                }
-                            } else {
-                                start(val);
-                            }
-                        }
-                    });
-
-                    function start(timelineData) {
-
-                        var width = settings.width;
-
-                        dataObj = {
-                            lastLine: [],
-                            biggestScore: {score: 0}
-                        };
-
-                        lastLine = void(0);
-
-                        if (settings.type === 'multi') {
-                            var distance = settings.distance * (timelineData.data.length + 2);
-                            width = (distance < settings.width) ? settings.width : distance;
-                        }
-
-                        if (settings.isMax) {
-                            settings.max = 0;
-                            angular.forEach(timelineData.data, function (value) {
-                                if (value.score > settings.max) {
-                                    settings.max = value.score;
-                                }
-                            });
-                        }
-
-                        canvasElem.width = width * 2;
-                        canvasElem.height = settings.height * 2;
-
-                        canvasElem.style.width = width + 'px';
-                        canvasElem.style.height = settings.height + 'px';
-
-                        ctx.scale(2, 2);
-
-                        if (settings.lineWidth) {
-                            ctx.lineWidth = settings.lineWidth;
-                        }
-
-                        if (angular.isDefined(timelineData.id) && settings.colors && angular.isArray(settings.colors)) {
-                            ctx.strokeStyle = settings.colors[timelineData.id];
-                            ctx.fillStyle = settings.colors[timelineData.id];
-                        }
-
-                        ctx.beginPath();
-
-                        createPath({
-                            moveTo: {
-                                x: 0,
-                                y: settings.height - 2
-                            },
-                            lineTo: {
-                                x: settings.distance,
-                                y: settings.height - 2
-                            }
-                        }, true);
-
-                        angular.forEach(timelineData.data, function (value, index) {
-
-                            var height = Math.abs((settings.height - settings.subPoint) - ((value.score - settings.min) / (settings.max - settings.min) * (settings.height - (settings.subPoint * 2)) ));
-                            var currentDistance = (index + 2) * settings.distance;
-                            var isLast = index === (timelineData.data.length - 1);
-                            value.moveTo = {
-                                x: lastLine.lineTo.x,
-                                y: lastLine.lineTo.y
-                            };
-
-                            value.lineTo = {
-                                x: currentDistance,
-                                y: height
-                            };
-
-                            createPath(value, false, isLast);
-
-                            if (value.score > dataObj.biggestScore.score) {
-                                dataObj.biggestScore = {score: value.score, lastLineTo: lastLine.lineTo};
-                            }
-
-                        });
-
-                        if (settings.numbers && angular.isObject(settings.numbers)) {
-
-                            setTimeout(function () {
-
-                                ctx.font = settings.numbers.font;
-                                ctx.fillStyle = settings.numbers.fillStyle;
-
-                                ctx.fillText(settings.min, 15, settings.height - 10);
-                                ctx.fillText(parseInt(dataObj.biggestScore.score), 15, dataObj.biggestScore.lastLineTo.y || settings.subPoint);
-
-                            });
-
-                        }
-
-                        if (settings.onFinish && angular.isFunction(settings.onFinish)) {
-                            settings.onFinish({data: dataObj, ctx: ctx, canvasElem: canvasElem});
-                        }
-
-                    }
-
-                    function createPath(data, ignoreAfterPath, isLast) {
-
-                        var arc = 10;
-                        var img = 20;
-
-                        if (angular.isDefined(settings.isMobile) && !settings.isMobile) {
-                            arc = 15;
-                            img = 25;
-                        }
-
-                        var subLocation = img / 2;
-
-                        lastLine = data;
-                        dataObj.lastLine.push(lastLine);
-
-                        /* create line */
-                        ctx.moveTo(data.moveTo.x, data.moveTo.y);
-                        ctx.lineTo(data.lineTo.x, data.lineTo.y);
-                        ctx.stroke();
-
-                        if (dataObj.summeryScore && !nextFlag) {
-                            dataObj.summeryScore.next = data.lineTo;
-                            nextFlag = true;
-                        }
-
-                        if (settings.isSummery) {
-                            if (settings.isSummery === data.exerciseId) {
-                                dataObj.summeryScore = {
-                                    score: data.score, lineTo: data.lineTo,
-                                    prev: dataObj.lastLine[dataObj.lastLine.length - 2]
-                                };
-                                arc = arc * 1.5;
-                                img = img + 5;
-                                subLocation = img / 2;
-                            }
-                        } else if (isLast) {
-                            arc = arc * 1.5;
-                            img = img + 5;
-                            subLocation = img / 2;
-                        }
-
-
-                        if (!ignoreAfterPath) {
-                            /* create circle */
-                            ctx.beginPath();
-                            ctx.arc(data.lineTo.x, data.lineTo.y, arc, 0, 2 * Math.PI, false);
-                            ctx.fill();
-
-                            if ((isLast && !settings.isSummery) || (settings.isSummery === data.exerciseId)) {
-                                ctx.beginPath();
-                                ctx.arc(data.lineTo.x, data.lineTo.y, arc + 4, 0, 2 * Math.PI, false);
-                                ctx.stroke();
-                            }
-
-                            /* create svg icons */
-                            var imageObj = new Image();
-                            var src;
-                            var locationImgY = data.lineTo.y - subLocation;
-                            var locationImgX = data.lineTo.x - subLocation;
-
-                            if (data.iconKey) {
-                                src = settings.images[data.iconKey];
-
-                                var svg = $templateCache.get(src);
-                                var mySrc = (svg) ? 'data:image/svg+xml;base64,' + $window.btoa(svg) : src;
-
-                                imageObj.onload = function () {
-                                    ctx.drawImage(imageObj, locationImgX, locationImgY, img, img);
-                                };
-
-                                imageObj.src = mySrc;
-                            }
-                        }
-
-                    }
-
-                }
-            };
-
-            return directive;
-        }]);
-
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkTimeline').provider('TimelineSrv', ['SvgIconSrvProvider', function () {
-
-        var imgObj;
-
-        this.setImages = function(obj) {
-            imgObj = obj;
-        };
-
-        this.$get = ['$log', function($log) {
-             return {
-                 getImages: function() {
-                     if (!angular.isObject(imgObj)) {
-                         $log.error('TimelineSrv getImages: obj is not an object! imgObj:', imgObj);
-                     }
-                     return imgObj;
-                 }
-             };
-        }];
-    }]);
 })(angular);
 
 
@@ -9384,3 +7673,279 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templat
     "</svg>\n" +
     "");
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkTimeline').directive('znkTimeline', ['$window', '$templateCache', 'TimelineSrv',
+        function ($window, $templateCache, TimelineSrv) {
+            var directive = {
+                restrict: 'A',
+                scope: {
+                    timelineData: '=',
+                    timelineSettings: '='
+                },
+                link: function (scope, element) {
+
+                    var settings = angular.extend({
+                        width: $window.innerWidth,
+                        height: $window.innerHeight,
+                        images: TimelineSrv.getImages()
+                    }, scope.timelineSettings || {});
+
+                    var dataObj;
+
+                    var canvasElem = element[0];
+
+                    var ctx = canvasElem.getContext('2d');
+
+                    var lastLine;
+
+                    var nextFlag = false;
+
+                    scope.$watch('timelineData', function (val, oldVal) {
+                        if (angular.isDefined(val)) {
+                            if (val !== oldVal) {
+                                ctx.clearRect(0, 0, canvasElem.width, canvasElem.height);
+                                if (val.data.length) {
+                                    start(val);
+                                }
+                            } else {
+                                start(val);
+                            }
+                        }
+                    });
+
+                    function start(timelineData) {
+
+                        var width = settings.width;
+
+                        dataObj = {
+                            lastLine: [],
+                            biggestScore: {score: 0}
+                        };
+
+                        lastLine = void(0);
+
+                        if (settings.type === 'multi') {
+                            var distance = settings.distance * (timelineData.data.length + 2);
+                            width = (distance < settings.width) ? settings.width : distance;
+                        }
+
+                        if (settings.isMax) {
+                            settings.max = 0;
+                            angular.forEach(timelineData.data, function (value) {
+                                if (value.score > settings.max) {
+                                    settings.max = value.score;
+                                }
+                            });
+                        }
+
+                        canvasElem.width = width * 2;
+                        canvasElem.height = settings.height * 2;
+
+                        canvasElem.style.width = width + 'px';
+                        canvasElem.style.height = settings.height + 'px';
+
+                        ctx.scale(2, 2);
+
+                        if (settings.lineWidth) {
+                            ctx.lineWidth = settings.lineWidth;
+                        }
+
+                        if (angular.isDefined(timelineData.id) && settings.colors && angular.isArray(settings.colors)) {
+                            ctx.strokeStyle = settings.colors[timelineData.id];
+                            ctx.fillStyle = settings.colors[timelineData.id];
+                        }
+
+                        ctx.beginPath();
+
+                        createPath({
+                            moveTo: {
+                                x: 0,
+                                y: settings.height - 2
+                            },
+                            lineTo: {
+                                x: settings.distance,
+                                y: settings.height - 2
+                            }
+                        }, true);
+
+                        angular.forEach(timelineData.data, function (value, index) {
+
+                            var height = Math.abs((settings.height - settings.subPoint) - ((value.score - settings.min) / (settings.max - settings.min) * (settings.height - (settings.subPoint * 2)) ));
+                            var currentDistance = (index + 2) * settings.distance;
+                            var isLast = index === (timelineData.data.length - 1);
+                            value.moveTo = {
+                                x: lastLine.lineTo.x,
+                                y: lastLine.lineTo.y
+                            };
+
+                            value.lineTo = {
+                                x: currentDistance,
+                                y: height
+                            };
+
+                            createPath(value, false, isLast);
+
+                            if (value.score > dataObj.biggestScore.score) {
+                                dataObj.biggestScore = {score: value.score, lastLineTo: lastLine.lineTo};
+                            }
+
+                        });
+
+                        if (settings.numbers && angular.isObject(settings.numbers)) {
+
+                            setTimeout(function () {
+
+                                ctx.font = settings.numbers.font;
+                                ctx.fillStyle = settings.numbers.fillStyle;
+
+                                ctx.fillText(settings.min, 15, settings.height - 10);
+                                ctx.fillText(parseInt(dataObj.biggestScore.score), 15, dataObj.biggestScore.lastLineTo.y || settings.subPoint);
+
+                            });
+
+                        }
+
+                        if (settings.onFinish && angular.isFunction(settings.onFinish)) {
+                            settings.onFinish({data: dataObj, ctx: ctx, canvasElem: canvasElem});
+                        }
+
+                    }
+
+                    function createPath(data, ignoreAfterPath, isLast) {
+
+                        var arc = 10;
+                        var img = 20;
+
+                        if (angular.isDefined(settings.isMobile) && !settings.isMobile) {
+                            arc = 15;
+                            img = 25;
+                        }
+
+                        var subLocation = img / 2;
+
+                        lastLine = data;
+                        dataObj.lastLine.push(lastLine);
+
+                        /* create line */
+                        ctx.moveTo(data.moveTo.x, data.moveTo.y);
+                        ctx.lineTo(data.lineTo.x, data.lineTo.y);
+                        ctx.stroke();
+
+                        if (dataObj.summeryScore && !nextFlag) {
+                            dataObj.summeryScore.next = data.lineTo;
+                            nextFlag = true;
+                        }
+
+                        if (settings.isSummery) {
+                            if (settings.isSummery === data.exerciseId) {
+                                dataObj.summeryScore = {
+                                    score: data.score, lineTo: data.lineTo,
+                                    prev: dataObj.lastLine[dataObj.lastLine.length - 2]
+                                };
+                                arc = arc * 1.5;
+                                img = img + 5;
+                                subLocation = img / 2;
+                            }
+                        } else if (isLast) {
+                            arc = arc * 1.5;
+                            img = img + 5;
+                            subLocation = img / 2;
+                        }
+
+
+                        if (!ignoreAfterPath) {
+                            /* create circle */
+                            ctx.beginPath();
+                            ctx.arc(data.lineTo.x, data.lineTo.y, arc, 0, 2 * Math.PI, false);
+                            ctx.fill();
+
+                            if ((isLast && !settings.isSummery) || (settings.isSummery === data.exerciseId)) {
+                                ctx.beginPath();
+                                ctx.arc(data.lineTo.x, data.lineTo.y, arc + 4, 0, 2 * Math.PI, false);
+                                ctx.stroke();
+                            }
+
+                            /* create svg icons */
+                            var imageObj = new Image();
+                            var src;
+                            var locationImgY = data.lineTo.y - subLocation;
+                            var locationImgX = data.lineTo.x - subLocation;
+
+                            if (data.iconKey) {
+                                src = settings.images[data.iconKey];
+
+                                var svg = $templateCache.get(src);
+                                var mySrc = (svg) ? 'data:image/svg+xml;base64,' + $window.btoa(svg) : src;
+
+                                imageObj.onload = function () {
+                                    ctx.drawImage(imageObj, locationImgX, locationImgY, img, img);
+                                };
+
+                                imageObj.src = mySrc;
+                            }
+                        }
+
+                    }
+
+                }
+            };
+
+            return directive;
+        }]);
+
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkTimeline').provider('TimelineSrv', ['SvgIconSrvProvider', function () {
+
+        var imgObj;
+
+        this.setImages = function(obj) {
+            imgObj = obj;
+        };
+
+        this.$get = ['$log', function($log) {
+             return {
+                 getImages: function() {
+                     if (!angular.isObject(imgObj)) {
+                         $log.error('TimelineSrv getImages: obj is not an object! imgObj:', imgObj);
+                     }
+                     return imgObj;
+                 }
+             };
+        }];
+    }]);
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra', [
+        'znk.infra.config',
+        'znk.infra.pngSequence',
+        'znk.infra.enum',
+        'znk.infra.svgIcon',
+        'znk.infra.general',
+        'znk.infra.scroll',
+        'znk.infra.content',
+        'znk.infra.znkExercise',
+        'znk.infra.storage',
+        'znk.infra.utility',
+        'znk.infra.exerciseResult',
+        'znk.infra.contentAvail',
+        'znk.infra.popUp',
+        'znk.infra.estimatedScore',
+        'znk.infra.stats',
+        'znk.infra.hint',
+        'znk.infra.znkTimeline',
+        'znk.infra.analytics',
+        'znk.infra.deviceNotSupported',
+        'znk.infra.filters'
+    ]);
+})(angular);

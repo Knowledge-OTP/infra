@@ -40,7 +40,7 @@ describe('testing service "ModuleResults":', function () {
         var exerciseResult = actions.getModuleResultByModuleId(moduleId, TEST_UID, true);
         var expectedModuleResult = {
             moduleId: moduleId,
-            tutorId: null,
+            assignedTutorId: null,
             assign: false,
             contentAssign: false,
             uid: TEST_UID
@@ -68,7 +68,7 @@ describe('testing service "ModuleResults":', function () {
         var expectedModuleResult = {
             moduleId: moduleId,
             guid: MODULE_RESULT_GUID,
-            tutorId: null,
+            assignedTutorId: null,
             assign: false,
             contentAssign: false,
             uid: TEST_UID
