@@ -2102,6 +2102,22 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
 
 (function (angular) {
     'use strict';
+
+    angular.module('znk.infra.filters').filter('capitalize', [
+        function () {
+            return function (str) {
+                if(!angular.isString(str) || !str.length){
+                    return '';
+                }
+                
+                return str[0].toUpperCase() + str.substr(1);
+            };
+        }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
     /**
      * @param time (in seconds)
      * @param exp (expression to display time)
