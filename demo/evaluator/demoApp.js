@@ -2,6 +2,13 @@
     'use strict';
 
     angular.module('demoApp', ['znk.infra.evaluator', 'znk.infra.evaluatorDefaultConfig'])
+        .config(function(InfraConfigSrvProvider) {
+            InfraConfigSrvProvider.setUserDataFn(function () {
+                return {
+                    uid: 'uid'
+                };
+            });
+        })
         .service('ENV', function() { // mock for ENV
             this.evaluateEndpoint = 'http://localhost:3009/evaluate/question';
             this.firebaseAppScopeName = 'toefl_app';
