@@ -5,7 +5,7 @@
         'ngInject';
 
         ZnkEvaluatorSrvProvider.shouldEvaluateQuestion(function(purchaseService) {
-            'ngInject';
+            'ngInject';// jshint ignore:line
             return purchaseService.hasProVersion();
         });
     });

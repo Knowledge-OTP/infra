@@ -3,7 +3,7 @@
 
     angular.module('demoApp', ['znk.infra.evaluator', 'znk.infra.evaluatorDefaultConfig'])
         .service('ENV', function() { // mock for ENV
-            this.evaluateEndpoint = '';
+            this.evaluateEndpoint = 'http://localhost:3009/evaluate/question';
             this.firebaseAppScopeName = 'toefl_app';
             this.promiseTimeOut = 15000;
         })
