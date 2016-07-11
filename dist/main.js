@@ -1787,7 +1787,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
             _evaluateQuestionFn = evaluateQuestionFn;
         };
 
-        this.$get = ["$log", "$q", "$injector", "ENV", "$http", "InfraConfigSrv", "purchaseService", function ($log, $q, $injector, ENV, $http, InfraConfigSrv, purchaseService) {
+        this.$get = ["$q", "$injector", "ENV", "$http", "InfraConfigSrv", "purchaseService", function ($q, $injector, ENV, $http, InfraConfigSrv, purchaseService) {
             'ngInject';
 
             var znkEvaluatorSrvApi = {};

@@ -15,7 +15,7 @@
             _evaluateQuestionFn = evaluateQuestionFn;
         };
 
-        this.$get = ["$log", "$q", "$injector", "ENV", "$http", "InfraConfigSrv", "purchaseService", function ($log, $q, $injector, ENV, $http, InfraConfigSrv, purchaseService) {
+        this.$get = ["$q", "$injector", "ENV", "$http", "InfraConfigSrv", "purchaseService", function ($q, $injector, ENV, $http, InfraConfigSrv, purchaseService) {
             'ngInject';
 
             var znkEvaluatorSrvApi = {};
