@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demoApp', ['znk.infra.evaluator', 'znk.infra.evaluatorDefaultConfig'])
+    angular.module('demoApp', ['znk.infra.evaluator'])
         .config(function(InfraConfigSrvProvider) {
             InfraConfigSrvProvider.setUserDataFn(function () {
                 return {

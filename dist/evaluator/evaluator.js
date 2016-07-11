@@ -4,31 +4,18 @@
     angular.module('znk.infra.evaluator', ['znk.infra.config']);
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.evaluatorDefaultConfig', []).config(["ZnkEvaluatorSrvProvider", function(ZnkEvaluatorSrvProvider) {
-        'ngInject';
-
-        ZnkEvaluatorSrvProvider.shouldEvaluateQuestion(["purchaseService", function(purchaseService) {
-            'ngInject';// jshint ignore:line
-            return purchaseService.hasProVersion();
-        }]);
-    }]);
-})(angular);
-
 'use strict';
 
 (function (angular) {
     angular.module('znk.infra.evaluator').provider('ZnkEvaluatorSrv', function () {
 
-        var _evaluateQuestionGetter;
+        var _evaluateQuestionFn;
 
-        this.shouldEvaluateQuestion = function(evaluateQuestionGetter) {
-            _evaluateQuestionGetter = evaluateQuestionGetter;
+        this.shouldEvaluateQuestionFnGetter = function(evaluateQuestionFn) {
+            _evaluateQuestionFn = evaluateQuestionFn;
         };
 
-        this.$get = ["$log", "$q", "$injector", "ENV", "$http", "InfraConfigSrv", function ($log, $q, $injector, ENV, $http, InfraConfigSrv) {
+        this.$get = ["$log", "$q", "$injector", "ENV", "$http", "InfraConfigSrv", "purchaseService", function ($log, $q, $injector, ENV, $http, InfraConfigSrv, purchaseService) {
             'ngInject';
 
             var znkEvaluatorSrvApi = {};
@@ -38,13 +25,11 @@
             };
 
             function _shouldEvaluateQuestion() {
-                if(!_evaluateQuestionGetter){
-                    var errMsg = 'ZnkEvaluatorSrv: evaluateQuestionGetter was not set';
-                    $log.error(errMsg);
-                    return $q.reject(errMsg);
+                if(!_evaluateQuestionFn){
+                    return $q.when(purchaseService.hasProVersion());
                 }
 
-                return $q.when($injector.invoke(_evaluateQuestionGetter));
+                return $q.when($injector.invoke(_evaluateQuestionFn));
             }
 
             znkEvaluatorSrvApi.evaluateQuestion = function (questionsArr) {
