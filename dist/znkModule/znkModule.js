@@ -3,10 +3,6 @@
     angular.module('znk.infra.znkModule', []);
 })(angular);
 
-angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
-
-}]);
-
 (function (angular) {
     'use strict';
 
@@ -33,3 +29,7 @@ angular.module('znk.infra.znkModule').run(['$templateCache', function($templateC
     ]);
 })(angular);
 
+
+angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
+
+}]);
