@@ -3530,7 +3530,7 @@ angular.module('znk.infra.presence').run(['$templateCache', function($templateCa
                 "SHARER": 2
             };
 
-            var isDashboardApp = ENV.appContext === 'dashboard';
+            var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to 
 
             //todo for easier upgrade to version-5
             function _getStorage(){
@@ -3583,7 +3583,7 @@ angular.module('znk.infra.presence').run(['$templateCache', function($templateCa
                 return UserProfileService.getCurrUserId().then(function (currUserId) {
                     var sharerData = {
                         uid: currUserId,
-                        isTeacher: isDashboardApp
+                        isTeacher: isTeacherApp
                     };
                     return _initiateScreenSharing(sharerData, viewerData, INITIATOR_ENUM.SHARER);
                 });
@@ -3593,7 +3593,7 @@ angular.module('znk.infra.presence').run(['$templateCache', function($templateCa
                 return UserProfileService.getCurrUserId().then(function (currUserId) {
                     var viewerData = {
                         uid: currUserId,
-                        isTeacher: isDashboardApp
+                        isTeacher: isTeacherApp
                     };
                     return _initiateScreenSharing(sharerData, viewerData, INITIATOR_ENUM.VIEWER);
                 });
