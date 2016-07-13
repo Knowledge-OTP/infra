@@ -11,11 +11,17 @@
 
         var _evaluateQuestionFn;
 
-        this.shouldEvaluateQuestionFnGetter = function(evaluateQuestionFn) {
+        var shouldEvaluateQuestionFnDefault = function(purchaseService) {
+            'ngInject';
+            return purchaseService.hasProVersion();
+        };
+        shouldEvaluateQuestionFnDefault.$inject = ["purchaseService"];
+
+        this.shouldEvaluateQuestionFn = function(evaluateQuestionFn) {
             _evaluateQuestionFn = evaluateQuestionFn;
         };
 
-        this.$get = ["$q", "$injector", "ENV", "$http", "InfraConfigSrv", "purchaseService", function ($q, $injector, ENV, $http, InfraConfigSrv, purchaseService) {
+        this.$get = ["$q", "$injector", "ENV", "$http", "InfraConfigSrv", function ($q, $injector, ENV, $http, InfraConfigSrv) {
             'ngInject';
 
             var znkEvaluatorSrvApi = {};
@@ -26,7 +32,7 @@
 
             function _shouldEvaluateQuestion() {
                 if(!_evaluateQuestionFn){
-                    return $q.when(purchaseService.hasProVersion());
+                    _evaluateQuestionFn = shouldEvaluateQuestionFnDefault;
                 }
 
                 return $q.when($injector.invoke(_evaluateQuestionFn));
