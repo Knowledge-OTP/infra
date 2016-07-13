@@ -61,7 +61,7 @@ module.exports = function (config) {
             'test/mock/**/*.js',
 
             //tests
-            'test/spec/**/*.spec.js'
+            'test/spec/storage/storageSrv.spec.js'//todo
         ],
 
         // list of files / patterns to exclude
