@@ -26,13 +26,6 @@
              *          uid - function or value which return current uid as straight value or promise
              * */
             function StorageSrv(adapter, config) {
-                // this.getter = function (path) {
-                //     return $q.when(adapter.get(path));
-                // };
-                //
-                // this.setter = function (path, newVal) {
-                //     return $q.when(adapter.set(path, newVal));
-                // };
                 this.adapter = adapter;
 
                 this.__cache = $cacheFactory('entityCache' + cacheId);
@@ -44,7 +37,7 @@
                     },
                     cacheRules: []
                 };
-                this.config = angular.extend(defaultConfig, config);
+                this.__config = angular.extend(defaultConfig, config);
 
                 cacheId++;
             }
@@ -110,10 +103,14 @@
                 });
             }
 
+            StorageSrv.prototype.__processPath = function(path){
+
+            };
+
             StorageSrv.prototype.get = function (path, defaultValue) {
                 var self = this;
 
-                return _processPath(path, self.config).then(function (processedPath) {
+                return _processPath(path, self.__config).then(function (processedPath) {
                     var entity = self.__cache.get(processedPath);
                     var getProm;
                     defaultValue = defaultValue || {};
@@ -140,7 +137,7 @@
                                 _entity = angular.extend(initObj, _entity);
                             }
 
-                            if (_shouldBeCached(processedPath, self.config)) {
+                            if (_shouldBeCached(processedPath, self.__config)) {
                                 self.__cache.put(processedPath, _entity);
                             }
 
@@ -169,22 +166,39 @@
 
             StorageSrv.prototype.getServerValue = function(path){
                 var self = this;
-                return _processPath(path, self.config).then(function (processedPath) {
+                return _processPath(path, self.__config).then(function (processedPath) {
                     return self.adapter.get(processedPath);
                 });
             };
 
-            StorageSrv.prototype.set = function (pathStrOrObj, newValue) {
+            StorageSrv.prototype.getAndBindToServer = function(){
+                return this.get.apply(this, arguments);
+            };
+
+            StorageSrv.prototype.set = function (path, newValue) {
                 var self = this;
 
-                return _processPath(pathStrOrObj, self.config).then(function (processedPathOrObj) {
-                    return self.adapter.set(processedPathOrObj, newValue).then(function () {
-                        return self.__addDataToCache(processedPathOrObj, newValue);
+                if(!angular.isString(path)){
+                    var errMSg = 'StorageSrv: path should be a string';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                return _processPath(path, self.__config).then(function (processedPath) {
+                    return self.adapter.set(processedPath, newValue).then(function () {
+                        return self.__addDataToCache(processedPath, newValue);
                     });
                 });
             };
 
-            StorageSrv.prototype.update = function(){};
+            StorageSrv.prototype.update = function (pathStrOrObj, newValue) {
+                var self = this;
+
+                return _processPath(pathStrOrObj, self.__config).then(function (processedPathOrObj) {
+                    return self.adapter.update(processedPathOrObj, newValue).then(function () {
+                        return self.__addDataToCache(processedPathOrObj, newValue);
+                    });
+                });
+            };
 
             StorageSrv.prototype.entityCommunicator = function (path, defaultValues) {
                 return new EntityCommunicator(path, defaultValues, this);
@@ -220,7 +234,7 @@
 
                     cachedDataMap[path] = cachedValue;
 
-                    if (_shouldBeCached(path, self.config)) {
+                    if (_shouldBeCached(path, self.__config)) {
                         self.__cache.put(path, cachedValue);
                     }
                 });

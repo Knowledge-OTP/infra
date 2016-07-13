@@ -39,15 +39,46 @@ describe('testing service "StorageSrv":', function () {
                 return $q.when(angular.copy(storageDb[path]));
             },
             set: function(path, newValue){
-                storageDb[path] = newValue;
+                storageDb[path] = angular.copy(newValue);
                 return this.get(path);
-            }
+            },
+            update: function(pathOrPathToValMap, newValue){
+                var pathToValMap = {};
+                if(!angular.isObject(pathOrPathToValMap)){
+                    pathToValMap[pathOrPathToValMap] = newValue;
+                }
+
+                angular.forEach(pathToValMap, function(value, path){
+                    storageDb[path] = angular.copy(value);
+                });
+
+                return $q.when(angular.isString(pathOrPathToValMap) ? newValue : pathOrPathToValMap);
+            },
+            onEvent: function(type, path, cb){
+
+            },
+            offEvent: function(type, path, cb){
+
+            },
+            __triggerEvent: function(){
+                var args = Array.prototype.slice.call(arguments);
+                var type = args.shift();
+
+                if(!this.__registeredEvents[type]){
+                    return;
+                }
+
+
+            },
+            __registeredEvents: {}
         };
         testStorage = new StorageSrv(adapter);
         var fnToConvertToSyncTestStorage = [
             'get',
+            'getServerValue',
+            'getAndBindToServer',
             'set',
-            'getServerValue'
+            'update'
         ];
         fnToConvertToSyncTestStorage.forEach(function(fnName){
             testStorage[fnName] = TestUtilitySrv.general.asyncToSync(testStorage[fnName], testStorage);
@@ -81,7 +112,7 @@ describe('testing service "StorageSrv":', function () {
             $rootScope.$digest();
             var expectedPath = 'path/to/123456';
             expect(adapter.get).toHaveBeenCalledWith(expectedPath);
-            expect(storageDb    [expectedPath]).toBeTruthy();
+            expect(storageDb[expectedPath]).toBeTruthy();
         }
     );
 
@@ -141,14 +172,14 @@ describe('testing service "StorageSrv":', function () {
         expect(adapter.set).toHaveBeenCalledWith(communicatorPath, entity);
     });
 
-    it('when set multiple locations are save simultaneously then cache should be updated accordingly', function () {
+    it('when updating multiple locations are save simultaneously then cache should be updated accordingly', function () {
         var expectedObj1 = {
             a: 1
         };
         var expectedObj2 = {
             a: 2
         };
-        testStorage.set({
+        testStorage.update({
             path1: angular.copy(expectedObj1),
             path2: angular.copy(expectedObj2)
         });
@@ -245,5 +276,55 @@ describe('testing service "StorageSrv":', function () {
         expect(testStorage.getServerValue(path)).toBe(newValue);
     });
 
-    it('when update multiple locations ')
+    it('when invoking getAndBindToServeValue then the path cache should be updated once the server was updated', function(){
+        var path = 'pathTo',
+            expectedPathValue;
+
+        storageDb[path] = {
+            prop1: {
+                prop1:1
+            },
+            prop2: 'b',
+            prop3: 'c',
+            prop4: {
+                prop: {
+                    prop1: 1,
+                    prop2: 2,
+                    prop3: 3
+                }
+            }
+        };
+
+        var currPathValue = testStorage.getAndBindToServer(path);
+
+        storageDb[path] = {
+            prop1: 1,
+            prop2: 'b',
+            prop4:{
+                prop:{
+                    prop1: 1,
+                    prop2: 2
+                }
+            }
+        };
+        adapter.__triggerEvent('update', path, angular.copy(storageDb[path]));
+
+        expectedPathValue = storageDb[path];
+        expect(currPathValue).toBe(expectedPathValue);
+
+        // currPathValue.prop2 = 2;
+        // currPathValue.prop4.prop.prop2 = 3;
+        // currPathValue.prop5 = 5;
+        //
+        // storageDb[path] = {
+        //     prop1: 2,
+        //     prop2: 1,
+        //     prop4:{
+        //         prop:{
+        //             prop1: 1,
+        //             prop2: 2
+        //         }
+        //     }
+        // };
+    });
 });
