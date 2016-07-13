@@ -30,7 +30,7 @@
     'use strict';
 
     angular.module('znk.infra.screenSharing').service('ScreenSharingDataGetterSrv',
-        ["InfraConfigSrv", "$q", function (InfraConfigSrv, $q) {
+        ["InfraConfigSrv", "$q", "ENV", function (InfraConfigSrv, $q, ENV) {
             'ngInject';
 
             //todo for easier upgrade to version-5
@@ -43,8 +43,9 @@
                 return SCREEN_SHARING_ROOT_PATH + '/' + guid;
             };
 
-            this.getUserScreenSharingDataGuidPath = function (userId, guid) {
-                var USER_DATA_PATH = 'users/' + userId;
+            this.getUserScreenSharingDataGuidPath = function (userData, guid) {
+                var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
+                var USER_DATA_PATH = appName  + '/users/' + userData.uid;
                 return USER_DATA_PATH + '/screenSharing/' + guid;
             };
 
@@ -62,13 +63,16 @@
     'use strict';
 
     angular.module('znk.infra.screenSharing').service('ScreenSharingSrv',
-        ["UserProfileService", "InfraConfigSrv", "$q", "UtilitySrv", "ScreenSharingDataGetterSrv", "ScreenSharingStatusEnum", function (UserProfileService, InfraConfigSrv, $q, UtilitySrv, ScreenSharingDataGetterSrv, ScreenSharingStatusEnum) {
+        ["UserProfileService", "InfraConfigSrv", "$q", "UtilitySrv", "ScreenSharingDataGetterSrv", "ScreenSharingStatusEnum", "ENV", "$log", function (UserProfileService, InfraConfigSrv, $q, UtilitySrv, ScreenSharingDataGetterSrv, ScreenSharingStatusEnum, ENV, $log) {
             'ngInject';
 
             var INITIATOR_ENUM = {
                 "VIEWER": 1,
                 "SHARER": 2
             };
+
+            var isDashboardApp = ENV.appContext === 'dashboard';
+
             //todo for easier upgrade to version-5
             function _getStorage(){
                 return $q.when(InfraConfigSrv.getStorageService());
@@ -80,10 +84,14 @@
                 initiatorToInitStatusMap[INITIATOR_ENUM.SHARER] = ScreenSharingStatusEnum.PENDING_VIEWER.enum;
 
                 return initiatorToInitStatusMap[initiator] || null;
-
             }
 
-            function _initiateScreenSharing(sharerId, viewerId, initiator) {
+            function _initiateScreenSharing(sharerData, viewerData, initiator) {
+                if(angular.isUndefined(viewerData.isTeacher) || angular.isUndefined(sharerData.isTeacher)){
+                    var errMSg = 'ScreenSharingSrv: isTeacher property was not provided!!!';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
                 var dataToSave = {};
 
                 var newScreenSharingGuid = UtilitySrv.general.createGuid();
@@ -94,17 +102,17 @@
                 }
                 var newScreenSharingData = {
                     guid: newScreenSharingGuid,
-                    sharerId: sharerId,
-                    viewerId: viewerId,
+                    sharerId: sharerData.uid,
+                    viewerId: viewerData.uid,
                     status: initStatus
                 };
                 var newScreenSharingDataPath = ScreenSharingDataGetterSrv.getScreenSharingDataPath(newScreenSharingGuid);
                 dataToSave[newScreenSharingDataPath] = newScreenSharingData;
 
-                var sharerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataGuidPath(sharerId, newScreenSharingGuid);
+                var sharerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataGuidPath(sharerData, newScreenSharingGuid);
                 dataToSave[sharerScreenSharingDataGuidPath] = true;
 
-                var viewerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataGuidPath(viewerId, newScreenSharingGuid);
+                var viewerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataGuidPath(viewerData, newScreenSharingGuid);
                 dataToSave[viewerScreenSharingDataGuidPath] = true;
 
                 return _getStorage().then(function(StudentStorage){
@@ -112,15 +120,23 @@
                 });
             }
 
-            this.shareMyScreen = function (viewerId) {
+            this.shareMyScreen = function (viewerData) {
                 return UserProfileService.getCurrUserId().then(function (currUserId) {
-                    return _initiateScreenSharing(currUserId, viewerId, INITIATOR_ENUM.SHARER);
+                    var sharerData = {
+                        uid: currUserId,
+                        isTeacher: isDashboardApp
+                    };
+                    return _initiateScreenSharing(sharerData, viewerData, INITIATOR_ENUM.SHARER);
                 });
             };
 
-            this.viewOtherUserScreen = function (sharerId) {
+            this.viewOtherUserScreen = function (sharerData) {
                 return UserProfileService.getCurrUserId().then(function (currUserId) {
-                    return _initiateScreenSharing(sharerId, currUserId, INITIATOR_ENUM.VIEWER);
+                    var viewerData = {
+                        uid: currUserId,
+                        isTeacher: isDashboardApp
+                    };
+                    return _initiateScreenSharing(sharerData, viewerData, INITIATOR_ENUM.VIEWER);
                 });
             };
 
