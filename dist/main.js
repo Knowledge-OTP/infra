@@ -253,8 +253,8 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', 'ModuleResultsService', '$q', '$log',
-        function (ZnkModuleService, ModuleResultsService, $q, $log) {
+        'ZnkModuleService', 'ModuleResultsService', '$q', 'SubjectEnum',
+        function (ZnkModuleService, ModuleResultsService, $q, SubjectEnum) {
             var userAssignModuleService = {};
 
             userAssignModuleService.getUserAssignModules = function (userId) {
@@ -278,19 +278,11 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             };
 
             userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId) {
-                if(!angular.isArray(moduleIds)){
-                    var errMSg = 'UserAssignModuleService: 1st argument should be array of module ids';
-                    $log.error(errMSg);
-                    return $q.reject(errMSg);
-                }
                 var moduleResults = {};
                 var getProm = $q.when();
                 angular.forEach(moduleIds, function (moduleId) {
                     getProm = getProm.then(function(){
-                        return ModuleResultsService.getModuleResultByModuleId(moduleId, userId, false).then(function (moduleResult) {
-                            moduleResults[moduleId] = moduleResult;
-                            return moduleResults;
-                        });
+                        return ModuleResultsService.getModuleResultByModuleId(moduleId, userId, false);
                     });
 
                 });
@@ -299,7 +291,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     angular.forEach(moduleIds, function (moduleId) {
                         if(!moduleResults[moduleId]) {
                             moduleResults[moduleId] =  ModuleResultsService.getDefaultModuleResult(moduleId, userId);
-                            moduleResults[moduleId].assignedTutorId = tutorId;
+                            moduleResults[moduleId].tutorId = tutorId;
                         }
                         moduleResults[moduleId].assign = true;
 
@@ -308,6 +300,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                                 moduleResults[moduleId] = savedResults;
                             });
                         });
+
                     });
 
                     return saveProm.then(function () {
@@ -316,6 +309,33 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
                 });
             };
+
+            userAssignModuleService.getUserAssignedModulesFull = function (uid) {
+                return $q.all([ZnkModuleService.getModuleHeaders(), userAssignModuleService.getUserAssignModules(uid)]).then(function (res) {
+                    var modules = objectsObjectToArray(res[0]);
+                    var assignedModules = objectsObjectToArray(res[1]);
+
+                    assignedModules.forEach(function (assignedModule) {
+                        if (assignedModule.assign) {
+                            modules.forEach(function (module) {
+                                if (module.id === assignedModule.moduleId) {
+                                    angular.extend(assignedModule, module);
+                                    assignedModule.subjectName = (getSubjectNameById(module.subjectId)) ? getSubjectNameById(module.subjectId) : '';
+                                }
+                            });
+                        }
+                    });
+                    return assignedModules;
+                });
+            };
+
+            function objectsObjectToArray(obj) {
+                return Object.keys(obj).map(function (key) { return obj[key]; });
+            }
+
+            function getSubjectNameById(subjectId) {
+                return SubjectEnum.getEnumMap()[subjectId];
+            }
 
             return userAssignModuleService;
         }
@@ -585,6 +605,51 @@ angular.module('znk.infra.config').run(['$templateCache', function($templateCach
 
     angular.module('znk.infra.content').provider('ContentSrv', ContentSrv);
 
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    /**
+     *  StorageRevSrv:
+     *      wrapper for ContentSrv, use for error handling and parsing data.
+     *      getContent(data={ exerciseType: 'type', exerciseId: '20' });
+     *      getAllContentByKey('type');
+     */
+    angular.module('znk.infra.content').service('StorageRevSrv', [
+        'ContentSrv', '$log', '$q',
+        function (ContentSrv, $log, $q) {
+            'ngInject';
+
+            var self = this;
+
+            this.getContent = function (data) {
+                return ContentSrv.getContent(data).then(function (result) {
+                    return angular.fromJson(result);
+                }, function (err) {
+                    if (err) {
+                        $log.error(err);
+                        return $q.reject(err);
+                    }
+                });
+            };
+
+            this.getAllContentByKey = function (key) {
+                var resultsProm = [];
+                return ContentSrv.getAllContentIdsByKey(key).then(function (results) {
+                    angular.forEach(results, function (keyValue) {
+                        resultsProm.push(self.getContent({ exerciseType: keyValue }));
+                    });
+                    return $q.all(resultsProm);
+                }, function (err) {
+                    if (err) {
+                        $log.error(err);
+                        return $q.reject(err);
+                    }
+                });
+            };
+        }
+    ]);
 })(angular);
 
 angular.module('znk.infra.content').run(['$templateCache', function($templateCache) {
