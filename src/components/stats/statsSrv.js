@@ -2,12 +2,16 @@
     'use strict';
 
     angular.module('znk.infra.stats').provider('StatsSrv', function () {
+        'ngInject';
+
         var getCategoryLookup;
         this.setCategoryLookup = function (_getCategoryLookup) {
             getCategoryLookup = _getCategoryLookup;
         };
 
         this.$get = function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv) {
+            'ngInject';//jshint ignore:line
+
             if (!getCategoryLookup) {
                 $log.error('StatsSrv: getCategoryLookup was not set !!!!');
             }
