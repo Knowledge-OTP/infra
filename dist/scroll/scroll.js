@@ -3,10 +3,6 @@
 
     angular.module('znk.infra.scroll', []);
 })(angular);
-angular.module('znk.infra.scroll').run(['$templateCache', function($templateCache) {
-
-}]);
-
 /**
  * attrs:
  *      actions:
@@ -200,3 +196,7 @@ angular.module('znk.infra.scroll').run(['$templateCache', function($templateCach
 
 })(angular);
 
+
+angular.module('znk.infra.scroll').run(['$templateCache', function($templateCache) {
+
+}]);

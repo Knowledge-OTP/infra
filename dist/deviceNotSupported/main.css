@@ -281,10 +281,14 @@ device-not-supported .device-not-supported-inner {
 
 @media screen and (max-width: 1024px) {
   device-not-supported .device-not-supported-inner {
+    display: -ms-flexbox;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    -ms-flex-direction: column;
+        flex-direction: column;
+    -ms-flex-align: center;
+        align-items: center;
+    -ms-flex-pack: center;
+        justify-content: center;
     padding: 40px;
     position: fixed;
     width: 100%;
