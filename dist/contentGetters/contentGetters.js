@@ -1,6 +1,14 @@
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.contentGetters', [
+        
+    ]);
+})(angular);
+
 'use strict';
 
-angular.module('znk.infra.contentGetters').service('CategoryService', function (StorageRevSrv, $q, SubjectEnum, $log)  {
+angular.module('znk.infra.contentGetters').service('CategoryService', ["StorageRevSrv", "$q", "SubjectEnum", "$log", function (StorageRevSrv, $q, SubjectEnum, $log)  {
         'ngInject';
 
 
@@ -60,7 +68,11 @@ angular.module('znk.infra.contentGetters').service('CategoryService', function (
                 SubjectEnum.SCIENCE.enum === id;
         }
     
-});
+}]);
 
 
 
+
+angular.module('znk.infra.contentGetters').run(['$templateCache', function($templateCache) {
+
+}]);
