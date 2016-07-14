@@ -2,8 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', 'ModuleResultsService', '$q',
-        function (ZnkModuleService, ModuleResultsService, $q) {
+        'ZnkModuleService', 'ModuleResultsService', '$q', 'SubjectEnum',
+        function (ZnkModuleService, ModuleResultsService, $q, SubjectEnum) {
             var userAssignModuleService = {};
 
             userAssignModuleService.getUserAssignModules = function (userId) {
@@ -58,6 +58,33 @@
 
                 });
             };
+
+            userAssignModuleService.getUserAssignedModulesFull = function (uid) {
+                return $q.all([ZnkModuleService.getModuleHeaders(), userAssignModuleService.getUserAssignModules(uid)]).then(function (res) {
+                    var modules = objectsObjectToArray(res[0]);
+                    var assignedModules = objectsObjectToArray(res[1]);
+
+                    assignedModules.forEach(function (assignedModule) {
+                        if (assignedModule.assign) {
+                            modules.forEach(function (module) {
+                                if (module.id === assignedModule.moduleId) {
+                                    angular.extend(assignedModule, module);
+                                    assignedModule.subjectName = (getSubjectNameById(module.subjectId)) ? getSubjectNameById(module.subjectId) : '';
+                                }
+                            });
+                        }
+                    });
+                    return assignedModules;
+                });
+            };
+
+            function objectsObjectToArray(obj) {
+                return Object.keys(obj).map(function (key) { return obj[key]; });
+            }
+
+            function getSubjectNameById(subjectId) {
+                return SubjectEnum.getEnumMap()[subjectId];
+            }
 
             return userAssignModuleService;
         }
