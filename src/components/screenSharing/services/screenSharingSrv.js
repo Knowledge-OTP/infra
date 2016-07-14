@@ -10,7 +10,7 @@
                 "SHARER": 2
             };
 
-            var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to 
+            var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
 
             //todo for easier upgrade to version-5
             function _getStorage(){
@@ -55,7 +55,7 @@
                 dataToSave[viewerScreenSharingDataGuidPath] = true;
 
                 return _getStorage().then(function(StudentStorage){
-                    return StudentStorage.set(dataToSave);
+                    return StudentStorage.update(dataToSave);
                 });
             }
 

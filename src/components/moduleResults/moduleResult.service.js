@@ -1,13 +1,13 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.moduleResults').service('ModuleResultsService', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv',
-        function (InfraConfigSrv, $log, $q, UtilitySrv) {
+    angular.module('znk.infra.moduleResults').service('ModuleResultsService',
+        function (InfraConfigSrv, $log, $q, UtilitySrv, StorageSrv) {
+            'ngInject';
 
             var moduleResultsService = {};
             var storage = InfraConfigSrv.getStorageService();
-            var USER_MODULE_RESULTS_PATH = storage.variables.appUserSpacePath + '/moduleResults';
+            var USER_MODULE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
             var MODULE_RESULTS_PATH = 'moduleResults';
 
             moduleResultsService.getDefaultModuleResult = function (moduleId, userId) {
@@ -76,6 +76,6 @@
 
             return moduleResultsService;
         }
-    ]);
+    );
 })(angular);
 

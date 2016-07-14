@@ -1,20 +1,9 @@
 describe('testing service "StorageSrv":', function () {
     'use strict';
 
-    beforeEach(module('znk.infra.storage', 'htmlTemplates', 'testUtility'));
+    beforeEach(module('znk.infra.storage', 'htmlTemplates', 'testUtility', 'storage.mock'));
 
-    var $rootScope, StorageSrv, $q, TestUtilitySrv;
-
-    function entitySetter(pathOrObject, newVal) {
-        if (angular.isObject(pathOrObject)) {
-            angular.forEach(pathOrObject, function (value, key) {
-                entityMap[key] = angular.copy(value);
-            });
-            return pathOrObject;
-        }
-        entityMap[pathOrObject] = angular.copy(newVal);
-        return $q.when(entityMap[pathOrObject]);
-    }
+    var $rootScope, StorageSrv, $q, TestUtilitySrv, StorageSrv, $$testAdapter;
 
     beforeEach(inject([
         '$injector',
@@ -23,6 +12,8 @@ describe('testing service "StorageSrv":', function () {
             StorageSrv = $injector.get('StorageSrv');
             $q = $injector.get('$q');
             TestUtilitySrv = $injector.get('TestUtilitySrv');
+            StorageSrv = $injector.get('StorageSrv');
+            $$testAdapter = $injector.get('$$testAdapter');
         }
     ]));
 
@@ -30,49 +21,14 @@ describe('testing service "StorageSrv":', function () {
         communicatorPath = 'test',
         testStorage,
         adapter,
-        storageDb;
+        storageDb,
+        syncTestStorage;
     beforeEach(function () {
-        storageDb = {};
+        storageDb = $$testAdapter.__db;
 
-        adapter = {
-            get: function(path){
-                return $q.when(angular.copy(storageDb[path]));
-            },
-            set: function(path, newValue){
-                storageDb[path] = angular.copy(newValue);
-                return this.get(path);
-            },
-            update: function(pathOrPathToValMap, newValue){
-                var pathToValMap = {};
-                if(!angular.isObject(pathOrPathToValMap)){
-                    pathToValMap[pathOrPathToValMap] = newValue;
-                }
-
-                angular.forEach(pathToValMap, function(value, path){
-                    storageDb[path] = angular.copy(value);
-                });
-
-                return $q.when(angular.isString(pathOrPathToValMap) ? newValue : pathOrPathToValMap);
-            },
-            onEvent: function(type, path, cb){
-
-            },
-            offEvent: function(type, path, cb){
-
-            },
-            __triggerEvent: function(){
-                var args = Array.prototype.slice.call(arguments);
-                var type = args.shift();
-
-                if(!this.__registeredEvents[type]){
-                    return;
-                }
-
-
-            },
-            __registeredEvents: {}
-        };
+        adapter = $$testAdapter;
         testStorage = new StorageSrv(adapter);
+        syncTestStorage = Object.create(testStorage);
         var fnToConvertToSyncTestStorage = [
             'get',
             'getServerValue',
@@ -80,19 +36,25 @@ describe('testing service "StorageSrv":', function () {
             'set',
             'update'
         ];
-        fnToConvertToSyncTestStorage.forEach(function(fnName){
-            testStorage[fnName] = TestUtilitySrv.general.asyncToSync(testStorage[fnName], testStorage);
+        fnToConvertToSyncTestStorage.forEach(function (fnName) {
+            syncTestStorage[fnName] = TestUtilitySrv.general.asyncToSync(testStorage[fnName], testStorage);
         });
 
-        entityCommunicator = testStorage.entityCommunicator(communicatorPath);
-        var fnToConvertToSyncEntityCommunicator  = [
+        entityCommunicator = syncTestStorage.entityCommunicator(communicatorPath);
+        var fnToConvertToSyncEntityCommunicator = [
             'get',
             'set'
         ];
-        fnToConvertToSyncEntityCommunicator.forEach(function(fnName){
+        fnToConvertToSyncEntityCommunicator.forEach(function (fnName) {
             entityCommunicator[fnName] = TestUtilitySrv.general.asyncToSync(entityCommunicator[fnName], entityCommunicator);
         });
 
+    });
+
+    it('when requesting for path value then return object should have its path in prototype object', function () {
+        var path = 'pathTo';
+        var pathValue = syncTestStorage.get(path);
+        expect(pathValue.__proto__.$$path).toEqual(path);
     });
 
     it('when requesting for entity with uid variable in the path the path should be built correctly',
@@ -104,15 +66,15 @@ describe('testing service "StorageSrv":', function () {
                     uid: 123456
                 }
             };
-            testStorage = new StorageSrv(adapter, config);
+            syncTestStorage = new StorageSrv(adapter, config);
 
             var path = 'path/to/' + StorageSrv.variables.uid;
-            testStorage.get(path);
-            testStorage.set(path, true);
+            syncTestStorage.get(path);
+            syncTestStorage.set(path, true);
             $rootScope.$digest();
             var expectedPath = 'path/to/123456';
             expect(adapter.get).toHaveBeenCalledWith(expectedPath);
-            expect(storageDb[expectedPath]).toBeTruthy();
+            expect(storageDb.path.to['123456']).toBeTruthy();
         }
     );
 
@@ -125,15 +87,15 @@ describe('testing service "StorageSrv":', function () {
                     uid: 123456
                 }
             };
-            testStorage = new StorageSrv(adapter, config);
+            syncTestStorage = new StorageSrv(adapter, config);
 
             var path = 'path/to/' + StorageSrv.variables.appUserSpacePath;
-            testStorage.get(path);
-            testStorage.set(path, true);
+            syncTestStorage.get(path);
+            syncTestStorage.set(path, true);
             $rootScope.$digest();
             var expectedPath = 'path/to/users/123456';
             expect(adapter.get).toHaveBeenCalledWith(expectedPath);
-            expect(storageDb[expectedPath]).toBeTruthy();
+            expect(storageDb.path.to.users['123456']).toBeTruthy();
         }
     );
 
@@ -179,17 +141,17 @@ describe('testing service "StorageSrv":', function () {
         var expectedObj2 = {
             a: 2
         };
-        testStorage.update({
+        syncTestStorage.update({
             path1: angular.copy(expectedObj1),
             path2: angular.copy(expectedObj2)
         });
 
-        var obj1 = testStorage.get('path1');
+        var obj1 = syncTestStorage.get('path1');
 
         expect(obj1).toEqual(jasmine.objectContaining(expectedObj1));
         expect(obj1.$save).toBeDefined();
 
-        var obj2 = testStorage.get('path2');
+        var obj2 = syncTestStorage.get('path2');
         expect(obj2).toEqual(jasmine.objectContaining(expectedObj2));
         expect(obj2.$save).toBeDefined();
     });
@@ -199,19 +161,19 @@ describe('testing service "StorageSrv":', function () {
         var path = 'path';
 
         storageDb[path] = 'cachedValue';
-        testStorage.get(path);
+        syncTestStorage.get(path);
 
 
         var expectedValue = 'freshValue';
         storageDb[path] = expectedValue;
 
-        testStorage.cleanPathCache(path);
-        expect(testStorage.__cache.get(path)).toBe(undefined);
+        syncTestStorage.cleanPathCache(path);
+        expect(syncTestStorage.__cache.get(path)).toBe(undefined);
 
-        var currVal =testStorage.get(path);
+        var currVal = syncTestStorage.get(path);
 
         expect(currVal).toBe(expectedValue);
-        expect(testStorage.__cache.get(path)).toBe(expectedValue);
+        expect(syncTestStorage.__cache.get(path)).toBe(expectedValue);
     });
 
     it('when cache rules are defined for storage then paths which were set not be cached should not be cached', function () {
@@ -250,17 +212,17 @@ describe('testing service "StorageSrv":', function () {
         _doubleGetDataOfNotCachedPath(PATH2_WITH_PREFIX);
         _doubleGetDataOfNotCachedPath(PATH3);
 
-        testStorage.get(PATH4);
+        syncTestStorage.get(PATH4);
         $rootScope.$digest();
         expectedTimesRetrievedFromServer++;
         //data should be retrieved from cache for this request
-        testStorage.get(PATH4);
+        syncTestStorage.get(PATH4);
         $rootScope.$digest();
 
         expect(adapter.get).toHaveBeenCalledTimes(expectedTimesRetrievedFromServer);
     });
 
-    it('when invoking getServer value function then server value should be always returned',function(){
+    it('when invoking getServer value function then server value should be always returned', function () {
         var path = 'pathTo';
         var oldValue = 'oldValue';
         var newValue = 'newValue';
@@ -268,21 +230,20 @@ describe('testing service "StorageSrv":', function () {
         storageDb[path] = oldValue;
 
         //caching the path
-        testStorage.get(path);
+        syncTestStorage.get(path);
 
         storageDb[path] = newValue;
 
-        expect(testStorage.get(path)).toBe(oldValue);
-        expect(testStorage.getServerValue(path)).toBe(newValue);
+        expect(syncTestStorage.get(path)).toBe(oldValue);
+        expect(syncTestStorage.getServerValue(path)).toBe(newValue);
     });
 
-    it('when invoking getAndBindToServeValue then the path cache should be updated once the server was updated', function(){
-        var path = 'pathTo',
-            expectedPathValue;
+    it('when invoking getAndBindToServeValue then the path cache should be updated once the server was updated', function () {
+        var path = 'pathTo';
 
         storageDb[path] = {
             prop1: {
-                prop1:1
+                prop1: 1
             },
             prop2: 'b',
             prop3: 'c',
@@ -295,36 +256,30 @@ describe('testing service "StorageSrv":', function () {
             }
         };
 
-        var currPathValue = testStorage.getAndBindToServer(path);
+        var currPathValue = syncTestStorage.getAndBindToServer(path);
 
-        storageDb[path] = {
+        var expectedPathValue = {
             prop1: 1,
             prop2: 'b',
-            prop4:{
-                prop:{
+            prop4: {
+                prop: {
                     prop1: 1,
                     prop2: 2
                 }
             }
         };
-        adapter.__triggerEvent('update', path, angular.copy(storageDb[path]));
-
+        adapter.set(path, angular.copy(expectedPathValue));
+        $rootScope.$digest();
         expectedPathValue = storageDb[path];
-        expect(currPathValue).toBe(expectedPathValue);
-
-        // currPathValue.prop2 = 2;
-        // currPathValue.prop4.prop.prop2 = 3;
-        // currPathValue.prop5 = 5;
-        //
-        // storageDb[path] = {
-        //     prop1: 2,
-        //     prop2: 1,
-        //     prop4:{
-        //         prop:{
-        //             prop1: 1,
-        //             prop2: 2
-        //         }
-        //     }
-        // };
+        expect(currPathValue).toEqual(expectedPathValue);
     });
+
+    it('when removing path binding to server then path value should not be updated upon server update', function () {
+        spyOn(adapter, 'offEvent');
+
+        var path = 'pathTo';
+        syncTestStorage.removeServerPathBinding(path);
+
+        expect(adapter.offEvent).toHaveBeenCalledWith(StorageSrv.EVENTS.VALUE, path);
+    })
 });

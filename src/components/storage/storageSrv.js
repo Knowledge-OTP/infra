@@ -13,7 +13,8 @@
              *      - get(path): get path value
              *      - set(path, value): set the value in the path
              *      - update(path, value
-             *      - onEvent
+             *      - onEvent: curretnly supported events:
+             *          value: value was changed
              *      - offEvent
              *
              *  config -
@@ -39,6 +40,9 @@
                 };
                 this.__config = angular.extend(defaultConfig, config);
 
+                this.__pathsBindedToServer = {};
+
+                //progress by 1 storage cache id
                 cacheId++;
             }
 
@@ -68,143 +72,49 @@
                 return true;
             }
 
-            function _getUid(config) {
-                var getUid = angular.isFunction(config.variables.uid) ? config.variables.uid() : config.variables.uid;
-                return $q.when(getUid);
-            }
+            StorageSrv.EVENTS = {
+                'VALUE': 'value'
+            };
 
-            function _processPath(pathStrOrObj, config) {
-                return _getUid(config).then(function (uid) {
-                    function _replaceVariables(path){
-                        var regexString = StorageSrv.variables.uid.replace(/\$/g, '\\$');
-                        var UID_REGEX = new RegExp(regexString, 'g');
-                        return path.replace(UID_REGEX, uid);
-                    }
+            StorageSrv.prototype.__processPath = function (pathStrOrObj) {
+                var config = this.__config;
+                function _replaceVariables(path, uid) {
+                    var regexString = StorageSrv.variables.uid.replace(/\$/g, '\\$');
+                    var UID_REGEX = new RegExp(regexString, 'g');
+                    return path.replace(UID_REGEX, uid);
+                }
 
+                function _getUid() {
+                    var getUid = angular.isFunction(config.variables.uid) ? config.variables.uid() : config.variables.uid;
+                    return $q.when(getUid);
+                }
+
+                return _getUid().then(function (uid) {
                     if (angular.isUndefined(uid) || uid === null) {
                         $log.debug('StorageSrv: empty uid was received');
                     }
 
-                    if(angular.isString(pathStrOrObj)){
-                        var processedPath = _replaceVariables(pathStrOrObj);
+                    if (angular.isString(pathStrOrObj)) {
+                        var processedPath = _replaceVariables(pathStrOrObj, uid);
                         return processedPath;
                     }
 
-                    if(angular.isObject(pathStrOrObj)){
+                    if (angular.isObject(pathStrOrObj)) {
                         var processedPathObj = {};
-                        angular.forEach(pathStrOrObj, function(value, pathName){
-                            var processedPath = _replaceVariables(pathName);
+                        angular.forEach(pathStrOrObj, function (value, pathName) {
+                            var processedPath = _replaceVariables(pathName, uid);
                             processedPathObj[processedPath] = value;
                         });
 
                         return processedPathObj;
                     }
                     $log.error('StorageSrv: failed to process path');
-                });
-            }
 
-            StorageSrv.prototype.__processPath = function(path){
-
-            };
-
-            StorageSrv.prototype.get = function (path, defaultValue) {
-                var self = this;
-
-                return _processPath(path, self.__config).then(function (processedPath) {
-                    var entity = self.__cache.get(processedPath);
-                    var getProm;
-                    defaultValue = defaultValue || {};
-                    var cacheProm = false;
-
-                    if (entity) {
-                        getProm = $q.when(entity);
-                    } else {
-                        if (getEntityPromMap[processedPath]) {
-                            return getEntityPromMap[processedPath];
-                        }
-                        cacheProm = true;
-                        getProm = self.adapter.get(processedPath).then(function (_entity) {
-                            if (angular.isUndefined(_entity) || _entity === null) {
-                                _entity = {};
-                            }
-
-                            if (angular.isObject(_entity)) {
-                                var initObj = Object.create({
-                                    $save: function () {
-                                        return self.set(processedPath, this);
-                                    }
-                                });
-                                _entity = angular.extend(initObj, _entity);
-                            }
-
-                            if (_shouldBeCached(processedPath, self.__config)) {
-                                self.__cache.put(processedPath, _entity);
-                            }
-
-                            delete getEntityPromMap[processedPath];
-
-                            return _entity;
-                        });
-                    }
-                    getProm = getProm.then(function (_entity) {
-                        var keys = Object.keys(defaultValue);
-                        keys.forEach(function (key) {
-                            if (angular.isUndefined(_entity[key])) {
-                                _entity[key] = angular.copy(defaultValue[key]);
-                            }
-                        });
-                        return _entity;
-                    });
-
-                    if (cacheProm) {
-                        getEntityPromMap[path] = getProm;
-                    }
-
-                    return getProm;
+                    return null;
                 });
             };
 
-            StorageSrv.prototype.getServerValue = function(path){
-                var self = this;
-                return _processPath(path, self.__config).then(function (processedPath) {
-                    return self.adapter.get(processedPath);
-                });
-            };
-
-            StorageSrv.prototype.getAndBindToServer = function(){
-                return this.get.apply(this, arguments);
-            };
-
-            StorageSrv.prototype.set = function (path, newValue) {
-                var self = this;
-
-                if(!angular.isString(path)){
-                    var errMSg = 'StorageSrv: path should be a string';
-                    $log.error(errMSg);
-                    return $q.reject(errMSg);
-                }
-                return _processPath(path, self.__config).then(function (processedPath) {
-                    return self.adapter.set(processedPath, newValue).then(function () {
-                        return self.__addDataToCache(processedPath, newValue);
-                    });
-                });
-            };
-
-            StorageSrv.prototype.update = function (pathStrOrObj, newValue) {
-                var self = this;
-
-                return _processPath(pathStrOrObj, self.__config).then(function (processedPathOrObj) {
-                    return self.adapter.update(processedPathOrObj, newValue).then(function () {
-                        return self.__addDataToCache(processedPathOrObj, newValue);
-                    });
-                });
-            };
-
-            StorageSrv.prototype.entityCommunicator = function (path, defaultValues) {
-                return new EntityCommunicator(path, defaultValues, this);
-            };
-
-            StorageSrv.prototype.__addDataToCache = function(pathStrOrObj, newValue){
+            StorageSrv.prototype.__addDataToCache = function (pathStrOrObj, newValue) {
                 var self = this;
 
                 var dataToSaveInCache = {};
@@ -240,6 +150,124 @@
                 });
 
                 return angular.isObject(pathStrOrObj) ? cachedDataMap : cachedDataMap[pathStrOrObj];
+            };
+
+            StorageSrv.prototype.__addPathBindedToServer = function(path){
+                this.__pathsBindedToServer[path] = true;
+            };
+
+            StorageSrv.prototype.removeServerPathBinding = function(path){
+                this.adapter.offEvent(StorageSrv.EVENTS.VALUE, path);
+            };
+
+            StorageSrv.prototype.get = function (path, defaultValue) {
+                var self = this;
+
+                return this.__processPath(path, self.__config).then(function (processedPath) {
+                    var entity = self.__cache.get(processedPath);
+                    var getProm;
+                    defaultValue = defaultValue || {};
+                    var cacheProm = false;
+
+                    if (entity) {
+                        getProm = $q.when(entity);
+                    } else {
+                        if (getEntityPromMap[processedPath]) {
+                            return getEntityPromMap[processedPath];
+                        }
+                        cacheProm = true;
+                        getProm = self.adapter.get(processedPath).then(function (_entity) {
+                            if (angular.isUndefined(_entity) || _entity === null) {
+                                _entity = {};
+                            }
+
+                            if (angular.isObject(_entity)) {
+                                var initObj = Object.create({
+                                    $save: function () {
+                                        return self.set(processedPath, this);
+                                    },
+                                    $$path: processedPath
+                                });
+                                _entity = angular.extend(initObj, _entity);
+                            }
+
+                            if (_shouldBeCached(processedPath, self.__config)) {
+                                self.__cache.put(processedPath, _entity);
+                            }
+
+                            delete getEntityPromMap[processedPath];
+
+                            return _entity;
+                        });
+                    }
+                    getProm = getProm.then(function (_entity) {
+                        var keys = Object.keys(defaultValue);
+                        keys.forEach(function (key) {
+                            if (angular.isUndefined(_entity[key])) {
+                                _entity[key] = angular.copy(defaultValue[key]);
+                            }
+                        });
+                        return _entity;
+                    });
+
+                    if (cacheProm) {
+                        getEntityPromMap[path] = getProm;
+                    }
+
+                    return getProm;
+                });
+            };
+
+            StorageSrv.prototype.getServerValue = function (path) {
+                var self = this;
+                return this.__processPath(path, self.__config).then(function (processedPath) {
+                    return self.adapter.get(processedPath);
+                });
+            };
+
+            StorageSrv.prototype.getAndBindToServer = function (path) {
+                var self = this;
+
+                return this.get(path).then(function (pathValue) {
+                    self.adapter.onEvent('value', pathValue.$$path, function (serverValue) {
+                        angular.forEach(pathValue, function (value, key) {
+                            delete pathValue[key];
+                        });
+                        angular.extend(pathValue, serverValue);
+                    });
+
+                    self.__addPathBindedToServer(path);
+                    return pathValue;
+                });
+            };
+
+            StorageSrv.prototype.set = function (path, newValue) {
+                var self = this;
+
+                if (!angular.isString(path)) {
+                    var errMSg = 'StorageSrv: path should be a string';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                return this.__processPath(path, self.__config).then(function (processedPath) {
+                    return self.adapter.set(processedPath, newValue).then(function () {
+                        return self.__addDataToCache(processedPath, newValue);
+                    });
+                });
+            };
+
+            StorageSrv.prototype.update = function (pathStrOrObj, newValue) {
+                var self = this;
+
+                return this.__processPath(pathStrOrObj, self.__config).then(function (processedPathOrObj) {
+                    return self.adapter.update(processedPathOrObj, newValue).then(function () {
+                        return self.__addDataToCache(processedPathOrObj, newValue);
+                    });
+                });
+            };
+
+            StorageSrv.prototype.entityCommunicator = function (path, defaultValues) {
+                return new EntityCommunicator(path, defaultValues, this);
             };
 
             StorageSrv.prototype.cleanPathCache = function (path) {
