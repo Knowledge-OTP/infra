@@ -1,7 +1,10 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demoApp', ['znk.infra.scroll'])
+    angular.module('demo', [
+        'znk.infra.config',
+        'znk.infra.screenSharing'
+    ])
         .config(function(){
 
         });

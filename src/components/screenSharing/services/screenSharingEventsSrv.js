@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.screenSharing').service('ScreenSharingEventsListenerSrv',
+    angular.module('znk.infra.screenSharing').service('ScreenSharingEventsrSrv',
         function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV) {
             'ngInject';
 
