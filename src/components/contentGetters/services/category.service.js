@@ -1,7 +1,8 @@
 'use strict';
 
-angular.module('znk.infra.contentGetters').service('CategoryService', function (StorageRevSrv, $q, categoryEnum)  {
+angular.module('znk.infra.contentGetters').service('CategoryService', function (StorageRevSrv, $q, SubjectEnum, $log)  {
         'ngInject';
+
 
         var self = this;
         this.get = function () {
@@ -23,96 +24,43 @@ angular.module('znk.infra.contentGetters').service('CategoryService', function (
             });
         };
 
-        self.getCategoryData = function (categoryId) {
-            return self.getCategoryMap().then(function (categoryMap) {
+        this.categoryName = function (categoryId) {
+            return this.getCategoryMap().then(function(categoryMap){
                 return categoryMap[categoryId];
             });
         };
 
-        self.getParentCategory = function (categoryId) {
+        this.getParentCategory = function (categoryId) {
             return self.getCategoryMap().then(function (categories) {
-                var parentId = categories[categoryId].parentId;
+                var parentId;
+                if (categories[categoryId]) {
+                    parentId = categories[categoryId].parentId;
+                } else {
+                    $log.error('category id was not found in the categories');
+                    return null;
+                }
                 return categories[parentId];
             });
         };
 
-        self.getCategoryLevel1Parent = function (category) {
-            if (category.typeId === categoryEnum.SUBJECT.enum) {
-                return $q.when(category.id);
-            }
-            return self.getParentCategory(category.id).then(function (parentCategory) {
-                return self.getCategoryLevel1Parent(parentCategory);
+        this.getAllSubscores = function () {
+            return this.getCategoryMap().then(function (categories) {
+                var subScoreObj = {};
+                for (var prop in categories) {
+                    if (_isSubScore(categories[prop].parentId)) {
+                        subScoreObj[categories[prop].id] = categories[prop];
+                    }
+                }
+                return subScoreObj;
             });
         };
-
-
-        self.getCategoryLevel2Parent = function (categoryId) {
-            return self.getCategoryMap().then(function (categories) {
-                var category = categories[categoryId];
-                if (categoryEnum.TEST_SCORE.enum === category.typeId) {
-                    return category;
-                }
-                return self.getCategoryLevel2Parent(category.parentId);
-            });
+        function _isSubScore(id) {
+            return SubjectEnum.MATH.enum === id || SubjectEnum.READING.enum === id ||
+                SubjectEnum.WRITING.enum === id || SubjectEnum.ENGLISH.enum === id ||
+                SubjectEnum.SCIENCE.enum === id;
         };
-
-        self.getAllLevel3Categories = (function () {
-            var getAllLevel3CategoriesProm;
-            return function () {
-                if (!getAllLevel3CategoriesProm) {
-                    getAllLevel3CategoriesProm = self.getCategoryMap().then(function (categories) {
-                        var generalCategories = {};
-                        angular.forEach(categories, function (category) {
-                            if (category.typeId === categoryEnum.GENERAL.enum) {
-                                generalCategories[category.id] = category;
-                            }
-                        });
-                        return generalCategories;
-                    });
-                }
-                return getAllLevel3CategoriesProm;
-            };
-        })();
-
-        self.getAllLevel3CategoriesGroupedByLevel1 = (function () {
-            var getAllLevel3CategoriesGroupedByLevel1Prom;
-            return function (subjectId) {
-                if (!getAllLevel3CategoriesGroupedByLevel1Prom) {
-                    getAllLevel3CategoriesGroupedByLevel1Prom = self.getAllLevel3Categories().then(function (categories) {
-                        var generalCategories = {};
-                        var promArray = [];
-                        angular.forEach(categories, function (generalCategory) {
-                            var prom = self.getCategoryLevel1Parent(generalCategory).then(function (currentCategorySubjectId) {
-                                if (currentCategorySubjectId === subjectId) {
-                                    generalCategories[generalCategory.id] = generalCategory;
-                                }
-                            });
-                            promArray.push(prom);
-                        });
-                        return $q.all(promArray).then(function () {
-                            return generalCategories;
-                        });
-                    });
-                }
-                return getAllLevel3CategoriesGroupedByLevel1Prom;
-            };
-        })();
-
-        self.getAllLevel4Categories = (function () {
-            var getAllLevel4CategoriessProm;
-            return function () {
-                if (!getAllLevel4CategoriessProm) {
-                    getAllLevel4CategoriessProm = self.getCategoryMap().then(function (categories) {
-                        var specificCategories = {};
-                        angular.forEach(categories, function (category) {
-                            if (category.typeId === categoryEnum.SPECIFIC.enum) {
-                                specificCategories[category.id] = category;
-                            }
-                        });
-                        return specificCategories;
-                    });
-                }
-                return getAllLevel4CategoriessProm;
-            };
-        })();
+    
 });
+
+
+

@@ -1,34 +1,42 @@
 describe('testing service "CategoryService":', function () {
     'use strict';
 
+    //TODO: Add category.mock
     beforeEach(module('znk.infra.contentGetters',
-        'htmlTemplates', 'testUtility'));
+        'htmlTemplates',
+        'znk.infra.storage',
+        'znk.infra.znkModule',
+        'znk.infra.content',
+        'znk.infra.storage',
+        'storage.mock',
+        'user.mock',
+        'znk.infra.utility',
+        'testUtility'));
 
-    var $rootScope, ExerciseResultSrv, ExerciseTypeEnum, actions, testStorage, ExerciseStatusEnum;
+    var CategoryService, StorageRevSrv, $q, $log, actions, SubjectEnum;
     beforeEach(inject([
         '$injector',
         function ($injector) {
-            $rootScope = $injector.get('$rootScope');
-            ExerciseResultSrv = $injector.get('ExerciseResultSrv');
-            ExerciseTypeEnum = $injector.get('ExerciseTypeEnum');
-            testStorage = $injector.get('testStorage');
-            ExerciseStatusEnum = $injector.get('ExerciseStatusEnum');
+            CategoryService = $injector.get('CategoryService');
+            StorageRevSrv = $injector.get('StorageRevSrv');
+            $q = $injector.get('$q');
+            $log = $injector.get('$log');
+            SubjectEnum = $injector.get('SubjectEnum');
 
             var TestUtilitySrv = $injector.get('TestUtilitySrv');
-            actions = TestUtilitySrv.general.convertAllAsyncToSync(ExerciseResultSrv);
+            actions = TestUtilitySrv.general.convertAllAsyncToSync(CategoryService);
         }
     ]));
 
-    xit('when requesting for a not exiting result then a new initialized result should be returned', function () {
-        var exerciseId = 20;
-        var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseId);
-        var expectedExerciseResult = {
-            exerciseId: exerciseId,
-            exerciseTypeId: ExerciseTypeEnum.TUTORIAL.enum,
-            questionResults: []
-        };
-        expect(exerciseResult).toEqual(jasmine.objectContaining(expectedExerciseResult));
-        expect(_isValidStartedTime(exerciseResult.startedTime)).toBeTruthy();
+    it('when calling categoryName the categoryName is returned', function () {
+        var categoryId = 100;
+        var categoryObjMap = {};
+        categoryObjMap[categoryId] = 'some category';
+        spyOn(CategoryService, "getCategoryMap").and.returnValue($q.when(categoryObjMap));
+
+        var category = actions.categoryName(categoryId);
+        expect(category).toEqual('some category');
+
     });
 
 });
