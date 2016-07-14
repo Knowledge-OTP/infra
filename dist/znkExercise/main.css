@@ -280,8 +280,10 @@ free-text-answer .free-text-answer-wrapper {
   free-text-answer .free-text-answer-wrapper .answer-status {
     width: 85px;
     height: auto;
+    display: -ms-flexbox;
     display: flex;
-    align-items: center; }
+    -ms-flex-align: center;
+        align-items: center; }
     free-text-answer .free-text-answer-wrapper .answer-status .user-answer {
       font-size: 18px;
       color: #4f4d4d;
@@ -385,13 +387,13 @@ free-text-answer .free-text-answer-wrapper {
   .rate-answer-wrapper .checkbox-items-wrapper .item-repeater .checkbox-item {
     width: 22px;
     height: 22px;
-    display: -webkit-flex;
-    display: -moz-box;
     display: -ms-flexbox;
     display: flex;
-    justify-content: center;
+    -ms-flex-pack: center;
+        justify-content: center;
     -webkit-justify-content: center;
-    align-items: center;
+    -ms-flex-align: center;
+        align-items: center;
     -webkit-align-items: center;
     position: relative;
     z-index: 1;
@@ -489,17 +491,17 @@ select-answer {
   font-family: Lato;
   display: block; }
   select-answer .answer {
-    display: -webkit-flex;
-    display: -moz-box;
     display: -ms-flexbox;
     display: flex;
-    align-items: center;
+    -ms-flex-align: center;
+        align-items: center;
     -webkit-align-items: center;
     margin-bottom: 20px; }
     select-answer .answer .correct-icon-drv,
     select-answer .answer .wrong-icon-drv {
       display: none;
-      flex-shrink: 0; }
+      -ms-flex-negative: 0;
+          flex-shrink: 0; }
     select-answer .answer.wrong .content-wrapper .answer-index-wrapper {
       background-color: #ff6766;
       color: #fff;
@@ -567,32 +569,33 @@ select-answer {
     select-answer .answer .answer-solution-icon-wrapper {
       visibility: hidden;
       margin-right: 25px;
-      flex-shrink: 0;
+      -ms-flex-negative: 0;
+          flex-shrink: 0;
       -webkit-flex-shrink: 0; }
     select-answer .answer .content-wrapper {
-      display: -webkit-flex;
-      display: -moz-box;
       display: -ms-flexbox;
       display: flex;
-      align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
       -webkit-align-items: center; }
       select-answer .answer .content-wrapper .answer-index-wrapper {
         position: relative;
         background-color: #f6f6f6;
         border-radius: 50%;
-        display: -webkit-flex;
-        display: -moz-box;
         display: -ms-flexbox;
         display: flex;
-        justify-content: center;
+        -ms-flex-pack: center;
+            justify-content: center;
         -webkit-justify-content: center;
-        align-items: center;
+        -ms-flex-align: center;
+            align-items: center;
         -webkit-align-items: center;
         width: 38px;
         height: 38px;
         border: 1px solid #888888;
         margin-right: 22.5px;
-        flex-shrink: 0;
+        -ms-flex-negative: 0;
+            flex-shrink: 0;
         -webkit-flex-shrink: 0; }
         select-answer .answer .content-wrapper .answer-index-wrapper .inner-circle {
           display: none;
@@ -611,7 +614,8 @@ select-answer {
         top: 3px;
         z-index: 1;
         display: none;
-        flex-shrink: 0;
+        -ms-flex-negative: 0;
+            flex-shrink: 0;
         -webkit-flex-shrink: 0; }
       select-answer .answer .content-wrapper .ion-android-done {
         position: absolute;
@@ -629,7 +633,9 @@ znk-exercise.desktop {
     position: absolute;
     top: 0;
     bottom: 0;
-    align-items: center;
+    -ms-flex-align: center;
+        align-items: center;
+    display: -ms-flexbox;
     display: flex;
     transition: all 0.2s linear; }
     znk-exercise.desktop .btn-section .btn-container.right-container {
@@ -696,6 +702,7 @@ znk-exercise.desktop {
     stroke-linejoin: round;
     stroke-miterlimit: 10; }
   znk-exercise.desktop questions-carousel.znk-carousel-container {
+    display: -ms-flexbox;
     display: flex;
     position: absolute;
     top: 0;
@@ -753,13 +760,13 @@ znk-exercise-pager {
           border-radius: 50%;
           width: 25px;
           height: 25px;
-          display: -webkit-flex;
-          display: -moz-box;
           display: -ms-flexbox;
           display: flex;
-          justify-content: center;
+          -ms-flex-pack: center;
+              justify-content: center;
           -webkit-justify-content: center;
-          align-items: center;
+          -ms-flex-align: center;
+              align-items: center;
           -webkit-align-items: center;
           background: linear-gradient(to bottom right, #cfcfcf 0%, #cfcfcf 50%, #d7d7d7 51%, #d7d7d7 100%);
           position: relative; }

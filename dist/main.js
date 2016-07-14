@@ -1,216 +1,42 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra', [
+        //all modules will be injected here
+        "znk.infra.analytics",
+"znk.infra.assignModule",
+"znk.infra.autofocus",
+"znk.infra.config",
+"znk.infra.content",
+"znk.infra.contentAvail",
+"znk.infra.deviceNotSupported",
+"znk.infra.enum",
+"znk.infra.estimatedScore",
+"znk.infra.exerciseResult",
+"znk.infra.filters",
+"znk.infra.general",
+"znk.infra.hint",
+"znk.infra.moduleResults",
+"znk.infra.pngSequence",
+"znk.infra.popUp",
+"znk.infra.presence",
+"znk.infra.screenSharing",
+"znk.infra.scroll",
+"znk.infra.stats",
+"znk.infra.storage",
+"znk.infra.svgIcon",
+"znk.infra.user",
+"znk.infra.utility",
+"znk.infra.znkExercise",
+"znk.infra.znkModule",
+"znk.infra.znkTimeline"
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.analytics', []);
-})(angular);
-
-(function (angular) {
-    'use strict';
-    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.moduleResults']);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.autofocus', ['znk.infra.enum', 'znk.infra.svgIcon']);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.config', []);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.content', []);
-})(angular);
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.contentAvail', ['znk.infra.config']);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.deviceNotSupported', []);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.enum', []);
-})(angular);
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.estimatedScore', [
-            'znk.infra.config',
-            'znk.infra.znkExercise',
-            'znk.infra.utility'
-        ])
-        .run([
-            'EstimatedScoreEventsHandlerSrv',
-            function (EstimatedScoreEventsHandlerSrv) {
-                EstimatedScoreEventsHandlerSrv.init();
-            }
-        ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.exerciseResult', ['znk.infra.config','znk.infra.utility']);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.filters', []);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.general', ['znk.infra.enum', 'znk.infra.svgIcon'])
-        .config([
-        'SvgIconSrvProvider',
-        function (SvgIconSrvProvider) {
-            var svgMap = {
-                'clock-icon': 'components/general/svg/clock-icon.svg'
-            };
-            SvgIconSrvProvider.registerSvgSources(svgMap);
-        }]);
-
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.hint', ['znk.infra.config']);
-})(angular);
-
-(function (angular) {
-    'use strict';
-    angular.module('znk.infra.moduleResults', []);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.pngSequence', []);
-})(angular);
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.popUp', ['znk.infra.svgIcon', 'znk.infra.autofocus'])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
-                var svgMap = {
-                    'exclamation-mark': 'components/popUp/svg/exclamation-mark-icon.svg',
-                    'correct': 'components/popUp/svg/correct-icon.svg'
-                };
-                SvgIconSrvProvider.registerSvgSources(svgMap);
-            }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.presence', ['ngIdle'])
-        .config([
-            'IdleProvider', 'KeepaliveProvider', 'ENV',
-            function (IdleProvider, KeepaliveProvider, ENV) {
-                // userIdleTime: how many sec until user is 'IDLE'
-                // idleTimeout: how many sec after idle to stop track the user, 0: keep track
-                // idleKeepalive: keepalive interval in sec
-
-                IdleProvider.idle(ENV.userIdleTime || 30);
-                IdleProvider.timeout(ENV.idleTimeout || 0);
-                KeepaliveProvider.interval(ENV.idleKeepalive || 2);
-            }])
-        .run([
-            'PresenceService', 'Idle',
-            function (PresenceService, Idle) {
-                PresenceService.addCurrentUserListeners();
-                Idle.watch();
-            }
-        ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.scroll', []);
-})(angular);
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.stats', [
-            'znk.infra.enum',
-            'znk.infra.znkExercise',
-            'znk.infra.utility'
-        ])
-        .run([
-            'StatsEventsHandlerSrv',
-            function (StatsEventsHandlerSrv) {
-                StatsEventsHandlerSrv.init();
-            }
-        ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.storage', []);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.svgIcon', []);
-})(angular);
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.utility', []);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkExercise', [
-            'znk.infra.enum',
-            'znk.infra.svgIcon',
-            'znk.infra.scroll',
-            'znk.infra.autofocus',
-            'ngAnimate'
-        ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
-                var svgMap = {
-                    chevron: 'components/znkExercise/svg/chevron-icon.svg',
-                    correct: 'components/znkExercise/svg/correct-icon.svg',
-                    wrong: 'components/znkExercise/svg/wrong-icon.svg',
-                    info: 'components/znkExercise/svg/info-icon.svg',
-                    arrow: 'components/znkExercise/svg/arrow-icon.svg'
-                };
-                SvgIconSrvProvider.registerSvgSources(svgMap);
-            }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-    angular.module('znk.infra.znkModule', []);
-})(angular);
-
-(function (angular) {
-    'use strict';
-    angular.module('znk.infra.znkTimeline', ['znk.infra.svgIcon', 'znk.infra.enum']);
 })(angular);
 
 /**
@@ -420,10 +246,15 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
 (function (angular) {
     'use strict';
+    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.moduleResults']);
+})(angular);
+
+(function (angular) {
+    'use strict';
 
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', 'ModuleResultsService', '$q',
-        function (ZnkModuleService, ModuleResultsService, $q) {
+        'ZnkModuleService', 'ModuleResultsService', '$q', '$log',
+        function (ZnkModuleService, ModuleResultsService, $q, $log) {
             var userAssignModuleService = {};
 
             userAssignModuleService.getUserAssignModules = function (userId) {
@@ -446,16 +277,43 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
             };
 
-            userAssignModuleService.setAssignModules = function (assignModules, userId) {
-                var setProm = $q.when();
-                angular.forEach(assignModules, function (assignModule) {
-                    setProm = setProm.then(function(){
-                        return ModuleResultsService.setModuleResult(assignModule);
+            userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId) {
+                if(!angular.isArray(moduleIds)){
+                    var errMSg = 'UserAssignModuleService: 1st argument should be array of module ids';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                var moduleResults = {};
+                var getProm = $q.when();
+                angular.forEach(moduleIds, function (moduleId) {
+                    getProm = getProm.then(function(){
+                        return ModuleResultsService.getModuleResultByModuleId(moduleId, userId, false).then(function (moduleResult) {
+                            moduleResults[moduleId] = moduleResult;
+                            return moduleResults;
+                        });
                     });
-                });
 
-                return setProm.then(function () {
-                    return userAssignModuleService.getUserAssignModules(userId);
+                });
+                return getProm.then(function () {
+                    var saveProm = $q.when();
+                    angular.forEach(moduleIds, function (moduleId) {
+                        if(!moduleResults[moduleId]) {
+                            moduleResults[moduleId] =  ModuleResultsService.getDefaultModuleResult(moduleId, userId);
+                            moduleResults[moduleId].assignedTutorId = tutorId;
+                        }
+                        moduleResults[moduleId].assign = true;
+
+                        saveProm = saveProm.then(function(){
+                            return ModuleResultsService.setModuleResult(moduleResults[moduleId]).then(function(savedResults){
+                                moduleResults[moduleId] = savedResults;
+                            });
+                        });
+                    });
+
+                    return saveProm.then(function () {
+                        return moduleResults;
+                    });
+
                 });
             };
 
@@ -468,6 +326,12 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.autofocus', ['znk.infra.enum', 'znk.infra.svgIcon']);
+})(angular);
 
 /**
  * the HTML5 autofocus property can be finicky when it comes to dynamically loaded
@@ -502,6 +366,12 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
 angular.module('znk.infra.autofocus').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.config', []);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -552,6 +422,11 @@ angular.module('znk.infra.config').run(['$templateCache', function($templateCach
 
 }]);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.content', []);
+})(angular);
 'use strict';
 
 (function (angular) {
@@ -715,6 +590,12 @@ angular.module('znk.infra.config').run(['$templateCache', function($templateCach
 angular.module('znk.infra.content').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.contentAvail', ['znk.infra.config']);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -956,6 +837,12 @@ angular.module('znk.infra.contentAvail').run(['$templateCache', function($templa
 
 }]);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.deviceNotSupported', []);
+})(angular);
+
 /**
  * Device Not Supported
  * This directive hides all content on the page and shows a message and an image
@@ -1009,6 +896,11 @@ angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function($
     "");
 }]);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.enum', []);
+})(angular);
 (function (angular) {
     'use strict';
 
@@ -1255,6 +1147,22 @@ angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function($
 angular.module('znk.infra.enum').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.estimatedScore', [
+            'znk.infra.config',
+            'znk.infra.znkExercise',
+            'znk.infra.utility'
+        ])
+        .run([
+            'EstimatedScoreEventsHandlerSrv',
+            function (EstimatedScoreEventsHandlerSrv) {
+                EstimatedScoreEventsHandlerSrv.init();
+            }
+        ]);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -1711,27 +1619,22 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.exerciseResult', ['znk.infra.config','znk.infra.utility', 'znk.infra.moduleResults']);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum',
-        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum) {
+        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum', 'ModuleResultsService',
+        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum, ModuleResultsService) {
             var ExerciseResultSrv = this;
 
             var EXERCISE_RESULTS_PATH = 'exerciseResults';
-            var EXERCISE_RESULTS_GUIDS_PATH = StorageSrv.variables.appUserSpacePath + '/exerciseResults';
-
-
             var EXAM_RESULTS_PATH = 'examResults';
-            var EXAM_RESULTS_GUIDS_PATH = StorageSrv.variables.appUserSpacePath + '/examResults';
-
-            var EXERCISES_STATUS_PATH = StorageSrv.variables.appUserSpacePath + '/exercisesStatus';
-
-            function _isValidNumber(number){
-                if(!angular.isNumber(number) && !angular.isString(number)){
-                    return false;
-                }
-
-                return !isNaN(+number);
-            }
+            var USER_EXERCISE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/exerciseResults';
+            var USER_EXAM_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/examResults';
+            var USER_EXERCISES_STATUS_PATH = StorageSrv.variables.appUserSpacePath + '/exercisesStatus';
 
             function _getExerciseResultPath(guid) {
                 return EXERCISE_RESULTS_PATH + '/' + guid;
@@ -1759,7 +1662,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 
             function _getExerciseResultsGuids(){
                 var storage = InfraConfigSrv.getStorageService();
-                return storage.get(EXERCISE_RESULTS_GUIDS_PATH);
+                return storage.get(USER_EXERCISE_RESULTS_PATH);
             }
 
             function _getExamResultPath(guid) {
@@ -1798,7 +1701,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 
             function _getExamResultsGuids(){
                 var storage = InfraConfigSrv.getStorageService();
-                return storage.get(EXAM_RESULTS_GUIDS_PATH);
+                return storage.get(USER_EXAM_RESULTS_PATH);
             }
 
             function exerciseSaveFn(){
@@ -1861,7 +1764,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
                     var exerciseNewStatus = exerciseResult.isComplete ?
                         ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
                     exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId] = new ExerciseStatus(exerciseNewStatus, totalTimeSpentOnQuestions);
-                    dataToSave[EXERCISES_STATUS_PATH] = exercisesStatusData;
+                    dataToSave[USER_EXERCISES_STATUS_PATH] = exercisesStatusData;
 
                     var getSectionAggregatedDataProm = $q.when();
                     if(exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
@@ -1917,7 +1820,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 
             function _getExercisesStatusData(){
                 var storage = InfraConfigSrv.getStorageService();
-                return storage.get(EXERCISES_STATUS_PATH);
+                return storage.get(USER_EXERCISES_STATUS_PATH);
             }
 
             function ExerciseStatus(status, duration){
@@ -1926,7 +1829,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
             }
 
             this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum, dontInitialize) {
-                if(!_isValidNumber(exerciseTypeId) || !_isValidNumber(exerciseId)){
+                if(!UtilitySrv.fn.isValidNumber(exerciseTypeId) || !UtilitySrv.fn.isValidNumber(exerciseId)){
                     var errMSg = 'ExerciseResultSrv: exercise type id, exercise id should be number !!!';
                     $log.error(errMSg);
                     return $q.reject(errMSg);
@@ -1934,7 +1837,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
                 exerciseTypeId = +exerciseTypeId;
                 exerciseId = +exerciseId;
 
-                if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum && !_isValidNumber(examId)){
+                if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum && !UtilitySrv.fn.isValidNumber(examId)){
                     var examErrMSg = 'ExerciseResultSrv: exam id should be provided when asking for section result and should' +
                         ' be a number!!!';
                     $log.error(examErrMSg);
@@ -1965,7 +1868,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
                         var dataToSave = {};
 
                         exerciseResultsGuids[exerciseTypeId][exerciseId] = newGuid;
-                        dataToSave[EXERCISE_RESULTS_GUIDS_PATH] = exerciseResultsGuids;
+                        dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
 
                         var exerciseResultPath = _getExerciseResultPath(newGuid);
                         var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,newGuid);
@@ -2018,7 +1921,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
             };
 
             this.getExamResult = function (examId, dontInitialize) {
-                if(!_isValidNumber(examId)){
+                if(!UtilitySrv.fn.isValidNumber(examId)){
                     var errMsg = 'Exam id is not a number !!!';
                     $log.error(errMsg);
                     return $q.reject(errMsg);
@@ -2036,7 +1939,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
                         var dataToSave = {};
                         var newExamResultGuid = UtilitySrv.general.createGuid();
                         examResultsGuids[examId] = newExamResultGuid;
-                        dataToSave[EXAM_RESULTS_GUIDS_PATH] = examResultsGuids;
+                        dataToSave[USER_EXAM_RESULTS_PATH] = examResultsGuids;
 
                         var examResultPath = _getExamResultPath(newExamResultGuid);
                         var initExamResultProm = _getInitExamResult(examId, newExamResultGuid);
@@ -2065,6 +1968,83 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
             this.getExercisesStatusMap = function(){
                 return _getExercisesStatusData();
             };
+
+            this.getModuleExerciseResults = function (userId, moduleId, exerciseTypeId, exerciseId, dontInitialize) {
+                if(!UtilitySrv.fn.isValidNumber(exerciseTypeId) || !UtilitySrv.fn.isValidNumber(exerciseId)){
+                    var errMSg = 'ExerciseResultSrv: exercise type id, exercise id should be number !!!';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                exerciseTypeId = +exerciseTypeId;
+                exerciseId = +exerciseId;
+
+                if(!UtilitySrv.fn.isValidNumber(moduleId)){
+                    var examErrMSg = 'ExerciseResultSrv: module id should be provided when asking for exercise result and should be a number!!!';
+                    $log.error(examErrMSg);
+                    return $q.reject(examErrMSg);
+                }
+                moduleId = +moduleId;
+
+                return $q.all([ModuleResultsService.getModuleResultByModuleId(moduleId, userId), _getExerciseResultsGuids()]).then(function (results) {
+                    var moduleResultsObj = results[0];
+                    var exerciseResultsGuids = results[1];
+                    var resultGuid = exerciseResultsGuids[exerciseTypeId] && exerciseResultsGuids[exerciseTypeId][exerciseId];
+                    if (!resultGuid) {
+                        if(dontInitialize){
+                            return null;
+                        }
+
+                        if(!exerciseResultsGuids[exerciseTypeId]){
+                            exerciseResultsGuids[exerciseTypeId] = {};
+                        }
+
+                        var storage = InfraConfigSrv.getStorageService();
+                        var newGuid = UtilitySrv.general.createGuid();
+                        var dataToSave = {};
+
+                        exerciseResultsGuids[exerciseTypeId][exerciseId] = newGuid;
+                        dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
+
+                        var exerciseResultPath = _getExerciseResultPath(newGuid);
+                        var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,newGuid);
+                        return initResultProm.then(function(initResult) {
+                            dataToSave[exerciseResultPath] = initResult;
+
+                            if(moduleResultsObj){
+                                moduleResultsObj.moduleId = moduleId;
+
+                                if(!moduleResultsObj.exerciseResults){
+                                    moduleResultsObj.exerciseResults = {};
+                                }
+                                moduleResultsObj.exerciseResults[exerciseId] = newGuid;
+                                var moduleResultPath = ModuleResultsService.getModuleResultPath(moduleResultsObj.guid);
+                                dataToSave[moduleResultPath] = moduleResultsObj;
+                            }
+
+                            return storage.set(dataToSave).then(function (res) {
+                                return res[exerciseResultPath];
+                            });
+                        });
+                    }
+
+                    return _getExerciseResultByGuid(resultGuid).then(function(result){
+                        var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,resultGuid);
+                        return initResultProm.then(function(initResult) {
+                            if(result.guid !== resultGuid){
+                                angular.extend(result,initResult);
+                            }else{
+                                UtilitySrv.object.extendWithoutOverride(result, initResult);
+                            }
+                            return result;
+                        });
+                    });
+                }).then(function(exerciseResult){
+                    if(angular.isObject(exerciseResult)){
+                        exerciseResult.$save = exerciseSaveFn;
+                    }
+                    return exerciseResult;
+                });
+            };
         }
     ]);
 })(angular);
@@ -2072,6 +2052,28 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 angular.module('znk.infra.exerciseResult').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.filters', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.filters').filter('capitalize', [
+        function () {
+            return function (str) {
+                if(!angular.isString(str) || !str.length){
+                    return '';
+                }
+                
+                return str[0].toUpperCase() + str.substr(1);
+            };
+        }
+    ]);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -2104,6 +2106,21 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
 angular.module('znk.infra.filters').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.general', ['znk.infra.enum', 'znk.infra.svgIcon'])
+        .config([
+        'SvgIconSrvProvider',
+        function (SvgIconSrvProvider) {
+            var svgMap = {
+                'clock-icon': 'components/general/svg/clock-icon.svg'
+            };
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+        }]);
+
+})(angular);
 
 /**
  * evaluates content , then it appended it to the DOM , and finally it compiles it with scope which was created out of the directive scope.
@@ -2296,96 +2313,6 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
     ]);
 })(angular);
 
-
-angular.module('znk.infra.general').run(['$templateCache', function($templateCache) {
-  $templateCache.put("components/general/svg/clock-icon.svg",
-    "<svg version=\"1.1\" class=\"clock-icon-svg\"\n" +
-    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
-    "     x=\"0px\"\n" +
-    "     y=\"0px\"\n" +
-    "     viewBox=\"0 0 183 208.5\">\n" +
-    "    <style>\n" +
-    "        .clock-icon-svg .st0 {\n" +
-    "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
-    "            stroke-width: 10.5417;\n" +
-    "            stroke-miterlimit: 10;\n" +
-    "        }\n" +
-    "\n" +
-    "        .clock-icon-svg .st1 {\n" +
-    "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
-    "            stroke-width: 12.3467;\n" +
-    "            stroke-linecap: round;\n" +
-    "            stroke-miterlimit: 10;\n" +
-    "        }\n" +
-    "\n" +
-    "        .clock-icon-svg .st2 {\n" +
-    "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
-    "            stroke-width: 11.8313;\n" +
-    "            stroke-linecap: round;\n" +
-    "            stroke-miterlimit: 10;\n" +
-    "        }\n" +
-    "\n" +
-    "        .clock-icon-svg .st3 {\n" +
-    "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
-    "            stroke-width: 22.9416;\n" +
-    "            stroke-miterlimit: 10;\n" +
-    "        }\n" +
-    "\n" +
-    "        .clock-icon-svg .st4 {\n" +
-    "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
-    "            stroke-width: 14;\n" +
-    "            stroke-linecap: round;\n" +
-    "            stroke-miterlimit: 10;\n" +
-    "        }\n" +
-    "\n" +
-    "        .clock-icon-svg .st5 {\n" +
-    "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
-    "            stroke-width: 18;\n" +
-    "            stroke-linejoin: round;\n" +
-    "            stroke-miterlimit: 10;\n" +
-    "        }\n" +
-    "\n" +
-    "\n" +
-    "    </style>\n" +
-    "    <g>\n" +
-    "        <circle class=\"st0\" cx=\"91.5\" cy=\"117\" r=\"86.2\"/>\n" +
-    "        <line class=\"st1\" x1=\"92.1\" y1=\"121.5\" x2=\"92.1\" y2=\"61\"/>\n" +
-    "        <line class=\"st2\" x1=\"92.1\" y1=\"121.5\" x2=\"131.4\" y2=\"121.5\"/>\n" +
-    "        <line class=\"st3\" x1=\"78.2\" y1=\"18.2\" x2=\"104.9\" y2=\"18.2\"/>\n" +
-    "        <line class=\"st4\" x1=\"61.4\" y1=\"7\" x2=\"121.7\" y2=\"7\"/>\n" +
-    "        <line class=\"st5\" x1=\"156.1\" y1=\"43\" x2=\"171.3\" y2=\"61\"/>\n" +
-    "    </g>\n" +
-    "</svg>\n" +
-    "");
-  $templateCache.put("components/general/templates/timerDrv.html",
-    "<div ng-switch=\"type\" class=\"timer-drv\">\n" +
-    "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +
-    "        <svg-icon class=\"icon-wrapper\" name=\"clock-icon\"></svg-icon>\n" +
-    "        <div class=\"timer-view\"></div>\n" +
-    "    </div>\n" +
-    "    <div ng-switch-when=\"2\" class=\"timer-type2\">\n" +
-    "        <div class=\"timer-display-wrapper\">\n" +
-    "            <span class=\"timer-display\"></span>\n" +
-    "        </div>\n" +
-    "        <div round-progress\n" +
-    "             current=\"ngModelCtrl.$viewValue\"\n" +
-    "             max=\"config.max\"\n" +
-    "             color=\"{{config.color}}\"\n" +
-    "             bgcolor=\"{{config.bgcolor}}\"\n" +
-    "             stroke=\"{{config.stroke}}\"\n" +
-    "             radius=\"{{config.radius}}\"\n" +
-    "             clockwise=\"config.clockwise\">\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "</div>\n" +
-    "");
-}]);
 
 /**
  * attrs -
@@ -2774,6 +2701,102 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
     ]);
 })(angular);
 
+angular.module('znk.infra.general').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/general/svg/clock-icon.svg",
+    "<svg version=\"1.1\" class=\"clock-icon-svg\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "     viewBox=\"0 0 183 208.5\">\n" +
+    "    <style>\n" +
+    "        .clock-icon-svg .st0 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 10.5417;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon-svg .st1 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 12.3467;\n" +
+    "            stroke-linecap: round;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon-svg .st2 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 11.8313;\n" +
+    "            stroke-linecap: round;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon-svg .st3 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 22.9416;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon-svg .st4 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 14;\n" +
+    "            stroke-linecap: round;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon-svg .st5 {\n" +
+    "            fill: none;\n" +
+    "            stroke: #757A83;\n" +
+    "            stroke-width: 18;\n" +
+    "            stroke-linejoin: round;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "\n" +
+    "    </style>\n" +
+    "    <g>\n" +
+    "        <circle class=\"st0\" cx=\"91.5\" cy=\"117\" r=\"86.2\"/>\n" +
+    "        <line class=\"st1\" x1=\"92.1\" y1=\"121.5\" x2=\"92.1\" y2=\"61\"/>\n" +
+    "        <line class=\"st2\" x1=\"92.1\" y1=\"121.5\" x2=\"131.4\" y2=\"121.5\"/>\n" +
+    "        <line class=\"st3\" x1=\"78.2\" y1=\"18.2\" x2=\"104.9\" y2=\"18.2\"/>\n" +
+    "        <line class=\"st4\" x1=\"61.4\" y1=\"7\" x2=\"121.7\" y2=\"7\"/>\n" +
+    "        <line class=\"st5\" x1=\"156.1\" y1=\"43\" x2=\"171.3\" y2=\"61\"/>\n" +
+    "    </g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/general/templates/timerDrv.html",
+    "<div ng-switch=\"type\" class=\"timer-drv\">\n" +
+    "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +
+    "        <svg-icon class=\"icon-wrapper\" name=\"clock-icon\"></svg-icon>\n" +
+    "        <div class=\"timer-view\"></div>\n" +
+    "    </div>\n" +
+    "    <div ng-switch-when=\"2\" class=\"timer-type2\">\n" +
+    "        <div class=\"timer-display-wrapper\">\n" +
+    "            <span class=\"timer-display\"></span>\n" +
+    "        </div>\n" +
+    "        <div round-progress\n" +
+    "             current=\"ngModelCtrl.$viewValue\"\n" +
+    "             max=\"config.max\"\n" +
+    "             color=\"{{config.color}}\"\n" +
+    "             bgcolor=\"{{config.bgcolor}}\"\n" +
+    "             stroke=\"{{config.stroke}}\"\n" +
+    "             radius=\"{{config.radius}}\"\n" +
+    "             clockwise=\"config.clockwise\">\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.hint', ['znk.infra.config']);
+})(angular);
+
 (function (angular) {
     'use strict';
 
@@ -2876,6 +2899,11 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
 
 (function (angular) {
     'use strict';
+    angular.module('znk.infra.moduleResults', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
 
     angular.module('znk.infra.moduleResults').service('ModuleResultsService', [
         'InfraConfigSrv', '$log', '$q', 'UtilitySrv',
@@ -2886,13 +2914,25 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
             var USER_MODULE_RESULTS_PATH = storage.variables.appUserSpacePath + '/moduleResults';
             var MODULE_RESULTS_PATH = 'moduleResults';
 
+            moduleResultsService.getDefaultModuleResult = function (moduleId, userId) {
+                return {
+                    moduleId: moduleId,
+                    uid: userId,
+                    assignedTutorId: null,
+                    assign: false,
+                    contentAssign: false,
+                    exerciseResults: [],
+                    guid: UtilitySrv.general.createGuid()
+                };
+            };
+
             moduleResultsService.getUserModuleResultsGuids = function (userId){
                 var userResultsPath = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
                 return storage.get(userResultsPath);
             };
 
             moduleResultsService.getModuleResultByGuid = function (resultGuid, defaultValue) {
-                var resultPath = MODULE_RESULTS_PATH + '/' + resultGuid;
+                var resultPath = moduleResultsService.getModuleResultPath(resultGuid);
                 return storage.get(resultPath, defaultValue);
             };
 
@@ -2905,15 +2945,8 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                         if (!withDefaultResult) {
                             return null;
                         } else {
-                            moduleResultGuid = UtilitySrv.general.createGuid();
-                            defaultResult =  {
-                                moduleId: moduleId,
-                                tutorId: null,
-                                assign: false,
-                                contentAssign: false,
-                                guid: moduleResultGuid,
-                                uid: userId
-                            };
+                            defaultResult =  moduleResultsService.getDefaultModuleResult(moduleId, userId);
+                            moduleResultGuid = defaultResult.guid;
                         }
                     }
 
@@ -2923,13 +2956,13 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
 
             moduleResultsService.setModuleResult = function (newResult){
                 return  moduleResultsService.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
-                    var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
-                   if (userGuidLists[newResult.guid]) {
-                       return  moduleResultsService.getModuleResultByGuid(newResult.guid).then(function (moduleResult) {
-                           angular.extend(moduleResult, newResult);
-                           return storage.set(moduleResultPath, moduleResult);
-                       });
-                   }
+                    var moduleResultPath = moduleResultsService.getModuleResultPath(newResult.guid);
+                    if (userGuidLists[newResult.guid]) {
+                        return  moduleResultsService.getModuleResultByGuid(newResult.guid).then(function (moduleResult) {
+                            angular.extend(moduleResult, newResult);
+                            return storage.set(moduleResultPath, moduleResult);
+                        });
+                    }
 
                     userGuidLists[newResult.moduleId] = newResult.guid;
                     var dataToSave = {};
@@ -2938,6 +2971,12 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                     return storage.set(dataToSave);
                 });
             };
+
+            moduleResultsService.getModuleResultPath = function (guid){
+                return MODULE_RESULTS_PATH + '/' + guid;
+            };
+
+
 
             return moduleResultsService;
         }
@@ -2949,6 +2988,11 @@ angular.module('znk.infra.moduleResults').run(['$templateCache', function($templ
 
 }]);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.pngSequence', []);
+})(angular);
 /**
  * Created by Igor on 8/19/2015.
  */
@@ -3067,6 +3111,21 @@ angular.module('znk.infra.moduleResults').run(['$templateCache', function($templ
 angular.module('znk.infra.pngSequence').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.popUp', ['znk.infra.svgIcon', 'znk.infra.autofocus'])
+        .config([
+            'SvgIconSrvProvider',
+            function (SvgIconSrvProvider) {
+                var svgMap = {
+                    'exclamation-mark': 'components/popUp/svg/exclamation-mark-icon.svg',
+                    'correct': 'components/popUp/svg/correct-icon.svg'
+                };
+                SvgIconSrvProvider.registerSvgSources(svgMap);
+            }]);
+})(angular);
 
 'use strict';
 
@@ -3284,6 +3343,30 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
     "");
 }]);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.presence', ['ngIdle'])
+        .config([
+            'IdleProvider', 'KeepaliveProvider', 'ENV',
+            function (IdleProvider, KeepaliveProvider, ENV) {
+                // userIdleTime: how many sec until user is 'IDLE'
+                // idleTimeout: how many sec after idle to stop track the user, 0: keep track
+                // idleKeepalive: keepalive interval in sec
+
+                IdleProvider.idle(ENV.userIdleTime || 30);
+                IdleProvider.timeout(ENV.idleTimeout || 0);
+                KeepaliveProvider.interval(ENV.idleKeepalive || 2);
+            }])
+        .run([
+            'PresenceService', 'Idle',
+            function (PresenceService, Idle) {
+                PresenceService.addCurrentUserListeners();
+                Idle.watch();
+            }
+        ]);
+})(angular);
+
 'use strict';
 
 (function (angular) {
@@ -3374,10 +3457,174 @@ angular.module('znk.infra.presence').run(['$templateCache', function($templateCa
 
 }]);
 
-angular.module('znk.infra.scroll').run(['$templateCache', function($templateCache) {
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.screenSharing', [
+        'znk.infra.user',
+        'znk.infra.utility',
+        'znk.infra.config'
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.screenSharing').factory('ScreenSharingStatusEnum',
+        ["EnumSrv", function (EnumSrv) {
+            'ngInject';
+
+            return new EnumSrv.BaseEnum([
+                ['PENDING_VIEWER', 1, 'pending viewer'],
+                ['PENDING_SHARER', 2, 'pending sharer'],
+                ['CONFIRMED', 3, 'confirmed'],
+                ['ENDED', 4, 'ended']
+            ]);
+        }]
+    );
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.screenSharing').service('ScreenSharingDataGetterSrv',
+        ["InfraConfigSrv", "$q", "ENV", function (InfraConfigSrv, $q, ENV) {
+            'ngInject';
+
+            //todo for easier upgrade to version-5
+            function _getStorage() {
+                return $q.when(InfraConfigSrv.getStorageService());
+            }
+
+            this.getScreenSharingDataPath = function (guid) {
+                var SCREEN_SHARING_ROOT_PATH = 'screenSharing';
+                return SCREEN_SHARING_ROOT_PATH + '/' + guid;
+            };
+
+            this.getUserScreenSharingDataGuidPath = function (userData, guid) {
+                var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
+                var USER_DATA_PATH = appName  + '/users/' + userData.uid;
+                return USER_DATA_PATH + '/screenSharing/' + guid;
+            };
+
+            this.getScreenSharingData = function (screenSharingGuid) {
+                var screenSharingDataPath = this.getScreenSharingDataPath(screenSharingGuid);
+                return _getStorage().then(function (StudentStorage) {
+                    return StudentStorage.get(screenSharingDataPath);
+                });
+            };
+        }]
+    );
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.screenSharing').service('ScreenSharingSrv',
+        ["UserProfileService", "InfraConfigSrv", "$q", "UtilitySrv", "ScreenSharingDataGetterSrv", "ScreenSharingStatusEnum", "ENV", "$log", function (UserProfileService, InfraConfigSrv, $q, UtilitySrv, ScreenSharingDataGetterSrv, ScreenSharingStatusEnum, ENV, $log) {
+            'ngInject';
+
+            var INITIATOR_ENUM = {
+                "VIEWER": 1,
+                "SHARER": 2
+            };
+
+            var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to 
+
+            //todo for easier upgrade to version-5
+            function _getStorage(){
+                return $q.when(InfraConfigSrv.getStorageService());
+            }
+
+            function _getScreenSharingInitStatusByInitiator(initiator){
+                var initiatorToInitStatusMap = {};
+                initiatorToInitStatusMap[INITIATOR_ENUM.VIEWER] = ScreenSharingStatusEnum.PENDING_SHARER.enum;
+                initiatorToInitStatusMap[INITIATOR_ENUM.SHARER] = ScreenSharingStatusEnum.PENDING_VIEWER.enum;
+
+                return initiatorToInitStatusMap[initiator] || null;
+            }
+
+            function _initiateScreenSharing(sharerData, viewerData, initiator) {
+                if(angular.isUndefined(viewerData.isTeacher) || angular.isUndefined(sharerData.isTeacher)){
+                    var errMSg = 'ScreenSharingSrv: isTeacher property was not provided!!!';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                var dataToSave = {};
+
+                var newScreenSharingGuid = UtilitySrv.general.createGuid();
+
+                var initStatus = _getScreenSharingInitStatusByInitiator(initiator);
+                if(!initStatus ){
+                    return $q.reject('ScreenSharingSrv: initiator was not provided');
+                }
+                var newScreenSharingData = {
+                    guid: newScreenSharingGuid,
+                    sharerId: sharerData.uid,
+                    viewerId: viewerData.uid,
+                    status: initStatus
+                };
+                var newScreenSharingDataPath = ScreenSharingDataGetterSrv.getScreenSharingDataPath(newScreenSharingGuid);
+                dataToSave[newScreenSharingDataPath] = newScreenSharingData;
+
+                var sharerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataGuidPath(sharerData, newScreenSharingGuid);
+                dataToSave[sharerScreenSharingDataGuidPath] = true;
+
+                var viewerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataGuidPath(viewerData, newScreenSharingGuid);
+                dataToSave[viewerScreenSharingDataGuidPath] = true;
+
+                return _getStorage().then(function(StudentStorage){
+                    return StudentStorage.set(dataToSave);
+                });
+            }
+
+            this.shareMyScreen = function (viewerData) {
+                return UserProfileService.getCurrUserId().then(function (currUserId) {
+                    var sharerData = {
+                        uid: currUserId,
+                        isTeacher: isTeacherApp
+                    };
+                    return _initiateScreenSharing(sharerData, viewerData, INITIATOR_ENUM.SHARER);
+                });
+            };
+
+            this.viewOtherUserScreen = function (sharerData) {
+                return UserProfileService.getCurrUserId().then(function (currUserId) {
+                    var viewerData = {
+                        uid: currUserId,
+                        isTeacher: isTeacherApp
+                    };
+                    return _initiateScreenSharing(sharerData, viewerData, INITIATOR_ENUM.VIEWER);
+                });
+            };
+
+            this.confirmSharing = function(screenSharingDataGuid){
+                return ScreenSharingDataGetterSrv.getScreenSharingData(screenSharingDataGuid).then(function(screenSharingData){
+                    screenSharingData.status = ScreenSharingStatusEnum.CONFIRMED.enum;
+                    return screenSharingData.$save();
+                });
+            };
+
+            this.endSharing = function(screenSharingDataGuid){
+                return ScreenSharingDataGetterSrv.getScreenSharingData(screenSharingDataGuid).then(function(screenSharingData){
+                    screenSharingData.status = ScreenSharingStatusEnum.ENDED.enum;
+                    return screenSharingData.$save();
+                });
+            };
+        }]
+    );
+})(angular);
+
+angular.module('znk.infra.screenSharing').run(['$templateCache', function($templateCache) {
 
 }]);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.scroll', []);
+})(angular);
 /**
  * attrs:
  *      actions:
@@ -3571,6 +3818,26 @@ angular.module('znk.infra.scroll').run(['$templateCache', function($templateCach
 
 })(angular);
 
+
+angular.module('znk.infra.scroll').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.stats', [
+            'znk.infra.enum',
+            'znk.infra.znkExercise',
+            'znk.infra.utility'
+        ])
+        .run([
+            'StatsEventsHandlerSrv',
+            function (StatsEventsHandlerSrv) {
+                StatsEventsHandlerSrv.init();
+            }
+        ]);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -3917,6 +4184,12 @@ angular.module('znk.infra.scroll').run(['$templateCache', function($templateCach
 angular.module('znk.infra.stats').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.storage', []);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -4287,6 +4560,11 @@ angular.module('znk.infra.storage').run(['$templateCache', function($templateCac
 
 }]);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.svgIcon', []);
+})(angular);
 /**
  * attrs:
  *  name: svg icon name
@@ -4403,6 +4681,72 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.user', [
+        'znk.infra.config',
+        'znk.infra.storage'
+    ]);
+})(angular);
+
+'use strict';
+
+angular.module('znk.infra.user').service('UserProfileService',
+    ["InfraConfigSrv", "StorageSrv", "ENV", "storageFirebaseAdapter", "$q", function (InfraConfigSrv, StorageSrv, ENV, storageFirebaseAdapter, $q) {
+        'ngInject';
+        var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
+
+        this.getProfile = function () {
+            return InfraConfigSrv.getGlobalStorage().then(function(globalStorage) {
+                return globalStorage.get(profilePath).then(function (profile) {
+                    if (profile && (angular.isDefined(profile.email) || angular.isDefined(profile.nickname))) {
+                        return profile;
+                    }
+                    return InfraConfigSrv.getUserData().then(function(authData) {
+                        var emailFromAuth = authData.password ? authData.password.email : '';
+                        var nickNameFromAuth = authData.auth ? authData.auth.name : emailFromAuth;
+
+                        if (!profile.email) {
+                            profile.email = emailFromAuth;
+                        }
+                        if (!profile.nickname) {
+                            profile.nickname = nickNameFromAuth;
+                        }
+                        if (!profile.createdTime) {
+                            profile.createdTime = StorageSrv.variables.currTimeStamp;
+                        }
+
+                        return globalStorage.set(profilePath, profile);
+                    });
+                });
+            });
+        };
+
+        this.setProfile = function (newProfile) {
+            return InfraConfigSrv.getGlobalStorage().then(function(globalStorage) {
+                return globalStorage.set(profilePath, newProfile);
+            });
+        };
+
+        this.getCurrUserId = function(){
+            var fbAdapter = storageFirebaseAdapter(ENV.fbDataEndPoint + '/' + ENV.firebaseAppScopeName);//(igor) todo: requires better implementation
+            var ref = fbAdapter.getRef('');
+            var authData = ref.getAuth();
+            return $q.when(authData && authData.uid);
+        };
+}]);
+
+angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.utility', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.utility').factory('UtilitySrv', [
         '$q',
         function ($q) {
@@ -4463,7 +4807,15 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
                     return prom;
                 };
             };
-            
+
+            UtilitySrv.fn.isValidNumber = function(number){
+                if(!angular.isNumber(number) && !angular.isString(number)){
+                    return false;
+                }
+
+                return !isNaN(+number);
+            };
+
             return UtilitySrv;
         }
     ]);
@@ -4472,6 +4824,30 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
 angular.module('znk.infra.utility').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise', [
+            'znk.infra.enum',
+            'znk.infra.svgIcon',
+            'znk.infra.scroll',
+            'znk.infra.autofocus',
+            'ngAnimate'
+        ])
+        .config([
+            'SvgIconSrvProvider',
+            function (SvgIconSrvProvider) {
+                var svgMap = {
+                    chevron: 'components/znkExercise/svg/chevron-icon.svg',
+                    correct: 'components/znkExercise/svg/correct-icon.svg',
+                    wrong: 'components/znkExercise/svg/wrong-icon.svg',
+                    info: 'components/znkExercise/svg/info-icon.svg',
+                    arrow: 'components/znkExercise/svg/arrow-icon.svg'
+                };
+                SvgIconSrvProvider.registerSvgSources(svgMap);
+            }]);
+})(angular);
 
 /**
  * attrs:
@@ -6346,281 +6722,6 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 })(angular);
 
 
-angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
-  $templateCache.put("components/znkExercise/answerTypes/templates/freeTextAnswerDrv.html",
-    "<div class=\"free-text-answer-wrapper\" ng-switch=\"showCorrectAnswer\">\n" +
-    "\n" +
-    "    <div ng-switch-when=\"true\" ng-class=\"userAnswerStatus\">\n" +
-    "        <div class=\"answer-status\">\n" +
-    "            <div class=\"user-answer\">{{d.userAnswer}}</div>\n" +
-    "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
-    "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
-    "        </div>\n" +
-    "        <div class=\"correct-answer\">Correct answer: <span>{{correctAnswer}}</span></div>\n" +
-    "    </div>\n" +
-    "\n" +
-    "    <div ng-switch-when=\"false\">\n" +
-    "        <div class=\"input-wrapper\">\n" +
-    "            <input ng-model-options=\"{ getterSetter: true }\" ng-model=\"d.userAnswerGetterSetter\">\n" +
-    "            <div class=\"arrow-wrapper\" ng-click=\"clickHandler()\">\n" +
-    "                <svg-icon name=\"arrow\"></svg-icon>\n" +
-    "                <div class=\"svg-back\"></div>\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "\n" +
-    "</div>\n" +
-    "");
-  $templateCache.put("components/znkExercise/answerTypes/templates/rateAnswerDrv.html",
-    "<div class=\"rate-answer-wrapper\">\n" +
-    "\n" +
-    "    <div class=\"checkbox-items-wrapper\" >\n" +
-    "\n" +
-    "        <div class=\"item-repeater\" ng-repeat=\"item in d.itemsArray track by $index\">\n" +
-    "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
-    "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
-    "            <div class=\"checkbox-item\" ng-click=\"clickHandler($index)\">\n" +
-    "                <div class=\"item-index\">{{$index +  2}}</div>\n" +
-    "            </div>\n" +
-    "            <div class=\"correct-answer-line\"></div>\n" +
-    "        </div>\n" +
-    "\n" +
-    "    </div>\n" +
-    "</div>\n" +
-    "");
-  $templateCache.put("components/znkExercise/answerTypes/templates/selectAnswerDrv.html",
-    "<div ng-repeat=\"answer in ::d.answers track by answer.id\"\n" +
-    "     class=\"answer\"\n" +
-    "     ng-click=\"d.click(answer)\"\n" +
-    "     tabindex=\"-1\">\n" +
-    "    <div class=\"content-wrapper\">\n" +
-    "        <div class=\"answer-index-wrapper\">\n" +
-    "            <span class=\"index-char\">{{::d.getIndexChar($index)}}</span>\n" +
-    "        </div>\n" +
-    "        <markup content=\"answer.content\" type=\"md\" class=\"content\"></markup>\n" +
-    "        <svg-icon class=\"correct-icon-drv\" name=\"correct\"></svg-icon>\n" +
-    "        <svg-icon class=\"wrong-icon-drv\" name=\"wrong\"></svg-icon>\n" +
-    "    </div>\n" +
-    "</div>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/btnSectionDesktopTemplate.html",
-    "<div class=\"btn-container left-container ng-hide\"\n" +
-    "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
-    "    <button ng-click=\"vm.prevQuestion()\">\n" +
-    "        <svg-icon name=\"chevron\"></svg-icon>\n" +
-    "    </button>\n" +
-    "</div>\n" +
-    "<div class=\"btn-container right-container ng-hide\"\n" +
-    "     ng-show=\"vm.maxQuestionIndex !== vm.currentQuestionIndex && vm.slideLeftAllowed\"\n" +
-    "     ng-class=\"{'question-answered': vm.isCurrentQuestionAnswered}\">\n" +
-    "    <button ng-click=\"vm.nextQuestion()\">\n" +
-    "        <svg-icon name=\"chevron\"></svg-icon>\n" +
-    "    </button>\n" +
-    "</div>\n" +
-    "<div class=\"done-btn-wrap show-opacity-animate\" ng-if=\"vm.showDoneButton\">\n" +
-    "    <button tabindex=\"0\"\n" +
-    "            class=\"done-btn\"\n" +
-    "            ng-click=\"onDone()\">DONE\n" +
-    "    </button>\n" +
-    "</div>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/btnSectionMobileTemplate.html",
-    "<div ng-class=\"{ 'next-disabled' : settings.slideDirection === d.slideDirections.NONE ||  settings.slideDirection === d.slideDirections.RIGHT }\">\n" +
-    "    <div class=\"bookmark-icon-container only-tablet\"\n" +
-    "         ng-class=\"vm.questionsWithAnswers[vm.currentSlide].__questionStatus.bookmark ? 'bookmark-active-icon' : 'bookmark-icon'\"\n" +
-    "         ng-click=\"vm.bookmarkCurrentQuestion()\"\n" +
-    "         ng-hide=\"settings.viewMode === d.reviewModeId\"></div>\n" +
-    "    <ng-switch\n" +
-    "            on=\"vm.currentSlide !== vm.questionsWithAnswers.length - 1 && vm.answeredCount !== vm.questionsWithAnswers.length\"\n" +
-    "            ng-hide=\"settings.viewMode === d.reviewModeId\"\n" +
-    "            class=\"ng-hide\"\n" +
-    "            ng-click=\"d.next()\">\n" +
-    "        <button ng-switch-when=\"true\"\n" +
-    "                class=\"btn next\">\n" +
-    "            <div class=\"only-tablet\">\n" +
-    "                <span>NEXT</span>\n" +
-    "                <i class=\"question-arrow-right-icon\"></i>\n" +
-    "            </div>\n" +
-    "        </button>\n" +
-    "        <button ng-switch-when=\"false\"\n" +
-    "                class=\"btn finish\">\n" +
-    "            <div>DONE</div>\n" +
-    "        </button>\n" +
-    "    </ng-switch>\n" +
-    "    <button class=\"btn sum ng-hide\"\n" +
-    "            ng-click=\"settings.onSummary()\"\n" +
-    "            ng-show=\"settings.viewMode === d.reviewModeId\">\n" +
-    "        SUMMARY\n" +
-    "    </button>\n" +
-    "</div>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/questionSwiperDesktopTemplate.html",
-    "<znk-swiper class=\"znk-carousel\"\n" +
-    "            ng-model=\"vm.currSlideIndex\"\n" +
-    "            actions=\"vm.swiperActions\"\n" +
-    "            ng-change=\"vm.SlideChanged()\"\n" +
-    "            disable-swipe=\"{{vm.isLocked}}\">\n" +
-    "    <div class=\"swiper-slide\"\n" +
-    "        ng-repeat=\"question in vm.questions \">\n" +
-    "        <question-builder question=\"question\"\n" +
-    "                          rate-answer-formatter-parser\n" +
-    "                          ng-model=\"question.__questionStatus.userAnswer\"\n" +
-    "                          ng-change=\"onQuestionAnswered(question)\">\n" +
-    "        </question-builder>\n" +
-    "    </div>\n" +
-    "</znk-swiper>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/questionSwiperMobileTemplate.html",
-    "<ion-slide-box znk-slide=\"settings.slideDirection\" class=\"znk-carousel\"\n" +
-    "               show-pager=\"false\"\n" +
-    "               active-slide=\"vm.currentSlide\">\n" +
-    "    <question-builder slide-repeat-drv=\"question in vm.questionsWithAnswers\"\n" +
-    "                      question=\"question\"\n" +
-    "                      ng-model=\"question.__questionStatus.userAnswer\"\n" +
-    "                      ng-change=\"vm.questionAnswered(question)\">\n" +
-    "    </question-builder>\n" +
-    "</ion-slide-box>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/znkExerciseDrv.html",
-    "<div ng-transclude></div>\n" +
-    "<questions-carousel class=\"znk-carousel-container\"\n" +
-    "                    questions=\"vm.questionsWithAnswers\"\n" +
-    "                    disable-swipe=\"{{vm.slideDirection !== 2}}\"\n" +
-    "                    ng-model=\"vm.currentSlide\"\n" +
-    "                    on-question-answered=\"vm.questionAnswered()\"\n" +
-    "                    slide-direction=\"{{vm.slideDirection}}\">\n" +
-    "</questions-carousel>\n" +
-    "<div class=\"question-bottom-shadow\"></div>\n" +
-    "<znk-exercise-btn-section class=\"btn-section\"\n" +
-    "                          prev-question=\"vm.setCurrentIndexByOffset(-1)\"\n" +
-    "                          next-question=\"vm.setCurrentIndexByOffset(1)\"\n" +
-    "                          on-done=\"settings.onDone()\"\n" +
-    "                          actions=\"vm.btnSectionActions\">\n" +
-    "</znk-exercise-btn-section>\n" +
-    "<znk-exercise-pager class=\"ng-hide show-opacity-animate\"\n" +
-    "                    ng-show=\"vm.showPager\"\n" +
-    "                    questions=\"vm.questionsWithAnswers\"\n" +
-    "                    ng-model=\"vm.currentSlide\">\n" +
-    "</znk-exercise-pager>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/znkExercisePagerDrv.html",
-    "<znk-scroll>\n" +
-    "    <div class=\"pager-items-wrapper\">\n" +
-    "        <div class=\"pager-item noselect\"\n" +
-    "             ng-repeat=\"question in questions track by question.id\"\n" +
-    "             question-status=\"question.__questionStatus\"\n" +
-    "             question=\"question\"\n" +
-    "             ng-click=\"d.tap($index)\">\n" +
-    "            <div class=\"question-bookmark-icon\"></div>\n" +
-    "            <div class=\"question-status-indicator\">\n" +
-    "                <div class=\"index\">{{::$index + 1}}</div>\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "</znk-scroll>\n" +
-    "");
-  $templateCache.put("components/znkExercise/core/template/znkSwiperTemplate.html",
-    "<div class=\"swiper-container\">\n" +
-    "    <!-- Additional required wrapper -->\n" +
-    "    <div class=\"swiper-wrapper\" ng-transclude>\n" +
-    "        <!-- Slides -->\n" +
-    "    </div>\n" +
-    "</div>\n" +
-    "");
-  $templateCache.put("components/znkExercise/svg/arrow-icon.svg",
-    "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\" viewBox=\"-468.2 482.4 96 89.8\" class=\"arrow-icon-wrapper\">\n" +
-    "    <style type=\"text/css\">\n" +
-    "        .arrow-icon-wrapper .st0{fill:#109BAC;}\n" +
-    "        .arrow-icon-wrapper .st1{fill:none;stroke:#fff;stroke-width:5.1237;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
-    "    </style>\n" +
-    "    <path class=\"st0\" d=\"M-417.2,572.2h-6.2c-24.7,0-44.9-20.2-44.9-44.9v0c0-24.7,20.2-44.9,44.9-44.9h6.2c24.7,0,44.9,20.2,44.9,44.9\n" +
-    "    v0C-372.2,552-392.5,572.2-417.2,572.2z\"/>\n" +
-    "    <g>\n" +
-    "        <line class=\"st1\" x1=\"-442.8\" y1=\"527.3\" x2=\"-401.4\" y2=\"527.3\"/>\n" +
-    "        <line class=\"st1\" x1=\"-401.4\" y1=\"527.3\" x2=\"-414.3\" y2=\"514.4\"/>\n" +
-    "        <line class=\"st1\" x1=\"-401.4\" y1=\"527.3\" x2=\"-414.3\" y2=\"540.2\"/>\n" +
-    "    </g>\n" +
-    "</svg>\n" +
-    "");
-  $templateCache.put("components/znkExercise/svg/chevron-icon.svg",
-    "<svg x=\"0px\" y=\"0px\" viewBox=\"0 0 143.5 65.5\">\n" +
-    "    <polyline class=\"st0\" points=\"6,6 71.7,59.5 137.5,6 \"/>\n" +
-    "</svg>\n" +
-    "");
-  $templateCache.put("components/znkExercise/svg/correct-icon.svg",
-    "<svg version=\"1.1\"\n" +
-    "     class=\"correct-icon-svg\"\n" +
-    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
-    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
-    "     x=\"0px\"\n" +
-    "     y=\"0px\"\n" +
-    "	 viewBox=\"0 0 188.5 129\"\n" +
-    "     style=\"enable-background:new 0 0 188.5 129;\"\n" +
-    "     xml:space=\"preserve\">\n" +
-    "<style type=\"text/css\">\n" +
-    "	.correct-icon-svg .st0 {\n" +
-    "        fill: none;\n" +
-    "        stroke: #231F20;\n" +
-    "        stroke-width: 15;\n" +
-    "        stroke-linecap: round;\n" +
-    "        stroke-linejoin: round;\n" +
-    "        stroke-miterlimit: 10;\n" +
-    "    }\n" +
-    "</style>\n" +
-    "<g>\n" +
-    "	<line class=\"st0\" x1=\"7.5\" y1=\"62\" x2=\"67\" y2=\"121.5\"/>\n" +
-    "	<line class=\"st0\" x1=\"67\" y1=\"121.5\" x2=\"181\" y2=\"7.5\"/>\n" +
-    "</g>\n" +
-    "</svg>\n" +
-    "");
-  $templateCache.put("components/znkExercise/svg/info-icon.svg",
-    "<svg\n" +
-    "    version=\"1.1\"\n" +
-    "    xmlns=\"http://www.w3.org/2000/svg\"\n" +
-    "    x=\"0px\"\n" +
-    "    y=\"0px\"\n" +
-    "    viewBox=\"-497 499 28 28\"\n" +
-    "    class=\"info-icon\">\n" +
-    "<style type=\"text/css\">\n" +
-    "	.info-icon .st0{fill:none;stroke:#0A9BAD; stroke-width:2;}\n" +
-    "	.info-icon .st2{fill:#0A9BAD;}\n" +
-    "</style>\n" +
-    "<g>\n" +
-    "	<circle class=\"st0\" cx=\"-483\" cy=\"513\" r=\"13.5\"/>\n" +
-    "	<g>\n" +
-    "		<path class=\"st2\" d=\"M-485.9,509.2h3.9v8.1h3v1.2h-7.6v-1.2h3v-6.9h-2.4V509.2z M-483.5,505.6h1.5v1.9h-1.5V505.6z\"/>\n" +
-    "	</g>\n" +
-    "</g>\n" +
-    "</svg>\n" +
-    "");
-  $templateCache.put("components/znkExercise/svg/wrong-icon.svg",
-    "<svg version=\"1.1\"\n" +
-    "     class=\"wrong-icon-svg\"\n" +
-    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
-    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
-    "     x=\"0px\"\n" +
-    "     y=\"0px\"\n" +
-    "	 viewBox=\"0 0 126.5 126.5\"\n" +
-    "     style=\"enable-background:new 0 0 126.5 126.5;\"\n" +
-    "     xml:space=\"preserve\">\n" +
-    "<style type=\"text/css\">\n" +
-    "	.wrong-icon-svg .st0 {\n" +
-    "        fill: none;\n" +
-    "        stroke: #231F20;\n" +
-    "        stroke-width: 15;\n" +
-    "        stroke-linecap: round;\n" +
-    "        stroke-linejoin: round;\n" +
-    "        stroke-miterlimit: 10;\n" +
-    "    }\n" +
-    "</style>\n" +
-    "<g>\n" +
-    "	<line class=\"st0\" x1=\"119\" y1=\"7.5\" x2=\"7.5\" y2=\"119\"/>\n" +
-    "	<line class=\"st0\" x1=\"7.5\" y1=\"7.5\" x2=\"119\" y2=\"119\"/>\n" +
-    "</g>\n" +
-    "</svg>\n" +
-    "");
-}]);
-
 'use strict';
 
 (function () {
@@ -7333,9 +7434,285 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     ]);
 })(angular);
 
-angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
-
+angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/znkExercise/answerTypes/templates/freeTextAnswerDrv.html",
+    "<div class=\"free-text-answer-wrapper\" ng-switch=\"showCorrectAnswer\">\n" +
+    "\n" +
+    "    <div ng-switch-when=\"true\" ng-class=\"userAnswerStatus\">\n" +
+    "        <div class=\"answer-status\">\n" +
+    "            <div class=\"user-answer\">{{d.userAnswer}}</div>\n" +
+    "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
+    "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
+    "        </div>\n" +
+    "        <div class=\"correct-answer\">Correct answer: <span>{{correctAnswer}}</span></div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-switch-when=\"false\">\n" +
+    "        <div class=\"input-wrapper\">\n" +
+    "            <input ng-model-options=\"{ getterSetter: true }\" ng-model=\"d.userAnswerGetterSetter\">\n" +
+    "            <div class=\"arrow-wrapper\" ng-click=\"clickHandler()\">\n" +
+    "                <svg-icon name=\"arrow\"></svg-icon>\n" +
+    "                <div class=\"svg-back\"></div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/answerTypes/templates/rateAnswerDrv.html",
+    "<div class=\"rate-answer-wrapper\">\n" +
+    "\n" +
+    "    <div class=\"checkbox-items-wrapper\" >\n" +
+    "\n" +
+    "        <div class=\"item-repeater\" ng-repeat=\"item in d.itemsArray track by $index\">\n" +
+    "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
+    "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
+    "            <div class=\"checkbox-item\" ng-click=\"clickHandler($index)\">\n" +
+    "                <div class=\"item-index\">{{$index +  2}}</div>\n" +
+    "            </div>\n" +
+    "            <div class=\"correct-answer-line\"></div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/answerTypes/templates/selectAnswerDrv.html",
+    "<div ng-repeat=\"answer in ::d.answers track by answer.id\"\n" +
+    "     class=\"answer\"\n" +
+    "     ng-click=\"d.click(answer)\"\n" +
+    "     tabindex=\"-1\">\n" +
+    "    <div class=\"content-wrapper\">\n" +
+    "        <div class=\"answer-index-wrapper\">\n" +
+    "            <span class=\"index-char\">{{::d.getIndexChar($index)}}</span>\n" +
+    "        </div>\n" +
+    "        <markup content=\"answer.content\" type=\"md\" class=\"content\"></markup>\n" +
+    "        <svg-icon class=\"correct-icon-drv\" name=\"correct\"></svg-icon>\n" +
+    "        <svg-icon class=\"wrong-icon-drv\" name=\"wrong\"></svg-icon>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/btnSectionDesktopTemplate.html",
+    "<div class=\"btn-container left-container ng-hide\"\n" +
+    "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
+    "    <button ng-click=\"vm.prevQuestion()\">\n" +
+    "        <svg-icon name=\"chevron\"></svg-icon>\n" +
+    "    </button>\n" +
+    "</div>\n" +
+    "<div class=\"btn-container right-container ng-hide\"\n" +
+    "     ng-show=\"vm.maxQuestionIndex !== vm.currentQuestionIndex && vm.slideLeftAllowed\"\n" +
+    "     ng-class=\"{'question-answered': vm.isCurrentQuestionAnswered}\">\n" +
+    "    <button ng-click=\"vm.nextQuestion()\">\n" +
+    "        <svg-icon name=\"chevron\"></svg-icon>\n" +
+    "    </button>\n" +
+    "</div>\n" +
+    "<div class=\"done-btn-wrap show-opacity-animate\" ng-if=\"vm.showDoneButton\">\n" +
+    "    <button tabindex=\"0\"\n" +
+    "            class=\"done-btn\"\n" +
+    "            ng-click=\"onDone()\">DONE\n" +
+    "    </button>\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/btnSectionMobileTemplate.html",
+    "<div ng-class=\"{ 'next-disabled' : settings.slideDirection === d.slideDirections.NONE ||  settings.slideDirection === d.slideDirections.RIGHT }\">\n" +
+    "    <div class=\"bookmark-icon-container only-tablet\"\n" +
+    "         ng-class=\"vm.questionsWithAnswers[vm.currentSlide].__questionStatus.bookmark ? 'bookmark-active-icon' : 'bookmark-icon'\"\n" +
+    "         ng-click=\"vm.bookmarkCurrentQuestion()\"\n" +
+    "         ng-hide=\"settings.viewMode === d.reviewModeId\"></div>\n" +
+    "    <ng-switch\n" +
+    "            on=\"vm.currentSlide !== vm.questionsWithAnswers.length - 1 && vm.answeredCount !== vm.questionsWithAnswers.length\"\n" +
+    "            ng-hide=\"settings.viewMode === d.reviewModeId\"\n" +
+    "            class=\"ng-hide\"\n" +
+    "            ng-click=\"d.next()\">\n" +
+    "        <button ng-switch-when=\"true\"\n" +
+    "                class=\"btn next\">\n" +
+    "            <div class=\"only-tablet\">\n" +
+    "                <span>NEXT</span>\n" +
+    "                <i class=\"question-arrow-right-icon\"></i>\n" +
+    "            </div>\n" +
+    "        </button>\n" +
+    "        <button ng-switch-when=\"false\"\n" +
+    "                class=\"btn finish\">\n" +
+    "            <div>DONE</div>\n" +
+    "        </button>\n" +
+    "    </ng-switch>\n" +
+    "    <button class=\"btn sum ng-hide\"\n" +
+    "            ng-click=\"settings.onSummary()\"\n" +
+    "            ng-show=\"settings.viewMode === d.reviewModeId\">\n" +
+    "        SUMMARY\n" +
+    "    </button>\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/questionSwiperDesktopTemplate.html",
+    "<znk-swiper class=\"znk-carousel\"\n" +
+    "            ng-model=\"vm.currSlideIndex\"\n" +
+    "            actions=\"vm.swiperActions\"\n" +
+    "            ng-change=\"vm.SlideChanged()\"\n" +
+    "            disable-swipe=\"{{vm.isLocked}}\">\n" +
+    "    <div class=\"swiper-slide\"\n" +
+    "        ng-repeat=\"question in vm.questions \">\n" +
+    "        <question-builder question=\"question\"\n" +
+    "                          rate-answer-formatter-parser\n" +
+    "                          ng-model=\"question.__questionStatus.userAnswer\"\n" +
+    "                          ng-change=\"onQuestionAnswered(question)\">\n" +
+    "        </question-builder>\n" +
+    "    </div>\n" +
+    "</znk-swiper>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/questionSwiperMobileTemplate.html",
+    "<ion-slide-box znk-slide=\"settings.slideDirection\" class=\"znk-carousel\"\n" +
+    "               show-pager=\"false\"\n" +
+    "               active-slide=\"vm.currentSlide\">\n" +
+    "    <question-builder slide-repeat-drv=\"question in vm.questionsWithAnswers\"\n" +
+    "                      question=\"question\"\n" +
+    "                      ng-model=\"question.__questionStatus.userAnswer\"\n" +
+    "                      ng-change=\"vm.questionAnswered(question)\">\n" +
+    "    </question-builder>\n" +
+    "</ion-slide-box>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/znkExerciseDrv.html",
+    "<div ng-transclude></div>\n" +
+    "<questions-carousel class=\"znk-carousel-container\"\n" +
+    "                    questions=\"vm.questionsWithAnswers\"\n" +
+    "                    disable-swipe=\"{{vm.slideDirection !== 2}}\"\n" +
+    "                    ng-model=\"vm.currentSlide\"\n" +
+    "                    on-question-answered=\"vm.questionAnswered()\"\n" +
+    "                    slide-direction=\"{{vm.slideDirection}}\">\n" +
+    "</questions-carousel>\n" +
+    "<div class=\"question-bottom-shadow\"></div>\n" +
+    "<znk-exercise-btn-section class=\"btn-section\"\n" +
+    "                          prev-question=\"vm.setCurrentIndexByOffset(-1)\"\n" +
+    "                          next-question=\"vm.setCurrentIndexByOffset(1)\"\n" +
+    "                          on-done=\"settings.onDone()\"\n" +
+    "                          actions=\"vm.btnSectionActions\">\n" +
+    "</znk-exercise-btn-section>\n" +
+    "<znk-exercise-pager class=\"ng-hide show-opacity-animate\"\n" +
+    "                    ng-show=\"vm.showPager\"\n" +
+    "                    questions=\"vm.questionsWithAnswers\"\n" +
+    "                    ng-model=\"vm.currentSlide\">\n" +
+    "</znk-exercise-pager>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/znkExercisePagerDrv.html",
+    "<znk-scroll>\n" +
+    "    <div class=\"pager-items-wrapper\">\n" +
+    "        <div class=\"pager-item noselect\"\n" +
+    "             ng-repeat=\"question in questions track by question.id\"\n" +
+    "             question-status=\"question.__questionStatus\"\n" +
+    "             question=\"question\"\n" +
+    "             ng-click=\"d.tap($index)\">\n" +
+    "            <div class=\"question-bookmark-icon\"></div>\n" +
+    "            <div class=\"question-status-indicator\">\n" +
+    "                <div class=\"index\">{{::$index + 1}}</div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</znk-scroll>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/znkSwiperTemplate.html",
+    "<div class=\"swiper-container\">\n" +
+    "    <!-- Additional required wrapper -->\n" +
+    "    <div class=\"swiper-wrapper\" ng-transclude>\n" +
+    "        <!-- Slides -->\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/arrow-icon.svg",
+    "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\" viewBox=\"-468.2 482.4 96 89.8\" class=\"arrow-icon-wrapper\">\n" +
+    "    <style type=\"text/css\">\n" +
+    "        .arrow-icon-wrapper .st0{fill:#109BAC;}\n" +
+    "        .arrow-icon-wrapper .st1{fill:none;stroke:#fff;stroke-width:5.1237;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
+    "    </style>\n" +
+    "    <path class=\"st0\" d=\"M-417.2,572.2h-6.2c-24.7,0-44.9-20.2-44.9-44.9v0c0-24.7,20.2-44.9,44.9-44.9h6.2c24.7,0,44.9,20.2,44.9,44.9\n" +
+    "    v0C-372.2,552-392.5,572.2-417.2,572.2z\"/>\n" +
+    "    <g>\n" +
+    "        <line class=\"st1\" x1=\"-442.8\" y1=\"527.3\" x2=\"-401.4\" y2=\"527.3\"/>\n" +
+    "        <line class=\"st1\" x1=\"-401.4\" y1=\"527.3\" x2=\"-414.3\" y2=\"514.4\"/>\n" +
+    "        <line class=\"st1\" x1=\"-401.4\" y1=\"527.3\" x2=\"-414.3\" y2=\"540.2\"/>\n" +
+    "    </g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/chevron-icon.svg",
+    "<svg x=\"0px\" y=\"0px\" viewBox=\"0 0 143.5 65.5\">\n" +
+    "    <polyline class=\"st0\" points=\"6,6 71.7,59.5 137.5,6 \"/>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/correct-icon.svg",
+    "<svg version=\"1.1\"\n" +
+    "     class=\"correct-icon-svg\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "	 viewBox=\"0 0 188.5 129\"\n" +
+    "     style=\"enable-background:new 0 0 188.5 129;\"\n" +
+    "     xml:space=\"preserve\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.correct-icon-svg .st0 {\n" +
+    "        fill: none;\n" +
+    "        stroke: #231F20;\n" +
+    "        stroke-width: 15;\n" +
+    "        stroke-linecap: round;\n" +
+    "        stroke-linejoin: round;\n" +
+    "        stroke-miterlimit: 10;\n" +
+    "    }\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<line class=\"st0\" x1=\"7.5\" y1=\"62\" x2=\"67\" y2=\"121.5\"/>\n" +
+    "	<line class=\"st0\" x1=\"67\" y1=\"121.5\" x2=\"181\" y2=\"7.5\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/info-icon.svg",
+    "<svg\n" +
+    "    version=\"1.1\"\n" +
+    "    xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "    x=\"0px\"\n" +
+    "    y=\"0px\"\n" +
+    "    viewBox=\"-497 499 28 28\"\n" +
+    "    class=\"info-icon\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.info-icon .st0{fill:none;stroke:#0A9BAD; stroke-width:2;}\n" +
+    "	.info-icon .st2{fill:#0A9BAD;}\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<circle class=\"st0\" cx=\"-483\" cy=\"513\" r=\"13.5\"/>\n" +
+    "	<g>\n" +
+    "		<path class=\"st2\" d=\"M-485.9,509.2h3.9v8.1h3v1.2h-7.6v-1.2h3v-6.9h-2.4V509.2z M-483.5,505.6h1.5v1.9h-1.5V505.6z\"/>\n" +
+    "	</g>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/wrong-icon.svg",
+    "<svg version=\"1.1\"\n" +
+    "     class=\"wrong-icon-svg\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "	 viewBox=\"0 0 126.5 126.5\"\n" +
+    "     style=\"enable-background:new 0 0 126.5 126.5;\"\n" +
+    "     xml:space=\"preserve\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.wrong-icon-svg .st0 {\n" +
+    "        fill: none;\n" +
+    "        stroke: #231F20;\n" +
+    "        stroke-width: 15;\n" +
+    "        stroke-linecap: round;\n" +
+    "        stroke-linejoin: round;\n" +
+    "        stroke-miterlimit: 10;\n" +
+    "    }\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<line class=\"st0\" x1=\"119\" y1=\"7.5\" x2=\"7.5\" y2=\"119\"/>\n" +
+    "	<line class=\"st0\" x1=\"7.5\" y1=\"7.5\" x2=\"119\" y2=\"119\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
 }]);
+
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.znkModule', []);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -7361,6 +7738,264 @@ angular.module('znk.infra.znkModule').run(['$templateCache', function($templateC
             return znkModuleService;
         }
     ]);
+})(angular);
+
+
+angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.znkTimeline', ['znk.infra.svgIcon', 'znk.infra.enum']);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkTimeline').directive('znkTimeline', ['$window', '$templateCache', 'TimelineSrv',
+        function ($window, $templateCache, TimelineSrv) {
+            var directive = {
+                restrict: 'A',
+                scope: {
+                    timelineData: '=',
+                    timelineSettings: '='
+                },
+                link: function (scope, element) {
+
+                    var settings = angular.extend({
+                        width: $window.innerWidth,
+                        height: $window.innerHeight,
+                        images: TimelineSrv.getImages()
+                    }, scope.timelineSettings || {});
+
+                    var dataObj;
+
+                    var canvasElem = element[0];
+
+                    var ctx = canvasElem.getContext('2d');
+
+                    var lastLine;
+
+                    var nextFlag = false;
+
+                    scope.$watch('timelineData', function (val, oldVal) {
+                        if (angular.isDefined(val)) {
+                            if (val !== oldVal) {
+                                ctx.clearRect(0, 0, canvasElem.width, canvasElem.height);
+                                if (val.data.length) {
+                                    start(val);
+                                }
+                            } else {
+                                start(val);
+                            }
+                        }
+                    });
+
+                    function start(timelineData) {
+
+                        var width = settings.width;
+
+                        dataObj = {
+                            lastLine: [],
+                            biggestScore: {score: 0}
+                        };
+
+                        lastLine = void(0);
+
+                        if (settings.type === 'multi') {
+                            var distance = settings.distance * (timelineData.data.length + 2);
+                            width = (distance < settings.width) ? settings.width : distance;
+                        }
+
+                        if (settings.isMax) {
+                            settings.max = 0;
+                            angular.forEach(timelineData.data, function (value) {
+                                if (value.score > settings.max) {
+                                    settings.max = value.score;
+                                }
+                            });
+                        }
+
+                        canvasElem.width = width * 2;
+                        canvasElem.height = settings.height * 2;
+
+                        canvasElem.style.width = width + 'px';
+                        canvasElem.style.height = settings.height + 'px';
+
+                        ctx.scale(2, 2);
+
+                        if (settings.lineWidth) {
+                            ctx.lineWidth = settings.lineWidth;
+                        }
+
+                        if (angular.isDefined(timelineData.id) && settings.colors && angular.isArray(settings.colors)) {
+                            ctx.strokeStyle = settings.colors[timelineData.id];
+                            ctx.fillStyle = settings.colors[timelineData.id];
+                        }
+
+                        ctx.beginPath();
+
+                        createPath({
+                            moveTo: {
+                                x: 0,
+                                y: settings.height - 2
+                            },
+                            lineTo: {
+                                x: settings.distance,
+                                y: settings.height - 2
+                            }
+                        }, true);
+
+                        angular.forEach(timelineData.data, function (value, index) {
+
+                            var height = Math.abs((settings.height - settings.subPoint) - ((value.score - settings.min) / (settings.max - settings.min) * (settings.height - (settings.subPoint * 2)) ));
+                            var currentDistance = (index + 2) * settings.distance;
+                            var isLast = index === (timelineData.data.length - 1);
+                            value.moveTo = {
+                                x: lastLine.lineTo.x,
+                                y: lastLine.lineTo.y
+                            };
+
+                            value.lineTo = {
+                                x: currentDistance,
+                                y: height
+                            };
+
+                            createPath(value, false, isLast);
+
+                            if (value.score > dataObj.biggestScore.score) {
+                                dataObj.biggestScore = {score: value.score, lastLineTo: lastLine.lineTo};
+                            }
+
+                        });
+
+                        if (settings.numbers && angular.isObject(settings.numbers)) {
+
+                            setTimeout(function () {
+
+                                ctx.font = settings.numbers.font;
+                                ctx.fillStyle = settings.numbers.fillStyle;
+
+                                ctx.fillText(settings.min, 15, settings.height - 10);
+                                ctx.fillText(parseInt(dataObj.biggestScore.score), 15, dataObj.biggestScore.lastLineTo.y || settings.subPoint);
+
+                            });
+
+                        }
+
+                        if (settings.onFinish && angular.isFunction(settings.onFinish)) {
+                            settings.onFinish({data: dataObj, ctx: ctx, canvasElem: canvasElem});
+                        }
+
+                    }
+
+                    function createPath(data, ignoreAfterPath, isLast) {
+
+                        var arc = 10;
+                        var img = 20;
+
+                        if (angular.isDefined(settings.isMobile) && !settings.isMobile) {
+                            arc = 15;
+                            img = 25;
+                        }
+
+                        var subLocation = img / 2;
+
+                        lastLine = data;
+                        dataObj.lastLine.push(lastLine);
+
+                        /* create line */
+                        ctx.moveTo(data.moveTo.x, data.moveTo.y);
+                        ctx.lineTo(data.lineTo.x, data.lineTo.y);
+                        ctx.stroke();
+
+                        if (dataObj.summeryScore && !nextFlag) {
+                            dataObj.summeryScore.next = data.lineTo;
+                            nextFlag = true;
+                        }
+
+                        if (settings.isSummery) {
+                            if (settings.isSummery === data.exerciseId) {
+                                dataObj.summeryScore = {
+                                    score: data.score, lineTo: data.lineTo,
+                                    prev: dataObj.lastLine[dataObj.lastLine.length - 2]
+                                };
+                                arc = arc * 1.5;
+                                img = img + 5;
+                                subLocation = img / 2;
+                            }
+                        } else if (isLast) {
+                            arc = arc * 1.5;
+                            img = img + 5;
+                            subLocation = img / 2;
+                        }
+
+
+                        if (!ignoreAfterPath) {
+                            /* create circle */
+                            ctx.beginPath();
+                            ctx.arc(data.lineTo.x, data.lineTo.y, arc, 0, 2 * Math.PI, false);
+                            ctx.fill();
+
+                            if ((isLast && !settings.isSummery) || (settings.isSummery === data.exerciseId)) {
+                                ctx.beginPath();
+                                ctx.arc(data.lineTo.x, data.lineTo.y, arc + 4, 0, 2 * Math.PI, false);
+                                ctx.stroke();
+                            }
+
+                            /* create svg icons */
+                            var imageObj = new Image();
+                            var src;
+                            var locationImgY = data.lineTo.y - subLocation;
+                            var locationImgX = data.lineTo.x - subLocation;
+
+                            if (data.iconKey) {
+                                src = settings.images[data.iconKey];
+
+                                var svg = $templateCache.get(src);
+                                var mySrc = (svg) ? 'data:image/svg+xml;base64,' + $window.btoa(svg) : src;
+
+                                imageObj.onload = function () {
+                                    ctx.drawImage(imageObj, locationImgX, locationImgY, img, img);
+                                };
+
+                                imageObj.src = mySrc;
+                            }
+                        }
+
+                    }
+
+                }
+            };
+
+            return directive;
+        }]);
+
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkTimeline').provider('TimelineSrv', ['SvgIconSrvProvider', function () {
+
+        var imgObj;
+
+        this.setImages = function(obj) {
+            imgObj = obj;
+        };
+
+        this.$get = ['$log', function($log) {
+             return {
+                 getImages: function() {
+                     if (!angular.isObject(imgObj)) {
+                         $log.error('TimelineSrv getImages: obj is not an object! imgObj:', imgObj);
+                     }
+                     return imgObj;
+                 }
+             };
+        }];
+    }]);
 })(angular);
 
 
@@ -7626,279 +8261,3 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templat
     "</svg>\n" +
     "");
 }]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkTimeline').directive('znkTimeline', ['$window', '$templateCache', 'TimelineSrv',
-        function ($window, $templateCache, TimelineSrv) {
-            var directive = {
-                restrict: 'A',
-                scope: {
-                    timelineData: '=',
-                    timelineSettings: '='
-                },
-                link: function (scope, element) {
-
-                    var settings = angular.extend({
-                        width: $window.innerWidth,
-                        height: $window.innerHeight,
-                        images: TimelineSrv.getImages()
-                    }, scope.timelineSettings || {});
-
-                    var dataObj;
-
-                    var canvasElem = element[0];
-
-                    var ctx = canvasElem.getContext('2d');
-
-                    var lastLine;
-
-                    var nextFlag = false;
-
-                    scope.$watch('timelineData', function (val, oldVal) {
-                        if (angular.isDefined(val)) {
-                            if (val !== oldVal) {
-                                ctx.clearRect(0, 0, canvasElem.width, canvasElem.height);
-                                if (val.data.length) {
-                                    start(val);
-                                }
-                            } else {
-                                start(val);
-                            }
-                        }
-                    });
-
-                    function start(timelineData) {
-
-                        var width = settings.width;
-
-                        dataObj = {
-                            lastLine: [],
-                            biggestScore: {score: 0}
-                        };
-
-                        lastLine = void(0);
-
-                        if (settings.type === 'multi') {
-                            var distance = settings.distance * (timelineData.data.length + 2);
-                            width = (distance < settings.width) ? settings.width : distance;
-                        }
-
-                        if (settings.isMax) {
-                            settings.max = 0;
-                            angular.forEach(timelineData.data, function (value) {
-                                if (value.score > settings.max) {
-                                    settings.max = value.score;
-                                }
-                            });
-                        }
-
-                        canvasElem.width = width * 2;
-                        canvasElem.height = settings.height * 2;
-
-                        canvasElem.style.width = width + 'px';
-                        canvasElem.style.height = settings.height + 'px';
-
-                        ctx.scale(2, 2);
-
-                        if (settings.lineWidth) {
-                            ctx.lineWidth = settings.lineWidth;
-                        }
-
-                        if (angular.isDefined(timelineData.id) && settings.colors && angular.isArray(settings.colors)) {
-                            ctx.strokeStyle = settings.colors[timelineData.id];
-                            ctx.fillStyle = settings.colors[timelineData.id];
-                        }
-
-                        ctx.beginPath();
-
-                        createPath({
-                            moveTo: {
-                                x: 0,
-                                y: settings.height - 2
-                            },
-                            lineTo: {
-                                x: settings.distance,
-                                y: settings.height - 2
-                            }
-                        }, true);
-
-                        angular.forEach(timelineData.data, function (value, index) {
-
-                            var height = Math.abs((settings.height - settings.subPoint) - ((value.score - settings.min) / (settings.max - settings.min) * (settings.height - (settings.subPoint * 2)) ));
-                            var currentDistance = (index + 2) * settings.distance;
-                            var isLast = index === (timelineData.data.length - 1);
-                            value.moveTo = {
-                                x: lastLine.lineTo.x,
-                                y: lastLine.lineTo.y
-                            };
-
-                            value.lineTo = {
-                                x: currentDistance,
-                                y: height
-                            };
-
-                            createPath(value, false, isLast);
-
-                            if (value.score > dataObj.biggestScore.score) {
-                                dataObj.biggestScore = {score: value.score, lastLineTo: lastLine.lineTo};
-                            }
-
-                        });
-
-                        if (settings.numbers && angular.isObject(settings.numbers)) {
-
-                            setTimeout(function () {
-
-                                ctx.font = settings.numbers.font;
-                                ctx.fillStyle = settings.numbers.fillStyle;
-
-                                ctx.fillText(settings.min, 15, settings.height - 10);
-                                ctx.fillText(parseInt(dataObj.biggestScore.score), 15, dataObj.biggestScore.lastLineTo.y || settings.subPoint);
-
-                            });
-
-                        }
-
-                        if (settings.onFinish && angular.isFunction(settings.onFinish)) {
-                            settings.onFinish({data: dataObj, ctx: ctx, canvasElem: canvasElem});
-                        }
-
-                    }
-
-                    function createPath(data, ignoreAfterPath, isLast) {
-
-                        var arc = 10;
-                        var img = 20;
-
-                        if (angular.isDefined(settings.isMobile) && !settings.isMobile) {
-                            arc = 15;
-                            img = 25;
-                        }
-
-                        var subLocation = img / 2;
-
-                        lastLine = data;
-                        dataObj.lastLine.push(lastLine);
-
-                        /* create line */
-                        ctx.moveTo(data.moveTo.x, data.moveTo.y);
-                        ctx.lineTo(data.lineTo.x, data.lineTo.y);
-                        ctx.stroke();
-
-                        if (dataObj.summeryScore && !nextFlag) {
-                            dataObj.summeryScore.next = data.lineTo;
-                            nextFlag = true;
-                        }
-
-                        if (settings.isSummery) {
-                            if (settings.isSummery === data.exerciseId) {
-                                dataObj.summeryScore = {
-                                    score: data.score, lineTo: data.lineTo,
-                                    prev: dataObj.lastLine[dataObj.lastLine.length - 2]
-                                };
-                                arc = arc * 1.5;
-                                img = img + 5;
-                                subLocation = img / 2;
-                            }
-                        } else if (isLast) {
-                            arc = arc * 1.5;
-                            img = img + 5;
-                            subLocation = img / 2;
-                        }
-
-
-                        if (!ignoreAfterPath) {
-                            /* create circle */
-                            ctx.beginPath();
-                            ctx.arc(data.lineTo.x, data.lineTo.y, arc, 0, 2 * Math.PI, false);
-                            ctx.fill();
-
-                            if ((isLast && !settings.isSummery) || (settings.isSummery === data.exerciseId)) {
-                                ctx.beginPath();
-                                ctx.arc(data.lineTo.x, data.lineTo.y, arc + 4, 0, 2 * Math.PI, false);
-                                ctx.stroke();
-                            }
-
-                            /* create svg icons */
-                            var imageObj = new Image();
-                            var src;
-                            var locationImgY = data.lineTo.y - subLocation;
-                            var locationImgX = data.lineTo.x - subLocation;
-
-                            if (data.iconKey) {
-                                src = settings.images[data.iconKey];
-
-                                var svg = $templateCache.get(src);
-                                var mySrc = (svg) ? 'data:image/svg+xml;base64,' + $window.btoa(svg) : src;
-
-                                imageObj.onload = function () {
-                                    ctx.drawImage(imageObj, locationImgX, locationImgY, img, img);
-                                };
-
-                                imageObj.src = mySrc;
-                            }
-                        }
-
-                    }
-
-                }
-            };
-
-            return directive;
-        }]);
-
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkTimeline').provider('TimelineSrv', ['SvgIconSrvProvider', function () {
-
-        var imgObj;
-
-        this.setImages = function(obj) {
-            imgObj = obj;
-        };
-
-        this.$get = ['$log', function($log) {
-             return {
-                 getImages: function() {
-                     if (!angular.isObject(imgObj)) {
-                         $log.error('TimelineSrv getImages: obj is not an object! imgObj:', imgObj);
-                     }
-                     return imgObj;
-                 }
-             };
-        }];
-    }]);
-})(angular);
-
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra', [
-        'znk.infra.config',
-        'znk.infra.pngSequence',
-        'znk.infra.enum',
-        'znk.infra.svgIcon',
-        'znk.infra.general',
-        'znk.infra.scroll',
-        'znk.infra.content',
-        'znk.infra.znkExercise',
-        'znk.infra.storage',
-        'znk.infra.utility',
-        'znk.infra.exerciseResult',
-        'znk.infra.contentAvail',
-        'znk.infra.popUp',
-        'znk.infra.estimatedScore',
-        'znk.infra.stats',
-        'znk.infra.hint',
-        'znk.infra.znkTimeline',
-        'znk.infra.analytics',
-        'znk.infra.deviceNotSupported',
-        'znk.infra.filters'
-    ]);
-})(angular);
