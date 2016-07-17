@@ -160,7 +160,7 @@
 
                     return getSectionAggregatedDataProm.then(function() {
                         var storage = InfraConfigSrv.getStorageService();
-                        storage.set(dataToSave);
+                        storage.update(dataToSave);
 
                         return exerciseResult;
                     });
@@ -270,7 +270,7 @@
                             }
 
                             return $q.when(setProm).then(function(){
-                                return storage.set(dataToSave);
+                                return storage.update(dataToSave);
                             }).then(function(res){
                                 return res[exerciseResultPath];
                             });
@@ -322,7 +322,7 @@
                         return initExamResultProm.then(function(initExamResult) {
                             dataToSave[examResultPath] = initExamResult;
 
-                            return storage.set(dataToSave).then(function (res) {
+                            return storage.update(dataToSave).then(function (res) {
                                 return res[examResultPath];
                             });
                         });
@@ -397,7 +397,7 @@
                                 dataToSave[moduleResultPath] = moduleResultsObj;
                             }
 
-                            return storage.set(dataToSave).then(function (res) {
+                            return storage.update(dataToSave).then(function (res) {
                                 return res[exerciseResultPath];
                             });
                         });
