@@ -65,40 +65,6 @@ describe('testing service "storageFirebaseAdapter":', function () {
             }
             return setProm;
         };
-
-        // return {
-        //     get: function(path){
-        //         var val;
-        //         adapter.get(path).then(function(_val){
-        //             val = _val;
-        //         });
-        //         var pathRef = adapter.__refMap[path];
-        //         if(pathRef){
-        //             pathRef.flush();
-        //         }
-        //         $rootScope.$digest();
-        //         return val;
-        //     },
-        //     set: function(path,newEntity){
-        //         var setProm = adapter.set(path, newEntity);
-        //         $rootScope.$digest();
-        //         var pathRef = adapter.__refMap[path];
-        //         if(pathRef){
-        //             pathRef.flush();
-        //         }
-        //         return setProm;
-        //     },
-        //     update: function(path,newEntity){
-        //         var setProm = adapter.update(path, newEntity);
-        //         $rootScope.$digest();
-        //         var pathRef = adapter.__refMap[path];
-        //         if(pathRef){
-        //             pathRef.flush();
-        //         }
-        //         return setProm;
-        //     },
-        //     __refMap: adapter.__refMap
-        // };
     });
 
     var actions = {};
@@ -106,12 +72,6 @@ describe('testing service "storageFirebaseAdapter":', function () {
     actions.syncAdapter = function (adapter) {
         adapter.__refMap.rootRef.changeAuthState({
             uid: 1
-            //provider: 'custom',
-            //token: 'authToken',
-            //expires: Math.floor(new Date() / 1000) + 24 * 60 * 60,
-            //auth: {
-            //    isAdmin: true
-            //}
         });
         adapter.__refMap.rootRef.flush();
 
@@ -242,7 +202,7 @@ describe('testing service "storageFirebaseAdapter":', function () {
         };
         syncedAdapter.set(path, expectedResult);
         $timeout.flush();
-        
+
         expect(receivedEventValue).toEqual(expectedResult);
     });
 
