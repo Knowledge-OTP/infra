@@ -18,7 +18,7 @@
     "demo"
   ],
   "main": [
-    "dist/znk.infra.js",
+    "dist/main.js",
     "dist/main.css"
   ],
   "resolutions": {
