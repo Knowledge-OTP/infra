@@ -1,9 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.moduleResults').service('ModuleResultsService', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'StorageSrv',
+    angular.module('znk.infra.moduleResults').service('ModuleResultsService',
         function (InfraConfigSrv, $log, $q, UtilitySrv, StorageSrv) {
+            'ngInject';
 
             var moduleResultsService = {};
             var USER_MODULE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
@@ -16,6 +16,7 @@
                     assignedTutorId: null,
                     assign: false,
                     contentAssign: false,
+                    exerciseResults: [],
                     guid: UtilitySrv.general.createGuid()
                 };
             };
@@ -74,8 +75,14 @@
                 });
             };
 
+            moduleResultsService.getModuleResultPath = function (guid){
+                return MODULE_RESULTS_PATH + '/' + guid;
+            };
+
+
+
             return moduleResultsService;
         }
-    ]);
+    );
 })(angular);
 

@@ -1,8 +1,8 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.stats').provider('StatsSrv', function () {
-        this.$get = function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv, CategoryService) {
+    angular.module('znk.infra.stats').service('StatsSrv',
+        function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv, CategoryService) {
             'ngInject';
 
             var STATS_PATH = StorageSrv.variables.appUserSpacePath + '/stats';
@@ -171,6 +171,5 @@
             };
 
             return StatsSrv;
-        };
-    });
+        });
 })(angular);

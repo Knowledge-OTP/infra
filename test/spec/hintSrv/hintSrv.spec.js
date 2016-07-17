@@ -20,7 +20,7 @@ describe('testing service "HintSrv":', function () {
         hintActionGetter: function(InfraConfigSrv){
             return hintSettings_2.hintAction.bind(hintSettings_2, InfraConfigSrv);
         },
-        triggerFnGetter: function($timeout){
+        triggerFnGetter: function(){
             return function(hintVal){
                 return !hintVal || hintVal.value <5;
             };
@@ -33,7 +33,7 @@ describe('testing service "HintSrv":', function () {
                         counter = 0;
                     }
                     counter++;
-                    testStorage.set(counterPath, counter);
+                    StudentStorage.set(counterPath, counter);
                     return counter;
                 });
             });
@@ -47,7 +47,7 @@ describe('testing service "HintSrv":', function () {
     }));
 
     var syncHintSrvActions;
-    var $rootScope, HintSrv, TestUtilitySrv, testStorage, $q;
+    var $rootScope, HintSrv, TestUtilitySrv, StudentStorage, $q, StorageSrv;
     beforeEach(inject([
         '$injector',
         function ($injector) {
@@ -56,12 +56,13 @@ describe('testing service "HintSrv":', function () {
             TestUtilitySrv = $injector.get('TestUtilitySrv');
 
             var InfraConfigSrv = $injector.get('InfraConfigSrv');
-            testStorage = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage, InfraConfigSrv)();
+            StudentStorage = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage, InfraConfigSrv)();
             $q = $injector.get('$q');
+            StorageSrv = $injector.get('StorageSrv');
 
             syncHintSrvActions = TestUtilitySrv.general.convertAllAsyncToSync(HintSrv);
 
-            testStorage.db.users.$$uid.hint = {
+            StudentStorage.adapter.__db.users.$$uid.hint = {
                 hintsStatus:{}
             };
         }]));
@@ -84,19 +85,19 @@ describe('testing service "HintSrv":', function () {
             name: hintSettings.HINT_NAME,
             history: [{
                 value: HINT_VALUE,
-                date: testStorage.variables.currTimeStamp
+                date: StorageSrv.variables.currTimeStamp
             }]
         };
-        var currentHintVal = testStorage.db.users.$$uid.hint.hintsStatus[hintSettings.HINT_NAME];
+        var currentHintVal = StudentStorage.adapter.__db.users.$$uid.hint.hintsStatus[hintSettings.HINT_NAME];
         expect(currentHintVal).toEqual(expectedResult);
     });
 
     it('given determineWhetherToTriggerFn was not defined and hint status is true when triggering hint then it should not be triggered', function () {
-        testStorage.db.users.$$uid.hint.hintsStatus[hintSettings.HINT_NAME] = {
+        StudentStorage.adapter.__db.users.$$uid.hint.hintsStatus[hintSettings.HINT_NAME] = {
             name: hintSettings.HINT_NAME,
             history: [{
                 value: true,
-                date: testStorage.variables.currTimeStamp
+                date: StorageSrv.variables.currTimeStamp
             }]
         };
 
@@ -116,9 +117,9 @@ describe('testing service "HintSrv":', function () {
     it('given determineWhetherToTriggerFn was defined and hint status is true when triggering hint then it should triggered', function () {
         var expectedVal = {
             value: false,
-            date: testStorage.variables.currTimeStamp
+            date: StorageSrv.variables.currTimeStamp
         };
-        testStorage.db.users.$$uid.hint.hintsStatus[hintSettings.HINT_NAME] = {
+        StudentStorage.adapter.__db.users.$$uid.hint.hintsStatus[hintSettings.HINT_NAME] = {
             name: hintSettings.HINT_NAME,
             history: [expectedVal]
         };
@@ -133,7 +134,7 @@ describe('testing service "HintSrv":', function () {
             syncHintSrvActions.triggerHint(hintSettings_2.HINT_NAME);
         }
 
-        var hintHistory = testStorage.db.users.$$uid.hint.hintsStatus[hintSettings_2.HINT_NAME].history;
+        var hintHistory = StudentStorage.adapter.__db.users.$$uid.hint.hintsStatus[hintSettings_2.HINT_NAME].history;
         var expectedResults = [
             {"value": 1, "date": "%currTimeStamp%"},
             {"value": 2, "date": "%currTimeStamp%"},

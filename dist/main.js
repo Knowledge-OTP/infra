@@ -27,6 +27,7 @@
 "znk.infra.popUp",
 "znk.infra.presence",
 "znk.infra.scoring",
+"znk.infra.screenSharing",
 "znk.infra.scroll",
 "znk.infra.sharedScss",
 "znk.infra.stats",
@@ -263,8 +264,8 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', 'ModuleResultsService', '$q', '$log',
-        function (ZnkModuleService, ModuleResultsService, $q, $log) {
+        'ZnkModuleService', 'ModuleResultsService', '$q', 'SubjectEnum',
+        function (ZnkModuleService, ModuleResultsService, $q, SubjectEnum) {
             var userAssignModuleService = {};
 
             userAssignModuleService.getUserAssignModules = function (userId) {
@@ -288,19 +289,11 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             };
 
             userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId) {
-                if(!angular.isArray(moduleIds)){
-                    var errMSg = 'UserAssignModuleService: 1st argument should be array of module ids';
-                    $log.error(errMSg);
-                    return $q.reject(errMSg);
-                }
                 var moduleResults = {};
                 var getProm = $q.when();
                 angular.forEach(moduleIds, function (moduleId) {
                     getProm = getProm.then(function(){
-                        return ModuleResultsService.getModuleResultByModuleId(moduleId, userId, false).then(function (moduleResult) {
-                            moduleResults[moduleId] = moduleResult;
-                            return moduleResults;
-                        });
+                        return ModuleResultsService.getModuleResultByModuleId(moduleId, userId, false);
                     });
 
                 });
@@ -309,7 +302,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     angular.forEach(moduleIds, function (moduleId) {
                         if(!moduleResults[moduleId]) {
                             moduleResults[moduleId] =  ModuleResultsService.getDefaultModuleResult(moduleId, userId);
-                            moduleResults[moduleId].assignedTutorId = tutorId;
+                            moduleResults[moduleId].tutorId = tutorId;
                         }
                         moduleResults[moduleId].assign = true;
 
@@ -318,6 +311,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                                 moduleResults[moduleId] = savedResults;
                             });
                         });
+
                     });
 
                     return saveProm.then(function () {
@@ -326,6 +320,33 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
                 });
             };
+
+            userAssignModuleService.getUserAssignedModulesFull = function (uid) {
+                return $q.all([ZnkModuleService.getModuleHeaders(), userAssignModuleService.getUserAssignModules(uid)]).then(function (res) {
+                    var modules = objectsObjectToArray(res[0]);
+                    var assignedModules = objectsObjectToArray(res[1]);
+
+                    assignedModules.forEach(function (assignedModule) {
+                        if (assignedModule.assign) {
+                            modules.forEach(function (module) {
+                                if (module.id === assignedModule.moduleId) {
+                                    angular.extend(assignedModule, module);
+                                    assignedModule.subjectName = (getSubjectNameById(module.subjectId)) ? getSubjectNameById(module.subjectId) : '';
+                                }
+                            });
+                        }
+                    });
+                    return assignedModules;
+                });
+            };
+
+            function objectsObjectToArray(obj) {
+                return Object.keys(obj).map(function (key) { return obj[key]; });
+            }
+
+            function getSubjectNameById(subjectId) {
+                return SubjectEnum.getEnumMap()[subjectId];
+            }
 
             return userAssignModuleService;
         }
@@ -703,22 +724,17 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.contentAvail', ['znk.infra.config']);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.contentAvail').provider('ContentAvailSrv', [
         function () {
 
             var _specials;
 
-            this.setSpecials = function(specialsObj) {
+            this.setSpecials = function (specialsObj) {
                 _specials = specialsObj;
             };
 
-            this.$get = ['$q', '$parse', '$injector', 'InfraConfigSrv', function($q, $parse, $injector, InfraConfigSrv) {
+            this.$get = ["$q", "$parse", "$injector", "InfraConfigSrv", "StorageSrv", function ($q, $parse, $injector, InfraConfigSrv, StorageSrv) {
+                'ngInject';
 
                 var PURCHASED_ALL = 'all';
 
@@ -726,7 +742,7 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
 
                 function getUserPurchaseData(){
                     return InfraConfigSrv.getStudentStorage().then(function(studentStorageSrv){
-                        var purchaseDataPath = studentStorageSrv.variables.appUserSpacePath + '/purchase';
+                        var purchaseDataPath = StorageSrv.variables.appUserSpacePath + '/purchase';
                         var defValues = {
                             daily: 0,
                             exam: {},
@@ -752,24 +768,24 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                     });
                 }
 
-                function getUserSpecialsData(){
+                function getUserSpecialsData() {
                     var specialsProm = false;
-                    if(_specials) {
+                    if (_specials) {
                         specialsProm = $injector.invoke(_specials);
                     }
                     return $q.when(specialsProm);
                 }
 
-                function idToKeyInStorage(id){
+                function idToKeyInStorage(id) {
                     return 'id_' + id;
                 }
 
-                function _hasSubscription(subscriptionObj){
+                function _hasSubscription(subscriptionObj) {
                     return subscriptionObj && subscriptionObj.expiryDate && subscriptionObj.expiryDate > Date.now();
                 }
 
-                function _baseIsEntityAvail(){
-                    return $q.all([getUserPurchaseData(),getFreeContentData(), getUserSpecialsData()]).then(function(res){
+                function _baseIsEntityAvail() {
+                    return $q.all([getUserPurchaseData(), getFreeContentData(), getUserSpecialsData()]).then(function (res) {
                         var purchaseData = res[0];
                         var hasSubscription = _hasSubscription(purchaseData.subscription);
                         var earnedSpecialsObj = {
@@ -778,36 +794,36 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                             section: {},
                             tutorial: {}
                         };
-                        if(hasSubscription){
+                        if (hasSubscription) {
                             return true;
                         } else {
                             var specials = res[1].specials;
                             var specialsRes = res[2];
-                            if(specialsRes) {
-                                angular.forEach(specialsRes, function(specialVal, specialKey) {
-                                    if(specials[specialKey] && specialVal === true) {
-                                        angular.forEach(specials[specialKey], function(val, key) {
-                                            if(val === PURCHASED_ALL) {
+                            if (specialsRes) {
+                                angular.forEach(specialsRes, function (specialVal, specialKey) {
+                                    if (specials[specialKey] && specialVal === true) {
+                                        angular.forEach(specials[specialKey], function (val, key) {
+                                            if (val === PURCHASED_ALL) {
                                                 earnedSpecialsObj[key] = val;
                                             } else {
-                                                switch(key) {
+                                                switch (key) {
                                                     case 'daily':
-                                                        if(angular.isNumber(val)) {
+                                                        if (angular.isNumber(val)) {
                                                             earnedSpecialsObj.daily += val;
                                                         }
                                                         break;
                                                     case 'exam':
-                                                        if(angular.isObject(val) && !angular.isArray(val)) {
+                                                        if (angular.isObject(val) && !angular.isArray(val)) {
                                                             earnedSpecialsObj.exam = angular.extend(earnedSpecialsObj.exam, val);
                                                         }
                                                         break;
                                                     case 'section':
-                                                        if(angular.isObject(val) && !angular.isArray(val)) {
+                                                        if (angular.isObject(val) && !angular.isArray(val)) {
                                                             earnedSpecialsObj.section = angular.extend(earnedSpecialsObj.section, val);
                                                         }
                                                         break;
                                                     case 'tutorial':
-                                                        if(angular.isObject(val) && !angular.isArray(val)) {
+                                                        if (angular.isObject(val) && !angular.isArray(val)) {
                                                             earnedSpecialsObj.tutorial = angular.extend(earnedSpecialsObj.tutorial, val);
                                                         }
                                                         break;
@@ -823,11 +839,11 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                     });
                 }
 
-                function _isContentOwned(contentData,pathArr){
+                function _isContentOwned(contentData, pathArr) {
                     var prefixPathArr = pathArr.slice(0, pathArr.length - 1);
                     var prefixPath = prefixPathArr.join('.');
                     var isAllOwned = $parse(prefixPath)(contentData) === PURCHASED_ALL;
-                    if(isAllOwned){
+                    if (isAllOwned) {
                         return true;
                     }
 
@@ -836,17 +852,17 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                 }
 
                 ContentAvailSrvObj.hasSubscription = function hasSubscription() {
-                    return getUserPurchaseData().then(function(purchaseData){
+                    return getUserPurchaseData().then(function (purchaseData) {
                         return _hasSubscription(purchaseData.subscription);
                     });
                 };
 
-                ContentAvailSrvObj.isDailyAvail = function isDailyAvail(dailyOrder){
-                    if(!angular.isNumber(dailyOrder) || isNaN(dailyOrder)){
+                ContentAvailSrvObj.isDailyAvail = function isDailyAvail(dailyOrder) {
+                    if (!angular.isNumber(dailyOrder) || isNaN(dailyOrder)) {
                         return $q.reject('daily order should be a number');
                     }
-                    return _baseIsEntityAvail().then(function(res){
-                        if(res === true){
+                    return _baseIsEntityAvail().then(function (res) {
+                        if (res === true) {
                             return true;
                         }
 
@@ -855,7 +871,7 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                         var earnedSpecials = res[3];
 
                         var isAllOwned = purchaseData.daily === PURCHASED_ALL || freeContent.daily === PURCHASED_ALL || earnedSpecials.daily === PURCHASED_ALL;
-                        if(isAllOwned){
+                        if (isAllOwned) {
                             return true;
                         }
 
@@ -864,9 +880,9 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                     });
                 };
 
-                ContentAvailSrvObj.isExamAvail = function isExamAvail(examId){
-                    return _baseIsEntityAvail().then(function(res){
-                        if(res === true){
+                ContentAvailSrvObj.isExamAvail = function isExamAvail(examId) {
+                    return _baseIsEntityAvail().then(function (res) {
+                        if (res === true) {
                             return true;
                         }
 
@@ -874,18 +890,18 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                         var freeContent = res[1];
                         var earnedSpecials = res[3];
 
-                        var examPathArr = ['exam',idToKeyInStorage(examId)];
-                        var isOwnedViaFreeContent = _isContentOwned(freeContent,examPathArr);
-                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials,examPathArr);
-                        var isOwnedViaPurchase = _isContentOwned(purchaseData,examPathArr);
+                        var examPathArr = ['exam', idToKeyInStorage(examId)];
+                        var isOwnedViaFreeContent = _isContentOwned(freeContent, examPathArr);
+                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials, examPathArr);
+                        var isOwnedViaPurchase = _isContentOwned(purchaseData, examPathArr);
 
                         return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
                     });
                 };
 
-                ContentAvailSrvObj.isSectionAvail = function isSectionAvail(examId,sectionId){
-                    return _baseIsEntityAvail().then(function(res){
-                        if(res === true){
+                ContentAvailSrvObj.isSectionAvail = function isSectionAvail(examId, sectionId) {
+                    return _baseIsEntityAvail().then(function (res) {
+                        if (res === true) {
                             return true;
                         }
 
@@ -894,25 +910,25 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                         var earnedSpecials = res[3];
 
                         var examKeyProp = idToKeyInStorage(examId);
-                        var examPathArr = ['exam',examKeyProp];
-                        var isExamPurchased = _isContentOwned(purchaseData,examPathArr);
-                        if(isExamPurchased ){
+                        var examPathArr = ['exam', examKeyProp];
+                        var isExamPurchased = _isContentOwned(purchaseData, examPathArr);
+                        if (isExamPurchased) {
                             return true;
                         }
 
                         var sectionKeyProp = idToKeyInStorage(sectionId);
 
-                        var sectionPathArr = ['section',sectionKeyProp];
-                        var isOwnedViaFreeContent = _isContentOwned(freeContent,sectionPathArr);
-                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials,sectionPathArr);
-                        var isOwnedViaPurchase = _isContentOwned(purchaseData,sectionPathArr);
+                        var sectionPathArr = ['section', sectionKeyProp];
+                        var isOwnedViaFreeContent = _isContentOwned(freeContent, sectionPathArr);
+                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials, sectionPathArr);
+                        var isOwnedViaPurchase = _isContentOwned(purchaseData, sectionPathArr);
 
                         return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
                     });
                 };
 
-                ContentAvailSrvObj.isTutorialAvail = function isTutorialAvail(tutorialId){
-                    return _baseIsEntityAvail().then(function(res) {
+                ContentAvailSrvObj.isTutorialAvail = function isTutorialAvail(tutorialId) {
+                    return _baseIsEntityAvail().then(function (res) {
                         if (res === true) {
                             return true;
                         }
@@ -922,10 +938,10 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                         var purchaseData = res[0];
                         var freeContent = res[1];
                         var earnedSpecials = res[3];
-                        var tutorialPathArr = ['tutorial',tutorialKeyInStorage];
-                        var isOwnedViaFreeContent = _isContentOwned(freeContent,tutorialPathArr);
-                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials,tutorialPathArr);
-                        var isOwnedViaPurchase = _isContentOwned(purchaseData,tutorialPathArr);
+                        var tutorialPathArr = ['tutorial', tutorialKeyInStorage];
+                        var isOwnedViaFreeContent = _isContentOwned(freeContent, tutorialPathArr);
+                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials, tutorialPathArr);
+                        var isOwnedViaPurchase = _isContentOwned(purchaseData, tutorialPathArr);
 
                         return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
 
@@ -933,7 +949,7 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                 };
 
                 ContentAvailSrvObj.getFreeContentDailyNum = function getFreeContentDailyNum() {
-                    return getFreeContentData().then(function(freeContentData) {
+                    return getFreeContentData().then(function (freeContentData) {
                         return freeContentData.daily;
                     });
                 };
@@ -942,7 +958,7 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
             }];
         }
     ]);
-})(angular);  
+})(angular);
 
 angular.module('znk.infra.contentAvail').run(['$templateCache', function($templateCache) {
 
@@ -1026,12 +1042,13 @@ angular.module('znk.infra.contentAvail').run(['$templateCache', function($templa
 
 'use strict';
 
-angular.module('znk.infra.contentGetters').service('CategoryService', ["StorageRevSrv", "$q", "categoryEnum", function (StorageRevSrv, $q, categoryEnum)  {
+angular.module('znk.infra.contentGetters').service('CategoryService',
+    ["StorageRevSrv", "$q", "categoryEnum", "$log", function (StorageRevSrv, $q, categoryEnum, $log) {
         'ngInject';
 
         var self = this;
         this.get = function () {
-            return StorageRevSrv.getContent({ exerciseType: 'category' });
+            return StorageRevSrv.getContent({exerciseType: 'category'});
         };
 
         var categoryMapObj;
@@ -1055,9 +1072,21 @@ angular.module('znk.infra.contentGetters').service('CategoryService', ["StorageR
             });
         };
 
+        self.categoryName = function (categoryId) {
+            return self.getCategoryMap().then(function (categoryMap) {
+                return categoryMap[categoryId];
+            });
+        };
+
         self.getParentCategory = function (categoryId) {
             return self.getCategoryMap().then(function (categories) {
-                var parentId = categories[categoryId].parentId;
+                var parentId;
+                if (categories[categoryId]) {
+                    parentId = categories[categoryId].parentId;
+                } else {
+                    $log.error('category id was not found in the categories');
+                    return null;
+                }
                 return categories[parentId];
             });
         };
@@ -1141,7 +1170,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService', ["StorageR
                 return getAllLevel4CategoriessProm;
             };
         })();
-}]);
+    }]);
 
 angular.module('znk.infra.contentGetters').run(['$templateCache', function($templateCache) {
 
@@ -1495,18 +1524,17 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.estimatedScore').service('EstimatedScoreHelperSrv', [
-        'SubjectEnum', 'InfraConfigSrv', 'StorageSrv',
-        function (SubjectEnum, InfraConfigSrv, StorageSrv) {
-            var EstimatedScoreHelperSrv = this;
+    angular.module('znk.infra.estimatedScore').service('EstimatedScoreHelperSrv',
+        ["SubjectEnum", "InfraConfigSrv", "StorageSrv", function (SubjectEnum, InfraConfigSrv, StorageSrv) {
+            'ngInject';
 
-            // var StorageSrv = InfraConfigSrv.getStorageService();
+            var EstimatedScoreHelperSrv = this;
 
             var ESTIMATE_SCORE_PATH = StorageSrv.variables.appUserSpacePath + '/estimatedScore';
 
-            function _SetSubjectInitialVal(obj,initValue){
+            function _SetSubjectInitialVal(obj, initValue) {
                 var subjectKeys = Object.keys(SubjectEnum);
-                for(var i in subjectKeys){
+                for (var i in subjectKeys) {
                     var subjectEnum = SubjectEnum[subjectKeys[i]];
                     obj[subjectEnum.enum] = angular.copy(initValue);
                 }
@@ -1555,8 +1583,8 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                     return StudentStorageSrv.set(ESTIMATE_SCORE_PATH,newEstimateScoreData);
                 });
             };
-        }
-    ]);
+        }]
+    );
 })(angular);
 
 'use strict';
@@ -1919,8 +1947,8 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
     'use strict';
 
     angular.module('znk.infra.exerciseResult', [
-        'znk.infra.config',
-        'znk.infra.utility',
+        'znk.infra.config','znk.infra.utility', 
+        'znk.infra.moduleResults',
         'znk.infra.exerciseUtility'
     ]);
 })(angular);
@@ -1929,26 +1957,15 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
     'use strict';
 
     angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum',
-        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum) {
+        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum', 'ModuleResultsService',
+        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum, ModuleResultsService) {
             var ExerciseResultSrv = this;
 
             var EXERCISE_RESULTS_PATH = 'exerciseResults';
-            var EXERCISE_RESULTS_GUIDS_PATH = StorageSrv.variables.appUserSpacePath + '/exerciseResults';
-
-
             var EXAM_RESULTS_PATH = 'examResults';
-            var EXAM_RESULTS_GUIDS_PATH = StorageSrv.variables.appUserSpacePath + '/examResults';
-
-            var EXERCISES_STATUS_PATH = StorageSrv.variables.appUserSpacePath + '/exercisesStatus';
-
-            function _isValidNumber(number){
-                if(!angular.isNumber(number) && !angular.isString(number)){
-                    return false;
-                }
-
-                return !isNaN(+number);
-            }
+            var USER_EXERCISE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/exerciseResults';
+            var USER_EXAM_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/examResults';
+            var USER_EXERCISES_STATUS_PATH = StorageSrv.variables.appUserSpacePath + '/exercisesStatus';
 
             function _getExerciseResultPath(guid) {
                 return EXERCISE_RESULTS_PATH + '/' + guid;
@@ -1977,7 +1994,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
             function _getExerciseResultsGuids(){
                 return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                    return StudentStorageSrv.get(EXERCISE_RESULTS_GUIDS_PATH);
+                    return StudentStorageSrv.get(USER_EXERCISE_RESULTS_PATH);
                 });
             }
 
@@ -2018,7 +2035,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
             function _getExamResultsGuids(){
                 return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                    return StudentStorageSrv.get(EXAM_RESULTS_GUIDS_PATH);
+                    return StudentStorageSrv.get(USER_EXAM_RESULTS_PATH);
                 });
             }
 
@@ -2065,7 +2082,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 exerciseResult.correctAnswersNum = countCorrect;
                 exerciseResult.wrongAnswersNum = countWrong;
                 exerciseResult.skippedAnswersNum = countSkipped;
-                
+
                 exerciseResult.duration = totalTimeSpentOnQuestions;
                 exerciseResult.correctAvgTime = _getAvgTime(countCorrect,correctTotalTime);
                 exerciseResult.wrongAvgTime = _getAvgTime(countWrong, wrongTotalTime);
@@ -2089,7 +2106,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                     var exerciseNewStatus = exerciseResult.isComplete ?
                         ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
                     exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId] = new ExerciseStatus(exerciseNewStatus, totalTimeSpentOnQuestions);
-                    dataToSave[EXERCISES_STATUS_PATH] = exercisesStatusData;
+                    dataToSave[USER_EXERCISES_STATUS_PATH] = exercisesStatusData;
 
                     var getSectionAggregatedDataProm = $q.when();
                     if(exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
@@ -2109,7 +2126,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
                     return getSectionAggregatedDataProm.then(function() {
                         return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                            StudentStorageSrv.set(dataToSave);
+                            StudentStorageSrv.update(dataToSave);
                             return exerciseResult;
                         });
                     });
@@ -2145,7 +2162,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
             function _getExercisesStatusData(){
                 return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                    return StudentStorageSrv.get(EXERCISES_STATUS_PATH);
+                    return StudentStorageSrv.get(USER_EXERCISES_STATUS_PATH);
                 });
             }
 
@@ -2155,7 +2172,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
             }
 
             this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum, dontInitialize) {
-                if(!_isValidNumber(exerciseTypeId) || !_isValidNumber(exerciseId)){
+                if(!UtilitySrv.fn.isValidNumber(exerciseTypeId) || !UtilitySrv.fn.isValidNumber(exerciseId)){
                     var errMSg = 'ExerciseResultSrv: exercise type id, exercise id should be number !!!';
                     $log.error(errMSg);
                     return $q.reject(errMSg);
@@ -2163,7 +2180,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 exerciseTypeId = +exerciseTypeId;
                 exerciseId = +exerciseId;
 
-                if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum && !_isValidNumber(examId)){
+                if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum && !UtilitySrv.fn.isValidNumber(examId)){
                     var examErrMSg = 'ExerciseResultSrv: exam id should be provided when asking for section result and should' +
                         ' be a number!!!';
                     $log.error(examErrMSg);
@@ -2192,7 +2209,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                             var dataToSave = {};
 
                             exerciseResultsGuids[exerciseTypeId][exerciseId] = newGuid;
-                            dataToSave[EXERCISE_RESULTS_GUIDS_PATH] = exerciseResultsGuids;
+                            dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
 
                             var exerciseResultPath = _getExerciseResultPath(newGuid);
                             var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,newGuid);
@@ -2218,7 +2235,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                                 }
 
                                 return $q.when(setProm).then(function(){
-                                    return StudentStorageSrv.set(dataToSave);
+                                    return StudentStorageSrv.update(dataToSave);
                                 }).then(function(res){
                                     return res[exerciseResultPath];
                                 });
@@ -2246,7 +2263,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
             };
 
             this.getExamResult = function (examId, dontInitialize) {
-                if(!_isValidNumber(examId)){
+                if(!UtilitySrv.fn.isValidNumber(examId)){
                     var errMsg = 'Exam id is not a number !!!';
                     $log.error(errMsg);
                     return $q.reject(errMsg);
@@ -2264,14 +2281,14 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                             var dataToSave = {};
                             var newExamResultGuid = UtilitySrv.general.createGuid();
                             examResultsGuids[examId] = newExamResultGuid;
-                            dataToSave[EXAM_RESULTS_GUIDS_PATH] = examResultsGuids;
+                            dataToSave[USER_EXAM_RESULTS_PATH] = examResultsGuids;
 
                             var examResultPath = _getExamResultPath(newExamResultGuid);
                             var initExamResultProm = _getInitExamResult(examId, newExamResultGuid);
                             return initExamResultProm.then(function(initExamResult) {
                                 dataToSave[examResultPath] = initExamResult;
 
-                                return StudentStorageSrv.set(dataToSave).then(function (res) {
+                                return StudentStorageSrv.update(dataToSave).then(function (res) {
                                     return res[examResultPath];
                                 });
                             });
@@ -2293,6 +2310,83 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
             this.getExercisesStatusMap = function(){
                 return _getExercisesStatusData();
+            };
+
+            this.getModuleExerciseResults = function (userId, moduleId, exerciseTypeId, exerciseId, dontInitialize) {
+                if(!UtilitySrv.fn.isValidNumber(exerciseTypeId) || !UtilitySrv.fn.isValidNumber(exerciseId)){
+                    var errMSg = 'ExerciseResultSrv: exercise type id, exercise id should be number !!!';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                exerciseTypeId = +exerciseTypeId;
+                exerciseId = +exerciseId;
+
+                if(!UtilitySrv.fn.isValidNumber(moduleId)){
+                    var examErrMSg = 'ExerciseResultSrv: module id should be provided when asking for exercise result and should be a number!!!';
+                    $log.error(examErrMSg);
+                    return $q.reject(examErrMSg);
+                }
+                moduleId = +moduleId;
+
+                return $q.all([ModuleResultsService.getModuleResultByModuleId(moduleId, userId), _getExerciseResultsGuids()]).then(function (results) {
+                    var moduleResultsObj = results[0];
+                    var exerciseResultsGuids = results[1];
+                    var resultGuid = exerciseResultsGuids[exerciseTypeId] && exerciseResultsGuids[exerciseTypeId][exerciseId];
+                    if (!resultGuid) {
+                        if(dontInitialize){
+                            return null;
+                        }
+
+                        if(!exerciseResultsGuids[exerciseTypeId]){
+                            exerciseResultsGuids[exerciseTypeId] = {};
+                        }
+
+                        var storage = InfraConfigSrv.getStorageService();
+                        var newGuid = UtilitySrv.general.createGuid();
+                        var dataToSave = {};
+
+                        exerciseResultsGuids[exerciseTypeId][exerciseId] = newGuid;
+                        dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
+
+                        var exerciseResultPath = _getExerciseResultPath(newGuid);
+                        var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,newGuid);
+                        return initResultProm.then(function(initResult) {
+                            dataToSave[exerciseResultPath] = initResult;
+
+                            if(moduleResultsObj){
+                                moduleResultsObj.moduleId = moduleId;
+
+                                if(!moduleResultsObj.exerciseResults){
+                                    moduleResultsObj.exerciseResults = {};
+                                }
+                                moduleResultsObj.exerciseResults[exerciseId] = newGuid;
+                                var moduleResultPath = ModuleResultsService.getModuleResultPath(moduleResultsObj.guid);
+                                dataToSave[moduleResultPath] = moduleResultsObj;
+                            }
+
+                            return storage.update(dataToSave).then(function (res) {
+                                return res[exerciseResultPath];
+                            });
+                        });
+                    }
+
+                    return _getExerciseResultByGuid(resultGuid).then(function(result){
+                        var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,resultGuid);
+                        return initResultProm.then(function(initResult) {
+                            if(result.guid !== resultGuid){
+                                angular.extend(result,initResult);
+                            }else{
+                                UtilitySrv.object.extendWithoutOverride(result, initResult);
+                            }
+                            return result;
+                        });
+                    });
+                }).then(function(exerciseResult){
+                    if(angular.isObject(exerciseResult)){
+                        exerciseResult.$save = exerciseSaveFn;
+                    }
+                    return exerciseResult;
+                });
             };
         }
     ]);
@@ -3322,13 +3416,13 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.hint').provider('HintSrv',function(){
+    angular.module('znk.infra.hint').provider('HintSrv', function () {
         var registeredHints = {};
 
         var _hintMap = {};
 
         this.registerHint = function (hintName, hintAction, determineWhetherToTriggerFnGetter) {
-            if(!registeredHints[hintName]){
+            if (!registeredHints[hintName]) {
                 registeredHints[hintName] = {
                     name: hintName,
                     action: hintAction,
@@ -3338,58 +3432,58 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
             _hintMap[hintName] = hintName;
         };
 
-        this.$get = [
-            'InfraConfigSrv', '$q', '$log', '$injector', 'StorageSrv',
-            function (InfraConfigSrv, $q, $log, $injector, StorageSrv) {
-                var HintSrv = {};
-                var hintPath = StorageSrv.variables.appUserSpacePath + '/hint';
-                var defaultHints = {
-                    hintsStatus:{}
-                };
+        this.$get = ["InfraConfigSrv", "$q", "$log", "$injector", "StorageSrv", function (InfraConfigSrv, $q, $log, $injector, StorageSrv) {
+            'ngInject';
 
-                HintSrv.hintMap = _hintMap;
+            var HintSrv = {};
+            var hintPath = StorageSrv.variables.appUserSpacePath + '/hint';
+            var defaultHints = {
+                hintsStatus: {}
+            };
 
-                HintSrv.triggerHint = function (hintName) {
-                    var hintData = registeredHints[hintName];
-                        if(!hintData){
-                        $log.error('HintSrv: the following hint is not registered ' + hintName);
+            HintSrv.hintMap = _hintMap;
+
+            HintSrv.triggerHint = function (hintName) {
+                var hintData = registeredHints[hintName];
+                if (!hintData) {
+                    $log.error('HintSrv: the following hint is not registered ' + hintName);
+                }
+                return getHints().then(function (hints) {
+                    var hintsStatus = hints.hintsStatus;
+                    var hintLastVal = getHintLastValue(hintsStatus[hintName]);
+
+                    var determineWhetherToTrigger;
+                    if (hintData.determineWhetherToTriggerGetter) {
+                        determineWhetherToTrigger = $injector.invoke(hintData.determineWhetherToTriggerGetter);
+                    } else {
+                        determineWhetherToTrigger = defaultDetermineWhetherToTriggerFn;
                     }
-                    return getHints().then(function(hints){
-                        var hintsStatus = hints.hintsStatus;
-                        var hintLastVal = getHintLastValue(hintsStatus[hintName]);
 
-                        var determineWhetherToTrigger;
-                        if(hintData.determineWhetherToTriggerGetter){
-                            determineWhetherToTrigger = $injector.invoke(hintData.determineWhetherToTriggerGetter);
-                        } else {
-                            determineWhetherToTrigger = defaultDetermineWhetherToTriggerFn;
-                        }
+                    return $q.when(determineWhetherToTrigger(hintLastVal)).then(function (shouldBeTriggered) {
+                        if (shouldBeTriggered) {
+                            var hintAction = $injector.invoke(hintData.action);
 
-                        return $q.when(determineWhetherToTrigger(hintLastVal)).then(function(shouldBeTriggered){
-                            if(shouldBeTriggered){
-                                var hintAction = $injector.invoke(hintData.action);
+                            return $q.when(hintAction(hintLastVal)).then(function (result) {
+                                if (!hintsStatus[hintName]) {
+                                    hintsStatus[hintName] = {
+                                        name: hintName,
+                                        history: []
+                                    };
+                                }
 
-                                return $q.when(hintAction(hintLastVal)).then(function(result){
-                                    if(!hintsStatus[hintName]){
-                                        hintsStatus[hintName] = {
-                                            name: hintName,
-                                            history: []
-                                        };
-                                    }
-
-                                    hintsStatus[hintName].history.push({
-                                        value: angular.isUndefined(result) ? true : result,
-                                        date: StorageSrv.variables.currTimeStamp
-                                    });
-
-                                    hints.hintsStatus = hintsStatus;
-                                    saveHints(hints);
-                                    return result;
+                                hintsStatus[hintName].history.push({
+                                    value: angular.isUndefined(result) ? true : result,
+                                    date: StorageSrv.variables.currTimeStamp
                                 });
-                            }
-                        });
+
+                                hints.hintsStatus = hintsStatus;
+                                saveHints(hints);
+                                return result;
+                            });
+                        }
                     });
-                };
+                });
+            };
 
                 function getHints(){
                     return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
@@ -3405,16 +3499,16 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
                     });
                 }
 
-                function getHintLastValue(hintStatus){
-                    return hintStatus && hintStatus.history && hintStatus.history.length && hintStatus.history[hintStatus.history.length - 1];
-                }
+            function getHintLastValue(hintStatus) {
+                return hintStatus && hintStatus.history && hintStatus.history.length && hintStatus.history[hintStatus.history.length - 1];
+            }
 
-                function defaultDetermineWhetherToTriggerFn(hintVal){
-                    return angular.isUndefined(hintVal) || !hintVal.value;
-                }
+            function defaultDetermineWhetherToTriggerFn(hintVal) {
+                return angular.isUndefined(hintVal) || !hintVal.value;
+            }
 
-                return HintSrv;
-            }];
+            return HintSrv;
+        }];
     });
 })(angular);
 
@@ -3430,9 +3524,9 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.moduleResults').service('ModuleResultsService', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'StorageSrv',
-        function (InfraConfigSrv, $log, $q, UtilitySrv, StorageSrv) {
+    angular.module('znk.infra.moduleResults').service('ModuleResultsService',
+        ["InfraConfigSrv", "$log", "$q", "UtilitySrv", "StorageSrv", function (InfraConfigSrv, $log, $q, UtilitySrv, StorageSrv) {
+            'ngInject';
 
             var moduleResultsService = {};
             var USER_MODULE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
@@ -3445,6 +3539,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                     assignedTutorId: null,
                     assign: false,
                     contentAssign: false,
+                    exerciseResults: [],
                     guid: UtilitySrv.general.createGuid()
                 };
             };
@@ -3503,9 +3598,15 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                 });
             };
 
+            moduleResultsService.getModuleResultPath = function (guid){
+                return MODULE_RESULTS_PATH + '/' + guid;
+            };
+
+
+
             return moduleResultsService;
-        }
-    ]);
+        }]
+    );
 })(angular);
 
 
@@ -4171,6 +4272,167 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.screenSharing', [
+        'znk.infra.user',
+        'znk.infra.utility',
+        'znk.infra.config'
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.screenSharing').factory('ScreenSharingStatusEnum',
+        ["EnumSrv", function (EnumSrv) {
+            'ngInject';
+
+            return new EnumSrv.BaseEnum([
+                ['PENDING_VIEWER', 1, 'pending viewer'],
+                ['PENDING_SHARER', 2, 'pending sharer'],
+                ['CONFIRMED', 3, 'confirmed'],
+                ['ENDED', 4, 'ended']
+            ]);
+        }]
+    );
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.screenSharing').service('ScreenSharingDataGetterSrv',
+        ["InfraConfigSrv", "$q", "ENV", function (InfraConfigSrv, $q, ENV) {
+            'ngInject';
+
+            function _getStorage() {
+                return InfraConfigSrv.getGlobalStorage();
+            }
+
+            this.getScreenSharingDataPath = function (guid) {
+                var SCREEN_SHARING_ROOT_PATH = 'screenSharing';
+                return SCREEN_SHARING_ROOT_PATH + '/' + guid;
+            };
+
+            this.getUserScreenSharingDataGuidPath = function (userData, guid) {
+                var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
+                var USER_DATA_PATH = appName  + '/users/' + userData.uid;
+                return USER_DATA_PATH + '/screenSharing/' + guid;
+            };
+
+            this.getScreenSharingData = function (screenSharingGuid) {
+                var screenSharingDataPath = this.getScreenSharingDataPath(screenSharingGuid);
+                return _getStorage().then(function (StudentStorage) {
+                    return StudentStorage.get(screenSharingDataPath);
+                });
+            };
+        }]
+    );
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.screenSharing').service('ScreenSharingSrv',
+        ["UserProfileService", "InfraConfigSrv", "$q", "UtilitySrv", "ScreenSharingDataGetterSrv", "ScreenSharingStatusEnum", "ENV", "$log", function (UserProfileService, InfraConfigSrv, $q, UtilitySrv, ScreenSharingDataGetterSrv, ScreenSharingStatusEnum, ENV, $log) {
+            'ngInject';
+
+            var INITIATOR_ENUM = {
+                "VIEWER": 1,
+                "SHARER": 2
+            };
+
+            var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
+
+            function _getStorage(){
+                return InfraConfigSrv.getGlobalStorage();
+            }
+
+            function _getScreenSharingInitStatusByInitiator(initiator){
+                var initiatorToInitStatusMap = {};
+                initiatorToInitStatusMap[INITIATOR_ENUM.VIEWER] = ScreenSharingStatusEnum.PENDING_SHARER.enum;
+                initiatorToInitStatusMap[INITIATOR_ENUM.SHARER] = ScreenSharingStatusEnum.PENDING_VIEWER.enum;
+
+                return initiatorToInitStatusMap[initiator] || null;
+            }
+
+            function _initiateScreenSharing(sharerData, viewerData, initiator) {
+                if(angular.isUndefined(viewerData.isTeacher) || angular.isUndefined(sharerData.isTeacher)){
+                    var errMSg = 'ScreenSharingSrv: isTeacher property was not provided!!!';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                var dataToSave = {};
+
+                var newScreenSharingGuid = UtilitySrv.general.createGuid();
+
+                var initStatus = _getScreenSharingInitStatusByInitiator(initiator);
+                if(!initStatus ){
+                    return $q.reject('ScreenSharingSrv: initiator was not provided');
+                }
+                var newScreenSharingData = {
+                    guid: newScreenSharingGuid,
+                    sharerId: sharerData.uid,
+                    viewerId: viewerData.uid,
+                    status: initStatus
+                };
+                var newScreenSharingDataPath = ScreenSharingDataGetterSrv.getScreenSharingDataPath(newScreenSharingGuid);
+                dataToSave[newScreenSharingDataPath] = newScreenSharingData;
+
+                var sharerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataGuidPath(sharerData, newScreenSharingGuid);
+                dataToSave[sharerScreenSharingDataGuidPath] = true;
+
+                var viewerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataGuidPath(viewerData, newScreenSharingGuid);
+                dataToSave[viewerScreenSharingDataGuidPath] = true;
+
+                return _getStorage().then(function(StudentStorage){
+                    return StudentStorage.update(dataToSave);
+                });
+            }
+
+            this.shareMyScreen = function (viewerData) {
+                return UserProfileService.getCurrUserId().then(function (currUserId) {
+                    var sharerData = {
+                        uid: currUserId,
+                        isTeacher: isTeacherApp
+                    };
+                    return _initiateScreenSharing(sharerData, viewerData, INITIATOR_ENUM.SHARER);
+                });
+            };
+
+            this.viewOtherUserScreen = function (sharerData) {
+                return UserProfileService.getCurrUserId().then(function (currUserId) {
+                    var viewerData = {
+                        uid: currUserId,
+                        isTeacher: isTeacherApp
+                    };
+                    return _initiateScreenSharing(sharerData, viewerData, INITIATOR_ENUM.VIEWER);
+                });
+            };
+
+            this.confirmSharing = function(screenSharingDataGuid){
+                return ScreenSharingDataGetterSrv.getScreenSharingData(screenSharingDataGuid).then(function(screenSharingData){
+                    screenSharingData.status = ScreenSharingStatusEnum.CONFIRMED.enum;
+                    return screenSharingData.$save();
+                });
+            };
+
+            this.endSharing = function(screenSharingDataGuid){
+                return ScreenSharingDataGetterSrv.getScreenSharingData(screenSharingDataGuid).then(function(screenSharingData){
+                    screenSharingData.status = ScreenSharingStatusEnum.ENDED.enum;
+                    return screenSharingData.$save();
+                });
+            };
+        }]
+    );
+})(angular);
+
+angular.module('znk.infra.screenSharing').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.scroll', []);
 })(angular);
 /**
@@ -4563,8 +4825,8 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.stats').provider('StatsSrv', function () {
-        this.$get = ["InfraConfigSrv", "$q", "SubjectEnum", "$log", "$injector", "StorageSrv", "CategoryService", function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv, CategoryService) {
+    angular.module('znk.infra.stats').service('StatsSrv',
+        ["InfraConfigSrv", "$q", "SubjectEnum", "$log", "$injector", "StorageSrv", "CategoryService", function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv, CategoryService) {
             'ngInject';
 
             var STATS_PATH = StorageSrv.variables.appUserSpacePath + '/stats';
@@ -4733,8 +4995,7 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
             };
 
             return StatsSrv;
-        }];
-    });
+        }]);
 })(angular);
 
 angular.module('znk.infra.stats').run(['$templateCache', function($templateCache) {
@@ -4879,26 +5140,27 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
             var cacheId = 0;
 
             /**
-             *  entityGetter -
-             *  entitySetter -
-             *  config-
+             *  adapter - implement the following interface:
+             *      - get(path): get path value
+             *      - set(path, value): set the value in the path
+             *      - update(path, value
+             *      - onEvent: curretnly supported events:
+             *          value: value was changed
+             *      - offEvent
+             *
+             *  config -
              *      cacheRules - rules which control whether path should be cached, the possible values are:
              *          string - if the path equal to the rule string the it will not be cached.
              *          function - receive the path as argument, if the function return true then the path will not be cached.
              *          regex - if the path matches the regex then it will not be cached.
+             *
              *      variables -
              *          uid - function or value which return current uid as straight value or promise
              * */
-            function StorageSrv(entityGetter, entitySetter, config) {
-                this.getter = function (path) {
-                    return $q.when(entityGetter(path));
-                };
+            function StorageSrv(adapter, config) {
+                this.adapter = adapter;
 
-                this.setter = function (path, newVal) {
-                    return $q.when(entitySetter(path, newVal));
-                };
-
-                this.entityCache = $cacheFactory('entityCache' + cacheId);
+                this.__cache = $cacheFactory('entityCache' + cacheId);
 
                 config = config || {};
                 var defaultConfig = {
@@ -4907,8 +5169,11 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                     },
                     cacheRules: []
                 };
-                this.config = angular.extend(defaultConfig, config);
+                this.__config = angular.extend(defaultConfig, config);
 
+                this.__pathsBindedToServer = {};
+
+                //progress by 1 storage cache id
                 cacheId++;
             }
 
@@ -4938,46 +5203,99 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                 return true;
             }
 
-            function _getUid(config) {
-                var getUid = angular.isFunction(config.variables.uid) ? config.variables.uid() : config.variables.uid;
-                return $q.when(getUid);
-            }
+            StorageSrv.EVENTS = {
+                'VALUE': 'value'
+            };
 
-            function _processPath(pathStrOrObj, config) {
-                return _getUid(config).then(function (uid) {
-                    function _replaceVariables(path){
-                        var regexString = StorageSrv.variables.uid.replace(/\$/g, '\\$');
-                        var UID_REGEX = new RegExp(regexString, 'g');
-                        return path.replace(UID_REGEX, uid);
-                    }
+            StorageSrv.prototype.__processPath = function (pathStrOrObj) {
+                var config = this.__config;
+                function _replaceVariables(path, uid) {
+                    var regexString = StorageSrv.variables.uid.replace(/\$/g, '\\$');
+                    var UID_REGEX = new RegExp(regexString, 'g');
+                    return path.replace(UID_REGEX, uid);
+                }
 
+                function _getUid() {
+                    var getUid = angular.isFunction(config.variables.uid) ? config.variables.uid() : config.variables.uid;
+                    return $q.when(getUid);
+                }
+
+                return _getUid().then(function (uid) {
                     if (angular.isUndefined(uid) || uid === null) {
                         $log.debug('StorageSrv: empty uid was received');
                     }
 
-                    if(angular.isString(pathStrOrObj)){
-                        var processedPath = _replaceVariables(pathStrOrObj);
+                    if (angular.isString(pathStrOrObj)) {
+                        var processedPath = _replaceVariables(pathStrOrObj, uid);
                         return processedPath;
                     }
 
-                    if(angular.isObject(pathStrOrObj)){
+                    if (angular.isObject(pathStrOrObj)) {
                         var processedPathObj = {};
-                        angular.forEach(pathStrOrObj, function(value, pathName){
-                            var processedPath = _replaceVariables(pathName);
+                        angular.forEach(pathStrOrObj, function (value, pathName) {
+                            var processedPath = _replaceVariables(pathName, uid);
                             processedPathObj[processedPath] = value;
                         });
 
                         return processedPathObj;
                     }
                     $log.error('StorageSrv: failed to process path');
+
+                    return null;
                 });
-            }
+            };
+
+            StorageSrv.prototype.__addDataToCache = function (pathStrOrObj, newValue) {
+                var self = this;
+
+                var dataToSaveInCache = {};
+
+                if (angular.isString(pathStrOrObj)) {
+                    dataToSaveInCache[pathStrOrObj] = newValue;
+                } else {
+                    dataToSaveInCache = pathStrOrObj;
+                }
+
+                var cachedDataMap = {};
+                angular.forEach(dataToSaveInCache, function (value, path) {
+                    var cachedValue;
+
+                    if (angular.isObject(value) && !value.$save) {
+                        cachedValue = Object.create({
+                            $save: function () {
+                                return self.set(path, this);
+                            }
+                        });
+                        angular.forEach(value, function (value, key) {
+                            cachedValue[key] = value;
+                        });
+                    } else {
+                        cachedValue = value;
+                    }
+
+                    cachedDataMap[path] = cachedValue;
+
+                    if (_shouldBeCached(path, self.__config)) {
+                        self.__cache.put(path, cachedValue);
+                    }
+                });
+
+                return angular.isObject(pathStrOrObj) ? cachedDataMap : cachedDataMap[pathStrOrObj];
+            };
+
+            StorageSrv.prototype.__addPathBindedToServer = function(path){
+                this.__pathsBindedToServer[path] = true;
+            };
+
+            StorageSrv.prototype.removeServerPathBinding = function(path){
+                this.adapter.offEvent(StorageSrv.EVENTS.VALUE, path);
+            };
 
             StorageSrv.prototype.get = function (path, defaultValue) {
                 var self = this;
 
-                return _processPath(path, self.config).then(function (processedPath) {
-                    var entity = self.entityCache.get(processedPath);
+                return this.__processPath(path, self.__config).then(function (processedPath) {
+                    var entity = self.__cache.get(processedPath);
                     var getProm;
                     defaultValue = defaultValue || {};
                     var cacheProm = false;
@@ -4989,7 +5307,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                             return getEntityPromMap[processedPath];
                         }
                         cacheProm = true;
-                        getProm = self.getter(processedPath).then(function (_entity) {
+                        getProm = self.adapter.get(processedPath).then(function (_entity) {
                             if (angular.isUndefined(_entity) || _entity === null) {
                                 _entity = {};
                             }
@@ -4998,13 +5316,14 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                                 var initObj = Object.create({
                                     $save: function () {
                                         return self.set(processedPath, this);
-                                    }
+                                    },
+                                    $$path: processedPath
                                 });
                                 _entity = angular.extend(initObj, _entity);
                             }
 
-                            if (_shouldBeCached(processedPath, self.config)) {
-                                self.entityCache.put(processedPath, _entity);
+                            if (_shouldBeCached(processedPath, self.__config)) {
+                                self.__cache.put(processedPath, _entity);
                             }
 
                             delete getEntityPromMap[processedPath];
@@ -5030,51 +5349,50 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                 });
             };
 
-            StorageSrv.prototype.getServerValue = function(path){
+            StorageSrv.prototype.getServerValue = function (path) {
                 var self = this;
-                return _processPath(path, self.config).then(function (processedPath) {
-                    return self.getter(processedPath);
+                return this.__processPath(path, self.__config).then(function (processedPath) {
+                    return self.adapter.get(processedPath);
                 });
             };
 
-            StorageSrv.prototype.set = function (pathStrOrObj, newValue) {
+            StorageSrv.prototype.getAndBindToServer = function (path) {
                 var self = this;
 
-                return _processPath(pathStrOrObj, self.config).then(function (processedPathOrObj) {
-                    return self.setter(processedPathOrObj, newValue).then(function () {
-                        var dataToSaveInCache = {};
-
-                        if (!angular.isObject(processedPathOrObj)) {
-                            dataToSaveInCache[processedPathOrObj] = newValue;
-                        } else {
-                            dataToSaveInCache = processedPathOrObj;
-                        }
-
-                        var cachedDataMap = {};
-                        angular.forEach(dataToSaveInCache, function (value, path) {
-                            var cachedValue;
-
-                            if (angular.isObject(value) && !value.$save) {
-                                cachedValue = Object.create({
-                                    $save: function () {
-                                        return self.set(path, this);
-                                    }
-                                });
-                                angular.forEach(value, function (value, key) {
-                                    cachedValue[key] = value;
-                                });
-                            } else {
-                                cachedValue = value;
-                            }
-
-                            cachedDataMap[path] = cachedValue;
-
-                            if (_shouldBeCached(path, self.config)) {
-                                self.entityCache.put(path, cachedValue);
-                            }
+                return this.get(path).then(function (pathValue) {
+                    self.adapter.onEvent('value', pathValue.$$path, function (serverValue) {
+                        angular.forEach(pathValue, function (value, key) {
+                            delete pathValue[key];
                         });
+                        angular.extend(pathValue, serverValue);
+                    });
 
-                        return angular.isObject(processedPathOrObj) ? cachedDataMap : cachedDataMap[processedPathOrObj];
+                    self.__addPathBindedToServer(path);
+                    return pathValue;
+                });
+            };
+
+            StorageSrv.prototype.set = function (path, newValue) {
+                var self = this;
+
+                if (!angular.isString(path)) {
+                    var errMSg = 'StorageSrv: path should be a string';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                return this.__processPath(path, self.__config).then(function (processedPath) {
+                    return self.adapter.set(processedPath, newValue).then(function () {
+                        return self.__addDataToCache(processedPath, newValue);
+                    });
+                });
+            };
+
+            StorageSrv.prototype.update = function (pathStrOrObj, newValue) {
+                var self = this;
+
+                return this.__processPath(pathStrOrObj, self.__config).then(function (processedPathOrObj) {
+                    return self.adapter.update(processedPathOrObj, newValue).then(function () {
+                        return self.__addDataToCache(processedPathOrObj, newValue);
                     });
                 });
             };
@@ -5084,10 +5402,10 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
             };
 
             StorageSrv.prototype.cleanPathCache = function (path) {
-                this.entityCache.remove(path);
+                this.__cache.remove(path);
             };
 
-            StorageSrv.variables = StorageSrv.prototype.variables = {
+            StorageSrv.variables = {
                 currTimeStamp: '%currTimeStamp%',
                 uid: '$$uid',
                 appUserSpacePath: 'users/$$uid'
@@ -5238,14 +5556,15 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.user', [
-        'znk.infra.config'
+        'znk.infra.config',
+        'znk.infra.storage'
     ]);
 })(angular);
 
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
-    ["InfraConfigSrv", "StorageSrv", function (InfraConfigSrv, StorageSrv) {
+    ["InfraConfigSrv", "StorageSrv", "ENV", "storageFirebaseAdapter", "$q", function (InfraConfigSrv, StorageSrv, ENV, storageFirebaseAdapter, $q) {
         'ngInject';
         var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
 
@@ -5279,6 +5598,13 @@ angular.module('znk.infra.user').service('UserProfileService',
             return InfraConfigSrv.getGlobalStorage().then(function(globalStorage) {
                 return globalStorage.set(profilePath, newProfile);
             });
+        };
+
+        this.getCurrUserId = function(){
+            var fbAdapter = storageFirebaseAdapter(ENV.fbDataEndPoint + '/' + ENV.firebaseAppScopeName);//(igor) todo: requires better implementation
+            var ref = fbAdapter.getRef('');
+            var authData = ref.getAuth();
+            return $q.when(authData && authData.uid);
         };
 }]);
 
@@ -5405,7 +5731,15 @@ angular.module('znk.infra.user').run(['$templateCache', function($templateCache)
                     return prom;
                 };
             };
-            
+
+            UtilitySrv.fn.isValidNumber = function(number){
+                if(!angular.isNumber(number) && !angular.isString(number)){
+                    return false;
+                }
+
+                return !isNaN(+number);
+            };
+
             return UtilitySrv;
         }
     ]);
