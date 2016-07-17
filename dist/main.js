@@ -4048,10 +4048,10 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
         };
 
         this.$get = [
-            '$log', '$injector', 'ENV', '$rootScope', 'storageFirebaseAdapter',
-            function ($log, $injector, ENV, $rootScope, storageFirebaseAdapter) {
+            '$log', '$injector', 'ENV', '$rootScope', 'StorageFirebaseAdapter',
+            function ($log, $injector, ENV, $rootScope, StorageFirebaseAdapter) {
                 var PresenceService = {};
-                var rootRef = storageFirebaseAdapter(ENV.fbDataEndPoint);
+                var rootRef = new StorageFirebaseAdapter(ENV.fbDataEndPoint);
                 var PRESENCE_PATH = 'presence/';
 
                 PresenceService.userStatus = {
