@@ -4048,10 +4048,10 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
         };
 
         this.$get = [
-            '$log', '$injector', 'ENV', '$rootScope', 'storageFirebaseAdapter',
-            function ($log, $injector, ENV, $rootScope, storageFirebaseAdapter) {
+            '$log', '$injector', 'ENV', '$rootScope', 'StorageFirebaseAdapter',
+            function ($log, $injector, ENV, $rootScope, StorageFirebaseAdapter) {
                 var PresenceService = {};
-                var rootRef = storageFirebaseAdapter(ENV.fbDataEndPoint);
+                var rootRef = new StorageFirebaseAdapter(ENV.fbDataEndPoint);
                 var PRESENCE_PATH = 'presence/';
 
                 PresenceService.userStatus = {
@@ -5353,7 +5353,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                             return getEntityPromMap[processedPath];
                         }
                         cacheProm = true;
-                        getProm = self.adapter.get(processedPath).then(function (_entity) {
+                        getProm = $q.when(self.adapter.get(processedPath)).then(function (_entity) {
                             if (angular.isUndefined(_entity) || _entity === null) {
                                 _entity = {};
                             }
@@ -5398,7 +5398,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
             StorageSrv.prototype.getServerValue = function (path) {
                 var self = this;
                 return this.__processPath(path, self.__config).then(function (processedPath) {
-                    return self.adapter.get(processedPath);
+                    return $q.when(self.adapter.get(processedPath));
                 });
             };
 
@@ -5427,7 +5427,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                     return $q.reject(errMSg);
                 }
                 return this.__processPath(path, self.__config).then(function (processedPath) {
-                    return self.adapter.set(processedPath, newValue).then(function () {
+                    return $q.when(self.adapter.set(processedPath, newValue)).then(function () {
                         return self.__addDataToCache(processedPath, newValue);
                     });
                 });
@@ -5437,7 +5437,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                 var self = this;
 
                 return this.__processPath(pathStrOrObj, self.__config).then(function (processedPathOrObj) {
-                    return self.adapter.update(processedPathOrObj, newValue).then(function () {
+                    return $q.when(self.adapter.update(processedPathOrObj, newValue)).then(function () {
                         return self.__addDataToCache(processedPathOrObj, newValue);
                     });
                 });
