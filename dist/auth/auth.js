@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.auth', []);
+    angular.module('znk.infra.auth', ['znk.infra.config']);
 })(angular);
 
 (function (angular) {
@@ -11,12 +11,18 @@
         ["ENV", function (ENV) {
             'ngInject';
 
-            var authService = {};
-
+            var refAuthDB = new Firebase(ENV.fbGlobalEndPoint, ENV.firebaseAppScopeName);
             var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
+
+            var authService = {};
 
             authService.getAuth = function(){
                 return rootRef.getAuth();
+            };
+
+            authService.logout = function () {
+                refAuthDB.unauth();
+                rootRef.unauth();
             };
 
             return authService;

@@ -36,4 +36,12 @@ angular.module('znk.infra.user').service('UserProfileService',
                 return globalStorage.set(profilePath, newProfile);
             });
         };
+
+        this.getCurrUserId = function(){
+            return InfraConfigSrv.getGlobalStorage().then(function(GlobalStorage){
+                var ref = GlobalStorage.adapter.getRef('');
+                var authData = ref.getAuth();
+                return authData && authData.uid;
+            });
+        };
 });

@@ -16,6 +16,10 @@
         "Swiper": false,
         "Firebase": false,
         "MockFirebase": false,
-        "content": false
+        "content": false,
+        "jasmine": false,
+        "it": false,
+        "expect": false,
+        "beforeEach": false
     }
 }

@@ -2,28 +2,44 @@
     'use strict';
 
     angular.module('znk.infra', [
-        'znk.infra.config',
-        'znk.infra.pngSequence',
-        'znk.infra.enum',
-        'znk.infra.svgIcon',
-        'znk.infra.general',
-        'znk.infra.scroll',
-        'znk.infra.content',
-        'znk.infra.znkExercise',
-        'znk.infra.storage',
-        'znk.infra.utility',
-        'znk.infra.exerciseResult',
-        'znk.infra.contentAvail',
-        'znk.infra.popUp',
-        'znk.infra.estimatedScore',
-        'znk.infra.stats',
-        'znk.infra.hint',
-        'znk.infra.znkTimeline',
-        'znk.infra.analytics',
-        'znk.infra.deviceNotSupported',
-        'znk.infra.user',
-        'znk.infra.exams',
-        'znk.infra.scoring'
+        //all modules will be injected here
+        "znk.infra.analytics",
+"znk.infra.assignModule",
+"znk.infra.auth",
+"znk.infra.autofocus",
+"znk.infra.config",
+"znk.infra.content",
+"znk.infra.contentAvail",
+"znk.infra.contentGetters",
+"znk.infra.deviceNotSupported",
+"znk.infra.enum",
+"znk.infra.estimatedScore",
+"znk.infra.evaluator",
+"znk.infra.exams",
+"znk.infra.exerciseResult",
+"znk.infra.exerciseUtility",
+"znk.infra.filters",
+"znk.infra.general",
+"znk.infra.hint",
+"znk.infra.moduleResults",
+"znk.infra.personalization",
+"znk.infra.pngSequence",
+"znk.infra.popUp",
+"znk.infra.presence",
+"znk.infra.scoring",
+"znk.infra.screenSharing",
+"znk.infra.scroll",
+"znk.infra.sharedScss",
+"znk.infra.stats",
+"znk.infra.storage",
+"znk.infra.svgIcon",
+"znk.infra.user",
+"znk.infra.utility",
+"znk.infra.workouts",
+"znk.infra.znkAudioPlayer",
+"znk.infra.znkExercise",
+"znk.infra.znkModule",
+"znk.infra.znkTimeline"
     ]);
 })(angular);
 
@@ -119,6 +135,7 @@
 
             if(!eventsHandler) {
                 $log.error('znkAnalyticsSrv eventsHandler is missing!');
+                return api;
             }
 
             var eventsFn = $injector.invoke(eventsHandler);
@@ -240,8 +257,111 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
 (function (angular) {
     'use strict';
+    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.moduleResults']);
+})(angular);
 
-    angular.module('znk.infra.auth', []);
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
+        'ZnkModuleService', 'ModuleResultsService', '$q', 'SubjectEnum',
+        function (ZnkModuleService, ModuleResultsService, $q, SubjectEnum) {
+            var userAssignModuleService = {};
+
+            userAssignModuleService.getUserAssignModules = function (userId) {
+                return ModuleResultsService.getUserModuleResultsGuids(userId).then(function (resultsGuids) {
+                    var moduleResults = {};
+                    var getProm = $q.when();
+                    angular.forEach(resultsGuids, function (resultGuid) {
+                        getProm = getProm.then(function(){
+                            return ModuleResultsService.getModuleResultByGuid(resultGuid).then(function(moduleResult){
+                                if(moduleResult) {
+                                    moduleResults[moduleResult.moduleId] = moduleResult;
+                                }
+                            });
+                        });
+                    });
+
+                    return getProm.then(function () {
+                        return moduleResults;
+                    });
+                });
+            };
+
+            userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId) {
+                var moduleResults = {};
+                var getProm = $q.when();
+                angular.forEach(moduleIds, function (moduleId) {
+                    getProm = getProm.then(function(){
+                        return ModuleResultsService.getModuleResultByModuleId(moduleId, userId, false);
+                    });
+
+                });
+                return getProm.then(function () {
+                    var saveProm = $q.when();
+                    angular.forEach(moduleIds, function (moduleId) {
+                        if(!moduleResults[moduleId]) {
+                            moduleResults[moduleId] =  ModuleResultsService.getDefaultModuleResult(moduleId, userId);
+                            moduleResults[moduleId].tutorId = tutorId;
+                        }
+                        moduleResults[moduleId].assign = true;
+
+                        saveProm = saveProm.then(function(){
+                            return ModuleResultsService.setModuleResult(moduleResults[moduleId]).then(function(savedResults){
+                                moduleResults[moduleId] = savedResults;
+                            });
+                        });
+
+                    });
+
+                    return saveProm.then(function () {
+                        return moduleResults;
+                    });
+
+                });
+            };
+
+            userAssignModuleService.getUserAssignedModulesFull = function (uid) {
+                return $q.all([ZnkModuleService.getModuleHeaders(), userAssignModuleService.getUserAssignModules(uid)]).then(function (res) {
+                    var modules = objectsObjectToArray(res[0]);
+                    var assignedModules = objectsObjectToArray(res[1]);
+
+                    assignedModules.forEach(function (assignedModule) {
+                        if (assignedModule.assign) {
+                            modules.forEach(function (module) {
+                                if (module.id === assignedModule.moduleId) {
+                                    angular.extend(assignedModule, module);
+                                    assignedModule.subjectName = (getSubjectNameById(module.subjectId)) ? getSubjectNameById(module.subjectId) : '';
+                                }
+                            });
+                        }
+                    });
+                    return assignedModules;
+                });
+            };
+
+            function objectsObjectToArray(obj) {
+                return Object.keys(obj).map(function (key) { return obj[key]; });
+            }
+
+            function getSubjectNameById(subjectId) {
+                return SubjectEnum.getEnumMap()[subjectId];
+            }
+
+            return userAssignModuleService;
+        }
+    ]);
+})(angular);
+
+
+angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.auth', ['znk.infra.config']);
 })(angular);
 
 (function (angular) {
@@ -251,12 +371,18 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
         ["ENV", function (ENV) {
             'ngInject';
 
-            var authService = {};
-
+            var refAuthDB = new Firebase(ENV.fbGlobalEndPoint, ENV.firebaseAppScopeName);
             var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
+
+            var authService = {};
 
             authService.getAuth = function(){
                 return rootRef.getAuth();
+            };
+
+            authService.logout = function () {
+                refAuthDB.unauth();
+                rootRef.unauth();
             };
 
             return authService;
@@ -598,22 +724,17 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.contentAvail', ['znk.infra.config']);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.contentAvail').provider('ContentAvailSrv', [
         function () {
 
             var _specials;
 
-            this.setSpecials = function(specialsObj) {
+            this.setSpecials = function (specialsObj) {
                 _specials = specialsObj;
             };
 
-            this.$get = ['$q', '$parse', '$injector', 'InfraConfigSrv', function($q, $parse, $injector, InfraConfigSrv) {
+            this.$get = ["$q", "$parse", "$injector", "InfraConfigSrv", "StorageSrv", function ($q, $parse, $injector, InfraConfigSrv, StorageSrv) {
+                'ngInject';
 
                 var PURCHASED_ALL = 'all';
 
@@ -621,7 +742,7 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
 
                 function getUserPurchaseData(){
                     return InfraConfigSrv.getStudentStorage().then(function(studentStorageSrv){
-                        var purchaseDataPath = studentStorageSrv.variables.appUserSpacePath + '/purchase';
+                        var purchaseDataPath = StorageSrv.variables.appUserSpacePath + '/purchase';
                         var defValues = {
                             daily: 0,
                             exam: {},
@@ -647,24 +768,24 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                     });
                 }
 
-                function getUserSpecialsData(){
+                function getUserSpecialsData() {
                     var specialsProm = false;
-                    if(_specials) {
+                    if (_specials) {
                         specialsProm = $injector.invoke(_specials);
                     }
                     return $q.when(specialsProm);
                 }
 
-                function idToKeyInStorage(id){
+                function idToKeyInStorage(id) {
                     return 'id_' + id;
                 }
 
-                function _hasSubscription(subscriptionObj){
+                function _hasSubscription(subscriptionObj) {
                     return subscriptionObj && subscriptionObj.expiryDate && subscriptionObj.expiryDate > Date.now();
                 }
 
-                function _baseIsEntityAvail(){
-                    return $q.all([getUserPurchaseData(),getFreeContentData(), getUserSpecialsData()]).then(function(res){
+                function _baseIsEntityAvail() {
+                    return $q.all([getUserPurchaseData(), getFreeContentData(), getUserSpecialsData()]).then(function (res) {
                         var purchaseData = res[0];
                         var hasSubscription = _hasSubscription(purchaseData.subscription);
                         var earnedSpecialsObj = {
@@ -673,36 +794,36 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                             section: {},
                             tutorial: {}
                         };
-                        if(hasSubscription){
+                        if (hasSubscription) {
                             return true;
                         } else {
                             var specials = res[1].specials;
                             var specialsRes = res[2];
-                            if(specialsRes) {
-                                angular.forEach(specialsRes, function(specialVal, specialKey) {
-                                    if(specials[specialKey] && specialVal === true) {
-                                        angular.forEach(specials[specialKey], function(val, key) {
-                                            if(val === PURCHASED_ALL) {
+                            if (specialsRes) {
+                                angular.forEach(specialsRes, function (specialVal, specialKey) {
+                                    if (specials[specialKey] && specialVal === true) {
+                                        angular.forEach(specials[specialKey], function (val, key) {
+                                            if (val === PURCHASED_ALL) {
                                                 earnedSpecialsObj[key] = val;
                                             } else {
-                                                switch(key) {
+                                                switch (key) {
                                                     case 'daily':
-                                                        if(angular.isNumber(val)) {
+                                                        if (angular.isNumber(val)) {
                                                             earnedSpecialsObj.daily += val;
                                                         }
                                                         break;
                                                     case 'exam':
-                                                        if(angular.isObject(val) && !angular.isArray(val)) {
+                                                        if (angular.isObject(val) && !angular.isArray(val)) {
                                                             earnedSpecialsObj.exam = angular.extend(earnedSpecialsObj.exam, val);
                                                         }
                                                         break;
                                                     case 'section':
-                                                        if(angular.isObject(val) && !angular.isArray(val)) {
+                                                        if (angular.isObject(val) && !angular.isArray(val)) {
                                                             earnedSpecialsObj.section = angular.extend(earnedSpecialsObj.section, val);
                                                         }
                                                         break;
                                                     case 'tutorial':
-                                                        if(angular.isObject(val) && !angular.isArray(val)) {
+                                                        if (angular.isObject(val) && !angular.isArray(val)) {
                                                             earnedSpecialsObj.tutorial = angular.extend(earnedSpecialsObj.tutorial, val);
                                                         }
                                                         break;
@@ -718,11 +839,11 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                     });
                 }
 
-                function _isContentOwned(contentData,pathArr){
+                function _isContentOwned(contentData, pathArr) {
                     var prefixPathArr = pathArr.slice(0, pathArr.length - 1);
                     var prefixPath = prefixPathArr.join('.');
                     var isAllOwned = $parse(prefixPath)(contentData) === PURCHASED_ALL;
-                    if(isAllOwned){
+                    if (isAllOwned) {
                         return true;
                     }
 
@@ -731,17 +852,17 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                 }
 
                 ContentAvailSrvObj.hasSubscription = function hasSubscription() {
-                    return getUserPurchaseData().then(function(purchaseData){
+                    return getUserPurchaseData().then(function (purchaseData) {
                         return _hasSubscription(purchaseData.subscription);
                     });
                 };
 
-                ContentAvailSrvObj.isDailyAvail = function isDailyAvail(dailyOrder){
-                    if(!angular.isNumber(dailyOrder) || isNaN(dailyOrder)){
+                ContentAvailSrvObj.isDailyAvail = function isDailyAvail(dailyOrder) {
+                    if (!angular.isNumber(dailyOrder) || isNaN(dailyOrder)) {
                         return $q.reject('daily order should be a number');
                     }
-                    return _baseIsEntityAvail().then(function(res){
-                        if(res === true){
+                    return _baseIsEntityAvail().then(function (res) {
+                        if (res === true) {
                             return true;
                         }
 
@@ -750,7 +871,7 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                         var earnedSpecials = res[3];
 
                         var isAllOwned = purchaseData.daily === PURCHASED_ALL || freeContent.daily === PURCHASED_ALL || earnedSpecials.daily === PURCHASED_ALL;
-                        if(isAllOwned){
+                        if (isAllOwned) {
                             return true;
                         }
 
@@ -759,9 +880,9 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                     });
                 };
 
-                ContentAvailSrvObj.isExamAvail = function isExamAvail(examId){
-                    return _baseIsEntityAvail().then(function(res){
-                        if(res === true){
+                ContentAvailSrvObj.isExamAvail = function isExamAvail(examId) {
+                    return _baseIsEntityAvail().then(function (res) {
+                        if (res === true) {
                             return true;
                         }
 
@@ -769,18 +890,18 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                         var freeContent = res[1];
                         var earnedSpecials = res[3];
 
-                        var examPathArr = ['exam',idToKeyInStorage(examId)];
-                        var isOwnedViaFreeContent = _isContentOwned(freeContent,examPathArr);
-                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials,examPathArr);
-                        var isOwnedViaPurchase = _isContentOwned(purchaseData,examPathArr);
+                        var examPathArr = ['exam', idToKeyInStorage(examId)];
+                        var isOwnedViaFreeContent = _isContentOwned(freeContent, examPathArr);
+                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials, examPathArr);
+                        var isOwnedViaPurchase = _isContentOwned(purchaseData, examPathArr);
 
                         return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
                     });
                 };
 
-                ContentAvailSrvObj.isSectionAvail = function isSectionAvail(examId,sectionId){
-                    return _baseIsEntityAvail().then(function(res){
-                        if(res === true){
+                ContentAvailSrvObj.isSectionAvail = function isSectionAvail(examId, sectionId) {
+                    return _baseIsEntityAvail().then(function (res) {
+                        if (res === true) {
                             return true;
                         }
 
@@ -789,25 +910,25 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                         var earnedSpecials = res[3];
 
                         var examKeyProp = idToKeyInStorage(examId);
-                        var examPathArr = ['exam',examKeyProp];
-                        var isExamPurchased = _isContentOwned(purchaseData,examPathArr);
-                        if(isExamPurchased ){
+                        var examPathArr = ['exam', examKeyProp];
+                        var isExamPurchased = _isContentOwned(purchaseData, examPathArr);
+                        if (isExamPurchased) {
                             return true;
                         }
 
                         var sectionKeyProp = idToKeyInStorage(sectionId);
 
-                        var sectionPathArr = ['section',sectionKeyProp];
-                        var isOwnedViaFreeContent = _isContentOwned(freeContent,sectionPathArr);
-                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials,sectionPathArr);
-                        var isOwnedViaPurchase = _isContentOwned(purchaseData,sectionPathArr);
+                        var sectionPathArr = ['section', sectionKeyProp];
+                        var isOwnedViaFreeContent = _isContentOwned(freeContent, sectionPathArr);
+                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials, sectionPathArr);
+                        var isOwnedViaPurchase = _isContentOwned(purchaseData, sectionPathArr);
 
                         return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
                     });
                 };
 
-                ContentAvailSrvObj.isTutorialAvail = function isTutorialAvail(tutorialId){
-                    return _baseIsEntityAvail().then(function(res) {
+                ContentAvailSrvObj.isTutorialAvail = function isTutorialAvail(tutorialId) {
+                    return _baseIsEntityAvail().then(function (res) {
                         if (res === true) {
                             return true;
                         }
@@ -817,10 +938,10 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                         var purchaseData = res[0];
                         var freeContent = res[1];
                         var earnedSpecials = res[3];
-                        var tutorialPathArr = ['tutorial',tutorialKeyInStorage];
-                        var isOwnedViaFreeContent = _isContentOwned(freeContent,tutorialPathArr);
-                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials,tutorialPathArr);
-                        var isOwnedViaPurchase = _isContentOwned(purchaseData,tutorialPathArr);
+                        var tutorialPathArr = ['tutorial', tutorialKeyInStorage];
+                        var isOwnedViaFreeContent = _isContentOwned(freeContent, tutorialPathArr);
+                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials, tutorialPathArr);
+                        var isOwnedViaPurchase = _isContentOwned(purchaseData, tutorialPathArr);
 
                         return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
 
@@ -828,7 +949,7 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                 };
 
                 ContentAvailSrvObj.getFreeContentDailyNum = function getFreeContentDailyNum() {
-                    return getFreeContentData().then(function(freeContentData) {
+                    return getFreeContentData().then(function (freeContentData) {
                         return freeContentData.daily;
                     });
                 };
@@ -837,9 +958,221 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
             }];
         }
     ]);
-})(angular);  
+})(angular);
 
 angular.module('znk.infra.contentAvail').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.contentGetters', [
+        'znk.infra.config',
+        'znk.infra.content',
+        'znk.infra.exerciseUtility'
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.contentGetters').factory('BaseExerciseGetterSrv',
+        ["ContentSrv", "$log", "$q", "ExerciseTypeEnum", function (ContentSrv, $log, $q, ExerciseTypeEnum) {
+            'ngInject';
+
+            function BaseExerciseGetterSrv(exerciseTypeName) {
+                this.typeName = exerciseTypeName;
+            }
+
+            BaseExerciseGetterSrv.getExerciseByNameAndId = function (exerciseTypeName, exerciseId) {
+                var context = {
+                    typeName: exerciseTypeName
+                };
+                return BaseExerciseGetterSrvPrototype.get.call(context, exerciseId);
+            };
+
+            BaseExerciseGetterSrv.getExerciseByTypeAndId = function (exerciseTypeId, exerciseId) {
+                var exerciseTypeName = ExerciseTypeEnum.getValByEnum(exerciseTypeId).toLowerCase();
+                return BaseExerciseGetterSrv.getExerciseByNameAndId(exerciseTypeName, exerciseId);
+            };
+
+            var BaseExerciseGetterSrvPrototype = {};
+
+            BaseExerciseGetterSrvPrototype.get = function (exerciseId) {
+                var contentData = {
+                    exerciseId: exerciseId,
+                    exerciseType: this.typeName
+                };
+
+                return ContentSrv.getContent(contentData).then(function (result) {
+                    return angular.fromJson(result);
+                }, function (err) {
+                    if (err) {
+                        $log.error(err);
+                        return $q.reject(err);
+                    }
+                });
+            };
+
+            BaseExerciseGetterSrvPrototype.getAll = function () {
+                var self = this;
+                var resultsProm = [];
+                return ContentSrv.getAllContentIdsByKey(self.typeName).then(function (results) {
+                    angular.forEach(results, function (keyValue) {
+                        resultsProm.push(self.getContent({
+                            exerciseType: keyValue
+                        }));
+                    });
+                    return $q.all(resultsProm);
+                }, function (err) {
+                    if (err) {
+                        $log.error(err);
+                        return $q.reject(err);
+                    }
+                });
+            };
+
+            BaseExerciseGetterSrv.prototype = BaseExerciseGetterSrvPrototype;
+
+            return BaseExerciseGetterSrv;
+        }]
+    );
+})(angular);
+
+'use strict';
+
+angular.module('znk.infra.contentGetters').service('CategoryService',
+    ["StorageRevSrv", "$q", "categoryEnum", "$log", function (StorageRevSrv, $q, categoryEnum, $log) {
+        'ngInject';
+
+        var self = this;
+        this.get = function () {
+            return StorageRevSrv.getContent({exerciseType: 'category'});
+        };
+
+        var categoryMapObj;
+        this.getCategoryMap = function () {
+            if (categoryMapObj) {
+                return $q.when(categoryMapObj);
+            }
+            return self.get().then(function (categories) {
+                var categoryMap = {};
+                angular.forEach(categories, function (item) {
+                    categoryMap[item.id] = item;
+                });
+                categoryMapObj = categoryMap;
+                return categoryMapObj;
+            });
+        };
+
+        self.getCategoryData = function (categoryId) {
+            return self.getCategoryMap().then(function (categoryMap) {
+                return categoryMap[categoryId];
+            });
+        };
+
+        self.categoryName = function (categoryId) {
+            return self.getCategoryMap().then(function (categoryMap) {
+                return categoryMap[categoryId];
+            });
+        };
+
+        self.getParentCategory = function (categoryId) {
+            return self.getCategoryMap().then(function (categories) {
+                var parentId;
+                if (categories[categoryId]) {
+                    parentId = categories[categoryId].parentId;
+                } else {
+                    $log.error('category id was not found in the categories');
+                    return null;
+                }
+                return categories[parentId];
+            });
+        };
+
+        self.getCategoryLevel1Parent = function (category) {
+            if (category.typeId === categoryEnum.SUBJECT.enum) {
+                return $q.when(category.id);
+            }
+            return self.getParentCategory(category.id).then(function (parentCategory) {
+                return self.getCategoryLevel1Parent(parentCategory);
+            });
+        };
+
+
+        self.getCategoryLevel2Parent = function (categoryId) {
+            return self.getCategoryMap().then(function (categories) {
+                var category = categories[categoryId];
+                if (categoryEnum.TEST_SCORE.enum === category.typeId) {
+                    return category;
+                }
+                return self.getCategoryLevel2Parent(category.parentId);
+            });
+        };
+
+        self.getAllLevel3Categories = (function () {
+            var getAllLevel3CategoriesProm;
+            return function () {
+                if (!getAllLevel3CategoriesProm) {
+                    getAllLevel3CategoriesProm = self.getCategoryMap().then(function (categories) {
+                        var generalCategories = {};
+                        angular.forEach(categories, function (category) {
+                            if (category.typeId === categoryEnum.GENERAL.enum) {
+                                generalCategories[category.id] = category;
+                            }
+                        });
+                        return generalCategories;
+                    });
+                }
+                return getAllLevel3CategoriesProm;
+            };
+        })();
+
+        self.getAllLevel3CategoriesGroupedByLevel1 = (function () {
+            var getAllLevel3CategoriesGroupedByLevel1Prom;
+            return function (subjectId) {
+                if (!getAllLevel3CategoriesGroupedByLevel1Prom) {
+                    getAllLevel3CategoriesGroupedByLevel1Prom = self.getAllLevel3Categories().then(function (categories) {
+                        var generalCategories = {};
+                        var promArray = [];
+                        angular.forEach(categories, function (generalCategory) {
+                            var prom = self.getCategoryLevel1Parent(generalCategory).then(function (currentCategorySubjectId) {
+                                if (currentCategorySubjectId === subjectId) {
+                                    generalCategories[generalCategory.id] = generalCategory;
+                                }
+                            });
+                            promArray.push(prom);
+                        });
+                        return $q.all(promArray).then(function () {
+                            return generalCategories;
+                        });
+                    });
+                }
+                return getAllLevel3CategoriesGroupedByLevel1Prom;
+            };
+        })();
+
+        self.getAllLevel4Categories = (function () {
+            var getAllLevel4CategoriessProm;
+            return function () {
+                if (!getAllLevel4CategoriessProm) {
+                    getAllLevel4CategoriessProm = self.getCategoryMap().then(function (categories) {
+                        var specificCategories = {};
+                        angular.forEach(categories, function (category) {
+                            if (category.typeId === categoryEnum.SPECIFIC.enum) {
+                                specificCategories[category.id] = category;
+                            }
+                        });
+                        return specificCategories;
+                    });
+                }
+                return getAllLevel4CategoriessProm;
+            };
+        })();
+    }]);
+
+angular.module('znk.infra.contentGetters').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -1191,18 +1524,17 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.estimatedScore').service('EstimatedScoreHelperSrv', [
-        'SubjectEnum', 'InfraConfigSrv', 'StorageSrv',
-        function (SubjectEnum, InfraConfigSrv, StorageSrv) {
-            var EstimatedScoreHelperSrv = this;
+    angular.module('znk.infra.estimatedScore').service('EstimatedScoreHelperSrv',
+        ["SubjectEnum", "InfraConfigSrv", "StorageSrv", function (SubjectEnum, InfraConfigSrv, StorageSrv) {
+            'ngInject';
 
-            // var StorageSrv = InfraConfigSrv.getStorageService();
+            var EstimatedScoreHelperSrv = this;
 
             var ESTIMATE_SCORE_PATH = StorageSrv.variables.appUserSpacePath + '/estimatedScore';
 
-            function _SetSubjectInitialVal(obj,initValue){
+            function _SetSubjectInitialVal(obj, initValue) {
                 var subjectKeys = Object.keys(SubjectEnum);
-                for(var i in subjectKeys){
+                for (var i in subjectKeys) {
                     var subjectEnum = SubjectEnum[subjectKeys[i]];
                     obj[subjectEnum.enum] = angular.copy(initValue);
                 }
@@ -1251,8 +1583,8 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                     return StudentStorageSrv.set(ESTIMATE_SCORE_PATH,newEstimateScoreData);
                 });
             };
-        }
-    ]);
+        }]
+    );
 })(angular);
 
 'use strict';
@@ -1469,6 +1801,75 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.evaluator', ['znk.infra.config']);
+})(angular);
+
+'use strict';
+
+(function (angular) {
+    angular.module('znk.infra.evaluator').provider('ZnkEvaluatorSrv', function () {
+
+        var _evaluateQuestionFn;
+
+        var shouldEvaluateQuestionFnDefault = function(purchaseService) {
+            'ngInject';
+            return purchaseService.hasProVersion();
+        };
+        shouldEvaluateQuestionFnDefault.$inject = ["purchaseService"];
+
+        this.shouldEvaluateQuestionFn = function(evaluateQuestionFn) {
+            _evaluateQuestionFn = evaluateQuestionFn;
+        };
+
+        this.$get = ["$q", "$injector", "ENV", "$http", "InfraConfigSrv", function ($q, $injector, ENV, $http, InfraConfigSrv) {
+            'ngInject';
+
+            var znkEvaluatorSrvApi = {};
+
+            var httpConfig = {
+                timeout: ENV.promiseTimeOut
+            };
+
+            function _shouldEvaluateQuestion() {
+                if(!_evaluateQuestionFn){
+                    _evaluateQuestionFn = shouldEvaluateQuestionFnDefault;
+                }
+
+                return $q.when($injector.invoke(_evaluateQuestionFn));
+            }
+
+            znkEvaluatorSrvApi.evaluateQuestion = function (questionsArr) {
+                return _shouldEvaluateQuestion().then(function (shouldEvaluate) {
+                    if (shouldEvaluate) {
+                        return InfraConfigSrv.getUserData().then(function(userData) {
+                            return $http.post(ENV.evaluateEndpoint, {
+                                uid: userData.uid,
+                                questionsArr: questionsArr,
+                                appName: ENV.firebaseAppScopeName
+                            }, httpConfig).then(function(evaluateData) {
+                                return evaluateData;
+                            }, function(error) {
+                                return $q.reject(error);
+                            });
+                        }, function(error) {
+                            return $q.reject(error);
+                        });
+                    }
+                });
+            };
+
+            return znkEvaluatorSrvApi;
+        }];
+    });
+})(angular);
+
+angular.module('znk.infra.evaluator').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.exams', []);
 })(angular);
 
@@ -1545,300 +1946,9 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.exerciseDataGetters', [
-        'znk.infra.config',
-        'znk.infra.content',
-        'znk.infra.exerciseUtility'
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.exerciseDataGetters').factory('BaseExerciseGetterSrv',
-        ["ContentSrv", "$log", "$q", function (ContentSrv, $log, $q) {
-            'ngInject';
-            
-            var BaseExerciseGetterSrvPrototype = {};
-
-            BaseExerciseGetterSrvPrototype.get = function (exerciseId) {
-                var contentData = {
-                    exerciseId: exerciseId,
-                    exerciseType: this.typeName
-                };
-
-                return ContentSrv.getContent(contentData).then(function (result) {
-                    return angular.fromJson(result);
-                }, function (err) {
-                    if (err) {
-                        $log.error(err);
-                        return $q.reject(err);
-                    }
-                });
-            };
-
-            BaseExerciseGetterSrvPrototype.getAll = function(){
-                var self = this;
-                var resultsProm = [];
-                return ContentSrv.getAllContentIdsByKey(self.typeName).then(function (results) {
-                    angular.forEach(results, function (keyValue) {
-                        resultsProm.push(self.getContent({
-                            exerciseType: keyValue
-                        }));
-                    });
-                    return $q.all(resultsProm);
-                }, function (err) {
-                    if (err) {
-                        $log.error(err);
-                        return $q.reject(err);
-                    }
-                });
-            };
-
-            function BaseExerciseGetterSrv(exerciseTypeName) {
-                this.typeName = exerciseTypeName;
-            }
-
-            BaseExerciseGetterSrv.getExerciseByNameAndId = function(exerciseId, exerciseTypeName){
-                var context = {
-                    typeName: exerciseTypeName
-                };
-                return BaseExerciseGetterSrvPrototype.get.call(context,exerciseId);
-            };
-
-            BaseExerciseGetterSrv.prototype = BaseExerciseGetterSrvPrototype;
-
-            return BaseExerciseGetterSrv;
-        }]
-    );
-})(angular);
-
-'use strict';
-
-angular.module('znk.infra.exerciseDataGetters').service('CategoryService', ["StorageRevSrv", "$q", "categoryEnum", function (StorageRevSrv, $q, categoryEnum)  {
-        'ngInject';
-
-        var self = this;
-        this.get = function () {
-            return StorageRevSrv.getContent({ exerciseType: 'category' });
-        };
-
-        var categoryMapObj;
-        this.getCategoryMap = function () {
-            if (categoryMapObj) {
-                return $q.when(categoryMapObj);
-            }
-            return self.get().then(function (categories) {
-                var categoryMap = {};
-                angular.forEach(categories, function (item) {
-                    categoryMap[item.id] = item;
-                });
-                categoryMapObj = categoryMap;
-                return categoryMapObj;
-            });
-        };
-
-        self.getCategoryData = function (categoryId) {
-            return self.getCategoryMap().then(function (categoryMap) {
-                return categoryMap[categoryId];
-            });
-        };
-
-        self.getParentCategory = function (categoryId) {
-            return self.getCategoryMap().then(function (categories) {
-                var parentId = categories[categoryId].parentId;
-                return categories[parentId];
-            });
-        };
-
-        self.getCategoryLevel1Parent = function (category) {
-            if (category.typeId === categoryEnum.SUBJECT.enum) {
-                return $q.when(category.id);
-            }
-            return self.getParentCategory(category.id).then(function (parentCategory) {
-                return self.getCategoryLevel1Parent(parentCategory);
-            });
-        };
-
-
-        self.getCategoryLevel2Parent = function (categoryId) {
-            return self.getCategoryMap().then(function (categories) {
-                var category = categories[categoryId];
-                if (categoryEnum.TEST_SCORE.enum === category.typeId) {
-                    return category;
-                }
-                return self.getCategoryLevel2Parent(category.parentId);
-            });
-        };
-
-        self.getAllLevel3Categories = (function () {
-            var getAllLevel3CategoriesProm;
-            return function () {
-                if (!getAllLevel3CategoriesProm) {
-                    getAllLevel3CategoriesProm = self.getCategoryMap().then(function (categories) {
-                        var generalCategories = {};
-                        angular.forEach(categories, function (category) {
-                            if (category.typeId === categoryEnum.GENERAL.enum) {
-                                generalCategories[category.id] = category;
-                            }
-                        });
-                        return generalCategories;
-                    });
-                }
-                return getAllLevel3CategoriesProm;
-            };
-        })();
-
-        self.getAllLevel3CategoriesGroupedByLevel1 = (function () {
-            var getAllLevel3CategoriesGroupedByLevel1Prom;
-            return function (subjectId) {
-                if (!getAllLevel3CategoriesGroupedByLevel1Prom) {
-                    getAllLevel3CategoriesGroupedByLevel1Prom = self.getAllLevel3Categories().then(function (categories) {
-                        var generalCategories = {};
-                        var promArray = [];
-                        angular.forEach(categories, function (generalCategory) {
-                            var prom = self.getCategoryLevel1Parent(generalCategory).then(function (currentCategorySubjectId) {
-                                if (currentCategorySubjectId === subjectId) {
-                                    generalCategories[generalCategory.id] = generalCategory;
-                                }
-                            });
-                            promArray.push(prom);
-                        });
-                        return $q.all(promArray).then(function () {
-                            return generalCategories;
-                        });
-                    });
-                }
-                return getAllLevel3CategoriesGroupedByLevel1Prom;
-            };
-        })();
-
-        self.getAllLevel4Categories = (function () {
-            var getAllLevel4CategoriessProm;
-            return function () {
-                if (!getAllLevel4CategoriessProm) {
-                    getAllLevel4CategoriessProm = self.getCategoryMap().then(function (categories) {
-                        var specificCategories = {};
-                        angular.forEach(categories, function (category) {
-                            if (category.typeId === categoryEnum.SPECIFIC.enum) {
-                                specificCategories[category.id] = category;
-                            }
-                        });
-                        return specificCategories;
-                    });
-                }
-                return getAllLevel4CategoriessProm;
-            };
-        })();
-}]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.exerciseDataGetters').service('WorkoutsSrv',
-        ["ExerciseStatusEnum", "ExerciseTypeEnum", "$log", "StorageSrv", "ExerciseResultSrv", "ContentAvailSrv", "$q", "InfraConfigSrv", "BaseExerciseGetterSrv", function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
-                  InfraConfigSrv, BaseExerciseGetterSrv) {
-            'ngInject';
-
-            var workoutsDataPath = StorageSrv.variables.appUserSpacePath + '/workouts';
-
-            function _getWorkoutsData() {
-                var defaultValue = {
-                    workouts: {}
-                };
-                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
-                    return StudentStorageSrv.get(workoutsDataPath, defaultValue);
-                });
-            }
-
-            function getWorkoutKey(workoutId) {
-                return 'workout_' + workoutId;
-            }
-
-            function _getWorkout(workoutId) {
-                var workoutKey = getWorkoutKey(workoutId);
-                return _getWorkoutsData().then(function (workoutsData) {
-                    return workoutsData.workouts[workoutKey];
-                });
-            }
-
-            function _setIsAvailForWorkout(workout) {
-                return ContentAvailSrv.isDailyAvail(workout.workoutOrder).then(function (isAvail) {
-                    workout.isAvail = isAvail;
-                });
-            }
-
-            this.getAllWorkouts = function () {
-                return _getWorkoutsData().then(function (workoutsData) {
-                    var workoutsArr = [],
-                        promArr = [];
-                    angular.forEach(workoutsData.workouts, function (workout) {
-                        workoutsArr.push(workout);
-                        promArr.push(_setIsAvailForWorkout(workout));
-                    });
-
-                    for (var i = 0; i < 5; i++) {
-                        var workoutToAdd = {
-                            status: ExerciseStatusEnum.NEW.enum,
-                            workoutOrder: workoutsArr.length + 1
-                        };
-                        workoutsArr.push(workoutToAdd);
-                        promArr.push(_setIsAvailForWorkout(workoutToAdd));
-                    }
-                    return $q.all(promArr).then(function () {
-                        return workoutsArr.sort(function (workout1, workout2) {
-                            return workout1.workoutOrder - workout2.workoutOrder;
-                        });
-                    });
-                });
-            };
-
-            this.getWorkoutData = function (workoutId) {
-                if (angular.isUndefined(workoutId)) {
-                    $log.error('workoutSrv: getWorkoutData function was invoked without workout id');
-                }
-                return _getWorkout(workoutId).then(function (workout) {
-                    if (workout) {
-                        var getExerciseProm;
-                        var exerciseTypeName = ExerciseTypeEnum.getValByEnum(workout.exerciseTypeId).toLowerCase();
-                        getExerciseProm = BaseExerciseGetterSrv.getExerciseByNameAndId(workout.exerciseId, exerciseTypeName);
-
-                        return {
-                            workoutId: workoutId,
-                            exerciseTypeId: workout.exerciseTypeId,
-                            exerciseProm: getExerciseProm,
-                            exerciseResultProm: ExerciseResultSrv.getExerciseResult(workout.exerciseTypeId, workout.exerciseId)
-                        };
-                    }
-                    return null;
-                });
-            };
-
-            this.setWorkout = function (workoutId, newWorkoutValue) {
-                return _getWorkoutsData().then(function (workoutsData) {
-                    var workoutKey = getWorkoutKey(workoutId);
-                    workoutsData.workouts[workoutKey] = newWorkoutValue;
-                    InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
-                        StudentStorageSrv.set(workoutsDataPath, workoutsData);
-                    });
-                });
-            };
-
-            this.getWorkoutKey = getWorkoutKey;
-        }]
-    );
-})(angular);
-
-angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function($templateCache) {
-
-}]);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.exerciseResult', [
-        'znk.infra.config',
-        'znk.infra.utility',
+        'znk.infra.config','znk.infra.utility', 
+        'znk.infra.moduleResults',
         'znk.infra.exerciseUtility'
     ]);
 })(angular);
@@ -1847,26 +1957,15 @@ angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function(
     'use strict';
 
     angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum',
-        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum) {
+        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum', 'ModuleResultsService',
+        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum, ModuleResultsService) {
             var ExerciseResultSrv = this;
 
             var EXERCISE_RESULTS_PATH = 'exerciseResults';
-            var EXERCISE_RESULTS_GUIDS_PATH = StorageSrv.variables.appUserSpacePath + '/exerciseResults';
-
-
             var EXAM_RESULTS_PATH = 'examResults';
-            var EXAM_RESULTS_GUIDS_PATH = StorageSrv.variables.appUserSpacePath + '/examResults';
-
-            var EXERCISES_STATUS_PATH = StorageSrv.variables.appUserSpacePath + '/exercisesStatus';
-
-            function _isValidNumber(number){
-                if(!angular.isNumber(number) && !angular.isString(number)){
-                    return false;
-                }
-
-                return !isNaN(+number);
-            }
+            var USER_EXERCISE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/exerciseResults';
+            var USER_EXAM_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/examResults';
+            var USER_EXERCISES_STATUS_PATH = StorageSrv.variables.appUserSpacePath + '/exercisesStatus';
 
             function _getExerciseResultPath(guid) {
                 return EXERCISE_RESULTS_PATH + '/' + guid;
@@ -1895,7 +1994,7 @@ angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function(
 
             function _getExerciseResultsGuids(){
                 return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                    return StudentStorageSrv.get(EXERCISE_RESULTS_GUIDS_PATH);
+                    return StudentStorageSrv.get(USER_EXERCISE_RESULTS_PATH);
                 });
             }
 
@@ -1936,7 +2035,7 @@ angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function(
 
             function _getExamResultsGuids(){
                 return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                    return StudentStorageSrv.get(EXAM_RESULTS_GUIDS_PATH);
+                    return StudentStorageSrv.get(USER_EXAM_RESULTS_PATH);
                 });
             }
 
@@ -1983,7 +2082,7 @@ angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function(
                 exerciseResult.correctAnswersNum = countCorrect;
                 exerciseResult.wrongAnswersNum = countWrong;
                 exerciseResult.skippedAnswersNum = countSkipped;
-                
+
                 exerciseResult.duration = totalTimeSpentOnQuestions;
                 exerciseResult.correctAvgTime = _getAvgTime(countCorrect,correctTotalTime);
                 exerciseResult.wrongAvgTime = _getAvgTime(countWrong, wrongTotalTime);
@@ -2007,7 +2106,7 @@ angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function(
                     var exerciseNewStatus = exerciseResult.isComplete ?
                         ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
                     exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId] = new ExerciseStatus(exerciseNewStatus, totalTimeSpentOnQuestions);
-                    dataToSave[EXERCISES_STATUS_PATH] = exercisesStatusData;
+                    dataToSave[USER_EXERCISES_STATUS_PATH] = exercisesStatusData;
 
                     var getSectionAggregatedDataProm = $q.when();
                     if(exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
@@ -2027,7 +2126,7 @@ angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function(
 
                     return getSectionAggregatedDataProm.then(function() {
                         return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                            StudentStorageSrv.set(dataToSave);
+                            StudentStorageSrv.update(dataToSave);
                             return exerciseResult;
                         });
                     });
@@ -2063,7 +2162,7 @@ angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function(
 
             function _getExercisesStatusData(){
                 return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                    return StudentStorageSrv.get(EXERCISES_STATUS_PATH);
+                    return StudentStorageSrv.get(USER_EXERCISES_STATUS_PATH);
                 });
             }
 
@@ -2073,7 +2172,7 @@ angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function(
             }
 
             this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum, dontInitialize) {
-                if(!_isValidNumber(exerciseTypeId) || !_isValidNumber(exerciseId)){
+                if(!UtilitySrv.fn.isValidNumber(exerciseTypeId) || !UtilitySrv.fn.isValidNumber(exerciseId)){
                     var errMSg = 'ExerciseResultSrv: exercise type id, exercise id should be number !!!';
                     $log.error(errMSg);
                     return $q.reject(errMSg);
@@ -2081,7 +2180,7 @@ angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function(
                 exerciseTypeId = +exerciseTypeId;
                 exerciseId = +exerciseId;
 
-                if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum && !_isValidNumber(examId)){
+                if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum && !UtilitySrv.fn.isValidNumber(examId)){
                     var examErrMSg = 'ExerciseResultSrv: exam id should be provided when asking for section result and should' +
                         ' be a number!!!';
                     $log.error(examErrMSg);
@@ -2110,7 +2209,7 @@ angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function(
                             var dataToSave = {};
 
                             exerciseResultsGuids[exerciseTypeId][exerciseId] = newGuid;
-                            dataToSave[EXERCISE_RESULTS_GUIDS_PATH] = exerciseResultsGuids;
+                            dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
 
                             var exerciseResultPath = _getExerciseResultPath(newGuid);
                             var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,newGuid);
@@ -2136,7 +2235,7 @@ angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function(
                                 }
 
                                 return $q.when(setProm).then(function(){
-                                    return StudentStorageSrv.set(dataToSave);
+                                    return StudentStorageSrv.update(dataToSave);
                                 }).then(function(res){
                                     return res[exerciseResultPath];
                                 });
@@ -2164,7 +2263,7 @@ angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function(
             };
 
             this.getExamResult = function (examId, dontInitialize) {
-                if(!_isValidNumber(examId)){
+                if(!UtilitySrv.fn.isValidNumber(examId)){
                     var errMsg = 'Exam id is not a number !!!';
                     $log.error(errMsg);
                     return $q.reject(errMsg);
@@ -2182,14 +2281,14 @@ angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function(
                             var dataToSave = {};
                             var newExamResultGuid = UtilitySrv.general.createGuid();
                             examResultsGuids[examId] = newExamResultGuid;
-                            dataToSave[EXAM_RESULTS_GUIDS_PATH] = examResultsGuids;
+                            dataToSave[USER_EXAM_RESULTS_PATH] = examResultsGuids;
 
                             var examResultPath = _getExamResultPath(newExamResultGuid);
                             var initExamResultProm = _getInitExamResult(examId, newExamResultGuid);
                             return initExamResultProm.then(function(initExamResult) {
                                 dataToSave[examResultPath] = initExamResult;
 
-                                return StudentStorageSrv.set(dataToSave).then(function (res) {
+                                return StudentStorageSrv.update(dataToSave).then(function (res) {
                                     return res[examResultPath];
                                 });
                             });
@@ -2211,6 +2310,83 @@ angular.module('znk.infra.exerciseDataGetters').run(['$templateCache', function(
 
             this.getExercisesStatusMap = function(){
                 return _getExercisesStatusData();
+            };
+
+            this.getModuleExerciseResults = function (userId, moduleId, exerciseTypeId, exerciseId, dontInitialize) {
+                if(!UtilitySrv.fn.isValidNumber(exerciseTypeId) || !UtilitySrv.fn.isValidNumber(exerciseId)){
+                    var errMSg = 'ExerciseResultSrv: exercise type id, exercise id should be number !!!';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                exerciseTypeId = +exerciseTypeId;
+                exerciseId = +exerciseId;
+
+                if(!UtilitySrv.fn.isValidNumber(moduleId)){
+                    var examErrMSg = 'ExerciseResultSrv: module id should be provided when asking for exercise result and should be a number!!!';
+                    $log.error(examErrMSg);
+                    return $q.reject(examErrMSg);
+                }
+                moduleId = +moduleId;
+
+                return $q.all([ModuleResultsService.getModuleResultByModuleId(moduleId, userId), _getExerciseResultsGuids()]).then(function (results) {
+                    var moduleResultsObj = results[0];
+                    var exerciseResultsGuids = results[1];
+                    var resultGuid = exerciseResultsGuids[exerciseTypeId] && exerciseResultsGuids[exerciseTypeId][exerciseId];
+                    if (!resultGuid) {
+                        if(dontInitialize){
+                            return null;
+                        }
+
+                        if(!exerciseResultsGuids[exerciseTypeId]){
+                            exerciseResultsGuids[exerciseTypeId] = {};
+                        }
+
+                        var storage = InfraConfigSrv.getStorageService();
+                        var newGuid = UtilitySrv.general.createGuid();
+                        var dataToSave = {};
+
+                        exerciseResultsGuids[exerciseTypeId][exerciseId] = newGuid;
+                        dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
+
+                        var exerciseResultPath = _getExerciseResultPath(newGuid);
+                        var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,newGuid);
+                        return initResultProm.then(function(initResult) {
+                            dataToSave[exerciseResultPath] = initResult;
+
+                            if(moduleResultsObj){
+                                moduleResultsObj.moduleId = moduleId;
+
+                                if(!moduleResultsObj.exerciseResults){
+                                    moduleResultsObj.exerciseResults = {};
+                                }
+                                moduleResultsObj.exerciseResults[exerciseId] = newGuid;
+                                var moduleResultPath = ModuleResultsService.getModuleResultPath(moduleResultsObj.guid);
+                                dataToSave[moduleResultPath] = moduleResultsObj;
+                            }
+
+                            return storage.update(dataToSave).then(function (res) {
+                                return res[exerciseResultPath];
+                            });
+                        });
+                    }
+
+                    return _getExerciseResultByGuid(resultGuid).then(function(result){
+                        var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,resultGuid);
+                        return initResultProm.then(function(initResult) {
+                            if(result.guid !== resultGuid){
+                                angular.extend(result,initResult);
+                            }else{
+                                UtilitySrv.object.extendWithoutOverride(result, initResult);
+                            }
+                            return result;
+                        });
+                    });
+                }).then(function(exerciseResult){
+                    if(angular.isObject(exerciseResult)){
+                        exerciseResult.$save = exerciseSaveFn;
+                    }
+                    return exerciseResult;
+                });
             };
         }
     ]);
@@ -2423,7 +2599,61 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.general', ['znk.infra.enum', 'znk.infra.svgIcon'])
+    angular.module('znk.infra.filters', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.filters').filter('capitalize', [
+        function () {
+            return function (str) {
+                if(!angular.isString(str) || !str.length){
+                    return '';
+                }
+                
+                return str[0].toUpperCase() + str.substr(1);
+            };
+        }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+    /**
+     * @param time (in seconds)
+     * @param exp (expression to display time)
+     * @returns formatted time string
+     */
+    angular.module('znk.infra.filters').filter('formatDuration', ['$log', function ($log) {
+        return function (time, exp) {
+            if (!angular.isNumber(time) || isNaN(time)) {
+                $log.error('time is not a number:', time);
+                return '';
+            }
+            var t = Math.round(parseInt(time));
+            var hours = parseInt(t / 3600, 10);
+            t = t - (hours * 3600);
+            var minutes = parseInt(t / 60, 10);
+            var seconds = time % 60;
+            var defaultFormat = 'mm:ss';
+
+            if (!exp) {
+                exp = defaultFormat;
+            }
+            return exp.replace(/hh/g, hours).replace(/mm/g, minutes).replace(/ss/g, seconds);
+        };
+    }]);
+})(angular);
+
+angular.module('znk.infra.filters').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.general', ['znk.infra.enum', 'znk.infra.svgIcon', 'angular-svg-round-progress'])
         .config([
         'SvgIconSrvProvider',
         function (SvgIconSrvProvider) {
@@ -2525,6 +2755,34 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
     });
 })(angular);
 
+
+'use strict';
+
+(function (angular) {
+    angular.module('znk.infra.general').directive('disableClickDrv', [
+        function () {
+            return {
+                priority: 200,
+                link: {
+                    pre: function (scope, element, attrs) {
+                        function clickHandler(evt){
+                            if(attrs.disabled){
+                                evt.stopImmediatePropagation();
+                                evt.preventDefault();
+                                return false;
+                            }
+                        }
+                        var eventName = 'click';
+                        element[0].addEventListener (eventName, clickHandler);
+                        scope.$on('$destroy',function(){
+                            element[0].removeEventListener (eventName, clickHandler);
+                        });
+                    }
+                }
+            };
+        }
+    ]);
+})(angular);
 
 /**
  *  @directive subjectIdToAttrDrv
@@ -3158,13 +3416,13 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.hint').provider('HintSrv',function(){
+    angular.module('znk.infra.hint').provider('HintSrv', function () {
         var registeredHints = {};
 
         var _hintMap = {};
 
         this.registerHint = function (hintName, hintAction, determineWhetherToTriggerFnGetter) {
-            if(!registeredHints[hintName]){
+            if (!registeredHints[hintName]) {
                 registeredHints[hintName] = {
                     name: hintName,
                     action: hintAction,
@@ -3174,58 +3432,58 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
             _hintMap[hintName] = hintName;
         };
 
-        this.$get = [
-            'InfraConfigSrv', '$q', '$log', '$injector', 'StorageSrv',
-            function (InfraConfigSrv, $q, $log, $injector, StorageSrv) {
-                var HintSrv = {};
-                var hintPath = StorageSrv.variables.appUserSpacePath + '/hint';
-                var defaultHints = {
-                    hintsStatus:{}
-                };
+        this.$get = ["InfraConfigSrv", "$q", "$log", "$injector", "StorageSrv", function (InfraConfigSrv, $q, $log, $injector, StorageSrv) {
+            'ngInject';
 
-                HintSrv.hintMap = _hintMap;
+            var HintSrv = {};
+            var hintPath = StorageSrv.variables.appUserSpacePath + '/hint';
+            var defaultHints = {
+                hintsStatus: {}
+            };
 
-                HintSrv.triggerHint = function (hintName) {
-                    var hintData = registeredHints[hintName];
-                        if(!hintData){
-                        $log.error('HintSrv: the following hint is not registered ' + hintName);
+            HintSrv.hintMap = _hintMap;
+
+            HintSrv.triggerHint = function (hintName) {
+                var hintData = registeredHints[hintName];
+                if (!hintData) {
+                    $log.error('HintSrv: the following hint is not registered ' + hintName);
+                }
+                return getHints().then(function (hints) {
+                    var hintsStatus = hints.hintsStatus;
+                    var hintLastVal = getHintLastValue(hintsStatus[hintName]);
+
+                    var determineWhetherToTrigger;
+                    if (hintData.determineWhetherToTriggerGetter) {
+                        determineWhetherToTrigger = $injector.invoke(hintData.determineWhetherToTriggerGetter);
+                    } else {
+                        determineWhetherToTrigger = defaultDetermineWhetherToTriggerFn;
                     }
-                    return getHints().then(function(hints){
-                        var hintsStatus = hints.hintsStatus;
-                        var hintLastVal = getHintLastValue(hintsStatus[hintName]);
 
-                        var determineWhetherToTrigger;
-                        if(hintData.determineWhetherToTriggerGetter){
-                            determineWhetherToTrigger = $injector.invoke(hintData.determineWhetherToTriggerGetter);
-                        } else {
-                            determineWhetherToTrigger = defaultDetermineWhetherToTriggerFn;
-                        }
+                    return $q.when(determineWhetherToTrigger(hintLastVal)).then(function (shouldBeTriggered) {
+                        if (shouldBeTriggered) {
+                            var hintAction = $injector.invoke(hintData.action);
 
-                        return $q.when(determineWhetherToTrigger(hintLastVal)).then(function(shouldBeTriggered){
-                            if(shouldBeTriggered){
-                                var hintAction = $injector.invoke(hintData.action);
+                            return $q.when(hintAction(hintLastVal)).then(function (result) {
+                                if (!hintsStatus[hintName]) {
+                                    hintsStatus[hintName] = {
+                                        name: hintName,
+                                        history: []
+                                    };
+                                }
 
-                                return $q.when(hintAction(hintLastVal)).then(function(result){
-                                    if(!hintsStatus[hintName]){
-                                        hintsStatus[hintName] = {
-                                            name: hintName,
-                                            history: []
-                                        };
-                                    }
-
-                                    hintsStatus[hintName].history.push({
-                                        value: angular.isUndefined(result) ? true : result,
-                                        date: StorageSrv.variables.currTimeStamp
-                                    });
-
-                                    hints.hintsStatus = hintsStatus;
-                                    saveHints(hints);
-                                    return result;
+                                hintsStatus[hintName].history.push({
+                                    value: angular.isUndefined(result) ? true : result,
+                                    date: StorageSrv.variables.currTimeStamp
                                 });
-                            }
-                        });
+
+                                hints.hintsStatus = hintsStatus;
+                                saveHints(hints);
+                                return result;
+                            });
+                        }
                     });
-                };
+                });
+            };
 
                 function getHints(){
                     return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
@@ -3241,20 +3499,161 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
                     });
                 }
 
-                function getHintLastValue(hintStatus){
-                    return hintStatus && hintStatus.history && hintStatus.history.length && hintStatus.history[hintStatus.history.length - 1];
-                }
+            function getHintLastValue(hintStatus) {
+                return hintStatus && hintStatus.history && hintStatus.history.length && hintStatus.history[hintStatus.history.length - 1];
+            }
 
-                function defaultDetermineWhetherToTriggerFn(hintVal){
-                    return angular.isUndefined(hintVal) || !hintVal.value;
-                }
+            function defaultDetermineWhetherToTriggerFn(hintVal) {
+                return angular.isUndefined(hintVal) || !hintVal.value;
+            }
 
-                return HintSrv;
-            }];
+            return HintSrv;
+        }];
     });
 })(angular);
 
 angular.module('znk.infra.hint').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.moduleResults', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.moduleResults').service('ModuleResultsService',
+        ["InfraConfigSrv", "$log", "$q", "UtilitySrv", "StorageSrv", function (InfraConfigSrv, $log, $q, UtilitySrv, StorageSrv) {
+            'ngInject';
+
+            var moduleResultsService = {};
+            var USER_MODULE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
+            var MODULE_RESULTS_PATH = 'moduleResults';
+
+            moduleResultsService.getDefaultModuleResult = function (moduleId, userId) {
+                return {
+                    moduleId: moduleId,
+                    uid: userId,
+                    assignedTutorId: null,
+                    assign: false,
+                    contentAssign: false,
+                    exerciseResults: [],
+                    guid: UtilitySrv.general.createGuid()
+                };
+            };
+
+            moduleResultsService.getUserModuleResultsGuids = function (userId){
+                var userResultsPath = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
+                return InfraConfigSrv.getStudentStorage().then(function (storage) {
+                    return storage.get(userResultsPath);
+                });
+            };
+
+            moduleResultsService.getModuleResultByGuid = function (resultGuid, defaultValue) {
+                var resultPath = MODULE_RESULTS_PATH + '/' + resultGuid;
+                return InfraConfigSrv.getStudentStorage().then(function (storage) {
+                    return storage.get(resultPath, defaultValue);
+                });
+            };
+
+            moduleResultsService.getModuleResultByModuleId = function (moduleId, userId, withDefaultResult) {
+                return moduleResultsService.getUserModuleResultsGuids(userId).then(function (moduleResultsGuids) {
+                    var defaultResult = {};
+                    var moduleResultGuid = moduleResultsGuids[moduleId];
+
+                    if (!moduleResultGuid) {
+                        if (!withDefaultResult) {
+                            return null;
+                        } else {
+                            defaultResult =  moduleResultsService.getDefaultModuleResult(moduleId, userId);
+                            moduleResultGuid = defaultResult.guid;
+                        }
+                    }
+
+                    return moduleResultsService.getModuleResultByGuid(moduleResultGuid, defaultResult);
+                });
+            };
+
+            moduleResultsService.setModuleResult = function (newResult) {
+                return moduleResultsService.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
+                    var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
+                    if (userGuidLists[newResult.guid]) {
+                        return  moduleResultsService.getModuleResultByGuid(newResult.guid).then(function (moduleResult) {
+                            angular.extend(moduleResult, newResult);
+                            return InfraConfigSrv.getStudentStorage().then(function (storage) {
+                                return storage.set(moduleResultPath, moduleResult);
+                            });
+                        });
+                    }
+
+                    userGuidLists[newResult.moduleId] = newResult.guid;
+                    var dataToSave = {};
+                    dataToSave[USER_MODULE_RESULTS_PATH] = userGuidLists;
+                    dataToSave[moduleResultPath] = newResult;
+                    return InfraConfigSrv.getStudentStorage().then(function(storage){
+                        return storage.set(dataToSave);
+                    });
+                });
+            };
+
+            moduleResultsService.getModuleResultPath = function (guid){
+                return MODULE_RESULTS_PATH + '/' + guid;
+            };
+
+
+
+            return moduleResultsService;
+        }]
+    );
+})(angular);
+
+
+angular.module('znk.infra.moduleResults').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.personalization', ['znk.infra.content']);
+})(angular);
+
+(function (angular) {
+    'use strict';
+    
+    angular.module('znk.infra.personalization')
+        .service('PersonalizationSrv',
+            ["StorageRevSrv", "$log", "$q", function (StorageRevSrv, $log, $q) {
+                'ngInject';
+
+                var self = this;
+
+                this.getPersonalizationData = function () {
+                    var data = {
+                        exerciseType: 'personalization'
+                    };
+
+                    return StorageRevSrv.getContent(data);
+                };
+
+                this.getExamOrder = function () {
+                    return self.getPersonalizationData().then(function (personalizationData) {
+                        var errorMsg = 'PersonalizationSrv getExamOrder: personalization.examOrder is not array or empty!';
+                        if (!angular.isArray(personalizationData.examOrder) || personalizationData.examOrder.length === 0) {
+                            $log.error(errorMsg);
+                            return $q.reject(errorMsg);
+                        }
+                        return personalizationData.examOrder;
+                    });
+                };
+            }]
+        );
+})(angular);
+
+
+angular.module('znk.infra.personalization').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -3616,6 +4015,120 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.presence', ['ngIdle'])
+        .config([
+            'IdleProvider', 'KeepaliveProvider', 'ENV',
+            function (IdleProvider, KeepaliveProvider, ENV) {
+                // userIdleTime: how many sec until user is 'IDLE'
+                // idleTimeout: how many sec after idle to stop track the user, 0: keep track
+                // idleKeepalive: keepalive interval in sec
+
+                IdleProvider.idle(ENV.userIdleTime || 30);
+                IdleProvider.timeout(ENV.idleTimeout || 0);
+                KeepaliveProvider.interval(ENV.idleKeepalive || 2);
+            }])
+        .run([
+            'PresenceService', 'Idle',
+            function (PresenceService, Idle) {
+                PresenceService.addCurrentUserListeners();
+                Idle.watch();
+            }
+        ]);
+})(angular);
+
+'use strict';
+
+(function (angular) {
+    angular.module('znk.infra.presence').provider('PresenceService', function () {
+
+        var AuthSrvName;
+
+        this.setAuthServiceName = function (authServiceName) {
+            AuthSrvName = authServiceName;
+        };
+
+        this.$get = [
+            '$log', '$injector', 'ENV', '$rootScope', 'StorageFirebaseAdapter',
+            function ($log, $injector, ENV, $rootScope, StorageFirebaseAdapter) {
+                var PresenceService = {};
+                var rootRef = new StorageFirebaseAdapter(ENV.fbDataEndPoint);
+                var PRESENCE_PATH = 'presence/';
+
+                PresenceService.userStatus = {
+                    'OFFLINE': 0,
+                    'ONLINE': 1,
+                    'IDLE': 2
+                };
+
+                function getAuthData() {
+                    var authData;
+                    var authService = $injector.get(AuthSrvName);
+                    if (angular.isObject(authService)) {
+                        authData =  authService.getAuth();
+                    }
+                    return authData;
+                }
+
+                PresenceService.addCurrentUserListeners = function () {
+                    var authData = getAuthData();
+                    if (authData) {
+                        var amOnline = rootRef.getRef('.info/connected');
+                        var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
+                        amOnline.on('value', function (snapshot) {
+                            if (snapshot.val()) {
+                                userRef.onDisconnect().remove();
+                                userRef.set(PresenceService.userStatus.ONLINE);
+                            }
+                        });
+
+                        $rootScope.$on('IdleStart', function() {
+                            userRef.set(PresenceService.userStatus.IDLE);
+                        });
+
+                        $rootScope.$on('IdleEnd', function() {
+                            userRef.set(PresenceService.userStatus.ONLINE);
+                        });
+                    }
+                };
+
+                PresenceService.getCurrentUserStatus = function (userId) {
+                    return rootRef.getRef(PRESENCE_PATH + userId).once('value').then(function(snapshot) {
+                        return (snapshot.val()) || PresenceService.userStatus.OFFLINE;
+                    });
+                };
+
+                PresenceService.startTrackUserPresence = function (userId, cb) {
+                    var userRef = rootRef.getRef(PRESENCE_PATH + userId);
+                    userRef.on('value', trackUserPresenceCB.bind(null, cb, userId));
+                };
+
+                PresenceService.stopTrackUserPresence = function (userId) {
+                    var userRef = rootRef.getRef(PRESENCE_PATH + userId);
+                    userRef.off('value', trackUserPresenceCB);
+                };
+
+                function trackUserPresenceCB(cb, userId, snapshot) {
+                    if (angular.isFunction(cb)) {
+                        var status = PresenceService.userStatus.OFFLINE;
+                        if (snapshot && snapshot.val()){
+                            status = snapshot.val();
+                        }
+                        cb(status, userId);
+                    }
+                }
+
+                return PresenceService;
+            }];
+    });
+})(angular);
+
+angular.module('znk.infra.presence').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.scoring', ['znk.infra.storage', 'znk.infra.exerciseUtility']);
 })(angular);
 
@@ -3753,6 +4266,167 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
 
 
 angular.module('znk.infra.scoring').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.screenSharing', [
+        'znk.infra.user',
+        'znk.infra.utility',
+        'znk.infra.config'
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.screenSharing').factory('ScreenSharingStatusEnum',
+        ["EnumSrv", function (EnumSrv) {
+            'ngInject';
+
+            return new EnumSrv.BaseEnum([
+                ['PENDING_VIEWER', 1, 'pending viewer'],
+                ['PENDING_SHARER', 2, 'pending sharer'],
+                ['CONFIRMED', 3, 'confirmed'],
+                ['ENDED', 4, 'ended']
+            ]);
+        }]
+    );
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.screenSharing').service('ScreenSharingDataGetterSrv',
+        ["InfraConfigSrv", "$q", "ENV", function (InfraConfigSrv, $q, ENV) {
+            'ngInject';
+
+            function _getStorage() {
+                return InfraConfigSrv.getGlobalStorage();
+            }
+
+            this.getScreenSharingDataPath = function (guid) {
+                var SCREEN_SHARING_ROOT_PATH = 'screenSharing';
+                return SCREEN_SHARING_ROOT_PATH + '/' + guid;
+            };
+
+            this.getUserScreenSharingDataGuidPath = function (userData, guid) {
+                var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
+                var USER_DATA_PATH = appName  + '/users/' + userData.uid;
+                return USER_DATA_PATH + '/screenSharing/' + guid;
+            };
+
+            this.getScreenSharingData = function (screenSharingGuid) {
+                var screenSharingDataPath = this.getScreenSharingDataPath(screenSharingGuid);
+                return _getStorage().then(function (StudentStorage) {
+                    return StudentStorage.get(screenSharingDataPath);
+                });
+            };
+        }]
+    );
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.screenSharing').service('ScreenSharingSrv',
+        ["UserProfileService", "InfraConfigSrv", "$q", "UtilitySrv", "ScreenSharingDataGetterSrv", "ScreenSharingStatusEnum", "ENV", "$log", function (UserProfileService, InfraConfigSrv, $q, UtilitySrv, ScreenSharingDataGetterSrv, ScreenSharingStatusEnum, ENV, $log) {
+            'ngInject';
+
+            var INITIATOR_ENUM = {
+                "VIEWER": 1,
+                "SHARER": 2
+            };
+
+            var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
+
+            function _getStorage(){
+                return InfraConfigSrv.getGlobalStorage();
+            }
+
+            function _getScreenSharingInitStatusByInitiator(initiator){
+                var initiatorToInitStatusMap = {};
+                initiatorToInitStatusMap[INITIATOR_ENUM.VIEWER] = ScreenSharingStatusEnum.PENDING_SHARER.enum;
+                initiatorToInitStatusMap[INITIATOR_ENUM.SHARER] = ScreenSharingStatusEnum.PENDING_VIEWER.enum;
+
+                return initiatorToInitStatusMap[initiator] || null;
+            }
+
+            function _initiateScreenSharing(sharerData, viewerData, initiator) {
+                if(angular.isUndefined(viewerData.isTeacher) || angular.isUndefined(sharerData.isTeacher)){
+                    var errMSg = 'ScreenSharingSrv: isTeacher property was not provided!!!';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                var dataToSave = {};
+
+                var newScreenSharingGuid = UtilitySrv.general.createGuid();
+
+                var initStatus = _getScreenSharingInitStatusByInitiator(initiator);
+                if(!initStatus ){
+                    return $q.reject('ScreenSharingSrv: initiator was not provided');
+                }
+                var newScreenSharingData = {
+                    guid: newScreenSharingGuid,
+                    sharerId: sharerData.uid,
+                    viewerId: viewerData.uid,
+                    status: initStatus
+                };
+                var newScreenSharingDataPath = ScreenSharingDataGetterSrv.getScreenSharingDataPath(newScreenSharingGuid);
+                dataToSave[newScreenSharingDataPath] = newScreenSharingData;
+
+                var sharerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataGuidPath(sharerData, newScreenSharingGuid);
+                dataToSave[sharerScreenSharingDataGuidPath] = true;
+
+                var viewerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataGuidPath(viewerData, newScreenSharingGuid);
+                dataToSave[viewerScreenSharingDataGuidPath] = true;
+
+                return _getStorage().then(function(StudentStorage){
+                    return StudentStorage.update(dataToSave);
+                });
+            }
+
+            this.shareMyScreen = function (viewerData) {
+                return UserProfileService.getCurrUserId().then(function (currUserId) {
+                    var sharerData = {
+                        uid: currUserId,
+                        isTeacher: isTeacherApp
+                    };
+                    return _initiateScreenSharing(sharerData, viewerData, INITIATOR_ENUM.SHARER);
+                });
+            };
+
+            this.viewOtherUserScreen = function (sharerData) {
+                return UserProfileService.getCurrUserId().then(function (currUserId) {
+                    var viewerData = {
+                        uid: currUserId,
+                        isTeacher: isTeacherApp
+                    };
+                    return _initiateScreenSharing(sharerData, viewerData, INITIATOR_ENUM.VIEWER);
+                });
+            };
+
+            this.confirmSharing = function(screenSharingDataGuid){
+                return ScreenSharingDataGetterSrv.getScreenSharingData(screenSharingDataGuid).then(function(screenSharingData){
+                    screenSharingData.status = ScreenSharingStatusEnum.CONFIRMED.enum;
+                    return screenSharingData.$save();
+                });
+            };
+
+            this.endSharing = function(screenSharingDataGuid){
+                return ScreenSharingDataGetterSrv.getScreenSharingData(screenSharingDataGuid).then(function(screenSharingData){
+                    screenSharingData.status = ScreenSharingStatusEnum.ENDED.enum;
+                    return screenSharingData.$save();
+                });
+            };
+        }]
+    );
+})(angular);
+
+angular.module('znk.infra.screenSharing').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -3979,7 +4653,8 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
     angular.module('znk.infra.stats', [
             'znk.infra.enum',
             'znk.infra.znkExercise',
-            'znk.infra.utility'
+            'znk.infra.utility',
+            'znk.infra.contentGetters'
         ])
         .run([
             'StatsEventsHandlerSrv',
@@ -4150,188 +4825,177 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.stats').provider('StatsSrv', function () {
-        var getCategoryLookup;
-        this.setCategoryLookup = function (_getCategoryLookup) {
-            getCategoryLookup = _getCategoryLookup;
-        };
+    angular.module('znk.infra.stats').service('StatsSrv',
+        ["InfraConfigSrv", "$q", "SubjectEnum", "$log", "$injector", "StorageSrv", "CategoryService", function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv, CategoryService) {
+            'ngInject';
 
-        this.$get = [
-            'InfraConfigSrv', '$q', 'SubjectEnum', '$log', '$injector', 'StorageSrv',
-            function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv) {
-                if (!getCategoryLookup) {
-                    $log.error('StatsSrv: getCategoryLookup was not set !!!!');
+            var STATS_PATH = StorageSrv.variables.appUserSpacePath + '/stats';
+
+            var StatsSrv = {};
+
+            var _getCategoryLookup = function () {
+                return CategoryService.getCategoryMap().then(function (categoryMap) {
+                    return categoryMap;
+                });
+            };
+
+            function BaseStats(id, addInitOffset) {
+                if (angular.isDefined(id)) {
+                    this.id = +id;
                 }
 
-                var STATS_PATH = StorageSrv.variables.appUserSpacePath + '/stats';
-
-                var StatsSrv = {};
-
-                var _getCategoryLookup = function() {
-                    return $injector.invoke(getCategoryLookup).then(function(categoryMap){
-                        return categoryMap;
-                    });
-                };
-
-                function BaseStats(id, addInitOffset) {
-                    if (angular.isDefined(id)) {
-                        this.id = +id;
-                    }
-
-                    var totalQuestions;
-                    var correct;
-                    var unanswered;
-                    var wrong;
-                    var totalTime;
+                var totalQuestions;
+                var correct;
+                var unanswered;
+                var wrong;
+                var totalTime;
 
 
-                    if (addInitOffset) {
-                        totalQuestions = 3;
-                        correct = 1;
-                        unanswered = 0;
-                        wrong = 2;
-                        totalTime = 0;
-                    } else {
-                        totalQuestions = 0;
-                        correct = 0;
-                        unanswered = 0;
-                        wrong = 0;
-                        totalTime = 0;
-                    }
-
-                    this.totalQuestions = totalQuestions;
-                    this.correct = correct;
-                    this.unanswered = unanswered;
-                    this.wrong = wrong;
-                    this.totalTime = totalTime;
+                if (addInitOffset) {
+                    totalQuestions = 3;
+                    correct = 1;
+                    unanswered = 0;
+                    wrong = 2;
+                    totalTime = 0;
+                } else {
+                    totalQuestions = 0;
+                    correct = 0;
+                    unanswered = 0;
+                    wrong = 0;
+                    totalTime = 0;
                 }
 
-                function getStats() {
-                    var defaults = {
-                        processedExercises:{}
-                    };
-                    return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                        return StudentStorageSrv.get(STATS_PATH, defaults);
-                    });
-                }
-
-                function setStats(newStats) {
-                    return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                        return StudentStorageSrv.set(STATS_PATH, newStats);
-                    });
-                }
-
-                function _baseStatsUpdater(currStat, newStat) {
-                    currStat.totalQuestions += newStat.totalQuestions;
-                    currStat.correct += newStat.correct;
-                    currStat.unanswered += newStat.unanswered;
-                    currStat.wrong += newStat.wrong;
-                    currStat.totalTime += newStat.totalTime;
-                }
-
-                function _getParentCategoryId(lookUp, categoryId) {
-                    return lookUp[categoryId] ? lookUp[categoryId].parentId : lookUp[categoryId];
-                }
-
-                function _getProcessedExerciseKey(exerciseType, exerciseId){
-                    return exerciseType + '_' + exerciseId;
-                }
-
-                StatsSrv.getLevelKey = function(level) {
-                    return 'level' + level + 'Categories';
-                };
-
-                StatsSrv.getCategoryKey = function (categoryId){
-                    return 'id_' + categoryId;
-                };
-
-                StatsSrv.getAncestorIds = function(categoryId){
-                    var parentIds = [];
-                    return _getCategoryLookup().then(function(categoryLookUp){
-                        var categoryIdToAdd = _getParentCategoryId(categoryLookUp, +categoryId);
-                        while (categoryIdToAdd !== null && angular.isDefined(categoryIdToAdd)) {
-                            parentIds.push(categoryIdToAdd);
-                            categoryIdToAdd = _getParentCategoryId(categoryLookUp, categoryIdToAdd);
-                        }
-                        return parentIds;
-                    });
-                };
-
-                StatsSrv.getStats = getStats;
-
-                StatsSrv.getLevelStats = function(level){
-                    var levelKey = StatsSrv.getLevelKey(level);
-                    return getStats().then(function(statsData){
-                        return statsData[levelKey];
-                    });
-                };
-
-                StatsSrv.BaseStats = BaseStats;
-
-                StatsSrv.updateStats = function (newStats, exerciseType, exerciseId) {
-                    var processedExerciseKey = _getProcessedExerciseKey(exerciseType, exerciseId);
-                    return getStats().then(function (stats) {
-                        var isExerciseRecorded = stats.processedExercises[processedExerciseKey];
-                        if(isExerciseRecorded){
-                            return;
-                        }
-
-                        var allProm = [];
-                        angular.forEach(newStats, function (newStat, processedCategoryId) {
-                            var prom = StatsSrv.getAncestorIds(processedCategoryId).then(function(categoriesToUpdate){
-                                categoriesToUpdate.unshift(+processedCategoryId);
-                                var deepestLevel = categoriesToUpdate.length;
-                                categoriesToUpdate.forEach(function (categoryId, index) {
-                                    var level = deepestLevel - index;
-                                    var levelKey = StatsSrv.getLevelKey(level);
-                                    var levelStats = stats[levelKey];
-                                    if (!levelStats) {
-                                        levelStats = {};
-
-                                        stats[levelKey] = levelStats;
-                                    }
-
-                                    var categoryKey = StatsSrv.getCategoryKey(categoryId);
-                                    var categoryStats = levelStats[categoryKey];
-                                    if(!categoryStats){
-                                        categoryStats = new BaseStats(categoryId);
-                                        //need to add init offset only when working on lowest category,
-                                        if(level === deepestLevel){
-                                            var initStatWithOffset = new BaseStats(null,true);
-                                            _baseStatsUpdater(newStat, initStatWithOffset);
-                                        }
-                                        var parentsIds = categoriesToUpdate.slice(index + 1);
-                                        if(parentsIds.length){
-                                            categoryStats.parentsIds = parentsIds;
-                                        }
-
-                                        levelStats[categoryKey] = categoryStats;
-                                    }
-
-                                    _baseStatsUpdater(categoryStats,newStat);
-                                });
-                            });
-                            allProm.push(prom);
-                        });
-                        return $q.all(allProm).then(function(){
-                            stats.processedExercises[processedExerciseKey] = true;
-                            return setStats(stats);
-                        });
-                    });
-
-                };
-
-                StatsSrv.isExerciseStatsRecorded = function(exerciseType, exerciseId){
-                    return StatsSrv.getStats().then(function(stats){
-                        var processedExerciseKey = _getProcessedExerciseKey(exerciseType, exerciseId);
-                        return !!stats.processedExercises[processedExerciseKey];
-                    });
-                };
-
-                return StatsSrv;
+                this.totalQuestions = totalQuestions;
+                this.correct = correct;
+                this.unanswered = unanswered;
+                this.wrong = wrong;
+                this.totalTime = totalTime;
             }
-        ];
-    });
+
+            function getStats() {
+                var defaults = {
+                    processedExercises: {}
+                };
+                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                    return StudentStorageSrv.get(STATS_PATH, defaults);
+                });
+            }
+
+            function setStats(newStats) {
+                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                    return StudentStorageSrv.set(STATS_PATH, newStats);
+                });
+            }
+
+            function _baseStatsUpdater(currStat, newStat) {
+                currStat.totalQuestions += newStat.totalQuestions;
+                currStat.correct += newStat.correct;
+                currStat.unanswered += newStat.unanswered;
+                currStat.wrong += newStat.wrong;
+                currStat.totalTime += newStat.totalTime;
+            }
+
+            function _getParentCategoryId(lookUp, categoryId) {
+                return lookUp[categoryId] ? lookUp[categoryId].parentId : lookUp[categoryId];
+            }
+
+            function _getProcessedExerciseKey(exerciseType, exerciseId) {
+                return exerciseType + '_' + exerciseId;
+            }
+
+            StatsSrv.getLevelKey = function (level) {
+                return 'level' + level + 'Categories';
+            };
+
+            StatsSrv.getCategoryKey = function (categoryId) {
+                return 'id_' + categoryId;
+            };
+
+            StatsSrv.getAncestorIds = function (categoryId) {
+                var parentIds = [];
+                return _getCategoryLookup().then(function (categoryLookUp) {
+                    var categoryIdToAdd = _getParentCategoryId(categoryLookUp, +categoryId);
+                    while (categoryIdToAdd !== null && angular.isDefined(categoryIdToAdd)) {
+                        parentIds.push(categoryIdToAdd);
+                        categoryIdToAdd = _getParentCategoryId(categoryLookUp, categoryIdToAdd);
+                    }
+                    return parentIds;
+                });
+            };
+
+            StatsSrv.getStats = getStats;
+
+            StatsSrv.getLevelStats = function (level) {
+                var levelKey = StatsSrv.getLevelKey(level);
+                return getStats().then(function (statsData) {
+                    return statsData[levelKey];
+                });
+            };
+
+            StatsSrv.BaseStats = BaseStats;
+
+            StatsSrv.updateStats = function (newStats, exerciseType, exerciseId) {
+                var processedExerciseKey = _getProcessedExerciseKey(exerciseType, exerciseId);
+                return getStats().then(function (stats) {
+                    var isExerciseRecorded = stats.processedExercises[processedExerciseKey];
+                    if (isExerciseRecorded) {
+                        return;
+                    }
+
+                    var allProm = [];
+                    angular.forEach(newStats, function (newStat, processedCategoryId) {
+                        var prom = StatsSrv.getAncestorIds(processedCategoryId).then(function (categoriesToUpdate) {
+                            categoriesToUpdate.unshift(+processedCategoryId);
+                            var deepestLevel = categoriesToUpdate.length;
+                            categoriesToUpdate.forEach(function (categoryId, index) {
+                                var level = deepestLevel - index;
+                                var levelKey = StatsSrv.getLevelKey(level);
+                                var levelStats = stats[levelKey];
+                                if (!levelStats) {
+                                    levelStats = {};
+
+                                    stats[levelKey] = levelStats;
+                                }
+
+                                var categoryKey = StatsSrv.getCategoryKey(categoryId);
+                                var categoryStats = levelStats[categoryKey];
+                                if (!categoryStats) {
+                                    categoryStats = new BaseStats(categoryId);
+                                    //need to add init offset only when working on lowest category,
+                                    if (level === deepestLevel) {
+                                        var initStatWithOffset = new BaseStats(null, true);
+                                        _baseStatsUpdater(newStat, initStatWithOffset);
+                                    }
+                                    var parentsIds = categoriesToUpdate.slice(index + 1);
+                                    if (parentsIds.length) {
+                                        categoryStats.parentsIds = parentsIds;
+                                    }
+
+                                    levelStats[categoryKey] = categoryStats;
+                                }
+
+                                _baseStatsUpdater(categoryStats, newStat);
+                            });
+                        });
+                        allProm.push(prom);
+                    });
+                    return $q.all(allProm).then(function () {
+                        stats.processedExercises[processedExerciseKey] = true;
+                        return setStats(stats);
+                    });
+                });
+
+            };
+
+            StatsSrv.isExerciseStatsRecorded = function (exerciseType, exerciseId) {
+                return StatsSrv.getStats().then(function (stats) {
+                    var processedExerciseKey = _getProcessedExerciseKey(exerciseType, exerciseId);
+                    return !!stats.processedExercises[processedExerciseKey];
+                });
+            };
+
+            return StatsSrv;
+        }]);
 })(angular);
 
 angular.module('znk.infra.stats').run(['$templateCache', function($templateCache) {
@@ -4347,121 +5011,168 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.storage').factory('storageFirebaseAdapter', [
-        '$log', '$q', 'StorageSrv', 'ENV',
-        function ($log, $q, StorageSrv, ENV) {
-            function processValuesToSet(source){
-                if(angular.isArray(source)){
-                    source.forEach(function(item, index){
-                        if(angular.isUndefined(item)){
+    angular.module('znk.infra.storage').service('StorageFirebaseAdapter',
+        ["$log", "$q", "StorageSrv", "ENV", "$timeout", function ($log, $q, StorageSrv, ENV, $timeout) {
+            'ngInject';
+
+            function processValue(value) {
+                if (value === StorageSrv.variables.currTimeStamp) {
+                    return Firebase.ServerValue.TIMESTAMP;
+                }
+                return value;
+            }
+
+            function processValuesToSet(source) {
+                if (angular.isArray(source)) {
+                    source.forEach(function (item, index) {
+                        if (angular.isUndefined(item)) {
                             source[index] = null;
                         }
                         processValuesToSet(item);
                     });
-                    return;
                 }
 
-                if(angular.isObject(source)){
+                if (angular.isObject(source)) {
                     var keys = Object.keys(source);
-                    keys.forEach(function(key){
+                    keys.forEach(function (key) {
                         var value = source[key];
 
-                        if(key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length) || (value !== value)){//value !== value return true if it equals to NaN
-                            if(key !== '$save'){
+                        if (key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length) || (value !== value)) {//value !== value return true if it equals to NaN
+                            if (key !== '$save') {
                                 $log.debug('storageFirebaseAdapter: illegal property was deleted before save ' + key);
                             }
                             delete source[key];
                             return;
                         }
 
-                        if(angular.isString(value)){
+                        if (angular.isString(value)) {
                             source[key] = processValue(value);
                         }
 
                         processValuesToSet(value);
                     });
-                    return;
                 }
             }
 
-            function storageFirebaseAdapter (endPoint){
-                var refMap = {};
-                var authObj;
-                var rootRef = new Firebase(endPoint, ENV.firebaseAppScopeName);
-                refMap.rootRef = rootRef;
-                rootRef.onAuth(function(newAuthObj){
-                    authObj = newAuthObj;
-                });
+            function StorageFirebaseAdapter(endPoint) {
+                this.__refMap = {};
 
-                function getRef(relativePath){
-                    if(!refMap[relativePath]){
-                        refMap[relativePath] = refMap.rootRef.child(relativePath);
+                this.__refMap.rootRef = new Firebase(endPoint, ENV.firebaseAppScopeName);
+
+                this.__registeredEvents = {};
+            }
+
+            var storageFirebaseAdapterPrototype = {
+                getRef: function(relativePath){
+                    if (!this.__refMap[relativePath]) {
+                        this.__refMap[relativePath] = this.__refMap.rootRef.child(relativePath);
                     }
-                    return refMap[relativePath];
-                }
 
-                function get(relativePath){
+                    return this.__refMap[relativePath];
+                },
+                get: function (relativePath) {
                     var defer = $q.defer();
 
-                    var ref = getRef(relativePath);
-                    ref.once('value',function(dataSnapshot){
+                    var ref = this.getRef(relativePath);
+                    ref.once('value', function (dataSnapshot) {
                         defer.resolve(dataSnapshot.val());
-                    },function(err){
+                    }, function (err) {
                         $log.error('storageFirebaseAdapter: failed to retrieve data for the following path ' + relativePath + ' ' + err);
                         defer.reject(err);
                     });
-                    return defer.promise;
-                }
 
-                function set(relativePathOrObject, newValue){
+                    return defer.promise;
+                },
+                update: function (relativePathOrObject, newValue) {
+                    var pathsToUpdate = {};
+
+                    if (!angular.isObject(relativePathOrObject)) {
+                        pathsToUpdate[relativePathOrObject] = newValue;
+                    } else {
+                        pathsToUpdate = relativePathOrObject;
+                    }
+
+                    var pathsToUpdateCopy = angular.copy(pathsToUpdate);
+
+                    processValuesToSet(pathsToUpdateCopy);
+
                     var defer = $q.defer();
 
-                    if(angular.isObject(relativePathOrObject)){
-                        var valuesToSet ={};
-                        angular.forEach(relativePathOrObject,function(value,path){
-                            valuesToSet[path] = angular.copy(value);
-                        });
-                        processValuesToSet(valuesToSet);
-                        refMap.rootRef.update(valuesToSet, function(err){
-                            if(err){
-                                defer.reject(err);
-                            }
-                            defer.resolve();
-                        });
-                    }else{
-                        var newValueCopy = angular.copy(newValue);
-                        processValuesToSet(newValueCopy);
-                        var ref = getRef(relativePathOrObject);
-                        ref.set(newValueCopy,function(err){
-                            if(err){
-                                $log.error('storageFirebaseAdapter: failed to set data for the following path ' + relativePathOrObject + ' ' + err);
-                                defer.reject(err);
-                            }else{
-                                defer.resolve(newValueCopy);
-                            }
+                    this.__refMap.rootRef.update(pathsToUpdateCopy, function (err) {
+                        if (err) {
+                            $log.error('storageFirebaseAdapter: failed to set data for the following path ' + pathsToUpdateCopy + ' ' + err);
+                            return defer.reject(err);
+                        }
+                        defer.resolve(angular.isString(relativePathOrObject) ? newValue : relativePathOrObject);
+                    });
+
+                    return defer.promise;
+                },
+                set: function (relativePath, newValue) {
+                    var newValueCopy = angular.copy(newValue);
+
+                    processValuesToSet(newValueCopy);
+
+                    var ref = this.getRef(relativePath);
+                    return ref.set(newValueCopy);
+                },
+                onEvent: function (type, path, cb) {
+                    var self = this;
+
+                    if(!this.__registeredEvents[type]){
+                        this.__registeredEvents[type] = {};
+                    }
+
+                    if(!this.__registeredEvents[type][path]){
+                        this.__registeredEvents[type][path] = [];
+
+                        var ref = this.getRef(path);
+                        ref.on(type, function(snapshot){
+                            var newVal = snapshot.val();
+                            self.__invokeEventCb(type, path, [newVal]);
                         });
                     }
 
-                    return defer.promise;
+                    var evtCbArr = this.__registeredEvents[type][path];
+                    evtCbArr.push(cb);
+                },
+                __invokeEventCb: function(type, path, argArr){
+                    if(!this.__registeredEvents[type] || !this.__registeredEvents[type][path]){
+                        return;
+                    }
+
+                    var eventCbArr = this.__registeredEvents[type][path];
+                    //fb event so we out of angular
+                    $timeout(function(){
+                        eventCbArr.forEach(function(cb){
+                            cb.apply(null, argArr);
+                        });
+                    });
+                },
+                offEvent: function(type, path, cb){
+                    if(!this.__registeredEvents[type] || !this.__registeredEvents[type][path]){
+                        return;
+                    }
+
+                    if(angular.isUndefined(cb)){
+                        this.__registeredEvents[type][path] = [];
+                        return;
+                    }
+
+                    var eventCbArr = this.__registeredEvents[type][path];
+                    var newEventCbArr = [];
+                    eventCbArr.forEach(function(cb){
+                        if(cb !== cb){
+                            newEventCbArr.push(cb);
+                        }
+                    });
+                    this.__registeredEvents[type][path] = newEventCbArr;
                 }
+            };
+            StorageFirebaseAdapter.prototype = storageFirebaseAdapterPrototype;
 
-                return {
-                    get: get,
-                    set: set,
-                    __refMap: refMap//for testing
-                };
-            }
-
-            function processValue(value){
-                if(value === StorageSrv.variables.currTimeStamp){
-                    return Firebase.ServerValue.TIMESTAMP;
-                }
-                return value;
-            }
-
-            return storageFirebaseAdapter;
-        }
-    ]);
+            return StorageFirebaseAdapter;
+        }]);
 })(angular);
 
 (function (angular) {
@@ -4475,26 +5186,27 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
             var cacheId = 0;
 
             /**
-             *  entityGetter -
-             *  entitySetter -
-             *  config-
+             *  adapter - implement the following interface:
+             *      - get(path): get path value
+             *      - set(path, value): set the value in the path
+             *      - update(path, value
+             *      - onEvent: curretnly supported events:
+             *          value: value was changed
+             *      - offEvent
+             *
+             *  config -
              *      cacheRules - rules which control whether path should be cached, the possible values are:
              *          string - if the path equal to the rule string the it will not be cached.
              *          function - receive the path as argument, if the function return true then the path will not be cached.
              *          regex - if the path matches the regex then it will not be cached.
+             *
              *      variables -
              *          uid - function or value which return current uid as straight value or promise
              * */
-            function StorageSrv(entityGetter, entitySetter, config) {
-                this.getter = function (path) {
-                    return $q.when(entityGetter(path));
-                };
+            function StorageSrv(adapter, config) {
+                this.adapter = adapter;
 
-                this.setter = function (path, newVal) {
-                    return $q.when(entitySetter(path, newVal));
-                };
-
-                this.entityCache = $cacheFactory('entityCache' + cacheId);
+                this.__cache = $cacheFactory('entityCache' + cacheId);
 
                 config = config || {};
                 var defaultConfig = {
@@ -4503,8 +5215,11 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                     },
                     cacheRules: []
                 };
-                this.config = angular.extend(defaultConfig, config);
+                this.__config = angular.extend(defaultConfig, config);
 
+                this.__pathsBindedToServer = {};
+
+                //progress by 1 storage cache id
                 cacheId++;
             }
 
@@ -4534,46 +5249,99 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                 return true;
             }
 
-            function _getUid(config) {
-                var getUid = angular.isFunction(config.variables.uid) ? config.variables.uid() : config.variables.uid;
-                return $q.when(getUid);
-            }
+            StorageSrv.EVENTS = {
+                'VALUE': 'value'
+            };
 
-            function _processPath(pathStrOrObj, config) {
-                return _getUid(config).then(function (uid) {
-                    function _replaceVariables(path){
-                        var regexString = StorageSrv.variables.uid.replace(/\$/g, '\\$');
-                        var UID_REGEX = new RegExp(regexString, 'g');
-                        return path.replace(UID_REGEX, uid);
-                    }
+            StorageSrv.prototype.__processPath = function (pathStrOrObj) {
+                var config = this.__config;
+                function _replaceVariables(path, uid) {
+                    var regexString = StorageSrv.variables.uid.replace(/\$/g, '\\$');
+                    var UID_REGEX = new RegExp(regexString, 'g');
+                    return path.replace(UID_REGEX, uid);
+                }
 
+                function _getUid() {
+                    var getUid = angular.isFunction(config.variables.uid) ? config.variables.uid() : config.variables.uid;
+                    return $q.when(getUid);
+                }
+
+                return _getUid().then(function (uid) {
                     if (angular.isUndefined(uid) || uid === null) {
                         $log.debug('StorageSrv: empty uid was received');
                     }
 
-                    if(angular.isString(pathStrOrObj)){
-                        var processedPath = _replaceVariables(pathStrOrObj);
+                    if (angular.isString(pathStrOrObj)) {
+                        var processedPath = _replaceVariables(pathStrOrObj, uid);
                         return processedPath;
                     }
 
-                    if(angular.isObject(pathStrOrObj)){
+                    if (angular.isObject(pathStrOrObj)) {
                         var processedPathObj = {};
-                        angular.forEach(pathStrOrObj, function(value, pathName){
-                            var processedPath = _replaceVariables(pathName);
+                        angular.forEach(pathStrOrObj, function (value, pathName) {
+                            var processedPath = _replaceVariables(pathName, uid);
                             processedPathObj[processedPath] = value;
                         });
 
                         return processedPathObj;
                     }
                     $log.error('StorageSrv: failed to process path');
+
+                    return null;
                 });
-            }
+            };
+
+            StorageSrv.prototype.__addDataToCache = function (pathStrOrObj, newValue) {
+                var self = this;
+
+                var dataToSaveInCache = {};
+
+                if (angular.isString(pathStrOrObj)) {
+                    dataToSaveInCache[pathStrOrObj] = newValue;
+                } else {
+                    dataToSaveInCache = pathStrOrObj;
+                }
+
+                var cachedDataMap = {};
+                angular.forEach(dataToSaveInCache, function (value, path) {
+                    var cachedValue;
+
+                    if (angular.isObject(value) && !value.$save) {
+                        cachedValue = Object.create({
+                            $save: function () {
+                                return self.set(path, this);
+                            }
+                        });
+                        angular.forEach(value, function (value, key) {
+                            cachedValue[key] = value;
+                        });
+                    } else {
+                        cachedValue = value;
+                    }
+
+                    cachedDataMap[path] = cachedValue;
+
+                    if (_shouldBeCached(path, self.__config)) {
+                        self.__cache.put(path, cachedValue);
+                    }
+                });
+
+                return angular.isObject(pathStrOrObj) ? cachedDataMap : cachedDataMap[pathStrOrObj];
+            };
+
+            StorageSrv.prototype.__addPathBindedToServer = function(path){
+                this.__pathsBindedToServer[path] = true;
+            };
+
+            StorageSrv.prototype.removeServerPathBinding = function(path){
+                this.adapter.offEvent(StorageSrv.EVENTS.VALUE, path);
+            };
 
             StorageSrv.prototype.get = function (path, defaultValue) {
                 var self = this;
 
-                return _processPath(path, self.config).then(function (processedPath) {
-                    var entity = self.entityCache.get(processedPath);
+                return this.__processPath(path, self.__config).then(function (processedPath) {
+                    var entity = self.__cache.get(processedPath);
                     var getProm;
                     defaultValue = defaultValue || {};
                     var cacheProm = false;
@@ -4585,7 +5353,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                             return getEntityPromMap[processedPath];
                         }
                         cacheProm = true;
-                        getProm = self.getter(processedPath).then(function (_entity) {
+                        getProm = $q.when(self.adapter.get(processedPath)).then(function (_entity) {
                             if (angular.isUndefined(_entity) || _entity === null) {
                                 _entity = {};
                             }
@@ -4594,13 +5362,14 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                                 var initObj = Object.create({
                                     $save: function () {
                                         return self.set(processedPath, this);
-                                    }
+                                    },
+                                    $$path: processedPath
                                 });
                                 _entity = angular.extend(initObj, _entity);
                             }
 
-                            if (_shouldBeCached(processedPath, self.config)) {
-                                self.entityCache.put(processedPath, _entity);
+                            if (_shouldBeCached(processedPath, self.__config)) {
+                                self.__cache.put(processedPath, _entity);
                             }
 
                             delete getEntityPromMap[processedPath];
@@ -4626,51 +5395,50 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                 });
             };
 
-            StorageSrv.prototype.getServerValue = function(path){
+            StorageSrv.prototype.getServerValue = function (path) {
                 var self = this;
-                return _processPath(path, self.config).then(function (processedPath) {
-                    return self.getter(processedPath);
+                return this.__processPath(path, self.__config).then(function (processedPath) {
+                    return $q.when(self.adapter.get(processedPath));
                 });
             };
 
-            StorageSrv.prototype.set = function (pathStrOrObj, newValue) {
+            StorageSrv.prototype.getAndBindToServer = function (path) {
                 var self = this;
 
-                return _processPath(pathStrOrObj, self.config).then(function (processedPathOrObj) {
-                    return self.setter(processedPathOrObj, newValue).then(function () {
-                        var dataToSaveInCache = {};
-
-                        if (!angular.isObject(processedPathOrObj)) {
-                            dataToSaveInCache[processedPathOrObj] = newValue;
-                        } else {
-                            dataToSaveInCache = processedPathOrObj;
-                        }
-
-                        var cachedDataMap = {};
-                        angular.forEach(dataToSaveInCache, function (value, path) {
-                            var cachedValue;
-
-                            if (angular.isObject(value) && !value.$save) {
-                                cachedValue = Object.create({
-                                    $save: function () {
-                                        return self.set(path, this);
-                                    }
-                                });
-                                angular.forEach(value, function (value, key) {
-                                    cachedValue[key] = value;
-                                });
-                            } else {
-                                cachedValue = value;
-                            }
-
-                            cachedDataMap[path] = cachedValue;
-
-                            if (_shouldBeCached(path, self.config)) {
-                                self.entityCache.put(path, cachedValue);
-                            }
+                return this.get(path).then(function (pathValue) {
+                    self.adapter.onEvent('value', pathValue.$$path, function (serverValue) {
+                        angular.forEach(pathValue, function (value, key) {
+                            delete pathValue[key];
                         });
+                        angular.extend(pathValue, serverValue);
+                    });
 
-                        return angular.isObject(processedPathOrObj) ? cachedDataMap : cachedDataMap[processedPathOrObj];
+                    self.__addPathBindedToServer(path);
+                    return pathValue;
+                });
+            };
+
+            StorageSrv.prototype.set = function (path, newValue) {
+                var self = this;
+
+                if (!angular.isString(path)) {
+                    var errMSg = 'StorageSrv: path should be a string';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                return this.__processPath(path, self.__config).then(function (processedPath) {
+                    return $q.when(self.adapter.set(processedPath, newValue)).then(function () {
+                        return self.__addDataToCache(processedPath, newValue);
+                    });
+                });
+            };
+
+            StorageSrv.prototype.update = function (pathStrOrObj, newValue) {
+                var self = this;
+
+                return this.__processPath(pathStrOrObj, self.__config).then(function (processedPathOrObj) {
+                    return $q.when(self.adapter.update(processedPathOrObj, newValue)).then(function () {
+                        return self.__addDataToCache(processedPathOrObj, newValue);
                     });
                 });
             };
@@ -4680,10 +5448,10 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
             };
 
             StorageSrv.prototype.cleanPathCache = function (path) {
-                this.entityCache.remove(path);
+                this.__cache.remove(path);
             };
 
-            StorageSrv.variables = StorageSrv.prototype.variables = {
+            StorageSrv.variables = {
                 currTimeStamp: '%currTimeStamp%',
                 uid: '$$uid',
                 appUserSpacePath: 'users/$$uid'
@@ -4833,7 +5601,10 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.user', []);
+    angular.module('znk.infra.user', [
+        'znk.infra.config',
+        'znk.infra.storage'
+    ]);
 })(angular);
 
 'use strict';
@@ -4874,7 +5645,65 @@ angular.module('znk.infra.user').service('UserProfileService',
                 return globalStorage.set(profilePath, newProfile);
             });
         };
+
+        this.getCurrUserId = function(){
+            return InfraConfigSrv.getGlobalStorage().then(function(GlobalStorage){
+                var ref = GlobalStorage.adapter.getRef('');
+                var authData = ref.getAuth();
+                return authData && authData.uid;
+            });
+        };
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.user').provider('UserSessionSrv',
+        function () {
+            'ngInject';
+
+            var isLastSessionRecordDisabled = false;
+            this.disableLastSessionRecord = function (isDisbaled) {
+                isLastSessionRecordDisabled = !!isDisbaled;
+            };
+
+            this.$get = ["InfraConfigSrv", "ENV", function (InfraConfigSrv, ENV) {
+                'ngInject';// jshint ignore:line
+
+                var initProm,lastSessionData;
+
+                var UserSessionSrv = {};
+
+                UserSessionSrv.isLastSessionRecordDisabled = function () {
+                    return isLastSessionRecordDisabled;
+                };
+
+                UserSessionSrv.getLastSessionData = function () {
+                    return initProm.then(function(){
+                        return lastSessionData;
+                    });
+                };
+
+                function init() {
+                    return InfraConfigSrv.getUserData().then(function (userData) {
+                        var globalLastSessionRef = new Firebase(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
+                        return globalLastSessionRef.once('value').then(function(snapshot){
+                            lastSessionData = snapshot.val();
+                            if(!isLastSessionRecordDisabled){
+                                globalLastSessionRef.child('began').set(Firebase.ServerValue.TIMESTAMP);
+                                globalLastSessionRef.child('ended').set(null);
+                                globalLastSessionRef.child('ended').onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
+                            }
+                        });
+                    });
+                }
+                initProm = init();
+
+                return UserSessionSrv;
+            }];
+        }
+    );
+})(angular);
 
 angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 
@@ -4949,13 +5778,119 @@ angular.module('znk.infra.user').run(['$templateCache', function($templateCache)
                     return prom;
                 };
             };
-            
+
+            UtilitySrv.fn.isValidNumber = function(number){
+                if(!angular.isNumber(number) && !angular.isString(number)){
+                    return false;
+                }
+
+                return !isNaN(+number);
+            };
+
             return UtilitySrv;
         }
     ]);
 })(angular);
 
 angular.module('znk.infra.utility').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.workouts', [
+        'znk.infra.exerciseUtility',
+        'znk.infra.config',
+        'znk.infra.exerciseResult',
+        'znk.infra.contentAvail'
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.contentGetters').service('WorkoutsSrv',
+        ["ExerciseStatusEnum", "ExerciseTypeEnum", "$log", "StorageSrv", "ExerciseResultSrv", "ContentAvailSrv", "$q", "InfraConfigSrv", function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
+                  InfraConfigSrv) {
+            'ngInject';
+
+            var workoutsDataPath = StorageSrv.variables.appUserSpacePath + '/workouts';
+
+            function _getWorkoutsData() {
+                var defaultValue = {
+                    workouts: {}
+                };
+                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                    return StudentStorageSrv.get(workoutsDataPath, defaultValue);
+                });
+            }
+
+            function getWorkoutKey(workoutId) {
+                return 'workout_' + workoutId;
+            }
+
+            function _getWorkout(workoutId) {
+                var workoutKey = getWorkoutKey(workoutId);
+                return _getWorkoutsData().then(function (workoutsData) {
+                    return workoutsData.workouts[workoutKey];
+                });
+            }
+
+            function _setIsAvailForWorkout(workout) {
+                return ContentAvailSrv.isDailyAvail(workout.workoutOrder).then(function (isAvail) {
+                    workout.isAvail = isAvail;
+                });
+            }
+
+            this.getAllWorkouts = function () {
+                return _getWorkoutsData().then(function (workoutsData) {
+                    var workoutsArr = [],
+                        promArr = [];
+                    angular.forEach(workoutsData.workouts, function (workout) {
+                        workoutsArr.push(workout);
+                        promArr.push(_setIsAvailForWorkout(workout));
+                    });
+
+                    for (var i = 0; i < 5; i++) {
+                        var workoutToAdd = {
+                            status: ExerciseStatusEnum.NEW.enum,
+                            workoutOrder: workoutsArr.length + 1
+                        };
+                        workoutsArr.push(workoutToAdd);
+                        promArr.push(_setIsAvailForWorkout(workoutToAdd));
+                    }
+                    return $q.all(promArr).then(function () {
+                        return workoutsArr.sort(function (workout1, workout2) {
+                            return workout1.workoutOrder - workout2.workoutOrder;
+                        });
+                    });
+                });
+            };
+
+            this.getWorkoutData = function (workoutId) {
+                if (angular.isUndefined(workoutId)) {
+                    $log.error('workoutSrv: getWorkoutData function was invoked without workout id');
+                }
+                return _getWorkout(workoutId);
+            };
+
+            this.setWorkout = function (workoutId, newWorkoutValue) {
+                return _getWorkoutsData().then(function (workoutsData) {
+                    var workoutKey = getWorkoutKey(workoutId);
+                    workoutsData.workouts[workoutKey] = newWorkoutValue;
+                    InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                        StudentStorageSrv.set(workoutsDataPath, workoutsData);
+                    });
+                });
+            };
+
+            this.getWorkoutKey = getWorkoutKey;
+        }]
+    );
+})(angular);
+
+angular.module('znk.infra.workouts').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -4969,10 +5904,47 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    play: 'components/znkAudioPlayer/svg/play-icon.svg'
+                    'znk-audio-player-play': 'components/znkAudioPlayer/svg/play-icon.svg',
+                    'znk-audio-player-pause': 'components/znkAudioPlayer/svg/pause-icon.svg',
+                    'znk-audio-player-close': 'components/znkAudioPlayer/svg/close-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }]);
+})(angular);
+
+'use strict';
+
+(function (angular) {
+
+    angular.module('znk.infra.znkAudioPlayer').directive('audioManager',
+        function () {
+            return {
+                require: 'audioManager',
+                controller: [
+                    '$scope', '$attrs',
+                    function ($scope, $attrs) {
+                        var resultData = $scope.$eval($attrs.audioManager);
+
+                        this.saveAsPlayedThrough = function saveAsPlayedThrough(groupData) {
+                            resultData.playedAudioArticles = resultData.playedAudioArticles || {};
+                            if (angular.isUndefined(resultData.playedAudioArticles[groupData.id])) {
+                                resultData.playedAudioArticles[groupData.id] = groupData.id;
+                                resultData.playedAudioArticles = angular.copy(resultData.playedAudioArticles);
+                                resultData.$save();
+                            }
+                        };
+
+                        this.wasPlayedThrough = function (groupData) {
+                            return !!resultData.playedAudioArticles && angular.isDefined(resultData.playedAudioArticles[groupData.id]);
+                        };
+
+                        this.canReplayAudio = function canReplayAudio() {
+                            return resultData.isComplete;
+                        };
+                    }]
+            };
+        });
+
 })(angular);
 
 
@@ -4990,7 +5962,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                     onEnded: '&',
                     switchInitGetter: '&switchInit',
                     allowReplay: '&?',
-                    showAsDone: '&?'
+                    showAsDone: '=?'
                 },
                 link:function(scope){
                     scope.d = {};
@@ -5008,7 +5980,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 
                     var allowReplay =  angular.isDefined(scope.allowReplay) ? scope.allowReplay() : false;
                     var autoPlay = angular.isDefined(scope.autoPlayGetter) ? scope.autoPlayGetter() : false;
-                    var showAsDone = angular.isDefined(scope.showAsDone) ? scope.showAsDone() : false;
+                    var showAsDone = !!scope.showAsDone;
 
                     scope.audioPlayer = {
                         STATE_ENUM: STATE_ENUM,
@@ -5029,6 +6001,12 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                     scope.$watch('audioPlayer.currState', function (state) {
                         scope.isPlaying = state === STATE_ENUM.PLAYING;
                     });
+
+                    scope.$watch('showAsDone', function (showAsDone) {
+                        if(showAsDone && !allowReplay){
+                            scope.audioPlayer.currState = STATE_ENUM.ALREADY_PLAYED;
+                        }
+                    });
                 }
             };
         }]);
@@ -5047,8 +6025,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                     sourceGetter: '&source',
                     typeGetter: '&?type',
                     autoPlayGetter: '&autoPlay',
-                    onEnded: '&',
-                    internalPath: '&'
+                    onEnded: '&'
                 },
                 link:function(scope,element,attrs){
                     var sound;
@@ -5082,6 +6059,9 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                             }else{
                                 sound.play();
                             }
+                        },
+                        stop: function() {
+                            sound.stop();
                         }
                     };
 
@@ -5584,18 +6564,48 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 })(angular);
 
 angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/znkAudioPlayer/svg/close-icon.svg",
+    "<svg\n" +
+    "    x=\"0px\"\n" +
+    "    y=\"0px\"\n" +
+    "    class=\"znk-audio-player-close-svg\"\n" +
+    "    viewBox=\"-596.6 492.3 133.2 133.5\">\n" +
+    "    <style>\n" +
+    "        .znk-audio-player-close-svg {\n" +
+    "        }\n" +
+    "    </style>\n" +
+    "<path class=\"st0\"/>\n" +
+    "<g>\n" +
+    "	<line class=\"st1\" x1=\"-592.6\" y1=\"496.5\" x2=\"-467.4\" y2=\"621.8\"/>\n" +
+    "	<line class=\"st1\" x1=\"-592.6\" y1=\"621.5\" x2=\"-467.4\" y2=\"496.3\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkAudioPlayer/svg/pause-icon.svg",
+    "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"-359 103.4 28 36.6\" class=\"znk-audio-player-pause-svg\">\n" +
+    "    <style>\n" +
+    "        .znk-audio-player-pause-svg  .znk-audio-player-pause-svg-rect {\n" +
+    "            width: 7px;\n" +
+    "            height: 20px;\n" +
+    "        }\n" +
+    "    </style>\n" +
+    "<rect class=\"znk-audio-player-pause-svg-rect\" x=\"-353\" y=\"110\" />\n" +
+    "<rect class=\"znk-audio-player-pause-svg-rect\" x=\"-340.8\" y=\"110\" />\n" +
+    "</svg>\n" +
+    "");
   $templateCache.put("components/znkAudioPlayer/svg/play-icon.svg",
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
     "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
-    "	 viewBox=\"0 0 55.7 55.7\" class=\"play-icon\">\n" +
+    "	 viewBox=\"0 0 55.7 55.7\" class=\"znk-audio-player-play-svg\">\n" +
     "    <style>\n" +
-    "        .play-icon {\n" +
+    "        .znk-audio-player-play-svg {\n" +
     "            enable-background:new 0 0 55.7 55.7;\n" +
     "        }\n" +
     "    </style>\n" +
     "<style type=\"text/css\">\n" +
-    "	.st0{fill:none;stroke:#231F20;stroke-width:3;stroke-miterlimit:10;}\n" +
-    "	.st1{fill:#231F20;}\n" +
+    "	.znk-audio-player-play-svg .st0{fill:none;stroke:#231F20;stroke-width:3;stroke-miterlimit:10;}\n" +
+    "	.znk-audio-player-play-svg .st1{fill:#231F20;}\n" +
     "</style>\n" +
     "<circle class=\"st0\" cx=\"27.8\" cy=\"27.8\" r=\"26.3\"/>\n" +
     "<path class=\"st1\" d=\"M22.7,16.6L39,26.1c1.4,0.8,1.4,2.8,0,3.6L22.7,39c-1.4,0.8-3.1-0.2-3.1-1.8V18.4\n" +
@@ -5607,7 +6617,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "    <div class=\"play-button-wrapper\"\n" +
     "         ng-switch-when=\"1\">\n" +
     "        <button class=\"play-button\" ng-click=\"audioPlayer.currState = audioPlayer.STATE_ENUM.PLAYING\">\n" +
-    "            <svg-icon name=\"play\"></svg-icon>\n" +
+    "            <svg-icon name=\"znk-audio-player-play\"></svg-icon>\n" +
     "            <span class=\"play-audio-text\" translate=\".PLAY_AUDIO\"></span>\n" +
     "        </button>\n" +
     "    </div>\n" +
@@ -5627,10 +6637,28 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "");
   $templateCache.put("components/znkAudioPlayer/templates/znkAudioPlayer.template.html",
     "<div class=\"time-display time-passed\" ng-if=\"::d.type === 1\"></div>\n" +
-    "<!--<i ng-if=\"::d.type === 2\"-->\n" +
-    "   <!--class=\"player-control\"-->\n" +
-    "   <!--ng-click=\"d.playOrPause()\">-->\n" +
-    "<!--</i>-->\n" +
+    "<div ng-if=\"::d.type === 2\"\n" +
+    "     class=\"player-close-svg-wrapper\"\n" +
+    "     ng-click=\"d.stop()\">\n" +
+    "    <svg-icon\n" +
+    "        class=\"player-close-svg\"\n" +
+    "        name=\"znk-audio-player-close\">\n" +
+    "    </svg-icon>\n" +
+    "</div>\n" +
+    "<div ng-if=\"::d.type === 2\"\n" +
+    "   class=\"player-control\"\n" +
+    "   ng-init=\"d.playStatus = false\"\n" +
+    "   ng-switch=\"d.playStatus\"\n" +
+    "   ng-click=\"d.playOrPause(); d.playStatus = !d.playStatus\">\n" +
+    "  <svg-icon ng-switch-when=\"true\"\n" +
+    "            class=\"player-play-svg\"\n" +
+    "            name=\"znk-audio-player-play\">\n" +
+    "  </svg-icon>\n" +
+    "  <svg-icon ng-switch-when=\"false\"\n" +
+    "              class=\"player-pause-svg\"\n" +
+    "              name=\"znk-audio-player-pause\">\n" +
+    "  </svg-icon>\n" +
+    "</div>\n" +
     "<ng-switch on=\"d.type\" class=\"progress-container\">\n" +
     "    <div ng-switch-when=\"1\" class=\"only-progress-wrapper\">\n" +
     "        <div class=\"audio-progress\"></div>\n" +
@@ -5666,12 +6694,15 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkExercise', [
-            'znk.infra.svgIcon',
-            'znk.infra.scroll',
-            'znk.infra.autofocus',
-            'znk.infra.exerciseUtility',
-            'ngAnimate'
-        ])
+        'ngAnimate',
+        'pascalprecht.translate',
+        'znk.infra.svgIcon',
+        'znk.infra.scroll',
+        'znk.infra.autofocus',
+        'znk.infra.exerciseUtility',
+        'znk.infra.analytics',
+        'znk.infra.popUp'
+    ])
         .config([
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
@@ -5682,7 +6713,12 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     arrow: 'components/znkExercise/svg/arrow-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
-            }]);
+            }])
+        .run(["$translatePartialLoader", function ($translatePartialLoader) {
+            'ngInject';
+
+            $translatePartialLoader.addPart('znkExercise');
+        }]);
 })(angular);
 
 /**
@@ -5944,14 +6980,190 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.znkExercise').controller('BaseZnkExerciseController',
+        ["$scope", "exerciseData", "exerciseSettings", "$state", "$q", "ExerciseTypeEnum", "$location", "ExerciseResultSrv", "ZnkExerciseSrv", "$filter", "PopUpSrv", "exerciseEventsConst", "$rootScope", "ZnkExerciseUtilitySrv", "ZnkExerciseViewModeEnum", "SubjectEnum", "znkAnalyticsSrv", "$translate", "$log", "StatsEventsHandlerSrv", function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, ExerciseResultSrv, ZnkExerciseSrv,
+                  $filter, PopUpSrv, exerciseEventsConst, $rootScope, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum, SubjectEnum,
+                  znkAnalyticsSrv, $translate, $log, StatsEventsHandlerSrv) {
+            'ngInject';
+
+            var exercise = exerciseData.exercise;
+            var exerciseResult = exerciseData.exerciseResult;
+            var exerciseTypeId = exerciseData.exerciseTypeId;
+            var isSection = exerciseTypeId === ExerciseTypeEnum.SECTION.enum;
+            var initSlideIndex;
+
+            function getNumOfUnansweredQuestions(questionsResults) {
+                var numOfUnansweredQuestions = questionsResults.length;
+                var keysArr = Object.keys(questionsResults);
+                angular.forEach(keysArr, function (i) {
+                    var questionAnswer = questionsResults[i];
+                    if (angular.isDefined(questionAnswer.userAnswer)) {
+                        numOfUnansweredQuestions--;
+                    }
+                });
+                return numOfUnansweredQuestions;
+            }
+
+            function _getAllowedTimeForExercise() {
+                if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
+                    return exercise.time;
+                }
+
+                var allowedTimeForQuestion  = ZnkExerciseSrv.getAllowedTimeForQuestion(exerciseTypeId);
+                return allowedTimeForQuestion * exercise.questions.length;
+            }
+
+            function _finishExercise() {
+                exerciseResult.isComplete = true;
+                exerciseResult.endedTime = Date.now();
+                exerciseResult.$save();
+
+                //  stats exercise data
+                StatsEventsHandlerSrv.addNewExerciseResult(exerciseTypeId, exercise, exerciseResult).then(function () {
+                    $scope.baseZnkExerciseCtrl.settings.viewMode = ZnkExerciseViewModeEnum.REVIEW.enum;
+
+                    var exerciseTypeValue = ExerciseTypeEnum.getValByEnum(exerciseData.exerciseTypeId).toLowerCase();
+                    var broadcastEventName = exerciseEventsConst[exerciseTypeValue].FINISH;
+                    $rootScope.$broadcast(broadcastEventName, exercise, exerciseResult, exerciseData.examData);
+
+                    $state.go('^.summary');
+                });
+            }
+
+            if (!$scope.baseZnkExerciseCtrl) {
+                $scope.baseZnkExerciseCtrl = {};
+            }
+
+            if (angular.isUndefined(exerciseResult.startedTime)) {
+                exerciseResult.startedTime = Date.now();
+            }
+
+            exerciseData.exercise.questions = exerciseData.exercise.questions.sort(function (a, b) {
+                return a.order - b.order;
+            });
+
+            if (!angular.isArray(exerciseResult.questionResults) || exerciseResult.questionResults.length === 0) {
+                exerciseResult.questionResults = exercise.questions.map(function (question) {
+                    return {
+                        questionId: question.id,
+                        categoryId: question.categoryId
+                    };
+                });
+            }
+
+            ZnkExerciseUtilitySrv.setQuestionsGroupData(exercise.questions, exercise.questionsGroupData);
+
+            $scope.baseZnkExerciseCtrl.exercise = exercise;
+            $scope.baseZnkExerciseCtrl.resultsData = exerciseResult;
+            $scope.baseZnkExerciseCtrl.numberOfQuestions = $scope.baseZnkExerciseCtrl.exercise.questions.length;
+
+            var viewMode;
+            if (exerciseResult.isComplete) {
+                viewMode = ZnkExerciseViewModeEnum.REVIEW.enum;
+                initSlideIndex = 0;
+            } else {
+                viewMode = isSection ? ZnkExerciseViewModeEnum.ONLY_ANSWER.enum : ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum;
+                initSlideIndex = exerciseResult.questionResults.findIndex(function (question) {
+                    return !question.userAnswer;
+                });
+            }
+
+            var defExerciseSettings = {
+                onDone: function onDone() {
+                    var numOfUnansweredQuestions = getNumOfUnansweredQuestions(exerciseResult.questionResults);
+
+                    var areAllQuestionsAnsweredProm = $q.when(true);
+                    if (numOfUnansweredQuestions) {
+                        var contentProm = $translate('ZNK_EXERCISE.SOME_ANSWER_LEFT_CONTENT');
+                        var titleProm = $translate('ZNK_EXERCISE.FINISH_TITLE');
+                        var buttonGoToProm = $translate('ZNK_EXERCISE.GO_TO_SUMMARY_BTN');
+                        var buttonStayProm = $translate('ZNK_EXERCISE.STAY_BTN');
+
+                        $q.all([contentProm, titleProm, buttonGoToProm, buttonStayProm]).then(function (results) {
+                            var content = results[0];
+                            var title = results[1];
+                            var buttonGoTo = results[2];
+                            var buttonStay = results[3];
+                            areAllQuestionsAnsweredProm = PopUpSrv.warning(title, content, buttonGoTo, buttonStay).promise;
+                        }, function (err) {
+                            $log.error(err);
+                        });
+                    }
+                    areAllQuestionsAnsweredProm.then(function () {
+                        _finishExercise(exerciseResult);
+                    });
+                },
+                onQuestionAnswered: function onQuestionAnswered() {
+                    exerciseResult.$save();
+                },
+                onSlideChange: function (currQuestion, currentIndex) {
+                    var indexPlusOne = currentIndex + 1;
+                    znkAnalyticsSrv.pageTrack({
+                        props: {
+                            url: $location.url() + '/index/' + indexPlusOne + '/questionId/' + (currQuestion.id || '')
+                        }
+                    });
+                    $scope.baseZnkExerciseCtrl.currentIndex = indexPlusOne;
+                },
+                viewMode: viewMode,
+                initSlideIndex: initSlideIndex || 0,
+                allowedTimeForExercise: _getAllowedTimeForExercise()
+            };
+
+            $scope.baseZnkExerciseCtrl.settings = angular.extend(defExerciseSettings, exerciseSettings);
+            $scope.baseZnkExerciseCtrl.settings.onExerciseReady = function () {
+                if (exerciseSettings.onExerciseReady) {
+                    exerciseSettings.onExerciseReady();
+                }
+            };
+
+            $scope.baseZnkExerciseCtrl.startTime = exerciseResult.duration || 0;
+            $scope.baseZnkExerciseCtrl.maxTime = exercise.time;
+
+            $scope.baseZnkExerciseCtrl.timerData = {
+                timeLeft: exercise.time - (exerciseResult.duration || 0),
+                config: {
+                    countDown: true
+                }
+            };
+
+            $scope.baseZnkExerciseCtrl.onFinishTime = function () {
+
+                var contentProm = $translate('ZNK_EXERCISE.TIME_UP_CONTENT');
+                var titleProm = $translate('ZNK_EXERCISE.TIME_UP_TITLE');
+                var buttonFinishProm = $translate('ZNK_EXERCISE.STOP');
+                var buttonContinueProm = $translate('ZNK_EXERCISE.CONTINUE_BTN');
+
+                $q.all([contentProm, titleProm, buttonFinishProm, buttonContinueProm]).then(function (results) {
+                    var content = results[0];
+                    var title = results[1];
+                    var buttonFinish = results[2];
+                    var buttonContinue = results[3];
+                    var timeOverPopupPromise = PopUpSrv.ErrorConfirmation(title, content, buttonFinish, buttonContinue).promise;
+
+                    timeOverPopupPromise.then(function () {
+                        _finishExercise(exerciseResult);
+                    });
+                });
+            };
+
+            $scope.baseZnkExerciseCtrl.onChangeTime = function (passedTime) {
+                exerciseResult.duration = passedTime;
+            };
+        }]);
+
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     var ZnkExerciseEvents = {
         BOOKMARK: 'znk exercise:bookmark',
         QUESTION_ANSWERED: 'znk exercise:question answered',
         READY: 'znk exercise: exercise ready',
         QUESTION_CHANGED: 'znk exercise: question changed',
         QUESTIONS_NUM_CHANGED: 'znk exercise: questions num changed',
-        SLIDE_DIRECTION_CHANGED: 'znk exercise: slide direction changed',
-        STATE_CHANGED: 'znk exercise: question state changed'
+        SLIDE_DIRECTION_CHANGED: 'znk exercise: slide direction changed'
     };
     angular.module('znk.infra.znkExercise').constant('ZnkExerciseEvents', ZnkExerciseEvents);
 })(angular);
@@ -6006,6 +7218,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                                 znkExerciseCtrl.notifyQuestionBuilderReady(questionBuilderCtrl.question.__questionStatus.index);
                             });
                         },0,false);
+
+                        questionBuilderCtrl.setViewValue = znkExerciseCtrl.setViewValue;
 
                         scope.$on('$destroy', function(){
                             $timeout.cancel(innerTimeout);
@@ -6450,42 +7664,69 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').factory('ZnkExerciseSrv', [
-        /*'ZnkModalSrv',*/ 'EnumSrv', '$window', 'PlatformEnum',
-        function (/*ZnkModalSrv, */EnumSrv, $window, PlatformEnum) {
-            var ZnkExerciseSrv = {};
+    angular.module('znk.infra.znkExercise').provider('ZnkExerciseSrv',
+        function () {
+            'ngInject';
 
-            var platform = !!$window.ionic ? PlatformEnum.MOBILE.enum : PlatformEnum.DESKTOP.enum;
-            ZnkExerciseSrv.getPlatform = function(){
-                return platform;
+            var exerciseTypeToAllowedQuestionTimeMap;
+            this.setAllowedTimeForQuestionMap = function (_exerciseTypeToAllowedQuestionTimeMap) {
+                exerciseTypeToAllowedQuestionTimeMap = _exerciseTypeToAllowedQuestionTimeMap;
             };
 
-            ZnkExerciseSrv.openExerciseToolBoxModal = function openExerciseToolBoxModal(/*toolBoxModalSettings*/) {
-                //var modalOptions = {
-                //    templateUrl: 'scripts/exercise/templates/znkExerciseToolBoxModal.html',
-                //    hideBackdrop: true,
-                //    ctrl: 'ZnkExerciseToolBoxModalCtrl',
-                //    ctrlAs: 'toolBoxCtrl',
-                //    dontCentralize: true,
-                //    wrapperClass: 'znk-exercise-toolbox ' + toolBoxModalSettings.wrapperCls,
-                //    resolve: {
-                //        Settings: toolBoxModalSettings
-                //    }
-                //};
-                //return ZnkModalSrv.modal(modalOptions);
-            };
+            this.$get = ["EnumSrv", "$window", "PlatformEnum", "$log", function (EnumSrv, $window, PlatformEnum, $log) {
+                'ngInject';//jshint ignore:line
 
-            ZnkExerciseSrv.toolBoxTools = {
-                BLACKBOARD: 'blackboard',
-                MARKER: 'mar',
-                CALCULATOR: 'cal',
-                BOOKMARK: 'bookmark',
-                SHOW_PAGER: 'show pager'
-            };
+                var platform = !!$window.ionic ? PlatformEnum.MOBILE.enum : PlatformEnum.DESKTOP.enum;
+                var ZnkExerciseSrv = {};
 
-            return ZnkExerciseSrv;
+                ZnkExerciseSrv.toolBoxTools = {
+                    BLACKBOARD: 'blackboard',
+                    MARKER: 'mar',
+                    CALCULATOR: 'cal',
+                    BOOKMARK: 'bookmark',
+                    SHOW_PAGER: 'show pager'
+                };
+
+                function openExerciseToolBoxModal(/*toolBoxModalSettings*/) {
+                    //var modalOptions = {
+                    //    templateUrl: 'scripts/exercise/templates/znkExerciseToolBoxModal.html',
+                    //    hideBackdrop: true,
+                    //    ctrl: 'ZnkExerciseToolBoxModalCtrl',
+                    //    ctrlAs: 'toolBoxCtrl',
+                    //    dontCentralize: true,
+                    //    wrapperClass: 'znk-exercise-toolbox ' + toolBoxModalSettings.wrapperCls,
+                    //    resolve: {
+                    //        Settings: toolBoxModalSettings
+                    //    }
+                    //};
+                    //return ZnkModalSrv.modal(modalOptions);
+                }
+
+                ZnkExerciseSrv.openExerciseToolBoxModal = openExerciseToolBoxModal;
+
+                ZnkExerciseSrv.getPlatform = function () {
+                    return platform;
+                };
+
+                ZnkExerciseSrv.getAllowedTimeForQuestion = function (exerciseType) {
+                    if(!exerciseTypeToAllowedQuestionTimeMap || !exerciseTypeToAllowedQuestionTimeMap[exerciseType]){
+                        $log.error('ZnkExerciseSrv: the following exercise type:' + exerciseType +' has no question allowed time');
+                    }
+                    return exerciseTypeToAllowedQuestionTimeMap[exerciseType];
+                };
+
+                ZnkExerciseSrv.toolBoxTools = {
+                    BLACKBOARD: 'blackboard',
+                    MARKER: 'mar',
+                    CALCULATOR: 'cal',
+                    BOOKMARK: 'bookmark',
+                    SHOW_PAGER: 'show pager'
+                };
+
+                return ZnkExerciseSrv;
+            }];
         }
-    ]);
+    );
 })(angular);
 
 /**
@@ -6495,7 +7736,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
  *  ngModel: results array
  *
  *  settings:
- *      allowedTimeForExercise
+ *      allowedTimeForExercise: in milliseconds
  *      onDone
  *      onQuestionAnswered
  *      wrapperCls
@@ -6503,7 +7744,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
  *      viewMode
  *      onExerciseReady
  *      onSlideChange
- *      onStateChange
  *      initSlideIndex
  *      toolBoxWrapperClass
  *      initSlideDirection
@@ -6552,7 +7792,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                                 onQuestionAnswered: angular.noop,
                                 viewMode: ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
                                 onSlideChange: angular.noop,
-                                onStateChange: angular.noop,
                                 initSlideDirection: ZnkExerciseSlideDirectionEnum.ALL.enum,
                                 initForceDoneBtnDisplay: null,
                                 initPagerDisplay: true,
@@ -6858,12 +8097,15 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                              *  INIT END
                              * */
 
-                            scope.$on(ZnkExerciseEvents.STATE_CHANGED, function (e, stateId) {
-                                var currQuestion = getCurrentQuestion();
-                                currQuestion.__questionStatus.stateId = stateId;
-                                setViewValue();
-                                scope.settings.onStateChange(stateId);
-                            });
+                            /**
+                             * EXERCISE CTRL ADDITIONAL API
+                             */
+
+                            znkExerciseDrvCtrl.setViewValue = setViewValue;
+
+                            /**
+                             * EXERCISE CTRL ADDITIONAL END
+                             */
 
                             scope.$watch('vm.currentSlide', function (value, prevValue) {
                                 if(angular.isUndefined(value)){
@@ -7858,7 +9100,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 });
 
                 angular.forEach(questions, function (question) {
-                    if (!groupDataMap[question.groupDataId]) {
+                    if (question.groupDataId && !groupDataMap[question.groupDataId]) {
                         $log.debug('Group data is missing for the following question id ' + question.id);
                     }
 
@@ -8086,6 +9328,42 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</g>\n" +
     "</svg>\n" +
     "");
+}]);
+
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.znkModule', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkModule').service('ZnkModuleService', [
+        'StorageRevSrv',
+        function (StorageRevSrv) {
+            var znkModuleService = {};
+
+            znkModuleService.getModuleHeaders = function () {
+                return StorageRevSrv.getContent({
+                    exerciseType: 'moduleheaders'
+                });
+            };
+
+            znkModuleService.getModuleById = function (moduleId) {
+                return StorageRevSrv.getContent({
+                    exerciseId: moduleId,
+                    exerciseType: 'module'
+                });
+            };
+
+            return znkModuleService;
+        }
+    ]);
+})(angular);
+
+
+angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
+
 }]);
 
 (function (angular) {

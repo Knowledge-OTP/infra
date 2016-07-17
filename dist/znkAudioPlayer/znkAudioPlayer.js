@@ -8,10 +8,47 @@
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    play: 'components/znkAudioPlayer/svg/play-icon.svg'
+                    'znk-audio-player-play': 'components/znkAudioPlayer/svg/play-icon.svg',
+                    'znk-audio-player-pause': 'components/znkAudioPlayer/svg/pause-icon.svg',
+                    'znk-audio-player-close': 'components/znkAudioPlayer/svg/close-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }]);
+})(angular);
+
+'use strict';
+
+(function (angular) {
+
+    angular.module('znk.infra.znkAudioPlayer').directive('audioManager',
+        function () {
+            return {
+                require: 'audioManager',
+                controller: [
+                    '$scope', '$attrs',
+                    function ($scope, $attrs) {
+                        var resultData = $scope.$eval($attrs.audioManager);
+
+                        this.saveAsPlayedThrough = function saveAsPlayedThrough(groupData) {
+                            resultData.playedAudioArticles = resultData.playedAudioArticles || {};
+                            if (angular.isUndefined(resultData.playedAudioArticles[groupData.id])) {
+                                resultData.playedAudioArticles[groupData.id] = groupData.id;
+                                resultData.playedAudioArticles = angular.copy(resultData.playedAudioArticles);
+                                resultData.$save();
+                            }
+                        };
+
+                        this.wasPlayedThrough = function (groupData) {
+                            return !!resultData.playedAudioArticles && angular.isDefined(resultData.playedAudioArticles[groupData.id]);
+                        };
+
+                        this.canReplayAudio = function canReplayAudio() {
+                            return resultData.isComplete;
+                        };
+                    }]
+            };
+        });
+
 })(angular);
 
 
@@ -29,7 +66,7 @@
                     onEnded: '&',
                     switchInitGetter: '&switchInit',
                     allowReplay: '&?',
-                    showAsDone: '&?'
+                    showAsDone: '=?'
                 },
                 link:function(scope){
                     scope.d = {};
@@ -47,7 +84,7 @@
 
                     var allowReplay =  angular.isDefined(scope.allowReplay) ? scope.allowReplay() : false;
                     var autoPlay = angular.isDefined(scope.autoPlayGetter) ? scope.autoPlayGetter() : false;
-                    var showAsDone = angular.isDefined(scope.showAsDone) ? scope.showAsDone() : false;
+                    var showAsDone = !!scope.showAsDone;
 
                     scope.audioPlayer = {
                         STATE_ENUM: STATE_ENUM,
@@ -68,6 +105,12 @@
                     scope.$watch('audioPlayer.currState', function (state) {
                         scope.isPlaying = state === STATE_ENUM.PLAYING;
                     });
+
+                    scope.$watch('showAsDone', function (showAsDone) {
+                        if(showAsDone && !allowReplay){
+                            scope.audioPlayer.currState = STATE_ENUM.ALREADY_PLAYED;
+                        }
+                    });
                 }
             };
         }]);
@@ -86,8 +129,7 @@
                     sourceGetter: '&source',
                     typeGetter: '&?type',
                     autoPlayGetter: '&autoPlay',
-                    onEnded: '&',
-                    internalPath: '&'
+                    onEnded: '&'
                 },
                 link:function(scope,element,attrs){
                     var sound;
@@ -121,6 +163,9 @@
                             }else{
                                 sound.play();
                             }
+                        },
+                        stop: function() {
+                            sound.stop();
                         }
                     };
 
@@ -623,18 +668,48 @@
 })(angular);
 
 angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/znkAudioPlayer/svg/close-icon.svg",
+    "<svg\n" +
+    "    x=\"0px\"\n" +
+    "    y=\"0px\"\n" +
+    "    class=\"znk-audio-player-close-svg\"\n" +
+    "    viewBox=\"-596.6 492.3 133.2 133.5\">\n" +
+    "    <style>\n" +
+    "        .znk-audio-player-close-svg {\n" +
+    "        }\n" +
+    "    </style>\n" +
+    "<path class=\"st0\"/>\n" +
+    "<g>\n" +
+    "	<line class=\"st1\" x1=\"-592.6\" y1=\"496.5\" x2=\"-467.4\" y2=\"621.8\"/>\n" +
+    "	<line class=\"st1\" x1=\"-592.6\" y1=\"621.5\" x2=\"-467.4\" y2=\"496.3\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkAudioPlayer/svg/pause-icon.svg",
+    "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"-359 103.4 28 36.6\" class=\"znk-audio-player-pause-svg\">\n" +
+    "    <style>\n" +
+    "        .znk-audio-player-pause-svg  .znk-audio-player-pause-svg-rect {\n" +
+    "            width: 7px;\n" +
+    "            height: 20px;\n" +
+    "        }\n" +
+    "    </style>\n" +
+    "<rect class=\"znk-audio-player-pause-svg-rect\" x=\"-353\" y=\"110\" />\n" +
+    "<rect class=\"znk-audio-player-pause-svg-rect\" x=\"-340.8\" y=\"110\" />\n" +
+    "</svg>\n" +
+    "");
   $templateCache.put("components/znkAudioPlayer/svg/play-icon.svg",
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
     "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
-    "	 viewBox=\"0 0 55.7 55.7\" class=\"play-icon\">\n" +
+    "	 viewBox=\"0 0 55.7 55.7\" class=\"znk-audio-player-play-svg\">\n" +
     "    <style>\n" +
-    "        .play-icon {\n" +
+    "        .znk-audio-player-play-svg {\n" +
     "            enable-background:new 0 0 55.7 55.7;\n" +
     "        }\n" +
     "    </style>\n" +
     "<style type=\"text/css\">\n" +
-    "	.st0{fill:none;stroke:#231F20;stroke-width:3;stroke-miterlimit:10;}\n" +
-    "	.st1{fill:#231F20;}\n" +
+    "	.znk-audio-player-play-svg .st0{fill:none;stroke:#231F20;stroke-width:3;stroke-miterlimit:10;}\n" +
+    "	.znk-audio-player-play-svg .st1{fill:#231F20;}\n" +
     "</style>\n" +
     "<circle class=\"st0\" cx=\"27.8\" cy=\"27.8\" r=\"26.3\"/>\n" +
     "<path class=\"st1\" d=\"M22.7,16.6L39,26.1c1.4,0.8,1.4,2.8,0,3.6L22.7,39c-1.4,0.8-3.1-0.2-3.1-1.8V18.4\n" +
@@ -646,7 +721,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "    <div class=\"play-button-wrapper\"\n" +
     "         ng-switch-when=\"1\">\n" +
     "        <button class=\"play-button\" ng-click=\"audioPlayer.currState = audioPlayer.STATE_ENUM.PLAYING\">\n" +
-    "            <svg-icon name=\"play\"></svg-icon>\n" +
+    "            <svg-icon name=\"znk-audio-player-play\"></svg-icon>\n" +
     "            <span class=\"play-audio-text\" translate=\".PLAY_AUDIO\"></span>\n" +
     "        </button>\n" +
     "    </div>\n" +
@@ -666,10 +741,28 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "");
   $templateCache.put("components/znkAudioPlayer/templates/znkAudioPlayer.template.html",
     "<div class=\"time-display time-passed\" ng-if=\"::d.type === 1\"></div>\n" +
-    "<!--<i ng-if=\"::d.type === 2\"-->\n" +
-    "   <!--class=\"player-control\"-->\n" +
-    "   <!--ng-click=\"d.playOrPause()\">-->\n" +
-    "<!--</i>-->\n" +
+    "<div ng-if=\"::d.type === 2\"\n" +
+    "     class=\"player-close-svg-wrapper\"\n" +
+    "     ng-click=\"d.stop()\">\n" +
+    "    <svg-icon\n" +
+    "        class=\"player-close-svg\"\n" +
+    "        name=\"znk-audio-player-close\">\n" +
+    "    </svg-icon>\n" +
+    "</div>\n" +
+    "<div ng-if=\"::d.type === 2\"\n" +
+    "   class=\"player-control\"\n" +
+    "   ng-init=\"d.playStatus = false\"\n" +
+    "   ng-switch=\"d.playStatus\"\n" +
+    "   ng-click=\"d.playOrPause(); d.playStatus = !d.playStatus\">\n" +
+    "  <svg-icon ng-switch-when=\"true\"\n" +
+    "            class=\"player-play-svg\"\n" +
+    "            name=\"znk-audio-player-play\">\n" +
+    "  </svg-icon>\n" +
+    "  <svg-icon ng-switch-when=\"false\"\n" +
+    "              class=\"player-pause-svg\"\n" +
+    "              name=\"znk-audio-player-pause\">\n" +
+    "  </svg-icon>\n" +
+    "</div>\n" +
     "<ng-switch on=\"d.type\" class=\"progress-container\">\n" +
     "    <div ng-switch-when=\"1\" class=\"only-progress-wrapper\">\n" +
     "        <div class=\"audio-progress\"></div>\n" +

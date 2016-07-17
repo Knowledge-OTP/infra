@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.general', ['znk.infra.enum', 'znk.infra.svgIcon'])
+    angular.module('znk.infra.general', ['znk.infra.enum', 'znk.infra.svgIcon', 'angular-svg-round-progress'])
         .config([
         'SvgIconSrvProvider',
         function (SvgIconSrvProvider) {
@@ -103,6 +103,34 @@
     });
 })(angular);
 
+
+'use strict';
+
+(function (angular) {
+    angular.module('znk.infra.general').directive('disableClickDrv', [
+        function () {
+            return {
+                priority: 200,
+                link: {
+                    pre: function (scope, element, attrs) {
+                        function clickHandler(evt){
+                            if(attrs.disabled){
+                                evt.stopImmediatePropagation();
+                                evt.preventDefault();
+                                return false;
+                            }
+                        }
+                        var eventName = 'click';
+                        element[0].addEventListener (eventName, clickHandler);
+                        scope.$on('$destroy',function(){
+                            element[0].removeEventListener (eventName, clickHandler);
+                        });
+                    }
+                }
+            };
+        }
+    ]);
+})(angular);
 
 /**
  *  @directive subjectIdToAttrDrv

@@ -28,9 +28,13 @@ module.exports = function (config) {
             'bower_components/angular-animate/angular-animate.js',
             'bower_components/Swiper/dist/js/swiper.js',
             'bower_components/firebase/firebase.js',
+            'bower_components/ng-idle/angular-idle.js',
             'bower_components/angular-translate/angular-translate.js',
+            'bower_components/SHA-1/sha1.js',
+            'bower_components/angulartics/src/angulartics.js',
             'bower_components/angular-translate-loader-partial/angular-translate-loader-partial.js',
             'bower_components/angular-svg-round-progressbar/build/roundProgress.min.js',
+            'bower_components/angular-ui-router/release/angular-ui-router.js',
             'bower_components/angular-mocks/angular-mocks.js',
             'bower_components/mockfirebase/browser/mockfirebase.js',
             'bower_components/jasmine/lib/jasmine-core/jasmine.js',
@@ -63,7 +67,7 @@ module.exports = function (config) {
             'test/mock/**/*.js',
 
             //tests
-            'test/spec/**/exerciseResult.spec.js'
+            'test/spec/**/*.spec.js'
         ],
 
         // list of files / patterns to exclude

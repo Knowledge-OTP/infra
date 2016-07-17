@@ -1,17 +1,10 @@
 describe('testing service "StatsEventsHandlerSrv":', function () {
     'use strict';
 
-    beforeEach(module('znk.infra.stats', 'znk.infra.utility', 'htmlTemplates', 'storage.mock', 'testUtility'));
+    beforeEach(module('znk.infra.stats', 'znk.infra.utility', 'htmlTemplates', 'storage.mock', 'testUtility',
+        'content.mock'));
 
-    beforeEach(module(function (StatsSrvProvider) {
-        function getCategoryLookup($q, UtilitySrv) {
-            return $q.when(UtilitySrv.array.convertToMap(content.category));
-        }
-
-        StatsSrvProvider.setCategoryLookup(getCategoryLookup);
-    }));
-
-    var $rootScope, exerciseEventsConst, TestUtilitySrv, testStorage, StatsEventsHandlerSrv, ExerciseTypeEnum;
+    var $rootScope, exerciseEventsConst, TestUtilitySrv, StudentStorage, StatsEventsHandlerSrv, ExerciseTypeEnum;
     beforeEach(inject([
         '$injector',
         function ($injector) {
@@ -22,12 +15,12 @@ describe('testing service "StatsEventsHandlerSrv":', function () {
             TestUtilitySrv = $injector.get('TestUtilitySrv');
 
             var InfraConfigSrv = $injector.get('InfraConfigSrv');
-            testStorage = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage, InfraConfigSrv)();
+            StudentStorage = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage, InfraConfigSrv)();
 
             TestUtilitySrv.general.printDebugLogs();
 
             StatsEventsHandlerSrv = $injector.get('StatsEventsHandlerSrv');
-            
+
             ExerciseTypeEnum = $injector.get('ExerciseTypeEnum');
         }]));
 
@@ -202,23 +195,23 @@ describe('testing service "StatsEventsHandlerSrv":', function () {
         StatsEventsHandlerSrv.addNewExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseMock, resultMock);
         $rootScope.$digest();
 
-        angular.forEach(expectedLevel4Stats,function(expectedResult, key){
-            var value = testStorage.db.users.$$uid.stats.level4Categories[key];
+        angular.forEach(expectedLevel4Stats, function (expectedResult, key) {
+            var value = StudentStorage.adapter.__db.users.$$uid.stats.level4Categories[key];
             expect(value).toEqual(jasmine.objectContaining(expectedResult));
         });
 
-        angular.forEach(expectedLevel3Stats,function(expectedResult, key){
-            var value = testStorage.db.users.$$uid.stats.level3Categories[key];
+        angular.forEach(expectedLevel3Stats, function (expectedResult, key) {
+            var value = StudentStorage.adapter.__db.users.$$uid.stats.level3Categories[key];
             expect(value).toEqual(jasmine.objectContaining(expectedResult));
         });
 
-        angular.forEach(expectedLevel2Stats,function(expectedResult, key){
-            var value = testStorage.db.users.$$uid.stats.level2Categories[key];
+        angular.forEach(expectedLevel2Stats, function (expectedResult, key) {
+            var value = StudentStorage.adapter.__db.users.$$uid.stats.level2Categories[key];
             expect(value).toEqual(jasmine.objectContaining(expectedResult));
         });
 
-        angular.forEach(expectedLevel1Stats,function(expectedResult, key){
-            var value = testStorage.db.users.$$uid.stats.level1Categories[key];
+        angular.forEach(expectedLevel1Stats, function (expectedResult, key) {
+            var value = StudentStorage.adapter.__db.users.$$uid.stats.level1Categories[key];
             expect(value).toEqual(jasmine.objectContaining(expectedResult));
         });
     });
