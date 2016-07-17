@@ -5011,122 +5011,168 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.storage').factory('storageFirebaseAdapter', [
-        '$log', '$q', 'StorageSrv', 'ENV',
-        function ($log, $q, StorageSrv, ENV) {
-            function processValuesToSet(source){
-                if(angular.isArray(source)){
-                    source.forEach(function(item, index){
-                        if(angular.isUndefined(item)){
+    angular.module('znk.infra.storage').service('StorageFirebaseAdapter',
+        ["$log", "$q", "StorageSrv", "ENV", "$timeout", function ($log, $q, StorageSrv, ENV, $timeout) {
+            'ngInject';
+
+            function processValue(value) {
+                if (value === StorageSrv.variables.currTimeStamp) {
+                    return Firebase.ServerValue.TIMESTAMP;
+                }
+                return value;
+            }
+
+            function processValuesToSet(source) {
+                if (angular.isArray(source)) {
+                    source.forEach(function (item, index) {
+                        if (angular.isUndefined(item)) {
                             source[index] = null;
                         }
                         processValuesToSet(item);
                     });
-                    return;
                 }
 
-                if(angular.isObject(source)){
+                if (angular.isObject(source)) {
                     var keys = Object.keys(source);
-                    keys.forEach(function(key){
+                    keys.forEach(function (key) {
                         var value = source[key];
 
-                        if(key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length) || (value !== value)){//value !== value return true if it equals to NaN
-                            if(key !== '$save'){
+                        if (key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length) || (value !== value)) {//value !== value return true if it equals to NaN
+                            if (key !== '$save') {
                                 $log.debug('storageFirebaseAdapter: illegal property was deleted before save ' + key);
                             }
                             delete source[key];
                             return;
                         }
 
-                        if(angular.isString(value)){
+                        if (angular.isString(value)) {
                             source[key] = processValue(value);
                         }
 
                         processValuesToSet(value);
                     });
-                    return;
                 }
             }
 
-            function storageFirebaseAdapter (endPoint){
-                var refMap = {};
-                var authObj;
-                var rootRef = new Firebase(endPoint, ENV.firebaseAppScopeName);
-                refMap.rootRef = rootRef;
-                rootRef.onAuth(function(newAuthObj){
-                    authObj = newAuthObj;
-                });
+            function StorageFirebaseAdapter(endPoint) {
+                this.__refMap = {};
 
-                function getRef(relativePath){
-                    if(!refMap[relativePath]){
-                        refMap[relativePath] = refMap.rootRef.child(relativePath);
+                this.__refMap.rootRef = new Firebase(endPoint, ENV.firebaseAppScopeName);
+
+                this.__registeredEvents = {};
+            }
+
+            var storageFirebaseAdapterPrototype = {
+                getRef: function(relativePath){
+                    if (!this.__refMap[relativePath]) {
+                        this.__refMap[relativePath] = this.__refMap.rootRef.child(relativePath);
                     }
-                    return refMap[relativePath];
-                }
 
-                function get(relativePath){
+                    return this.__refMap[relativePath];
+                },
+                get: function (relativePath) {
                     var defer = $q.defer();
 
-                    var ref = getRef(relativePath);
-                    ref.once('value',function(dataSnapshot){
+                    var ref = this.getRef(relativePath);
+                    ref.once('value', function (dataSnapshot) {
                         defer.resolve(dataSnapshot.val());
-                    },function(err){
+                    }, function (err) {
                         $log.error('storageFirebaseAdapter: failed to retrieve data for the following path ' + relativePath + ' ' + err);
                         defer.reject(err);
                     });
-                    return defer.promise;
-                }
 
-                function set(relativePathOrObject, newValue){
+                    return defer.promise;
+                },
+                update: function (relativePathOrObject, newValue) {
+                    var pathsToUpdate = {};
+
+                    if (!angular.isObject(relativePathOrObject)) {
+                        pathsToUpdate[relativePathOrObject] = newValue;
+                    } else {
+                        pathsToUpdate = relativePathOrObject;
+                    }
+
+                    var pathsToUpdateCopy = angular.copy(pathsToUpdate);
+
+                    processValuesToSet(pathsToUpdateCopy);
+
                     var defer = $q.defer();
 
-                    if(angular.isObject(relativePathOrObject)){
-                        var valuesToSet ={};
-                        angular.forEach(relativePathOrObject,function(value,path){
-                            valuesToSet[path] = angular.copy(value);
-                        });
-                        processValuesToSet(valuesToSet);
-                        refMap.rootRef.update(valuesToSet, function(err){
-                            if(err){
-                                defer.reject(err);
-                            }
-                            defer.resolve();
-                        });
-                    }else{
-                        var newValueCopy = angular.copy(newValue);
-                        processValuesToSet(newValueCopy);
-                        var ref = getRef(relativePathOrObject);
-                        ref.set(newValueCopy,function(err){
-                            if(err){
-                                $log.error('storageFirebaseAdapter: failed to set data for the following path ' + relativePathOrObject + ' ' + err);
-                                defer.reject(err);
-                            }else{
-                                defer.resolve(newValueCopy);
-                            }
+                    this.__refMap.rootRef.update(pathsToUpdateCopy, function (err) {
+                        if (err) {
+                            $log.error('storageFirebaseAdapter: failed to set data for the following path ' + pathsToUpdateCopy + ' ' + err);
+                            return defer.reject(err);
+                        }
+                        defer.resolve(angular.isString(relativePathOrObject) ? newValue : relativePathOrObject);
+                    });
+
+                    return defer.promise;
+                },
+                set: function (relativePath, newValue) {
+                    var newValueCopy = angular.copy(newValue);
+
+                    processValuesToSet(newValueCopy);
+
+                    var ref = this.getRef(relativePath);
+                    return ref.set(newValueCopy);
+                },
+                onEvent: function (type, path, cb) {
+                    var self = this;
+
+                    if(!this.__registeredEvents[type]){
+                        this.__registeredEvents[type] = {};
+                    }
+
+                    if(!this.__registeredEvents[type][path]){
+                        this.__registeredEvents[type][path] = [];
+
+                        var ref = this.getRef(path);
+                        ref.on(type, function(snapshot){
+                            var newVal = snapshot.val();
+                            self.__invokeEventCb(type, path, [newVal]);
                         });
                     }
 
-                    return defer.promise;
+                    var evtCbArr = this.__registeredEvents[type][path];
+                    evtCbArr.push(cb);
+                },
+                __invokeEventCb: function(type, path, argArr){
+                    if(!this.__registeredEvents[type] || !this.__registeredEvents[type][path]){
+                        return;
+                    }
+
+                    var eventCbArr = this.__registeredEvents[type][path];
+                    //fb event so we out of angular
+                    $timeout(function(){
+                        eventCbArr.forEach(function(cb){
+                            cb.apply(null, argArr);
+                        });
+                    });
+                },
+                offEvent: function(type, path, cb){
+                    if(!this.__registeredEvents[type] || !this.__registeredEvents[type][path]){
+                        return;
+                    }
+
+                    if(angular.isUndefined(cb)){
+                        this.__registeredEvents[type][path] = [];
+                        return;
+                    }
+
+                    var eventCbArr = this.__registeredEvents[type][path];
+                    var newEventCbArr = [];
+                    eventCbArr.forEach(function(cb){
+                        if(cb !== cb){
+                            newEventCbArr.push(cb);
+                        }
+                    });
+                    this.__registeredEvents[type][path] = newEventCbArr;
                 }
+            };
+            StorageFirebaseAdapter.prototype = storageFirebaseAdapterPrototype;
 
-                return {
-                    get: get,
-                    set: set,
-                    getRef: getRef,
-                    __refMap: refMap//for testing
-                };
-            }
-
-            function processValue(value){
-                if(value === StorageSrv.variables.currTimeStamp){
-                    return Firebase.ServerValue.TIMESTAMP;
-                }
-                return value;
-            }
-
-            return storageFirebaseAdapter;
-        }
-    ]);
+            return StorageFirebaseAdapter;
+        }]);
 })(angular);
 
 (function (angular) {
@@ -5564,7 +5610,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
-    ["InfraConfigSrv", "StorageSrv", "ENV", "storageFirebaseAdapter", "$q", function (InfraConfigSrv, StorageSrv, ENV, storageFirebaseAdapter, $q) {
+    ["InfraConfigSrv", "StorageSrv", function (InfraConfigSrv, StorageSrv) {
         'ngInject';
         var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
 
@@ -5601,10 +5647,11 @@ angular.module('znk.infra.user').service('UserProfileService',
         };
 
         this.getCurrUserId = function(){
-            var fbAdapter = storageFirebaseAdapter(ENV.fbDataEndPoint + '/' + ENV.firebaseAppScopeName);//(igor) todo: requires better implementation
-            var ref = fbAdapter.getRef('');
-            var authData = ref.getAuth();
-            return $q.when(authData && authData.uid);
+            return InfraConfigSrv.getGlobalStorage().then(function(GlobalStorage){
+                var ref = GlobalStorage.adapter.getRef('');
+                var authData = ref.getAuth();
+                return authData && authData.uid;
+            });
         };
 }]);
 
