@@ -52,7 +52,7 @@
 
                 return $q.all([authProm, dataAuthProm]).then(function(res){
                     var auth = res[0];
-                    var fbAdapter = StorageFirebaseAdapter(path);
+                    var fbAdapter = new StorageFirebaseAdapter(path);
                     var config = {
                         variables: {
                             uid: function () {
