@@ -29,9 +29,21 @@ angular.module('znk.infra.contentGetters').service('CategoryService', function (
             });
         };
 
+        self.categoryName = function (categoryId) {
+            return self.getCategoryMap().then(function(categoryMap){
+                return categoryMap[categoryId];
+            });
+        };
+    
         self.getParentCategory = function (categoryId) {
             return self.getCategoryMap().then(function (categories) {
-                var parentId = categories[categoryId].parentId;
+                var parentId;
+                if (categories[categoryId]) {
+                    parentId = categories[categoryId].parentId;
+                } else {
+                    $log.error('category id was not found in the categories');
+                    return null;
+                }
                 return categories[parentId];
             });
         };
