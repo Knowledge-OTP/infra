@@ -127,7 +127,7 @@
                 exerciseResult.correctAnswersNum = countCorrect;
                 exerciseResult.wrongAnswersNum = countWrong;
                 exerciseResult.skippedAnswersNum = countSkipped;
-                
+
                 exerciseResult.duration = totalTimeSpentOnQuestions;
                 exerciseResult.correctAvgTime = _getAvgTime(countCorrect,correctTotalTime);
                 exerciseResult.wrongAvgTime = _getAvgTime(countWrong, wrongTotalTime);
@@ -326,7 +326,7 @@
                             var dataToSave = {};
                             var newExamResultGuid = UtilitySrv.general.createGuid();
                             examResultsGuids[examId] = newExamResultGuid;
-                            dataToSave[EXAM_RESULTS_GUIDS_PATH] = examResultsGuids;
+                            dataToSave[USER_EXAM_RESULTS_PATH] = examResultsGuids;
 
                             var examResultPath = _getExamResultPath(newExamResultGuid);
                             var initExamResultProm = _getInitExamResult(examId, newExamResultGuid);

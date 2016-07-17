@@ -3,7 +3,7 @@ describe('testing service "StatsQuerySrv":', function () {
 
     beforeEach(module('znk.infra.stats', 'htmlTemplates','storage.mock', 'testUtility', 'content.mock'));
 
-    var $rootScope, StatsQuerySrv, SubjectEnum, StorageSrv;
+    var $rootScope, StatsQuerySrv, SubjectEnum, StudentStorage;
     var actions;
     beforeEach(inject([
         '$injector',
@@ -149,8 +149,8 @@ describe('testing service "StatsQuerySrv":', function () {
             TestUtilitySrv.general.printDebugLogs();
 
             var InfraConfigSrv = $injector.get('InfraConfigSrv');
-            StorageSrv = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage, InfraConfigSrv)();
-            StorageSrv.db.users.$$uid.stats = {
+            StudentStorage = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage, InfraConfigSrv)();
+            StudentStorage.adapter.__db.users.$$uid.stats = {
                 level1Categories: level1,
                 level2Categories: level2,
                 level3Categories: level3,
@@ -200,7 +200,7 @@ describe('testing service "StatsQuerySrv":', function () {
 
     it('given no stats were recorded when requesting for weakest category under specific parent and providing optionalIds ' +
         'then a random one from the optional ids array should be returned', function(){
-        delete StorageSrv.db.users.$$uid.stats;
+        delete StudentStorage.adapter.__db.users.$$uid.stats;
         var parentId = 1;
         var LEVEL = 3;
         var optionalCategories = [275, 277];

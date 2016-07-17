@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.contentAvail', ['znk.infra.config']);
+    angular.module('znk.infra.contentAvail', ['znk.infra.config', 'znk.infra.exerciseUtility']);
 })(angular);
 
 (function (angular) {
@@ -23,30 +23,32 @@
 
                 var ContentAvailSrvObj = {};
 
-                function getUserPurchaseData() {
-                    var StorageService = InfraConfigSrv.getStorageService();
-                    var purchaseDataPath = StorageSrv.variables.appUserSpacePath + '/purchase';
-                    var defValues = {
-                        daily: 0,
-                        exam: {},
-                        tutorial: {},
-                        section: {},
-                        subscription: {}
-                    };
-                    return StorageService.get(purchaseDataPath, defValues);
+                function getUserPurchaseData(){
+                    return InfraConfigSrv.getStudentStorage().then(function(studentStorageSrv){
+                        var purchaseDataPath = StorageSrv.variables.appUserSpacePath + '/purchase';
+                        var defValues = {
+                            daily: 0,
+                            exam: {},
+                            tutorial: {},
+                            section: {},
+                            subscription: {}
+                        };
+                        return studentStorageSrv.get(purchaseDataPath,defValues);
+                    });
                 }
 
-                function getFreeContentData() {
-                    var StorageService = InfraConfigSrv.getStorageService();
-                    var freeContentPath = 'freeContent';
-                    var defValues = {
-                        daily: 0,
-                        exam: {},
-                        tutorial: {},
-                        section: {},
-                        specials: {}
-                    };
-                    return StorageService.get(freeContentPath, defValues);
+                function getFreeContentData(){
+                    return InfraConfigSrv.getStudentStorage().then(function(studentStorageSrv){
+                        var freeContentPath = 'freeContent';
+                        var defValues = {
+                            daily: 0,
+                            exam: {},
+                            tutorial: {},
+                            section: {},
+                            specials: {}
+                        };
+                        return studentStorageSrv.get(freeContentPath,defValues);
+                    });
                 }
 
                 function getUserSpecialsData() {

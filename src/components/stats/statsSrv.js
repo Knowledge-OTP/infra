@@ -1,13 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.stats').provider('StatsSrv', function () {
-        'ngInject';
-
-        var getCategoryLookup;
-        this.setCategoryLookup = function (_getCategoryLookup) {
-            getCategoryLookup = _getCategoryLookup;
-        };
+    angular.module('znk.infra.stats').service('StatsSrv',
+        function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv, CategoryService) {
+            'ngInject';
 
             var STATS_PATH = StorageSrv.variables.appUserSpacePath + '/stats';
 
@@ -175,6 +171,5 @@
             };
 
             return StatsSrv;
-        };
-    });
+        });
 })(angular);
