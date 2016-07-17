@@ -1,11 +1,12 @@
 'use strict';
 
-angular.module('znk.infra.contentGetters').service('CategoryService', function (StorageRevSrv, $q, categoryEnum)  {
+angular.module('znk.infra.contentGetters').service('CategoryService',
+    function (StorageRevSrv, $q, categoryEnum, $log) {
         'ngInject';
 
         var self = this;
         this.get = function () {
-            return StorageRevSrv.getContent({ exerciseType: 'category' });
+            return StorageRevSrv.getContent({exerciseType: 'category'});
         };
 
         var categoryMapObj;
@@ -30,11 +31,11 @@ angular.module('znk.infra.contentGetters').service('CategoryService', function (
         };
 
         self.categoryName = function (categoryId) {
-            return self.getCategoryMap().then(function(categoryMap){
+            return self.getCategoryMap().then(function (categoryMap) {
                 return categoryMap[categoryId];
             });
         };
-    
+
         self.getParentCategory = function (categoryId) {
             return self.getCategoryMap().then(function (categories) {
                 var parentId;
@@ -127,4 +128,4 @@ angular.module('znk.infra.contentGetters').service('CategoryService', function (
                 return getAllLevel4CategoriessProm;
             };
         })();
-});
+    });
