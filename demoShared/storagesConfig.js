@@ -34,7 +34,7 @@
         });
 
         function storageGetter(path) {
-            return function(storageFirebaseAdapter, StorageSrv, $q, ENV) {
+            return function(StorageFirebaseAdapter, StorageSrv, $q, ENV) {
                 if(!authRef){
                     authRef = new Firebase(options.authDbPath, ENV.firebaseAppScopeName);
                     authProm = authRef.authWithPassword({
@@ -52,7 +52,7 @@
 
                 return $q.all([authProm, dataAuthProm]).then(function(res){
                     var auth = res[0];
-                    var fbAdapter = storageFirebaseAdapter(path);
+                    var fbAdapter = StorageFirebaseAdapter(path);
                     var config = {
                         variables: {
                             uid: function () {
