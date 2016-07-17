@@ -5,164 +5,104 @@
 
     angular.module('storage.mock', ['znk.infra.config', 'znk.infra.storage'])
         .config(function(InfraConfigSrvProvider){
-            function globalStorageGetter(StorageSrv, $parse){
-                var db = {};
-
-                function keyInDb(path){
-                    var pathArr = path.split('/');
-                    var firstPart = pathArr.shift();
-                    return pathArr.reduce(function(prevVal,currPart){
-                        return prevVal + '["' + currPart + '"]';
-                    },firstPart);
+            InfraConfigSrvProvider.setStorageServiceName(mockStorageServiceName );
+        })
+        .service(mockStorageServiceName, function(StorageSrv, $parse, $$testAdapter){
+            var config = {
+                variables:{
+                    uid: '$$$$uid'
                 }
-                function getter(path){
-                    var key = keyInDb(path);
-                    return $parse(key)(db);
-                }
+            };
 
-                function setInDb(key,val){
-                    var _dbKey = keyInDb(key);
-                    $parse(_dbKey + '=' + JSON.stringify(val))(db);
-                }
-                function setter(pathOrObject, newVal){
-                    var ret;
-                    if(angular.isObject(pathOrObject)){
-                        ret = {};
-                        angular.forEach(pathOrObject, function(val,key){
-                            setInDb(key,val);
-                            ret[key] = angular.copy(val);
-                        });
-                    }else{
-                        setInDb(pathOrObject,newVal);
-                        ret = newVal;
-                    }
-                    return ret;
-                }
+            var storage = new StorageSrv($$testAdapter,config);
+            storage.db = $$testAdapter.__db;
 
-                var config = {
-                    variables:{
-                        uid: '$$$$uid'
-                    },
-                    cacheRules: /.*/
-                };
-                var storage = new StorageSrv(getter,setter,config);
-                storage.db = db;
-                storage.variables = StorageSrv.variables;
-
-                setInDb(storage.variables.appUserSpacePath,{});
-
-                return storage;
+            return storage;
+        })
+        .service('$$testAdapter', function($q, StorageSrv, $parse){
+            function keyInDb(path){
+                var pathArr = path.split('/');
+                var firstPart = pathArr.shift();
+                return pathArr.reduce(function(prevVal,currPart){
+                    return prevVal + '["' + currPart + '"]';
+                },firstPart);
             }
-            var storagesGetter = (function(){
-                var studentStorage;
 
-                var _storagesGetter = {};
+            function setInDb(key,val){
+                var _dbKey = keyInDb(key);
+                $parse(_dbKey + '=' + JSON.stringify(val))(adapter.__db);
+            }
 
-                var db = {};
+            function updateInDb(key,val){
+                var _dbKey = keyInDb(key);
+                var valueInDb = $parse(_dbKey)(adapter.__db);
 
-                _storagesGetter.studentStorageGetter = function(StorageSrv, $parse){
-                    if(!studentStorage){
-                        var keyInDb = function (path){
-                            var pathArr = path.split('/');
-                            var firstPart = pathArr.shift();
-                            return pathArr.reduce(function(prevVal,currPart){
-                                return prevVal + '["' + currPart + '"]';
-                            },firstPart);
-                        };
+                if(!valueInDb){
+                    setInDb(key, val);
+                }else{
+                    angular.extend(valueInDb, val);
+                }
 
-                        var getter = function (path){
-                            var key = keyInDb(path);
-                            return $parse(key)(db);
-                        };
+            }
 
-                        var setInDb = function(key,val){
-                            var _dbKey = keyInDb(key);
-                            $parse(_dbKey + '=' + JSON.stringify(val))(db);
-                        };
-                        var setter = function(pathOrObject, newVal){
-                            var ret;
-                            if(angular.isObject(pathOrObject)){
-                                ret = {};
-                                angular.forEach(pathOrObject, function(val,key){
-                                    setInDb(key,val);
-                                    ret[key] = angular.copy(val);
-                                });
-                            }else{
-                                setInDb(pathOrObject,newVal);
-                                ret = newVal;
-                            }
-                            return ret;
-                        };
+            var adapter = {
+                __db: {},
+                get: function (path) {
+                    var key = keyInDb(path);
+                    return $q.when($parse(key)(this.__db));
+                },
+                set: function (path, newValue) {
+                    var self = this;
 
-                        var config = {
-                            variables:{
-                                uid: '$$$$uid'
-                            }
-                        };
-                        var storage = new StorageSrv(getter,setter,config);
-                        storage.db = db;
-                        storage.variables = StorageSrv.variables;
+                    setInDb(path,newValue);
 
-                        setInDb(storage.variables.appUserSpacePath,{});
-
-                        studentStorage =  storage;
+                    return this.get(path).then(function (pathValue) {
+                        var valueEventsCbs = self.__getEventTypeCbs(StorageSrv.EVENTS.VALUE, path);
+                        valueEventsCbs.forEach(function (cb) {
+                            cb(pathValue);
+                        });
+                    });
+                },
+                update: function (pathOrPathToValMap, newValue) {
+                    var pathToValMap = {};
+                    if (!angular.isObject(pathOrPathToValMap)) {
+                        pathToValMap[pathOrPathToValMap] = newValue;
+                    }else{
+                        pathToValMap = pathOrPathToValMap;
                     }
-                    return studentStorage;
-                };
 
-                return _storagesGetter;
-            })();
+                    angular.forEach(pathToValMap, function (value, path) {
+                        updateInDb(path,value);
+                    });
 
-            InfraConfigSrvProvider.setStorages(
-                storagesGetter.globalStorageGetter,
-                storagesGetter.studentStorageGetter
-            );
+                    return $q.when(angular.isString(pathOrPathToValMap) ? newValue : pathOrPathToValMap);
+                },
+                onEvent: function (type, path, cb) {
+                    if (!this.__registeredEvents[type]) {
+                        this.__registeredEvents[type] = {};
+                    }
+
+                    if (!this.__registeredEvents[type][path]) {
+                        this.__registeredEvents[type][path] = [];
+                    }
+
+                    this.__registeredEvents[type][path].push(cb);
+                },
+                __getEventTypeCbs: function (type, path) {
+                    if (!this.__registeredEvents || !this.__registeredEvents[type] || !this.__registeredEvents[type][path]) {
+                        return [];
+                    }
+
+                    return this.__registeredEvents[type][path];
+                },
+                offEvent: function (type, path, cb) {
+
+                },
+                __registeredEvents: {}
+            };
+
+            setInDb(StorageSrv.variables.appUserSpacePath,{});
+
+            return adapter;
         });
-        // .service(mockStorageServiceName, function(StorageSrv, $parse){
-        //     var db = {};
-        //
-        //     function keyInDb(path){
-        //         var pathArr = path.split('/');
-        //         var firstPart = pathArr.shift();
-        //         return pathArr.reduce(function(prevVal,currPart){
-        //             return prevVal + '["' + currPart + '"]';
-        //         },firstPart);
-        //     }
-        //     function getter(path){
-        //         var key = keyInDb(path);
-        //         return $parse(key)(db);
-        //     }
-        //
-        //     function setInDb(key,val){
-        //         var _dbKey = keyInDb(key);
-        //         $parse(_dbKey + '=' + JSON.stringify(val))(db);
-        //     }
-        //     function setter(pathOrObject, newVal){
-        //         var ret;
-        //         if(angular.isObject(pathOrObject)){
-        //             ret = {};
-        //             angular.forEach(pathOrObject, function(val,key){
-        //                 setInDb(key,val);
-        //                 ret[key] = angular.copy(val);
-        //             });
-        //         }else{
-        //             setInDb(pathOrObject,newVal);
-        //             ret = newVal;
-        //         }
-        //         return ret;
-        //     }
-        //
-        //     var config = {
-        //         variables:{
-        //             uid: '$$$$uid'
-        //         }
-        //     };
-        //     var storage = new StorageSrv(getter,setter,config);
-        //     storage.db = db;
-        //     storage.variables = StorageSrv.variables;
-        //
-        //     setInDb(storage.variables.appUserSpacePath,{});
-        //
-        //     return storage;
-        // });
 })(angular);

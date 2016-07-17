@@ -2,15 +2,12 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise', [
-        'ngAnimate',
-        'pascalprecht.translate',
-        'znk.infra.svgIcon',
-        'znk.infra.scroll',
-        'znk.infra.autofocus',
-        'znk.infra.exerciseUtility',
-        'znk.infra.analytics',
-        'znk.infra.popUp'
-    ])
+            'znk.infra.enum',
+            'znk.infra.svgIcon',
+            'znk.infra.scroll',
+            'znk.infra.autofocus',
+            'ngAnimate'
+        ])
         .config([
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
@@ -18,15 +15,11 @@
                     chevron: 'components/znkExercise/svg/chevron-icon.svg',
                     correct: 'components/znkExercise/svg/correct-icon.svg',
                     wrong: 'components/znkExercise/svg/wrong-icon.svg',
+                    info: 'components/znkExercise/svg/info-icon.svg',
                     arrow: 'components/znkExercise/svg/arrow-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
-            }])
-        .run(["$translatePartialLoader", function ($translatePartialLoader) {
-            'ngInject';
-
-            $translatePartialLoader.addPart('znkExercise');
-        }]);
+            }]);
 })(angular);
 
 /**
@@ -36,17 +29,14 @@
 (function (angular) {
     'use strict';
 
-    var typeToViewMap;
     angular.module('znk.infra.znkExercise').directive('answerBuilder', [
         '$compile', 'AnswerTypeEnum', 'ZnkExerciseUtilitySrv', 'ZnkExerciseViewModeEnum',
         function ($compile, AnswerTypeEnum, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum) {
-            if(!typeToViewMap) {
-                typeToViewMap = {};
-                angular.forEach(AnswerTypeEnum, function (enumData, enumName) {
-                    var directiveName = enumName.toLowerCase().replace(/_/g, '-');
-                    typeToViewMap[enumData.enum] = '<' + directiveName + '></' + directiveName + '>';
-                });
-            }
+            var typeToViewMap = {};
+
+            typeToViewMap[AnswerTypeEnum.SELECT_ANSWER.enum] = '<select-answer></select-answer>';
+            typeToViewMap[AnswerTypeEnum.FREE_TEXT_ANSWER.enum] = '<free-text-answer></free-text-answer>';
+            typeToViewMap[AnswerTypeEnum.RATE_ANSWER.enum] = '<rate-answer></rate-answer>';
 
             return {
                 require: ['answerBuilder','^questionBuilder', '^ngModel'],
@@ -85,6 +75,340 @@
         }
     ]);
 })(angular);
+
+/**
+ * attrs:
+ */
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('freeTextAnswer', ['ZnkExerciseViewModeEnum', '$timeout',
+
+        function (ZnkExerciseViewModeEnum, $timeout) {
+            return {
+                templateUrl: 'components/znkExercise/answerTypes/templates/freeTextAnswerDrv.html',
+                require: ['^ngModel', '^answerBuilder'],
+                scope:{},
+                link: function (scope, element, attrs, ctrls) {
+                    var ngModelCtrl = ctrls[0];
+                    var answerBuilderCtrl = ctrls[1];
+                    var userAnswerValidation = /^[0-9\/\.]{0,4}$/;
+
+                    scope.d = {};
+
+                    scope.d.userAnswer = '';  // stores the current userAnswer
+                    scope.d.userAnswerGetterSetter = function(newUserAnswer){
+                        if(arguments.length && _isAnswerValid(newUserAnswer)){
+                            scope.d.userAnswer = newUserAnswer;
+                            return scope.d.userAnswer;
+                        }
+                        return scope.d.userAnswer;
+                    };
+
+                    function _isAnswerValid(answerToCheck){
+                        return userAnswerValidation.test(answerToCheck);
+                    }
+
+                    var MODE_ANSWER_ONLY = ZnkExerciseViewModeEnum.ONLY_ANSWER.enum,
+                        MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum,
+                        MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
+
+                    scope.clickHandler = function(){
+                        ngModelCtrl.$setViewValue(scope.d.userAnswer);
+                        updateViewByCorrectAnswers(scope.d.userAnswer);
+                    };
+
+                    function updateViewByCorrectAnswers(userAnswer) {
+                        var correctAnswers = answerBuilderCtrl.question.correctAnswerText;
+                        var viewMode = answerBuilderCtrl.getViewMode();
+                        scope.correctAnswer = correctAnswers[0].content;
+
+                        if (viewMode === MODE_ANSWER_ONLY || viewMode === MODE_MUST_ANSWER) {
+                            scope.d.userAnswer = angular.isDefined(userAnswer) ? userAnswer : '';
+                            scope.showCorrectAnswer = false;
+                        } else {
+
+                            if (angular.isUndefined(userAnswer)) {
+                                // unanswered question
+                                    scope.userAnswerStatus = 'neutral';
+                                    scope.showCorrectAnswer = viewMode === MODE_REVIEW;
+                            } else {
+                                if (_isAnsweredCorrectly(userAnswer, correctAnswers)) {
+                                    scope.userAnswerStatus = 'correct';
+                                } else {
+                                    scope.userAnswerStatus = 'wrong';
+                                }
+                                scope.showCorrectAnswer = true;
+                                scope.d.userAnswer = userAnswer;
+                            }
+                        }
+                    }
+
+                    function _isAnsweredCorrectly(userAnswer,correctAnswers) {
+                        for (var i = 0; i < correctAnswers.length; i++) {
+                            if (userAnswer === correctAnswers[i].content) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+
+                    ngModelCtrl.$render = function () {
+                        //skip one digest cycle in order to let the answers time to be compiled
+                        $timeout(function(){
+                            updateViewByCorrectAnswers(ngModelCtrl.$viewValue);
+                        });
+                    };
+
+                    ngModelCtrl.$render();
+                }
+            };
+        }
+    ]);
+})(angular);
+
+
+
+/**
+ * attrs:
+ *
+ */
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('rateAnswer', ['ZnkExerciseViewModeEnum',
+        function (ZnkExerciseViewModeEnum) {
+            return {
+                templateUrl: 'components/znkExercise/answerTypes/templates/rateAnswerDrv.html',
+                require: ['^answerBuilder', '^ngModel'],
+                scope: {},
+                link: function link(scope, element, attrs, ctrls) {
+                    var domElement = element[0];
+
+                    var answerBuilder = ctrls[0];
+                    var ngModelCtrl = ctrls[1];
+
+                    var viewMode = answerBuilder.getViewMode();
+                    var ANSWER_WITH_RESULT_MODE = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
+                        REVIEW_MODE = ZnkExerciseViewModeEnum.REVIEW.enum;
+                    var INDEX_OFFSET = 2;
+
+                    scope.d = {};
+                    scope.d.itemsArray = new Array(11);
+                    var answers = answerBuilder.question.correctAnswerText;
+
+                    var domItemsArray;
+
+                    var destroyWatcher = scope.$watch(
+                        function () {
+                            return element[0].querySelectorAll('.item-repeater');
+                        },
+                        function (val) {
+                            if (val) {
+                                destroyWatcher();
+                                domItemsArray = val;
+
+                                if (viewMode === REVIEW_MODE) {
+                                    scope.clickHandler = angular.noop;
+                                    updateItemsByCorrectAnswers(scope.d.answers);
+                                } else {
+                                    scope.clickHandler = clickHandler;
+                                }
+
+                                ngModelCtrl.$render = function(){
+                                    updateItemsByCorrectAnswers();
+                                };
+                                ngModelCtrl.$render();
+                            }
+                        }
+                    );
+
+                    function clickHandler(index) {
+                        if (answerBuilder.canUserAnswerBeChanged()) {
+                            return;
+                        }
+
+                        ngModelCtrl.$setViewValue(index);
+                        updateItemsByCorrectAnswers();
+                    }
+
+                    function updateItemsByCorrectAnswers() {
+                        var oldSelectedElement = angular.element(domElement.querySelector('.selected'));
+                        oldSelectedElement.removeClass('selected');
+
+                        var selectedAnswerId = ngModelCtrl.$viewValue;
+
+                        var newSelectedElement = angular.element(domItemsArray[selectedAnswerId]);
+                        newSelectedElement.addClass('selected');
+
+                        var lastElemIndex = answers.length - 1;
+
+                        if((viewMode === ANSWER_WITH_RESULT_MODE && angular.isNumber(selectedAnswerId))|| viewMode === REVIEW_MODE){
+                            for (var i = 0; i < lastElemIndex; i++) {
+                                angular.element(domItemsArray[answers[i].id - INDEX_OFFSET]).addClass('correct');
+                            }
+                            angular.element(domItemsArray[answers[lastElemIndex].id - INDEX_OFFSET]).addClass('correct-edge');
+                        }
+
+                        if (angular.isNumber(selectedAnswerId) && (viewMode === REVIEW_MODE || viewMode === ANSWER_WITH_RESULT_MODE)) {
+                            if (selectedAnswerId >= answers[0].id - INDEX_OFFSET && selectedAnswerId <= answers[lastElemIndex].id - INDEX_OFFSET) {
+                                angular.element(domItemsArray[selectedAnswerId]).addClass('selected-correct');
+                            } else {
+                                angular.element(domItemsArray[selectedAnswerId]).addClass('selected-wrong');
+                            }
+                        }
+                    }
+                }
+            };
+        }
+    ]);
+})(angular);
+
+
+
+/**
+ * attrs:
+ *
+ */
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('selectAnswer', [
+        '$timeout', 'ZnkExerciseViewModeEnum', 'ZnkExerciseAnswersSrv', 'ZnkExerciseEvents',
+        function ($timeout, ZnkExerciseViewModeEnum, ZnkExerciseAnswersSrv, ZnkExerciseEvents) {
+            return {
+                templateUrl: 'components/znkExercise/answerTypes/templates/selectAnswerDrv.html',
+                require: ['^answerBuilder', '^ngModel'],
+                restrict:'E',
+                scope: {},
+                link: function (scope, element, attrs, ctrls) {
+                    var answerBuilder = ctrls[0];
+                    var ngModelCtrl = ctrls[1];
+                    var questionIndex = answerBuilder.question.__questionStatus.index;
+                    var currentSlide = answerBuilder.getCurrentIndex();    // current question/slide in the viewport
+                    var body = document.body;
+
+
+                    var MODE_ANSWER_WITH_QUESTION = ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
+                        MODE_ANSWER_ONLY = ZnkExerciseViewModeEnum.ONLY_ANSWER.enum,
+                        MODE_REVIEW = ZnkExerciseViewModeEnum.REVIEW.enum,
+                        MODE_MUST_ANSWER = ZnkExerciseViewModeEnum.MUST_ANSWER.enum;
+                    var keyMap = {};
+
+                    scope.d = {};
+
+                    scope.d.answers = answerBuilder.question.answers;
+
+                    scope.d.click = function (answer) {
+                        var viewMode = answerBuilder.getViewMode();
+
+                        if ((!isNaN(parseInt(ngModelCtrl.$viewValue)) && viewMode === MODE_ANSWER_WITH_QUESTION) || viewMode === MODE_REVIEW) {
+                            return;
+                        }
+                        ngModelCtrl.$setViewValue(answer.id);
+                        updateAnswersFollowingSelection(viewMode);
+                    };
+
+                    function keyboardHandler(key){
+                        key = String.fromCharCode(key.keyCode).toUpperCase();
+                        if(angular.isDefined(keyMap[key])){
+                            scope.d.click(scope.d.answers[keyMap[key]]);
+                        }
+                    }
+
+                    if(questionIndex === currentSlide){
+                        body.addEventListener('keydown',keyboardHandler);
+                    }
+
+                    scope.$on(ZnkExerciseEvents.QUESTION_CHANGED,function(event,value ,prevValue ,currQuestion){
+                        var currentSlide = currQuestion.__questionStatus.index;
+                        if(questionIndex !== currentSlide){
+                            body.removeEventListener('keydown',keyboardHandler);
+                        }else{
+                            body.addEventListener('keydown',keyboardHandler);
+                        }
+                    });
+
+
+
+                    scope.d.getIndexChar = function(answerIndex){
+                        var key = ZnkExerciseAnswersSrv.selectAnswer.getAnswerIndex(answerIndex,answerBuilder.question);
+                        keyMap[key] = answerIndex;
+                        return key;
+                    };
+
+                    function updateAnswersFollowingSelection(viewMode) {
+                        var selectedAnswerId = ngModelCtrl.$viewValue;
+                        var correctAnswerId = answerBuilder.question.correctAnswerId;
+                        var $answers = angular.element(element[0].querySelectorAll('.answer'));
+                        for (var i = 0; i < $answers.length; i++) {
+
+                            var $answerElem = angular.element($answers[i]);
+                            if(!$answerElem || !$answerElem.scope || !$answerElem.scope()){
+                                continue;
+                            }
+
+                            var answer = $answerElem.scope().answer;
+                            var classToAdd,
+                                classToRemove;
+
+                            if (answerBuilder.getViewMode() === MODE_ANSWER_ONLY || answerBuilder.getViewMode() === MODE_MUST_ANSWER) {
+                                // dont show correct / wrong indication
+                                classToRemove = 'answered';
+                                classToAdd = selectedAnswerId === answer.id ? 'answered' : 'neutral';
+                            } else {
+                                // the rest of the optional states involve correct / wrong indications
+                                if (angular.isUndefined(selectedAnswerId)) {
+                                    // unanswered question
+                                    if (answerBuilder.getViewMode() === MODE_REVIEW) {
+                                        classToAdd = correctAnswerId === answer.id ? 'answered-incorrect' : 'neutral';
+                                    }
+                                } else if (selectedAnswerId === answer.id) {
+                                    // this is the selected answer
+                                    classToAdd = correctAnswerId === answer.id ? 'correct' : 'wrong';
+                                } else {
+                                    // this is the correct answer but the user didn't select it
+                                    classToAdd = answer.id === correctAnswerId ? 'answered-incorrect' : 'neutral';
+                                }
+                            }
+                            $answerElem.removeClass(classToRemove);
+                            $answerElem.addClass(classToAdd);
+                            if (viewMode === MODE_ANSWER_WITH_QUESTION){
+                                if (classToAdd === 'correct'){
+
+                                }
+                                if (classToAdd === 'wrong'){
+
+                                }
+                            }
+                        }
+                    }
+
+                    ngModelCtrl.$render = function () {
+                        //skip one digest cycle in order to let the answers time to be compiled
+                        $timeout(function(){
+                            updateAnswersFollowingSelection();
+                        });
+                    };
+                    //ng model controller render function not triggered in case render function was set
+                    // after the model value was changed
+                    ngModelCtrl.$render();
+
+                    scope.$on('exercise:viewModeChanged', function () {
+                        ngModelCtrl.$render();
+                    });
+
+                    scope.$on('$destroy',function(){
+                        body.removeEventListener('keydown',keyboardHandler);
+                    });
+                }
+            };
+        }
+    ]);
+})(angular);
+
+
 
 (function (angular) {
     'use strict';
@@ -126,6 +450,58 @@
         ];
     });
 })(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('freeTextAnswerGrid', [
+        function () {
+            return {
+                templateUrl: 'scripts/exercise/templates/freeTextAnswerGridDrv.html',
+                restrict: 'E',
+                require: 'ngModel',
+                scope: {
+                    cellsNumGetter: '&cellsNum'
+                },
+                link: function (scope, element, attrs, ngModelCtrl) {
+
+                    scope.buttonArray = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+                    var numberOfCells = scope.cellsNumGetter() || 3;
+
+                    scope.d = {
+                        viewCells: new Array(numberOfCells)
+                    };
+
+                    function updateNgModelViewValue() {
+                        ngModelCtrl.$setViewValue(angular.copy(scope.d.cells));
+                    }
+
+                    scope.onClickNum = function (num) {
+                        if (attrs.disabled || scope.d.cells.length >= numberOfCells) {
+                            return;
+                        }
+
+                        scope.d.cells.push(num);
+                        updateNgModelViewValue();
+                    };
+
+                    scope.onClickErase = function () {
+                        if (attrs.disabled || !scope.d.cells.length) {
+                            return;
+                        }
+
+                        scope.d.cells.pop();
+                        updateNgModelViewValue();
+                    };
+
+                    ngModelCtrl.$render = function () {
+                        scope.d.cells = angular.isDefined(ngModelCtrl.$viewValue) ? ngModelCtrl.$viewValue : [];
+                    };
+                }
+            };
+        }]);
+}(angular));
 
 'use strict';
 
@@ -288,183 +664,6 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').controller('BaseZnkExerciseController',
-        ["$scope", "exerciseData", "exerciseSettings", "$state", "$q", "ExerciseTypeEnum", "$location", "ExerciseResultSrv", "ZnkExerciseSrv", "$filter", "PopUpSrv", "exerciseEventsConst", "$rootScope", "ZnkExerciseUtilitySrv", "ZnkExerciseViewModeEnum", "SubjectEnum", "znkAnalyticsSrv", "$translate", "$log", "StatsEventsHandlerSrv", function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, ExerciseResultSrv, ZnkExerciseSrv,
-                  $filter, PopUpSrv, exerciseEventsConst, $rootScope, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum, SubjectEnum,
-                  znkAnalyticsSrv, $translate, $log, StatsEventsHandlerSrv) {
-            'ngInject';
-
-            var exercise = exerciseData.exercise;
-            var exerciseResult = exerciseData.exerciseResult;
-            var exerciseTypeId = exerciseData.exerciseTypeId;
-            var isSection = exerciseTypeId === ExerciseTypeEnum.SECTION.enum;
-            var initSlideIndex;
-
-            function getNumOfUnansweredQuestions(questionsResults) {
-                var numOfUnansweredQuestions = questionsResults.length;
-                var keysArr = Object.keys(questionsResults);
-                angular.forEach(keysArr, function (i) {
-                    var questionAnswer = questionsResults[i];
-                    if (angular.isDefined(questionAnswer.userAnswer)) {
-                        numOfUnansweredQuestions--;
-                    }
-                });
-                return numOfUnansweredQuestions;
-            }
-
-            function _getAllowedTimeForExercise() {
-                if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
-                    return exercise.time;
-                }
-
-                var allowedTimeForQuestion  = ZnkExerciseSrv.getAllowedTimeForQuestion(exerciseTypeId);
-                return allowedTimeForQuestion * exercise.questions.length;
-            }
-
-            function _finishExercise() {
-                exerciseResult.isComplete = true;
-                exerciseResult.endedTime = Date.now();
-                exerciseResult.$save();
-
-                //  stats exercise data
-                StatsEventsHandlerSrv.addNewExerciseResult(exerciseTypeId, exercise, exerciseResult).then(function () {
-                    $scope.baseZnkExerciseCtrl.settings.viewMode = ZnkExerciseViewModeEnum.REVIEW.enum;
-
-                    var exerciseTypeValue = ExerciseTypeEnum.getValByEnum(exerciseData.exerciseTypeId).toLowerCase();
-                    var broadcastEventName = exerciseEventsConst[exerciseTypeValue].FINISH;
-                    $rootScope.$broadcast(broadcastEventName, exercise, exerciseResult, exerciseData.examData);
-
-                    $state.go('^.summary');
-                });
-            }
-
-            if (!$scope.baseZnkExerciseCtrl) {
-                $scope.baseZnkExerciseCtrl = {};
-            }
-
-            if (angular.isUndefined(exerciseResult.startedTime)) {
-                exerciseResult.startedTime = Date.now();
-            }
-
-            exerciseData.exercise.questions = exerciseData.exercise.questions.sort(function (a, b) {
-                return a.order - b.order;
-            });
-
-            if (!angular.isArray(exerciseResult.questionResults) || exerciseResult.questionResults.length === 0) {
-                exerciseResult.questionResults = exercise.questions.map(function (question) {
-                    return {
-                        questionId: question.id,
-                        categoryId: question.categoryId
-                    };
-                });
-            }
-
-            ZnkExerciseUtilitySrv.setQuestionsGroupData(exercise.questions, exercise.questionsGroupData);
-
-            $scope.baseZnkExerciseCtrl.exercise = exercise;
-            $scope.baseZnkExerciseCtrl.resultsData = exerciseResult;
-            $scope.baseZnkExerciseCtrl.numberOfQuestions = $scope.baseZnkExerciseCtrl.exercise.questions.length;
-
-            var viewMode;
-            if (exerciseResult.isComplete) {
-                viewMode = ZnkExerciseViewModeEnum.REVIEW.enum;
-                initSlideIndex = 0;
-            } else {
-                viewMode = isSection ? ZnkExerciseViewModeEnum.ONLY_ANSWER.enum : ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum;
-                initSlideIndex = exerciseResult.questionResults.findIndex(function (question) {
-                    return !question.userAnswer;
-                });
-            }
-
-            var defExerciseSettings = {
-                onDone: function onDone() {
-                    var numOfUnansweredQuestions = getNumOfUnansweredQuestions(exerciseResult.questionResults);
-
-                    var areAllQuestionsAnsweredProm = $q.when(true);
-                    if (numOfUnansweredQuestions) {
-                        var contentProm = $translate('ZNK_EXERCISE.SOME_ANSWER_LEFT_CONTENT');
-                        var titleProm = $translate('ZNK_EXERCISE.FINISH_TITLE');
-                        var buttonGoToProm = $translate('ZNK_EXERCISE.GO_TO_SUMMARY_BTN');
-                        var buttonStayProm = $translate('ZNK_EXERCISE.STAY_BTN');
-
-                        $q.all([contentProm, titleProm, buttonGoToProm, buttonStayProm]).then(function (results) {
-                            var content = results[0];
-                            var title = results[1];
-                            var buttonGoTo = results[2];
-                            var buttonStay = results[3];
-                            areAllQuestionsAnsweredProm = PopUpSrv.warning(title, content, buttonGoTo, buttonStay).promise;
-                        }, function (err) {
-                            $log.error(err);
-                        });
-                    }
-                    areAllQuestionsAnsweredProm.then(function () {
-                        _finishExercise(exerciseResult);
-                    });
-                },
-                onQuestionAnswered: function onQuestionAnswered() {
-                    exerciseResult.$save();
-                },
-                onSlideChange: function (currQuestion, currentIndex) {
-                    var indexPlusOne = currentIndex + 1;
-                    znkAnalyticsSrv.pageTrack({
-                        props: {
-                            url: $location.url() + '/index/' + indexPlusOne + '/questionId/' + (currQuestion.id || '')
-                        }
-                    });
-                    $scope.baseZnkExerciseCtrl.currentIndex = indexPlusOne;
-                },
-                viewMode: viewMode,
-                initSlideIndex: initSlideIndex || 0,
-                allowedTimeForExercise: _getAllowedTimeForExercise()
-            };
-
-            $scope.baseZnkExerciseCtrl.settings = angular.extend(defExerciseSettings, exerciseSettings);
-            $scope.baseZnkExerciseCtrl.settings.onExerciseReady = function () {
-                if (exerciseSettings.onExerciseReady) {
-                    exerciseSettings.onExerciseReady();
-                }
-            };
-
-            $scope.baseZnkExerciseCtrl.startTime = exerciseResult.duration || 0;
-            $scope.baseZnkExerciseCtrl.maxTime = exercise.time;
-
-            $scope.baseZnkExerciseCtrl.timerData = {
-                timeLeft: exercise.time - (exerciseResult.duration || 0),
-                config: {
-                    countDown: true
-                }
-            };
-
-            $scope.baseZnkExerciseCtrl.onFinishTime = function () {
-
-                var contentProm = $translate('ZNK_EXERCISE.TIME_UP_CONTENT');
-                var titleProm = $translate('ZNK_EXERCISE.TIME_UP_TITLE');
-                var buttonFinishProm = $translate('ZNK_EXERCISE.STOP');
-                var buttonContinueProm = $translate('ZNK_EXERCISE.CONTINUE_BTN');
-
-                $q.all([contentProm, titleProm, buttonFinishProm, buttonContinueProm]).then(function (results) {
-                    var content = results[0];
-                    var title = results[1];
-                    var buttonFinish = results[2];
-                    var buttonContinue = results[3];
-                    var timeOverPopupPromise = PopUpSrv.ErrorConfirmation(title, content, buttonFinish, buttonContinue).promise;
-
-                    timeOverPopupPromise.then(function () {
-                        _finishExercise(exerciseResult);
-                    });
-                });
-            };
-
-            $scope.baseZnkExerciseCtrl.onChangeTime = function (passedTime) {
-                exerciseResult.duration = passedTime;
-            };
-        }]);
-
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     var ZnkExerciseEvents = {
         BOOKMARK: 'znk exercise:bookmark',
         QUESTION_ANSWERED: 'znk exercise:question answered',
@@ -526,8 +725,6 @@
                                 znkExerciseCtrl.notifyQuestionBuilderReady(questionBuilderCtrl.question.__questionStatus.index);
                             });
                         },0,false);
-
-                        questionBuilderCtrl.setViewValue = znkExerciseCtrl.setViewValue;
 
                         scope.$on('$destroy', function(){
                             $timeout.cancel(innerTimeout);
@@ -620,6 +817,36 @@
                         scope.vm.questions = notBindedQuestions;
                         scope.vm.swiperActions.updateFollowingSlideAddition();
                     });
+                }
+            };
+        }
+    ]);
+})(angular);
+
+
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('rateAnswerFormatterParser', ['AnswerTypeEnum',
+        function (AnswerTypeEnum) {
+            return {
+                require: ['ngModel','questionBuilder'],
+                link: function(scope, elem, attrs, ctrls){
+                    var ngModelCtrl = ctrls[0];
+                    var questionBuilderCtrl = ctrls[1];
+                    var answerTypeId = questionBuilderCtrl.question.answerTypeId;
+
+                    if(answerTypeId === AnswerTypeEnum.RATE_ANSWER.enum){
+                        var INDEX_OFFSET = 2;
+                        ngModelCtrl.$formatters.push(function(answer){
+                            return angular.isDefined(answer) ? answer - INDEX_OFFSET : undefined;
+                        });
+                        ngModelCtrl.$parsers.push(function(index){
+                            return angular.isDefined(index) ? index + INDEX_OFFSET : undefined;
+                        });
+
+                    }
                 }
             };
         }
@@ -959,10 +1186,6 @@
                     });
                 };
 
-                QuestionTypesSrv.getQuestionType = function getQuestionType(question) {
-                    return questionTypeGetterFn(question);
-                };
-
                 return QuestionTypesSrv;
             }
         ];
@@ -972,69 +1195,42 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').provider('ZnkExerciseSrv',
-        function () {
-            'ngInject';
+    angular.module('znk.infra.znkExercise').factory('ZnkExerciseSrv', [
+        /*'ZnkModalSrv',*/ 'EnumSrv', '$window', 'PlatformEnum',
+        function (/*ZnkModalSrv, */EnumSrv, $window, PlatformEnum) {
+            var ZnkExerciseSrv = {};
 
-            var exerciseTypeToAllowedQuestionTimeMap;
-            this.setAllowedTimeForQuestionMap = function (_exerciseTypeToAllowedQuestionTimeMap) {
-                exerciseTypeToAllowedQuestionTimeMap = _exerciseTypeToAllowedQuestionTimeMap;
+            var platform = !!$window.ionic ? PlatformEnum.MOBILE.enum : PlatformEnum.DESKTOP.enum;
+            ZnkExerciseSrv.getPlatform = function(){
+                return platform;
             };
 
-            this.$get = ["EnumSrv", "$window", "PlatformEnum", "$log", function (EnumSrv, $window, PlatformEnum, $log) {
-                'ngInject';//jshint ignore:line
+            ZnkExerciseSrv.openExerciseToolBoxModal = function openExerciseToolBoxModal(/*toolBoxModalSettings*/) {
+                //var modalOptions = {
+                //    templateUrl: 'scripts/exercise/templates/znkExerciseToolBoxModal.html',
+                //    hideBackdrop: true,
+                //    ctrl: 'ZnkExerciseToolBoxModalCtrl',
+                //    ctrlAs: 'toolBoxCtrl',
+                //    dontCentralize: true,
+                //    wrapperClass: 'znk-exercise-toolbox ' + toolBoxModalSettings.wrapperCls,
+                //    resolve: {
+                //        Settings: toolBoxModalSettings
+                //    }
+                //};
+                //return ZnkModalSrv.modal(modalOptions);
+            };
 
-                var platform = !!$window.ionic ? PlatformEnum.MOBILE.enum : PlatformEnum.DESKTOP.enum;
-                var ZnkExerciseSrv = {};
+            ZnkExerciseSrv.toolBoxTools = {
+                BLACKBOARD: 'blackboard',
+                MARKER: 'mar',
+                CALCULATOR: 'cal',
+                BOOKMARK: 'bookmark',
+                SHOW_PAGER: 'show pager'
+            };
 
-                ZnkExerciseSrv.toolBoxTools = {
-                    BLACKBOARD: 'blackboard',
-                    MARKER: 'mar',
-                    CALCULATOR: 'cal',
-                    BOOKMARK: 'bookmark',
-                    SHOW_PAGER: 'show pager'
-                };
-
-                function openExerciseToolBoxModal(/*toolBoxModalSettings*/) {
-                    //var modalOptions = {
-                    //    templateUrl: 'scripts/exercise/templates/znkExerciseToolBoxModal.html',
-                    //    hideBackdrop: true,
-                    //    ctrl: 'ZnkExerciseToolBoxModalCtrl',
-                    //    ctrlAs: 'toolBoxCtrl',
-                    //    dontCentralize: true,
-                    //    wrapperClass: 'znk-exercise-toolbox ' + toolBoxModalSettings.wrapperCls,
-                    //    resolve: {
-                    //        Settings: toolBoxModalSettings
-                    //    }
-                    //};
-                    //return ZnkModalSrv.modal(modalOptions);
-                }
-
-                ZnkExerciseSrv.openExerciseToolBoxModal = openExerciseToolBoxModal;
-
-                ZnkExerciseSrv.getPlatform = function () {
-                    return platform;
-                };
-
-                ZnkExerciseSrv.getAllowedTimeForQuestion = function (exerciseType) {
-                    if(!exerciseTypeToAllowedQuestionTimeMap || !exerciseTypeToAllowedQuestionTimeMap[exerciseType]){
-                        $log.error('ZnkExerciseSrv: the following exercise type:' + exerciseType +' has no question allowed time');
-                    }
-                    return exerciseTypeToAllowedQuestionTimeMap[exerciseType];
-                };
-
-                ZnkExerciseSrv.toolBoxTools = {
-                    BLACKBOARD: 'blackboard',
-                    MARKER: 'mar',
-                    CALCULATOR: 'cal',
-                    BOOKMARK: 'bookmark',
-                    SHOW_PAGER: 'show pager'
-                };
-
-                return ZnkExerciseSrv;
-            }];
+            return ZnkExerciseSrv;
         }
-    );
+    ]);
 })(angular);
 
 /**
@@ -1044,7 +1240,7 @@
  *  ngModel: results array
  *
  *  settings:
- *      allowedTimeForExercise: in milliseconds
+ *      allowedTimeForExercise
  *      onDone
  *      onQuestionAnswered
  *      wrapperCls
@@ -1404,16 +1600,6 @@
                             /**
                              *  INIT END
                              * */
-
-                            /**
-                             * EXERCISE CTRL ADDITIONAL API
-                             */
-
-                            znkExerciseDrvCtrl.setViewValue = setViewValue;
-
-                            /**
-                             * EXERCISE CTRL ADDITIONAL END
-                             */
 
                             scope.$watch('vm.currentSlide', function (value, prevValue) {
                                 if(angular.isUndefined(value)){
@@ -2408,7 +2594,7 @@
                 });
 
                 angular.forEach(questions, function (question) {
-                    if (question.groupDataId && !groupDataMap[question.groupDataId]) {
+                    if (!groupDataMap[question.groupDataId]) {
                         $log.debug('Group data is missing for the following question id ' + question.id);
                     }
 
@@ -2422,6 +2608,62 @@
 })(angular);
 
 angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/znkExercise/answerTypes/templates/freeTextAnswerDrv.html",
+    "<div class=\"free-text-answer-wrapper\" ng-switch=\"showCorrectAnswer\">\n" +
+    "\n" +
+    "    <div ng-switch-when=\"true\" ng-class=\"userAnswerStatus\">\n" +
+    "        <div class=\"answer-status\">\n" +
+    "            <div class=\"user-answer\">{{d.userAnswer}}</div>\n" +
+    "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
+    "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
+    "        </div>\n" +
+    "        <div class=\"correct-answer\">Correct answer: <span>{{correctAnswer}}</span></div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div ng-switch-when=\"false\">\n" +
+    "        <div class=\"input-wrapper\">\n" +
+    "            <input ng-model-options=\"{ getterSetter: true }\" ng-model=\"d.userAnswerGetterSetter\">\n" +
+    "            <div class=\"arrow-wrapper\" ng-click=\"clickHandler()\">\n" +
+    "                <svg-icon name=\"arrow\"></svg-icon>\n" +
+    "                <div class=\"svg-back\"></div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/answerTypes/templates/rateAnswerDrv.html",
+    "<div class=\"rate-answer-wrapper\">\n" +
+    "\n" +
+    "    <div class=\"checkbox-items-wrapper\" >\n" +
+    "\n" +
+    "        <div class=\"item-repeater\" ng-repeat=\"item in d.itemsArray track by $index\">\n" +
+    "            <svg-icon class=\"correct-icon\" name=\"correct\"></svg-icon>\n" +
+    "            <svg-icon class=\"wrong-icon\" name=\"wrong\"></svg-icon>\n" +
+    "            <div class=\"checkbox-item\" ng-click=\"clickHandler($index)\">\n" +
+    "                <div class=\"item-index\">{{$index +  2}}</div>\n" +
+    "            </div>\n" +
+    "            <div class=\"correct-answer-line\"></div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/znkExercise/answerTypes/templates/selectAnswerDrv.html",
+    "<div ng-repeat=\"answer in ::d.answers track by answer.id\"\n" +
+    "     class=\"answer\"\n" +
+    "     ng-click=\"d.click(answer)\"\n" +
+    "     tabindex=\"-1\">\n" +
+    "    <div class=\"content-wrapper\">\n" +
+    "        <div class=\"answer-index-wrapper\">\n" +
+    "            <span class=\"index-char\">{{::d.getIndexChar($index)}}</span>\n" +
+    "        </div>\n" +
+    "        <markup content=\"answer.content\" type=\"md\" class=\"content\"></markup>\n" +
+    "        <svg-icon class=\"correct-icon-drv\" name=\"correct\"></svg-icon>\n" +
+    "        <svg-icon class=\"wrong-icon-drv\" name=\"wrong\"></svg-icon>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
   $templateCache.put("components/znkExercise/core/template/btnSectionDesktopTemplate.html",
     "<div class=\"btn-container left-container ng-hide\"\n" +
     "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
@@ -2549,7 +2791,6 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
   $templateCache.put("components/znkExercise/svg/arrow-icon.svg",
     "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\" viewBox=\"-468.2 482.4 96 89.8\" class=\"arrow-icon-wrapper\">\n" +
     "    <style type=\"text/css\">\n" +
-    "        .arrow-icon-wrapper{width: 48px;  height:auto;}\n" +
     "        .arrow-icon-wrapper .st0{fill:#109BAC;}\n" +
     "        .arrow-icon-wrapper .st1{fill:none;stroke:#fff;stroke-width:5.1237;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
     "    </style>\n" +
@@ -2563,25 +2804,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</svg>\n" +
     "");
   $templateCache.put("components/znkExercise/svg/chevron-icon.svg",
-    "<svg x=\"0px\"\n" +
-    "     y=\"0px\"\n" +
-    "     viewBox=\"0 0 143.5 65.5\"\n" +
-    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
-    "     class=\"znk-exercise-chevron-svg\">\n" +
-    "    <style>\n" +
-    "        .znk-exercise-chevron-svg{\n" +
-    "            height: 16px;\n" +
-    "        }\n" +
-    "\n" +
-    "        .znk-exercise-chevron-svg .st0{\n" +
-    "            stroke: #0a9bad;\n" +
-    "            fill: none;\n" +
-    "            stroke-width: 12;\n" +
-    "            stroke-linecap: round;\n" +
-    "            stroke-linejoin: round;\n" +
-    "            stroke-miterlimit: 10;\n" +
-    "        }\n" +
-    "    </style>\n" +
+    "<svg x=\"0px\" y=\"0px\" viewBox=\"0 0 143.5 65.5\">\n" +
     "    <polyline class=\"st0\" points=\"6,6 71.7,59.5 137.5,6 \"/>\n" +
     "</svg>\n" +
     "");
@@ -2589,6 +2812,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "<svg version=\"1.1\"\n" +
     "     class=\"correct-icon-svg\"\n" +
     "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
     "     x=\"0px\"\n" +
     "     y=\"0px\"\n" +
     "	 viewBox=\"0 0 188.5 129\"\n" +
@@ -2607,6 +2831,26 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "<g>\n" +
     "	<line class=\"st0\" x1=\"7.5\" y1=\"62\" x2=\"67\" y2=\"121.5\"/>\n" +
     "	<line class=\"st0\" x1=\"67\" y1=\"121.5\" x2=\"181\" y2=\"7.5\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/info-icon.svg",
+    "<svg\n" +
+    "    version=\"1.1\"\n" +
+    "    xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "    x=\"0px\"\n" +
+    "    y=\"0px\"\n" +
+    "    viewBox=\"-497 499 28 28\"\n" +
+    "    class=\"info-icon\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.info-icon .st0{fill:none;stroke:#0A9BAD; stroke-width:2;}\n" +
+    "	.info-icon .st2{fill:#0A9BAD;}\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<circle class=\"st0\" cx=\"-483\" cy=\"513\" r=\"13.5\"/>\n" +
+    "	<g>\n" +
+    "		<path class=\"st2\" d=\"M-485.9,509.2h3.9v8.1h3v1.2h-7.6v-1.2h3v-6.9h-2.4V509.2z M-483.5,505.6h1.5v1.9h-1.5V505.6z\"/>\n" +
+    "	</g>\n" +
     "</g>\n" +
     "</svg>\n" +
     "");

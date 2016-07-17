@@ -272,8 +272,9 @@ describe('testing service "ExerciseResult":', function () {
             };
 
             var exercisesStatusData = testStorage.db.users.$$uid.exercisesStatus;
-
-            expect(exercisesStatusData).toEqual(expectedExercisesStatusData);
+            //remove nested object constructor prototype
+            var exerciseStatusDataWithoutConstructorPrototype = JSON.parse(JSON.stringify(exercisesStatusData));
+            expect(exerciseStatusDataWithoutConstructorPrototype).toEqual(jasmine.objectContaining(expectedExercisesStatusData));
         });
 
         it('given exercise is completed when saving exercise result then it status should be saved', function () {
@@ -291,8 +292,9 @@ describe('testing service "ExerciseResult":', function () {
             };
 
             var exercisesStatusData = testStorage.db.users.$$uid.exercisesStatus;
-
-            expect(exercisesStatusData).toEqual(expectedExercisesStatusData);
+            //remove nested object constructor prototype
+            var exerciseStatusDataWithoutConstructorPrototype = JSON.parse(JSON.stringify(exercisesStatusData));
+            expect(exerciseStatusDataWithoutConstructorPrototype).toEqual(expectedExercisesStatusData);
         });
 
         it('given exercise is completed when saving exercise result then it status should be saved', function () {
@@ -311,8 +313,9 @@ describe('testing service "ExerciseResult":', function () {
             };
 
             var exercisesStatusData = testStorage.db.users.$$uid.exercisesStatus;
-
-            expect(exercisesStatusData).toEqual(expectedExercisesStatusData);
+            //remove nested object constructor prototype
+            var exerciseStatusDataWithoutConstructorPrototype = JSON.parse(JSON.stringify(exercisesStatusData));
+            expect(exerciseStatusDataWithoutConstructorPrototype).toEqual(expectedExercisesStatusData);
         });
 
         it('when requesting for not started exercise status then new status should be returned',function(){

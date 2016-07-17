@@ -1,12 +1,6 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.contentAvail', ['znk.infra.config', 'znk.infra.exerciseUtility']);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.contentAvail', ['znk.infra.config']);
 })(angular);
 
@@ -18,62 +12,61 @@
 
             var _specials;
 
-            this.setSpecials = function(specialsObj) {
+            this.setSpecials = function (specialsObj) {
                 _specials = specialsObj;
             };
 
-            this.$get = ['$q', '$parse', '$injector', 'InfraConfigSrv', function($q, $parse, $injector, InfraConfigSrv) {
+            this.$get = ["$q", "$parse", "$injector", "InfraConfigSrv", "StorageSrv", function ($q, $parse, $injector, InfraConfigSrv, StorageSrv) {
+                'ngInject';
 
                 var PURCHASED_ALL = 'all';
 
                 var ContentAvailSrvObj = {};
 
-                function getUserPurchaseData(){
-                    return InfraConfigSrv.getStudentStorage().then(function(studentStorageSrv){
-                        var purchaseDataPath = studentStorageSrv.variables.appUserSpacePath + '/purchase';
-                        var defValues = {
-                            daily: 0,
-                            exam: {},
-                            tutorial: {},
-                            section: {},
-                            subscription: {}
-                        };
-                        return studentStorageSrv.get(purchaseDataPath,defValues);
-                    });
+                function getUserPurchaseData() {
+                    var StorageService = InfraConfigSrv.getStorageService();
+                    var purchaseDataPath = StorageSrv.variables.appUserSpacePath + '/purchase';
+                    var defValues = {
+                        daily: 0,
+                        exam: {},
+                        tutorial: {},
+                        section: {},
+                        subscription: {}
+                    };
+                    return StorageService.get(purchaseDataPath, defValues);
                 }
 
-                function getFreeContentData(){
-                    return InfraConfigSrv.getStudentStorage().then(function(studentStorageSrv){
-                        var freeContentPath = 'freeContent';
-                        var defValues = {
-                            daily: 0,
-                            exam: {},
-                            tutorial: {},
-                            section: {},
-                            specials: {}
-                        };
-                        return studentStorageSrv.get(freeContentPath,defValues);
-                    });
+                function getFreeContentData() {
+                    var StorageService = InfraConfigSrv.getStorageService();
+                    var freeContentPath = 'freeContent';
+                    var defValues = {
+                        daily: 0,
+                        exam: {},
+                        tutorial: {},
+                        section: {},
+                        specials: {}
+                    };
+                    return StorageService.get(freeContentPath, defValues);
                 }
 
-                function getUserSpecialsData(){
+                function getUserSpecialsData() {
                     var specialsProm = false;
-                    if(_specials) {
+                    if (_specials) {
                         specialsProm = $injector.invoke(_specials);
                     }
                     return $q.when(specialsProm);
                 }
 
-                function idToKeyInStorage(id){
+                function idToKeyInStorage(id) {
                     return 'id_' + id;
                 }
 
-                function _hasSubscription(subscriptionObj){
+                function _hasSubscription(subscriptionObj) {
                     return subscriptionObj && subscriptionObj.expiryDate && subscriptionObj.expiryDate > Date.now();
                 }
 
-                function _baseIsEntityAvail(){
-                    return $q.all([getUserPurchaseData(),getFreeContentData(), getUserSpecialsData()]).then(function(res){
+                function _baseIsEntityAvail() {
+                    return $q.all([getUserPurchaseData(), getFreeContentData(), getUserSpecialsData()]).then(function (res) {
                         var purchaseData = res[0];
                         var hasSubscription = _hasSubscription(purchaseData.subscription);
                         var earnedSpecialsObj = {
@@ -82,36 +75,36 @@
                             section: {},
                             tutorial: {}
                         };
-                        if(hasSubscription){
+                        if (hasSubscription) {
                             return true;
                         } else {
                             var specials = res[1].specials;
                             var specialsRes = res[2];
-                            if(specialsRes) {
-                                angular.forEach(specialsRes, function(specialVal, specialKey) {
-                                    if(specials[specialKey] && specialVal === true) {
-                                        angular.forEach(specials[specialKey], function(val, key) {
-                                            if(val === PURCHASED_ALL) {
+                            if (specialsRes) {
+                                angular.forEach(specialsRes, function (specialVal, specialKey) {
+                                    if (specials[specialKey] && specialVal === true) {
+                                        angular.forEach(specials[specialKey], function (val, key) {
+                                            if (val === PURCHASED_ALL) {
                                                 earnedSpecialsObj[key] = val;
                                             } else {
-                                                switch(key) {
+                                                switch (key) {
                                                     case 'daily':
-                                                        if(angular.isNumber(val)) {
+                                                        if (angular.isNumber(val)) {
                                                             earnedSpecialsObj.daily += val;
                                                         }
                                                         break;
                                                     case 'exam':
-                                                        if(angular.isObject(val) && !angular.isArray(val)) {
+                                                        if (angular.isObject(val) && !angular.isArray(val)) {
                                                             earnedSpecialsObj.exam = angular.extend(earnedSpecialsObj.exam, val);
                                                         }
                                                         break;
                                                     case 'section':
-                                                        if(angular.isObject(val) && !angular.isArray(val)) {
+                                                        if (angular.isObject(val) && !angular.isArray(val)) {
                                                             earnedSpecialsObj.section = angular.extend(earnedSpecialsObj.section, val);
                                                         }
                                                         break;
                                                     case 'tutorial':
-                                                        if(angular.isObject(val) && !angular.isArray(val)) {
+                                                        if (angular.isObject(val) && !angular.isArray(val)) {
                                                             earnedSpecialsObj.tutorial = angular.extend(earnedSpecialsObj.tutorial, val);
                                                         }
                                                         break;
@@ -127,11 +120,11 @@
                     });
                 }
 
-                function _isContentOwned(contentData,pathArr){
+                function _isContentOwned(contentData, pathArr) {
                     var prefixPathArr = pathArr.slice(0, pathArr.length - 1);
                     var prefixPath = prefixPathArr.join('.');
                     var isAllOwned = $parse(prefixPath)(contentData) === PURCHASED_ALL;
-                    if(isAllOwned){
+                    if (isAllOwned) {
                         return true;
                     }
 
@@ -140,17 +133,17 @@
                 }
 
                 ContentAvailSrvObj.hasSubscription = function hasSubscription() {
-                    return getUserPurchaseData().then(function(purchaseData){
+                    return getUserPurchaseData().then(function (purchaseData) {
                         return _hasSubscription(purchaseData.subscription);
                     });
                 };
 
-                ContentAvailSrvObj.isDailyAvail = function isDailyAvail(dailyOrder){
-                    if(!angular.isNumber(dailyOrder) || isNaN(dailyOrder)){
+                ContentAvailSrvObj.isDailyAvail = function isDailyAvail(dailyOrder) {
+                    if (!angular.isNumber(dailyOrder) || isNaN(dailyOrder)) {
                         return $q.reject('daily order should be a number');
                     }
-                    return _baseIsEntityAvail().then(function(res){
-                        if(res === true){
+                    return _baseIsEntityAvail().then(function (res) {
+                        if (res === true) {
                             return true;
                         }
 
@@ -159,7 +152,7 @@
                         var earnedSpecials = res[3];
 
                         var isAllOwned = purchaseData.daily === PURCHASED_ALL || freeContent.daily === PURCHASED_ALL || earnedSpecials.daily === PURCHASED_ALL;
-                        if(isAllOwned){
+                        if (isAllOwned) {
                             return true;
                         }
 
@@ -168,9 +161,9 @@
                     });
                 };
 
-                ContentAvailSrvObj.isExamAvail = function isExamAvail(examId){
-                    return _baseIsEntityAvail().then(function(res){
-                        if(res === true){
+                ContentAvailSrvObj.isExamAvail = function isExamAvail(examId) {
+                    return _baseIsEntityAvail().then(function (res) {
+                        if (res === true) {
                             return true;
                         }
 
@@ -178,18 +171,18 @@
                         var freeContent = res[1];
                         var earnedSpecials = res[3];
 
-                        var examPathArr = ['exam',idToKeyInStorage(examId)];
-                        var isOwnedViaFreeContent = _isContentOwned(freeContent,examPathArr);
-                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials,examPathArr);
-                        var isOwnedViaPurchase = _isContentOwned(purchaseData,examPathArr);
+                        var examPathArr = ['exam', idToKeyInStorage(examId)];
+                        var isOwnedViaFreeContent = _isContentOwned(freeContent, examPathArr);
+                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials, examPathArr);
+                        var isOwnedViaPurchase = _isContentOwned(purchaseData, examPathArr);
 
                         return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
                     });
                 };
 
-                ContentAvailSrvObj.isSectionAvail = function isSectionAvail(examId,sectionId){
-                    return _baseIsEntityAvail().then(function(res){
-                        if(res === true){
+                ContentAvailSrvObj.isSectionAvail = function isSectionAvail(examId, sectionId) {
+                    return _baseIsEntityAvail().then(function (res) {
+                        if (res === true) {
                             return true;
                         }
 
@@ -198,25 +191,25 @@
                         var earnedSpecials = res[3];
 
                         var examKeyProp = idToKeyInStorage(examId);
-                        var examPathArr = ['exam',examKeyProp];
-                        var isExamPurchased = _isContentOwned(purchaseData,examPathArr);
-                        if(isExamPurchased ){
+                        var examPathArr = ['exam', examKeyProp];
+                        var isExamPurchased = _isContentOwned(purchaseData, examPathArr);
+                        if (isExamPurchased) {
                             return true;
                         }
 
                         var sectionKeyProp = idToKeyInStorage(sectionId);
 
-                        var sectionPathArr = ['section',sectionKeyProp];
-                        var isOwnedViaFreeContent = _isContentOwned(freeContent,sectionPathArr);
-                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials,sectionPathArr);
-                        var isOwnedViaPurchase = _isContentOwned(purchaseData,sectionPathArr);
+                        var sectionPathArr = ['section', sectionKeyProp];
+                        var isOwnedViaFreeContent = _isContentOwned(freeContent, sectionPathArr);
+                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials, sectionPathArr);
+                        var isOwnedViaPurchase = _isContentOwned(purchaseData, sectionPathArr);
 
                         return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
                     });
                 };
 
-                ContentAvailSrvObj.isTutorialAvail = function isTutorialAvail(tutorialId){
-                    return _baseIsEntityAvail().then(function(res) {
+                ContentAvailSrvObj.isTutorialAvail = function isTutorialAvail(tutorialId) {
+                    return _baseIsEntityAvail().then(function (res) {
                         if (res === true) {
                             return true;
                         }
@@ -226,10 +219,10 @@
                         var purchaseData = res[0];
                         var freeContent = res[1];
                         var earnedSpecials = res[3];
-                        var tutorialPathArr = ['tutorial',tutorialKeyInStorage];
-                        var isOwnedViaFreeContent = _isContentOwned(freeContent,tutorialPathArr);
-                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials,tutorialPathArr);
-                        var isOwnedViaPurchase = _isContentOwned(purchaseData,tutorialPathArr);
+                        var tutorialPathArr = ['tutorial', tutorialKeyInStorage];
+                        var isOwnedViaFreeContent = _isContentOwned(freeContent, tutorialPathArr);
+                        var isOwnedViaSpecials = _isContentOwned(earnedSpecials, tutorialPathArr);
+                        var isOwnedViaPurchase = _isContentOwned(purchaseData, tutorialPathArr);
 
                         return isOwnedViaFreeContent || isOwnedViaSpecials || isOwnedViaPurchase;
 
@@ -237,7 +230,7 @@
                 };
 
                 ContentAvailSrvObj.getFreeContentDailyNum = function getFreeContentDailyNum() {
-                    return getFreeContentData().then(function(freeContentData) {
+                    return getFreeContentData().then(function (freeContentData) {
                         return freeContentData.daily;
                     });
                 };
@@ -246,7 +239,7 @@
             }];
         }
     ]);
-})(angular);  
+})(angular);
 
 angular.module('znk.infra.contentAvail').run(['$templateCache', function($templateCache) {
 

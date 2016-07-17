@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
-    function (InfraConfigSrv, StorageSrv) {
+    function (InfraConfigSrv, StorageSrv, ENV, storageFirebaseAdapter, $q) {
         'ngInject';
         var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
 
@@ -35,5 +35,12 @@ angular.module('znk.infra.user').service('UserProfileService',
             return InfraConfigSrv.getGlobalStorage().then(function(globalStorage) {
                 return globalStorage.set(profilePath, newProfile);
             });
+        };
+
+        this.getCurrUserId = function(){
+            var fbAdapter = storageFirebaseAdapter(ENV.fbDataEndPoint + '/' + ENV.firebaseAppScopeName);//(igor) todo: requires better implementation
+            var ref = fbAdapter.getRef('');
+            var authData = ref.getAuth();
+            return $q.when(authData && authData.uid);
         };
 });

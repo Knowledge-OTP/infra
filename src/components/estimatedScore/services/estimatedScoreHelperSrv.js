@@ -1,18 +1,17 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.estimatedScore').service('EstimatedScoreHelperSrv', [
-        'SubjectEnum', 'InfraConfigSrv', 'StorageSrv',
+    angular.module('znk.infra.estimatedScore').service('EstimatedScoreHelperSrv',
         function (SubjectEnum, InfraConfigSrv, StorageSrv) {
-            var EstimatedScoreHelperSrv = this;
+            'ngInject';
 
-            // var StorageSrv = InfraConfigSrv.getStorageService();
+            var EstimatedScoreHelperSrv = this;
 
             var ESTIMATE_SCORE_PATH = StorageSrv.variables.appUserSpacePath + '/estimatedScore';
 
-            function _SetSubjectInitialVal(obj,initValue){
+            function _SetSubjectInitialVal(obj, initValue) {
                 var subjectKeys = Object.keys(SubjectEnum);
-                for(var i in subjectKeys){
+                for (var i in subjectKeys) {
                     var subjectEnum = SubjectEnum[subjectKeys[i]];
                     obj[subjectEnum.enum] = angular.copy(initValue);
                 }
@@ -62,5 +61,5 @@
                 });
             };
         }
-    ]);
+    );
 })(angular);

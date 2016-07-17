@@ -2,8 +2,12 @@
     'use strict';
 
     angular.module('znk.infra.stats').provider('StatsSrv', function () {
-        this.$get = function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv, CategoryService) {
-            'ngInject';
+        'ngInject';
+
+        var getCategoryLookup;
+        this.setCategoryLookup = function (_getCategoryLookup) {
+            getCategoryLookup = _getCategoryLookup;
+        };
 
             var STATS_PATH = StorageSrv.variables.appUserSpacePath + '/stats';
 
