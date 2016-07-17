@@ -61,7 +61,15 @@
                     return prom;
                 };
             };
-            
+
+            UtilitySrv.fn.isValidNumber = function(number){
+                if(!angular.isNumber(number) && !angular.isString(number)){
+                    return false;
+                }
+
+                return !isNaN(+number);
+            };
+
             return UtilitySrv;
         }
     ]);
