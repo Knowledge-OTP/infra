@@ -61,7 +61,7 @@
                         },
                         cache: /.*/
                     };
-                    return new StorageSrv(fbAdapter.get, fbAdapter.set, config);
+                    return new StorageSrv(fbAdapter, config);
                 });
             };
         }
