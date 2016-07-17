@@ -3,11 +3,16 @@
 (function (angular) {
     angular.module('znk.infra.evaluator').provider('ZnkEvaluatorSrv', function () {
 
-        var _evaluateQuestionFn;
+        var _shouldEvaluateQuestionFn;
+        var _isEvaluateQuestionFn;
         var _evaluateStatusFn;
 
-        this.shouldEvaluateQuestionFnGetter = function(evaluateQuestionFn) {
-            _evaluateQuestionFn = evaluateQuestionFn;
+        this.shouldEvaluateQuestionFnGetter = function(shouldEvaluateQuestionFn) {
+            _shouldEvaluateQuestionFn = shouldEvaluateQuestionFn;
+        };
+
+        this.isEvaluateQuestionTypeFnGetter = function(isEvaluateQuestionFn) {
+            _isEvaluateQuestionFn = isEvaluateQuestionFn;
         };
 
         this.getEvaluateStatusFnGetter = function(evaluateStatusFn) {
@@ -29,7 +34,9 @@
                 return $q.when($injector.invoke(evaluateFn));
             }
 
-            znkEvaluatorSrvApi.shouldEvaluateQuestionFn = invokeEvaluateFn.bind(null, _evaluateQuestionFn, 'evaluateQuestionFn');
+            znkEvaluatorSrvApi.shouldEvaluateQuestionFn = invokeEvaluateFn.bind(null, _shouldEvaluateQuestionFn, 'shouldEvaluateQuestionFn');
+
+            znkEvaluatorSrvApi.isEvaluateQuestionTypeFn = invokeEvaluateFn.bind(null, _isEvaluateQuestionFn, 'isEvaluateQuestionFn');
 
             znkEvaluatorSrvApi.getEvaluateStatusFn = invokeEvaluateFn.bind(null, _evaluateStatusFn, 'evaluateStatusFn');
 

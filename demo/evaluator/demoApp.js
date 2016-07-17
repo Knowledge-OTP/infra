@@ -14,6 +14,12 @@
                     return EvaluateStatusEnum.NOT_PURCHASE;
                 }
             });
+
+            ZnkEvaluatorSrvProvider.isEvaluateQuestionTypeFnGetter(function () {
+                return function(question) {
+                    return question.manualEvaluation;
+                }
+            });
         })
         .service('purchaseService', function() { // mock for purchaseService
              this.hasProVersion = function() {
@@ -28,6 +34,14 @@
                 var fnGetter = ZnkEvaluatorSrv.shouldEvaluateQuestionFn();
                 fnGetter.then(function (fn) {
                     console.log('shouldEvaluateQuestion', fn());
+                });
+            };
+            $scope.isEvaluateQuestionType = function() {
+                var fnGetter = ZnkEvaluatorSrv.isEvaluateQuestionTypeFn();
+                fnGetter.then(function (fn) {
+                    console.log('isEvaluateQuestionType', fn({
+                        manualEvaluation: true
+                    }));
                 });
             };
             $scope.getEvaluateStatus = function() {
