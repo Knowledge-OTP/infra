@@ -3,7 +3,7 @@ describe('testing service "ModuleResults":', function () {
 
     beforeEach(module('znk.infra.moduleResults', 'znk.infra.utility', 'znk.infra.config', 'znk.infra.storage', 'testUtility', 'storage.mock'));
 
-    var ModuleResultsService, UtilitySrv, actions, testStorage, InfraConfigSrv, $q, TEST_UID, MODULE_RESULT_GUID;
+    var ModuleResultsService, UtilitySrv, actions, StudentStorage, InfraConfigSrv, $q, TEST_UID, MODULE_RESULT_GUID;
     beforeEach(inject([
         '$injector',
         function ($injector) {
@@ -15,10 +15,10 @@ describe('testing service "ModuleResults":', function () {
             var TestUtilitySrv = $injector.get('TestUtilitySrv');
             actions = TestUtilitySrv.general.convertAllAsyncToSync(ModuleResultsService);
 
-            testStorage = $injector.get('testStorage');
             $q = $injector.get('$q');
 
             InfraConfigSrv = $injector.get('InfraConfigSrv');
+            StudentStorage = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage,InfraConfigSrv)();
             InfraConfigSrv.getUserData = function () {
                 return $q.when({
                     uid: TEST_UID
@@ -27,8 +27,8 @@ describe('testing service "ModuleResults":', function () {
         }]));
 
     beforeEach(function () {
-        testStorage.db.moduleResults = {};
-        testStorage.db.users = {
+        StudentStorage.adapter.__db.moduleResults = {};
+        StudentStorage.adapter.__db.users = {
             '$$uid': {
                 moduleResults: {}
             }
@@ -52,7 +52,7 @@ describe('testing service "ModuleResults":', function () {
         var moduleId = 1;
         var moduleResults = actions.getModuleResultByModuleId(moduleId, TEST_UID, false);
         expect(moduleResults).toBeNull();
-        expect(testStorage.db.moduleResults[moduleId]).toBeUndefined();
+        expect(StudentStorage.adapter.__db.moduleResults[moduleId]).toBeUndefined();
     });
 
     it('when requesting for a not exiting result By Guid with no default, null should return', function () {
@@ -60,10 +60,10 @@ describe('testing service "ModuleResults":', function () {
         var moduleResults = actions.getModuleResultByGuid(MODULE_RESULT_GUID);
         var expectedModuleResult = {};
         expect(moduleResults).toEqual(expectedModuleResult);
-        expect(testStorage.db.moduleResults[moduleId]).toBeUndefined();
+        expect(StudentStorage.adapter.__db.moduleResults[moduleId]).toBeUndefined();
     });
 
-    it('when requesting for a not exiting result By Guid with default value, default should return', function () {
+    it('when requesting for a not existing result By Guid with default value, default should return', function () {
         var moduleId = 1;
         var expectedModuleResult = {
             moduleId: moduleId,

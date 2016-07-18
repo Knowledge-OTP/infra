@@ -1,0 +1,189 @@
+znk-audio-player {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 150px;
+
+    .time-display {
+        @include text-style(14px,$fcColor2,Lato);
+        min-width: 41px;
+
+        &.time-passed {
+            padding: {
+                right: 10px;
+            }
+        }
+
+        &.time-left {
+            padding: {
+                left: 22px;
+            }
+        }
+    }
+
+    .spiral {
+        display: none;
+        padding: 7px 13px 0 11px;
+    }
+
+    .progress-container {
+        @include flex-grow(1);
+        justify-content: center;
+        align-items: center;
+    }
+
+    &.grey-player {
+        border: {
+            radius: 50px;
+        }
+        height: 46px;
+        background: $bgColor17;
+        max-width: 380px;
+
+        .time-display {
+            padding: {
+                left: 11px;
+                right: 11px;
+            }
+            color: $fcColor6;
+        }
+    }
+
+    &.type-no-control {
+        .progress-container {
+            .only-progress-wrapper {
+                background: $bgColor18;
+                @include flex-grow(1);
+                border: {
+                    radius: 3px;
+                }
+                overflow: hidden;
+
+                .audio-progress {
+                    background: $bcColor1;
+                    width: 0;
+                    height: 5px;
+                }
+            }
+        }
+    }
+
+    &.type-has-control{
+        .player-control {
+            display: flex;
+            align-items: center;
+            margin: {
+                right: 15px;
+                top: 4px;
+            }
+            cursor: pointer;
+            .player-play-svg {
+                svg {
+                    width:25px;
+                    path {
+                        fill: $fcColor5;
+                    }
+                    circle {
+                        stroke: $fcColor5;
+                    }
+                }
+            }
+            .player-pause-svg {
+                svg {
+                    width:25px;
+                    * {
+                        fill: $fcColor5;
+                    }
+                }
+            }
+        }
+
+        .player-close-svg-wrapper {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            border-radius: 100%;
+            border: 1px solid $fcColor11;
+            margin: {
+                right: 25px;
+                left: -10px;
+                top: 0;
+            }
+            .player-close-svg {
+                svg {
+                    width:15px;
+                    line {
+                        stroke: $fcColor11;
+                        stroke-width: 5px;
+                    }
+                }
+            }
+        }
+
+        .progress-container{
+            margin-top: -4px;
+            .range-progress-wrapper{
+                @include flex-grow(1);
+                &.range{
+                    padding: 0;
+
+                    input[type="range"] {
+                        margin: 0;
+                        -webkit-appearance: none;
+                        width: 100%;
+                        background: transparent;
+
+                        &:focus {
+                            outline: none;
+                        }
+
+                       &::-ms-track {
+                            width: 100%;
+                            cursor: pointer;
+                            background: transparent;
+                            border-color: transparent;
+                            color: transparent;
+                        }
+
+                        &::-webkit-slider-thumb {
+                            -webkit-appearance: none;
+                            margin-top: -3px;
+                            @include dimension(11px, 11px);
+                            background: $bgColor6;
+                            border-radius: 100%;
+                            border: none;
+                            cursor: pointer;
+                            box-shadow: none;
+                        }
+
+                        &::-moz-range-thumb, &::-ms-thumb {
+                            @include dimension(11px, 11px);
+                            background: $bgColor6;
+                            border-radius: 100%;
+                            border: none;
+                            cursor: pointer;
+                            box-shadow: none;
+                        }
+
+                        &::-webkit-slider-runnable-track {
+                            width: 100%;
+                            height: 5px;
+                            cursor: pointer;
+                            background: $bgColor2;
+                            border-radius: 3px;
+                            border: none;
+                            box-shadow: none;
+                        }
+
+                        &:focus::-webkit-slider-runnable-track {
+                            opacity: 0.6;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+}

@@ -5,9 +5,8 @@
         function (InfraConfigSrv, $q, ENV) {
             'ngInject';
 
-            //todo for easier upgrade to version-5
             function _getStorage() {
-                return $q.when(InfraConfigSrv.getStorageService());
+                return InfraConfigSrv.getGlobalStorage();
             }
 
             this.getScreenSharingDataPath = function (guid) {

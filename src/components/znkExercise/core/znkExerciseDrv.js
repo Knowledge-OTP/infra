@@ -5,7 +5,7 @@
  *  ngModel: results array
  *
  *  settings:
- *      allowedTimeForExercise
+ *      allowedTimeForExercise: in milliseconds
  *      onDone
  *      onQuestionAnswered
  *      wrapperCls
@@ -365,6 +365,16 @@
                             /**
                              *  INIT END
                              * */
+
+                            /**
+                             * EXERCISE CTRL ADDITIONAL API
+                             */
+
+                            znkExerciseDrvCtrl.setViewValue = setViewValue;
+
+                            /**
+                             * EXERCISE CTRL ADDITIONAL END
+                             */
 
                             scope.$watch('vm.currentSlide', function (value, prevValue) {
                                 if(angular.isUndefined(value)){

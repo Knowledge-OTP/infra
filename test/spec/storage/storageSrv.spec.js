@@ -24,9 +24,9 @@ describe('testing service "StorageSrv":', function () {
         storageDb,
         syncTestStorage;
     beforeEach(function () {
-        storageDb = $$testAdapter.__db;
 
-        adapter = $$testAdapter;
+        adapter = new $$testAdapter();
+        storageDb = adapter.__db;
         testStorage = new StorageSrv(adapter);
         syncTestStorage = Object.create(testStorage);
         var fnToConvertToSyncTestStorage = [

@@ -21,7 +21,6 @@
             'ngInject';
 
             var HintSrv = {};
-            var Storage = InfraConfigSrv.getStorageService();
             var hintPath = StorageSrv.variables.appUserSpacePath + '/hint';
             var defaultHints = {
                 hintsStatus: {}
@@ -71,15 +70,19 @@
                 });
             };
 
-            function getHints() {
-                return Storage.get(hintPath, defaultHints).then(function (hint) {
-                    return hint;
-                });
-            }
+                function getHints(){
+                    return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                        return StudentStorageSrv.get(hintPath, defaultHints).then(function (hint) {
+                            return hint;
+                        });
+                    });
+                }
 
-            function saveHints(newHint) {
-                return Storage.set(hintPath, newHint);
-            }
+                function saveHints(newHint){
+                    return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                        return StudentStorageSrv.set(hintPath, newHint);
+                    });
+                }
 
             function getHintLastValue(hintStatus) {
                 return hintStatus && hintStatus.history && hintStatus.history.length && hintStatus.history[hintStatus.history.length - 1];

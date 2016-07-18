@@ -14,60 +14,53 @@ describe('testing service "ContentAvailSrv":', function () {
         }]);
     });
 
-    var $rootScope, ContentAvailSrv, actions, TestStorage, StorageSrv;
+    var $rootScope, ContentAvailSrv, actions, StudentStorage, StorageSrv;
     beforeEach(inject([
         '$injector',
         function ($injector) {
             $rootScope = $injector.get('$rootScope');
+
             ContentAvailSrv = $injector.get('ContentAvailSrv');
-            TestStorage = $injector.get('testStorage');
-            StorageSrv = $injector.get('StorageSrv');
-
-            TestStorage.db.users.$$uid.purchase = {
-                daily: 0,
-                exam: {},
-                tutorial: {},
-                subscription: {}
-            };
-
-            TestStorage.db.freeContent = {
-                daily: 0,
-                exam: {},
-                tutorial: {},
-                subscription: {},
-                specials: {}
-            };
 
             var TestUtilitySrv = $injector.get('TestUtilitySrv');
+
+            var InfraConfigSrv = $injector.get('InfraConfigSrv');
+
+            StorageSrv = $injector.get('StorageSrv');
+
+            StudentStorage = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage, InfraConfigSrv)();
+
+            var purchaseDataPath = StorageSrv.variables.appUserSpacePath + '/purchase';
             actions = TestUtilitySrv.general.convertAllAsyncToSync(ContentAvailSrv);
             actions.addSubscription = function () {
                 var purchaseData = this.getPurchaseData();
                 purchaseData.subscription.expiryDate = Date.now() + 1000 * 60 * 24 * 30;//one month
+                StudentStorage.set(purchaseDataPath, purchaseData);
+                $rootScope.$digest();
             };
             actions.getPurchaseData = function () {
                 var purchaseData;
-                var purchaseDataPath = StorageSrv.variables.appUserSpacePath + '/purchase';
-                TestStorage.get(purchaseDataPath).then(function (_purchaseData) {
+                StudentStorage.get(purchaseDataPath).then(function(_purchaseData){
                     purchaseData = _purchaseData;
                 });
                 $rootScope.$digest();
                 return purchaseData;
             };
             actions.setFreeDaily = function (dailyOrder) {
-                TestStorage.db.freeContent.daily = dailyOrder;
+                StudentStorage.adapter.__db.freeContent.daily = dailyOrder;
             };
             actions.setSpecials = function (specialObj) {
-                TestStorage.db.freeContent.specials = specialObj;
+                StudentStorage.adapter.__db.freeContent.specials = specialObj;
             };
             actions.setFreeSection = function (examId, sectionId) {
-                TestStorage.db.freeContent.exam['id_' + examId] = true;
-                if (!TestStorage.db.freeContent.section) {
-                    TestStorage.db.freeContent.section = {};
+                StudentStorage.adapter.__db.freeContent.exam['id_' + examId] = true;
+                if (!StudentStorage.adapter.__db.freeContent.section) {
+                    StudentStorage.adapter.__db.freeContent.section = {};
                 }
-                TestStorage.db.freeContent.section['id_' + sectionId] = true;
+                StudentStorage.adapter.__db.freeContent.section['id_' + sectionId] = true;
             };
             actions.setFreeExam = function (examId) {
-                TestStorage.db.freeContent.exam['id_' + examId] = true;
+                StudentStorage.adapter.__db.freeContent.exam['id_' + examId] = true;
             };
             actions.purchaseExam = function (examIdOrString) {
                 var purchaseData = this.getPurchaseData();
@@ -82,10 +75,10 @@ describe('testing service "ContentAvailSrv":', function () {
                 purchaseData.daily = dailyOrder;
             };
             actions.setFreeTutorial = function (tutorialId) {
-                if (!TestStorage.db.freeContent.tutorial) {
-                    TestStorage.db.freeContent.tutorial = {};
+                if (!StudentStorage.adapter.__db.freeContent.tutorial) {
+                    StudentStorage.adapter.__db.freeContent.tutorial = {};
                 }
-                TestStorage.db.freeContent.tutorial['id_' + tutorialId] = true;
+                StudentStorage.adapter.__db.freeContent.tutorial['id_' + tutorialId] = true;
             };
             actions.purchaseTutorial = function (tutorialIdOrAll) {
                 var purchaseData = this.getPurchaseData();
@@ -100,7 +93,7 @@ describe('testing service "ContentAvailSrv":', function () {
     );
 
     beforeEach(function () {
-        TestStorage.db.users = {
+        StudentStorage.adapter.__db.users = {
             "$$uid": {
                 "purchase": {
                     "daily": 0,
@@ -109,7 +102,22 @@ describe('testing service "ContentAvailSrv":', function () {
                     "subscription": {}
                 }
             }
-        }
+        };
+
+        StudentStorage.adapter.__db.users.$$uid.purchase = {
+            daily: 0,
+            exam: {},
+            tutorial: {},
+            subscription: {}
+        };
+
+        StudentStorage.adapter.__db.freeContent = {
+            daily: 0,
+            exam: {},
+            tutorial: {},
+            subscription: {},
+            specials: {}
+        };
     });
 
     it('when user has subscription then hasSubscription should return true', function () {
@@ -137,7 +145,7 @@ describe('testing service "ContentAvailSrv":', function () {
     });
 
     it('when user has subscription then isSectionAvail should return true for all sections', function () {
-        TestStorage;
+        StudentStorage;
         actions.addSubscription();
         expect(actions.isSectionAvail(25, 11)).toBeTruthy();
         expect(actions.isSectionAvail(3, 1116)).toBeTruthy();

@@ -77,6 +77,10 @@
                         currMousePoint.x = evt.pageX;
                         currMousePoint.y = evt.pageY;
                         moveScroll(xOffset,containerWidth,childWidth);
+                        //stop event bubbling
+                        evt.preventDefault();
+                        evt.stopPropagation();
+                        return false;
                     }
                     function mouseUpEventHandler(){
                         //$log.debug('mouse up',evt.pageX);

@@ -1,0 +1,11 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="-359 103.4 28 36.6" class="znk-audio-player-pause-svg">
+    <style>
+        .znk-audio-player-pause-svg  .znk-audio-player-pause-svg-rect {
+            width: 7px;
+            height: 20px;
+        }
+    </style>
+<rect class="znk-audio-player-pause-svg-rect" x="-353" y="110" />
+<rect class="znk-audio-player-pause-svg-rect" x="-340.8" y="110" />
+</svg>

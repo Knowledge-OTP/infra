@@ -1,0 +1,16 @@
+<div class="wrapper" ng-class="{'no-footer': hideFooter}">
+    <!--<div class="bg-img only-tablet" ng-style="{'background-image': 'url(' + d.blurredImage + ')'}"></div>-->
+    <div class="inner-section">
+        <img class="inner" ng-src="{{::d.image}}">
+    </div>
+    <div class="audio-footer inverted" ng-if="::!hideFooter">
+        <znk-audio-play-button
+            switch-init="audioPlayer.currState"
+            source="source"
+            on-ended="onEnded()"
+            allow-replay="allowReplay()"
+            show-as-done="showAsDone()"
+            auto-play="autoPlayGetter()">
+        </znk-audio-play-button>
+    </div>
+</div>

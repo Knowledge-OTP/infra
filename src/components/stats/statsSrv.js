@@ -1,28 +1,16 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.stats').provider('StatsSrv', function () {
-        'ngInject';
+    angular.module('znk.infra.stats').service('StatsSrv',
+        function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv, CategoryService) {
+            'ngInject';
 
-        var getCategoryLookup;
-        this.setCategoryLookup = function (_getCategoryLookup) {
-            getCategoryLookup = _getCategoryLookup;
-        };
-
-        this.$get = function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv) {
-            'ngInject';//jshint ignore:line
-
-            if (!getCategoryLookup) {
-                $log.error('StatsSrv: getCategoryLookup was not set !!!!');
-            }
-
-            var storage = InfraConfigSrv.getStorageService();
             var STATS_PATH = StorageSrv.variables.appUserSpacePath + '/stats';
 
             var StatsSrv = {};
 
             var _getCategoryLookup = function () {
-                return $injector.invoke(getCategoryLookup).then(function (categoryMap) {
+                return CategoryService.getCategoryMap().then(function (categoryMap) {
                     return categoryMap;
                 });
             };
@@ -64,11 +52,15 @@
                 var defaults = {
                     processedExercises: {}
                 };
-                return storage.get(STATS_PATH, defaults);
+                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                    return StudentStorageSrv.get(STATS_PATH, defaults);
+                });
             }
 
             function setStats(newStats) {
-                return storage.set(STATS_PATH, newStats);
+                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                    return StudentStorageSrv.set(STATS_PATH, newStats);
+                });
             }
 
             function _baseStatsUpdater(currStat, newStat) {
@@ -179,6 +171,5 @@
             };
 
             return StatsSrv;
-        };
-    });
+        });
 })(angular);

@@ -12,9 +12,8 @@
 
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
 
-            //todo for easier upgrade to version-5
             function _getStorage(){
-                return $q.when(InfraConfigSrv.getStorageService());
+                return InfraConfigSrv.getGlobalStorage();
             }
 
             function _getScreenSharingInitStatusByInitiator(initiator){

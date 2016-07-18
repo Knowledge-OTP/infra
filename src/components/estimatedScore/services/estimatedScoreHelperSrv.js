@@ -7,8 +7,6 @@
 
             var EstimatedScoreHelperSrv = this;
 
-            var storage = InfraConfigSrv.getStorageService();
-
             var ESTIMATE_SCORE_PATH = StorageSrv.variables.appUserSpacePath + '/estimatedScore';
 
             function _SetSubjectInitialVal(obj, initValue) {
@@ -19,44 +17,48 @@
                 }
             }
 
-            EstimatedScoreHelperSrv.getEstimatedScoreData = function () {
-                return storage.get(ESTIMATE_SCORE_PATH).then(function (estimatedScore) {
-                    var defaultValues = {
-                        estimatedScores: {},
-                        sectionsRawScores: {},
-                        exercisesRawScores: {},
-                        processedExercises: []
-                    };
+            EstimatedScoreHelperSrv.getEstimatedScoreData = function(){
+                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                    return StudentStorageSrv.get(ESTIMATE_SCORE_PATH).then(function(estimatedScore){
+                        var defaultValues = {
+                            estimatedScores: {},
+                            sectionsRawScores:{},
+                            exercisesRawScores: {},
+                            processedExercises: []
+                        };
 
-                    _SetSubjectInitialVal(defaultValues.estimatedScores, []);
-                    _SetSubjectInitialVal(defaultValues.sectionsRawScores, []);
-                    var rawScoreInitialObject = {
-                        total: 0,
-                        earned: 0
-                    };
-                    _SetSubjectInitialVal(defaultValues.exercisesRawScores, rawScoreInitialObject);
+                        _SetSubjectInitialVal(defaultValues.estimatedScores,[]);
+                        _SetSubjectInitialVal(defaultValues.sectionsRawScores,[]);
+                        var rawScoreInitialObject = {
+                            total: 0,
+                            earned: 0
+                        };
+                        _SetSubjectInitialVal(defaultValues.exercisesRawScores,rawScoreInitialObject);
 
-                    angular.forEach(defaultValues, function (defaultVal, defaultValKey) {
-                        if (angular.isUndefined(estimatedScore[defaultValKey])) {
-                            estimatedScore[defaultValKey] = defaultVal;
-                        }
+                        angular.forEach(defaultValues, function(defaultVal, defaultValKey){
+                            if(angular.isUndefined(estimatedScore[defaultValKey])){
+                                estimatedScore[defaultValKey] = defaultVal ;
+                            }
 
-                        if (estimatedScore[defaultValKey] !== defaultVal && angular.isObject(defaultVal)) {
-                            var currVal = estimatedScore[defaultValKey];
-                            angular.forEach(defaultVal, function (innerDefaultVal, innerDefaultValueKey) {
-                                if (angular.isUndefined(currVal[innerDefaultValueKey])) {
-                                    currVal[innerDefaultValueKey] = innerDefaultVal;
-                                }
-                            });
-                        }
+                            if(estimatedScore[defaultValKey] !== defaultVal && angular.isObject(defaultVal)){
+                                var currVal = estimatedScore[defaultValKey];
+                                angular.forEach(defaultVal, function(innerDefaultVal, innerDefaultValueKey){
+                                    if(angular.isUndefined(currVal[innerDefaultValueKey])){
+                                        currVal[innerDefaultValueKey] = innerDefaultVal;
+                                    }
+                                });
+                            }
+                        });
+
+                        return estimatedScore;
                     });
-
-                    return estimatedScore;
                 });
             };
 
-            EstimatedScoreHelperSrv.setEstimateScoreData = function (newEstimateScoreData) {
-                return storage.set(ESTIMATE_SCORE_PATH, newEstimateScoreData);
+            EstimatedScoreHelperSrv.setEstimateScoreData = function (newEstimateScoreData){
+                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                    return StudentStorageSrv.set(ESTIMATE_SCORE_PATH,newEstimateScoreData);
+                });
             };
         }
     );
