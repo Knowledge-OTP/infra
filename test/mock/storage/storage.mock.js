@@ -64,6 +64,15 @@
 
                 }
 
+                function _triggerEvent (path, type){
+                    adapter.get(path).then(function (pathValue) {
+                        var valueEventsCbs = adapter.__getEventTypeCbs(type, path);
+                        valueEventsCbs.forEach(function (cb) {
+                            cb(pathValue);
+                        });
+                    });
+                }
+
                 var adapter = {
                     __db: {},
                     get: function (path) {
@@ -71,16 +80,9 @@
                         return $q.when($parse(key)(this.__db));
                     },
                     set: function (path, newValue) {
-                        var self = this;
-
                         setInDb(path,newValue);
-
-                        return this.get(path).then(function (pathValue) {
-                            var valueEventsCbs = self.__getEventTypeCbs(StorageSrv.EVENTS.VALUE, path);
-                            valueEventsCbs.forEach(function (cb) {
-                                cb(pathValue);
-                            });
-                        });
+                        _triggerEvent(path, StorageSrv.EVENTS.VALUE);
+                        return this.get(path);
                     },
                     update: function (pathOrPathToValMap, newValue) {
                         var pathToValMap = {};
@@ -92,6 +94,7 @@
 
                         angular.forEach(pathToValMap, function (value, path) {
                             updateInDb(path,value);
+                            _triggerEvent(path, StorageSrv.EVENTS.VALUE);
                         });
 
                         return $q.when(angular.isString(pathOrPathToValMap) ? newValue : pathOrPathToValMap);
@@ -106,6 +109,8 @@
                         }
 
                         this.__registeredEvents[type][path].push(cb);
+
+                        _triggerEvent(path, type);
                     },
                     __getEventTypeCbs: function (type, path) {
                         if (!this.__registeredEvents || !this.__registeredEvents[type] || !this.__registeredEvents[type][path]) {

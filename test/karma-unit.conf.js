@@ -67,7 +67,7 @@ module.exports = function (config) {
             'test/mock/**/*.js',
 
             //tests
-            'test/spec/**/*.spec.js'
+            'test/spec/**/screenSharing/*.spec.js'
         ],
 
         // list of files / patterns to exclude

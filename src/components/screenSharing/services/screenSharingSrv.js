@@ -2,13 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.screenSharing').service('ScreenSharingSrv',
-        function (UserProfileService, InfraConfigSrv, $q, UtilitySrv, ScreenSharingDataGetterSrv, ScreenSharingStatusEnum, ENV, $log) {
+        function (UserProfileService, InfraConfigSrv, $q, UtilitySrv, ScreenSharingDataGetterSrv, ScreenSharingStatusEnum, ENV, $log, UserScreenSharingStatusEnum) {
             'ngInject';
-
-            var INITIATOR_ENUM = {
-                "VIEWER": 1,
-                "SHARER": 2
-            };
 
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
 
@@ -18,8 +13,8 @@
 
             function _getScreenSharingInitStatusByInitiator(initiator){
                 var initiatorToInitStatusMap = {};
-                initiatorToInitStatusMap[INITIATOR_ENUM.VIEWER] = ScreenSharingStatusEnum.PENDING_SHARER.enum;
-                initiatorToInitStatusMap[INITIATOR_ENUM.SHARER] = ScreenSharingStatusEnum.PENDING_VIEWER.enum;
+                initiatorToInitStatusMap[UserScreenSharingStatusEnum.VIEWER.enum] = ScreenSharingStatusEnum.PENDING_SHARER.enum;
+                initiatorToInitStatusMap[UserScreenSharingStatusEnum.SHARER.enum] = ScreenSharingStatusEnum.PENDING_VIEWER.enum;
 
                 return initiatorToInitStatusMap[initiator] || null;
             }
@@ -64,7 +59,7 @@
                         uid: currUserId,
                         isTeacher: isTeacherApp
                     };
-                    return _initiateScreenSharing(sharerData, viewerData, INITIATOR_ENUM.SHARER);
+                    return _initiateScreenSharing(sharerData, viewerData, UserScreenSharingStatusEnum.SHARER.enum);
                 });
             };
 
@@ -74,7 +69,7 @@
                         uid: currUserId,
                         isTeacher: isTeacherApp
                     };
-                    return _initiateScreenSharing(sharerData, viewerData, INITIATOR_ENUM.VIEWER);
+                    return _initiateScreenSharing(sharerData, viewerData, UserScreenSharingStatusEnum.VIEWER.enum);
                 });
             };
 

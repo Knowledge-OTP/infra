@@ -7,18 +7,20 @@
 
             function _startListening(){
                 UserProfileService.getCurrUserId().then(function (currUid) {
-                    $q.when(InfraConfigSrv.getStorageService()).then(function(storage){
+                    InfraConfigSrv.getGlobalStorage().then(function(globalStorage){
                         var appName = ENV.firebaseAppScopeName;
                         var userScreenSharingPath = appName + '/users/' + currUid +'/screenSharing';
-                        storage.onEvent(StorageSrv.EVENTS.VALUE, userScreenSharingPath, function(){
-
+                        globalStorage.onEvent(StorageSrv.EVENTS.VALUE, userScreenSharingPath, function(userScreenSharingData){
+                            if(!userScreenSharingData){
+                                return;
+                            }
                         });
                     });
                 });
             }
 
             this.activate = function(){
-
+                _startListening();
             };
         }
     );
