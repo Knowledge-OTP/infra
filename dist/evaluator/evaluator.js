@@ -30,14 +30,22 @@
 
             var znkEvaluatorSrvApi = {};
 
+            function handleErrors(evaluateFnName) {
+                var errMsg = 'ZnkEvaluatorSrv: '+ evaluateFnName +' was not set';
+                $log.error(errMsg);
+                return $q.reject(errMsg);
+            }
+
             function invokeEvaluateFn(evaluateFn, evaluateFnName) {
                 if(!evaluateFn) {
-                    var errMsg = 'ZnkEvaluatorSrv: '+ evaluateFnName +' was not set';
-                    $log.error(errMsg);
-                    return $q.reject(errMsg);
+                    return handleErrors(evaluateFnName);
                 }
 
-                return $q.when($injector.invoke(evaluateFn));
+                try {
+                    return $injector.invoke(evaluateFn);
+                } catch (e) {
+                    return handleErrors(evaluateFnName +' e: ' + e);
+                }
             }
 
             znkEvaluatorSrvApi.shouldEvaluateQuestionFn = invokeEvaluateFn.bind(null, _shouldEvaluateQuestionFn, 'shouldEvaluateQuestionFn');
