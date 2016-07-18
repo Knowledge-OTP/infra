@@ -176,7 +176,7 @@
                             return getEntityPromMap[processedPath];
                         }
                         cacheProm = true;
-                        getProm = self.adapter.get(processedPath).then(function (_entity) {
+                        getProm = $q.when(self.adapter.get(processedPath)).then(function (_entity) {
                             if (angular.isUndefined(_entity) || _entity === null) {
                                 _entity = {};
                             }
@@ -221,7 +221,7 @@
             StorageSrv.prototype.getServerValue = function (path) {
                 var self = this;
                 return this.__processPath(path, self.__config).then(function (processedPath) {
-                    return self.adapter.get(processedPath);
+                    return $q.when(self.adapter.get(processedPath));
                 });
             };
 
@@ -250,7 +250,7 @@
                     return $q.reject(errMSg);
                 }
                 return this.__processPath(path, self.__config).then(function (processedPath) {
-                    return self.adapter.set(processedPath, newValue).then(function () {
+                    return $q.when(self.adapter.set(processedPath, newValue)).then(function () {
                         return self.__addDataToCache(processedPath, newValue);
                     });
                 });
@@ -260,7 +260,7 @@
                 var self = this;
 
                 return this.__processPath(pathStrOrObj, self.__config).then(function (processedPathOrObj) {
-                    return self.adapter.update(processedPathOrObj, newValue).then(function () {
+                    return $q.when(self.adapter.update(processedPathOrObj, newValue)).then(function () {
                         return self.__addDataToCache(processedPathOrObj, newValue);
                     });
                 });

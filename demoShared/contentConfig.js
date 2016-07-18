@@ -3,7 +3,7 @@
 
     angular.module('demo').config(function(ContentSrvProvider) {
         ContentSrvProvider.setContent(
-            function ($window, $q, InfraConfigSrv, ENV) {
+            function ($window, $q, InfraConfigSrv, ENV, StorageSrv) {
                 var publicationsPath = 'publications';
                 var promises = {};
 
@@ -40,7 +40,7 @@
 
                 function getUserRevProm() {
                     return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
-                        return StudentStorageSrv.get(StudentStorageSrv.variables.appUserSpacePath + '/contentSync').then(function (resp) {
+                        return StudentStorageSrv.get(StorageSrv.variables.appUserSpacePath + '/contentSync').then(function (resp) {
                             if (!resp.revisionManifest) {
                                 resp.revisionManifest = {};
                             }
@@ -59,7 +59,7 @@
                         },
                         updatePublication: updatePublicationCb,
                         contentRoot: 'content/',
-                        userRoot: results.studentStorageSrv.variables.appUserSpacePath + '/contentSync'
+                        userRoot: StorageSrv.variables.appUserSpacePath + '/contentSync'
 
                     };
                 });

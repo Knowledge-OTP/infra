@@ -1,26 +1,26 @@
 describe('testing service "storageFirebaseAdapter":', function () {
     'use strict';
 
-    beforeEach(function(){
+    beforeEach(function () {
         MockFirebase.override();
     });
 
-    beforeEach(module('env.mock','znk.infra.storage', 'htmlTemplates'));
+    beforeEach(module('env.mock', 'znk.infra.storage', 'htmlTemplates'));
 
-    var $rootScope, storageFirebaseAdapter, StorageSrv;
+    var $rootScope, StorageFirebaseAdapter, StorageSrv, $timeout;
     beforeEach(inject([
         '$injector',
         function ($injector) {
             $rootScope = $injector.get('$rootScope');
-            storageFirebaseAdapter = $injector.get('storageFirebaseAdapter');
+            StorageFirebaseAdapter = $injector.get('StorageFirebaseAdapter');
             StorageSrv = $injector.get('StorageSrv');
+            $timeout = $injector.get('$timeout');
         }
     ]));
 
-
-    var actions = {};
-
-    actions.syncAdapter = function(adapter){
+    var syncedAdapter;
+    beforeEach(function () {
+        var adapter = new StorageFirebaseAdapter(endpoint);
         adapter.__refMap.rootRef.changeAuthState({
             uid: 1
             //provider: 'custom',
@@ -32,24 +32,76 @@ describe('testing service "storageFirebaseAdapter":', function () {
         });
         adapter.__refMap.rootRef.flush();
 
+        syncedAdapter = Object.create(adapter);
+
+        syncedAdapter.get = function (path) {
+            var val;
+            adapter.get(path).then(function (_val) {
+                val = _val;
+            });
+            var pathRef = adapter.__refMap[path];
+            if (pathRef) {
+                pathRef.flush();
+            }
+            $rootScope.$digest();
+            return val;
+        };
+        syncedAdapter.set = function (path, newEntity) {
+            var setProm = adapter.set(path, newEntity);
+            $rootScope.$digest();
+            var pathRef = adapter.__refMap[path];
+            if (pathRef) {
+                pathRef.flush();
+            }
+            return setProm;
+        };
+
+        syncedAdapter.update = function (path, newEntity) {
+            var setProm = adapter.update(path, newEntity);
+            $rootScope.$digest();
+            var pathRef = adapter.__refMap[path];
+            if (pathRef) {
+                pathRef.flush();
+            }
+            return setProm;
+        };
+    });
+
+    var actions = {};
+
+    actions.syncAdapter = function (adapter) {
+        adapter.__refMap.rootRef.changeAuthState({
+            uid: 1
+        });
+        adapter.__refMap.rootRef.flush();
+
         return {
-            get: function(path){
+            get: function (path) {
                 var val;
-                adapter.get(path).then(function(_val){
+                adapter.get(path).then(function (_val) {
                     val = _val;
                 });
                 var pathRef = adapter.__refMap[path];
-                if(pathRef){
+                if (pathRef) {
                     pathRef.flush();
                 }
                 $rootScope.$digest();
                 return val;
             },
-            set: function(path,newEntity){
+            set: function (path, newEntity) {
                 var setProm = adapter.set(path, newEntity);
                 $rootScope.$digest();
                 var pathRef = adapter.__refMap[path];
-                if(pathRef){
+                if (pathRef) {
+                    pathRef.flush();
+                }
+                return setProm;
+            },
+            update: function (path, newEntity) {
+                var setProm = adapter.update(path, newEntity);
+                $rootScope.$digest();
+                var pathRef = adapter.__refMap[path];
+                if (pathRef) {
                     pathRef.flush();
                 }
                 return setProm;
@@ -60,20 +112,49 @@ describe('testing service "storageFirebaseAdapter":', function () {
 
     var endpoint = 'https://znk-test.firebaseio.com';
 
-    it('when calling set then it should update firebase db', function () {
+    it('when calling update then it should update firebase db', function () {
         var path = 'testPath';
-        var syncedAdapter = actions.syncAdapter(storageFirebaseAdapter(endpoint));
+
         var newEntityVal = {
             test: 'test'
         };
-        syncedAdapter.set(path,newEntityVal);
+        syncedAdapter.set(path, newEntityVal);
+        var currEntityVal = syncedAdapter.get(path);
+        expect(currEntityVal).toEqual(newEntityVal);
+    });
+
+    it('when setting simultaneously 2 objects then firebase db should be updated accordingly', function () {
+        var savedDataMap = {
+            a: {
+                a: 1
+            },
+            b: {
+                b: 2
+            }
+        };
+
+        syncedAdapter.update(angular.copy(savedDataMap));
+        syncedAdapter.__refMap.rootRef.flush();
+        var aVal = syncedAdapter.get('a');
+        var bVal = syncedAdapter.get('b');
+        expect(aVal).toEqual(savedDataMap.a);
+        expect(bVal).toEqual(savedDataMap.b);
+    });
+
+    it('when calling set then it should update firebase db', function () {
+        var path = 'testPath';
+
+        var newEntityVal = {
+            test: 'test'
+        };
+        syncedAdapter.set(path, newEntityVal);
         var currEntityVal = syncedAdapter.get(path);
         expect(currEntityVal).toEqual(newEntityVal);
     });
 
     it('when saving entity then all undefined and start with $ properties should be deleted and not stored in firebase', function () {
         var path = 'testPath';
-        var syncedAdapter = actions.syncAdapter(storageFirebaseAdapter(endpoint));
+
         var expectedResult = {
             key1: 'val',
             key2: {
@@ -88,41 +169,62 @@ describe('testing service "storageFirebaseAdapter":', function () {
         value.key2.$prop = 'illegal key name';
         value.key2.arr = [];
 
-        syncedAdapter.set(path,value);
+        syncedAdapter.set(path, value);
         var currValue = syncedAdapter.get(path);
         expect(currValue).toEqual(expectedResult);
     });
 
-    it('when setting simultaneously 2 objects then firebase db should be updated accordingly', function () {
-        var syncedAdapter = actions.syncAdapter(storageFirebaseAdapter(endpoint));
-        var savedDataMap = {
-            a: {
-                a: 1
-            },
-            b: {
-                b: 2
-            }
-        };
-
-        syncedAdapter.set(angular.copy(savedDataMap));
-        syncedAdapter.__refMap.rootRef.flush();
-        var aVal = syncedAdapter.get('a');
-        var bVal = syncedAdapter.get('b');
-        expect(aVal).toEqual(savedDataMap.a);
-        expect(bVal).toEqual(savedDataMap.b);
-    });
-
     it('when value has a storageSrv time stamp variable then it should be changed to firebase time stamp', function () {
-        var syncedAdapter = actions.syncAdapter(storageFirebaseAdapter(endpoint));
+        var path = 'pathTo';
+
         var savedDataMap = {
             a: StorageSrv.variables.currTimeStamp
         };
 
-        syncedAdapter.set(angular.copy(savedDataMap));
-        syncedAdapter.__refMap.rootRef.flush();
+        syncedAdapter.set(path, angular.copy(savedDataMap));
 
-        var aVal = syncedAdapter.get('a');
+        var aVal = syncedAdapter.get(path).a;
 
         expect(aVal).toEqual(jasmine.any(Number));
+    });
+
+    it('when registering to "value" event then once value is updated "value" event callback should be invoked', function () {
+        var path = 'pathTo';
+
+        var receivedEventValue;
+        syncedAdapter.onEvent(StorageSrv.EVENTS.VALUE, path, function (val) {
+            receivedEventValue = val;
+        });
+
+        var expectedResult = {
+            a: 1,
+            b: 2
+        };
+        syncedAdapter.set(path, expectedResult);
+        $timeout.flush();
+
+        expect(receivedEventValue).toEqual(expectedResult);
+    });
+
+    it('given registered to "value" event when unregistering then when value is updated the event callback should not be ' +
+        'invoked', function () {
+        var path = 'pathTo';
+
+        var receivedEventValue;
+
+        function cb(val) {
+            receivedEventValue = val;
+        }
+
+        syncedAdapter.onEvent(StorageSrv.EVENTS.VALUE, path, cb);
+        syncedAdapter.offEvent(StorageSrv.EVENTS.VALUE, path, cb);
+        var newPathVal = {
+            a: 1,
+            b: 2
+        };
+        syncedAdapter.set(path, newPathVal);
+        $timeout.flush();
+
+        expect(receivedEventValue).toBeUndefined();
     });
 });
