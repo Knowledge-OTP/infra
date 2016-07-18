@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.screenSharing').service('ScreenSharingSrv',
-        function (UserProfileService, InfraConfigSrv, $q, UtilitySrv, ScreenSharingDataGetterSrv, ScreenSharingStatusEnum, ENV, $log, UserScreenSharingStatusEnum) {
+        function (UserProfileService, InfraConfigSrv, $q, UtilitySrv, ScreenSharingDataGetterSrv, ScreenSharingStatusEnum, ENV, $log, UserScreenSharingStateEnum, ScreenSharingUiSrv) {
             'ngInject';
 
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
@@ -13,8 +13,8 @@
 
             function _getScreenSharingInitStatusByInitiator(initiator){
                 var initiatorToInitStatusMap = {};
-                initiatorToInitStatusMap[UserScreenSharingStatusEnum.VIEWER.enum] = ScreenSharingStatusEnum.PENDING_SHARER.enum;
-                initiatorToInitStatusMap[UserScreenSharingStatusEnum.SHARER.enum] = ScreenSharingStatusEnum.PENDING_VIEWER.enum;
+                initiatorToInitStatusMap[UserScreenSharingStateEnum.VIEWER.enum] = ScreenSharingStatusEnum.PENDING_SHARER.enum;
+                initiatorToInitStatusMap[UserScreenSharingStateEnum.SHARER.enum] = ScreenSharingStatusEnum.PENDING_VIEWER.enum;
 
                 return initiatorToInitStatusMap[initiator] || null;
             }
@@ -59,7 +59,7 @@
                         uid: currUserId,
                         isTeacher: isTeacherApp
                     };
-                    return _initiateScreenSharing(sharerData, viewerData, UserScreenSharingStatusEnum.SHARER.enum);
+                    return _initiateScreenSharing(sharerData, viewerData, UserScreenSharingStateEnum.SHARER.enum);
                 });
             };
 
@@ -69,7 +69,7 @@
                         uid: currUserId,
                         isTeacher: isTeacherApp
                     };
-                    return _initiateScreenSharing(sharerData, viewerData, UserScreenSharingStatusEnum.VIEWER.enum);
+                    return _initiateScreenSharing(sharerData, viewerData, UserScreenSharingStateEnum.VIEWER.enum);
                 });
             };
 
@@ -85,6 +85,16 @@
                     screenSharingData.status = ScreenSharingStatusEnum.ENDED.enum;
                     return screenSharingData.$save();
                 });
+            };
+
+            this._setUserScreenSharingState = function(newUserScreenSharingState){
+                if(newUserScreenSharingState === UserScreenSharingStateEnum.VIEWER.enum){
+                    ScreenSharingUiSrv.showViewerIndication();
+                }
+
+                if(newUserScreenSharingState === UserScreenSharingStateEnum.SHARER.enum){
+                    ScreenSharingUiSrv.showSharerIndication();
+                }
             };
         }
     );

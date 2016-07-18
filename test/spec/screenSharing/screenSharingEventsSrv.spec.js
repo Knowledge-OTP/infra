@@ -14,31 +14,29 @@ describe('testing service "ScreenSharingSrv":', function () {
             'UtilitySrv',
             'ENV',
             'ScreenSharingUiSrv',
-            'UserScreenSharingStatusEnum'
+            'UserScreenSharingStateEnum',
+            '$rootScope'
         ];
 
         depsToInject.forEach(function (depName) {
             _deps[depName] = $injector.get(depName);
         });
 
-        _deps.ScreenSharingSrv = _deps.TestUtilitySrv.general.convertAllAsyncToSync(_deps.ScreenSharingSrv);
-
         _deps.GlobalStorage = _deps.TestUtilitySrv.general.asyncToSync(_deps.InfraConfigSrv.getGlobalStorage, _deps.InfraConfigSrv)();
     }));
 
     it('when user start sharing his screen then activate ScreenSharingUiSrv.activateSharing should be called with sharing status', function(){
-        spyOn(_deps.ScreenSharingUiSrv, 'activateSharing');
-
         var currUid = _deps.UserProfileService.__currUserId;
         var screenSharingDataGuid = '123456789-data-guid';
         var sharerId = currUid;
         var viewerId = '123456789-viewer-id';
         var screenSharingPath = 'screenSharing/' + screenSharingDataGuid;
-        var userScreenSharingDataPath = _deps.ENV.firebaseAppScopeName + '/users/' + currUid  + 'screenSharing';
+        var userScreenSharingDataPath = _deps.ENV.firebaseAppScopeName + '/users/' + currUid  + '/screenSharing';
 
         var userScreenSharingData = {};
         userScreenSharingData[screenSharingDataGuid] = true;
         _deps.GlobalStorage.adapter.update(userScreenSharingDataPath, userScreenSharingData);
+        _deps.$rootScope.$digest();
 
         var screenSharingData = {
             guid: screenSharingDataGuid,
@@ -48,9 +46,12 @@ describe('testing service "ScreenSharingSrv":', function () {
         };
         _deps.GlobalStorage.adapter.update(screenSharingPath, screenSharingData);
 
+        spyOn(_deps.ScreenSharingSrv, '_setUserScreenSharingState');
+
         screenSharingData.status = _deps.ScreenSharingStatusEnum.CONFIRMED.enum;
         _deps.GlobalStorage.adapter.update(screenSharingPath, screenSharingData);
+        _deps.$rootScope.$digest();
 
-        expect(_deps.ScreenSharingUiSrv.activateSharing).toHaveBeenCalledWith(_deps.UserScreenSharingStatusEnum.SHARER.enum);
+        expect(_deps.ScreenSharingSrv._setUserScreenSharingState).toHaveBeenCalledWith(_deps.UserScreenSharingStateEnum.SHARER.enum);
     });
 });

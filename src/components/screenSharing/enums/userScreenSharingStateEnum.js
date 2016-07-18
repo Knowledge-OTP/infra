@@ -1,12 +1,12 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.screenSharing').factory('UserScreenSharingStatusEnum',
+    angular.module('znk.infra.screenSharing').factory('UserScreenSharingStateEnum',
         function (EnumSrv) {
             'ngInject';
 
             return new EnumSrv.BaseEnum([
-                ['none', 1, 'none'],
+                ['NONE', 1, 'none'],
                 ['VIEWER', 2, 'viewer'],
                 ['SHARER', 3, 'sharer']
             ]);

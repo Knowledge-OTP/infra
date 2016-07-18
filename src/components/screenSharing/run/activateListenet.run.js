@@ -1,9 +1,9 @@
 (function(){
     angular.module('znk.infra.screenSharing').run(
-        function(ScreenSharingEventsrSrv){
+        function(ScreenSharingEventsSrv){
             'ngInject';
 
-            ScreenSharingEventsrSrv.activate();
+            ScreenSharingEventsSrv.activate();
         }
     );
 })();
