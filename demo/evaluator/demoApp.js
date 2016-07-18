@@ -31,24 +31,19 @@
         })
         .controller('Main', function ($scope, ZnkEvaluatorSrv) {
             $scope.shouldEvaluateQuestion = function() {
-                var fnGetter = ZnkEvaluatorSrv.shouldEvaluateQuestionFn();
-                fnGetter.then(function (fn) {
-                    console.log('shouldEvaluateQuestion', fn());
-                });
+                var fn = ZnkEvaluatorSrv.shouldEvaluateQuestionFn();
+                console.log('shouldEvaluateQuestion', fn());
+
             };
             $scope.isEvaluateQuestionType = function() {
-                var fnGetter = ZnkEvaluatorSrv.isEvaluateQuestionTypeFn();
-                fnGetter.then(function (fn) {
-                    console.log('isEvaluateQuestionType', fn({
-                        manualEvaluation: true
-                    }));
-                });
+                var fn = ZnkEvaluatorSrv.isEvaluateQuestionTypeFn();
+                console.log('isEvaluateQuestionType', fn({
+                    manualEvaluation: true
+                }));
             };
             $scope.getEvaluateStatus = function() {
-                var fnGetter = ZnkEvaluatorSrv.getEvaluateStatusFn();
-                fnGetter.then(function (fn) {
-                    console.log('getEvaluateStatus', fn());
-                });
+                var fn = ZnkEvaluatorSrv.getEvaluateStatusFn();
+                console.log('getEvaluateStatus', fn());
             };
         });
 })(angular);
