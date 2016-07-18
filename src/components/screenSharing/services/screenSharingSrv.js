@@ -19,37 +19,61 @@
                 return initiatorToInitStatusMap[initiator] || null;
             }
 
+            function _isScreenSharingAlreadyInitiated(sharerId, viewerId){
+                return ScreenSharingDataGetterSrv.getCurrUserScreenSharingData().then(function(screenSharingDataMap){
+                    var isInitiated = false;
+                    var screenSharingDataMapKeys = Object.keys(screenSharingDataMap);
+                    for(var i in screenSharingDataMapKeys){
+                        var screenSharingDataKey = screenSharingDataMapKeys[i];
+                        var screenSharingData = screenSharingDataMap[screenSharingDataKey];
+                        isInitiated = screenSharingData.sharerId === sharerId && screenSharingData.viewerId === viewerId;
+                        if(isInitiated){
+                            break;
+                        }
+                    }
+                    return isInitiated;
+                });
+            }
+
             function _initiateScreenSharing(sharerData, viewerData, initiator) {
-                if(angular.isUndefined(viewerData.isTeacher) || angular.isUndefined(sharerData.isTeacher)){
-                    var errMSg = 'ScreenSharingSrv: isTeacher property was not provided!!!';
-                    $log.error(errMSg);
-                    return $q.reject(errMSg);
-                }
-                var dataToSave = {};
+                return _isScreenSharingAlreadyInitiated(sharerData.id, viewerData.id).then(function(isInitiated){
+                    if(isInitiated){
+                        var errMsg = 'ScreenSharingSrv: screen sharing was already initiated';
+                        $log.error(errMsg);
+                        return $q.reject(errMsg);
+                    }
 
-                var newScreenSharingGuid = UtilitySrv.general.createGuid();
+                    if(angular.isUndefined(viewerData.isTeacher) || angular.isUndefined(sharerData.isTeacher)){
+                        var errMSg = 'ScreenSharingSrv: isTeacher property was not provided!!!';
+                        $log.error(errMSg);
+                        return $q.reject(errMSg);
+                    }
+                    var dataToSave = {};
 
-                var initStatus = _getScreenSharingInitStatusByInitiator(initiator);
-                if(!initStatus ){
-                    return $q.reject('ScreenSharingSrv: initiator was not provided');
-                }
-                var newScreenSharingData = {
-                    guid: newScreenSharingGuid,
-                    sharerId: sharerData.uid,
-                    viewerId: viewerData.uid,
-                    status: initStatus
-                };
-                var newScreenSharingDataPath = ScreenSharingDataGetterSrv.getScreenSharingDataPath(newScreenSharingGuid);
-                dataToSave[newScreenSharingDataPath] = newScreenSharingData;
+                    var newScreenSharingGuid = UtilitySrv.general.createGuid();
 
-                var sharerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataGuidPath(sharerData, newScreenSharingGuid);
-                dataToSave[sharerScreenSharingDataGuidPath] = true;
+                    var initStatus = _getScreenSharingInitStatusByInitiator(initiator);
+                    if(!initStatus ){
+                        return $q.reject('ScreenSharingSrv: initiator was not provided');
+                    }
+                    var newScreenSharingData = {
+                        guid: newScreenSharingGuid,
+                        sharerId: sharerData.uid,
+                        viewerId: viewerData.uid,
+                        status: initStatus
+                    };
+                    var newScreenSharingDataPath = ScreenSharingDataGetterSrv.getScreenSharingDataPath(newScreenSharingGuid);
+                    dataToSave[newScreenSharingDataPath] = newScreenSharingData;
 
-                var viewerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataGuidPath(viewerData, newScreenSharingGuid);
-                dataToSave[viewerScreenSharingDataGuidPath] = true;
+                    var sharerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataPath (sharerData, newScreenSharingGuid);
+                    dataToSave[sharerScreenSharingDataGuidPath] = true;
 
-                return _getStorage().then(function(StudentStorage){
-                    return StudentStorage.update(dataToSave);
+                    var viewerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataPath (viewerData, newScreenSharingGuid);
+                    dataToSave[viewerScreenSharingDataGuidPath] = true;
+
+                    return _getStorage().then(function(StudentStorage){
+                        return StudentStorage.update(dataToSave);
+                    });
                 });
             }
 

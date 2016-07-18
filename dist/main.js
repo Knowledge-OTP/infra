@@ -1947,7 +1947,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
     'use strict';
 
     angular.module('znk.infra.exerciseResult', [
-        'znk.infra.config','znk.infra.utility', 
+        'znk.infra.config','znk.infra.utility',
         'znk.infra.moduleResults',
         'znk.infra.exerciseUtility'
     ]);
@@ -2584,7 +2584,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
     angular.module('znk.infra.exerciseUtility').factory('ExerciseUtilitySrv',
         function () {
             'ngInject';
-            
+
             var ExerciseUtilitySrv = {};
 
             return ExerciseUtilitySrv;
@@ -2611,7 +2611,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
                 if(!angular.isString(str) || !str.length){
                     return '';
                 }
-                
+
                 return str[0].toUpperCase() + str.substr(1);
             };
         }
@@ -3622,7 +3622,7 @@ angular.module('znk.infra.moduleResults').run(['$templateCache', function($templ
 
 (function (angular) {
     'use strict';
-    
+
     angular.module('znk.infra.personalization')
         .service('PersonalizationSrv',
             ["StorageRevSrv", "$log", "$q", function (StorageRevSrv, $log, $q) {
@@ -4313,7 +4313,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 return SCREEN_SHARING_ROOT_PATH + '/' + guid;
             };
 
-            this.getUserScreenSharingDataGuidPath = function (userData, guid) {
+            this.getUserScreenSharingDataPath  = function (userData, guid) {
                 var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
                 var USER_DATA_PATH = appName  + '/users/' + userData.uid;
                 return USER_DATA_PATH + '/screenSharing/' + guid;
@@ -4378,10 +4378,10 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 var newScreenSharingDataPath = ScreenSharingDataGetterSrv.getScreenSharingDataPath(newScreenSharingGuid);
                 dataToSave[newScreenSharingDataPath] = newScreenSharingData;
 
-                var sharerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataGuidPath(sharerData, newScreenSharingGuid);
+                var sharerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataPath (sharerData, newScreenSharingGuid);
                 dataToSave[sharerScreenSharingDataGuidPath] = true;
 
-                var viewerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataGuidPath(viewerData, newScreenSharingGuid);
+                var viewerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataPath (viewerData, newScreenSharingGuid);
                 dataToSave[viewerScreenSharingDataGuidPath] = true;
 
                 return _getStorage().then(function(StudentStorage){

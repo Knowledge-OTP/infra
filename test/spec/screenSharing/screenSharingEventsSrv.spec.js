@@ -1,4 +1,4 @@
-describe('testing service "ScreenSharingSrv":', function () {
+xdescribe('testing service "ScreenSharingSrv":', function () {
     'use strict';
 
     beforeEach(module('znk.infra.screenSharing', 'htmlTemplates', 'storage.mock', 'testUtility', 'user.mock', 'env.mock'));
