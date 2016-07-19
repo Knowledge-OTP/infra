@@ -4442,10 +4442,18 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.screenSharing').service('ScreenSharingEventsSrv',
-        ["UserProfileService", "InfraConfigSrv", "$q", "StorageSrv", "ENV", "ScreenSharingStatusEnum", "UserScreenSharingStateEnum", "ScreenSharingSrv", function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, ScreenSharingStatusEnum, UserScreenSharingStateEnum, ScreenSharingSrv) {
-            'ngInject';
+    angular.module('znk.infra.screenSharing').provider('ScreenSharingEventsSrv', function () {
+        var isEnabled = true;
+        
+        this.enabled = function (_isEnabled) {
+            isEnabled = _isEnabled;
+        };
 
+        this.$get = ["UserProfileService", "InfraConfigSrv", "$q", "StorageSrv", "ENV", "ScreenSharingStatusEnum", "UserScreenSharingStateEnum", "ScreenSharingSrv", function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, ScreenSharingStatusEnum, UserScreenSharingStateEnum, ScreenSharingSrv) {
+            'ngInject';
+            
+            var ScreenSharingEventsSrv = {};
+            
             function _listenToScreenSharingData(guid) {
                 var screenSharingStatusPath = 'screenSharing/' + guid;
 
@@ -4492,11 +4500,15 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 });
             }
 
-            this.activate = function () {
-                _startListening();
+            ScreenSharingEventsSrv.activate = function () {
+                if (isEnabled) {
+                    _startListening();
+                }
             };
-        }]
-    );
+            
+            return ScreenSharingEventsSrv;
+        }];
+    });
 })(angular);
 
 (function (angular) {
