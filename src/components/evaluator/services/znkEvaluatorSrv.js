@@ -3,52 +3,53 @@
 (function (angular) {
     angular.module('znk.infra.evaluator').provider('ZnkEvaluatorSrv', function () {
 
-        var _evaluateQuestionFn;
+        var _shouldEvaluateQuestionFn;
+        var _isEvaluateQuestionFn;
+        var _evaluateStatusFn;
 
-        var shouldEvaluateQuestionFnDefault = function(purchaseService) {
-            'ngInject';
-            return purchaseService.hasProVersion();
+        this.shouldEvaluateQuestionFnGetter = function(shouldEvaluateQuestionFn) {
+            _shouldEvaluateQuestionFn = shouldEvaluateQuestionFn;
         };
 
-        this.shouldEvaluateQuestionFn = function(evaluateQuestionFn) {
-            _evaluateQuestionFn = evaluateQuestionFn;
+        this.isEvaluateQuestionTypeFnGetter = function(isEvaluateQuestionFn) {
+            _isEvaluateQuestionFn = isEvaluateQuestionFn;
         };
 
-        this.$get = function ($q, $injector, ENV, $http, InfraConfigSrv) {
+        this.getEvaluateStatusFnGetter = function(evaluateStatusFn) {
+            _evaluateStatusFn = evaluateStatusFn;
+        };
+
+        this.$get = function ($q, $injector, $log) {
             'ngInject';
 
             var znkEvaluatorSrvApi = {};
 
-            var httpConfig = {
-                timeout: ENV.promiseTimeOut
-            };
-
-            function _shouldEvaluateQuestion() {
-                if(!_evaluateQuestionFn){
-                    _evaluateQuestionFn = shouldEvaluateQuestionFnDefault;
-                }
-
-                return $q.when($injector.invoke(_evaluateQuestionFn));
+            function handleErrors(evaluateFnName) {
+                var errMsg = 'ZnkEvaluatorSrv: '+ evaluateFnName +' was not set';
+                $log.error(errMsg);
+                return $q.reject(errMsg);
             }
 
-            znkEvaluatorSrvApi.evaluateQuestion = function (questionsArr) {
-                return _shouldEvaluateQuestion().then(function (shouldEvaluate) {
-                    if (shouldEvaluate) {
-                        return InfraConfigSrv.getUserData().then(function(userData) {
-                            return $http.post(ENV.evaluateEndpoint, {
-                                uid: userData.uid,
-                                questionsArr: questionsArr,
-                                appName: ENV.firebaseAppScopeName
-                            }, httpConfig).then(function(evaluateData) {
-                                return evaluateData;
-                            }, function(error) {
-                                return $q.reject(error);
-                            });
-                        }, function(error) {
-                            return $q.reject(error);
-                        });
-                    }
-                });
+            function invokeEvaluateFn(evaluateFn, evaluateFnName) {
+                if(!evaluateFn) {
+                    return handleErrors(evaluateFnName);
+                }
+
+                try {
+                    return $injector.invoke(evaluateFn);
+                } catch (e) {
+                    return handleErrors(evaluateFnName +' e: ' + e);
+                }
+            }
+
+            znkEvaluatorSrvApi.shouldEvaluateQuestionFn = invokeEvaluateFn.bind(null, _shouldEvaluateQuestionFn, 'shouldEvaluateQuestionFn');
+
+            znkEvaluatorSrvApi.isEvaluateQuestionTypeFn = invokeEvaluateFn.bind(null, _isEvaluateQuestionFn, 'isEvaluateQuestionFn');
+
+            znkEvaluatorSrvApi.getEvaluateStatusFn = invokeEvaluateFn.bind(null, _evaluateStatusFn, 'evaluateStatusFn');
+
+            znkEvaluatorSrvApi.evaluateQuestion = function () {
+                //@todo(oded) implement saving data to firebase
             };
 
             return znkEvaluatorSrvApi;

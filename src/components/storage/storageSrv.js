@@ -274,6 +274,14 @@
                 this.__cache.remove(path);
             };
 
+            StorageSrv.prototype.onEvent = function(){
+                return this.adapter.onEvent.apply(this.adapter, arguments);
+            };
+
+            StorageSrv.prototype.offEvent = function(){
+                return this.adapter.onEvent.apply(this.adapter, arguments);
+            };
+
             StorageSrv.variables = {
                 currTimeStamp: '%currTimeStamp%',
                 uid: '$$uid',

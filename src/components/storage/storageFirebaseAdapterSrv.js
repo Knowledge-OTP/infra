@@ -54,6 +54,10 @@
 
             var storageFirebaseAdapterPrototype = {
                 getRef: function(relativePath){
+                    if(relativePath === '' || angular.isUndefined(relativePath) || angular.isUndefined(relativePath) || relativePath === null){
+                        return this.__refMap.rootRef;
+                    }
+
                     if (!this.__refMap[relativePath]) {
                         this.__refMap[relativePath] = this.__refMap.rootRef.child(relativePath);
                     }

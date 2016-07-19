@@ -1,55 +1,4 @@
-//font color
-$fcColor1: #363636;
-$fcColor2: #fff;
-$fcColor3: #ff6766;
-$fcColor4: #2AB79E;
-$fcColor5: #0a9bad;
-$fcColor6: #4f4d4d;
-$fcColor7: #87ca4d;
-$fcColor8: #b7b7b7;
-$fcColor9: #757a83;
-$fcColor10: #ff6766;
-$fcColor11: #cccccc;
-$fcColor12: #d2d2d2;
-
-//background color
-$bgColor1: #ff6766;
-$bgColor2: #87ca4d;
-$bgColor3: #0a9bad;
-$bgColor4: #f6f6f6;
-$bgColor5: #888888;
-$bgColor6: #fff;
-$bgColor7: #e8e7e7;
-$bgColor8: #f7f6f6;
-$bgColor9: #e8e7e7;
-$bgColor10: #f5f8fa;
-$bgColor11: #e55958;
-$bgColor12: #80c248;
-$bgColor13: #fafafa;
-$bgColor14: #6ac1cc;
-$bgColor15: #f08a1c;
-$bgColor16: #2c808a;
-$bgColor17: #ebebeb;
-$bgColor18: #c2c3c5;
-$bcColor19: #ff931e;
-
-//border color
-$bcColor1: #87ca4d;
-$bcColor2: #0a9bad;
-$bcColor3: #CFCFCF;
-$bcColor4: #ff6766;
-$bcColor5: #757a83;
-$bcColor6: #ff931e;
-$bcColor7: #d2d2d2;
-
-//background with transparency
-$tbgColor1: rgba(0,0,0,0.7);
-$tbgColor2: rgba(255, 255, 255, 0.91);
-$tbgColor3: rgba(0, 0, 0, 0.08);
-$tbgColor4: rgba(0, 0, 0, 0.08);
-$tbgColor5: rgba(255, 255, 255, 0.3);
-$tbgColor6: rgba(255, 255, 255, 0.08);
-
+/* fonts size */
 /*
 //backgrounds
 $greyBG1: #B4BAD9;
@@ -323,3 +272,36 @@ $blueBG8: #75cbe8;
 
 
 */
+/* full background image with retina */
+screen-sharing .sharer-state-container .square-side {
+  background: #ff931e;
+  position: absolute; }
+  screen-sharing .sharer-state-container .square-side.top, screen-sharing .sharer-state-container .square-side.bottom {
+    height: 5px;
+    right: 0;
+    left: 0; }
+  screen-sharing .sharer-state-container .square-side.right, screen-sharing .sharer-state-container .square-side.left {
+    width: 5px;
+    top: 0;
+    bottom: 0; }
+  screen-sharing .sharer-state-container .square-side.top {
+    top: 0; }
+  screen-sharing .sharer-state-container .square-side.right {
+    right: 0; }
+  screen-sharing .sharer-state-container .square-side.bottom {
+    bottom: 0; }
+  screen-sharing .sharer-state-container .square-side.left {
+    left: 0; }
+
+screen-sharing .sharer-state-container .eye-wrapper {
+  background: #ff931e;
+  width: 52px;
+  text-align: center;
+  border-radius: 50%;
+  height: 30px;
+  box-sizing: border-box;
+  position: absolute;
+  top: -11px;
+  right: 50%;
+  margin-right: -26px;
+  padding-top: 12px; }

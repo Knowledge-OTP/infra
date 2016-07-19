@@ -17,12 +17,12 @@
              };
         })
         .decorator('UserProfileService',function($delegate, $q){
-            $delegate.__currUserId = '123456789-abcd';
-            
+            $delegate.__currUserId = '123456789-curr-uid';
+
             $delegate.getCurrUserId = function(){
                 return $q.when($delegate.__currUserId);
             };
-            
-            return $delegate; 
+
+            return $delegate;
         });
 })(angular);
