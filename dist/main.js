@@ -4313,7 +4313,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 return SCREEN_SHARING_ROOT_PATH + '/' + guid;
             };
 
-            this.getUserScreenSharingDataPath  = function (userData, guid) {
+            this.getUserScreenSharingRequestsPath  = function (userData, guid) {
                 var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
                 var USER_DATA_PATH = appName  + '/users/' + userData.uid;
                 return USER_DATA_PATH + '/screenSharing/' + guid;
@@ -4378,10 +4378,10 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 var newScreenSharingDataPath = ScreenSharingDataGetterSrv.getScreenSharingDataPath(newScreenSharingGuid);
                 dataToSave[newScreenSharingDataPath] = newScreenSharingData;
 
-                var sharerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataPath (sharerData, newScreenSharingGuid);
+                var sharerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingRequestsPath (sharerData, newScreenSharingGuid);
                 dataToSave[sharerScreenSharingDataGuidPath] = true;
 
-                var viewerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingDataPath (viewerData, newScreenSharingGuid);
+                var viewerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingRequestsPath (viewerData, newScreenSharingGuid);
                 dataToSave[viewerScreenSharingDataGuidPath] = true;
 
                 return _getStorage().then(function(StudentStorage){

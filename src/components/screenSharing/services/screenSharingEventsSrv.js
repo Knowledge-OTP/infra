@@ -25,7 +25,7 @@
                         }
 
                         if (userScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
-                            ScreenSharingSrv._setUserScreenSharingState(userScreenSharingState);
+                            ScreenSharingSrv._userScreenSharingStateChanged(userScreenSharingState);
                         }
                     });
                 }
