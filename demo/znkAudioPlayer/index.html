@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="main.css">
+    <style>
+        body {
+            background: #f2f2f2;
+        }
+
+        .znk-image-audio-wrapper, .znk-audio-button-wrapper {
+            width: 450px;
+            margin: 100px auto;
+            display: block;
+        }
+
+        .znk-audio-button-wrapper znk-audio-player{
+            background-color: #887373;
+            height: 44px;
+            width: 355px;
+            padding: 0 20px;
+            border-radius: 24px;
+        }
+    </style>
+</head>
+
+<body ng-app="demo" ng-controller="Main">
+<div class="znk-image-audio-wrapper">
+    <znk-image-audio image="d.image"
+                     audio="d.audio"
+                     show-skip-option="true"
+                     on-ended="d.onAudioEnded()"
+                     auto-play="false">
+    </znk-image-audio>
+</div>
+
+<div class="znk-audio-button-wrapper">
+    <znk-audio-play-button
+        auto-play="false"
+        allow-replay="true"
+        source="d.audio">
+    </znk-audio-play-button>
+</div>
+
+<div class="znk-audio-button-wrapper">
+    <znk-audio-player
+        auto-play="true"
+        type="2"
+        source="d.audio">
+    </znk-audio-player>
+</div>
+
+
+<script src="angular/angular.js"></script>
+
+<script src="svgIcon/svgIcon.js"></script>
+<script src="znkAudioPlayer/znkAudioPlayer.js"></script>
+<script src="znkAudioPlayer/templates.js"></script>
+<script src="angular-translate/angular-translate.js"></script>
+<script src="angular-translate-loader-partial/angular-translate-loader-partial.js"></script>
+<script src="angular-animate/angular-animate.js"></script>
+
+<script src="demo.js"></script>
+</body>
+</html>

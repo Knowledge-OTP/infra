@@ -1,0 +1,85 @@
+znk-image-audio {
+    display: block;
+    position: relative;
+
+    .wrapper {
+        @include dimension(458px,308px);
+        position: relative;
+        min-height: 192px;
+
+        &.no-footer {
+            min-height: 141px;
+        }
+
+        .bg-img{
+            overflow: hidden;
+            top: 2px;
+        }
+
+        .inner-section {
+            position: relative;
+            padding-top: 0;
+            text-align: center;
+
+            img{
+                @include dimension(458px,308px);
+                border-radius: 5px;
+            }
+        }
+
+        .audio-footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            bottom: 0;
+            height: 55px;
+            width: 100%;
+            background-color: rgba(22, 22, 22, 0.6);
+            border-radius: 0 0 5px 5px;
+
+            znk-audio-player{
+                width: 380px;
+            }
+
+            .skip-audio-button {
+                @include dimension(42px,21px);
+                @include text-style(14px, $fcColor12, Lato, $regularFontWeight);
+                transition:0.2s linear opacity;
+                cursor: pointer;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                position: absolute;
+                right:18px;
+                top:16px;
+                border: 1px solid $bcColor7;
+                border-radius: 20px;
+            }
+
+            .skip-audio-button:active.skip-audio-button:hover{
+                background-color: $tbgColor5;
+            }
+
+            .skip-audio-button:hover{
+                background-color: $tbgColor6;
+            }
+
+            .skip-audio-button.ng-enter, .skip-audio-button.ng-leave.ng-leave-active{
+                opacity:0;
+            }
+
+            .skip-audio-button.ng-enter.ng-enter-active, .skip-audio-button.ng-leave {
+                opacity:1;
+            }
+
+            &.showSkipButton{
+
+                znk-audio-player{
+                    width: 310px;
+                    margin-right: 50px;
+                }
+            }
+        }
+    }
+}

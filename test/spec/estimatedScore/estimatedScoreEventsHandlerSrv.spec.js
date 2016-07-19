@@ -67,7 +67,7 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         });
     }));
 
-    var exerciseEventsConst, actions, TestUtilitySrv, $rootScope, ExerciseTypeEnum, SubjectEnum, testStorage,
+    var exerciseEventsConst, actions, TestUtilitySrv, $rootScope, ExerciseTypeEnum, SubjectEnum, StudentStorage,
         ExerciseAnswerStatusEnum, EstimatedScoreSrv;
     beforeEach(inject(
         function ($injector) {
@@ -77,7 +77,8 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
             EstimatedScoreSrv = $injector.get('EstimatedScoreSrv');
             ExerciseTypeEnum = $injector.get('ExerciseTypeEnum');
             SubjectEnum = $injector.get('SubjectEnum');
-            testStorage = $injector.get('testStorage');
+            var InfraConfigSrv = $injector.get('InfraConfigSrv');
+            StudentStorage = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage, InfraConfigSrv)();
             ExerciseAnswerStatusEnum = $injector.get('ExerciseAnswerStatusEnum');
 
             TestUtilitySrv.general.printDebugLogs();
@@ -85,15 +86,15 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
             actions = TestUtilitySrv.general.convertAllAsyncToSync(EstimatedScoreSrv);
 
             actions.getSectionsRawScoresFromDb = function (subjectId) {
-                return testStorage.db.users.$$uid.estimatedScore.sectionsRawScores[subjectId];
+                return StudentStorage.adapter.__db.users.$$uid.estimatedScore.sectionsRawScores[subjectId];
             };
 
             actions.getEstimatedScoresFromDb = function (subjectId) {
-                return testStorage.db.users.$$uid.estimatedScore.estimatedScores[subjectId];
+                return StudentStorage.adapter.__db.users.$$uid.estimatedScore.estimatedScores[subjectId];
             };
 
             actions.getExercisesRawScoreFromDb = function (subjectId) {
-                return testStorage.db.users.$$uid.estimatedScore.exercisesRawScores[subjectId];
+                return StudentStorage.adapter.__db.users.$$uid.estimatedScore.exercisesRawScores[subjectId];
             };
         }
     ));
@@ -180,12 +181,12 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
             score: 24,
             time: 1441625776941
         };
-        testStorage.db.users.$$uid.estimatedScore = {
+        StudentStorage.adapter.__db.users.$$uid.estimatedScore = {
             sectionsRawScores: {},
             estimatedScores: {}
         };
-        testStorage.db.users.$$uid.estimatedScore.sectionsRawScores[drillMock.subjectId] = [diagnosticSectionRawScoreMock];
-        testStorage.db.users.$$uid.estimatedScore.estimatedScores[drillMock.subjectId] = [estimatedScoreMock];
+        StudentStorage.adapter.__db.users.$$uid.estimatedScore.sectionsRawScores[drillMock.subjectId] = [diagnosticSectionRawScoreMock];
+        StudentStorage.adapter.__db.users.$$uid.estimatedScore.estimatedScores[drillMock.subjectId] = [estimatedScoreMock];
 
 
         var TOTAL_QUESTIONS = drillMock.questions.length;
@@ -230,7 +231,7 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         var sectionKey = 'section' + examMock.sections[0].id;
         var sectionMock = content[sectionKey];
 
-        testStorage.db.users.$$uid.estimatedScore = {
+        StudentStorage.adapter.__db.users.$$uid.estimatedScore = {
             sectionsRawScores: {},
             estimatedScores: {},
             exercisesRawScores: {}
@@ -243,7 +244,7 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
             earned: 2,
             time: 1441608399119
         };
-        testStorage.db.users.$$uid.estimatedScore.sectionsRawScores[sectionMock.subjectId] = [diagnosticSectionRawScoreMock];
+        StudentStorage.adapter.__db.users.$$uid.estimatedScore.sectionsRawScores[sectionMock.subjectId] = [diagnosticSectionRawScoreMock];
 
         var estimatedScoresMock = [{
             exerciseType: 4,
@@ -256,13 +257,13 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
             score: 38.845,
             time: 1441625776941
         }];
-        testStorage.db.users.$$uid.estimatedScore.estimatedScores[sectionMock.subjectId] = estimatedScoresMock;
+        StudentStorage.adapter.__db.users.$$uid.estimatedScore.estimatedScores[sectionMock.subjectId] = estimatedScoresMock;
 
         var exerciseRawScoreMock = {
             earned: 15,
             total: 20
         };
-        testStorage.db.users.$$uid.estimatedScore.exercisesRawScores[sectionMock.subjectId] = exerciseRawScoreMock;
+        StudentStorage.adapter.__db.users.$$uid.estimatedScore.exercisesRawScores[sectionMock.subjectId] = exerciseRawScoreMock;
 
         var CORRECT_NUM = 60;
         var UNANSWERED_NUM = 1;

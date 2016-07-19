@@ -10,7 +10,7 @@
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
-    ["InfraConfigSrv", "StorageSrv", "ENV", "storageFirebaseAdapter", "$q", function (InfraConfigSrv, StorageSrv, ENV, storageFirebaseAdapter, $q) {
+    ["InfraConfigSrv", "StorageSrv", function (InfraConfigSrv, StorageSrv) {
         'ngInject';
         var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
 
@@ -47,12 +47,63 @@ angular.module('znk.infra.user').service('UserProfileService',
         };
 
         this.getCurrUserId = function(){
-            var fbAdapter = storageFirebaseAdapter(ENV.fbDataEndPoint + '/' + ENV.firebaseAppScopeName);//(igor) todo: requires better implementation
-            var ref = fbAdapter.getRef('');
-            var authData = ref.getAuth();
-            return $q.when(authData && authData.uid);
+            return InfraConfigSrv.getGlobalStorage().then(function(GlobalStorage){
+                var ref = GlobalStorage.adapter.getRef('');
+                var authData = ref.getAuth();
+                return authData && authData.uid;
+            });
         };
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.user').provider('UserSessionSrv',
+        function () {
+            'ngInject';
+
+            var isLastSessionRecordDisabled = false;
+            this.disableLastSessionRecord = function (isDisbaled) {
+                isLastSessionRecordDisabled = !!isDisbaled;
+            };
+
+            this.$get = ["InfraConfigSrv", "ENV", function (InfraConfigSrv, ENV) {
+                'ngInject';// jshint ignore:line
+
+                var initProm,lastSessionData;
+
+                var UserSessionSrv = {};
+
+                UserSessionSrv.isLastSessionRecordDisabled = function () {
+                    return isLastSessionRecordDisabled;
+                };
+
+                UserSessionSrv.getLastSessionData = function () {
+                    return initProm.then(function(){
+                        return lastSessionData;
+                    });
+                };
+
+                function init() {
+                    return InfraConfigSrv.getUserData().then(function (userData) {
+                        var globalLastSessionRef = new Firebase(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
+                        return globalLastSessionRef.once('value').then(function(snapshot){
+                            lastSessionData = snapshot.val();
+                            if(!isLastSessionRecordDisabled){
+                                globalLastSessionRef.child('began').set(Firebase.ServerValue.TIMESTAMP);
+                                globalLastSessionRef.child('ended').set(null);
+                                globalLastSessionRef.child('ended').onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
+                            }
+                        });
+                    });
+                }
+                initProm = init();
+
+                return UserSessionSrv;
+            }];
+        }
+    );
+})(angular);
 
 angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 
