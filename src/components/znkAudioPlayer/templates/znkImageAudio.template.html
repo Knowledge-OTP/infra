@@ -1,4 +1,4 @@
-<div class="wrapper" ng-class="{'no-footer': hideFooter}">
+<div class="wrapper" ng-class="{'no-footer': hideFooter}" translate-namespace="ZNK_IMAGE_AUDIO">
     <div class="inner-section">
         <img class="inner" ng-src="{{::d.image}}">
     </div>
@@ -14,7 +14,7 @@
         </znk-audio-play-button>
 
         <div class="skip-audio-button" ng-if="d.showSkipButton" ng-click="d.skippedHandler()">
-            <div translate="ZNK_IMAGE_AUDIO.SKIP"></div>
+            <div translate=".SKIP"></div>
         </div>
     </div>
 </div>

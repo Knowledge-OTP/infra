@@ -42,7 +42,7 @@ znk-image-audio {
                 width: 380px;
             }
 
-            .skip-audio-button{
+            .skip-audio-button {
                 @include dimension(42px,21px);
                 @include text-style(14px, $fcColor12, Lato, $regularFontWeight);
                 transition:0.2s linear opacity;

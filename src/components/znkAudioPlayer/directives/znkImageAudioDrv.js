@@ -38,8 +38,8 @@
                             scope.d.showSkipButton = true;
                         };
 
-                        var onEnded = scope.onEnded;
-                        scope.onEnded = function(){
+                        var onEnded = scope.onEnded;  // reference to onEnded function.
+                        scope.onEnded = function(){ // extend the onEnded function (if passed).
                             if(onEnded){
                                 onEnded();
                             }
