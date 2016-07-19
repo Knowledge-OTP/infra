@@ -48,7 +48,7 @@ describe('testing service "CategoryService":', function () {
         expect(categoryData.parentId).toBeDefined();
     });
 
-    it('when calling getAllLevelCategories with level 1 all subjects returned', function () {
+    it('when calling getAllLevelCategories with level 1 returned', function () {
         
         var categories = actions.getAllLevelCategories(1);
         expect(categories[0] && categories[0].name === 'Mathematics').toBeTruthy();
@@ -59,7 +59,7 @@ describe('testing service "CategoryService":', function () {
        
     });
 
-    it('when calling getAllLevelCategories with level 2 all subscores returned', function () {
+    it('when calling getAllLevelCategories with level 2 returned', function () {
         
         var categories = actions.getAllLevelCategories(2);
 
@@ -76,7 +76,7 @@ describe('testing service "CategoryService":', function () {
     
     });
 
-    it('when calling getAllLevelCategories with level 3 all general returned', function () {
+    it('when calling getAllLevelCategories with level 3 returned', function () {
         
         var categories = actions.getAllLevelCategories(3);
 
@@ -94,7 +94,7 @@ describe('testing service "CategoryService":', function () {
     });
 
 
-    it('when calling getAllLevelCategories with level 4 spesific returned', function () {
+    it('when calling getAllLevelCategories with level 4 returned', function () {
         
         var categories = actions.getAllLevelCategories(4);
 
