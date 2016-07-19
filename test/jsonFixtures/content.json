@@ -19133,15 +19133,6 @@
             "weight": null
         },
         {
-            "id": 228,
-            "name": "00",
-            "shortName": "00",
-            "parentId": null,
-            "typeId": 5,
-            "instruction": null,
-            "weight": null
-        },
-        {
             "id": 229,
             "name": "Inequalities",
             "shortName": "INEQ",
