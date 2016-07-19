@@ -1,12 +1,6 @@
 (function (angular) {
     'use strict';
 
-    var screenSharingContentHtmlTemplate =
-        '<ng-switch on="d.sharingState">' +
-        '<div ng-switch-when="2"></div>' +
-        '<div ng-switch-when="3"></div>' +
-        '</ng-switch>';
-
     angular.module('znk.infra.screenSharing').service('ScreenSharingUiSrv',
         function ($rootScope, $timeout, $compile, $animate) {
             'ngInject';
