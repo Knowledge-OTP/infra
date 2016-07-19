@@ -1111,6 +1111,32 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             });
         };
 
+        self.getAllLevelCategories = (function () {
+            var getAllLevelCategoriesProm;
+            return function (level) {
+                if (!getAllLevelCategoriesProm) {
+                    getAllLevelCategoriesProm = self.getCategoryMap().then(function (categories) {
+                        var levelCategories = {};
+                        angular.forEach(categories, function (category) {
+                            var numLevel=1;
+                            var catgoryDup = angular.copy(category);
+                            while (catgoryDup.parentId !== null) {
+                                catgoryDup = categories[catgoryDup.parentId];
+                                numLevel++;
+                            }
+                            if (numLevel === level){
+                                levelCategories[category.id] = category;
+                            }
+                        });
+                        return levelCategories;
+                    });
+                }
+                return getAllLevelCategoriesProm;
+            };
+        })();
+
+
+        
         self.getAllLevel3Categories = (function () {
             var getAllLevel3CategoriesProm;
             return function () {

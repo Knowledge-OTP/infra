@@ -150,7 +150,7 @@ module.exports = function (grunt) {
             unit: {
                 browsers: [
                     'Chrome',
-                    'Safari'
+                    // 'Safari'
                 ],
                 configFile: 'test/karma-unit.conf.js'
             },
