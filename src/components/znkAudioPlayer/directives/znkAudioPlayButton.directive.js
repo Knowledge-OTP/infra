@@ -10,6 +10,7 @@
                     sourceGetter: '&source',
                     typeGetter: '&?type',
                     autoPlayGetter: '&autoPlay',
+                    onStart: '&?',
                     onEnded: '&',
                     switchInitGetter: '&switchInit',
                     allowReplay: '&?',

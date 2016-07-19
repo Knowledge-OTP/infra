@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demo', ['znk.infra.znkAudioPlayer', 'pascalprecht.translate'])
+    angular.module('demo', ['znk.infra.znkAudioPlayer', 'pascalprecht.translate', 'ngAnimate'])
         .config(function($translateProvider){
             $translateProvider.useLoader('$translatePartialLoader', {
                 urlTemplate: '/{part}/locale/{lang}.json'
