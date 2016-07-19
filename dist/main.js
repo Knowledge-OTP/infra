@@ -4708,8 +4708,6 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             readyProm = $timeout(function(){
                 _init();
             });
-
-            this.activateScreenSharing(2);
         }]
     );
 })(angular);

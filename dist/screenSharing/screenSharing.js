@@ -437,8 +437,6 @@
             readyProm = $timeout(function(){
                 _init();
             });
-
-            this.activateScreenSharing(2);
         }]
     );
 })(angular);
