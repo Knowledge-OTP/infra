@@ -1111,6 +1111,32 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             });
         };
 
+        self.getAllLevelCategories = (function () {
+            var getAllLevelCategoriesProm;
+            return function (level) {
+                if (!getAllLevelCategoriesProm) {
+                    getAllLevelCategoriesProm = self.getCategoryMap().then(function (categories) {
+                        var levelCategories = {};
+                        angular.forEach(categories, function (category) {
+                            var numLevel=1;
+                            var catgoryDup = angular.copy(category);
+                            while (catgoryDup.parentId !== null) {
+                                catgoryDup = categories[catgoryDup.parentId];
+                                numLevel++;
+                            }
+                            if (numLevel === level){
+                                levelCategories[category.id] = category;
+                            }
+                        });
+                        return levelCategories;
+                    });
+                }
+                return getAllLevelCategoriesProm;
+            };
+        })();
+
+
+        
         self.getAllLevel3Categories = (function () {
             var getAllLevel3CategoriesProm;
             return function () {
@@ -1801,7 +1827,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.evaluator', ['znk.infra.config']);
+    angular.module('znk.infra.evaluator', []);
 })(angular);
 
 'use strict';
@@ -1809,53 +1835,53 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 (function (angular) {
     angular.module('znk.infra.evaluator').provider('ZnkEvaluatorSrv', function () {
 
-        var _evaluateQuestionFn;
+        var _shouldEvaluateQuestionFn;
+        var _isEvaluateQuestionFn;
+        var _evaluateStatusFn;
 
-        var shouldEvaluateQuestionFnDefault = function(purchaseService) {
-            'ngInject';
-            return purchaseService.hasProVersion();
-        };
-        shouldEvaluateQuestionFnDefault.$inject = ["purchaseService"];
-
-        this.shouldEvaluateQuestionFn = function(evaluateQuestionFn) {
-            _evaluateQuestionFn = evaluateQuestionFn;
+        this.shouldEvaluateQuestionFnGetter = function(shouldEvaluateQuestionFn) {
+            _shouldEvaluateQuestionFn = shouldEvaluateQuestionFn;
         };
 
-        this.$get = ["$q", "$injector", "ENV", "$http", "InfraConfigSrv", function ($q, $injector, ENV, $http, InfraConfigSrv) {
+        this.isEvaluateQuestionTypeFnGetter = function(isEvaluateQuestionFn) {
+            _isEvaluateQuestionFn = isEvaluateQuestionFn;
+        };
+
+        this.getEvaluateStatusFnGetter = function(evaluateStatusFn) {
+            _evaluateStatusFn = evaluateStatusFn;
+        };
+
+        this.$get = ["$q", "$injector", "$log", function ($q, $injector, $log) {
             'ngInject';
 
             var znkEvaluatorSrvApi = {};
 
-            var httpConfig = {
-                timeout: ENV.promiseTimeOut
-            };
-
-            function _shouldEvaluateQuestion() {
-                if(!_evaluateQuestionFn){
-                    _evaluateQuestionFn = shouldEvaluateQuestionFnDefault;
-                }
-
-                return $q.when($injector.invoke(_evaluateQuestionFn));
+            function handleErrors(evaluateFnName) {
+                var errMsg = 'ZnkEvaluatorSrv: '+ evaluateFnName +' was not set';
+                $log.error(errMsg);
+                return $q.reject(errMsg);
             }
 
-            znkEvaluatorSrvApi.evaluateQuestion = function (questionsArr) {
-                return _shouldEvaluateQuestion().then(function (shouldEvaluate) {
-                    if (shouldEvaluate) {
-                        return InfraConfigSrv.getUserData().then(function(userData) {
-                            return $http.post(ENV.evaluateEndpoint, {
-                                uid: userData.uid,
-                                questionsArr: questionsArr,
-                                appName: ENV.firebaseAppScopeName
-                            }, httpConfig).then(function(evaluateData) {
-                                return evaluateData;
-                            }, function(error) {
-                                return $q.reject(error);
-                            });
-                        }, function(error) {
-                            return $q.reject(error);
-                        });
-                    }
-                });
+            function invokeEvaluateFn(evaluateFn, evaluateFnName) {
+                if(!evaluateFn) {
+                    return handleErrors(evaluateFnName);
+                }
+
+                try {
+                    return $injector.invoke(evaluateFn);
+                } catch (e) {
+                    return handleErrors(evaluateFnName +' e: ' + e);
+                }
+            }
+
+            znkEvaluatorSrvApi.shouldEvaluateQuestionFn = invokeEvaluateFn.bind(null, _shouldEvaluateQuestionFn, 'shouldEvaluateQuestionFn');
+
+            znkEvaluatorSrvApi.isEvaluateQuestionTypeFn = invokeEvaluateFn.bind(null, _isEvaluateQuestionFn, 'isEvaluateQuestionFn');
+
+            znkEvaluatorSrvApi.getEvaluateStatusFn = invokeEvaluateFn.bind(null, _evaluateStatusFn, 'evaluateStatusFn');
+
+            znkEvaluatorSrvApi.evaluateQuestion = function () {
+                //@todo(oded) implement saving data to firebase
             };
 
             return znkEvaluatorSrvApi;
@@ -3593,7 +3619,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                     dataToSave[USER_MODULE_RESULTS_PATH] = userGuidLists;
                     dataToSave[moduleResultPath] = newResult;
                     return InfraConfigSrv.getStudentStorage().then(function(storage){
-                        return storage.set(dataToSave);
+                        return storage.update(dataToSave);
                     });
                 });
             };

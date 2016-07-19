@@ -2,5 +2,8 @@
     "ZNK_AUDIO_PLAYER": {
         "PLAY_AUDIO": "PLAY AUDIO",
         "THIS_VIDEO_ALREADY_PLAYED": "This audio was already played"
+    },
+    "ZNK_IMAGE_AUDIO": {
+        "SKIP": "Skip"
     }
 }
