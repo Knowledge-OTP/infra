@@ -356,13 +356,10 @@
             };
 
             this._userScreenSharingStateChanged = function (newUserScreenSharingState) {
-                if (newUserScreenSharingState === UserScreenSharingStateEnum.VIEWER.enum) {
-                    ScreenSharingUiSrv.showViewerIndication();
+                if(!newUserScreenSharingState){
+                    return;
                 }
-
-                if (newUserScreenSharingState === UserScreenSharingStateEnum.SHARER.enum) {
-                    ScreenSharingUiSrv.showSharerIndication();
-                }
+                ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState);
             };
         }]
     );
