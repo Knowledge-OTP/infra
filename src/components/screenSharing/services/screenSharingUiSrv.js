@@ -6,6 +6,7 @@
             'ngInject';
 
             var childScope, screenSharingPhElement, readyProm;
+            var self = this;
 
             function _init() {
                 var bodyElement = angular.element(document.body);
@@ -20,8 +21,12 @@
                     childScope.$destroy();
                 }
 
+
                 if(screenSharingPhElement){
-                    $animate.leave(screenSharingPhElement.contents());
+                    var hasContents = !!screenSharingPhElement.contents().length;
+                    if(hasContents){
+                        $animate.leave(screenSharingPhElement.contents());
+                    }
                 }
             }
 
@@ -31,10 +36,19 @@
                 readyProm.then(function(){
                     childScope = $rootScope.$new(true);
                     childScope.d = {
-                        userSharingState: userSharingState
+                        userSharingState: userSharingState,
+                        onClose: function(){
+                            self.endScreenSharing();
+                        }
                     };
 
-                    var screenSharingElement = angular.element('<div class="show-hide-animation"><screen-sharing user-sharing-state="d.userSharingState"></screen-sharing></div>');
+                    var screenSharingHtmlTemplate =
+                        '<div class="show-hide-animation">' +
+                            '<screen-sharing user-sharing-state="d.userSharingState" ' +
+                                            'on-close="d.onClose()">' +
+                            '</screen-sharing>' +
+                        '</div>';
+                    var screenSharingElement = angular.element(screenSharingHtmlTemplate);
                     screenSharingPhElement.append(screenSharingElement);
                     $animate.enter(screenSharingElement[0], screenSharingPhElement[0]);
                     $compile(screenSharingElement)(childScope);
@@ -54,7 +68,7 @@
                 _init();
             });
 
-            this.activateScreenSharing(3);
+            this.activateScreenSharing(2);
         }
     );
 })(angular);

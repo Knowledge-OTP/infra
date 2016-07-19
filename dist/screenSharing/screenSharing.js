@@ -32,7 +32,8 @@
     angular.module('znk.infra.screenSharing').component('screenSharing', {
             templateUrl: 'components/screenSharing/directives/screenSharing/screenSharing.template.html',
             bindings: {
-                userSharingState: '<'
+                userSharingState: '<',
+                onClose: '&'
             }
         }
     );
@@ -375,6 +376,7 @@
             'ngInject';
 
             var childScope, screenSharingPhElement, readyProm;
+            var self = this;
 
             function _init() {
                 var bodyElement = angular.element(document.body);
@@ -389,8 +391,12 @@
                     childScope.$destroy();
                 }
 
+
                 if(screenSharingPhElement){
-                    $animate.leave(screenSharingPhElement.contents());
+                    var hasContents = !!screenSharingPhElement.contents().length;
+                    if(hasContents){
+                        $animate.leave(screenSharingPhElement.contents());
+                    }
                 }
             }
 
@@ -400,10 +406,19 @@
                 readyProm.then(function(){
                     childScope = $rootScope.$new(true);
                     childScope.d = {
-                        userSharingState: userSharingState
+                        userSharingState: userSharingState,
+                        onClose: function(){
+                            self.endScreenSharing();
+                        }
                     };
 
-                    var screenSharingElement = angular.element('<div class="show-hide-animation"><screen-sharing user-sharing-state="d.userSharingState"></screen-sharing></div>');
+                    var screenSharingHtmlTemplate =
+                        '<div class="show-hide-animation">' +
+                            '<screen-sharing user-sharing-state="d.userSharingState" ' +
+                                            'on-close="d.onClose()">' +
+                            '</screen-sharing>' +
+                        '</div>';
+                    var screenSharingElement = angular.element(screenSharingHtmlTemplate);
                     screenSharingPhElement.append(screenSharingElement);
                     $animate.enter(screenSharingElement[0], screenSharingPhElement[0]);
                     $compile(screenSharingElement)(childScope);
@@ -423,7 +438,7 @@
                 _init();
             });
 
-            this.activateScreenSharing(3);
+            this.activateScreenSharing(2);
         }]
     );
 })(angular);
@@ -433,7 +448,9 @@ angular.module('znk.infra.screenSharing').run(['$templateCache', function($templ
     "<div ng-switch=\"$ctrl.userSharingState\">\n" +
     "    <div ng-switch-when=\"2\"\n" +
     "         class=\"viewer-state-container\">\n" +
-    "\n" +
+    "        <div class=\"close-icon-wrapper\" ng-click=\"$ctrl.onClose()\">\n" +
+    "            <svg-icon name=\"screen-sharing-close\"></svg-icon>\n" +
+    "        </div>\n" +
     "    </div>\n" +
     "    <div ng-switch-when=\"3\"\n" +
     "         class=\"sharer-state-container\">\n" +
@@ -454,6 +471,11 @@ angular.module('znk.infra.screenSharing').run(['$templateCache', function($templ
     "    class=\"screen-sharing-close\"\n" +
     "    viewBox=\"-596.6 492.3 133.2 133.5\">\n" +
     "    <style>\n" +
+    "        .screen-sharing-close{\n" +
+    "            width: 13px;\n" +
+    "            stroke: white;\n" +
+    "            stroke-width: 10px;\n" +
+    "        }\n" +
     "    </style>\n" +
     "<path class=\"st0\"/>\n" +
     "<g>\n" +

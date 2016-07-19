@@ -1,7 +1,9 @@
 <div ng-switch="$ctrl.userSharingState">
     <div ng-switch-when="2"
          class="viewer-state-container">
-
+        <div class="close-icon-wrapper" ng-click="$ctrl.onClose()">
+            <svg-icon name="screen-sharing-close"></svg-icon>
+        </div>
     </div>
     <div ng-switch-when="3"
          class="sharer-state-container">
