@@ -1,0 +1,56 @@
+screen-sharing{
+    .viewer-state-container{
+
+    }
+
+    .sharer-state-container{
+        .square-side{
+            background: $bcColor19;
+            position: absolute;
+
+            &.top, &.bottom{
+                height: 5px;
+                right: 0;
+                left: 0;
+            }
+
+            &.right, &.left{
+                width: 5px;
+                top: 0;
+                bottom: 0;
+            }
+
+            &.top{
+                top: 0;
+            }
+
+            &.right{
+                right: 0;
+            }
+
+            &.bottom{
+                bottom: 0;
+            }
+
+            &.left{
+                left: 0;
+            }
+        }
+
+        .eye-wrapper{
+            background: $bcColor19;
+            width: 52px;
+            text-align: center;
+            border-radius: 50%;
+            height: 30px;
+            box-sizing: border-box;
+            @include absolute-position(-11px, 50%);
+            margin: {
+                right: -26px;
+            }
+            padding: {
+                top: 12px;
+            }
+        }
+    }
+}

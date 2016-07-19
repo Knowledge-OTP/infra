@@ -60,6 +60,10 @@
 
             var storageFirebaseAdapterPrototype = {
                 getRef: function(relativePath){
+                    if(relativePath === '' || angular.isUndefined(relativePath) || angular.isUndefined(relativePath) || relativePath === null){
+                        return this.__refMap.rootRef;
+                    }
+
                     if (!this.__refMap[relativePath]) {
                         this.__refMap[relativePath] = this.__refMap.rootRef.child(relativePath);
                     }
@@ -445,6 +449,14 @@
 
             StorageSrv.prototype.cleanPathCache = function (path) {
                 this.__cache.remove(path);
+            };
+
+            StorageSrv.prototype.onEvent = function(){
+                return this.adapter.onEvent.apply(this.adapter, arguments);
+            };
+
+            StorageSrv.prototype.offEvent = function(){
+                return this.adapter.onEvent.apply(this.adapter, arguments);
             };
 
             StorageSrv.variables = {
