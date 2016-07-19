@@ -2,7 +2,7 @@ screen-sharing{
     .viewer-state-container{
         @include absolute-full-cover;
         border: 5px solid $bcColor2;
-        background: $tbgColor5;
+        background: $tbgColor7;
 
         .close-icon-wrapper{
             @include dimension(40px);

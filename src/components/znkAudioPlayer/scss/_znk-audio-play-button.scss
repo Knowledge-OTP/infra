@@ -4,7 +4,7 @@ znk-audio-play-button {
         justify-content: center;
         align-items: center;
 
-        &:hover:active&:hover{
+        &:active{
             background-color: $tbgColor5;
             border-radius: 50px;
         }

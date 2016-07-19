@@ -6346,6 +6346,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                     sourceGetter: '&source',
                     typeGetter: '&?type',
                     autoPlayGetter: '&autoPlay',
+                    onStart: '&?',
                     onEnded: '&',
                     switchInitGetter: '&switchInit',
                     allowReplay: '&?',
@@ -6662,6 +6663,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                     isPlaying: '=?',
                     showAsDone: '&?',
                     allowReplay: '&?',
+                    showSkipOption: '&?',
                     autoPlayGetter: '&autoPlay',
                     blurredImageGetter: '&?blurredImage'
                 },
@@ -6670,8 +6672,29 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
 
                     scope.d = {
                         image: scope.imageGetter(),
-                        blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined
+                        blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined,
+                        showAsDone: angular.isDefined(scope.showAsDone) ? scope.showAsDone : false
                     };
+
+                    scope.d.skippedHandler = function(){
+                        scope.d.showAsDone = true;
+                        scope.d.showSkipButton = false;
+                    };
+
+                    if(angular.isDefined(scope.showSkipOption) && scope.showSkipOption()){
+                        scope.d.showSkipButtonFn = function(){
+                            scope.d.showSkipButton = true;
+                        };
+
+                        var onEnded = scope.onEnded;  // reference to onEnded function.
+                        scope.onEnded = function(){ // extend the onEnded function (if passed).
+                            if(onEnded){
+                                onEnded();
+                            }
+                            scope.d.showSkipButton = false;
+                        };
+                    }
+
                 }
             };
         }]);
@@ -7003,7 +7026,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "<ng-switch on=\"audioPlayer.currState\" translate-namespace=\"ZNK_AUDIO_PLAYER\">\n" +
     "    <div class=\"play-button-wrapper\"\n" +
     "         ng-switch-when=\"1\">\n" +
-    "        <button class=\"play-button\" ng-click=\"audioPlayer.currState = audioPlayer.STATE_ENUM.PLAYING\">\n" +
+    "        <button class=\"play-button\" ng-click=\"audioPlayer.currState = audioPlayer.STATE_ENUM.PLAYING; onStart();\">\n" +
     "            <svg-icon name=\"znk-audio-player-play\"></svg-icon>\n" +
     "            <span class=\"play-audio-text\" translate=\".PLAY_AUDIO\"></span>\n" +
     "        </button>\n" +
@@ -7058,20 +7081,24 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "\n" +
     "");
   $templateCache.put("components/znkAudioPlayer/templates/znkImageAudio.template.html",
-    "<div class=\"wrapper\" ng-class=\"{'no-footer': hideFooter}\">\n" +
-    "    <!--<div class=\"bg-img only-tablet\" ng-style=\"{'background-image': 'url(' + d.blurredImage + ')'}\"></div>-->\n" +
+    "<div class=\"wrapper\" ng-class=\"{'no-footer': hideFooter}\" translate-namespace=\"ZNK_IMAGE_AUDIO\">\n" +
     "    <div class=\"inner-section\">\n" +
     "        <img class=\"inner\" ng-src=\"{{::d.image}}\">\n" +
     "    </div>\n" +
-    "    <div class=\"audio-footer inverted\" ng-if=\"::!hideFooter\">\n" +
+    "    <div class=\"audio-footer inverted\" ng-if=\"::!hideFooter\"  ng-class=\"{'showSkipButton': d.showSkipButton}\">\n" +
     "        <znk-audio-play-button\n" +
     "            switch-init=\"audioPlayer.currState\"\n" +
     "            source=\"source\"\n" +
     "            on-ended=\"onEnded()\"\n" +
+    "            on-start=\"d.showSkipButtonFn()\"\n" +
     "            allow-replay=\"allowReplay()\"\n" +
-    "            show-as-done=\"showAsDone()\"\n" +
+    "            show-as-done=\"d.showAsDone\"\n" +
     "            auto-play=\"autoPlayGetter()\">\n" +
     "        </znk-audio-play-button>\n" +
+    "\n" +
+    "        <div class=\"skip-audio-button\" ng-if=\"d.showSkipButton\" ng-click=\"d.skippedHandler()\">\n" +
+    "            <div translate=\".SKIP\"></div>\n" +
+    "        </div>\n" +
     "    </div>\n" +
     "</div>\n" +
     "");
