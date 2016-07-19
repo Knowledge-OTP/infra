@@ -2,10 +2,15 @@
     'use strict';
 
     angular.module('demo', [
-        'znk.infra.config',
         'znk.infra.screenSharing'
     ])
-        .config(function(){
+        .run(function ($rootScope, ScreenSharingUiSrv) {
+            $rootScope.activateSharing = function (userSharingState) {
+                ScreenSharingUiSrv.activateScreenSharing(userSharingState);
+            };
 
+            $rootScope.endSharing = function(){
+                ScreenSharingUiSrv.endScreenSharing();
+            };
         });
 })(angular);

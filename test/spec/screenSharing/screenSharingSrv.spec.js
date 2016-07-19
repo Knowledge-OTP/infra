@@ -24,8 +24,8 @@ describe('testing service "ScreenSharingSrv":', function () {
         _deps.GlobalStorage = _deps.TestUtilitySrv.general.asyncToSync(_deps.InfraConfigSrv.getGlobalStorage, _deps.InfraConfigSrv)();
     }));
 
-    xit('given i\'m a student when requesting to share my screen with a teacher then root shareScreen object and sharer and viewer shareScreen objects should' +
-        ' be update accordingly', function () {
+    it('given i\'m a student when requesting to share my screen with a teacher then root shareScreen object and ' +
+        'sharer and viewer shareScreen objects should be update accordingly', function () {
         var screenSharingDataGuid = 'guid';
         spyOn(_deps.UtilitySrv.general, 'createGuid').and.returnValue(screenSharingDataGuid);
 
@@ -38,10 +38,14 @@ describe('testing service "ScreenSharingSrv":', function () {
         };
         _deps.ScreenSharingSrv.shareMyScreen(viewerData);
 
+        var expectedViewerPath = _deps.ENV.dashboardAppName + '/users/' + viewerId + '/screenSharing';
+        var expectedSharerPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
         var expectedRootScreenSharing = {
             guid: {
                 sharerId: sharerId,
                 viewerId: viewerId,
+                viewerPath: expectedViewerPath,
+                sharerPath: expectedSharerPath,
                 status: _deps.ScreenSharingStatusEnum.PENDING_VIEWER.enum,
                 guid: screenSharingDataGuid
             }
@@ -67,7 +71,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(currTeacherAppUsersObject).toEqual(jasmine.objectContaining(expectedTeacherAppUsersObject));
     });
 
-    xit('given i\'m a student when requesting to share my screen with a student then root shareScreen object and sharer and viewer shareScreen objects should' +
+    it('given i\'m a student when requesting to share my screen with a student then root shareScreen object and sharer and viewer shareScreen objects should' +
         ' be update accordingly', function () {
         var screenSharingDataGuid = 'guid';
         spyOn(_deps.UtilitySrv.general, 'createGuid').and.returnValue(screenSharingDataGuid);
@@ -81,12 +85,16 @@ describe('testing service "ScreenSharingSrv":', function () {
         };
         _deps.ScreenSharingSrv.shareMyScreen(viewerData);
 
+        var expectedViewerPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
+        var expectedSharerPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
         var expectedRootScreenSharing = {
             guid: {
                 sharerId: sharerId,
                 viewerId: viewerId,
                 status: _deps.ScreenSharingStatusEnum.PENDING_VIEWER.enum,
-                guid: screenSharingDataGuid
+                guid: screenSharingDataGuid,
+                viewerPath: expectedViewerPath,
+                sharerPath: expectedSharerPath
             }
         };
         expect(_deps.GlobalStorage.adapter.__db.screenSharing).toEqual(jasmine.objectContaining(expectedRootScreenSharing));
@@ -107,7 +115,7 @@ describe('testing service "ScreenSharingSrv":', function () {
     });
 
     it('given i\'m a student which already requested to share my screen with a student when requesting to share my screen with the ' +
-        'same student then new screen sharing requestion should not be initialized' +
+        'same student then new screen sharing request should not be initialized' +
         ' be update accordingly', function () {
         var viewerId = '11223344';
 
@@ -137,12 +145,16 @@ describe('testing service "ScreenSharingSrv":', function () {
         };
         _deps.ScreenSharingSrv.viewOtherUserScreen(sharerData);
 
+        var expectedViewerPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
+        var expectedSharerPath = _deps.ENV.dashboardAppName + '/users/' + sharerId + '/screenSharing';
         var expectedRootScreenSharing = {
             guid: {
                 sharerId: sharerId,
                 viewerId: viewerId,
                 status: _deps.ScreenSharingStatusEnum.PENDING_SHARER.enum,
-                guid: screenSharingDataGuid
+                guid: screenSharingDataGuid,
+                viewerPath: expectedViewerPath,
+                sharerPath: expectedSharerPath
             }
         };
         expect(_deps.GlobalStorage.adapter.__db.screenSharing).toEqual(jasmine.objectContaining(expectedRootScreenSharing));
@@ -180,12 +192,16 @@ describe('testing service "ScreenSharingSrv":', function () {
         };
         _deps.ScreenSharingSrv.viewOtherUserScreen(sharerData);
 
+        var expectedViewerPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
+        var expectedSharerPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
         var expectedRootScreenSharing = {
             guid: {
                 sharerId: sharerId,
                 viewerId: viewerId,
                 status: _deps.ScreenSharingStatusEnum.PENDING_SHARER.enum,
-                guid: screenSharingDataGuid
+                guid: screenSharingDataGuid,
+                viewerPath: expectedViewerPath,
+                sharerPath: expectedSharerPath
             }
         };
         expect(_deps.GlobalStorage.adapter.__db.screenSharing).toEqual(jasmine.objectContaining(expectedRootScreenSharing));
@@ -240,15 +256,30 @@ describe('testing service "ScreenSharingSrv":', function () {
             guid: screenSharingDataGuid,
             sharerId: sharerId,
             viewerId: viewerId,
-            status: _deps.ScreenSharingStatusEnum.PENDING_VIEWER.enum
+            status: _deps.ScreenSharingStatusEnum.PENDING_VIEWER.enum,
+            viewerPath: _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing',
+            sharerPath: _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing'
         };
+
+        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName] = {users:{}};
+
+        //set viewer screen sharing requests data
+        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[viewerId] = {screenSharing:{}};
+        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[viewerId].screenSharing[screenSharingDataGuid] = true;
+
+        //set sharer screen sharing requests data
+        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[sharerId] = {screenSharing:{}};
+        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[sharerId].screenSharing[screenSharingDataGuid] = true;
 
         _deps.ScreenSharingSrv.endSharing(screenSharingDataGuid);
 
         var expectedRootScreenSharing = {};
         expectedRootScreenSharing[screenSharingDataGuid] = angular.copy(_deps.GlobalStorage.adapter.__db.screenSharing[screenSharingDataGuid]);
         expectedRootScreenSharing[screenSharingDataGuid].status = _deps.ScreenSharingStatusEnum.ENDED.enum;
-
         expect(_deps.GlobalStorage.adapter.__db.screenSharing).toEqual(jasmine.objectContaining(expectedRootScreenSharing));
+
+        expect(_deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[sharerId].screenSharing[screenSharingDataGuid]).toBeFalsy();
+
+        expect(_deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[viewerId].screenSharing[screenSharingDataGuid]).toBeFalsy();
     });
 });

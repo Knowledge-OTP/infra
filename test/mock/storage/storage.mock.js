@@ -56,7 +56,7 @@
                     var _dbKey = keyInDb(key);
                     var valueInDb = $parse(_dbKey)(adapter.__db);
 
-                    if(!valueInDb){
+                    if(!angular.isObject(valueInDb) || !valueInDb){
                         setInDb(key, val);
                     }else{
                         angular.extend(valueInDb, val);

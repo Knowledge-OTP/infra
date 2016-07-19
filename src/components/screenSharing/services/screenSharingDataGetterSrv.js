@@ -14,10 +14,10 @@
                 return SCREEN_SHARING_ROOT_PATH + '/' + guid;
             };
 
-            this.getUserScreenSharingRequestsPath  = function (userData, guid) {
+            this.getUserScreenSharingRequestsPath  = function (userData) {
                 var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
                 var USER_DATA_PATH = appName  + '/users/' + userData.uid;
-                return USER_DATA_PATH + '/screenSharing/' + guid;
+                return USER_DATA_PATH + '/screenSharing';
             };
 
             this.getScreenSharingData = function (screenSharingGuid) {
@@ -26,7 +26,7 @@
                     return storage.get(screenSharingDataPath);
                 });
             };
-            
+
             this.getCurrUserScreenSharingRequests = function(){
                 return UserProfileService.getCurrUserId().then(function(currUid){
                     return _getStorage().then(function(storage){

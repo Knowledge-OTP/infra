@@ -6,8 +6,14 @@
     <!-- bower:css -->
     <link rel="stylesheet" href="Swiper/dist/css/swiper.css" />
     <!-- endbower -->
+    <link rel="stylesheet" href="main.css">
 </head>
 <body ng-app="demo">
+    <h1>Activate sharing</h1>
+    <button ng-click="activateSharing(2)">Viewer</button>
+    <button ng-click="activateSharing(3)">Sharer</button>
+    <h1>End sharing</h1>
+    <button ng-click="endSharing()">End sharing</button>
     <!-- bower:js -->
     <script src="angular/angular.js"></script>
     <script src="angular-animate/angular-animate.js"></script>
@@ -24,7 +30,6 @@
     <script src="main.js "></script>
 
     <script src="demoApp.js "></script>
-    <script src="autoLogin.js"></script>
     <script src="env.service.js"></script>
     <script src="storagesConfig.js"></script>
 </body>

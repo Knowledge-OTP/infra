@@ -67,11 +67,15 @@
                     return $q.all(getDataPromMap).then(function (data) {
                         var dataToSave = {};
 
+                        var viewerPath = ScreenSharingDataGetterSrv.getUserScreenSharingRequestsPath(viewerData, newScreenSharingGuid);
+                        var sharerPath = ScreenSharingDataGetterSrv.getUserScreenSharingRequestsPath(sharerData, newScreenSharingGuid);
                         var newScreenSharingData = {
                             guid: newScreenSharingGuid,
                             sharerId: sharerData.uid,
                             viewerId: viewerData.uid,
-                            status: initScreenSharingStatus
+                            status: initScreenSharingStatus,
+                            viewerPath: viewerPath,
+                            sharerPath: sharerPath
                         };
                         angular.extend(data.newScreenSharingData, newScreenSharingData);
 
@@ -80,8 +84,8 @@
                         data.currUserScreenSharingRequests[newScreenSharingGuid] = true;
                         dataToSave[data.currUserScreenSharingRequests.$$path] = data.currUserScreenSharingRequests;
                         //other user screen sharing requests object update
-                        var otherUserData = viewerData.uid === data.currUid ? sharerData : viewerData;
-                        var viewerScreenSharingDataGuidPath = ScreenSharingDataGetterSrv.getUserScreenSharingRequestsPath(otherUserData, newScreenSharingGuid);
+                        var otherUserScreenSharingPath = viewerData.uid === data.currUid ? sharerPath: viewerPath;
+                        var viewerScreenSharingDataGuidPath = otherUserScreenSharingPath + '/' + newScreenSharingGuid;
                         dataToSave[viewerScreenSharingDataGuidPath] = true;
 
                         return _getStorage().then(function (StudentStorage) {
@@ -120,9 +124,30 @@
             };
 
             this.endSharing = function (screenSharingDataGuid) {
-                return ScreenSharingDataGetterSrv.getScreenSharingData(screenSharingDataGuid).then(function (screenSharingData) {
-                    screenSharingData.status = ScreenSharingStatusEnum.ENDED.enum;
-                    return screenSharingData.$save();
+                var getDataPromMap = {};
+                getDataPromMap.screenSharingData = ScreenSharingDataGetterSrv.getScreenSharingData(screenSharingDataGuid);
+                getDataPromMap.currUid = UserProfileService.getCurrUserId();
+                getDataPromMap.currUidScreenSharingRequests = ScreenSharingDataGetterSrv.getCurrUserScreenSharingRequests();
+                getDataPromMap.storage = _getStorage();
+                return $q.all(getDataPromMap).then(function (data) {
+                    var dataToSave = {};
+
+                    data.screenSharingData.status = ScreenSharingStatusEnum.ENDED.enum;
+                    dataToSave [data.screenSharingData.$$path] = data.screenSharingData;
+
+                    data.currUidScreenSharingRequests[data.screenSharingData.guid] = false;
+                    dataToSave[data.currUidScreenSharingRequests.$$path] = data.currUidScreenSharingRequests;
+
+                    var otherUserScreenSharingRequestPath;
+                    if(data.screenSharingData.viewerId !== data.currUid){
+                        otherUserScreenSharingRequestPath = data.screenSharingData.viewerPath;
+                    }else{
+                        otherUserScreenSharingRequestPath = data.screenSharingData.sharerPath;
+                    }
+                    otherUserScreenSharingRequestPath += '/' + data.screenSharingData.guid;
+                    dataToSave[otherUserScreenSharingRequestPath] = false;
+
+                    return data.storage.update(dataToSave);
                 });
             };
 
