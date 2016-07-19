@@ -1,10 +1,18 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.screenSharing').service('ScreenSharingEventsSrv',
-        function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, ScreenSharingStatusEnum, UserScreenSharingStateEnum, ScreenSharingSrv) {
-            'ngInject';
+    angular.module('znk.infra.screenSharing').provider('ScreenSharingEventsSrv', function () {
+        var isEnabled = true;
+        
+        this.enabled = function (_isEnabled) {
+            isEnabled = _isEnabled;
+        };
 
+        this.$get = function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, ScreenSharingStatusEnum, UserScreenSharingStateEnum, ScreenSharingSrv) {
+            'ngInject';
+            
+            var ScreenSharingEventsSrv = {};
+            
             function _listenToScreenSharingData(guid) {
                 var screenSharingStatusPath = 'screenSharing/' + guid;
 
@@ -51,9 +59,13 @@
                 });
             }
 
-            this.activate = function () {
-                _startListening();
+            ScreenSharingEventsSrv.activate = function () {
+                if (isEnabled) {
+                    _startListening();
+                }
             };
-        }
-    );
+            
+            return ScreenSharingEventsSrv;
+        };
+    });
 })(angular);
