@@ -4329,7 +4329,8 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
     angular.module('znk.infra.screenSharing').component('screenSharing', {
             templateUrl: 'components/screenSharing/directives/screenSharing/screenSharing.template.html',
             bindings: {
-                userSharingState: '<'
+                userSharingState: '<',
+                onClose: '&'
             }
         }
     );
@@ -4652,13 +4653,10 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             };
 
             this._userScreenSharingStateChanged = function (newUserScreenSharingState) {
-                if (newUserScreenSharingState === UserScreenSharingStateEnum.VIEWER.enum) {
-                    ScreenSharingUiSrv.showViewerIndication();
+                if(!newUserScreenSharingState){
+                    return;
                 }
-
-                if (newUserScreenSharingState === UserScreenSharingStateEnum.SHARER.enum) {
-                    ScreenSharingUiSrv.showSharerIndication();
-                }
+                ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState);
             };
         }]
     );
@@ -4672,6 +4670,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             'ngInject';
 
             var childScope, screenSharingPhElement, readyProm;
+            var self = this;
 
             function _init() {
                 var bodyElement = angular.element(document.body);
@@ -4686,8 +4685,12 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                     childScope.$destroy();
                 }
 
+
                 if(screenSharingPhElement){
-                    $animate.leave(screenSharingPhElement.contents());
+                    var hasContents = !!screenSharingPhElement.contents().length;
+                    if(hasContents){
+                        $animate.leave(screenSharingPhElement.contents());
+                    }
                 }
             }
 
@@ -4697,10 +4700,19 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 readyProm.then(function(){
                     childScope = $rootScope.$new(true);
                     childScope.d = {
-                        userSharingState: userSharingState
+                        userSharingState: userSharingState,
+                        onClose: function(){
+                            self.endScreenSharing();
+                        }
                     };
 
-                    var screenSharingElement = angular.element('<div class="show-hide-animation"><screen-sharing user-sharing-state="d.userSharingState"></screen-sharing></div>');
+                    var screenSharingHtmlTemplate =
+                        '<div class="show-hide-animation">' +
+                            '<screen-sharing user-sharing-state="d.userSharingState" ' +
+                                            'on-close="d.onClose()">' +
+                            '</screen-sharing>' +
+                        '</div>';
+                    var screenSharingElement = angular.element(screenSharingHtmlTemplate);
                     screenSharingPhElement.append(screenSharingElement);
                     $animate.enter(screenSharingElement[0], screenSharingPhElement[0]);
                     $compile(screenSharingElement)(childScope);
@@ -4719,8 +4731,6 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             readyProm = $timeout(function(){
                 _init();
             });
-
-            this.activateScreenSharing(3);
         }]
     );
 })(angular);
@@ -4730,7 +4740,9 @@ angular.module('znk.infra.screenSharing').run(['$templateCache', function($templ
     "<div ng-switch=\"$ctrl.userSharingState\">\n" +
     "    <div ng-switch-when=\"2\"\n" +
     "         class=\"viewer-state-container\">\n" +
-    "\n" +
+    "        <div class=\"close-icon-wrapper\" ng-click=\"$ctrl.onClose()\">\n" +
+    "            <svg-icon name=\"screen-sharing-close\"></svg-icon>\n" +
+    "        </div>\n" +
     "    </div>\n" +
     "    <div ng-switch-when=\"3\"\n" +
     "         class=\"sharer-state-container\">\n" +
@@ -4751,6 +4763,11 @@ angular.module('znk.infra.screenSharing').run(['$templateCache', function($templ
     "    class=\"screen-sharing-close\"\n" +
     "    viewBox=\"-596.6 492.3 133.2 133.5\">\n" +
     "    <style>\n" +
+    "        .screen-sharing-close{\n" +
+    "            width: 13px;\n" +
+    "            stroke: white;\n" +
+    "            stroke-width: 10px;\n" +
+    "        }\n" +
     "    </style>\n" +
     "<path class=\"st0\"/>\n" +
     "<g>\n" +
@@ -6329,6 +6346,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                     sourceGetter: '&source',
                     typeGetter: '&?type',
                     autoPlayGetter: '&autoPlay',
+                    onStart: '&?',
                     onEnded: '&',
                     switchInitGetter: '&switchInit',
                     allowReplay: '&?',
@@ -6645,6 +6663,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                     isPlaying: '=?',
                     showAsDone: '&?',
                     allowReplay: '&?',
+                    showSkipOption: '&?',
                     autoPlayGetter: '&autoPlay',
                     blurredImageGetter: '&?blurredImage'
                 },
@@ -6653,8 +6672,29 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
 
                     scope.d = {
                         image: scope.imageGetter(),
-                        blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined
+                        blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined,
+                        showAsDone: angular.isDefined(scope.showAsDone) ? scope.showAsDone : false
                     };
+
+                    scope.d.skippedHandler = function(){
+                        scope.d.showAsDone = true;
+                        scope.d.showSkipButton = false;
+                    };
+
+                    if(angular.isDefined(scope.showSkipOption) && scope.showSkipOption()){
+                        scope.d.showSkipButtonFn = function(){
+                            scope.d.showSkipButton = true;
+                        };
+
+                        var onEnded = scope.onEnded;  // reference to onEnded function.
+                        scope.onEnded = function(){ // extend the onEnded function (if passed).
+                            if(onEnded){
+                                onEnded();
+                            }
+                            scope.d.showSkipButton = false;
+                        };
+                    }
+
                 }
             };
         }]);
@@ -6986,7 +7026,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "<ng-switch on=\"audioPlayer.currState\" translate-namespace=\"ZNK_AUDIO_PLAYER\">\n" +
     "    <div class=\"play-button-wrapper\"\n" +
     "         ng-switch-when=\"1\">\n" +
-    "        <button class=\"play-button\" ng-click=\"audioPlayer.currState = audioPlayer.STATE_ENUM.PLAYING\">\n" +
+    "        <button class=\"play-button\" ng-click=\"audioPlayer.currState = audioPlayer.STATE_ENUM.PLAYING; onStart();\">\n" +
     "            <svg-icon name=\"znk-audio-player-play\"></svg-icon>\n" +
     "            <span class=\"play-audio-text\" translate=\".PLAY_AUDIO\"></span>\n" +
     "        </button>\n" +
@@ -7041,20 +7081,24 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "\n" +
     "");
   $templateCache.put("components/znkAudioPlayer/templates/znkImageAudio.template.html",
-    "<div class=\"wrapper\" ng-class=\"{'no-footer': hideFooter}\">\n" +
-    "    <!--<div class=\"bg-img only-tablet\" ng-style=\"{'background-image': 'url(' + d.blurredImage + ')'}\"></div>-->\n" +
+    "<div class=\"wrapper\" ng-class=\"{'no-footer': hideFooter}\" translate-namespace=\"ZNK_IMAGE_AUDIO\">\n" +
     "    <div class=\"inner-section\">\n" +
     "        <img class=\"inner\" ng-src=\"{{::d.image}}\">\n" +
     "    </div>\n" +
-    "    <div class=\"audio-footer inverted\" ng-if=\"::!hideFooter\">\n" +
+    "    <div class=\"audio-footer inverted\" ng-if=\"::!hideFooter\"  ng-class=\"{'showSkipButton': d.showSkipButton}\">\n" +
     "        <znk-audio-play-button\n" +
     "            switch-init=\"audioPlayer.currState\"\n" +
     "            source=\"source\"\n" +
     "            on-ended=\"onEnded()\"\n" +
+    "            on-start=\"d.showSkipButtonFn()\"\n" +
     "            allow-replay=\"allowReplay()\"\n" +
-    "            show-as-done=\"showAsDone()\"\n" +
+    "            show-as-done=\"d.showAsDone\"\n" +
     "            auto-play=\"autoPlayGetter()\">\n" +
     "        </znk-audio-play-button>\n" +
+    "\n" +
+    "        <div class=\"skip-audio-button\" ng-if=\"d.showSkipButton\" ng-click=\"d.skippedHandler()\">\n" +
+    "            <div translate=\".SKIP\"></div>\n" +
+    "        </div>\n" +
     "    </div>\n" +
     "</div>\n" +
     "");

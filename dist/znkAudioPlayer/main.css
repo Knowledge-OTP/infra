@@ -442,6 +442,37 @@ znk-image-audio {
       border-radius: 0 0 5px 5px; }
       znk-image-audio .wrapper .audio-footer znk-audio-player {
         width: 380px; }
+      znk-image-audio .wrapper .audio-footer .skip-audio-button {
+        width: 42px;
+        height: 21px;
+        font-size: 14px;
+        color: #d2d2d2;
+        font-family: Lato;
+        font-weight: 400;
+        transition: 0.2s linear opacity;
+        cursor: pointer;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-pack: center;
+            justify-content: center;
+        -ms-flex-align: center;
+            align-items: center;
+        position: absolute;
+        right: 18px;
+        top: 16px;
+        border: 1px solid #d2d2d2;
+        border-radius: 20px; }
+      znk-image-audio .wrapper .audio-footer .skip-audio-button:active.skip-audio-button:hover {
+        background-color: rgba(255, 255, 255, 0.3); }
+      znk-image-audio .wrapper .audio-footer .skip-audio-button:hover {
+        background-color: rgba(255, 255, 255, 0.08); }
+      znk-image-audio .wrapper .audio-footer .skip-audio-button.ng-enter, znk-image-audio .wrapper .audio-footer .skip-audio-button.ng-leave.ng-leave-active {
+        opacity: 0; }
+      znk-image-audio .wrapper .audio-footer .skip-audio-button.ng-enter.ng-enter-active, znk-image-audio .wrapper .audio-footer .skip-audio-button.ng-leave {
+        opacity: 1; }
+      znk-image-audio .wrapper .audio-footer.showSkipButton znk-audio-player {
+        width: 310px;
+        margin-right: 50px; }
 
 znk-audio-play-button .play-button-wrapper {
   display: -ms-flexbox;
@@ -450,6 +481,12 @@ znk-audio-play-button .play-button-wrapper {
       justify-content: center;
   -ms-flex-align: center;
       align-items: center; }
+  znk-audio-play-button .play-button-wrapper:active {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 50px; }
+  znk-audio-play-button .play-button-wrapper:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-radius: 50px; }
   znk-audio-play-button .play-button-wrapper .play-button {
     font-size: 16px;
     color: #fff;

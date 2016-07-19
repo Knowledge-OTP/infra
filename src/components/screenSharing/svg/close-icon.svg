@@ -4,6 +4,11 @@
     class="screen-sharing-close"
     viewBox="-596.6 492.3 133.2 133.5">
     <style>
+        .screen-sharing-close{
+            width: 13px;
+            stroke: white;
+            stroke-width: 10px;
+        }
     </style>
 <path class="st0"/>
 <g>
