@@ -15,6 +15,7 @@
                     isPlaying: '=?',
                     showAsDone: '&?',
                     allowReplay: '&?',
+                    showSkipOption: '&?',
                     autoPlayGetter: '&autoPlay',
                     blurredImageGetter: '&?blurredImage'
                 },
@@ -23,8 +24,29 @@
 
                     scope.d = {
                         image: scope.imageGetter(),
-                        blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined
+                        blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined,
+                        showAsDone: angular.isDefined(scope.showAsDone) ? scope.showAsDone : false
                     };
+
+                    scope.d.skippedHandler = function(){
+                        scope.d.showAsDone = true;
+                        scope.d.showSkipButton = false;
+                    };
+
+                    if(angular.isDefined(scope.showSkipOption) && scope.showSkipOption()){
+                        scope.d.showSkipButtonFn = function(){
+                            scope.d.showSkipButton = true;
+                        };
+
+                        var onEnded = scope.onEnded;  // reference to onEnded function.
+                        scope.onEnded = function(){ // extend the onEnded function (if passed).
+                            if(onEnded){
+                                onEnded();
+                            }
+                            scope.d.showSkipButton = false;
+                        };
+                    }
+
                 }
             };
         }]);

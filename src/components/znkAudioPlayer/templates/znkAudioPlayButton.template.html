@@ -1,7 +1,7 @@
 <ng-switch on="audioPlayer.currState" translate-namespace="ZNK_AUDIO_PLAYER">
     <div class="play-button-wrapper"
          ng-switch-when="1">
-        <button class="play-button" ng-click="audioPlayer.currState = audioPlayer.STATE_ENUM.PLAYING">
+        <button class="play-button" ng-click="audioPlayer.currState = audioPlayer.STATE_ENUM.PLAYING; onStart();">
             <svg-icon name="znk-audio-player-play"></svg-icon>
             <span class="play-audio-text" translate=".PLAY_AUDIO"></span>
         </button>
