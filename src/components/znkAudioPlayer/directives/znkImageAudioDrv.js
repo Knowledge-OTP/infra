@@ -13,7 +13,7 @@
                     hideFooter: '=',
                     onEnded: '&',
                     isPlaying: '=?',
-                    showAsDone: '&?',
+                    showAsDone: '=?',
                     allowReplay: '&?',
                     showSkipOption: '&?',
                     autoPlayGetter: '&autoPlay',
