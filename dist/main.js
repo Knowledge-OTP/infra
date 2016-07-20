@@ -1048,7 +1048,9 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
 
         var self = this;
         this.get = function () {
-            return StorageRevSrv.getContent({ exerciseType: 'category' });
+            return StorageRevSrv.getContent({
+                exerciseType: 'category'
+            });
         };
 
         var categoryMapObj;
