@@ -7505,12 +7505,12 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         var buttonGoToProm = $translate('ZNK_EXERCISE.GO_TO_SUMMARY_BTN');
                         var buttonStayProm = $translate('ZNK_EXERCISE.STAY_BTN');
 
-                        $q.all([contentProm, titleProm, buttonGoToProm, buttonStayProm]).then(function (results) {
+                        areAllQuestionsAnsweredProm = $q.all([contentProm, titleProm, buttonGoToProm, buttonStayProm]).then(function (results) {
                             var content = results[0];
                             var title = results[1];
                             var buttonGoTo = results[2];
                             var buttonStay = results[3];
-                            areAllQuestionsAnsweredProm = PopUpSrv.warning(title, content, buttonGoTo, buttonStay).promise;
+                            return PopUpSrv.warning(title, content, buttonGoTo, buttonStay).promise;
                         }, function (err) {
                             $log.error(err);
                         });
