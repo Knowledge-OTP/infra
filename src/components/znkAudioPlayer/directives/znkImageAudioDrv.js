@@ -25,11 +25,10 @@
                     scope.d = {
                         image: scope.imageGetter(),
                         blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined,
-                        showAsDone: angular.isDefined(scope.showAsDone) ? scope.showAsDone() : false
                     };
 
                     scope.d.skippedHandler = function(){
-                        scope.d.showAsDone = true;
+                        scope.showAsDone = true;
                         scope.d.showSkipButton = false;
                     };
 
