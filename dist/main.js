@@ -2001,11 +2001,8 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 });
             }
 
-            function _getExerciseResultsGuids(isTeacherRequest, studentId) {
+            function _getExerciseResultsGuids() {
                 return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                    if(isTeacherRequest) {
-                        StudentStorageSrv.__config.variables.uid = studentId;
-                    }
                     return StudentStorageSrv.get(USER_EXERCISE_RESULTS_PATH);
                 });
             }
@@ -2029,18 +2026,6 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                         });
                     });
                 });
-            }
-
-            function _getInitModuleResult(moduleId, userId){
-                return {
-                    moduleId: moduleId,
-                    uid: userId,
-                    assignedTutorId: null,
-                    assign: false,
-                    contentAssign: false,
-                    exerciseResults: [],
-                    guid: UtilitySrv.general.createGuid()
-                };
             }
 
             function _getInitExamResult(examId, guid){
@@ -2372,7 +2357,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                             if (!withDefaultResult) {
                                 return null;
                             } else {
-                                defaultResult =  _getInitModuleResult(moduleId, userId);
+                                defaultResult =  this.getDefaultModuleResult(moduleId, userId);
                                 moduleResultGuid = defaultResult.guid;
                             }
                         }
