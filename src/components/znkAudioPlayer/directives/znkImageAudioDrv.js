@@ -13,7 +13,7 @@
                     hideFooter: '=',
                     onEnded: '&',
                     isPlaying: '=?',
-                    showAsDone: '&?',
+                    showAsDone: '=?',
                     allowReplay: '&?',
                     showSkipOption: '&?',
                     autoPlayGetter: '&autoPlay',
@@ -24,13 +24,13 @@
 
                     scope.d = {
                         image: scope.imageGetter(),
-                        blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined,
-                        showAsDone: angular.isDefined(scope.showAsDone) ? scope.showAsDone() : false
+                        blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined
                     };
 
                     scope.d.skippedHandler = function(){
-                        scope.d.showAsDone = true;
+                        scope.showAsDone = true;
                         scope.d.showSkipButton = false;
+                        scope.onEnded();
                     };
 
                     if(angular.isDefined(scope.showSkipOption) && scope.showSkipOption()){
