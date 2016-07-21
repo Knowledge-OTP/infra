@@ -4789,13 +4789,16 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 translationsPromMap.acceptBtnTitle = $translate('SCREEN_SHARING.REJECT');
                 translationsPromMap.cancelBtnTitle = $translate('SCREEN_SHARING.ACCEPT');
                 return $q.all(translationsPromMap).then(function(translations){
-                    return PopUpSrv.warning(
+                    var popUpInstance = PopUpSrv.warning(
                         translations.title,
                         translations.content,
                         translations.acceptBtnTitle,
                         translations.cancelBtnTitle
-                    ).then(function(popUpInstance){
-                        return popUpInstance.promise;
+                    );
+                    return popUpInstance.promise.then(function(res){
+                        return $q.reject(res);
+                    },function(res){
+                        return $q.resolve(res);
                     });
                 },function(err){
                     $log.error('ScreenSharingUiSrv: translate failure' + err);
