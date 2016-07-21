@@ -9642,7 +9642,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "<znk-scroll>\n" +
     "    <div class=\"pager-items-wrapper\">\n" +
     "        <div class=\"pager-item noselect\"\n" +
-    "             ng-repeat=\"question in questions track by question.id\"\n" +
+    "             ng-repeat=\"question in questions\"\n" +
     "             question-status=\"question.__questionStatus\"\n" +
     "             question=\"question\"\n" +
     "             ng-click=\"d.tap($index)\">\n" +
