@@ -1967,7 +1967,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
     'use strict';
 
     angular.module('znk.infra.exerciseResult', [
-        'znk.infra.config','znk.infra.utility',
+        'znk.infra.config','znk.infra.utility', 
         'znk.infra.moduleResults',
         'znk.infra.exerciseUtility'
     ]);
@@ -2604,7 +2604,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
     angular.module('znk.infra.exerciseUtility').factory('ExerciseUtilitySrv',
         function () {
             'ngInject';
-
+            
             var ExerciseUtilitySrv = {};
 
             return ExerciseUtilitySrv;
@@ -2631,7 +2631,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
                 if(!angular.isString(str) || !str.length){
                     return '';
                 }
-
+                
                 return str[0].toUpperCase() + str.substr(1);
             };
         }
@@ -3642,7 +3642,7 @@ angular.module('znk.infra.moduleResults').run(['$templateCache', function($templ
 
 (function (angular) {
     'use strict';
-
+    
     angular.module('znk.infra.personalization')
         .service('PersonalizationSrv',
             ["StorageRevSrv", "$log", "$q", function (StorageRevSrv, $log, $q) {
@@ -4368,7 +4368,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
 (function(){
     'use strict';
-
+    
     angular.module('znk.infra.screenSharing').run(
         ["ScreenSharingEventsSrv", function(ScreenSharingEventsSrv){
             'ngInject';
@@ -4438,16 +4438,16 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
     angular.module('znk.infra.screenSharing').provider('ScreenSharingEventsSrv', function () {
         var isEnabled = true;
-
+        
         this.enabled = function (_isEnabled) {
             isEnabled = _isEnabled;
         };
 
         this.$get = ["UserProfileService", "InfraConfigSrv", "$q", "StorageSrv", "ENV", "ScreenSharingStatusEnum", "UserScreenSharingStateEnum", "ScreenSharingSrv", function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, ScreenSharingStatusEnum, UserScreenSharingStateEnum, ScreenSharingSrv) {
             'ngInject';
-
+            
             var ScreenSharingEventsSrv = {};
-
+            
             function _listenToScreenSharingData(guid) {
                 var screenSharingStatusPath = 'screenSharing/' + guid;
 
@@ -4499,7 +4499,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                     _startListening();
                 }
             };
-
+            
             return ScreenSharingEventsSrv;
         }];
     });
