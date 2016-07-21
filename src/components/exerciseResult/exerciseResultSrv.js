@@ -37,8 +37,11 @@
                 });
             }
 
-            function _getExerciseResultsGuids(){
+            function _getExerciseResultsGuids(isTeacherRequest, studentId) {
                 return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                    if(isTeacherRequest) {
+                        StudentStorageSrv.__config.variables.uid = studentId;
+                    }
                     return StudentStorageSrv.get(USER_EXERCISE_RESULTS_PATH);
                 });
             }
@@ -84,20 +87,20 @@
                 });
             }
 
-            function exerciseSaveFn(){
-                /* jshint validthis: true */
-                var exerciseResult = this;
-                var getExercisesStatusDataProm = _getExercisesStatusData();
-                var dataToSave = {};
-
+            function _calcExerciseResultFields(exerciseResultObj) {
                 var countCorrect = 0,
                     countWrong = 0,
                     countSkipped = 0,
                     correctTotalTime = 0,
                     wrongTotalTime = 0,
-                    skippedTotalTime = 0;
+                    skippedTotalTime = 0,
+                    dataToSaveObj = {};
 
-                var totalTimeSpentOnQuestions = exerciseResult.questionResults.reduce(function(previousValue, currResult) {
+                if(!exerciseResultObj.questionResults) {
+                    exerciseResultObj.questionResults = [];
+                }
+
+                var totalTimeSpentOnQuestions = exerciseResultObj.questionResults.reduce(function(previousValue, currResult) {
                     var timeSpentOnQuestion =  angular.isDefined(currResult.timeSpent) && !isNaN(currResult.timeSpent) ? currResult.timeSpent : 0;
                     if (currResult.isAnsweredCorrectly) {
                         countCorrect++;
@@ -112,46 +115,51 @@
 
                     return previousValue + (currResult.timeSpent || 0);
                 },0);
+                var questionsNum = exerciseResultObj.questionResults.length;
 
-                function _getAvgTime(totalNum, totalTime){
-                    var avgTime = Math.round(totalNum ? totalTime/totalNum : 0);
-                    return avgTime;
+                exerciseResultObj.totalQuestionNum = questionsNum;
+                exerciseResultObj.totalAnsweredNum = countWrong + countCorrect;
+                exerciseResultObj.correctAnswersNum = countCorrect;
+                exerciseResultObj.wrongAnswersNum = countWrong;
+                exerciseResultObj.skippedAnswersNum = countSkipped;
+                exerciseResultObj.duration = totalTimeSpentOnQuestions;
+                exerciseResultObj.correctAvgTime = _getAvgTime(countCorrect,correctTotalTime);
+                exerciseResultObj.wrongAvgTime = _getAvgTime(countWrong, wrongTotalTime);
+                exerciseResultObj.skippedAvgTime = _getAvgTime(countSkipped, skippedTotalTime);
+
+                if (exerciseResultObj.isComplete && angular.isUndefined(exerciseResultObj.endedTime)){
+                    exerciseResultObj.endedTime = Date.now();
                 }
 
-                var questionsNum = exerciseResult.questionResults.length;
+                exerciseResultObj.avgTimePerQuestion = questionsNum ? Math.round(totalTimeSpentOnQuestions / questionsNum) : 0;
 
-                exerciseResult.totalQuestionNum = questionsNum;
+                var exerciseResultPath = _getExerciseResultPath(exerciseResultObj.guid);
+                dataToSaveObj[exerciseResultPath] = exerciseResultObj;
 
-                exerciseResult.totalAnsweredNum = countWrong + countCorrect;
-
-                exerciseResult.correctAnswersNum = countCorrect;
-                exerciseResult.wrongAnswersNum = countWrong;
-                exerciseResult.skippedAnswersNum = countSkipped;
-
-                exerciseResult.duration = totalTimeSpentOnQuestions;
-                exerciseResult.correctAvgTime = _getAvgTime(countCorrect,correctTotalTime);
-                exerciseResult.wrongAvgTime = _getAvgTime(countWrong, wrongTotalTime);
-                exerciseResult.skippedAvgTime = _getAvgTime(countSkipped, skippedTotalTime);
-
-
-                if(exerciseResult.isComplete && angular.isUndefined(exerciseResult.endedTime)){
-                    exerciseResult.endedTime = Date.now();
-                }
-
-                exerciseResult.avgTimePerQuestion = questionsNum ? Math.round(totalTimeSpentOnQuestions / questionsNum) : 0;
-                var exerciseResultPath = _getExerciseResultPath(exerciseResult.guid);
-
-                dataToSave[exerciseResultPath] = exerciseResult;
-
-                return getExercisesStatusDataProm.then(function(exercisesStatusData){
-                    if(!exercisesStatusData[exerciseResult.exerciseTypeId]){
-                        exercisesStatusData[exerciseResult.exerciseTypeId] = {};
+                return _getExercisesStatusData().then(function(exercisesStatusData){
+                    if(!exercisesStatusData[exerciseResultObj.exerciseTypeId]){
+                        exercisesStatusData[exerciseResultObj.exerciseTypeId] = {};
                     }
 
-                    var exerciseNewStatus = exerciseResult.isComplete ?
-                        ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
-                    exercisesStatusData[exerciseResult.exerciseTypeId][exerciseResult.exerciseId] = new ExerciseStatus(exerciseNewStatus, totalTimeSpentOnQuestions);
-                    dataToSave[USER_EXERCISES_STATUS_PATH] = exercisesStatusData;
+                    var exerciseNewStatus = exerciseResultObj.isComplete ? ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
+                    exercisesStatusData[exerciseResultObj.exerciseTypeId][exerciseResultObj.exerciseId] = new ExerciseStatus(exerciseNewStatus, totalTimeSpentOnQuestions);
+                    dataToSaveObj[USER_EXERCISES_STATUS_PATH] = exercisesStatusData;
+                    return {
+                        exerciseResult: exerciseResultObj,
+                        dataToSave: dataToSaveObj
+                    };
+                });
+
+                function _getAvgTime(totalNum, totalTime){
+                    return Math.round(totalNum ? totalTime/totalNum : 0);
+                }
+            }
+
+            function exerciseSaveFn(){
+                /* jshint validthis: true */
+                return _calcExerciseResultFields(this).then(function (response) {
+                    var exerciseResult = response.exerciseResult;
+                    var dataToSave = response.dataToSave;
 
                     var getSectionAggregatedDataProm = $q.when();
                     if(exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
@@ -175,7 +183,56 @@
                             return exerciseResult;
                         });
                     });
+                });
+            }
 
+            function moduleExerciseSaveFn(){
+                /* jshint validthis: true */
+                return _calcExerciseResultFields(this).then(function (response) {
+                    var exerciseResult = response.exerciseResult;
+                    var dataToSave = response.dataToSave;
+                    return _getExerciseResultsGuids().then(function (exerciseResultsGuids) {
+                        var exerciseTypeId = exerciseResult.exerciseTypeId;
+                        var exerciseId = exerciseResult.exerciseId;
+
+                        if (!exerciseResultsGuids[exerciseTypeId]) {
+                            exerciseResultsGuids[exerciseTypeId] = {};
+                        }
+
+                        exerciseResultsGuids[exerciseTypeId][exerciseId] = exerciseResult.guid;
+                        dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
+
+                        return ModuleResultsService.getModuleResultByModuleId(exerciseResult.moduleId, exerciseResult.uid).then(function (moduleResult) {
+                            if(!moduleResult.exerciseResults) {
+                                moduleResult.exerciseResults = {};
+                            }
+                            if(!moduleResult.exerciseResults[exerciseTypeId]) {
+                                moduleResult.exerciseResults[exerciseTypeId] = {};
+                            }
+
+                            moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResult.guid;
+
+                            return _getExercisesStatusData().then(function (exerciseStatuses) {
+                                if(!moduleResult.exercisesStatus) {
+                                    moduleResult.exercisesStatus = {};
+                                }
+
+                                if(!moduleResult.exercisesStatus[exerciseTypeId]) {
+                                    moduleResult.exercisesStatus[exerciseTypeId] = {};
+                                }
+
+                                moduleResult.exercisesStatus[exerciseTypeId][exerciseId] = exerciseStatuses[exerciseTypeId][exerciseId].status;
+
+                                var modulePath = ModuleResultsService.getModuleResultPath(moduleResult.guid);
+                                dataToSave[modulePath] = moduleResult;
+
+                                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                                    StudentStorageSrv.update(dataToSave);
+                                    return exerciseResult;
+                                });
+                            });
+                        });
+                    });
                 });
             }
 
@@ -357,82 +414,7 @@
                 return _getExercisesStatusData();
             };
 
-            this.getModuleExerciseResults = function (userId, moduleId, exerciseTypeId, exerciseId, dontInitialize) {
-                if(!UtilitySrv.fn.isValidNumber(exerciseTypeId) || !UtilitySrv.fn.isValidNumber(exerciseId)){
-                    var errMSg = 'ExerciseResultSrv: exercise type id, exercise id should be number !!!';
-                    $log.error(errMSg);
-                    return $q.reject(errMSg);
-                }
-                exerciseTypeId = +exerciseTypeId;
-                exerciseId = +exerciseId;
 
-                if(!UtilitySrv.fn.isValidNumber(moduleId)){
-                    var examErrMSg = 'ExerciseResultSrv: module id should be provided when asking for exercise result and should be a number!!!';
-                    $log.error(examErrMSg);
-                    return $q.reject(examErrMSg);
-                }
-                moduleId = +moduleId;
-
-                return $q.all([ModuleResultsService.getModuleResultByModuleId(moduleId, userId), _getExerciseResultsGuids()]).then(function (results) {
-                    var moduleResultsObj = results[0];
-                    var exerciseResultsGuids = results[1];
-                    var resultGuid = exerciseResultsGuids[exerciseTypeId] && exerciseResultsGuids[exerciseTypeId][exerciseId];
-                    if (!resultGuid) {
-                        if(dontInitialize){
-                            return null;
-                        }
-
-                        if(!exerciseResultsGuids[exerciseTypeId]){
-                            exerciseResultsGuids[exerciseTypeId] = {};
-                        }
-
-                        var storage = InfraConfigSrv.getStorageService();
-                        var newGuid = UtilitySrv.general.createGuid();
-                        var dataToSave = {};
-
-                        exerciseResultsGuids[exerciseTypeId][exerciseId] = newGuid;
-                        dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
-
-                        var exerciseResultPath = _getExerciseResultPath(newGuid);
-                        var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,newGuid);
-                        return initResultProm.then(function(initResult) {
-                            dataToSave[exerciseResultPath] = initResult;
-
-                            if(moduleResultsObj){
-                                moduleResultsObj.moduleId = moduleId;
-
-                                if(!moduleResultsObj.exerciseResults){
-                                    moduleResultsObj.exerciseResults = {};
-                                }
-                                moduleResultsObj.exerciseResults[exerciseId] = newGuid;
-                                var moduleResultPath = ModuleResultsService.getModuleResultPath(moduleResultsObj.guid);
-                                dataToSave[moduleResultPath] = moduleResultsObj;
-                            }
-
-                            return storage.update(dataToSave).then(function (res) {
-                                return res[exerciseResultPath];
-                            });
-                        });
-                    }
-
-                    return _getExerciseResultByGuid(resultGuid).then(function(result){
-                        var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,resultGuid);
-                        return initResultProm.then(function(initResult) {
-                            if(result.guid !== resultGuid){
-                                angular.extend(result,initResult);
-                            }else{
-                                UtilitySrv.object.extendWithoutOverride(result, initResult);
-                            }
-                            return result;
-                        });
-                    });
-                }).then(function(exerciseResult){
-                    if(angular.isObject(exerciseResult)){
-                        exerciseResult.$save = exerciseSaveFn;
-                    }
-                    return exerciseResult;
-                });
-            };
         }
     ]);
 })(angular);

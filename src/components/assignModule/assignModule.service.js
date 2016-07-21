@@ -27,64 +27,49 @@
             };
 
             userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId) {
+                if(!angular.isArray(moduleIds)){
+                    var errMSg = 'UserAssignModuleService: 1st argument should be array of module ids';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
                 var moduleResults = {};
                 var getProm = $q.when();
                 angular.forEach(moduleIds, function (moduleId) {
                     getProm = getProm.then(function(){
-                        return ModuleResultsService.getModuleResultByModuleId(moduleId, userId, false);
+                        return ModuleResultsService.getModuleResultByModuleId(moduleId, userId, false).then(function (moduleResult) {
+                            moduleResults[moduleId] = moduleResult;
+                            return moduleResults;
+                        });
                     });
 
                 });
                 return getProm.then(function () {
-                    var saveProm = $q.when();
-                    angular.forEach(moduleIds, function (moduleId) {
-                        if(!moduleResults[moduleId]) {
-                            moduleResults[moduleId] =  ModuleResultsService.getDefaultModuleResult(moduleId, userId);
-                            moduleResults[moduleId].tutorId = tutorId;
-                        }
-                        moduleResults[moduleId].assign = true;
+                    return ZnkModuleService.getModuleHeaders().then(function (moduleHeaders) {
+                        var saveProm = $q.when();
+                        angular.forEach(moduleIds, function (moduleId) {
+                            if(!moduleResults[moduleId]) {
+                                moduleResults[moduleId] =  ModuleResultsService.getDefaultModuleResult(moduleId, userId);
+                                moduleResults[moduleId].assignedTutorId = tutorId;
+                                // copy fields from module object to results object for future using
+                                moduleResults[moduleId].name = moduleHeaders[moduleId].name;
+                                moduleResults[moduleId].desc = moduleHeaders[moduleId].desc;
+                                moduleResults[moduleId].subjectId = moduleHeaders[moduleId].subjectId;
+                                moduleResults[moduleId].subjectName = SubjectEnum.getEnumMap()[moduleHeaders[moduleId].subjectId];
+                                moduleResults[moduleId].assignDate = Date.now();
+                            }
+                            moduleResults[moduleId].assign = true;
 
-                        saveProm = saveProm.then(function(){
-                            return ModuleResultsService.setModuleResult(moduleResults[moduleId]).then(function(savedResults){
-                                moduleResults[moduleId] = savedResults;
+                            saveProm = saveProm.then(function(){
+                                return ModuleResultsService.setModuleResult(moduleResults[moduleId]);
                             });
                         });
 
+                        return saveProm.then(function () {
+                            return moduleResults;
+                        });
                     });
-
-                    return saveProm.then(function () {
-                        return moduleResults;
-                    });
-
                 });
             };
-
-            userAssignModuleService.getUserAssignedModulesFull = function (uid) {
-                return $q.all([ZnkModuleService.getModuleHeaders(), userAssignModuleService.getUserAssignModules(uid)]).then(function (res) {
-                    var modules = objectsObjectToArray(res[0]);
-                    var assignedModules = objectsObjectToArray(res[1]);
-
-                    assignedModules.forEach(function (assignedModule) {
-                        if (assignedModule.assign) {
-                            modules.forEach(function (module) {
-                                if (module.id === assignedModule.moduleId) {
-                                    angular.extend(assignedModule, module);
-                                    assignedModule.subjectName = (getSubjectNameById(module.subjectId)) ? getSubjectNameById(module.subjectId) : '';
-                                }
-                            });
-                        }
-                    });
-                    return assignedModules;
-                });
-            };
-
-            function objectsObjectToArray(obj) {
-                return Object.keys(obj).map(function (key) { return obj[key]; });
-            }
-
-            function getSubjectNameById(subjectId) {
-                return SubjectEnum.getEnumMap()[subjectId];
-            }
 
             return userAssignModuleService;
         }
