@@ -38,7 +38,9 @@
                     return moduleResultsService.getModuleResultByGuid(moduleResultGuid, defaultResult);
                 });
             };
-
+            moduleResultsService.getModuleResultPath = function (guid){
+                return MODULE_RESULTS_PATH + '/' + guid;
+            };
 
 
             moduleResultsService.getDefaultModuleResult = function (moduleId, userId) {
@@ -75,9 +77,7 @@
                 });
             };
 
-            moduleResultsService.getModuleResultPath = function (guid){
-                return MODULE_RESULTS_PATH + '/' + guid;
-            };
+
 
             return moduleResultsService;
         }

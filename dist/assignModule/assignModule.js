@@ -7,17 +7,17 @@
     'use strict';
 
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', 'ModuleResultsService', '$q', 'SubjectEnum', '$log',
-        function (ZnkModuleService, ModuleResultsService, $q, SubjectEnum, $log) {
+        'ZnkModuleService', 'ModuleResultsService', '$q', 'SubjectEnum', '$log', 'ExerciseResultSrv',
+        function (ZnkModuleService, ModuleResultsService, $q, SubjectEnum, $log, ExerciseResultSrv) {
             var userAssignModuleService = {};
 
             userAssignModuleService.getUserAssignModules = function (userId) {
                 return ModuleResultsService.getUserModuleResultsGuids(userId).then(function (resultsGuids) {
                     var moduleResults = {};
                     var getProm = $q.when();
-                    angular.forEach(resultsGuids, function (resultGuid) {
+                    angular.forEach(resultsGuids, function (resultGuid, resultModuleId) {
                         getProm = getProm.then(function(){
-                            return ModuleResultsService.getModuleResultByGuid(resultGuid).then(function(moduleResult){
+                            return ExerciseResultSrv.getModuleResult(userId, resultModuleId, false).then(function(moduleResult){
                                 if(moduleResult) {
                                     moduleResults[moduleResult.moduleId] = moduleResult;
                                 }
