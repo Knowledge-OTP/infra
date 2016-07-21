@@ -104,10 +104,6 @@
                     skippedTotalTime = 0,
                     dataToSaveObj = {};
 
-                if(!exerciseResultObj.questionResults) {
-                    exerciseResultObj.questionResults = [];
-                }
-
                 var totalTimeSpentOnQuestions = exerciseResultObj.questionResults.reduce(function(previousValue, currResult) {
                     var timeSpentOnQuestion =  angular.isDefined(currResult.timeSpent) && !isNaN(currResult.timeSpent) ? currResult.timeSpent : 0;
                     if (currResult.isAnsweredCorrectly) {
@@ -521,8 +517,6 @@
                     });
                 });
             }
-
-
         }
     ]);
 })(angular);
