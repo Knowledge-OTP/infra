@@ -6,7 +6,9 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
 
         var self = this;
         this.get = function () {
-            return StorageRevSrv.getContent({exerciseType: 'category'});
+            return StorageRevSrv.getContent({
+                exerciseType: 'category'
+            });
         };
 
         var categoryMapObj;
@@ -69,32 +71,24 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             });
         };
 
-        self.getAllLevelCategories = (function () {
-            var getAllLevelCategoriesProm;
-            return function (level) {
-                if (!getAllLevelCategoriesProm) {
-                    getAllLevelCategoriesProm = self.getCategoryMap().then(function (categories) {
-                        var levelCategories = {};
-                        angular.forEach(categories, function (category) {
-                            var numLevel=1;
-                            var catgoryDup = angular.copy(category);
-                            while (catgoryDup.parentId !== null) {
-                                catgoryDup = categories[catgoryDup.parentId];
-                                numLevel++;
-                            }
-                            if (numLevel === level){
-                                levelCategories[category.id] = category;
-                            }
-                        });
-                        return levelCategories;
-                    });
-                }
-                return getAllLevelCategoriesProm;
-            };
-        })();
+        self.getAllLevelCategories = function (level) {
+            return self.getCategoryMap().then(function (categories) {
+                var levelCategories = {};
+                angular.forEach(categories, function (category) {
+                    var numLevel = 1;
+                    var catgoryDup = angular.copy(category);
+                    while (catgoryDup.parentId !== null) {
+                        catgoryDup = categories[catgoryDup.parentId];
+                        numLevel++;
+                    }
+                    if (numLevel === level) {
+                        levelCategories[category.id] = category;
+                    }
+                });
+                return levelCategories;
+            });
+        };
 
-
-        
         self.getAllLevel3Categories = (function () {
             var getAllLevel3CategoriesProm;
             return function () {
