@@ -97,7 +97,87 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(_deps.GlobalStorage.adapter.__db.screenSharing[screenSharingDataGuid].status).toBe(_deps.ScreenSharingStatusEnum.ENDED.enum);
     });
 
-    fit('when user want to view other user screen then screen sharing status should be changed to confirmed by the other user', function(){
+    it('when i want to share my screen then listener should ignore the change event', function(){
+        var myUid = _deps.UserProfileService.__currUserId;
+        var otherUid = '123456789-other-uid';
+        var screenSharingDataGuid = '123456789-data-guid';
+
+        var dataToUpdate = {};
+
+        var myUSerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + myUid + '/screenSharing';
+        dataToUpdate[myUSerScreenSharingRequestsPath] = {};
+        dataToUpdate[myUSerScreenSharingRequestsPath][screenSharingDataGuid] = true;
+
+        var otherUserScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + otherUid + '/screenSharing';
+        dataToUpdate[otherUserScreenSharingRequestsPath] = {};
+        dataToUpdate[otherUserScreenSharingRequestsPath][screenSharingDataGuid] = true;
+
+        var screenSharingDataPath = 'screenSharing/' + screenSharingDataGuid;
+        var viewerId = otherUid;
+        var sharerId = myUid;
+        dataToUpdate[screenSharingDataPath] = {
+            guid: screenSharingDataGuid,
+            sharerId: sharerId,
+            viewerId: viewerId,
+            status: _deps.ScreenSharingStatusEnum.PENDING_VIEWER.enum,
+            viewerPath: myUSerScreenSharingRequestsPath,
+            sharerPath: otherUserScreenSharingRequestsPath
+        };
+
+        //the pop up service works opposite, resolved when rejected
+        spyOn(_deps.ScreenSharingUiSrv, 'showScreenSharingConfirmationPopUp').and.callThrough();
+        spyOn(_deps.ScreenSharingSrv, 'confirmSharing');
+        spyOn(_deps.ScreenSharingSrv, 'endSharing');
+
+        _deps.GlobalStorage.adapter.update(dataToUpdate);
+        _deps.$rootScope.$digest();
+
+        expect(_deps.ScreenSharingUiSrv.showScreenSharingConfirmationPopUp).not.toHaveBeenCalled();
+        expect(_deps.ScreenSharingSrv.confirmSharing).not.toHaveBeenCalled();
+        expect(_deps.ScreenSharingSrv.endSharing).not.toHaveBeenCalled();
+    });
+
+    it('when i want to view other user screen then listener should ignore the change event', function(){
+        var myUid = _deps.UserProfileService.__currUserId;
+        var otherUid = '123456789-other-uid';
+        var screenSharingDataGuid = '123456789-data-guid';
+
+        var dataToUpdate = {};
+
+        var myUSerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + myUid + '/screenSharing';
+        dataToUpdate[myUSerScreenSharingRequestsPath] = {};
+        dataToUpdate[myUSerScreenSharingRequestsPath][screenSharingDataGuid] = true;
+
+        var otherUserScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + otherUid + '/screenSharing';
+        dataToUpdate[otherUserScreenSharingRequestsPath] = {};
+        dataToUpdate[otherUserScreenSharingRequestsPath][screenSharingDataGuid] = true;
+
+        var screenSharingDataPath = 'screenSharing/' + screenSharingDataGuid;
+        var viewerId = myUid;
+        var sharerId = otherUid;
+        dataToUpdate[screenSharingDataPath] = {
+            guid: screenSharingDataGuid,
+            sharerId: sharerId,
+            viewerId: viewerId,
+            status: _deps.ScreenSharingStatusEnum.PENDING_SHARER.enum,
+            viewerPath: myUSerScreenSharingRequestsPath,
+            sharerPath: otherUserScreenSharingRequestsPath
+        };
+
+        //the pop up service works opposite, resolved when rejected
+        spyOn(_deps.ScreenSharingUiSrv, 'showScreenSharingConfirmationPopUp').and.callThrough();
+        spyOn(_deps.ScreenSharingSrv, 'confirmSharing');
+        spyOn(_deps.ScreenSharingSrv, 'endSharing');
+
+        _deps.GlobalStorage.adapter.update(dataToUpdate);
+        _deps.$rootScope.$digest();
+
+        expect(_deps.ScreenSharingUiSrv.showScreenSharingConfirmationPopUp).not.toHaveBeenCalled();
+        expect(_deps.ScreenSharingSrv.confirmSharing).not.toHaveBeenCalled();
+        expect(_deps.ScreenSharingSrv.endSharing).not.toHaveBeenCalled();
+    });
+
+    it('when user want to view other user screen then screen sharing status should be changed to confirmed by the other user', function(){
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
         var screenSharingDataGuid = '123456789-data-guid';

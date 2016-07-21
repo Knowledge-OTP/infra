@@ -180,42 +180,52 @@
                         return;
                     }
 
-                    switch (screenSharingData.status) {
-                        case ScreenSharingStatusEnum.PENDING_VIEWER.enum:
-                            ScreenSharingUiSrv.showScreenSharingConfirmationPopUp().then(function () {
-                                ScreenSharingSrv.endSharing(screenSharingData.guid);
-                            }, function () {
+                    UserProfileService.getCurrUserId().then(function (currUid) {
+                        switch (screenSharingData.status) {
+                            case ScreenSharingStatusEnum.PENDING_VIEWER.enum:
+                                if (screenSharingData.viewerId !== currUid) {
+                                    return;
+                                }
+
+                                ScreenSharingUiSrv.showScreenSharingConfirmationPopUp().then(function () {
+                                    ScreenSharingSrv.endSharing(screenSharingData.guid);
+                                }, function () {
+                                    ScreenSharingSrv.confirmSharing(screenSharingData.guid);
+                                });
+                                break;
+                            case ScreenSharingStatusEnum.PENDING_SHARER.enum:
+                                if (screenSharingData.sharerId !== currUid) {
+                                    return;
+                                }
+
                                 ScreenSharingSrv.confirmSharing(screenSharingData.guid);
-                            });
-                            break;
-                        case ScreenSharingStatusEnum.PENDING_SHARER.enum:
-                            ScreenSharingSrv.confirmSharing(screenSharingData.guid);
-                            break;
-                        case ScreenSharingStatusEnum.CONFIRMED.enum:
-                            UserProfileService.getCurrUserId().then(function (currUid) {
-                                var userScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
+                                break;
+                            case ScreenSharingStatusEnum.CONFIRMED.enum:
+                                UserProfileService.getCurrUserId().then(function (currUid) {
+                                    var userScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
 
-                                if (screenSharingData.viewerId === currUid) {
-                                    userScreenSharingState = UserScreenSharingStateEnum.VIEWER.enum;
-                                }
+                                    if (screenSharingData.viewerId === currUid) {
+                                        userScreenSharingState = UserScreenSharingStateEnum.VIEWER.enum;
+                                    }
 
-                                if (screenSharingData.sharerId === currUid) {
-                                    userScreenSharingState = UserScreenSharingStateEnum.SHARER.enum;
-                                }
+                                    if (screenSharingData.sharerId === currUid) {
+                                        userScreenSharingState = UserScreenSharingStateEnum.SHARER.enum;
+                                    }
 
-                                if (userScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
-                                    ScreenSharingSrv._userScreenSharingStateChanged(userScreenSharingState);
-                                }
-                            });
+                                    if (userScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
+                                        ScreenSharingSrv._userScreenSharingStateChanged(userScreenSharingState);
+                                    }
+                                });
 
-                            break;
-                        case ScreenSharingStatusEnum.ENDED.enum:
-                            $log.debug('ScreenSharingEventsSrv: Sharing request was ended ' + screenSharingData.guid);
-                            break;
-                        default:
-                            $log.error('ScreenSharingEventsSrv: invalid status was received ' + screenSharingData.status);
+                                break;
+                            case ScreenSharingStatusEnum.ENDED.enum:
+                                $log.debug('ScreenSharingEventsSrv: Sharing request was ended ' + screenSharingData.guid);
+                                break;
+                            default:
+                                $log.error('ScreenSharingEventsSrv: invalid status was received ' + screenSharingData.status);
 
-                    }
+                        }
+                    });
                 }
 
                 InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
