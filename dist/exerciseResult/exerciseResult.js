@@ -47,11 +47,8 @@
                 });
             }
 
-            function _getExerciseResultsGuids(isTeacherRequest, studentId) {
+            function _getExerciseResultsGuids() {
                 return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                    if(isTeacherRequest) {
-                        StudentStorageSrv.__config.variables.uid = studentId;
-                    }
                     return StudentStorageSrv.get(USER_EXERCISE_RESULTS_PATH);
                 });
             }

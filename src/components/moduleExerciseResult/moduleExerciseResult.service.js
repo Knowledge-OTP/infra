@@ -16,9 +16,14 @@
                 exerciseTypeId = +exerciseTypeId;
                 exerciseId = +exerciseId;
 
-                return ExerciseResultSrv.getExerciseResult(exerciseTypeId, exerciseId).then(function (exerciseResults) {
-                    return exerciseResults;
+                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                    StudentStorageSrv.__config.variables.uid = userId;
+                    return ExerciseResultSrv.getExerciseResult(exerciseTypeId, exerciseId).then(function (exerciseResults) {
+                        return exerciseResults;
+                    });
                 });
+
+
 
                /* return _getExerciseResultsGuids(true, userId).then(function (exerciseResultsGuids) {
                     var resultGuid = exerciseResultsGuids[exerciseTypeId] && exerciseResultsGuids[exerciseTypeId][exerciseId];
