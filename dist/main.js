@@ -2344,6 +2344,13 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
             };
 
             /* Module Results Functions */
+            this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId) {
+                return this.getExerciseResult(exerciseTypeId, exerciseId, null, null, true).then(function (exerciseResult) {
+                    exerciseResult.moduleId = moduleId;
+                    exerciseResult.$save = moduleExerciseSaveFn;
+                    return exerciseResult;
+                });
+            };
 
             this.getModuleResult = function (userId, moduleId, withDefaultResult) {
                 return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
@@ -2362,16 +2369,28 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                         }
 
                         var resultPath = MODULE_RESULTS_PATH + '/' + moduleResultGuid;
-                        return StudentStorageSrv.get(resultPath);
-                    });
-                });
-            };
+                        return StudentStorageSrv.get(resultPath).then(function (moduleResult) {
 
-            this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId) {
-                return this.getExerciseResult(exerciseTypeId, exerciseId, null, null, true).then(function (exerciseResult) {
-                    exerciseResult.moduleId = moduleId;
-                    exerciseResult.$save = moduleExerciseSaveFn;
-                    return exerciseResult;
+                            var getExerciseResultsProm = $q.when();
+
+                            if(moduleResult.exerciseResults) {
+                                angular.forEach(moduleResult.exerciseResults, function (exerciseResult, exerciseTypeId) {
+                                    angular.forEach(exerciseResult, function (exerciseResultGuid, exerciseId) {
+                                        getExerciseResultsProm = getExerciseResultsProm.then(function(){
+                                            return ExerciseResultSrv.getModuleExerciseResult(userId, 2, exerciseTypeId, exerciseId).then(function(exerciseResults){
+                                                if(exerciseResults) {
+                                                    moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResults;
+                                                }
+                                            });
+                                        });
+                                    });
+                                });
+                            }
+                            return getExerciseResultsProm.then(function () {
+                                return moduleResult;
+                            });
+                        });
+                    });
                 });
             };
 
