@@ -30,7 +30,7 @@
                     scope.d.skippedHandler = function(){
                         scope.showAsDone = true;
                         scope.d.showSkipButton = false;
-                        scope.onEnded(); // todo
+                        scope.onEnded();
                     };
 
                     if(angular.isDefined(scope.showSkipOption) && scope.showSkipOption()){
