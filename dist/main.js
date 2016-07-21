@@ -21,7 +21,6 @@
 "znk.infra.filters",
 "znk.infra.general",
 "znk.infra.hint",
-"znk.infra.moduleResults",
 "znk.infra.personalization",
 "znk.infra.pngSequence",
 "znk.infra.popUp",
@@ -257,19 +256,19 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
 (function (angular) {
     'use strict';
-    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.moduleResults']);
+    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.exerciseResult']);
 })(angular);
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', 'ModuleResultsService', '$q', 'SubjectEnum', '$log', 'ExerciseResultSrv',
-        function (ZnkModuleService, ModuleResultsService, $q, SubjectEnum, $log, ExerciseResultSrv) {
+        'ZnkModuleService', '$q', 'SubjectEnum', '$log', 'ExerciseResultSrv',
+        function (ZnkModuleService, $q, SubjectEnum, $log, ExerciseResultSrv) {
             var userAssignModuleService = {};
 
             userAssignModuleService.getUserAssignModules = function (userId) {
-                return ModuleResultsService.getUserModuleResultsGuids(userId).then(function (resultsGuids) {
+                return ExerciseResultSrv.getUserModuleResultsGuids(userId).then(function (resultsGuids) {
                     var moduleResults = {};
                     var getProm = $q.when();
                     angular.forEach(resultsGuids, function (resultGuid, resultModuleId) {
@@ -298,7 +297,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 var getProm = $q.when();
                 angular.forEach(moduleIds, function (moduleId) {
                     getProm = getProm.then(function(){
-                        return ModuleResultsService.getModuleResultByModuleId(moduleId, userId, false).then(function (moduleResult) {
+                        return ExerciseResultSrv.getModuleResult(userId, moduleId, false).then(function (moduleResult) {
                             moduleResults[moduleId] = moduleResult;
                             return moduleResults;
                         });
@@ -310,7 +309,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                         var saveProm = $q.when();
                         angular.forEach(moduleIds, function (moduleId) {
                             if(!moduleResults[moduleId]) {
-                                moduleResults[moduleId] =  ModuleResultsService.getDefaultModuleResult(moduleId, userId);
+                                moduleResults[moduleId] =  ExerciseResultSrv.getDefaultModuleResult(moduleId, userId);
                                 moduleResults[moduleId].assignedTutorId = tutorId;
                                 // copy fields from module object to results object for future using
                                 moduleResults[moduleId].name = moduleHeaders[moduleId].name;
@@ -322,7 +321,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                             moduleResults[moduleId].assign = true;
 
                             saveProm = saveProm.then(function(){
-                                return ModuleResultsService.setModuleResult(moduleResults[moduleId]);
+                                return ExerciseResultSrv.setModuleResult(moduleResults[moduleId]);
                             });
                         });
 
@@ -1952,8 +1951,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
     'use strict';
 
     angular.module('znk.infra.exerciseResult', [
-        'znk.infra.config','znk.infra.utility', 
-        'znk.infra.moduleResults',
+        'znk.infra.config','znk.infra.utility',
         'znk.infra.exerciseUtility'
     ]);
 })(angular);
@@ -1962,8 +1960,8 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
     'use strict';
 
     angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum', 'ModuleResultsService',
-        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum, ModuleResultsService) {
+        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum',
+        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum) {
             var ExerciseResultSrv = this;
 
             var EXERCISE_RESULTS_PATH = 'exerciseResults';
@@ -1976,6 +1974,10 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
             function _getExerciseResultPath(guid) {
                 return EXERCISE_RESULTS_PATH + '/' + guid;
+            }
+
+            function _getModuleResultPath(guid) {
+                return MODULE_RESULTS_PATH + '/' + guid;
             }
 
             function _getInitExerciseResult(exerciseTypeId,exerciseId,guid){
@@ -2373,6 +2375,47 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 });
             };
 
+            this.getUserModuleResultsGuids = function (userId){
+                var userResultsPath = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
+                return InfraConfigSrv.getStudentStorage().then(function (storage) {
+                    return storage.get(userResultsPath);
+                });
+            };
+
+            this.getDefaultModuleResult = function (moduleId, userId) {
+                return {
+                    moduleId: moduleId,
+                    uid: userId,
+                    assignedTutorId: null,
+                    assign: false,
+                    contentAssign: false,
+                    exerciseResults: [],
+                    guid: UtilitySrv.general.createGuid()
+                };
+            };
+
+            this.setModuleResult = function (newResult) {
+                return this.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
+                    var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
+                    if (userGuidLists[newResult.guid]) {
+                        return  this.getModuleResult(newResult.moduleId).then(function (moduleResult) {
+                            angular.extend(moduleResult, newResult);
+                            return InfraConfigSrv.getStudentStorage().then(function (storage) {
+                                return storage.set(moduleResultPath, moduleResult);
+                            });
+                        });
+                    }
+
+                    userGuidLists[newResult.moduleId] = newResult.guid;
+                    var dataToSave = {};
+                    dataToSave[USER_MODULE_RESULTS_PATH] = userGuidLists;
+                    dataToSave[moduleResultPath] = newResult;
+                    return InfraConfigSrv.getStudentStorage().then(function(storage){
+                        return storage.update(dataToSave);
+                    });
+                });
+            };
+
             function moduleExerciseSaveFn(){
                 /* jshint validthis: true */
                 return _calcExerciseResultFields(this).then(function (response) {
@@ -2389,7 +2432,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                         exerciseResultsGuids[exerciseTypeId][exerciseId] = exerciseResult.guid;
                         dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
 
-                        return ModuleResultsService.getModuleResultByModuleId(exerciseResult.moduleId, exerciseResult.uid).then(function (moduleResult) {
+                        return this.getModuleResult(exerciseResult.uid, exerciseResult.moduleId, exerciseResult.exerciseTypeId, exerciseResult.exerciseId).then(function (moduleResult) {
                             if(!moduleResult.exerciseResults) {
                                 moduleResult.exerciseResults = {};
                             }
@@ -2410,7 +2453,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
                                 moduleResult.exercisesStatus[exerciseTypeId][exerciseId] = exerciseStatuses[exerciseTypeId][exerciseId].status;
 
-                                var modulePath = ModuleResultsService.getModuleResultPath(moduleResult.guid);
+                                var modulePath = _getModuleResultPath(moduleResult.guid);
                                 dataToSave[modulePath] = moduleResult;
 
                                 return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
@@ -3549,102 +3592,6 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
 })(angular);
 
 angular.module('znk.infra.hint').run(['$templateCache', function($templateCache) {
-
-}]);
-
-(function (angular) {
-    'use strict';
-    angular.module('znk.infra.moduleResults', []);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.moduleResults').service('ModuleResultsService',
-        ["InfraConfigSrv", "$log", "$q", "UtilitySrv", "StorageSrv", function (InfraConfigSrv, $log, $q, UtilitySrv, StorageSrv) {
-            'ngInject';
-
-            var moduleResultsService = {};
-            var USER_MODULE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
-            var MODULE_RESULTS_PATH = 'moduleResults';
-
-            moduleResultsService.getUserModuleResultsGuids = function (userId){
-                var userResultsPath = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
-                return InfraConfigSrv.getStudentStorage().then(function (storage) {
-                    return storage.get(userResultsPath);
-                });
-            };
-            moduleResultsService.getModuleResultByGuid = function (resultGuid, defaultValue) {
-                var resultPath = MODULE_RESULTS_PATH + '/' + resultGuid;
-                return InfraConfigSrv.getStudentStorage().then(function (storage) {
-                    return storage.get(resultPath, defaultValue);
-                });
-            };
-            moduleResultsService.getModuleResultByModuleId = function (moduleId, userId, withDefaultResult) {
-                return moduleResultsService.getUserModuleResultsGuids(userId).then(function (moduleResultsGuids) {
-                    var defaultResult = {};
-                    var moduleResultGuid = moduleResultsGuids[moduleId];
-
-                    if (!moduleResultGuid) {
-                        if (!withDefaultResult) {
-                            return null;
-                        } else {
-                            defaultResult =  moduleResultsService.getDefaultModuleResult(moduleId, userId);
-                            moduleResultGuid = defaultResult.guid;
-                        }
-                    }
-
-                    return moduleResultsService.getModuleResultByGuid(moduleResultGuid, defaultResult);
-                });
-            };
-            moduleResultsService.getModuleResultPath = function (guid){
-                return MODULE_RESULTS_PATH + '/' + guid;
-            };
-
-
-            moduleResultsService.getDefaultModuleResult = function (moduleId, userId) {
-                return {
-                    moduleId: moduleId,
-                    uid: userId,
-                    assignedTutorId: null,
-                    assign: false,
-                    contentAssign: false,
-                    exerciseResults: [],
-                    guid: UtilitySrv.general.createGuid()
-                };
-            };
-
-            moduleResultsService.setModuleResult = function (newResult) {
-                return moduleResultsService.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
-                    var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
-                    if (userGuidLists[newResult.guid]) {
-                        return  moduleResultsService.getModuleResultByGuid(newResult.guid).then(function (moduleResult) {
-                            angular.extend(moduleResult, newResult);
-                            return InfraConfigSrv.getStudentStorage().then(function (storage) {
-                                return storage.set(moduleResultPath, moduleResult);
-                            });
-                        });
-                    }
-
-                    userGuidLists[newResult.moduleId] = newResult.guid;
-                    var dataToSave = {};
-                    dataToSave[USER_MODULE_RESULTS_PATH] = userGuidLists;
-                    dataToSave[moduleResultPath] = newResult;
-                    return InfraConfigSrv.getStudentStorage().then(function(storage){
-                        return storage.update(dataToSave);
-                    });
-                });
-            };
-
-
-
-            return moduleResultsService;
-        }]
-    );
-})(angular);
-
-
-angular.module('znk.infra.moduleResults').run(['$templateCache', function($templateCache) {
 
 }]);
 

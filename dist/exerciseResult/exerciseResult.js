@@ -2,8 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.exerciseResult', [
-        'znk.infra.config','znk.infra.utility', 
-        'znk.infra.moduleResults',
+        'znk.infra.config','znk.infra.utility',
         'znk.infra.exerciseUtility'
     ]);
 })(angular);
@@ -12,8 +11,8 @@
     'use strict';
 
     angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum', 'ModuleResultsService',
-        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum, ModuleResultsService) {
+        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum',
+        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum) {
             var ExerciseResultSrv = this;
 
             var EXERCISE_RESULTS_PATH = 'exerciseResults';
@@ -26,6 +25,10 @@
 
             function _getExerciseResultPath(guid) {
                 return EXERCISE_RESULTS_PATH + '/' + guid;
+            }
+
+            function _getModuleResultPath(guid) {
+                return MODULE_RESULTS_PATH + '/' + guid;
             }
 
             function _getInitExerciseResult(exerciseTypeId,exerciseId,guid){
@@ -423,6 +426,47 @@
                 });
             };
 
+            this.getUserModuleResultsGuids = function (userId){
+                var userResultsPath = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
+                return InfraConfigSrv.getStudentStorage().then(function (storage) {
+                    return storage.get(userResultsPath);
+                });
+            };
+
+            this.getDefaultModuleResult = function (moduleId, userId) {
+                return {
+                    moduleId: moduleId,
+                    uid: userId,
+                    assignedTutorId: null,
+                    assign: false,
+                    contentAssign: false,
+                    exerciseResults: [],
+                    guid: UtilitySrv.general.createGuid()
+                };
+            };
+
+            this.setModuleResult = function (newResult) {
+                return this.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
+                    var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
+                    if (userGuidLists[newResult.guid]) {
+                        return  this.getModuleResult(newResult.moduleId).then(function (moduleResult) {
+                            angular.extend(moduleResult, newResult);
+                            return InfraConfigSrv.getStudentStorage().then(function (storage) {
+                                return storage.set(moduleResultPath, moduleResult);
+                            });
+                        });
+                    }
+
+                    userGuidLists[newResult.moduleId] = newResult.guid;
+                    var dataToSave = {};
+                    dataToSave[USER_MODULE_RESULTS_PATH] = userGuidLists;
+                    dataToSave[moduleResultPath] = newResult;
+                    return InfraConfigSrv.getStudentStorage().then(function(storage){
+                        return storage.update(dataToSave);
+                    });
+                });
+            };
+
             function moduleExerciseSaveFn(){
                 /* jshint validthis: true */
                 return _calcExerciseResultFields(this).then(function (response) {
@@ -439,7 +483,7 @@
                         exerciseResultsGuids[exerciseTypeId][exerciseId] = exerciseResult.guid;
                         dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
 
-                        return ModuleResultsService.getModuleResultByModuleId(exerciseResult.moduleId, exerciseResult.uid).then(function (moduleResult) {
+                        return this.getModuleResult(exerciseResult.uid, exerciseResult.moduleId, exerciseResult.exerciseTypeId, exerciseResult.exerciseId).then(function (moduleResult) {
                             if(!moduleResult.exerciseResults) {
                                 moduleResult.exerciseResults = {};
                             }
@@ -460,7 +504,7 @@
 
                                 moduleResult.exercisesStatus[exerciseTypeId][exerciseId] = exerciseStatuses[exerciseTypeId][exerciseId].status;
 
-                                var modulePath = ModuleResultsService.getModuleResultPath(moduleResult.guid);
+                                var modulePath = _getModuleResultPath(moduleResult.guid);
                                 dataToSave[modulePath] = moduleResult;
 
                                 return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){

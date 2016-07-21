@@ -1,18 +1,18 @@
 (function (angular) {
     'use strict';
-    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.moduleResults']);
+    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.exerciseResult']);
 })(angular);
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', 'ModuleResultsService', '$q', 'SubjectEnum', '$log', 'ExerciseResultSrv',
-        function (ZnkModuleService, ModuleResultsService, $q, SubjectEnum, $log, ExerciseResultSrv) {
+        'ZnkModuleService', '$q', 'SubjectEnum', '$log', 'ExerciseResultSrv',
+        function (ZnkModuleService, $q, SubjectEnum, $log, ExerciseResultSrv) {
             var userAssignModuleService = {};
 
             userAssignModuleService.getUserAssignModules = function (userId) {
-                return ModuleResultsService.getUserModuleResultsGuids(userId).then(function (resultsGuids) {
+                return ExerciseResultSrv.getUserModuleResultsGuids(userId).then(function (resultsGuids) {
                     var moduleResults = {};
                     var getProm = $q.when();
                     angular.forEach(resultsGuids, function (resultGuid, resultModuleId) {
@@ -41,7 +41,7 @@
                 var getProm = $q.when();
                 angular.forEach(moduleIds, function (moduleId) {
                     getProm = getProm.then(function(){
-                        return ModuleResultsService.getModuleResultByModuleId(moduleId, userId, false).then(function (moduleResult) {
+                        return ExerciseResultSrv.getModuleResult(userId, moduleId, false).then(function (moduleResult) {
                             moduleResults[moduleId] = moduleResult;
                             return moduleResults;
                         });
@@ -53,7 +53,7 @@
                         var saveProm = $q.when();
                         angular.forEach(moduleIds, function (moduleId) {
                             if(!moduleResults[moduleId]) {
-                                moduleResults[moduleId] =  ModuleResultsService.getDefaultModuleResult(moduleId, userId);
+                                moduleResults[moduleId] =  ExerciseResultSrv.getDefaultModuleResult(moduleId, userId);
                                 moduleResults[moduleId].assignedTutorId = tutorId;
                                 // copy fields from module object to results object for future using
                                 moduleResults[moduleId].name = moduleHeaders[moduleId].name;
@@ -65,7 +65,7 @@
                             moduleResults[moduleId].assign = true;
 
                             saveProm = saveProm.then(function(){
-                                return ModuleResultsService.setModuleResult(moduleResults[moduleId]);
+                                return ExerciseResultSrv.setModuleResult(moduleResults[moduleId]);
                             });
                         });
 
