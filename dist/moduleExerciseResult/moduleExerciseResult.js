@@ -1,18 +1,18 @@
 (function (angular) {
     'use strict';
-    angular.module('znk.infra.moduleExerciseResults', []);
+    angular.module('znk.infra.moduleExerciseResult', []);
 })(angular);
 
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.moduleExerciseResults').service('ModuleExerciseResultsService',
+    angular.module('znk.infra.moduleExerciseResult').service('ModuleExerciseResultService',
         ["InfraConfigSrv", "$log", "$q", "UtilitySrv", "ExerciseResultSrv", function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseResultSrv) {
             'ngInject';
 
-            var moduleExerciseResultsService = {};
+            var moduleExerciseResultService = {};
 
-            moduleExerciseResultsService.getModuleExerciseResult = function (userId, moduleId, exerciseId, exerciseTypeId) {
+            moduleExerciseResultService.getModuleExerciseResult = function (userId, moduleId, exerciseId, exerciseTypeId) {
                 if(!UtilitySrv.fn.isValidNumber(exerciseTypeId) || !UtilitySrv.fn.isValidNumber(exerciseId)){
                     var errMSg = 'ExerciseResultSrv: exercise type id, exercise id should be number !!!';
                     $log.error(errMSg);
@@ -93,7 +93,7 @@
                 });
             }*/
 
-            return moduleExerciseResultsService;
+            return moduleExerciseResultService;
         }]
     );
 })(angular);
