@@ -122,7 +122,7 @@
                     return screenSharingData.$save();
                 });
             };
-
+            
             this.endSharing = function (screenSharingDataGuid) {
                 var getDataPromMap = {};
                 getDataPromMap.screenSharingData = ScreenSharingDataGetterSrv.getScreenSharingData(screenSharingDataGuid);

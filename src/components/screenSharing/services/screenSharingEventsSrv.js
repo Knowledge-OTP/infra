@@ -3,39 +3,57 @@
 
     angular.module('znk.infra.screenSharing').provider('ScreenSharingEventsSrv', function () {
         var isEnabled = true;
-        
+
         this.enabled = function (_isEnabled) {
             isEnabled = _isEnabled;
         };
 
-        this.$get = function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, ScreenSharingStatusEnum, UserScreenSharingStateEnum, ScreenSharingSrv) {
+        this.$get = function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, ScreenSharingStatusEnum, UserScreenSharingStateEnum, ScreenSharingSrv, $log, ScreenSharingUiSrv) {
             'ngInject';
-            
+
             var ScreenSharingEventsSrv = {};
-            
+
             function _listenToScreenSharingData(guid) {
                 var screenSharingStatusPath = 'screenSharing/' + guid;
 
                 function _cb(screenSharingData) {
-                    if (!screenSharingData || screenSharingData.status !== ScreenSharingStatusEnum.CONFIRMED.enum) {
+                    if (!screenSharingData) {
                         return;
                     }
 
-                    UserProfileService.getCurrUserId().then(function (currUid) {
-                        var userScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
+                    switch (screenSharingData.status) {
+                        case ScreenSharingStatusEnum.PENDING_VIEWER.enum:
+                            ScreenSharingUiSrv.showScreenSharingConfirmationPopUp().then(function () {
+                                ScreenSharingSrv.endSharing(screenSharingData.guid);
+                            }, function () {
+                                ScreenSharingSrv.confirmSharing(screenSharingData.guid);
+                            });
+                            break;
+                        case ScreenSharingStatusEnum.PENDING_SHARER.enum:
+                            ScreenSharingSrv.confirmSharing(screenSharingData.guid);
+                            break;
+                        case ScreenSharingStatusEnum.CONFIRMED.enum:
+                            UserProfileService.getCurrUserId().then(function (currUid) {
+                                var userScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
 
-                        if (screenSharingData.viewerId === currUid) {
-                            userScreenSharingState = UserScreenSharingStateEnum.VIEWER.enum;
-                        }
+                                if (screenSharingData.viewerId === currUid) {
+                                    userScreenSharingState = UserScreenSharingStateEnum.VIEWER.enum;
+                                }
 
-                        if (screenSharingData.sharerId === currUid) {
-                            userScreenSharingState = UserScreenSharingStateEnum.SHARER.enum;
-                        }
+                                if (screenSharingData.sharerId === currUid) {
+                                    userScreenSharingState = UserScreenSharingStateEnum.SHARER.enum;
+                                }
 
-                        if (userScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
-                            ScreenSharingSrv._userScreenSharingStateChanged(userScreenSharingState);
-                        }
-                    });
+                                if (userScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
+                                    ScreenSharingSrv._userScreenSharingStateChanged(userScreenSharingState);
+                                }
+                            });
+
+                            break;
+                        default:
+                            $log.error('ScreenSharingEventsSrv: invalid status was received' + screenSharingData.status);
+
+                    }
                 }
 
                 InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
@@ -64,7 +82,7 @@
                     _startListening();
                 }
             };
-            
+
             return ScreenSharingEventsSrv;
         };
     });

@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.screenSharing').service('ScreenSharingUiSrv',
-        function ($rootScope, $timeout, $compile, $animate) {
+        function ($rootScope, $timeout, $compile, $animate, PopUpSrv, $translate, $q, $log) {
             'ngInject';
 
             var childScope, screenSharingPhElement, readyProm;
@@ -63,6 +63,25 @@
                 _endScreenSharing();
             };
 
+            this.showScreenSharingConfirmationPopUp = function(){
+                var translationsPromMap = {};
+                translationsPromMap.title = $translate('SCREEN_SHARING.SHARE_SCREEN_REQUEST');
+                translationsPromMap.content= $translate('SCREEN_SHARING.WANT_TO_SHARE',{
+                    name: "Student/Teacher"
+                });
+                translationsPromMap.acceptBtnTitle = $translate('SCREEN_SHARING.REJECT');
+                translationsPromMap.cancelBtnTitle = $translate('SCREEN_SHARING.ACCEPT');
+                return $q.all(translationsPromMap).then(function(translations){
+                    return PopUpSrv.warning(
+                        translations.title,
+                        translations.content,
+                        translations.acceptBtnTitle,
+                        translations.cancelBtnTitle
+                    );
+                },function(err){
+                    $log.error('ScreenSharingUiSrv: translate failure' + err);
+                });
+            };
             //was wrapped with timeout since angular will compile the dom after this service initialization
             readyProm = $timeout(function(){
                 _init();
