@@ -1048,7 +1048,9 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
 
         var self = this;
         this.get = function () {
-            return StorageRevSrv.getContent({exerciseType: 'category'});
+            return StorageRevSrv.getContent({
+                exerciseType: 'category'
+            });
         };
 
         var categoryMapObj;
@@ -1111,32 +1113,24 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             });
         };
 
-        self.getAllLevelCategories = (function () {
-            var getAllLevelCategoriesProm;
-            return function (level) {
-                if (!getAllLevelCategoriesProm) {
-                    getAllLevelCategoriesProm = self.getCategoryMap().then(function (categories) {
-                        var levelCategories = {};
-                        angular.forEach(categories, function (category) {
-                            var numLevel=1;
-                            var catgoryDup = angular.copy(category);
-                            while (catgoryDup.parentId !== null) {
-                                catgoryDup = categories[catgoryDup.parentId];
-                                numLevel++;
-                            }
-                            if (numLevel === level){
-                                levelCategories[category.id] = category;
-                            }
-                        });
-                        return levelCategories;
-                    });
-                }
-                return getAllLevelCategoriesProm;
-            };
-        })();
+        self.getAllLevelCategories = function (level) {
+            return self.getCategoryMap().then(function (categories) {
+                var levelCategories = {};
+                angular.forEach(categories, function (category) {
+                    var numLevel = 1;
+                    var catgoryDup = angular.copy(category);
+                    while (catgoryDup.parentId !== null) {
+                        catgoryDup = categories[catgoryDup.parentId];
+                        numLevel++;
+                    }
+                    if (numLevel === level) {
+                        levelCategories[category.id] = category;
+                    }
+                });
+                return levelCategories;
+            });
+        };
 
-
-        
         self.getAllLevel3Categories = (function () {
             var getAllLevel3CategoriesProm;
             return function () {
@@ -5424,7 +5418,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                     keys.forEach(function (key) {
                         var value = source[key];
 
-                        if (key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length) || (value !== value)) {//value !== value return true if it equals to NaN
+                        if (key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length) || (value !== value)) { //value !== value return true if it equals to NaN
                             if (key !== '$save') {
                                 $log.debug('storageFirebaseAdapter: illegal property was deleted before save ' + key);
                             }
@@ -5450,8 +5444,8 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
             }
 
             var storageFirebaseAdapterPrototype = {
-                getRef: function(relativePath){
-                    if(relativePath === '' || angular.isUndefined(relativePath) || angular.isUndefined(relativePath) || relativePath === null){
+                getRef: function (relativePath) {
+                    if (relativePath === '' || angular.isUndefined(relativePath) || angular.isUndefined(relativePath) || relativePath === null) {
                         return this.__refMap.rootRef;
                     }
 
@@ -5491,7 +5485,11 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
 
                     this.__refMap.rootRef.update(pathsToUpdateCopy, function (err) {
                         if (err) {
-                            $log.error('storageFirebaseAdapter: failed to set data for the following path ' + pathsToUpdateCopy + ' ' + err);
+                            if (angular.isObject(pathsToUpdateCopy)) {
+                                $log.error('storageFirebaseAdapter: failed to set data for the following path ' + JSON.stringify(pathsToUpdateCopy) + ' ' + err);
+                            } else {
+                                $log.error('storageFirebaseAdapter: failed to set data for the following path ' + pathsToUpdateCopy + ' ' + err);
+                            }
                             return defer.reject(err);
                         }
                         defer.resolve(angular.isString(relativePathOrObject) ? newValue : relativePathOrObject);
@@ -5510,15 +5508,15 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                 onEvent: function (type, path, cb) {
                     var self = this;
 
-                    if(!this.__registeredEvents[type]){
+                    if (!this.__registeredEvents[type]) {
                         this.__registeredEvents[type] = {};
                     }
 
-                    if(!this.__registeredEvents[type][path]){
+                    if (!this.__registeredEvents[type][path]) {
                         this.__registeredEvents[type][path] = [];
 
                         var ref = this.getRef(path);
-                        ref.on(type, function(snapshot){
+                        ref.on(type, function (snapshot) {
                             var newVal = snapshot.val();
                             self.__invokeEventCb(type, path, [newVal]);
                         });
@@ -5527,33 +5525,33 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                     var evtCbArr = this.__registeredEvents[type][path];
                     evtCbArr.push(cb);
                 },
-                __invokeEventCb: function(type, path, argArr){
-                    if(!this.__registeredEvents[type] || !this.__registeredEvents[type][path]){
+                __invokeEventCb: function (type, path, argArr) {
+                    if (!this.__registeredEvents[type] || !this.__registeredEvents[type][path]) {
                         return;
                     }
 
                     var eventCbArr = this.__registeredEvents[type][path];
                     //fb event so we out of angular
-                    $timeout(function(){
-                        eventCbArr.forEach(function(cb){
+                    $timeout(function () {
+                        eventCbArr.forEach(function (cb) {
                             cb.apply(null, argArr);
                         });
                     });
                 },
-                offEvent: function(type, path, cb){
-                    if(!this.__registeredEvents[type] || !this.__registeredEvents[type][path]){
+                offEvent: function (type, path, cb) {
+                    if (!this.__registeredEvents[type] || !this.__registeredEvents[type][path]) {
                         return;
                     }
 
-                    if(angular.isUndefined(cb)){
+                    if (angular.isUndefined(cb)) {
                         this.__registeredEvents[type][path] = [];
                         return;
                     }
 
                     var eventCbArr = this.__registeredEvents[type][path];
                     var newEventCbArr = [];
-                    eventCbArr.forEach(function(cb){
-                        if(cb !== cb){
+                    eventCbArr.forEach(function (cb) {
+                        if (cb !== cb) {
                             newEventCbArr.push(cb);
                         }
                     });
@@ -6685,7 +6683,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                     scope.d = {
                         image: scope.imageGetter(),
                         blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined,
-                        showAsDone: angular.isDefined(scope.showAsDone) ? scope.showAsDone : false
+                        showAsDone: angular.isDefined(scope.showAsDone) ? scope.showAsDone() : false
                     };
 
                     scope.d.skippedHandler = function(){
@@ -7505,12 +7503,12 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         var buttonGoToProm = $translate('ZNK_EXERCISE.GO_TO_SUMMARY_BTN');
                         var buttonStayProm = $translate('ZNK_EXERCISE.STAY_BTN');
 
-                        $q.all([contentProm, titleProm, buttonGoToProm, buttonStayProm]).then(function (results) {
+                        areAllQuestionsAnsweredProm = $q.all([contentProm, titleProm, buttonGoToProm, buttonStayProm]).then(function (results) {
                             var content = results[0];
                             var title = results[1];
                             var buttonGoTo = results[2];
                             var buttonStay = results[3];
-                            areAllQuestionsAnsweredProm = PopUpSrv.warning(title, content, buttonGoTo, buttonStay).promise;
+                            return PopUpSrv.warning(title, content, buttonGoTo, buttonStay).promise;
                         }, function (err) {
                             $log.error(err);
                         });

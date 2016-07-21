@@ -33,7 +33,7 @@
                     keys.forEach(function (key) {
                         var value = source[key];
 
-                        if (key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length) || (value !== value)) {//value !== value return true if it equals to NaN
+                        if (key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length) || (value !== value)) { //value !== value return true if it equals to NaN
                             if (key !== '$save') {
                                 $log.debug('storageFirebaseAdapter: illegal property was deleted before save ' + key);
                             }
@@ -59,8 +59,8 @@
             }
 
             var storageFirebaseAdapterPrototype = {
-                getRef: function(relativePath){
-                    if(relativePath === '' || angular.isUndefined(relativePath) || angular.isUndefined(relativePath) || relativePath === null){
+                getRef: function (relativePath) {
+                    if (relativePath === '' || angular.isUndefined(relativePath) || angular.isUndefined(relativePath) || relativePath === null) {
                         return this.__refMap.rootRef;
                     }
 
@@ -100,7 +100,11 @@
 
                     this.__refMap.rootRef.update(pathsToUpdateCopy, function (err) {
                         if (err) {
-                            $log.error('storageFirebaseAdapter: failed to set data for the following path ' + pathsToUpdateCopy + ' ' + err);
+                            if (angular.isObject(pathsToUpdateCopy)) {
+                                $log.error('storageFirebaseAdapter: failed to set data for the following path ' + JSON.stringify(pathsToUpdateCopy) + ' ' + err);
+                            } else {
+                                $log.error('storageFirebaseAdapter: failed to set data for the following path ' + pathsToUpdateCopy + ' ' + err);
+                            }
                             return defer.reject(err);
                         }
                         defer.resolve(angular.isString(relativePathOrObject) ? newValue : relativePathOrObject);
@@ -119,15 +123,15 @@
                 onEvent: function (type, path, cb) {
                     var self = this;
 
-                    if(!this.__registeredEvents[type]){
+                    if (!this.__registeredEvents[type]) {
                         this.__registeredEvents[type] = {};
                     }
 
-                    if(!this.__registeredEvents[type][path]){
+                    if (!this.__registeredEvents[type][path]) {
                         this.__registeredEvents[type][path] = [];
 
                         var ref = this.getRef(path);
-                        ref.on(type, function(snapshot){
+                        ref.on(type, function (snapshot) {
                             var newVal = snapshot.val();
                             self.__invokeEventCb(type, path, [newVal]);
                         });
@@ -136,33 +140,33 @@
                     var evtCbArr = this.__registeredEvents[type][path];
                     evtCbArr.push(cb);
                 },
-                __invokeEventCb: function(type, path, argArr){
-                    if(!this.__registeredEvents[type] || !this.__registeredEvents[type][path]){
+                __invokeEventCb: function (type, path, argArr) {
+                    if (!this.__registeredEvents[type] || !this.__registeredEvents[type][path]) {
                         return;
                     }
 
                     var eventCbArr = this.__registeredEvents[type][path];
                     //fb event so we out of angular
-                    $timeout(function(){
-                        eventCbArr.forEach(function(cb){
+                    $timeout(function () {
+                        eventCbArr.forEach(function (cb) {
                             cb.apply(null, argArr);
                         });
                     });
                 },
-                offEvent: function(type, path, cb){
-                    if(!this.__registeredEvents[type] || !this.__registeredEvents[type][path]){
+                offEvent: function (type, path, cb) {
+                    if (!this.__registeredEvents[type] || !this.__registeredEvents[type][path]) {
                         return;
                     }
 
-                    if(angular.isUndefined(cb)){
+                    if (angular.isUndefined(cb)) {
                         this.__registeredEvents[type][path] = [];
                         return;
                     }
 
                     var eventCbArr = this.__registeredEvents[type][path];
                     var newEventCbArr = [];
-                    eventCbArr.forEach(function(cb){
-                        if(cb !== cb){
+                    eventCbArr.forEach(function (cb) {
+                        if (cb !== cb) {
                             newEventCbArr.push(cb);
                         }
                     });

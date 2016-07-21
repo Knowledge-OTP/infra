@@ -25,7 +25,7 @@
                     scope.d = {
                         image: scope.imageGetter(),
                         blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined,
-                        showAsDone: angular.isDefined(scope.showAsDone) ? scope.showAsDone : false
+                        showAsDone: angular.isDefined(scope.showAsDone) ? scope.showAsDone() : false
                     };
 
                     scope.d.skippedHandler = function(){
