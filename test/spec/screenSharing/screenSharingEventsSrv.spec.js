@@ -52,8 +52,7 @@ describe('testing service "ScreenSharingSrv":', function () {
             sharerPath: otherUserScreenSharingRequestsPath
         };
 
-        //the pop up service works opposite, reject when accepting
-        spyOn(_deps.ScreenSharingUiSrv, 'showScreenSharingConfirmationPopUp').and.returnValue(_deps.$q.reject());
+        spyOn(_deps.ScreenSharingUiSrv, 'showScreenSharingConfirmationPopUp').and.returnValue(_deps.$q.resolve());
 
         _deps.GlobalStorage.adapter.update(dataToUpdate);
         _deps.$rootScope.$digest();
@@ -88,8 +87,7 @@ describe('testing service "ScreenSharingSrv":', function () {
             sharerPath: otherUserScreenSharingRequestsPath
         };
 
-        //the pop up service works opposite, resolved when rejected
-        spyOn(_deps.ScreenSharingUiSrv, 'showScreenSharingConfirmationPopUp').and.returnValue(_deps.$q.resolve());
+        spyOn(_deps.ScreenSharingUiSrv, 'showScreenSharingConfirmationPopUp').and.returnValue(_deps.$q.reject());
 
         _deps.GlobalStorage.adapter.update(dataToUpdate);
         _deps.$rootScope.$digest();

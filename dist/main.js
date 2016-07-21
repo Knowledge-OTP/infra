@@ -4480,9 +4480,9 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                                 }
 
                                 ScreenSharingUiSrv.showScreenSharingConfirmationPopUp().then(function () {
-                                    ScreenSharingSrv.endSharing(screenSharingData.guid);
-                                }, function () {
                                     ScreenSharingSrv.confirmSharing(screenSharingData.guid);
+                                }, function () {
+                                    ScreenSharingSrv.endSharing(screenSharingData.guid);
                                 });
                                 break;
                             case ScreenSharingStatusEnum.PENDING_SHARER.enum:
