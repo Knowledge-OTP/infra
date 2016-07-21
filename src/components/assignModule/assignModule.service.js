@@ -2,8 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', 'ModuleResultsService', '$q', 'SubjectEnum',
-        function (ZnkModuleService, ModuleResultsService, $q, SubjectEnum) {
+        'ZnkModuleService', 'ModuleResultsService', '$q', 'SubjectEnum', '$log',
+        function (ZnkModuleService, ModuleResultsService, $q, SubjectEnum, $log) {
             var userAssignModuleService = {};
 
             userAssignModuleService.getUserAssignModules = function (userId) {

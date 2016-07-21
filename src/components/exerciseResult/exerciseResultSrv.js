@@ -2,8 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum', 'ModuleResultsService',
-        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum, ModuleResultsService) {
+        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum',
+        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum) {
             var ExerciseResultSrv = this;
 
             var EXERCISE_RESULTS_PATH = 'exerciseResults';
@@ -88,6 +88,11 @@
             }
 
             function _calcExerciseResultFields(exerciseResultObj) {
+
+                function _getAvgTime(totalNum, totalTime){
+                    return Math.round(totalNum ? totalTime/totalNum : 0);
+                }
+
                 var countCorrect = 0,
                     countWrong = 0,
                     countSkipped = 0,
@@ -146,13 +151,10 @@
                     dataToSaveObj[USER_EXERCISES_STATUS_PATH] = exercisesStatusData;
                     return {
                         exerciseResult: exerciseResultObj,
+                        exercisesStatus: exercisesStatusData,
                         dataToSave: dataToSaveObj
                     };
                 });
-
-                function _getAvgTime(totalNum, totalTime){
-                    return Math.round(totalNum ? totalTime/totalNum : 0);
-                }
             }
 
             function exerciseSaveFn(){
@@ -160,6 +162,7 @@
                 return _calcExerciseResultFields(this).then(function (response) {
                     var exerciseResult = response.exerciseResult;
                     var dataToSave = response.dataToSave;
+                    var exercisesStatusData = response.exercisesStatus;
 
                     var getSectionAggregatedDataProm = $q.when();
                     if(exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
@@ -186,55 +189,7 @@
                 });
             }
 
-            function moduleExerciseSaveFn(){
-                /* jshint validthis: true */
-                return _calcExerciseResultFields(this).then(function (response) {
-                    var exerciseResult = response.exerciseResult;
-                    var dataToSave = response.dataToSave;
-                    return _getExerciseResultsGuids().then(function (exerciseResultsGuids) {
-                        var exerciseTypeId = exerciseResult.exerciseTypeId;
-                        var exerciseId = exerciseResult.exerciseId;
 
-                        if (!exerciseResultsGuids[exerciseTypeId]) {
-                            exerciseResultsGuids[exerciseTypeId] = {};
-                        }
-
-                        exerciseResultsGuids[exerciseTypeId][exerciseId] = exerciseResult.guid;
-                        dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
-
-                        return ModuleResultsService.getModuleResultByModuleId(exerciseResult.moduleId, exerciseResult.uid).then(function (moduleResult) {
-                            if(!moduleResult.exerciseResults) {
-                                moduleResult.exerciseResults = {};
-                            }
-                            if(!moduleResult.exerciseResults[exerciseTypeId]) {
-                                moduleResult.exerciseResults[exerciseTypeId] = {};
-                            }
-
-                            moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResult.guid;
-
-                            return _getExercisesStatusData().then(function (exerciseStatuses) {
-                                if(!moduleResult.exercisesStatus) {
-                                    moduleResult.exercisesStatus = {};
-                                }
-
-                                if(!moduleResult.exercisesStatus[exerciseTypeId]) {
-                                    moduleResult.exercisesStatus[exerciseTypeId] = {};
-                                }
-
-                                moduleResult.exercisesStatus[exerciseTypeId][exerciseId] = exerciseStatuses[exerciseTypeId][exerciseId].status;
-
-                                var modulePath = ModuleResultsService.getModuleResultPath(moduleResult.guid);
-                                dataToSave[modulePath] = moduleResult;
-
-                                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                                    StudentStorageSrv.update(dataToSave);
-                                    return exerciseResult;
-                                });
-                            });
-                        });
-                    });
-                });
-            }
 
             function _getExamAggregatedSectionsData(examResult, exercisesStatusData) {
                 var aggregatedData = {

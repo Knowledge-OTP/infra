@@ -1,8 +1,13 @@
 (function (angular) {
     'use strict';
+    angular.module('znk.infra.moduleExerciseResults', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
 
     angular.module('znk.infra.moduleExerciseResults').service('ModuleExerciseResultsService',
-        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseResultSrv) {
+        ["InfraConfigSrv", "$log", "$q", "UtilitySrv", "ExerciseResultSrv", function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseResultSrv) {
             'ngInject';
 
             var moduleExerciseResultsService = {};
@@ -89,7 +94,11 @@
             }*/
 
             return moduleExerciseResultsService;
-        }
+        }]
     );
 })(angular);
 
+
+angular.module('znk.infra.moduleExerciseResult').run(['$templateCache', function($templateCache) {
+
+}]);

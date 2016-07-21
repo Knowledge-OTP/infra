@@ -14,32 +14,18 @@
             var USER_MODULE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
             var MODULE_RESULTS_PATH = 'moduleResults';
 
-            moduleResultsService.getDefaultModuleResult = function (moduleId, userId) {
-                return {
-                    moduleId: moduleId,
-                    uid: userId,
-                    assignedTutorId: null,
-                    assign: false,
-                    contentAssign: false,
-                    exerciseResults: [],
-                    guid: UtilitySrv.general.createGuid()
-                };
-            };
-
             moduleResultsService.getUserModuleResultsGuids = function (userId){
                 var userResultsPath = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
                 return InfraConfigSrv.getStudentStorage().then(function (storage) {
                     return storage.get(userResultsPath);
                 });
             };
-
             moduleResultsService.getModuleResultByGuid = function (resultGuid, defaultValue) {
                 var resultPath = MODULE_RESULTS_PATH + '/' + resultGuid;
                 return InfraConfigSrv.getStudentStorage().then(function (storage) {
                     return storage.get(resultPath, defaultValue);
                 });
             };
-
             moduleResultsService.getModuleResultByModuleId = function (moduleId, userId, withDefaultResult) {
                 return moduleResultsService.getUserModuleResultsGuids(userId).then(function (moduleResultsGuids) {
                     var defaultResult = {};
@@ -56,6 +42,20 @@
 
                     return moduleResultsService.getModuleResultByGuid(moduleResultGuid, defaultResult);
                 });
+            };
+
+
+
+            moduleResultsService.getDefaultModuleResult = function (moduleId, userId) {
+                return {
+                    moduleId: moduleId,
+                    uid: userId,
+                    assignedTutorId: null,
+                    assign: false,
+                    contentAssign: false,
+                    exerciseResults: [],
+                    guid: UtilitySrv.general.createGuid()
+                };
             };
 
             moduleResultsService.setModuleResult = function (newResult) {
@@ -83,8 +83,6 @@
             moduleResultsService.getModuleResultPath = function (guid){
                 return MODULE_RESULTS_PATH + '/' + guid;
             };
-
-
 
             return moduleResultsService;
         }]
