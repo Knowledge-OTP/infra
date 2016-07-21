@@ -274,10 +274,12 @@ $blueBG8: #75cbe8;
 */
 /* full background image with retina */
 znk-audio-player {
+  display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  -ms-flex-align: center;
-      align-items: center;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
   width: 100%;
   min-width: 150px; }
   znk-audio-player .time-display {
@@ -296,10 +298,12 @@ znk-audio-player {
     -ms-flex-positive: 1;
         flex-grow: 1;
     -webkit-flex-grow: 1;
-    -ms-flex-pack: center;
-        justify-content: center;
-    -ms-flex-align: center;
-        align-items: center; }
+    -webkit-justify-content: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+    -webkit-align-items: center;
+        -ms-flex-align: center;
+            align-items: center; }
   znk-audio-player.grey-player {
     border-radius: 50px;
     height: 46px;
@@ -321,10 +325,12 @@ znk-audio-player {
       width: 0;
       height: 5px; }
   znk-audio-player.type-has-control .player-control {
+    display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
-    -ms-flex-align: center;
-        align-items: center;
+    -webkit-align-items: center;
+        -ms-flex-align: center;
+            align-items: center;
     margin-right: 15px;
     margin-top: 4px;
     cursor: pointer; }
@@ -342,10 +348,12 @@ znk-audio-player {
     width: 30px;
     height: 30px;
     cursor: pointer;
+    display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
-    -ms-flex-pack: center;
-        justify-content: center;
+    -webkit-justify-content: center;
+        -ms-flex-pack: center;
+            justify-content: center;
     border-radius: 100%;
     border: 1px solid #cccccc;
     margin-right: 25px;
@@ -428,12 +436,15 @@ znk-image-audio {
         height: 308px;
         border-radius: 5px; }
     znk-image-audio .wrapper .audio-footer {
+      display: -webkit-flex;
       display: -ms-flexbox;
       display: flex;
-      -ms-flex-pack: center;
-          justify-content: center;
-      -ms-flex-align: center;
-          align-items: center;
+      -webkit-justify-content: center;
+          -ms-flex-pack: center;
+              justify-content: center;
+      -webkit-align-items: center;
+          -ms-flex-align: center;
+              align-items: center;
       position: absolute;
       bottom: 0;
       height: 55px;
@@ -451,12 +462,15 @@ znk-image-audio {
         font-weight: 400;
         transition: 0.2s linear opacity;
         cursor: pointer;
+        display: -webkit-flex;
         display: -ms-flexbox;
         display: flex;
-        -ms-flex-pack: center;
-            justify-content: center;
-        -ms-flex-align: center;
-            align-items: center;
+        -webkit-justify-content: center;
+            -ms-flex-pack: center;
+                justify-content: center;
+        -webkit-align-items: center;
+            -ms-flex-align: center;
+                align-items: center;
         position: absolute;
         right: 18px;
         top: 16px;
@@ -475,12 +489,15 @@ znk-image-audio {
         margin-right: 50px; }
 
 znk-audio-play-button .play-button-wrapper {
+  display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  -ms-flex-pack: center;
-      justify-content: center;
-  -ms-flex-align: center;
-      align-items: center; }
+  -webkit-justify-content: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center; }
   znk-audio-play-button .play-button-wrapper:active {
     background-color: rgba(255, 255, 255, 0.3);
     border-radius: 50px; }
@@ -494,12 +511,15 @@ znk-audio-play-button .play-button-wrapper {
     font-weight: 400;
     width: 180px;
     height: 45px;
+    display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
-    -ms-flex-pack: center;
-        justify-content: center;
-    -ms-flex-align: center;
-        align-items: center;
+    -webkit-justify-content: center;
+        -ms-flex-pack: center;
+            justify-content: center;
+    -webkit-align-items: center;
+        -ms-flex-align: center;
+            align-items: center;
     cursor: pointer;
     border-radius: 50px;
     background: transparent;
