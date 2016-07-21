@@ -71,8 +71,8 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(currTeacherAppUsersObject).toEqual(jasmine.objectContaining(expectedTeacherAppUsersObject));
     });
 
-    it('given i\'m a student when requesting to share my screen with a student then root shareScreen object and sharer and viewer shareScreen objects should' +
-        ' be update accordingly', function () {
+    it('given i\'m a student when requesting to share my screen with a student then root shareScreen object and sharer ' +
+        'and viewer shareScreen objects should be update accordingly', function () {
         var screenSharingDataGuid = 'guid';
         spyOn(_deps.UtilitySrv.general, 'createGuid').and.returnValue(screenSharingDataGuid);
 
@@ -114,8 +114,8 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(currStudentAppUsersObject).toEqual(jasmine.objectContaining(expectedStudentAppUsersObject));
     });
 
-    it('given i\'m a student which already requested to share my screen with a student when requesting to share my screen with the ' +
-        'same student then new screen sharing request should not be initialized' +
+    it('given i\'m a student which already requested to share my screen with a student when requesting to share ' +
+        'my screen with the same student then new screen sharing request should not be initialized' +
         ' be update accordingly', function () {
         var viewerId = '11223344';
 
@@ -131,8 +131,59 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(screenSharingRequestNum).toEqual(expectedScreenSharingRequestNum);
     });
 
-    it('given i\'m a student when requesting to view other teacher screen then root shareScreen object and sharer and viewer shareScreen objects should' +
-        ' be update accordingly', function () {
+    fit('given screen sharing request with status ended exists when trying to share my screen with the same user then new screen sharing' +
+        'data should be create', function(){
+        var myUid = _deps.UserProfileService.__currUserId;
+        var otherUid = '123456789-other-uid';
+        var screenSharingDataGuid = '123456789-data-guid';
+
+        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName] = {
+            users: {}
+        };
+
+        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[myUid] = {
+            screenSharing:{}
+        };
+        var myScreenSharingRequestsData = _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[myUid].screenSharing;
+
+        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[otherUid] = {
+            screenSharing:{}
+        };
+        var otherUserScreenSharingRequestsData = _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[otherUid].screenSharing;
+
+        _deps.GlobalStorage.adapter.__db.screenSharing = {};
+        var screenSharingData = _deps.GlobalStorage.adapter.__db.screenSharing;
+
+        myScreenSharingRequestsData[screenSharingDataGuid] = false;
+        otherUserScreenSharingRequestsData [screenSharingDataGuid] = false;
+
+        var viewerId = otherUid;
+        var sharerId = myUid;
+        var myUserScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + myUid + '/screenSharing';
+        var otherUserScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + otherUid + '/screenSharing';
+        screenSharingData[screenSharingDataGuid] = {
+            guid: screenSharingDataGuid,
+            sharerId: sharerId,
+            viewerId: viewerId,
+            status: _deps.ScreenSharingStatusEnum.ENDED.enum,
+            viewerPath: myUserScreenSharingRequestsPath,
+            sharerPath: otherUserScreenSharingRequestsPath
+        };
+
+        var viewerData = {
+            uid: otherUid,
+            isTeacher: false
+        };
+        _deps.ScreenSharingSrv.shareMyScreen(viewerData);
+        // _deps.$rootScope.$digest();
+
+        var screenSharingReqNum = Object.keys(_deps.GlobalStorage.adapter.__db.screenSharing).length;
+        var expectedScreenSharingReqNum = 2;
+        expect(screenSharingReqNum).toBe(expectedScreenSharingReqNum);
+    });
+
+    it('given i\'m a student when requesting to view other teacher screen then root shareScreen object and ' +
+        'sharer and viewer shareScreen objects should be update accordingly', function () {
         var screenSharingDataGuid = 'guid';
         spyOn(_deps.UtilitySrv.general, 'createGuid').and.returnValue(screenSharingDataGuid);
 
@@ -178,8 +229,8 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(currTeacherAppUsersObject ).toEqual(jasmine.objectContaining(expectedTeacherAppUsersObject));
     });
 
-    it('given i\'m a student when requesting to view other student screen then root shareScreen object and sharer and viewer shareScreen objects should' +
-        ' be update accordingly', function () {
+    it('given i\'m a student when requesting to view other student screen then root shareScreen object and sharer and ' +
+        'viewer shareScreen objects should be update accordingly', function () {
         var screenSharingDataGuid = 'guid';
         spyOn(_deps.UtilitySrv.general, 'createGuid').and.returnValue(screenSharingDataGuid);
 
