@@ -2518,7 +2518,8 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
         PRACTICE: 2,
         GAME: 3,
         SECTION: 4,
-        DRILL: 5
+        DRILL: 5,
+        LECTURE: 13
     };
 
     angular.module('znk.infra.exerciseUtility')
@@ -9643,7 +9644,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "<znk-scroll>\n" +
     "    <div class=\"pager-items-wrapper\">\n" +
     "        <div class=\"pager-item noselect\"\n" +
-    "             ng-repeat=\"question in questions track by question.id\"\n" +
+    "             ng-repeat=\"question in questions\"\n" +
     "             question-status=\"question.__questionStatus\"\n" +
     "             question=\"question\"\n" +
     "             ng-click=\"d.tap($index)\">\n" +

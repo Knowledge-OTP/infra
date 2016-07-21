@@ -1,7 +1,7 @@
 <znk-scroll>
     <div class="pager-items-wrapper">
         <div class="pager-item noselect"
-             ng-repeat="question in questions track by question.id"
+             ng-repeat="question in questions"
              question-status="question.__questionStatus"
              question="question"
              ng-click="d.tap($index)">

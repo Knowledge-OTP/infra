@@ -100,7 +100,8 @@
         PRACTICE: 2,
         GAME: 3,
         SECTION: 4,
-        DRILL: 5
+        DRILL: 5,
+        LECTURE: 13
     };
 
     angular.module('znk.infra.exerciseUtility')
