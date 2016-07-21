@@ -2486,8 +2486,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                             dataToSave[modulePath] = moduleResult;
 
                             return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                                StudentStorageSrv.update(dataToSave);
-                                return exerciseResult;
+                                return StudentStorageSrv.update(dataToSave);
                             });
                         });
                     });

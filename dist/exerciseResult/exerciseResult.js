@@ -537,8 +537,7 @@
                             dataToSave[modulePath] = moduleResult;
 
                             return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                                StudentStorageSrv.update(dataToSave);
-                                return exerciseResult;
+                                return StudentStorageSrv.update(dataToSave);
                             });
                         });
                     });
