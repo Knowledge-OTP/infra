@@ -21,6 +21,7 @@
             if (!exp) {
                 exp = defaultFormat;
             }
+
             return exp.replace(/hh/g, hours).replace(/mm/g, minutes).replace(/ss/g, seconds);
         };
     }]);

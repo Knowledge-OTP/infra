@@ -209,8 +209,11 @@
                             });
 
                             break;
+                        case ScreenSharingStatusEnum.ENDED.enum:
+                            $log.debug('ScreenSharingEventsSrv: Sharing request was ended ' + screenSharingData.guid);
+                            break;
                         default:
-                            $log.error('ScreenSharingEventsSrv: invalid status was received' + screenSharingData.status);
+                            $log.error('ScreenSharingEventsSrv: invalid status was received ' + screenSharingData.status);
 
                     }
                 }

@@ -2661,6 +2661,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
             if (!exp) {
                 exp = defaultFormat;
             }
+
             return exp.replace(/hh/g, hours).replace(/mm/g, minutes).replace(/ss/g, seconds);
         };
     }]);
@@ -4500,8 +4501,11 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                             });
 
                             break;
+                        case ScreenSharingStatusEnum.ENDED.enum:
+                            $log.debug('ScreenSharingEventsSrv: Sharing request was ended ' + screenSharingData.guid);
+                            break;
                         default:
-                            $log.error('ScreenSharingEventsSrv: invalid status was received' + screenSharingData.status);
+                            $log.error('ScreenSharingEventsSrv: invalid status was received ' + screenSharingData.status);
 
                     }
                 }
