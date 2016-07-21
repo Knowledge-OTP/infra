@@ -2346,6 +2346,12 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
             /* Module Results Functions */
             this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId) {
                 return this.getExerciseResult(exerciseTypeId, exerciseId, null, null, true).then(function (exerciseResult) {
+                    if(!exerciseResult){
+                        exerciseResult = {
+                            exerciseTypeId: exerciseTypeId,
+                            exerciseId: exerciseId
+                        };
+                    }
                     exerciseResult.moduleId = moduleId;
                     exerciseResult.$save = moduleExerciseSaveFn;
                     return exerciseResult;
@@ -2440,6 +2446,8 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 return _calcExerciseResultFields(this).then(function (response) {
                     var exerciseResult = response.exerciseResult;
                     var dataToSave = response.dataToSave;
+                    var exerciseStatuses = response.exercisesStatus;
+
                     return _getExerciseResultsGuids().then(function (exerciseResultsGuids) {
                         var exerciseTypeId = exerciseResult.exerciseTypeId;
                         var exerciseId = exerciseResult.exerciseId;
@@ -2451,7 +2459,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                         exerciseResultsGuids[exerciseTypeId][exerciseId] = exerciseResult.guid;
                         dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
 
-                        return this.getModuleResult(exerciseResult.uid, exerciseResult.moduleId, exerciseResult.exerciseTypeId, exerciseResult.exerciseId).then(function (moduleResult) {
+                        return ExerciseResultSrv.getModuleResult(exerciseResult.uid, exerciseResult.moduleId, exerciseResult.exerciseTypeId, exerciseResult.exerciseId).then(function (moduleResult) {
                             if(!moduleResult.exerciseResults) {
                                 moduleResult.exerciseResults = {};
                             }
@@ -2461,24 +2469,22 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
                             moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResult.guid;
 
-                            return _getExercisesStatusData().then(function (exerciseStatuses) {
-                                if(!moduleResult.exercisesStatus) {
-                                    moduleResult.exercisesStatus = {};
-                                }
+                            if(!moduleResult.exercisesStatus) {
+                                moduleResult.exercisesStatus = {};
+                            }
 
-                                if(!moduleResult.exercisesStatus[exerciseTypeId]) {
-                                    moduleResult.exercisesStatus[exerciseTypeId] = {};
-                                }
+                            if(!moduleResult.exercisesStatus[exerciseTypeId]) {
+                                moduleResult.exercisesStatus[exerciseTypeId] = {};
+                            }
 
-                                moduleResult.exercisesStatus[exerciseTypeId][exerciseId] = exerciseStatuses[exerciseTypeId][exerciseId].status;
+                            moduleResult.exercisesStatus[exerciseTypeId][exerciseId] = exerciseStatuses[exerciseTypeId][exerciseId].status;
 
-                                var modulePath = _getModuleResultPath(moduleResult.guid);
-                                dataToSave[modulePath] = moduleResult;
+                            var modulePath = _getModuleResultPath(moduleResult.guid);
+                            dataToSave[modulePath] = moduleResult;
 
-                                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
-                                    StudentStorageSrv.update(dataToSave);
-                                    return exerciseResult;
-                                });
+                            return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                                StudentStorageSrv.update(dataToSave);
+                                return exerciseResult;
                             });
                         });
                     });
