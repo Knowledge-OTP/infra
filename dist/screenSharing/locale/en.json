@@ -1,6 +1,6 @@
 {
     "SCREEN_SHARING":{
-        "SHARE_SCREEN_REQUEST": "Share Screen Requst",
+        "SHARE_SCREEN_REQUEST": "Share Screen Request",
         "WANT_TO_SHARE": "{{name}} wants to share his screen with you.",
         "REJECT": "REJECT",
         "ACCEPT": "ACCEPT"

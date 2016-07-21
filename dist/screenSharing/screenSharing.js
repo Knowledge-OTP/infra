@@ -502,9 +502,12 @@
                         translations.content,
                         translations.acceptBtnTitle,
                         translations.cancelBtnTitle
-                    );
+                    ).then(function(popUpInstance){
+                        return popUpInstance.promise;
+                    });
                 },function(err){
                     $log.error('ScreenSharingUiSrv: translate failure' + err);
+                    return $q.reject(err);
                 });
             };
             //was wrapped with timeout since angular will compile the dom after this service initialization
