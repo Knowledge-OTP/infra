@@ -491,7 +491,7 @@
                 return _calcExerciseResultFields(this).then(function (response) {
                     var exerciseResult = response.exerciseResult;
                     var dataToSave = response.dataToSave;
-                    var exerciseStatuses = response.exercisesStatus;
+                    var exerciseStatuses = response.exercisesStatus || {};
 
                     return _getExerciseResultsGuids().then(function (exerciseResultsGuids) {
                         var exerciseTypeId = exerciseResult.exerciseTypeId;
@@ -522,7 +522,9 @@
                                 moduleResult.exercisesStatus[exerciseTypeId] = {};
                             }
 
-                            moduleResult.exercisesStatus[exerciseTypeId][exerciseId] = exerciseStatuses[exerciseTypeId][exerciseId].status;
+                            if(exerciseStatuses[exerciseTypeId] && exerciseStatuses[exerciseTypeId][exerciseId]) {
+                                moduleResult.exercisesStatus[exerciseTypeId][exerciseId] = exerciseStatuses[exerciseTypeId][exerciseId].status;
+                            }
 
                             var modulePath = _getModuleResultPath(moduleResult.guid);
                             dataToSave[modulePath] = moduleResult;
