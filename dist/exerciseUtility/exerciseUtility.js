@@ -113,7 +113,8 @@
                     ['PRACTICE', 2, 'Practice'],
                     ['GAME', 3, 'Game'],
                     ['SECTION', 4, 'Section'],
-                    ['DRILL', 5, 'Drill']
+                    ['DRILL', 5, 'Drill'],
+                    ['LECTURE', 13, 'Lecture']
                 ]);
             }
         ]);

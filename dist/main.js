@@ -1525,7 +1525,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                 }
 
                 angular.forEach(ExerciseTypeEnum, function(enumObj, enumName){
-                    if(enumName !== 'SECTION'){
+                    if(enumName !== 'SECTION' && enumName !== 'LECTURE'){
                         var enumLowercaseName = enumName.toLowerCase();
                         var evtName = exerciseEventsConst[enumLowercaseName].FINISH;
                         childScope.$on(evtName, _baseExerciseFinishHandler.bind(EstimatedScoreEventsHandlerSrv, enumObj.enum));
@@ -2531,7 +2531,8 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
                     ['PRACTICE', 2, 'Practice'],
                     ['GAME', 3, 'Game'],
                     ['SECTION', 4, 'Section'],
-                    ['DRILL', 5, 'Drill']
+                    ['DRILL', 5, 'Drill'],
+                    ['LECTURE', 13, 'Lecture']
                 ]);
             }
         ]);
