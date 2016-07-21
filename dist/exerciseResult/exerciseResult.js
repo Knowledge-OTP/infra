@@ -396,12 +396,15 @@
 
             /* Module Results Functions */
             this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId) {
-                return this.getExerciseResult(exerciseTypeId, exerciseId, null, null, true).then(function (exerciseResult) {
-                    if(!exerciseResult){
-                        exerciseResult = {
-                            exerciseTypeId: exerciseTypeId,
-                            exerciseId: exerciseId
-                        };
+                return $q.all([
+                    this.getExerciseResult(exerciseTypeId, exerciseId, null, null, true),
+                    _getInitExerciseResult(exerciseTypeId,exerciseId,UtilitySrv.general.createGuid())
+                ]).then(function (results) {
+                    var exerciseResult = results[0];
+                    var initResults = results[1];
+
+                    if(!exerciseResult) {
+                        exerciseResult = initResults;
                     }
                     exerciseResult.moduleId = moduleId;
                     exerciseResult.$save = moduleExerciseSaveFn;
