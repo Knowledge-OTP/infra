@@ -31,6 +31,19 @@
                 });
             };
 
+            userAssignModuleService.getUserAssignModulesWithHeader = function (userId) {
+                return userAssignModuleService.getUserAssignModules(userId).then(function (assignModules) {
+                    return ZnkModuleService.getModuleHeaders().then(function(moduleHeaders){
+                        if(moduleHeaders) {
+                            angular.forEach(assignModules, function (assignModule, assignModuleId) {
+                                assignModule.module = moduleHeaders[assignModuleId];
+                            });
+                        }
+                        return assignModules;
+                    });
+                });
+            };
+
             userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId) {
                 if(!angular.isArray(moduleIds)){
                     var errMSg = 'UserAssignModuleService: 1st argument should be array of module ids';
