@@ -43,6 +43,7 @@
                     var correctAnswersNum = 0,
                         wrongAnswersNum = 0,
                         skippedAnswersNum = 0,
+                        totalAnswered = 0,
                         duration = 0;
 
                     if(assignModule.exercisesStatus) {
@@ -57,6 +58,7 @@
                             wrongAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
                             skippedAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
                             duration = assignModule.exerciseResults[exerciseTypeId][exerciseId].duration || 0;
+                            totalAnswered = correctAnswersNum + wrongAnswersNum + skippedAnswersNum;
                         }
                     }
                     return {
@@ -64,7 +66,8 @@
                         correctAnswersNum: correctAnswersNum,
                         wrongAnswersNum: wrongAnswersNum,
                         skippedAnswersNum: skippedAnswersNum,
-                        duration: duration
+                        duration: duration,
+                        totalAnswered: totalAnswered
                     };
                 }
 
