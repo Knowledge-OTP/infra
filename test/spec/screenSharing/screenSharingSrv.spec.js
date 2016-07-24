@@ -375,6 +375,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         };
         _updateScreenSharingData(screenSharingData);
 
+        spyOn(_deps.ScreenSharingUiSrv, 'endScreenSharing');
         spyOn(_deps.ScreenSharingUiSrv, 'activateScreenSharing').and.returnValue(_deps.$q.when());
         screenSharingData.status = _deps.ScreenSharingStatusEnum.CONFIRMED.enum;
         _updateScreenSharingData(screenSharingData);
@@ -382,5 +383,6 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(_deps.GlobalStorage.adapter.__db.screenSharing[screenSharingDataGuid].status).toBe(_deps.ScreenSharingStatusEnum.ENDED.enum);
         expect(_deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[viewerId].screenSharing[screenSharingDataGuid]).toBeFalsy();
         expect(_deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[sharerId].screenSharing[screenSharingDataGuid]).toBeFalsy();
+        expect(_deps.ScreenSharingUiSrv.endScreenSharing).toHaveBeenCalled();
     });
 });

@@ -6,7 +6,6 @@
             'ngInject';
 
             var childScope, screenSharingPhElement, readyProm;
-            var self = this;
 
             function _init() {
                 var bodyElement = angular.element(document.body);
@@ -32,15 +31,14 @@
 
             function _activateScreenSharing(userSharingState) {
                 _endScreenSharing();
-                
+
                 var defer = $q.defer();
-                
+
                 readyProm.then(function(){
                     childScope = $rootScope.$new(true);
                     childScope.d = {
                         userSharingState: userSharingState,
                         onClose: function(){
-                            self.endScreenSharing();
                             defer.resolve('closed');
                         }
                     };
@@ -56,7 +54,7 @@
                     $animate.enter(screenSharingElement[0], screenSharingPhElement[0]);
                     $compile(screenSharingElement)(childScope);
                 });
-                
+
                 return defer.promise;
             }
 

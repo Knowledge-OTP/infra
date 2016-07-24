@@ -4743,7 +4743,6 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             'ngInject';
 
             var childScope, screenSharingPhElement, readyProm;
-            var self = this;
 
             function _init() {
                 var bodyElement = angular.element(document.body);
@@ -4769,15 +4768,14 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
             function _activateScreenSharing(userSharingState) {
                 _endScreenSharing();
-                
+
                 var defer = $q.defer();
-                
+
                 readyProm.then(function(){
                     childScope = $rootScope.$new(true);
                     childScope.d = {
                         userSharingState: userSharingState,
                         onClose: function(){
-                            self.endScreenSharing();
                             defer.resolve('closed');
                         }
                     };
@@ -4793,7 +4791,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                     $animate.enter(screenSharingElement[0], screenSharingPhElement[0]);
                     $compile(screenSharingElement)(childScope);
                 });
-                
+
                 return defer.promise;
             }
 
