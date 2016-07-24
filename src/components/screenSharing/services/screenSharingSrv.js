@@ -160,11 +160,14 @@
                 });
             };
 
-            this._userScreenSharingStateChanged = function (newUserScreenSharingState) {
+            this._userScreenSharingStateChanged = function (newUserScreenSharingState, screenSharingData) {
                 if(!newUserScreenSharingState){
                     return;
                 }
-                ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState);
+
+                ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState).then(function(){
+                    _this.endSharing(screenSharingData.guid);
+                });
             };
         }
     );

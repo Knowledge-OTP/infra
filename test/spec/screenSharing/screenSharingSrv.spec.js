@@ -12,7 +12,10 @@ describe('testing service "ScreenSharingSrv":', function () {
             'ScreenSharingStatusEnum',
             'TestUtilitySrv',
             'UtilitySrv',
-            'ENV'
+            'ENV',
+            'ScreenSharingUiSrv',
+            '$q',
+            '$rootScope'
         ];
 
         depsToInject.forEach(function (depName) {
@@ -23,6 +26,23 @@ describe('testing service "ScreenSharingSrv":', function () {
 
         _deps.GlobalStorage = _deps.TestUtilitySrv.general.asyncToSync(_deps.InfraConfigSrv.getGlobalStorage, _deps.InfraConfigSrv)();
     }));
+
+    function _addScreenSharingRequestToUser(uid, isTeacher, guid){
+        var appName = isTeacher ? _deps.ENV.dashboardAppName : _deps.ENV.studentAppName;
+
+        var path = appName + '/users/' + uid + '/screenSharing';
+        var value = {};
+        value[guid] = true;
+        _deps.GlobalStorage.adapter.update(path, value);
+
+    }
+
+    function _updateScreenSharingData(screenSharingData){
+        var path = 'screenSharing/' + screenSharingData.guid;
+
+        _deps.GlobalStorage.adapter.update(path, screenSharingData);
+        _deps.$rootScope.$digest();
+    }
 
     it('given i\'m a student when requesting to share my screen with a teacher then root shareScreen object and ' +
         'sharer and viewer shareScreen objects should be update accordingly', function () {
@@ -175,7 +195,6 @@ describe('testing service "ScreenSharingSrv":', function () {
             isTeacher: false
         };
         _deps.ScreenSharingSrv.shareMyScreen(viewerData);
-        // _deps.$rootScope.$digest();
 
         var screenSharingReqNum = Object.keys(_deps.GlobalStorage.adapter.__db.screenSharing).length;
         var expectedScreenSharingReqNum = 2;
@@ -332,5 +351,34 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(_deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[sharerId].screenSharing[screenSharingDataGuid]).toBeFalsy();
 
         expect(_deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[viewerId].screenSharing[screenSharingDataGuid]).toBeFalsy();
+    });
+
+    it('when user close the view other user screen modal then screen sharing data status should change to ended', function(){
+        var myUid = _deps.UserProfileService.__currUserId;
+        var otherUid = '123456789-other-uid';
+        var screenSharingDataGuid = '123456789-data-guid';
+
+        _addScreenSharingRequestToUser(myUid,false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(otherUid,false, screenSharingDataGuid);
+
+        var viewerId = otherUid;
+        var sharerId = myUid;
+        var myUserScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + myUid + '/screenSharing';
+        var otherUserScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + otherUid + '/screenSharing';
+        var screenSharingData = {
+            guid: screenSharingDataGuid,
+            sharerId: sharerId,
+            viewerId: viewerId,
+            status: _deps.ScreenSharingStatusEnum.PENDING_VIEWER.enum,
+            viewerPath: myUserScreenSharingRequestsPath,
+            sharerPath: otherUserScreenSharingRequestsPath
+        };
+        _updateScreenSharingData(screenSharingData);
+
+        spyOn(_deps.ScreenSharingUiSrv, 'activateScreenSharing').and.returnValue(_deps.$q.when());
+        screenSharingData.status = _deps.ScreenSharingStatusEnum.CONFIRMED.enum;
+        _updateScreenSharingData(screenSharingData);
+
+        expect(_deps.GlobalStorage.adapter.__db.screenSharing[screenSharingDataGuid].status).toBe(_deps.ScreenSharingStatusEnum.ENDED.enum);
     });
 });

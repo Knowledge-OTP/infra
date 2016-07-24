@@ -4505,7 +4505,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                                     }
 
                                     if (userScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
-                                        ScreenSharingSrv._userScreenSharingStateChanged(userScreenSharingState);
+                                        ScreenSharingSrv._userScreenSharingStateChanged(userScreenSharingState, screenSharingData);
                                     }
                                 });
 
@@ -4714,11 +4714,14 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 });
             };
 
-            this._userScreenSharingStateChanged = function (newUserScreenSharingState) {
+            this._userScreenSharingStateChanged = function (newUserScreenSharingState, screenSharingData) {
                 if(!newUserScreenSharingState){
                     return;
                 }
-                ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState);
+
+                ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState).then(function(){
+                    _this.endSharing(screenSharingData.guid);
+                });
             };
         }]
     );
@@ -4758,13 +4761,16 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
             function _activateScreenSharing(userSharingState) {
                 _endScreenSharing();
-
+                
+                var defer = $q.defer();
+                
                 readyProm.then(function(){
                     childScope = $rootScope.$new(true);
                     childScope.d = {
                         userSharingState: userSharingState,
                         onClose: function(){
                             self.endScreenSharing();
+                            defer.resolve('closed');
                         }
                     };
 
@@ -4779,10 +4785,12 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                     $animate.enter(screenSharingElement[0], screenSharingPhElement[0]);
                     $compile(screenSharingElement)(childScope);
                 });
+                
+                return defer.promise;
             }
 
             this.activateScreenSharing = function (userSharingState) {
-                _activateScreenSharing(userSharingState);
+                return _activateScreenSharing(userSharingState);
             };
 
             this.endScreenSharing = function () {

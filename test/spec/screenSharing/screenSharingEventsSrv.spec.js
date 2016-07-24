@@ -235,6 +235,6 @@ describe('testing service "ScreenSharingSrv":', function () {
         _deps.GlobalStorage.adapter.update(screenSharingPath, screenSharingData);
         _deps.$rootScope.$digest();
 
-        expect(_deps.ScreenSharingSrv._userScreenSharingStateChanged).toHaveBeenCalledWith(_deps.UserScreenSharingStateEnum.SHARER.enum);
+        expect(_deps.ScreenSharingSrv._userScreenSharingStateChanged).toHaveBeenCalledWith(_deps.UserScreenSharingStateEnum.SHARER.enum, screenSharingData);
     });
 });

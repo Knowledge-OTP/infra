@@ -32,13 +32,16 @@
 
             function _activateScreenSharing(userSharingState) {
                 _endScreenSharing();
-
+                
+                var defer = $q.defer();
+                
                 readyProm.then(function(){
                     childScope = $rootScope.$new(true);
                     childScope.d = {
                         userSharingState: userSharingState,
                         onClose: function(){
                             self.endScreenSharing();
+                            defer.resolve('closed');
                         }
                     };
 
@@ -53,10 +56,12 @@
                     $animate.enter(screenSharingElement[0], screenSharingPhElement[0]);
                     $compile(screenSharingElement)(childScope);
                 });
+                
+                return defer.promise;
             }
 
             this.activateScreenSharing = function (userSharingState) {
-                _activateScreenSharing(userSharingState);
+                return _activateScreenSharing(userSharingState);
             };
 
             this.endScreenSharing = function () {
