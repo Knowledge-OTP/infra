@@ -26,6 +26,10 @@
  *      setSlideDirection
  *      forceDoneBtnDisplay
  *      pagerDisplay: function, if true provided than pager will be displayed other it will be hidden.
+ *      bindViewTo: receive as parameter the view state
+ *          viewState properties:
+ *              currQuestion:
+ *              questionView: it implemented per question
  */
 
 (function (angular) {

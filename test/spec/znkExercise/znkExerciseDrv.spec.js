@@ -840,4 +840,11 @@ describe('testing directive "znkExerciseDrv":', function () {
         isolateScope.vm.questionAnswered();
         expect(scope.d.answers[0].afterAllowedTime).toBeTruthy();
     });
+
+    fit('when bindTo action is invoked then znk exercise view should be binded to viewState which received as parameter',
+        function(){
+            var scopeContent = createDirectiveHtml();
+            var scope = scopeContent.scope;
+        }
+    );
 });
