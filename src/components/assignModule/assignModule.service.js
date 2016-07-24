@@ -70,8 +70,8 @@
 
                 return userAssignModuleService.getUserAssignModules(userId).then(function (assignModules) {
                     return ZnkModuleService.getModuleHeaders().then(function(moduleHeaders){
+                        var getProm = $q.when();
                         if(moduleHeaders) {
-                            var getProm = $q.when();
                             angular.forEach(assignModules, function (assignModule, assignModuleId) {
                                 getProm = getProm.then(function () {
                                     assignModule.module = moduleHeaders[assignModuleId];

@@ -289,53 +289,62 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
             userAssignModuleService.getUserAssignModulesWithProgress = function (userId) {
 
-                function moduleSummary(assignModule){
-                    var exerciseTypeId = ExerciseTypeEnum.PRACTICE.enum;
-                    var exerciseId = assignModule.module.exercises.filter(function (exercise) {
-                        return exercise.typeId === exerciseTypeId ? exercise.id : null;
+                function getModuleSummary(assignModule){
+                    return ZnkModuleService.getModuleById(assignModule.moduleId).then(function (moduleObj) {
+                        var exerciseTypeId = ExerciseTypeEnum.PRACTICE.enum;
+                        var exerciseId = moduleObj.exercises.filter(function (exercise) {
+                            return exercise.typeId === exerciseTypeId ? exercise.id : null;
+                        });
+
+                        var status = ExerciseStatusEnum.NEW.enum;
+                        var correctAnswersNum = 0,
+                            wrongAnswersNum = 0,
+                            skippedAnswersNum = 0,
+                            totalAnswered = 0,
+                            duration = 0;
+
+                        if(assignModule.exercisesStatus) {
+                            if (assignModule.exercisesStatus[exerciseTypeId] && assignModule.exercisesStatus[exerciseTypeId][exerciseId]) {
+                                status = assignModule.exercisesStatus[exerciseTypeId][exerciseId];
+                            }
+                        }
+
+                        if (assignModule.exerciseResults) {
+                            if (assignModule.exerciseResults[exerciseTypeId] && assignModule.exerciseResults[exerciseTypeId][exerciseId]) {
+                                correctAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
+                                wrongAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
+                                skippedAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
+                                duration = assignModule.exerciseResults[exerciseTypeId][exerciseId].duration || 0;
+                                totalAnswered = correctAnswersNum + wrongAnswersNum + skippedAnswersNum;
+                            }
+                        }
+                        return {
+                            status: status,
+                            correctAnswersNum: correctAnswersNum,
+                            wrongAnswersNum: wrongAnswersNum,
+                            skippedAnswersNum: skippedAnswersNum,
+                            duration: duration,
+                            totalAnswered: totalAnswered
+                        };
                     });
-
-                    var status = ExerciseStatusEnum.NEW.enum;
-                    var correctAnswersNum = 0,
-                        wrongAnswersNum = 0,
-                        skippedAnswersNum = 0,
-                        totalAnswered = 0,
-                        duration = 0;
-
-                    if(assignModule.exercisesStatus) {
-                        if (assignModule.exercisesStatus[exerciseTypeId] && assignModule.exercisesStatus[exerciseTypeId][exerciseId]) {
-                            status = assignModule.exercisesStatus[exerciseTypeId][exerciseId];
-                        }
-                    }
-
-                    if (assignModule.exerciseResults) {
-                        if (assignModule.exerciseResults[exerciseTypeId] && assignModule.exerciseResults[exerciseTypeId][exerciseId]) {
-                            correctAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
-                            wrongAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
-                            skippedAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
-                            duration = assignModule.exerciseResults[exerciseTypeId][exerciseId].duration || 0;
-                            totalAnswered = correctAnswersNum + wrongAnswersNum + skippedAnswersNum;
-                        }
-                    }
-                    return {
-                        status: status,
-                        correctAnswersNum: correctAnswersNum,
-                        wrongAnswersNum: wrongAnswersNum,
-                        skippedAnswersNum: skippedAnswersNum,
-                        duration: duration,
-                        totalAnswered: totalAnswered
-                    };
                 }
 
                 return userAssignModuleService.getUserAssignModules(userId).then(function (assignModules) {
                     return ZnkModuleService.getModuleHeaders().then(function(moduleHeaders){
+                        var getProm = $q.when();
                         if(moduleHeaders) {
                             angular.forEach(assignModules, function (assignModule, assignModuleId) {
-                                assignModule.module = moduleHeaders[assignModuleId];
-                                assignModule.moduleSummary = moduleSummary(assignModule);
+                                getProm = getProm.then(function () {
+                                    assignModule.module = moduleHeaders[assignModuleId];
+                                    return getModuleSummary(assignModule).then(function (moduleSummary) {
+                                        assignModule.moduleSummary = moduleSummary;
+                                    });
+                                });
                             });
                         }
-                        return assignModules;
+                        return getProm.then(function () {
+                            return assignModules;
+                        });
                     });
                 });
             };
@@ -386,10 +395,10 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             };
 
             userAssignModuleService.setAssignContent = function (moduleId) {
-              return ZnkModuleService.getModuleById(moduleId).then(function (module) {
-                  module.contentAssign = true;
-                  return ZnkModuleService.setModule(module);
-              });
+                return ZnkModuleService.getModuleById(moduleId).then(function (module) {
+                    module.contentAssign = true;
+                    return ZnkModuleService.setModule(module);
+                });
             };
 
             return userAssignModuleService;
@@ -9832,10 +9841,6 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
                     exerciseId: moduleId,
                     exerciseType: 'module'
                 });
-            };
-
-            znkModuleService.setModule = function (module) {
-                return StorageRevSrv.update(module);
             };
 
             return znkModuleService;
