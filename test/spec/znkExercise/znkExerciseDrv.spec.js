@@ -147,10 +147,6 @@ describe('testing directive "znkExerciseDrv":', function () {
         return item1.id - item2.id;
     }
 
-    function sortArrByQuestionId(item1, item2) {
-        return item1.questionId - item2.questionId;
-    }
-
     it('given btn section and question builder ready then znkExerciseDrvCtrl.isExerciseReady promise should return true', function () {
         var scopeContent = createDirectiveHtml();
         var content = scopeContent.content;
@@ -841,10 +837,47 @@ describe('testing directive "znkExerciseDrv":', function () {
         expect(scope.d.answers[0].afterAllowedTime).toBeTruthy();
     });
 
-    fit('when bindTo action is invoked then znk exercise view should be binded to viewState which received as parameter',
+    it('when bindExerciseViewTo action is invoked then znk exercise view should be binded to viewState which received as parameter',
         function(){
             var scopeContent = createDirectiveHtml();
             var scope = scopeContent.scope;
+
+            var exerciseView = {};
+            scope.d.actions.bindExerciseViewTo(exerciseView);
+
+            scope.d.actions.setSlideIndex(2);
+            scope.$digest();
+            var expectedResult = 2;
+            expect(exerciseView.currSlideIndex).toBe(expectedResult);
+
+            exerciseView.currSlideIndex = 1;
+            scope.$digest();
+            var currSlideIndex = scope.d.actions.getCurrentIndex();
+            expectedResult = 1;
+            expect(currSlideIndex).toBe(expectedResult);
         }
     );
+
+    it('when unbindExerciseView action is invoked then znk exercise view should be unbinded to viewState which ' +
+        'received as parameter', function(){
+        var scopeContent = createDirectiveHtml();
+        var scope = scopeContent.scope;
+
+        var exerciseView = {
+            currSlideIndex: 5
+        };
+        scope.d.actions.bindExerciseViewTo(exerciseView);
+        scope.d.actions.unbindExerciseView(exerciseView);
+
+        scope.d.actions.setSlideIndex(2);
+        scope.$digest();
+        var expectedResult = 5;
+        expect(exerciseView.currSlideIndex).toBe(expectedResult);
+
+        exerciseView.currSlideIndex = 4;
+        scope.$digest();
+        var currSlideIndex = scope.d.actions.getCurrentIndex();
+        expectedResult = 2;
+        expect(currSlideIndex).toBe(expectedResult);
+    });
 });

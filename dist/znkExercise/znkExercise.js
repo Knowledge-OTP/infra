@@ -1065,6 +1065,10 @@
  *      setSlideDirection
  *      forceDoneBtnDisplay
  *      pagerDisplay: function, if true provided than pager will be displayed other it will be hidden.
+ *      bindExerciseViewTo: receive as parameter the view state
+ *          viewState properties:
+ *              currQuestion:
+ *              questionView: it implemented per question
  */
 
 (function (angular) {
@@ -1140,6 +1144,7 @@
                             /**
                              *  ACTIONS
                              * */
+
                             scope.actions = scope.actions || {};
 
                             scope.actions.setSlideIndex = function setSlideIndex(index) {
@@ -1208,6 +1213,34 @@
                                 });
                             };
 
+                            var killExerciseViewListener;
+                            scope.actions.bindExerciseViewTo = function(exerciseView){
+                                if(!angular.isObject(exerciseView)){
+                                    $log.error('znkExerciseDrv: exercise view should be an object');
+                                    return;
+                                }
+
+                                znkExerciseDrvCtrl.__exerciseViewBinding = exerciseView;
+
+                                killExerciseViewListener = scope.$watch(function(){
+                                    return exerciseView.currSlideIndex;
+                                },function(newVal){
+                                    if(angular.isDefined(newVal)){
+                                        znkExerciseDrvCtrl.setCurrentIndex(newVal);
+                                    }
+                                });
+                            };
+
+                            scope.actions.unbindExerciseView = function(){
+                                if(killExerciseViewListener){
+                                    killExerciseViewListener();
+                                    killExerciseViewListener = null;
+                                }
+
+                                if(znkExerciseDrvCtrl.__exerciseViewBinding ){
+                                    znkExerciseDrvCtrl.__exerciseViewBinding = null;
+                                }
+                            };
                             /**
                              *  ACTIONS END
                              * */
@@ -1532,6 +1565,11 @@
                         newQuestionIndex = Math.min(newQuestionIndex, questions.length - 1);
 
                         $scope.vm.currentSlide = newQuestionIndex;
+
+                        if(self.__exerciseViewBinding){
+                            self.__exerciseViewBinding.currSlideIndex = newQuestionIndex;
+                        }
+
                         return $scope.vm.currentSlide;
                     });
                 }else{
