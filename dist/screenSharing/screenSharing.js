@@ -127,7 +127,7 @@
             this.getScreenSharingData = function (screenSharingGuid) {
                 var screenSharingDataPath = this.getScreenSharingDataPath(screenSharingGuid);
                 return _getStorage().then(function (storage) {
-                    return storage.get(screenSharingDataPath);
+                    return storage.getAndBindToServer(screenSharingDataPath);
                 });
             };
 
