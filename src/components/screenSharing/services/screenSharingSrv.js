@@ -165,9 +165,17 @@
                     return;
                 }
 
-                ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState).then(function(){
+                var isViewerState = newUserScreenSharingState === UserScreenSharingStateEnum.VIEWER.enum;
+                var isSharerState = newUserScreenSharingState === UserScreenSharingStateEnum.SHARER.enum;
+
+                if(isSharerState || isViewerState){
+                    ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState).then(function(){
+                        _this.endSharing(screenSharingData.guid);
+                    });
+                }else{
                     _this.endSharing(screenSharingData.guid);
-                });
+                }
+
             };
         }
     );

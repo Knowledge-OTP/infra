@@ -353,7 +353,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(_deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[viewerId].screenSharing[screenSharingDataGuid]).toBeFalsy();
     });
 
-    it('when user close the view other user screen modal then screen sharing data status should change to ended', function(){
+    fit('when user close the view other user screen modal then screen sharing data status should change to ended', function(){
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
         var screenSharingDataGuid = '123456789-data-guid';
@@ -380,5 +380,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         _updateScreenSharingData(screenSharingData);
 
         expect(_deps.GlobalStorage.adapter.__db.screenSharing[screenSharingDataGuid].status).toBe(_deps.ScreenSharingStatusEnum.ENDED.enum);
+        expect(_deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[viewerId].screenSharing[screenSharingDataGuid]).toBeFalsy();
+        expect(_deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[sharerId].screenSharing[screenSharingDataGuid]).toBeFalsy();
     });
 });
