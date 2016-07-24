@@ -263,9 +263,15 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', '$q', 'SubjectEnum', '$log', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum',
-        function (ZnkModuleService, $q, SubjectEnum, $log, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum) {
+        'ZnkModuleService', '$q', 'SubjectEnum', '$log', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv',
+        function (ZnkModuleService, $q, SubjectEnum, $log, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv) {
             var userAssignModuleService = {};
+
+            userAssignModuleService.assignModuleStatus = new EnumSrv.BaseEnum([
+                ['ASSIGN', ExerciseStatusEnum.NEW.val, 'assign'],
+                ['IN-PROGRESS', ExerciseStatusEnum.ACTIVE.val, 'in-progress'],
+                ['COMPLETED', ExerciseStatusEnum.COMPLETED.val, 'completed']
+            ]);
 
             userAssignModuleService.getUserAssignModules = function (userId) {
                 return ExerciseResultSrv.getUserModuleResultsGuids(userId).then(function (resultsGuids) {
