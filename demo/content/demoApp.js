@@ -1,51 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demoApp', ['znk.infra.content'])
-        .config(function(ContentSrvProvider){
-            ContentSrvProvider.setContent(['$q',
-                function ($q) {
-                    var mockData = {
-                            revisionManifest: {
-                                drill10: {
-                                    rev: 3
-                                },
-                                drill11: {
-                                    rev: 1
-                                }
-                            },
-                            latestRevisions: {
-                                drill10: {
-                                    rev: 1
-                                },
-                                drill11: {
-                                    rev: 2
-                                },
-                                drill12: {
-                                    rev: 2
-                                }
-                            }
-                    };
-                        return $q.when({
-                            latestRevisions: mockData.latestRevisions,
-                            revisionManifest: mockData.revisionManifest,
-                            revisionManifestGetter: null,
-                            create: function(path) {
-                                return {
-                                    set: angular.noop,
-                                    get: function() {
-                                        return { value: 666 }
-                                    }};
-                            },
-                            contentRoot: 'mockData/content/',
-                            userRoot: 'mockData/users/0ef5a913-4a69-4c75/contentSync',
-                            key: 'key666'
-                        });
-
-                }
-            ]);
-        }).controller('demoCtrl', ['ContentSrv', function(ContentSrv) {
-            ContentSrv.getContent({exerciseId: 10, exerciseType: 'drill'}).then(function(result){
+    angular.module('demo', ['znk.infra.content', 'znk.infra.config', 'znk.infra.storage'])
+        .controller('demoCtrl', ['ContentSrv', function(ContentSrv) {
+            ContentSrv.getContent({exerciseType: 'personalization'}).then(function(result){
                 console.log('result', result);
             });
         }]);
