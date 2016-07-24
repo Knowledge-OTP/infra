@@ -269,7 +269,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
             userAssignModuleService.assignModuleStatus = new EnumSrv.BaseEnum([
                 ['ASSIGN', ExerciseStatusEnum.NEW.val, 'assign'],
-                ['IN-PROGRESS', ExerciseStatusEnum.ACTIVE.val, 'in-progress'],
+                ['IN-PROGRESS', ExerciseStatusEnum.ACTIVE.val, 'in progress'],
                 ['COMPLETED', ExerciseStatusEnum.COMPLETED.val, 'completed']
             ]);
 
