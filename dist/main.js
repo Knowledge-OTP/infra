@@ -4559,6 +4559,8 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
         ["UserProfileService", "InfraConfigSrv", "$q", "UtilitySrv", "ScreenSharingDataGetterSrv", "ScreenSharingStatusEnum", "ENV", "$log", "UserScreenSharingStateEnum", "ScreenSharingUiSrv", function (UserProfileService, InfraConfigSrv, $q, UtilitySrv, ScreenSharingDataGetterSrv, ScreenSharingStatusEnum, ENV, $log, UserScreenSharingStateEnum, ScreenSharingUiSrv) {
             'ngInject';
 
+            var _this = this;
+
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
 
             function _getStorage() {
@@ -4580,6 +4582,13 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                     for (var i in screenSharingDataMapKeys) {
                         var screenSharingDataKey = screenSharingDataMapKeys[i];
                         var screenSharingData = screenSharingDataMap[screenSharingDataKey];
+
+                        var isEnded = screenSharingData.status === ScreenSharingStatusEnum.ENDED.enum;
+                        if(isEnded){
+                            _this.endSharing(screenSharingData.guid);
+                            continue;
+                        }
+
                         isInitiated = screenSharingData.sharerId === sharerId && screenSharingData.viewerId === viewerId;
                         if (isInitiated) {
                             break;
@@ -4676,7 +4685,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                     return screenSharingData.$save();
                 });
             };
-            
+
             this.endSharing = function (screenSharingDataGuid) {
                 var getDataPromMap = {};
                 getDataPromMap.screenSharingData = ScreenSharingDataGetterSrv.getScreenSharingData(screenSharingDataGuid);

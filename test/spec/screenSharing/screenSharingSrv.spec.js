@@ -131,7 +131,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(screenSharingRequestNum).toEqual(expectedScreenSharingRequestNum);
     });
 
-    fit('given screen sharing request with status ended exists when trying to share my screen with the same user then new screen sharing' +
+    it('given screen sharing request with status ended exists when trying to share my screen with the same user then new screen sharing' +
         'data should be create', function(){
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
@@ -154,8 +154,8 @@ describe('testing service "ScreenSharingSrv":', function () {
         _deps.GlobalStorage.adapter.__db.screenSharing = {};
         var screenSharingData = _deps.GlobalStorage.adapter.__db.screenSharing;
 
-        myScreenSharingRequestsData[screenSharingDataGuid] = false;
-        otherUserScreenSharingRequestsData [screenSharingDataGuid] = false;
+        myScreenSharingRequestsData[screenSharingDataGuid] = true;
+        otherUserScreenSharingRequestsData [screenSharingDataGuid] = true;
 
         var viewerId = otherUid;
         var sharerId = myUid;
