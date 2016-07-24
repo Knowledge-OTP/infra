@@ -82,7 +82,7 @@ describe('content service', function() {
         expect(actions.getContent({ exerciseId: 11, exerciseType: 'drill' })).toEqual('mockData/content/drill11-rev-1');
     });
 
-    it('when practice is only in user revisionManifest and not exist in latestRevisions then return latestRevisions rev', function() {
+    it('when practice is only in latestRevisions and not exist in user revisionManifest then return latestRevisions rev', function() {
         expect(actions.getContent({ exerciseId: 12, exerciseType: 'drill' })).toEqual('mockData/content/drill12-rev-2');
     });
 
