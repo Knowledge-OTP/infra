@@ -4533,7 +4533,9 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                         globalStorage.onEvent(StorageSrv.EVENTS.VALUE, userScreenSharingPath, function (userScreenSharingData) {
                             if (userScreenSharingData) {
                                 angular.forEach(userScreenSharingData, function (isActive, guid) {
-                                    _listenToScreenSharingData(guid);
+                                    if(isActive){
+                                        _listenToScreenSharingData(guid);
+                                    }
                                 });
                             }
                         });
