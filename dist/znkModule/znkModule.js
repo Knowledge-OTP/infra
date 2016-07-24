@@ -24,6 +24,10 @@
                 });
             };
 
+            znkModuleService.setModule = function (module) {
+                return StorageRevSrv.update(module);
+            };
+
             return znkModuleService;
         }
     ]);

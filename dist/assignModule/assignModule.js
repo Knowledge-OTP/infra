@@ -129,6 +129,13 @@
                 });
             };
 
+            userAssignModuleService.setAssignContent = function (moduleId) {
+              return ZnkModuleService.getModuleById(moduleId).then(function (module) {
+                  module.contentAssign = true;
+                  return ZnkModuleService.setModule(module);
+              });
+            };
+
             return userAssignModuleService;
         }
     ]);

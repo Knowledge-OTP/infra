@@ -385,6 +385,13 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
             };
 
+            userAssignModuleService.setAssignContent = function (moduleId) {
+              return ZnkModuleService.getModuleById(moduleId).then(function (module) {
+                  module.contentAssign = true;
+                  return ZnkModuleService.setModule(module);
+              });
+            };
+
             return userAssignModuleService;
         }
     ]);
@@ -9825,6 +9832,10 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
                     exerciseId: moduleId,
                     exerciseType: 'module'
                 });
+            };
+
+            znkModuleService.setModule = function (module) {
+                return StorageRevSrv.update(module);
             };
 
             return znkModuleService;
