@@ -2,8 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.exerciseResult', [
-        'znk.infra.config','znk.infra.utility', 
-        'znk.infra.moduleResults',
+        'znk.infra.config','znk.infra.utility',
         'znk.infra.exerciseUtility'
     ]);
 })(angular);
