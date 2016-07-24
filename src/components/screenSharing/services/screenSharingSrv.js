@@ -64,7 +64,7 @@
                 if (!initScreenSharingStatus) {
                     errMsg = 'ScreenSharingSrv: initiator was not provided';
                     $log.error(errMsg);
-                    return $q.reject('ScreenSharingSrv: initiator was not provided');
+                    return $q.reject(errMsg);
                 }
 
                 return _isScreenSharingAlreadyInitiated(sharerData.uid, viewerData.uid).then(function (isInitiated) {
@@ -142,7 +142,7 @@
                     $log.debug(errMsg);
                     return $q.reject(errMsg);
                 }
-                
+
                 return ScreenSharingDataGetterSrv.getScreenSharingData(screenSharingDataGuid).then(function (screenSharingData) {
                     screenSharingData.status = ScreenSharingStatusEnum.CONFIRMED.enum;
                     return screenSharingData.$save();
