@@ -389,10 +389,10 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
             };
 
-            userAssignModuleService.setAssignContent = function (moduleId) {
-                return ZnkModuleService.getModuleById(moduleId).then(function (module) {
-                    module.contentAssign = true;
-                    return ZnkModuleService.setModule(module);
+            userAssignModuleService.setAssignContent = function (userId, moduleId) {
+                return ExerciseResultSrv.getModuleResult(userId, moduleId).then(function (moduleResult) {
+                    moduleResult.contentAssign = true;
+                    return ExerciseResultSrv.setModuleResult(moduleResult);
                 });
             };
 
@@ -2484,7 +2484,9 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                     dataToSave[USER_MODULE_RESULTS_PATH] = userGuidLists;
                     dataToSave[moduleResultPath] = newResult;
                     return InfraConfigSrv.getStudentStorage().then(function(storage){
-                        return storage.update(dataToSave);
+                        return storage.update(dataToSave).then(function (newResults) {
+                            return newResults[moduleResultPath];
+                        });
                     });
                 });
             };

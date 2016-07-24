@@ -133,10 +133,10 @@
                 });
             };
 
-            userAssignModuleService.setAssignContent = function (moduleId) {
-                return ZnkModuleService.getModuleById(moduleId).then(function (module) {
-                    module.contentAssign = true;
-                    return ZnkModuleService.setModule(module);
+            userAssignModuleService.setAssignContent = function (userId, moduleId) {
+                return ExerciseResultSrv.getModuleResult(userId, moduleId).then(function (moduleResult) {
+                    moduleResult.contentAssign = true;
+                    return ExerciseResultSrv.setModuleResult(moduleResult);
                 });
             };
 

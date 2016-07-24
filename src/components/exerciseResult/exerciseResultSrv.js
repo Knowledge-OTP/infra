@@ -462,7 +462,9 @@
                     dataToSave[USER_MODULE_RESULTS_PATH] = userGuidLists;
                     dataToSave[moduleResultPath] = newResult;
                     return InfraConfigSrv.getStudentStorage().then(function(storage){
-                        return storage.update(dataToSave);
+                        return storage.update(dataToSave).then(function (newResults) {
+                            return newResults[moduleResultPath];
+                        });
                     });
                 });
             };
