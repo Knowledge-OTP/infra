@@ -1,18 +1,29 @@
 screen-sharing{
+    .close-icon-wrapper{
+        @include dimension(40px);
+        @include absolute-position(0,0);
+        border-bottom-left-radius: 15px;
+        text-align: center;
+        line-height: 42px;
+        cursor: pointer;
+    }
+
+    .viewer-state{
+        .close-icon-wrapper{
+            background: $bgColor3;
+        }
+    }
+
+    .sharer-state{
+        .close-icon-wrapper{
+            background: $bcColor19;
+        }
+    }
+
     .viewer-state-container{
         @include absolute-full-cover;
         border: 5px solid $bcColor2;
         background: $tbgColor7;
-
-        .close-icon-wrapper{
-            @include dimension(40px);
-            background: $bgColor3;
-            @include absolute-position(0,0);
-            border-bottom-left-radius: 15px;
-            text-align: center;
-            line-height: 42px;
-            cursor: pointer;
-        }
     }
 
     .sharer-state-container{

@@ -6,7 +6,9 @@
     ])
         .run(function ($rootScope, ScreenSharingUiSrv) {
             $rootScope.activateSharing = function (userSharingState) {
-                ScreenSharingUiSrv.activateScreenSharing(userSharingState);
+                ScreenSharingUiSrv.activateScreenSharing(userSharingState).then(function(){
+                    ScreenSharingUiSrv.endScreenSharing();
+                });
             };
 
             $rootScope.endSharing = function(){
@@ -24,5 +26,7 @@
                     alert('reject');
                 });
             };
+
+            $rootScope.activateSharing(3);
         });
 })(angular);

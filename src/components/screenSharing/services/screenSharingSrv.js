@@ -6,6 +6,7 @@
             'ngInject';
 
             var _this = this;
+            var currUserScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
 
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
 
@@ -45,14 +46,24 @@
             }
 
             function _initiateScreenSharing(sharerData, viewerData, initiator) {
+                var errMsg;
+
                 if (angular.isUndefined(viewerData.isTeacher) || angular.isUndefined(sharerData.isTeacher)) {
-                    var errMSg = 'ScreenSharingSrv: isTeacher property was not provided!!!';
-                    $log.error(errMSg);
-                    return $q.reject(errMSg);
+                    errMsg = 'ScreenSharingSrv: isTeacher property was not provided!!!';
+                    $log.error(errMsg);
+                    return $q.reject(errMsg);
+                }
+
+                if(currUserScreenSharingState !== UserScreenSharingStateEnum.NONE.enum){
+                    errMsg = 'ScreenSharingSrv: screen sharing is already active!!!';
+                    $log.debug(errMsg);
+                    return $q.reject(errMsg);
                 }
 
                 var initScreenSharingStatus = _getScreenSharingInitStatusByInitiator(initiator);
                 if (!initScreenSharingStatus) {
+                    errMsg = 'ScreenSharingSrv: initiator was not provided';
+                    $log.error(errMsg);
                     return $q.reject('ScreenSharingSrv: initiator was not provided');
                 }
 
@@ -126,6 +137,12 @@
             };
 
             this.confirmSharing = function (screenSharingDataGuid) {
+                if(currUserScreenSharingState !== UserScreenSharingStateEnum.NONE.enum){
+                    var errMsg = 'ScreenSharingSrv: screen sharing is already active!!!';
+                    $log.debug(errMsg);
+                    return $q.reject(errMsg);
+                }
+                
                 return ScreenSharingDataGetterSrv.getScreenSharingData(screenSharingDataGuid).then(function (screenSharingData) {
                     screenSharingData.status = ScreenSharingStatusEnum.CONFIRMED.enum;
                     return screenSharingData.$save();
@@ -164,6 +181,8 @@
                 if(!newUserScreenSharingState){
                     return;
                 }
+
+                currUserScreenSharingState = newUserScreenSharingState;
 
                 var isViewerState = newUserScreenSharingState === UserScreenSharingStateEnum.VIEWER.enum;
                 var isSharerState = newUserScreenSharingState === UserScreenSharingStateEnum.SHARER.enum;

@@ -42,21 +42,19 @@
                                 ScreenSharingSrv.confirmSharing(screenSharingData.guid);
                                 break;
                             case ScreenSharingStatusEnum.CONFIRMED.enum:
-                                UserProfileService.getCurrUserId().then(function (currUid) {
-                                    var userScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
+                                var userScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
 
-                                    if (screenSharingData.viewerId === currUid) {
-                                        userScreenSharingState = UserScreenSharingStateEnum.VIEWER.enum;
-                                    }
+                                if (screenSharingData.viewerId === currUid) {
+                                    userScreenSharingState = UserScreenSharingStateEnum.VIEWER.enum;
+                                }
 
-                                    if (screenSharingData.sharerId === currUid) {
-                                        userScreenSharingState = UserScreenSharingStateEnum.SHARER.enum;
-                                    }
+                                if (screenSharingData.sharerId === currUid) {
+                                    userScreenSharingState = UserScreenSharingStateEnum.SHARER.enum;
+                                }
 
-                                    if (userScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
-                                        ScreenSharingSrv._userScreenSharingStateChanged(userScreenSharingState, screenSharingData);
-                                    }
-                                });
+                                if (userScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
+                                    ScreenSharingSrv._userScreenSharingStateChanged(userScreenSharingState, screenSharingData);
+                                }
 
                                 break;
                             case ScreenSharingStatusEnum.ENDED.enum:
