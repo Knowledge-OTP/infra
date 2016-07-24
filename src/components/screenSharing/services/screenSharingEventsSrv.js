@@ -60,9 +60,6 @@
 
                                 break;
                             case ScreenSharingStatusEnum.ENDED.enum:
-                                debugger;
-                                // ScreenSharingSrv._userScreenSharingStateChanged(UserScreenSharingStateEnum.NONE.enum, screenSharingData);
-                                $log.debug('ScreenSharingEventsSrv: Sharing request was ended ' + screenSharingData.guid);
                                 break;
                             default:
                                 $log.error('ScreenSharingEventsSrv: invalid status was received ' + screenSharingData.status);

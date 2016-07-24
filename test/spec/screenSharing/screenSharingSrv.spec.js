@@ -177,8 +177,8 @@ describe('testing service "ScreenSharingSrv":', function () {
         myScreenSharingRequestsData[screenSharingDataGuid] = true;
         otherUserScreenSharingRequestsData [screenSharingDataGuid] = true;
 
-        var viewerId = otherUid;
-        var sharerId = myUid;
+        var viewerId = myUid;
+        var sharerId = otherUid;
         var myUserScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + myUid + '/screenSharing';
         var otherUserScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + otherUid + '/screenSharing';
         screenSharingData[screenSharingDataGuid] = {
@@ -353,7 +353,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(_deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[viewerId].screenSharing[screenSharingDataGuid]).toBeFalsy();
     });
 
-    fit('when user close the view other user screen modal then screen sharing data status should change to ended', function(){
+    it('when user close the view other user screen modal then screen sharing data status should change to ended', function(){
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
         var screenSharingDataGuid = '123456789-data-guid';
@@ -361,17 +361,17 @@ describe('testing service "ScreenSharingSrv":', function () {
         _addScreenSharingRequestToUser(myUid,false, screenSharingDataGuid);
         _addScreenSharingRequestToUser(otherUid,false, screenSharingDataGuid);
 
-        var viewerId = otherUid;
-        var sharerId = myUid;
-        var myUserScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + myUid + '/screenSharing';
-        var otherUserScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + otherUid + '/screenSharing';
+        var viewerId = myUid;
+        var sharerId = otherUid;
+        var viewerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
+        var sharerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
         var screenSharingData = {
             guid: screenSharingDataGuid,
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.PENDING_VIEWER.enum,
-            viewerPath: myUserScreenSharingRequestsPath,
-            sharerPath: otherUserScreenSharingRequestsPath
+            viewerPath: viewerScreenSharingRequestsPath ,
+            sharerPath: sharerScreenSharingRequestsPath
         };
         _updateScreenSharingData(screenSharingData);
 
