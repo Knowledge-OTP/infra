@@ -4511,6 +4511,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
                                 break;
                             case ScreenSharingStatusEnum.ENDED.enum:
+                                ScreenSharingSrv._userScreenSharingStateChanged(UserScreenSharingStateEnum.NONE.enum, screenSharingData);
                                 break;
                             default:
                                 $log.error('ScreenSharingEventsSrv: invalid status was received ' + screenSharingData.status);
@@ -4726,7 +4727,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                         _this.endSharing(screenSharingData.guid);
                     });
                 }else{
-                    _this.endSharing(screenSharingData.guid);
+                    ScreenSharingUiSrv.endScreenSharing();
                 }
 
             };

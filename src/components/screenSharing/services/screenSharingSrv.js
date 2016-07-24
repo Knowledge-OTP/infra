@@ -173,7 +173,7 @@
                         _this.endSharing(screenSharingData.guid);
                     });
                 }else{
-                    _this.endSharing(screenSharingData.guid);
+                    ScreenSharingUiSrv.endScreenSharing();
                 }
 
             };
