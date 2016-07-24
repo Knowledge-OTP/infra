@@ -1,5 +1,6 @@
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="-468.2 482.4 96 89.8" class="arrow-icon-wrapper">
     <style type="text/css">
+        .arrow-icon-wrapper{width: 48px;  height:auto;}
         .arrow-icon-wrapper .st0{fill:#109BAC;}
         .arrow-icon-wrapper .st1{fill:none;stroke:#fff;stroke-width:5.1237;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}
     </style>

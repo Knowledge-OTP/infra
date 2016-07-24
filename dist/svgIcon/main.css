@@ -274,5 +274,11 @@ $blueBG8: #75cbe8;
 */
 /* full background image with retina */
 svg-icon {
-  display: block;
-  overflow: hidden; }
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -ms-flex-align: center;
+      align-items: center;
+  -ms-flex-pack: center;
+      justify-content: center; }
+  svg-icon svg {
+    display: block; }

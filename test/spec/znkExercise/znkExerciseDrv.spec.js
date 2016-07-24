@@ -2,7 +2,7 @@ describe('testing directive "znkExerciseDrv":', function () {
     'use strict';
 
     // Load  the module, which contains the directive
-    beforeEach(module('znk.infra.znkExercise', 'htmlTemplates'));
+    beforeEach(module('znk.infra.znkExercise', 'htmlTemplates', 'analytics.mock'));
 
     //get dependencies
     var $rootScope, $compile, $timeout, $interval, ZnkExerciseSrv, $q, ZnkExerciseViewModeEnum,

@@ -4,24 +4,30 @@ describe('testing service "ExerciseResult":', function () {
     beforeEach(module('znk.infra.exerciseResult', 'znk.infra.storage', 'znk.infra.enum',
         'htmlTemplates', 'testUtility', 'storage.mock', 'user.mock'));
 
-    var $rootScope, ExerciseResultSrv, ExerciseTypeEnum, actions, testStorage, ExerciseStatusEnum;
+    var $rootScope, ExerciseResultSrv, ExerciseTypeEnum, actions, StudentStorage, ExerciseStatusEnum;
     beforeEach(inject([
         '$injector',
         function ($injector) {
             $rootScope = $injector.get('$rootScope');
+
             ExerciseResultSrv = $injector.get('ExerciseResultSrv');
+
             ExerciseTypeEnum = $injector.get('ExerciseTypeEnum');
-            testStorage = $injector.get('testStorage');
-            ExerciseStatusEnum = $injector.get('ExerciseStatusEnum');
 
             var TestUtilitySrv = $injector.get('TestUtilitySrv');
+
+            var InfraConfigSrv = $injector.get('InfraConfigSrv');
+            StudentStorage = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage, InfraConfigSrv)();
+
+            ExerciseStatusEnum = $injector.get('ExerciseStatusEnum');
+
             actions = TestUtilitySrv.general.convertAllAsyncToSync(ExerciseResultSrv);
         }]));
 
     beforeEach(function () {
-        testStorage.db.exerciseResults = {};
-        testStorage.db.examResults = {};
-        testStorage.db.users = {
+        StudentStorage.adapter.__db.exerciseResults = {};
+        StudentStorage.adapter.__db.examResults = {};
+        StudentStorage.adapter.__db.users = {
             '$$uid': {
                 exerciseResults: {},
                 examResults: {},
@@ -53,14 +59,14 @@ describe('testing service "ExerciseResult":', function () {
             var dontInitIfNotExists = true;
             var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseId, undefined, undefined, dontInitIfNotExists);
             expect(exerciseResult).toBeNull();
-            expect(testStorage.db.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum]).toBeUndefined();
+            expect(StudentStorage.adapter.__db.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum]).toBeUndefined();
         });
 
         it('when requesting for a not exiting result then a new initialized result should be saved in db', function () {
             var exerciseId = 10;
             actions.getExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseId);
-            var expectedResultGuid = Object.keys(testStorage.db.exerciseResults)[0];
-            var exerciseResultGuid = testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum][exerciseId];
+            var expectedResultGuid = Object.keys(StudentStorage.adapter.__db.exerciseResults)[0];
+            var exerciseResultGuid = StudentStorage.adapter.__db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum][exerciseId];
             expect(exerciseResultGuid).toBe(expectedResultGuid);
         });
 
@@ -77,9 +83,9 @@ describe('testing service "ExerciseResult":', function () {
             var expectedResult = angular.copy(result);
             expectedResult.questionResults = [];
 
-            testStorage.db.exerciseResults[questionGuid] = result;
-            testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum] = {};
-            testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum][exerciseId] = questionGuid;
+            StudentStorage.adapter.__db.exerciseResults[questionGuid] = result;
+            StudentStorage.adapter.__db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum] = {};
+            StudentStorage.adapter.__db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum][exerciseId] = questionGuid;
 
             var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseId);
             expect(exerciseResult).toEqual(jasmine.objectContaining(expectedResult));
@@ -101,9 +107,9 @@ describe('testing service "ExerciseResult":', function () {
 
             var expectedResult = angular.copy(result);
 
-            testStorage.db.exerciseResults[questionGuid] = result;
-            testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum] = {};
-            testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum][exerciseId] = questionGuid;
+            StudentStorage.adapter.__db.exerciseResults[questionGuid] = result;
+            StudentStorage.adapter.__db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum] = {};
+            StudentStorage.adapter.__db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum][exerciseId] = questionGuid;
 
             var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseId);
             expect(exerciseResult).toEqual(jasmine.objectContaining(expectedResult));
@@ -117,8 +123,8 @@ describe('testing service "ExerciseResult":', function () {
             expectedResult.$save();
             $rootScope.$digest();
 
-            var guid = testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum][exerciseId];
-            var exerciseResult = testStorage.db.exerciseResults[guid];
+            var guid = StudentStorage.adapter.__db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum][exerciseId];
+            var exerciseResult = StudentStorage.adapter.__db.exerciseResults[guid];
 
             delete expectedResult.$save;
             angular.forEach(expectedResult, function(value, key){
@@ -129,8 +135,8 @@ describe('testing service "ExerciseResult":', function () {
         it('when requesting for result and it not exist although the guid exists then it should be set to init result', function () {
             var exerciseId = 10;
 
-            testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum] = {};
-            testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum][exerciseId] = 123;
+            StudentStorage.adapter.__db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum] = {};
+            StudentStorage.adapter.__db.users.$$uid.exerciseResults[ExerciseTypeEnum.TUTORIAL.enum][exerciseId] = 123;
 
             var exerciseResult = actions.getExerciseResult(ExerciseTypeEnum.TUTORIAL.enum, exerciseId);
             var expectedExerciseResult = {
@@ -159,23 +165,23 @@ describe('testing service "ExerciseResult":', function () {
         it('when requesting for not existing exam result then initialized result should be saved in db', function () {
             var examId = 1;
             actions.getExamResult(examId);
-            var examResultKeys = Object.keys(testStorage.db.examResults);
+            var examResultKeys = Object.keys(StudentStorage.adapter.__db.examResults);
             var examResultGuid = examResultKeys[0];
-            expect(testStorage.db.users.$$uid.examResults[examId]).toBe(examResultGuid);
+            expect(StudentStorage.adapter.__db.users.$$uid.examResults[examId]).toBe(examResultGuid);
         });
 
         it('when requesting for existing result then it should be returned', function () {
             var examId = 1;
             var guid = 123;
 
-            testStorage.db.users.$$uid.examResults[examId] = 'guid';
+            StudentStorage.adapter.__db.users.$$uid.examResults[examId] = 'guid';
             var result = {
                 isComplete: false,
                 examId: examId,
                 guid: guid
             };
-            testStorage.db.users.$$uid.examResults[examId] = guid;
-            testStorage.db.examResults[guid] = result;
+            StudentStorage.adapter.__db.users.$$uid.examResults[examId] = guid;
+            StudentStorage.adapter.__db.examResults[guid] = result;
 
             var expectedResult = angular.copy(result);
             expectedResult.sectionResults = {};
@@ -188,7 +194,7 @@ describe('testing service "ExerciseResult":', function () {
 
         it('when requesting for existing result which has sectionResults then it should be returned', function () {
             var examId = 1;
-            testStorage.db.users.$$uid.examResults[examId] = 'guid';
+            StudentStorage.adapter.__db.users.$$uid.examResults[examId] = 'guid';
             var expectedResult = {
                 guid: 'guid',
                 isComplete: false,
@@ -198,7 +204,7 @@ describe('testing service "ExerciseResult":', function () {
                 }
             };
 
-            testStorage.db.examResults['guid'] = expectedResult;
+            StudentStorage.adapter.__db.examResults['guid'] = expectedResult;
             var examResult = actions.getExamResult(examId);
             expect(examResult).toEqual(jasmine.objectContaining(expectedResult));
             expect(_isValidStartedTime(examResult.startedTime)).toBeTruthy();
@@ -211,15 +217,15 @@ describe('testing service "ExerciseResult":', function () {
             expectedResult.$save();
             $rootScope.$digest();
 
-            var examResultKeys = Object.keys(testStorage.db.examResults);
-            var examResult = testStorage.db.examResults[examResultKeys[0]];
+            var examResultKeys = Object.keys(StudentStorage.adapter.__db.examResults);
+            var examResult = StudentStorage.adapter.__db.examResults[examResultKeys[0]];
 
             expect(examResult).toEqual(expectedResult);
         });
 
         it('when requesting for exam result by guid and it not exist then it should be set to init result', function () {
             var examId = 1;
-            testStorage.db.users.$$uid.examResults[examId] = 'guid';
+            StudentStorage.adapter.__db.users.$$uid.examResults[examId] = 'guid';
 
             var examResult = actions.getExamResult(examId);
             var expectedExamResult = {
@@ -243,9 +249,9 @@ describe('testing service "ExerciseResult":', function () {
             var sectionId = 10;
             var examId = 1;
             actions.getExerciseResult(ExerciseTypeEnum.SECTION.enum, sectionId, examId);
-            var examResultGuid = testStorage.db.users.$$uid.examResults[1];
-            var examResult = testStorage.db.examResults[examResultGuid];
-            var sectionResultGuid = testStorage.db.users.$$uid.exerciseResults[ExerciseTypeEnum.SECTION.enum][sectionId];
+            var examResultGuid = StudentStorage.adapter.__db.users.$$uid.examResults[1];
+            var examResult = StudentStorage.adapter.__db.examResults[examResultGuid];
+            var sectionResultGuid = StudentStorage.adapter.__db.users.$$uid.exerciseResults[ExerciseTypeEnum.SECTION.enum][sectionId];
             expect(examResult.sectionResults[sectionId]).toBe(sectionResultGuid);
         });
     });
@@ -265,9 +271,10 @@ describe('testing service "ExerciseResult":', function () {
                 duration: 0
             };
 
-            var exercisesStatusData = testStorage.db.users.$$uid.exercisesStatus;
-
-            expect(exercisesStatusData).toEqual(expectedExercisesStatusData);
+            var exercisesStatusData = StudentStorage.adapter.__db.users.$$uid.exercisesStatus;
+            //remove nested object constructor prototype
+            var exerciseStatusDataWithoutConstructorPrototype = JSON.parse(JSON.stringify(exercisesStatusData));
+            expect(exerciseStatusDataWithoutConstructorPrototype).toEqual(jasmine.objectContaining(expectedExercisesStatusData));
         });
 
         it('given exercise is completed when saving exercise result then it status should be saved', function () {
@@ -284,9 +291,10 @@ describe('testing service "ExerciseResult":', function () {
                 duration: 0
             };
 
-            var exercisesStatusData = testStorage.db.users.$$uid.exercisesStatus;
-
-            expect(exercisesStatusData).toEqual(expectedExercisesStatusData);
+            var exercisesStatusData = StudentStorage.adapter.__db.users.$$uid.exercisesStatus;
+            //remove nested object constructor prototype
+            var exerciseStatusDataWithoutConstructorPrototype = JSON.parse(JSON.stringify(exercisesStatusData));
+            expect(exerciseStatusDataWithoutConstructorPrototype).toEqual(expectedExercisesStatusData);
         });
 
         it('given exercise is completed when saving exercise result then it status should be saved', function () {
@@ -304,9 +312,10 @@ describe('testing service "ExerciseResult":', function () {
                 duration: 0
             };
 
-            var exercisesStatusData = testStorage.db.users.$$uid.exercisesStatus;
-
-            expect(exercisesStatusData).toEqual(expectedExercisesStatusData);
+            var exercisesStatusData = StudentStorage.adapter.__db.users.$$uid.exercisesStatus;
+            //remove nested object constructor prototype
+            var exerciseStatusDataWithoutConstructorPrototype = JSON.parse(JSON.stringify(exercisesStatusData));
+            expect(exerciseStatusDataWithoutConstructorPrototype).toEqual(expectedExercisesStatusData);
         });
 
         it('when requesting for not started exercise status then new status should be returned',function(){
@@ -319,8 +328,8 @@ describe('testing service "ExerciseResult":', function () {
 
         it('when requesting for an active exercise then an active status should be returned',function(){
             var exerciseId = 5;
-            testStorage.db.users.$$uid.exercisesStatus[ExerciseTypeEnum.DRILL.enum] = {};
-            testStorage.db.users.$$uid.exercisesStatus[ExerciseTypeEnum.DRILL.enum][exerciseId] = {
+            StudentStorage.adapter.__db.users.$$uid.exercisesStatus[ExerciseTypeEnum.DRILL.enum] = {};
+            StudentStorage.adapter.__db.users.$$uid.exercisesStatus[ExerciseTypeEnum.DRILL.enum][exerciseId] = {
                 status: ExerciseStatusEnum.ACTIVE.enum
             };
 
@@ -333,8 +342,8 @@ describe('testing service "ExerciseResult":', function () {
 
         it('when requesting for a completed exercise then an completed status should be returned',function(){
             var exerciseId = 5;
-            testStorage.db.users.$$uid.exercisesStatus[ExerciseTypeEnum.DRILL.enum] = {};
-            testStorage.db.users.$$uid.exercisesStatus[ExerciseTypeEnum.DRILL.enum][exerciseId] = {
+            StudentStorage.adapter.__db.users.$$uid.exercisesStatus[ExerciseTypeEnum.DRILL.enum] = {};
+            StudentStorage.adapter.__db.users.$$uid.exercisesStatus[ExerciseTypeEnum.DRILL.enum][exerciseId] = {
                 status: ExerciseStatusEnum.COMPLETED.enum
             };
 
@@ -433,6 +442,8 @@ describe('testing service "ExerciseResult":', function () {
             expectedResult.correctAnswersNum = 5;
             expectedResult.wrongAnswersNum =  3;
             expectedResult.skippedAnswersNum = 2;
+            expectedResult.totalQuestionNum = 10;
+            expectedResult.totalAnsweredNum = 8;
 
             expect(exerciseResult).toEqual(jasmine.objectContaining(expectedResult));
         });
@@ -474,7 +485,7 @@ describe('testing service "ExerciseResult":', function () {
                 4: '111',
                 5: '111'
             };
-            var expectedExercisesStatusData =  testStorage.db.users.$$uid.exercisesStatus;
+            var expectedExercisesStatusData =  StudentStorage.adapter.__db.users.$$uid.exercisesStatus;
             expectedExercisesStatusData[ExerciseTypeEnum.SECTION.enum] = {};
             for(var key in sectionResultsObj) {
                 expectedExercisesStatusData[ExerciseTypeEnum.SECTION.enum][key] = {
@@ -507,7 +518,7 @@ describe('testing service "ExerciseResult":', function () {
                 4: '111',
                 5: '111'
             };
-            var expectedExercisesStatusData =  testStorage.db.users.$$uid.exercisesStatus;
+            var expectedExercisesStatusData =  StudentStorage.adapter.__db.users.$$uid.exercisesStatus;
             expectedExercisesStatusData[ExerciseTypeEnum.SECTION.enum] = {};
             for(var key in sectionResultsObj) {
                 expectedExercisesStatusData[ExerciseTypeEnum.SECTION.enum][key] = {
@@ -537,7 +548,7 @@ describe('testing service "ExerciseResult":', function () {
                 actions.getExerciseResult(ExerciseTypeEnum.SECTION.enum, sectionId, examId, examSectionsId.length);
             });
 
-            var sectionsStatus = testStorage.db.users.$$uid.exercisesStatus[ExerciseTypeEnum.SECTION.enum] = {};
+            var sectionsStatus = StudentStorage.adapter.__db.users.$$uid.exercisesStatus[ExerciseTypeEnum.SECTION.enum] = {};
             sectionsStatus[1] = {
                 duration: 5000
             };

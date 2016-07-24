@@ -1,0 +1,33 @@
+<div class="time-display time-passed" ng-if="::d.type === 1"></div>
+<div ng-if="::d.type === 2"
+     class="player-close-svg-wrapper"
+     ng-click="d.stop()">
+    <svg-icon
+        class="player-close-svg"
+        name="znk-audio-player-close">
+    </svg-icon>
+</div>
+<div ng-if="::d.type === 2"
+   class="player-control"
+   ng-init="d.playStatus = false"
+   ng-switch="d.playStatus"
+   ng-click="d.playOrPause(); d.playStatus = !d.playStatus">
+  <svg-icon ng-switch-when="true"
+            class="player-play-svg"
+            name="znk-audio-player-play">
+  </svg-icon>
+  <svg-icon ng-switch-when="false"
+              class="player-pause-svg"
+              name="znk-audio-player-pause">
+  </svg-icon>
+</div>
+<ng-switch on="d.type" class="progress-container">
+    <div ng-switch-when="1" class="only-progress-wrapper">
+        <div class="audio-progress"></div>
+    </div>
+    <div ng-switch-when="2" class="range-progress-wrapper range">
+        <input type="range" min="0" max="0" step="1" value="0"/>
+    </div>
+</ng-switch>
+<div class="time-display time-left"></div>
+
