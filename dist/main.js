@@ -330,21 +330,16 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 }
 
                 return userAssignModuleService.getUserAssignModules(userId).then(function (assignModules) {
-                    return ZnkModuleService.getModuleHeaders().then(function(moduleHeaders){
-                        var getProm = $q.when();
-                        if(moduleHeaders) {
-                            angular.forEach(assignModules, function (assignModule, assignModuleId) {
-                                getProm = getProm.then(function () {
-                                    assignModule.module = moduleHeaders[assignModuleId];
-                                    return getModuleSummary(assignModule).then(function (moduleSummary) {
-                                        assignModule.moduleSummary = moduleSummary;
-                                    });
-                                });
+                    var getProm = $q.when();
+                    angular.forEach(assignModules, function (assignModule) {
+                        getProm = getProm.then(function () {
+                            return getModuleSummary(assignModule).then(function (moduleSummary) {
+                                assignModule.moduleSummary = moduleSummary;
                             });
-                        }
-                        return getProm.then(function () {
-                            return assignModules;
                         });
+                    });
+                    return getProm.then(function () {
+                        return assignModules;
                     });
                 });
             };
