@@ -11,7 +11,7 @@
                     var moduleResults = {};
                     var getProm = $q.when();
                     angular.forEach(resultsGuids, function (resultGuid, resultModuleId) {
-                        getProm = getProm.then(function(){
+                        getProm = getProm.then(function() {
                             return ExerciseResultSrv.getModuleResult(userId, resultModuleId, false).then(function(moduleResult){
                                 if(moduleResult) {
                                     moduleResults[moduleResult.moduleId] = moduleResult;
