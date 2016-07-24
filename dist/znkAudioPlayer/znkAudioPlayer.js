@@ -378,7 +378,7 @@
                     hideFooter: '=',
                     onEnded: '&',
                     isPlaying: '=?',
-                    showAsDone: '&?',
+                    showAsDone: '=?',
                     allowReplay: '&?',
                     showSkipOption: '&?',
                     autoPlayGetter: '&autoPlay',
@@ -389,13 +389,13 @@
 
                     scope.d = {
                         image: scope.imageGetter(),
-                        blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined,
-                        showAsDone: angular.isDefined(scope.showAsDone) ? scope.showAsDone() : false
+                        blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined
                     };
 
                     scope.d.skippedHandler = function(){
-                        scope.d.showAsDone = true;
+                        scope.showAsDone = true;
                         scope.d.showSkipButton = false;
+                        scope.onEnded();
                     };
 
                     if(angular.isDefined(scope.showSkipOption) && scope.showSkipOption()){
@@ -809,7 +809,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "            on-ended=\"onEnded()\"\n" +
     "            on-start=\"d.showSkipButtonFn()\"\n" +
     "            allow-replay=\"allowReplay()\"\n" +
-    "            show-as-done=\"d.showAsDone\"\n" +
+    "            show-as-done=\"showAsDone\"\n" +
     "            auto-play=\"autoPlayGetter()\">\n" +
     "        </znk-audio-play-button>\n" +
     "\n" +

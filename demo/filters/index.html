@@ -12,7 +12,9 @@
 <p><time>{{3660.9 | formatDuration}}</time></p>
 
 <p>With Custom Expression:<br>
-    <time>{{3660 | formatDuration:'Hours: hh, Minutes: mm, Seconds: ss'}}</time></p>
+    <time>{{12000000 | formatDuration:'Hours: hh, Minutes: mm, Seconds: ss'}}</time></p>
+
+<p>{{12000000 | formatTimeDuration: 'mm'}}</p>
 
 <script src="angular/angular.js"></script>
 <script src="filters/filters.js"></script>

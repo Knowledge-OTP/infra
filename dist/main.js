@@ -1525,7 +1525,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                 }
 
                 angular.forEach(ExerciseTypeEnum, function(enumObj, enumName){
-                    if(enumName !== 'SECTION'){
+                    if(enumName !== 'SECTION' && enumName !== 'LECTURE'){
                         var enumLowercaseName = enumName.toLowerCase();
                         var evtName = exerciseEventsConst[enumLowercaseName].FINISH;
                         childScope.$on(evtName, _baseExerciseFinishHandler.bind(EstimatedScoreEventsHandlerSrv, enumObj.enum));
@@ -2518,7 +2518,8 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
         PRACTICE: 2,
         GAME: 3,
         SECTION: 4,
-        DRILL: 5
+        DRILL: 5,
+        LECTURE: 13
     };
 
     angular.module('znk.infra.exerciseUtility')
@@ -2531,7 +2532,8 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
                     ['PRACTICE', 2, 'Practice'],
                     ['GAME', 3, 'Game'],
                     ['SECTION', 4, 'Section'],
-                    ['DRILL', 5, 'Drill']
+                    ['DRILL', 5, 'Drill'],
+                    ['LECTURE', 13, 'Lecture']
                 ]);
             }
         ]);
@@ -2665,6 +2667,29 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
             return exp.replace(/hh/g, hours).replace(/mm/g, minutes).replace(/ss/g, seconds);
         };
     }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.filters').filter('formatTimeDuration', ['$log', function ($log) {
+            return function (time, exp) {
+                if (!angular.isNumber(time) || isNaN(time)) {
+                    $log.error('time is not a number:', time);
+                    return '';
+                }
+                var t = Math.round(parseInt(time));
+                var hours = parseInt(t / 3600000, 10);
+                var minutes = parseInt(t / 60000, 10);
+                var seconds = time / 1000;
+                var defaultFormat = 'mm';
+
+                if (!exp) {
+                    exp = defaultFormat;
+                }
+                return exp.replace(/hh/g, hours).replace(/mm/g, minutes).replace(/ss/g, seconds);
+            };
+        }]);
 })(angular);
 
 angular.module('znk.infra.filters').run(['$templateCache', function($templateCache) {
@@ -6802,7 +6827,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                     hideFooter: '=',
                     onEnded: '&',
                     isPlaying: '=?',
-                    showAsDone: '&?',
+                    showAsDone: '=?',
                     allowReplay: '&?',
                     showSkipOption: '&?',
                     autoPlayGetter: '&autoPlay',
@@ -6813,13 +6838,13 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
 
                     scope.d = {
                         image: scope.imageGetter(),
-                        blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined,
-                        showAsDone: angular.isDefined(scope.showAsDone) ? scope.showAsDone() : false
+                        blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined
                     };
 
                     scope.d.skippedHandler = function(){
-                        scope.d.showAsDone = true;
+                        scope.showAsDone = true;
                         scope.d.showSkipButton = false;
+                        scope.onEnded();
                     };
 
                     if(angular.isDefined(scope.showSkipOption) && scope.showSkipOption()){
@@ -7233,7 +7258,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "            on-ended=\"onEnded()\"\n" +
     "            on-start=\"d.showSkipButtonFn()\"\n" +
     "            allow-replay=\"allowReplay()\"\n" +
-    "            show-as-done=\"d.showAsDone\"\n" +
+    "            show-as-done=\"showAsDone\"\n" +
     "            auto-play=\"autoPlayGetter()\">\n" +
     "        </znk-audio-play-button>\n" +
     "\n" +
@@ -9773,7 +9798,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "<znk-scroll>\n" +
     "    <div class=\"pager-items-wrapper\">\n" +
     "        <div class=\"pager-item noselect\"\n" +
-    "             ng-repeat=\"question in questions track by question.id\"\n" +
+    "             ng-repeat=\"question in questions\"\n" +
     "             question-status=\"question.__questionStatus\"\n" +
     "             question=\"question\"\n" +
     "             ng-click=\"d.tap($index)\">\n" +
