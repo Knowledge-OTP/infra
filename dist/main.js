@@ -2663,6 +2663,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
             if (!exp) {
                 exp = defaultFormat;
             }
+
             return exp.replace(/hh/g, hours).replace(/mm/g, minutes).replace(/ss/g, seconds);
         };
     }]);
@@ -4319,11 +4320,13 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
     angular.module('znk.infra.screenSharing', [
         'ngAnimate',
+        'pascalprecht.translate',
         'znk.infra.user',
         'znk.infra.utility',
         'znk.infra.config',
         'znk.infra.enum',
-        'znk.infra.svgIcon'
+        'znk.infra.svgIcon',
+        'znk.infra.popUp'
     ]);
 })(angular);
 
@@ -4350,7 +4353,23 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             bindings: {
                 userSharingState: '<',
                 onClose: '&'
-            }
+            },
+            controller: ["UserScreenSharingStateEnum", "$log", function (UserScreenSharingStateEnum, $log) {
+                'ngInject';
+
+                this.$onInit = function () {
+                    switch(this.userSharingState){
+                        case UserScreenSharingStateEnum.VIEWER.enum:
+                            this.sharingStateCls = 'viewer-state';
+                            break;
+                        case UserScreenSharingStateEnum.SHARER.enum:
+                            this.sharingStateCls = 'sharer-state';
+                            break;
+                        default:
+                            $log.error('screenSharingComponent: invalid state was provided');
+                    }
+                };
+            }]
         }
     );
 })(angular);
@@ -4406,6 +4425,19 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.screenSharing')
+        .run(["$timeout", "$translatePartialLoader", function($timeout, $translatePartialLoader){
+            'ngInject';
+            //must be wrapped in timeout because the parting adding cannot be made directly in a run block
+            $timeout(function(){
+                $translatePartialLoader.addPart('screenSharing');
+            });
+        }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.screenSharing').service('ScreenSharingDataGetterSrv',
         ["InfraConfigSrv", "$q", "ENV", "UserProfileService", function (InfraConfigSrv, $q, ENV, UserProfileService) {
             'ngInject';
@@ -4428,7 +4460,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             this.getScreenSharingData = function (screenSharingGuid) {
                 var screenSharingDataPath = this.getScreenSharingDataPath(screenSharingGuid);
                 return _getStorage().then(function (storage) {
-                    return storage.get(screenSharingDataPath);
+                    return storage.getAndBindToServer(screenSharingDataPath);
                 });
             };
 
@@ -4463,37 +4495,66 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
     angular.module('znk.infra.screenSharing').provider('ScreenSharingEventsSrv', function () {
         var isEnabled = true;
-        
+
         this.enabled = function (_isEnabled) {
             isEnabled = _isEnabled;
         };
 
-        this.$get = ["UserProfileService", "InfraConfigSrv", "$q", "StorageSrv", "ENV", "ScreenSharingStatusEnum", "UserScreenSharingStateEnum", "ScreenSharingSrv", function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, ScreenSharingStatusEnum, UserScreenSharingStateEnum, ScreenSharingSrv) {
+        this.$get = ["UserProfileService", "InfraConfigSrv", "$q", "StorageSrv", "ENV", "ScreenSharingStatusEnum", "UserScreenSharingStateEnum", "ScreenSharingSrv", "$log", "ScreenSharingUiSrv", function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, ScreenSharingStatusEnum, UserScreenSharingStateEnum, ScreenSharingSrv, $log, ScreenSharingUiSrv) {
             'ngInject';
-            
+
             var ScreenSharingEventsSrv = {};
-            
+
             function _listenToScreenSharingData(guid) {
                 var screenSharingStatusPath = 'screenSharing/' + guid;
 
                 function _cb(screenSharingData) {
-                    if (!screenSharingData || screenSharingData.status !== ScreenSharingStatusEnum.CONFIRMED.enum) {
+                    if (!screenSharingData) {
                         return;
                     }
 
                     UserProfileService.getCurrUserId().then(function (currUid) {
-                        var userScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
+                        switch (screenSharingData.status) {
+                            case ScreenSharingStatusEnum.PENDING_VIEWER.enum:
+                                if (screenSharingData.viewerId !== currUid) {
+                                    return;
+                                }
 
-                        if (screenSharingData.viewerId === currUid) {
-                            userScreenSharingState = UserScreenSharingStateEnum.VIEWER.enum;
-                        }
+                                ScreenSharingUiSrv.showScreenSharingConfirmationPopUp().then(function () {
+                                    ScreenSharingSrv.confirmSharing(screenSharingData.guid);
+                                }, function () {
+                                    ScreenSharingSrv.endSharing(screenSharingData.guid);
+                                });
+                                break;
+                            case ScreenSharingStatusEnum.PENDING_SHARER.enum:
+                                if (screenSharingData.sharerId !== currUid) {
+                                    return;
+                                }
 
-                        if (screenSharingData.sharerId === currUid) {
-                            userScreenSharingState = UserScreenSharingStateEnum.SHARER.enum;
-                        }
+                                ScreenSharingSrv.confirmSharing(screenSharingData.guid);
+                                break;
+                            case ScreenSharingStatusEnum.CONFIRMED.enum:
+                                var userScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
 
-                        if (userScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
-                            ScreenSharingSrv._userScreenSharingStateChanged(userScreenSharingState);
+                                if (screenSharingData.viewerId === currUid) {
+                                    userScreenSharingState = UserScreenSharingStateEnum.VIEWER.enum;
+                                }
+
+                                if (screenSharingData.sharerId === currUid) {
+                                    userScreenSharingState = UserScreenSharingStateEnum.SHARER.enum;
+                                }
+
+                                if (userScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
+                                    ScreenSharingSrv._userScreenSharingStateChanged(userScreenSharingState, screenSharingData);
+                                }
+
+                                break;
+                            case ScreenSharingStatusEnum.ENDED.enum:
+                                ScreenSharingSrv._userScreenSharingStateChanged(UserScreenSharingStateEnum.NONE.enum, screenSharingData);
+                                break;
+                            default:
+                                $log.error('ScreenSharingEventsSrv: invalid status was received ' + screenSharingData.status);
+
                         }
                     });
                 }
@@ -4511,7 +4572,9 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                         globalStorage.onEvent(StorageSrv.EVENTS.VALUE, userScreenSharingPath, function (userScreenSharingData) {
                             if (userScreenSharingData) {
                                 angular.forEach(userScreenSharingData, function (isActive, guid) {
-                                    _listenToScreenSharingData(guid);
+                                    if(isActive){
+                                        _listenToScreenSharingData(guid);
+                                    }
                                 });
                             }
                         });
@@ -4524,7 +4587,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                     _startListening();
                 }
             };
-            
+
             return ScreenSharingEventsSrv;
         }];
     });
@@ -4536,6 +4599,9 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
     angular.module('znk.infra.screenSharing').service('ScreenSharingSrv',
         ["UserProfileService", "InfraConfigSrv", "$q", "UtilitySrv", "ScreenSharingDataGetterSrv", "ScreenSharingStatusEnum", "ENV", "$log", "UserScreenSharingStateEnum", "ScreenSharingUiSrv", function (UserProfileService, InfraConfigSrv, $q, UtilitySrv, ScreenSharingDataGetterSrv, ScreenSharingStatusEnum, ENV, $log, UserScreenSharingStateEnum, ScreenSharingUiSrv) {
             'ngInject';
+
+            var _this = this;
+            var currUserScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
 
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
 
@@ -4558,6 +4624,13 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                     for (var i in screenSharingDataMapKeys) {
                         var screenSharingDataKey = screenSharingDataMapKeys[i];
                         var screenSharingData = screenSharingDataMap[screenSharingDataKey];
+
+                        var isEnded = screenSharingData.status === ScreenSharingStatusEnum.ENDED.enum;
+                        if(isEnded){
+                            _this.endSharing(screenSharingData.guid);
+                            continue;
+                        }
+
                         isInitiated = screenSharingData.sharerId === sharerId && screenSharingData.viewerId === viewerId;
                         if (isInitiated) {
                             break;
@@ -4568,14 +4641,24 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             }
 
             function _initiateScreenSharing(sharerData, viewerData, initiator) {
+                var errMsg;
+
                 if (angular.isUndefined(viewerData.isTeacher) || angular.isUndefined(sharerData.isTeacher)) {
-                    var errMSg = 'ScreenSharingSrv: isTeacher property was not provided!!!';
-                    $log.error(errMSg);
-                    return $q.reject(errMSg);
+                    errMsg = 'ScreenSharingSrv: isTeacher property was not provided!!!';
+                    $log.error(errMsg);
+                    return $q.reject(errMsg);
+                }
+
+                if(currUserScreenSharingState !== UserScreenSharingStateEnum.NONE.enum){
+                    errMsg = 'ScreenSharingSrv: screen sharing is already active!!!';
+                    $log.debug(errMsg);
+                    return $q.reject(errMsg);
                 }
 
                 var initScreenSharingStatus = _getScreenSharingInitStatusByInitiator(initiator);
                 if (!initScreenSharingStatus) {
+                    errMsg = 'ScreenSharingSrv: initiator was not provided';
+                    $log.error(errMsg);
                     return $q.reject('ScreenSharingSrv: initiator was not provided');
                 }
 
@@ -4649,6 +4732,12 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             };
 
             this.confirmSharing = function (screenSharingDataGuid) {
+                if(currUserScreenSharingState !== UserScreenSharingStateEnum.NONE.enum){
+                    var errMsg = 'ScreenSharingSrv: screen sharing is already active!!!';
+                    $log.debug(errMsg);
+                    return $q.reject(errMsg);
+                }
+                
                 return ScreenSharingDataGetterSrv.getScreenSharingData(screenSharingDataGuid).then(function (screenSharingData) {
                     screenSharingData.status = ScreenSharingStatusEnum.CONFIRMED.enum;
                     return screenSharingData.$save();
@@ -4683,11 +4772,24 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 });
             };
 
-            this._userScreenSharingStateChanged = function (newUserScreenSharingState) {
+            this._userScreenSharingStateChanged = function (newUserScreenSharingState, screenSharingData) {
                 if(!newUserScreenSharingState){
                     return;
                 }
-                ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState);
+
+                currUserScreenSharingState = newUserScreenSharingState;
+
+                var isViewerState = newUserScreenSharingState === UserScreenSharingStateEnum.VIEWER.enum;
+                var isSharerState = newUserScreenSharingState === UserScreenSharingStateEnum.SHARER.enum;
+
+                if(isSharerState || isViewerState){
+                    ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState).then(function(){
+                        _this.endSharing(screenSharingData.guid);
+                    });
+                }else{
+                    ScreenSharingUiSrv.endScreenSharing();
+                }
+
             };
         }]
     );
@@ -4697,11 +4799,10 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.screenSharing').service('ScreenSharingUiSrv',
-        ["$rootScope", "$timeout", "$compile", "$animate", function ($rootScope, $timeout, $compile, $animate) {
+        ["$rootScope", "$timeout", "$compile", "$animate", "PopUpSrv", "$translate", "$q", "$log", function ($rootScope, $timeout, $compile, $animate, PopUpSrv, $translate, $q, $log) {
             'ngInject';
 
             var childScope, screenSharingPhElement, readyProm;
-            var self = this;
 
             function _init() {
                 var bodyElement = angular.element(document.body);
@@ -4728,12 +4829,14 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             function _activateScreenSharing(userSharingState) {
                 _endScreenSharing();
 
+                var defer = $q.defer();
+
                 readyProm.then(function(){
                     childScope = $rootScope.$new(true);
                     childScope.d = {
                         userSharingState: userSharingState,
                         onClose: function(){
-                            self.endScreenSharing();
+                            defer.resolve('closed');
                         }
                     };
 
@@ -4748,16 +4851,43 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                     $animate.enter(screenSharingElement[0], screenSharingPhElement[0]);
                     $compile(screenSharingElement)(childScope);
                 });
+
+                return defer.promise;
             }
 
             this.activateScreenSharing = function (userSharingState) {
-                _activateScreenSharing(userSharingState);
+                return _activateScreenSharing(userSharingState);
             };
 
             this.endScreenSharing = function () {
                 _endScreenSharing();
             };
 
+            this.showScreenSharingConfirmationPopUp = function(){
+                var translationsPromMap = {};
+                translationsPromMap.title = $translate('SCREEN_SHARING.SHARE_SCREEN_REQUEST');
+                translationsPromMap.content= $translate('SCREEN_SHARING.WANT_TO_SHARE',{
+                    name: "Student/Teacher"
+                });
+                translationsPromMap.acceptBtnTitle = $translate('SCREEN_SHARING.REJECT');
+                translationsPromMap.cancelBtnTitle = $translate('SCREEN_SHARING.ACCEPT');
+                return $q.all(translationsPromMap).then(function(translations){
+                    var popUpInstance = PopUpSrv.warning(
+                        translations.title,
+                        translations.content,
+                        translations.acceptBtnTitle,
+                        translations.cancelBtnTitle
+                    );
+                    return popUpInstance.promise.then(function(res){
+                        return $q.reject(res);
+                    },function(res){
+                        return $q.resolve(res);
+                    });
+                },function(err){
+                    $log.error('ScreenSharingUiSrv: translate failure' + err);
+                    return $q.reject(err);
+                });
+            };
             //was wrapped with timeout since angular will compile the dom after this service initialization
             readyProm = $timeout(function(){
                 _init();
@@ -4768,12 +4898,10 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
 angular.module('znk.infra.screenSharing').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/screenSharing/directives/screenSharing/screenSharing.template.html",
-    "<div ng-switch=\"$ctrl.userSharingState\">\n" +
+    "<div ng-switch=\"$ctrl.userSharingState\"\n" +
+    "     ng-class=\"$ctrl.sharingStateCls\">\n" +
     "    <div ng-switch-when=\"2\"\n" +
     "         class=\"viewer-state-container\">\n" +
-    "        <div class=\"close-icon-wrapper\" ng-click=\"$ctrl.onClose()\">\n" +
-    "            <svg-icon name=\"screen-sharing-close\"></svg-icon>\n" +
-    "        </div>\n" +
     "    </div>\n" +
     "    <div ng-switch-when=\"3\"\n" +
     "         class=\"sharer-state-container\">\n" +
@@ -4784,6 +4912,9 @@ angular.module('znk.infra.screenSharing').run(['$templateCache', function($templ
     "        <div class=\"eye-wrapper\">\n" +
     "            <svg-icon name=\"screen-sharing-eye\"></svg-icon>\n" +
     "        </div>\n" +
+    "    </div>\n" +
+    "    <div class=\"close-icon-wrapper\" ng-click=\"$ctrl.onClose()\">\n" +
+    "        <svg-icon name=\"screen-sharing-close\"></svg-icon>\n" +
     "    </div>\n" +
     "</div>\n" +
     "");
