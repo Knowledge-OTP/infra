@@ -40,13 +40,13 @@
                                 userCallData = {
                                     action: CALL_ACTIONS.DISCONNECT,
                                     newReceiverId: receiverId
-                                }
+                                };
                             } else if (_isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId)) {
                                 userCallData = {
                                     action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
                                     newReceiverId: receiverId,
                                     oldReceiverId: callsData.receiverId
-                                }
+                                };
                             }
 
                             if (userCallData) {

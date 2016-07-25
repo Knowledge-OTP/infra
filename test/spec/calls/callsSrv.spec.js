@@ -24,7 +24,7 @@ describe('testing service "CallsSrv":', function () {
         _deps.GlobalStorage = _deps.TestUtilitySrv.general.asyncToSync(_deps.InfraConfigSrv.getGlobalStorage, _deps.InfraConfigSrv)();
     }));
 
-    it('given when click on call button should save data to root calls', function () {
+    xit('given when click on call button should save data to root calls', function () {
         var callsDataGuid = '123456789-data-guid';
 
         var callerId = _deps.UserProfileService.__currUserId;
