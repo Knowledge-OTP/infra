@@ -4643,7 +4643,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
             var _this = this;
 
-            var currActiveScreenSharingData = null;
+            var activeScreenSharingData = null;
             var currUserScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
             var registeredCbToActiveScreenSharingDataChanges = [];
             var registeredCbToCurrUserScreenSharingStateChange = [];
@@ -4757,7 +4757,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             }
 
             function _cleanRegisteredCbToActiveScreenSharingData(){
-                currActiveScreenSharingData = null;
+                activeScreenSharingData = null;
                 registeredCbToActiveScreenSharingDataChanges = [];
             }
 
@@ -4829,9 +4829,9 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             };
 
             this.registerToActiveScreenSharingDataChanges = function(cb){
-                if(currActiveScreenSharingData){
+                if(activeScreenSharingData){
                     registeredCbToActiveScreenSharingDataChanges.push(cb);
-                    cb(currActiveScreenSharingData);
+                    cb(activeScreenSharingData);
                 }
             };
 
@@ -4846,6 +4846,13 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 });
             };
 
+            this.getActiveScreenSharingData = function(){
+                if(!activeScreenSharingData){
+                    return $q.reject('ScreenSharingSrv: no active screen sharing data');
+                }
+                return ScreenSharingDataGetterSrv.getScreenSharingData(activeScreenSharingData.guid);
+            };
+
             this._userScreenSharingStateChanged = function (newUserScreenSharingState, screenSharingData) {
                 if(!newUserScreenSharingState || (currUserScreenSharingState === newUserScreenSharingState)){
                     return;
@@ -4853,12 +4860,10 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
                 currUserScreenSharingState = newUserScreenSharingState;
 
-                _invokeCurrUserScreenSharingStateChangedCb(currUserScreenSharingState );
-
                 var isViewerState = newUserScreenSharingState === UserScreenSharingStateEnum.VIEWER.enum;
                 var isSharerState = newUserScreenSharingState === UserScreenSharingStateEnum.SHARER.enum;
                 if(isSharerState || isViewerState){
-                    currActiveScreenSharingData = screenSharingData;
+                    activeScreenSharingData = screenSharingData;
                     ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState).then(function(){
                         _this.endSharing(screenSharingData.guid);
                     });
@@ -4866,16 +4871,18 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                     _cleanRegisteredCbToActiveScreenSharingData();
                     ScreenSharingUiSrv.endScreenSharing();
                 }
+
+                _invokeCurrUserScreenSharingStateChangedCb(currUserScreenSharingState );
             };
 
             this._screenSharingDataChanged = function(newScreenSharingData){
-                if(!currActiveScreenSharingData || currActiveScreenSharingData.guid !== newScreenSharingData.guid){
+                if(!activeScreenSharingData || activeScreenSharingData.guid !== newScreenSharingData.guid){
                     return;
                 }
 
-                currActiveScreenSharingData = newScreenSharingData;
+                activeScreenSharingData = newScreenSharingData;
                 registeredCbToActiveScreenSharingDataChanges.forEach(function(cb){
-                    cb(currActiveScreenSharingData);
+                    cb(activeScreenSharingData);
                 });
             };
         }]
