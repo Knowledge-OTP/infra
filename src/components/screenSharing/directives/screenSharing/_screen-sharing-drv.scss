@@ -17,7 +17,7 @@ screen-sharing{
 
     .sharer-state-container{
         .square-side{
-            background: $bcColor19;
+            background: $bgColor19;
             position: absolute;
 
             &.top, &.bottom{
@@ -50,7 +50,7 @@ screen-sharing{
         }
 
         .eye-wrapper{
-            background: $bcColor19;
+            background: $bgColor19;
             width: 52px;
             text-align: center;
             border-radius: 50%;

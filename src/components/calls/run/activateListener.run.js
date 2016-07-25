@@ -5,7 +5,7 @@
         function(CallsEventsSrv){
             'ngInject';
 
-            CallsEventsSrv.activate();
+           // CallsEventsSrv.activate();
         }
     );
 })();
