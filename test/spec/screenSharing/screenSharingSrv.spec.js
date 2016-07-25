@@ -422,6 +422,128 @@ describe('testing service "ScreenSharingSrv":', function () {
         _deps.$rootScope.$digest();
 
         var expectedResult = 'rejected';
-        expect(shareMyScreenResult).toBe(expectedResult)
+        expect(shareMyScreenResult).toBe(expectedResult);
+    });
+
+    it('given screen sharing is confirmed when screen sharing data is changed then all registered cb should ' +
+        'be invoked', function(){
+        var myUid = _deps.UserProfileService.__currUserId;
+        var otherUid = '123456789-other-uid';
+        var screenSharingDataGuid = '123456789-data-guid';
+
+        _addScreenSharingRequestToUser(myUid,false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(otherUid,false, screenSharingDataGuid);
+
+        var viewerId = myUid;
+        var sharerId = otherUid;
+        var viewerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
+        var sharerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
+        var screenSharingData = {
+            guid: screenSharingDataGuid,
+            sharerId: sharerId,
+            viewerId: viewerId,
+            status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
+            viewerPath: viewerScreenSharingRequestsPath ,
+            sharerPath: sharerScreenSharingRequestsPath
+        };
+        _updateScreenSharingData(screenSharingData);
+
+        var valueReceivedInCb;
+        function cb(_newScreenSharingData){
+            valueReceivedInCb = _newScreenSharingData;
+        }
+        _deps.ScreenSharingSrv.registerToActiveScreenSharingDataChanges(cb);
+
+        var screenSharingPath = 'screenSharing/' + screenSharingDataGuid;
+        var newScreenSharingData = angular.copy(screenSharingData);
+        newScreenSharingData.activeExercise = {
+            exerciseId: 1
+        };
+        _deps.GlobalStorage.adapter.update(screenSharingPath, newScreenSharingData);
+        _deps.$rootScope.$digest();
+
+        expect(valueReceivedInCb).toEqual(newScreenSharingData);
+    });
+
+    it('given screen sharing is confirmed when screen sharing status change to ENDED then once screen sharing data is changed' +
+        ' then no registered cn should be invoked', function(){
+        var myUid = _deps.UserProfileService.__currUserId;
+        var otherUid = '123456789-other-uid';
+        var screenSharingDataGuid = '123456789-data-guid';
+
+        _addScreenSharingRequestToUser(myUid,false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(otherUid,false, screenSharingDataGuid);
+
+        var viewerId = myUid;
+        var sharerId = otherUid;
+        var viewerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
+        var sharerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
+        var screenSharingData = {
+            guid: screenSharingDataGuid,
+            sharerId: sharerId,
+            viewerId: viewerId,
+            status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
+            viewerPath: viewerScreenSharingRequestsPath ,
+            sharerPath: sharerScreenSharingRequestsPath
+        };
+        _updateScreenSharingData(screenSharingData);
+
+        var valueReceivedInCb;
+        function cb(_newScreenSharingData){
+            valueReceivedInCb = _newScreenSharingData;
+        }
+        _deps.ScreenSharingSrv.registerToActiveScreenSharingDataChanges(cb);
+
+        var screenSharingPath = 'screenSharing/' + screenSharingDataGuid;
+        var newScreenSharingData = angular.copy(screenSharingData);
+        newScreenSharingData.activeExercise = {
+            exerciseId: 1
+        };
+        newScreenSharingData.status = _deps.ScreenSharingStatusEnum.ENDED.enum;
+        _deps.GlobalStorage.adapter.update(screenSharingPath, newScreenSharingData);
+        _deps.$rootScope.$digest();
+
+        expect(valueReceivedInCb).toEqual(screenSharingData);
+    });
+
+    it('given screen sharing is confirmed when screen sharing data update then registered cb should be invoked only in case' +
+        ' the active screen sharing data was updated', function(){
+        var myUid = _deps.UserProfileService.__currUserId;
+        var otherUid = '123456789-other-uid';
+        var screenSharingDataGuid = '123456789-data-guid';
+
+        _addScreenSharingRequestToUser(myUid,false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(otherUid,false, screenSharingDataGuid);
+
+        var viewerId = myUid;
+        var sharerId = otherUid;
+        var viewerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
+        var sharerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
+        var screenSharingData = {
+            guid: screenSharingDataGuid,
+            sharerId: sharerId,
+            viewerId: viewerId,
+            status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
+            viewerPath: viewerScreenSharingRequestsPath ,
+            sharerPath: sharerScreenSharingRequestsPath
+        };
+        _updateScreenSharingData(screenSharingData);
+
+        var valueReceivedInCb;
+        function cb(_newScreenSharingData){
+            valueReceivedInCb = _newScreenSharingData;
+        }
+        _deps.ScreenSharingSrv.registerToActiveScreenSharingDataChanges(cb);
+
+        var screenSharingPath = 'screenSharing/' + screenSharingDataGuid;
+        var newScreenSharingData = angular.copy(screenSharingData);
+        newScreenSharingData.guid = 'other-screen-sharing-data-guid';
+        newScreenSharingData.activeExercise = {
+            exerciseId: 1
+        };
+        _deps.GlobalStorage.adapter.update(screenSharingPath, newScreenSharingData);
+        _deps.$rootScope.$digest();
+
+        expect(valueReceivedInCb).toEqual(screenSharingData);
     });
 });

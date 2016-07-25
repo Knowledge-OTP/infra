@@ -63,7 +63,7 @@
                     }else{
                         angular.extend(valueInDb, angular.copy(val));
                     }
-                    
+
                     var currValueInDb = $parse(_dbKey)(adapter.__db);
                     return !angular.equals(prevValueInDb, currValueInDb);
 
@@ -71,9 +71,10 @@
 
                 function _triggerEvent (path, type){
                     adapter.get(path).then(function (pathValue) {
+                        var pathValueCopy = angular.copy(pathValue);
                         var valueEventsCbs = adapter.__getEventTypeCbs(type, path);
                         valueEventsCbs.forEach(function (cb) {
-                            cb(pathValue);
+                            cb(pathValueCopy);
                         });
                     });
                 }
