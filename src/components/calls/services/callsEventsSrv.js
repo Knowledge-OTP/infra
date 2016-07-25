@@ -8,9 +8,8 @@
             isEnabled = _isEnabled;
         };
 
-        this.$get = function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV) {
+        this.$get = function (/* UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV */) {
             'ngInject';
-
             //var ScreenSharingEventsSrv = {};
             //
             //function _listenToScreenSharingData(guid) {

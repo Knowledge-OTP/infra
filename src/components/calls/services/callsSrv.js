@@ -2,16 +2,16 @@
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsSrv',
-        function (UserProfileService, InfraConfigSrv, $q, UtilitySrv, ENV, $log) {
+        function (/* UserProfileService, InfraConfigSrv, $q, UtilitySrv, ENV, $log */) {
             'ngInject';
 
             //@todo(oded) will implement all the api calls to pivlo here
 
-            var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
-
-            function _getStorage() {
-                return InfraConfigSrv.getGlobalStorage();
-            }
+            //var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
+            //
+            //function _getStorage() {
+            //    return InfraConfigSrv.getGlobalStorage();
+            //}
 
             //function _getScreenSharingInitStatusByInitiator(initiator) {
             //    var initiatorToInitStatusMap = {};
