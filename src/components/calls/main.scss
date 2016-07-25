@@ -2,4 +2,5 @@
         './src/scss/imports/colors',
         './src/scss/imports/mixins';
 
-@import './directives/callBtn/call-btn-drv';
+@import './directives/callBtn/call-btn-drv',
+        './directives/activeCall/activeCall';
