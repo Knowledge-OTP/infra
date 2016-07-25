@@ -6,10 +6,13 @@
             require: {
                 parent: '?^ngModel'
             },
-            bindings: {},
+            bindings: {
+                onClickIcon: '&?'
+            },
             controllerAs: 'vm',
-            controller: function (CallBtnEnum) {
+            controller: function (CallBtnEnum, CallsSrv) {
                 var vm = this;
+                var receiverId;
 
                 vm.callBtnEnum = CallBtnEnum;
 
@@ -24,13 +27,16 @@
                     var ngModelCtrl = vm.parent;
                     if (ngModelCtrl) {
                         ngModelCtrl.$render = function() {
-                            _changeBtnState(ngModelCtrl.$modelValue);
+                            var modelValue = ngModelCtrl.$modelValue;
+                            var btnState = modelValue.btnState;
+                            receiverId = modelValue.receiverId;
+                            _changeBtnState(btnState);
                         };
                     }
                 };
 
                 vm.clickBtn = function() {
-
+                    CallsSrv.callsStateChanged(receiverId);
                 };
             }
         }

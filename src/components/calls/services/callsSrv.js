@@ -6,12 +6,13 @@
             'ngInject';
 
             //@todo(oded) will implement all the api calls to pivlo here
-            //var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
-            //
-            //function _getStorage() {
-            //    return InfraConfigSrv.getGlobalStorage();
-            //}
-            //
+
+            var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
+
+            function _getStorage() {
+                return InfraConfigSrv.getGlobalStorage();
+            }
+
             //function _getScreenSharingInitStatusByInitiator(initiator) {
             //    var initiatorToInitStatusMap = {};
             //    initiatorToInitStatusMap[UserScreenSharingStateEnum.VIEWER.enum] = ScreenSharingStatusEnum.PENDING_SHARER.enum;
@@ -151,13 +152,10 @@
             //        return data.storage.update(dataToSave);
             //    });
             //};
-            //
-            //this._userScreenSharingStateChanged = function (newUserScreenSharingState) {
-            //    if(!newUserScreenSharingState){
-            //        return;
-            //    }
-            //    ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState);
-            //};
+
+            this.callsStateChanged = function () {
+
+            };
         }
     );
 })(angular);

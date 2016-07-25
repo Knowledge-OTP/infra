@@ -5,9 +5,8 @@
         'znk.infra.calls'
     ])
         .run(function ($rootScope) {
-
-            $rootScope.offline = 1;
-            $rootScope.call = 2;
-            $rootScope.called = 3;
+            $rootScope.offline = { btnState: 1, receiverId: 1 };
+            $rootScope.call = { btnState: 2, receiverId: 1 };
+            $rootScope.called = { btnState: 3, receiverId: 1 };
         });
 })(angular);
