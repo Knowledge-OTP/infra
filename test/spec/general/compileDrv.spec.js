@@ -1,4 +1,4 @@
-describe('testing directive "compileDrv":', function() {
+fdescribe('testing directive "compileDrv":', function() {
     var $compile,
         $rootScope,
         $httpBackend;
