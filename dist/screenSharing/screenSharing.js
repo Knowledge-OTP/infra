@@ -295,9 +295,11 @@
             'ngInject';
 
             var _this = this;
+
             var currActiveScreenSharingData = null;
             var currUserScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
             var registeredCbToActiveScreenSharingDataChanges = [];
+            var registeredCbToCurrUserScreenSharingStateChange = [];
 
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
 
@@ -412,6 +414,12 @@
                 registeredCbToActiveScreenSharingDataChanges = [];
             }
 
+            function _invokeCurrUserScreenSharingStateChangedCb(){
+                registeredCbToCurrUserScreenSharingStateChange.forEach(function(cb){
+                    cb(currUserScreenSharingState);
+                });
+            }
+
             this.shareMyScreen = function (viewerData) {
                 return UserProfileService.getCurrUserId().then(function (currUserId) {
                     var sharerData = {
@@ -480,12 +488,25 @@
                 }
             };
 
+            this.registerToCurrUserScreenSharingStateChanges = function(cb){
+                registeredCbToCurrUserScreenSharingStateChange.push(cb);
+                cb(currUserScreenSharingState);
+            };
+
+            this.unregisterFromCurrUserScreenSharingStateChanges = function(cb){
+                registeredCbToCurrUserScreenSharingStateChange = registeredCbToCurrUserScreenSharingStateChange.filter(function(iterationCb){
+                    return iterationCb !== cb;
+                });
+            };
+
             this._userScreenSharingStateChanged = function (newUserScreenSharingState, screenSharingData) {
                 if(!newUserScreenSharingState || (currUserScreenSharingState === newUserScreenSharingState)){
                     return;
                 }
 
                 currUserScreenSharingState = newUserScreenSharingState;
+
+                _invokeCurrUserScreenSharingStateChangedCb(currUserScreenSharingState );
 
                 var isViewerState = newUserScreenSharingState === UserScreenSharingStateEnum.VIEWER.enum;
                 var isSharerState = newUserScreenSharingState === UserScreenSharingStateEnum.SHARER.enum;

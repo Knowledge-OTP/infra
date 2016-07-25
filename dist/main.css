@@ -3147,13 +3147,13 @@ znk-exercise.desktop {
       right: -40px; }
       znk-exercise.desktop .btn-section .btn-container.right-container.question-answered button {
         background: #0a9bad; }
-        znk-exercise.desktop .btn-section .btn-container.right-container.question-answered button svg-icon.chevron .st0 {
+        znk-exercise.desktop .btn-section .btn-container.right-container.question-answered button svg-icon.znk-exercise-chevron .st0 {
           stroke: #fff; }
       znk-exercise.desktop .btn-section .btn-container.right-container button {
         border-top-right-radius: 42px;
         border-bottom-right-radius: 42px;
         padding-right: 3px; }
-        znk-exercise.desktop .btn-section .btn-container.right-container button .chevron {
+        znk-exercise.desktop .btn-section .btn-container.right-container button .znk-exercise-chevron {
           transform: rotate(-90deg); }
       znk-exercise.desktop .btn-section .btn-container.right-container.ng-hide-add, znk-exercise.desktop .btn-section .btn-container.right-container.ng-hide-remove {
         transition: all linear 0.2s; }
@@ -3165,7 +3165,7 @@ znk-exercise.desktop {
         border-top-left-radius: 42px;
         border-bottom-left-radius: 42px;
         padding-left: 5px; }
-        znk-exercise.desktop .btn-section .btn-container.left-container button .chevron {
+        znk-exercise.desktop .btn-section .btn-container.left-container button .znk-exercise-chevron {
           transform: rotate(90deg); }
       znk-exercise.desktop .btn-section .btn-container.left-container.ng-hide-add, znk-exercise.desktop .btn-section .btn-container.left-container.ng-hide-remove {
         transition: all linear 0.2s; }

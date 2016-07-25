@@ -4642,9 +4642,11 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             'ngInject';
 
             var _this = this;
+
             var currActiveScreenSharingData = null;
             var currUserScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
             var registeredCbToActiveScreenSharingDataChanges = [];
+            var registeredCbToCurrUserScreenSharingStateChange = [];
 
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
 
@@ -4759,6 +4761,12 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 registeredCbToActiveScreenSharingDataChanges = [];
             }
 
+            function _invokeCurrUserScreenSharingStateChangedCb(){
+                registeredCbToCurrUserScreenSharingStateChange.forEach(function(cb){
+                    cb(currUserScreenSharingState);
+                });
+            }
+
             this.shareMyScreen = function (viewerData) {
                 return UserProfileService.getCurrUserId().then(function (currUserId) {
                     var sharerData = {
@@ -4827,12 +4835,25 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 }
             };
 
+            this.registerToCurrUserScreenSharingStateChanges = function(cb){
+                registeredCbToCurrUserScreenSharingStateChange.push(cb);
+                cb(currUserScreenSharingState);
+            };
+
+            this.unregisterFromCurrUserScreenSharingStateChanges = function(cb){
+                registeredCbToCurrUserScreenSharingStateChange = registeredCbToCurrUserScreenSharingStateChange.filter(function(iterationCb){
+                    return iterationCb !== cb;
+                });
+            };
+
             this._userScreenSharingStateChanged = function (newUserScreenSharingState, screenSharingData) {
                 if(!newUserScreenSharingState || (currUserScreenSharingState === newUserScreenSharingState)){
                     return;
                 }
 
                 currUserScreenSharingState = newUserScreenSharingState;
+
+                _invokeCurrUserScreenSharingStateChangedCb(currUserScreenSharingState );
 
                 var isViewerState = newUserScreenSharingState === UserScreenSharingStateEnum.VIEWER.enum;
                 var isSharerState = newUserScreenSharingState === UserScreenSharingStateEnum.SHARER.enum;
@@ -7371,10 +7392,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    chevron: 'components/znkExercise/svg/chevron-icon.svg',
-                    correct: 'components/znkExercise/svg/correct-icon.svg',
-                    wrong: 'components/znkExercise/svg/wrong-icon.svg',
-                    arrow: 'components/znkExercise/svg/arrow-icon.svg'
+                    'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }])
@@ -9820,14 +9838,14 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "<div class=\"btn-container left-container ng-hide\"\n" +
     "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
     "    <button ng-click=\"vm.prevQuestion()\">\n" +
-    "        <svg-icon name=\"chevron\"></svg-icon>\n" +
+    "        <svg-icon name=\"znk-exercise-chevron\"></svg-icon>\n" +
     "    </button>\n" +
     "</div>\n" +
     "<div class=\"btn-container right-container ng-hide\"\n" +
     "     ng-show=\"vm.maxQuestionIndex !== vm.currentQuestionIndex && vm.slideLeftAllowed\"\n" +
     "     ng-class=\"{'question-answered': vm.isCurrentQuestionAnswered}\">\n" +
     "    <button ng-click=\"vm.nextQuestion()\">\n" +
-    "        <svg-icon name=\"chevron\"></svg-icon>\n" +
+    "        <svg-icon name=\"znk-exercise-chevron\"></svg-icon>\n" +
     "    </button>\n" +
     "</div>\n" +
     "<div class=\"done-btn-wrap show-opacity-animate\" ng-if=\"vm.showDoneButton\">\n" +

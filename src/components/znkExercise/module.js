@@ -15,10 +15,7 @@
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    chevron: 'components/znkExercise/svg/chevron-icon.svg',
-                    correct: 'components/znkExercise/svg/correct-icon.svg',
-                    wrong: 'components/znkExercise/svg/wrong-icon.svg',
-                    arrow: 'components/znkExercise/svg/arrow-icon.svg'
+                    'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }])

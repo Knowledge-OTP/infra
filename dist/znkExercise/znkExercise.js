@@ -15,10 +15,7 @@
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    chevron: 'components/znkExercise/svg/chevron-icon.svg',
-                    correct: 'components/znkExercise/svg/correct-icon.svg',
-                    wrong: 'components/znkExercise/svg/wrong-icon.svg',
-                    arrow: 'components/znkExercise/svg/arrow-icon.svg'
+                    'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }])
@@ -2464,14 +2461,14 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "<div class=\"btn-container left-container ng-hide\"\n" +
     "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
     "    <button ng-click=\"vm.prevQuestion()\">\n" +
-    "        <svg-icon name=\"chevron\"></svg-icon>\n" +
+    "        <svg-icon name=\"znk-exercise-chevron\"></svg-icon>\n" +
     "    </button>\n" +
     "</div>\n" +
     "<div class=\"btn-container right-container ng-hide\"\n" +
     "     ng-show=\"vm.maxQuestionIndex !== vm.currentQuestionIndex && vm.slideLeftAllowed\"\n" +
     "     ng-class=\"{'question-answered': vm.isCurrentQuestionAnswered}\">\n" +
     "    <button ng-click=\"vm.nextQuestion()\">\n" +
-    "        <svg-icon name=\"chevron\"></svg-icon>\n" +
+    "        <svg-icon name=\"znk-exercise-chevron\"></svg-icon>\n" +
     "    </button>\n" +
     "</div>\n" +
     "<div class=\"done-btn-wrap show-opacity-animate\" ng-if=\"vm.showDoneButton\">\n" +
