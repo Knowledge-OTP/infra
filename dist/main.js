@@ -472,8 +472,9 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             return {
                 templateUrl: 'components/calls/directives/activeCall/activeCall.template.html',
                 scope: {},
-                link:function() {
-
+                link:function(scope) {
+                    scope.teacherName = 'Teacher Name';
+                    scope.callDuration = '10:25';
                 }
             };
         });
@@ -910,8 +911,8 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "            <div class=\"online-indicator\"></div>\n" +
     "        </div>\n" +
     "        <div class=\"callee-name flex-col\">\n" +
-    "            Erik Powel\n" +
-    "            <div class=\"call-duration\">10:25</div>\n" +
+    "            {{teacherName}}\n" +
+    "            <div class=\"call-duration\">{{callDuration}}</div>\n" +
     "        </div>\n" +
     "        <div class=\"call-controls flex-col\">\n" +
     "            <svg-icon name=\"etutoring-call-mute-icon\"></svg-icon>\n" +
