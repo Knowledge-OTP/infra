@@ -1,0 +1,53 @@
+.call-btn {
+        cursor: pointer;
+        svg-icon {
+            &.etutoring-phone-icon {
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                overflow: hidden;
+                svg {
+                    width: 50%;
+                }
+            }
+     }
+    &.called {
+        svg-icon {
+            &.etutoring-phone-icon {
+                background-color: $bgColor1;
+                svg {
+                    transform: translate(0, 2px) rotate(136deg);
+                    path {
+                        fill: $bgColor6;
+                    }
+                }
+            }
+        }
+    }
+    &.offline {
+        svg-icon {
+            &.etutoring-phone-icon {
+                border: 1px solid $bcColor8;
+                background-color: $bgColor6;
+                svg {
+                    path {
+                        fill: $bcColor8;
+                    }
+                }
+            }
+        }
+    }
+    &.call {
+        svg-icon {
+            &.etutoring-phone-icon {
+                background-color: $bgColor19;
+                svg {
+                    path {
+                        fill: $bgColor6;
+                    }
+                }
+            }
+        }
+    }
+}
+
