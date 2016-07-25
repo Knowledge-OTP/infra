@@ -7,8 +7,9 @@
             return {
                 templateUrl: 'components/calls/directives/activeCall/activeCall.template.html',
                 scope: {},
-                link:function() {
-
+                link:function(scope) {
+                    scope.teacherName = 'Teacher Name';
+                    scope.callDuration = '10:25';
                 }
             };
         });
