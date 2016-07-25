@@ -56,11 +56,16 @@
                     var _dbKey = keyInDb(key);
                     var valueInDb = $parse(_dbKey)(adapter.__db);
 
+                    var prevValueInDb = angular.copy(valueInDb);
+
                     if(!angular.isObject(valueInDb) || !valueInDb){
                         setInDb(key, val);
                     }else{
-                        angular.extend(valueInDb, val);
+                        angular.extend(valueInDb, angular.copy(val));
                     }
+                    
+                    var currValueInDb = $parse(_dbKey)(adapter.__db);
+                    return !angular.equals(prevValueInDb, currValueInDb);
 
                 }
 
@@ -93,8 +98,9 @@
                         }
 
                         angular.forEach(pathToValMap, function (value, path) {
-                            updateInDb(path,value);
-                            _triggerEvent(path, StorageSrv.EVENTS.VALUE);
+                            if(updateInDb(path,value)){
+                                _triggerEvent(path, StorageSrv.EVENTS.VALUE);
+                            }
                         });
 
                         return $q.when(angular.isString(pathOrPathToValMap) ? newValue : pathOrPathToValMap);

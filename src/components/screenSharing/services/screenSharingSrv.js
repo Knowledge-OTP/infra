@@ -5,6 +5,9 @@
         function (UserProfileService, InfraConfigSrv, $q, UtilitySrv, ScreenSharingDataGetterSrv, ScreenSharingStatusEnum, ENV, $log, UserScreenSharingStateEnum, ScreenSharingUiSrv) {
             'ngInject';
 
+            var _this = this;
+            var currUserScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
+
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
 
             function _getStorage() {
@@ -26,6 +29,13 @@
                     for (var i in screenSharingDataMapKeys) {
                         var screenSharingDataKey = screenSharingDataMapKeys[i];
                         var screenSharingData = screenSharingDataMap[screenSharingDataKey];
+
+                        var isEnded = screenSharingData.status === ScreenSharingStatusEnum.ENDED.enum;
+                        if(isEnded){
+                            _this.endSharing(screenSharingData.guid);
+                            continue;
+                        }
+
                         isInitiated = screenSharingData.sharerId === sharerId && screenSharingData.viewerId === viewerId;
                         if (isInitiated) {
                             break;
@@ -36,15 +46,25 @@
             }
 
             function _initiateScreenSharing(sharerData, viewerData, initiator) {
+                var errMsg;
+
                 if (angular.isUndefined(viewerData.isTeacher) || angular.isUndefined(sharerData.isTeacher)) {
-                    var errMSg = 'ScreenSharingSrv: isTeacher property was not provided!!!';
-                    $log.error(errMSg);
-                    return $q.reject(errMSg);
+                    errMsg = 'ScreenSharingSrv: isTeacher property was not provided!!!';
+                    $log.error(errMsg);
+                    return $q.reject(errMsg);
+                }
+
+                if(currUserScreenSharingState !== UserScreenSharingStateEnum.NONE.enum){
+                    errMsg = 'ScreenSharingSrv: screen sharing is already active!!!';
+                    $log.debug(errMsg);
+                    return $q.reject(errMsg);
                 }
 
                 var initScreenSharingStatus = _getScreenSharingInitStatusByInitiator(initiator);
                 if (!initScreenSharingStatus) {
-                    return $q.reject('ScreenSharingSrv: initiator was not provided');
+                    errMsg = 'ScreenSharingSrv: initiator was not provided';
+                    $log.error(errMsg);
+                    return $q.reject(errMsg);
                 }
 
                 return _isScreenSharingAlreadyInitiated(sharerData.uid, viewerData.uid).then(function (isInitiated) {
@@ -117,6 +137,12 @@
             };
 
             this.confirmSharing = function (screenSharingDataGuid) {
+                if(currUserScreenSharingState !== UserScreenSharingStateEnum.NONE.enum){
+                    var errMsg = 'ScreenSharingSrv: screen sharing is already active!!!';
+                    $log.debug(errMsg);
+                    return $q.reject(errMsg);
+                }
+
                 return ScreenSharingDataGetterSrv.getScreenSharingData(screenSharingDataGuid).then(function (screenSharingData) {
                     screenSharingData.status = ScreenSharingStatusEnum.CONFIRMED.enum;
                     return screenSharingData.$save();
@@ -151,11 +177,24 @@
                 });
             };
 
-            this._userScreenSharingStateChanged = function (newUserScreenSharingState) {
+            this._userScreenSharingStateChanged = function (newUserScreenSharingState, screenSharingData) {
                 if(!newUserScreenSharingState){
                     return;
                 }
-                ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState);
+
+                currUserScreenSharingState = newUserScreenSharingState;
+
+                var isViewerState = newUserScreenSharingState === UserScreenSharingStateEnum.VIEWER.enum;
+                var isSharerState = newUserScreenSharingState === UserScreenSharingStateEnum.SHARER.enum;
+
+                if(isSharerState || isViewerState){
+                    ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState).then(function(){
+                        _this.endSharing(screenSharingData.guid);
+                    });
+                }else{
+                    ScreenSharingUiSrv.endScreenSharing();
+                }
+
             };
         }
     );

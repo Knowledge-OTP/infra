@@ -273,6 +273,23 @@ $blueBG8: #75cbe8;
 
 */
 /* full background image with retina */
+screen-sharing .close-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-bottom-left-radius: 15px;
+  text-align: center;
+  line-height: 42px;
+  cursor: pointer; }
+
+screen-sharing .viewer-state .close-icon-wrapper {
+  background: #0a9bad; }
+
+screen-sharing .sharer-state .close-icon-wrapper {
+  background: #ff931e; }
+
 screen-sharing .viewer-state-container {
   position: absolute;
   top: 0;
@@ -281,17 +298,6 @@ screen-sharing .viewer-state-container {
   left: 0;
   border: 5px solid #0a9bad;
   background: rgba(15, 15, 15, 0.85); }
-  screen-sharing .viewer-state-container .close-icon-wrapper {
-    width: 40px;
-    height: 40px;
-    background: #0a9bad;
-    position: absolute;
-    top: 0;
-    right: 0;
-    border-bottom-left-radius: 15px;
-    text-align: center;
-    line-height: 42px;
-    cursor: pointer; }
 
 screen-sharing .sharer-state-container .square-side {
   background: #ff931e;
@@ -324,4 +330,4 @@ screen-sharing .sharer-state-container .eye-wrapper {
   top: -11px;
   right: 50%;
   margin-right: -26px;
-  padding-top: 12px; }
+  padding-top: 10px; }
