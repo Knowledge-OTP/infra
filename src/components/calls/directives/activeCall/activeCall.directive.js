@@ -7,7 +7,7 @@
             return {
                 templateUrl: 'components/calls/directives/activeCall/activeCall.template.html',
                 scope: {},
-                link:function(scope) {
+                link:function() {
 
                 }
             };
