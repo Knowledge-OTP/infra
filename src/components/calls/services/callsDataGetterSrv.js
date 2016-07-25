@@ -9,44 +9,44 @@
                 return InfraConfigSrv.getGlobalStorage();
             }
 
-            this.getScreenSharingDataPath = function (guid) {
+            this.getCallsDataPath = function (guid) {
                 var SCREEN_SHARING_ROOT_PATH = 'calls';
                 return SCREEN_SHARING_ROOT_PATH + '/' + guid;
             };
 
-            this.getUserScreenSharingRequestsPath  = function (userData) {
-                var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
-                var USER_DATA_PATH = appName  + '/users/' + userData.uid;
+            this.getCallsRequestsPath  = function (uid, isTeacher) {
+                var appName = isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
+                var USER_DATA_PATH = appName  + '/users/' + uid;
                 return USER_DATA_PATH + '/calls';
             };
 
-            this.getScreenSharingData = function (screenSharingGuid) {
-                var screenSharingDataPath = this.getScreenSharingDataPath(screenSharingGuid);
+            this.getCallsData = function (callsGuid) {
+                var callsDataPath = this.getCallsDataPath(callsGuid);
                 return _getStorage().then(function (storage) {
-                    return storage.get(screenSharingDataPath);
+                    return storage.getAndBindToServer(callsDataPath);
                 });
             };
 
-            this.getCurrUserScreenSharingRequests = function(){
+            this.getCurrUserCallsRequests = function(){
                 return UserProfileService.getCurrUserId().then(function(currUid){
                     return _getStorage().then(function(storage){
-                        var currUserScreenSharingDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/calls';
-                        return storage.get(currUserScreenSharingDataPath);
+                        var currUserCallsDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/calls';
+                        return storage.get(currUserCallsDataPath);
                     });
                 });
             };
 
-            this.getCurrUserScreenSharingData = function () {
+            this.getCurrUserCallsData = function () {
                 var self = this;
-                return this.getCurrUserScreenSharingRequests().then(function(currUserScreenSharingRequests){
-                    var screenSharingDataPromMap = {};
-                    angular.forEach(currUserScreenSharingRequests, function(isActive, guid){
-                        if(isActive){
-                            screenSharingDataPromMap[guid] = self.getScreenSharingData(guid);
+                return this.getCurrUserCallsRequests().then(function(currUserCallsRequests){
+                    var callsDataPromMap = {};
+                    angular.forEach(currUserCallsRequests, function(isActive, guid){
+                        if(isActive) {
+                            callsDataPromMap[guid] = self.getCallsData(guid);
                         }
                     });
 
-                    return $q.all(screenSharingDataPromMap);
+                    return $q.all(callsDataPromMap);
                 });
             };
         }

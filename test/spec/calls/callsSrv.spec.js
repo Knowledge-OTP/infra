@@ -24,9 +24,7 @@ describe('testing service "CallsSrv":', function () {
         _deps.GlobalStorage = _deps.TestUtilitySrv.general.asyncToSync(_deps.InfraConfigSrv.getGlobalStorage, _deps.InfraConfigSrv)();
     }));
 
-    xit('given i\'m a student when requesting to share my screen with a teacher then root shareScreen object and ' +
-        'sharer and viewer shareScreen objects should be update accordingly', function () {
-
+    it('given when click on call button should save data to root calls', function () {
         var callsDataGuid = '123456789-data-guid';
 
         var callerId = _deps.UserProfileService.__currUserId;
