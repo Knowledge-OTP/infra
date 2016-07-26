@@ -22,9 +22,6 @@
                     }
 
                     UserProfileService.getCurrUserId().then(function (currUid) {
-                        console.log('CallStatusEnum', CallsStatusEnum);
-                        console.log('callsData', callsData);
-
                         switch(callsData.status) {
                             case CallsStatusEnum.PENDING_CALL.enum:
                                 $log.debug('call pending');
@@ -39,8 +36,8 @@
                             case CallsStatusEnum.DECLINE_CALL.enum:
                                 $log.debug('call declined');
                                 if (isCurrentUserInitiatedCall(currUid)) {
-                                    // show outgoing call modal WITH the DECLINED TEXT
-                                    CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, callsData);
+                                    // close outgoing call modal
+                                    CallsUiSrv.closeModal();
                                 } else {
                                     // show incoming call modal WITH the DECLINED TEXT
                                     CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, callsData);
@@ -69,39 +66,6 @@
                                 // disconnect other user from call
                                 break;
                         }
-
-
-                        /**
-                         * Scenarios:
-                         * Call is pending, user initiated call
-                         * Call is pending, user receives call
-                         * Call declined, user initiated call
-                         * Call declined, user receives call
-                         * Call is Active,  user initiated call
-                         * Call is Active,  user receives call
-                         * Call ended, user initiated call
-                         * Call ended, user received call
-                         */
-
-                        // ['PENDING_CALL', 1, 'pending call'],
-                        // ['DECLINE_CALL', 2, 'decline call'],
-                        // ['ACTIVE_CALL', 3, 'active call'],
-                        // ['ENDED_CALL', 4, 'ended call']
-
-
-                        // var userCallState = UserCallStateEnum.NONE.enum;
-                        //
-                        // if (callsData.viewerId === currUid) {
-                        //     userCallState = UserCallStateEnum.VIEWER.enum;
-                        // }
-                        //
-                        // if (callsData.sharerId === currUid) {
-                        //     userCallState = UserCallStateEnum.SHARER.enum;
-                        // }
-                        //
-                        // if (userCallState !== UserCallStateEnum.NONE.enum) {
-                        //     CallsSrv._userCallStateChanged(userCallState);
-                        // }
                     });
 
                     function isCurrentUserInitiatedCall(currUid) {

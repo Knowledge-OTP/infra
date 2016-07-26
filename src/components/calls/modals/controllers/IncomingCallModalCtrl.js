@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.calls').controller('IncomingCallModalCtrl', [
+    angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
         function (modalData, CallsSrv, CallsUiSrv, $log) {
             'ngInject';
 
@@ -22,6 +22,6 @@
                     $log.error('IncomingCallModalCtrl acceptCall: err: ' + err);
                 });
             };
-        }]
+        }
     );
 })(angular);
