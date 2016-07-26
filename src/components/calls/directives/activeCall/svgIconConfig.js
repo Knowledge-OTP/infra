@@ -6,7 +6,7 @@
             'ngInject';
 
             var svgMap = {
-                'etutoring-call-mute-icon': 'components/calls/directives/activeCall/svg/etutoring-call-mute-icon.svg'
+                'call-mute-icon': 'components/calls/svg/call-mute-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
         });
