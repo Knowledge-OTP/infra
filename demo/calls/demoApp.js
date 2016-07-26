@@ -41,9 +41,8 @@
                 console.log('openOutgoingCallModal');
                 CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, modalData);
             };
-        }
-        ])
-        }).service('ENV', function () {
+        }])
+        .service('ENV', function () {
             this.firebaseAppScopeName = "act_app";
             this.appContext = 'student';
             this.studentAppName = 'act_app';
