@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl', [
-        function (modalData, CallsSrv, $log) {
+        function (modalData, CallsSrv, CallsUiSrv, $log) {
             'ngInject';
 
             this.declineCall = function() {

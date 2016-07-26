@@ -77,7 +77,7 @@
                     $log.error(errMSg);
                     return $q.reject(errMSg);
                 }
-                return $q.when(true)
+                return $q.when(true);
             }
 
             function _webCallConnect(callId) {
