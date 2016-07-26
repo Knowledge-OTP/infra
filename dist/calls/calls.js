@@ -6,7 +6,9 @@
         'znk.infra.utility',
         'znk.infra.config',
         'znk.infra.enum',
-        'znk.infra.svgIcon'
+        'znk.infra.svgIcon',
+        'pascalprecht.translate',
+        'znk.infra.webcall'
     ]);
 })(angular);
 
@@ -23,6 +25,19 @@
                 'calls-etutoring-phone-icon': 'components/calls/svg/etutoring-phone-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
+        }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.calls')
+        .config(["WebcallSrvProvider", function (WebcallSrvProvider) {
+            'ngInject';
+            WebcallSrvProvider.setCallCred({
+                username:'assafshp160721153735',
+                password:'khjihghs'
+            });
         }]);
 })(angular);
 
@@ -213,6 +228,19 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.calls')
+        .run(["$timeout", "$translatePartialLoader", function($timeout, $translatePartialLoader){
+            'ngInject';
+            //must be wrapped in timeout because the parting adding cannot be made directly in a run block
+            $timeout(function(){
+                $translatePartialLoader.addPart('calls');
+            });
+        }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.calls').service('CallsDataGetterSrv',
         ["InfraConfigSrv", "$q", "ENV", "UserProfileService", function (InfraConfigSrv, $q, ENV, UserProfileService) {
             'ngInject';
@@ -340,7 +368,7 @@
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsSrv',
-        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "InfraConfigSrv", "CallsStatusEnum", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, InfraConfigSrv, CallsStatusEnum) {
+        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "InfraConfigSrv", "CallsStatusEnum", "WebcallSrv", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, InfraConfigSrv, CallsStatusEnum, WebcallSrv) {
             'ngInject';
 
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
@@ -421,36 +449,39 @@
 
                 getDataPromMap.currUid = UserProfileService.getCurrUserId();
 
-                return $q.all(getDataPromMap).then(function (data) {
-                    var dataToSave = {};
+                return WebcallSrv.connect(newCallGuid).then(function () {
 
-                    var isCallerTeacher = userCallData.callerId === data.currUid && isTeacherApp;
+                    return $q.all(getDataPromMap).then(function (data) {
+                        var dataToSave = {};
 
-                    var receiverPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.newReceiverId, !isCallerTeacher);
-                    var callerPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.callerId, isCallerTeacher);
+                        var isCallerTeacher = userCallData.callerId === data.currUid && isTeacherApp;
 
-                    var newCallData = {
-                        guid: newCallGuid,
-                        callerId: userCallData.callerId,
-                        receiverId: userCallData.newReceiverId,
-                        status: CallsStatusEnum.PENDING_CALL.enum,
-                        callerPath: callerPath,
-                        receiverPath: receiverPath
-                    };
+                        var receiverPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.newReceiverId, !isCallerTeacher);
+                        var callerPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.callerId, isCallerTeacher);
 
-                    angular.extend(data.newCallData, newCallData);
+                        var newCallData = {
+                            guid: newCallGuid,
+                            callerId: userCallData.callerId,
+                            receiverId: userCallData.newReceiverId,
+                            status: CallsStatusEnum.PENDING_CALL.enum,
+                            callerPath: callerPath,
+                            receiverPath: receiverPath
+                        };
 
-                    dataToSave[data.newCallData.$$path] = data.newCallData;
-                    //current user call requests object update
-                    data.currUserCallsRequests[newCallGuid] = true;
-                    dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
-                    //other user call requests object update
-                    var otherUserCallPath = userCallData.newReceiverId === data.currUid ? callerPath : receiverPath;
-                    var otherUserCallDataGuidPath = otherUserCallPath + '/' + newCallGuid;
-                    dataToSave[otherUserCallDataGuidPath] = true;
+                        angular.extend(data.newCallData, newCallData);
 
-                    return _getStorage().then(function (StudentStorage) {
-                        return StudentStorage.update(dataToSave);
+                        dataToSave[data.newCallData.$$path] = data.newCallData;
+                        //current user call requests object update
+                        data.currUserCallsRequests[newCallGuid] = true;
+                        dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
+                        //other user call requests object update
+                        var otherUserCallPath = userCallData.newReceiverId === data.currUid ? callerPath : receiverPath;
+                        var otherUserCallDataGuidPath = otherUserCallPath + '/' + newCallGuid;
+                        dataToSave[otherUserCallDataGuidPath] = true;
+
+                        return _getStorage().then(function (StudentStorage) {
+                            return StudentStorage.update(dataToSave);
+                        });
                     });
                 });
             }
@@ -466,20 +497,22 @@
                 getDataPromMap.currCallData = CallsDataGetterSrv.getCallsData(guid);
                 getDataPromMap.currUid = UserProfileService.getCurrUserId();
 
-                return $q.all(getDataPromMap).then(function (data) {
-                    var dataToSave = {};
-                    data.currCallData.status = CallsStatusEnum.ENDED_CALL.enum;
-                    dataToSave[data.currCallData.$$path] = data.currCallData;
-                    //current user call requests object update
-                    data.currUserCallsRequests[guid] = null;
-                    dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
-                    //other user call requests object update
-                    var otherUserCallPath = receiverId === data.currUid ? data.currCallData.callerPath : data.currCallData.receiverPath;
-                    var otherUserCallDataGuidPath = otherUserCallPath + '/' + guid;
-                    dataToSave[otherUserCallDataGuidPath] = null;
+                return WebcallSrv.hang().then(function () {
+                    return $q.all(getDataPromMap).then(function (data) {
+                        var dataToSave = {};
+                        data.currCallData.status = CallsStatusEnum.ENDED_CALL.enum;
+                        dataToSave[data.currCallData.$$path] = data.currCallData;
+                        //current user call requests object update
+                        data.currUserCallsRequests[guid] = null;
+                        dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
+                        //other user call requests object update
+                        var otherUserCallPath = receiverId === data.currUid ? data.currCallData.callerPath : data.currCallData.receiverPath;
+                        var otherUserCallDataGuidPath = otherUserCallPath + '/' + guid;
+                        dataToSave[otherUserCallDataGuidPath] = null;
 
-                    return _getStorage().then(function (StudentStorage) {
-                        return StudentStorage.update(dataToSave);
+                        return _getStorage().then(function (StudentStorage) {
+                            return StudentStorage.update(dataToSave);
+                        });
                     });
                 });
             }
@@ -568,7 +601,7 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "        <div class=\"callee-status flex-col\">\n" +
     "            <div class=\"online-indicator\"></div>\n" +
     "        </div>\n" +
-    "        <div class=\"callee-name flex-col\">\n" +
+    "        <div class=\"callee-name flex-col\" title=\"{}\">\n" +
     "            {{teacherName}}\n" +
     "            <div class=\"call-duration\">{{callDuration}}</div>\n" +
     "        </div>\n" +
@@ -580,7 +613,7 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "</div>\n" +
     "");
   $templateCache.put("components/calls/directives/callBtn/callBtn.template.html",
-    "<md-button\n" +
+    "<button\n" +
     "    ng-click=\"vm.clickBtn()\"\n" +
     "    class=\"call-btn\"\n" +
     "     ng-class=\"{\n" +
@@ -592,16 +625,12 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "        class=\"etutoring-phone-icon\"\n" +
     "        name=\"calls-etutoring-phone-icon\">\n" +
     "    </svg-icon>\n" +
-    "</md-button>\n" +
+    "</button>\n" +
     "");
   $templateCache.put("components/calls/modals/templates/baseCallsModal.template.html",
     "<md-dialog aria-label=\"{{'SHARED_MD_DIALOG.BASE_MODAL.MODAL_NAME' | translate: {modalName: vm.modalName} }}\"\n" +
     "           class=\"baseCallsModal\" ng-cloak ng-class=\"vm.overrideCssClass\">\n" +
-    "    <md-toolbar>\n" +
-    "        <div class=\"close-popup-wrap\" ng-click=\"vm.closeModal()\">\n" +
-    "            <svg-icon name=\"close-popup\"></svg-icon>\n" +
-    "        </div>\n" +
-    "    </md-toolbar>\n" +
+    "    <md-toolbar></md-toolbar>\n" +
     "    <md-dialog-content>\n" +
     "        <ng-include src=\"vm.innerTemplateUrl\"></ng-include>\n" +
     "    </md-dialog-content>\n" +
@@ -615,28 +644,32 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "</md-dialog>\n" +
     "");
   $templateCache.put("components/calls/modals/templates/incomingCall.template.html",
-    "<div class=\"modal-main-title\">Incoming Call</div>\n" +
-    "<div class=\"modal-sub-title\">Eric Powell Is Calling...</div>\n" +
-    "<div class=\"btn-container\">\n" +
-    "    <div class=\"btn-decline\">\n" +
+    "<div translate-namespace=\"AUDIO_CALLS\">\n" +
+    "    <div class=\"modal-main-title\" translate=\".INCOMING_CALL\"></div>\n" +
+    "    <div class=\"modal-sub-title\" translate=\".NAME_IS_CALLING\" translate-values=\"{callerName: 'Eric Powell'}\"></div>\n" +
+    "    <div class=\"btn-container\">\n" +
+    "        <div class=\"btn-decline\">\n" +
     "\n" +
-    "    </div>\n" +
-    "    <div class=\"btn-accept\">\n" +
-    "        <button>Decline</button>\n" +
-    "        <button class=\"primary\">Accept</button>\n" +
+    "        </div>\n" +
+    "        <div class=\"btn-accept\">\n" +
+    "            <button translate=\".DECLINE\"></button>\n" +
+    "            <button class=\"primary\" translate=\".ACCEPT\"></button>\n" +
+    "        </div>\n" +
     "    </div>\n" +
     "</div>\n" +
     "");
   $templateCache.put("components/calls/modals/templates/outgoingCall.template.html",
-    "<div class=\"modal-main-title\">Outgoing Call</div>\n" +
-    "<div class=\"modal-sub-title\">Calling Eric Powell...</div>\n" +
+    "<div translate-namespace=\"AUDIO_CALLS\">\n" +
+    "<div class=\"modal-main-title\" translate=\".OUTGOING_CALL\"></div>\n" +
+    "<div class=\"modal-sub-title\" translate=\".CALLING_NAME\" translate-values=\"{calleeName: 'Eric Powell'}\"></div>\n" +
     "<div class=\"btn-container\">\n" +
     "    <div class=\"btn-decline\">\n" +
     "\n" +
     "    </div>\n" +
     "    <div class=\"btn-accept\">\n" +
-    "        <button>Cancel</button>\n" +
+    "        <button translate=\".CANCEL\"></button>\n" +
     "    </div>\n" +
+    "</div>\n" +
     "</div>\n" +
     "");
   $templateCache.put("components/calls/svg/call-mute-icon.svg",
