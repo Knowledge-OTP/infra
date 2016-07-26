@@ -326,7 +326,7 @@ screen-sharing .sharer-state-container .eye-wrapper {
   border-radius: 50%;
   height: 30px;
   box-sizing: border-box;
-  position: absolute;
+  position: fixed;
   top: -11px;
   right: 50%;
   margin-right: -26px;

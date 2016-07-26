@@ -73,7 +73,9 @@ screen-sharing{
             border-radius: 50%;
             height: 30px;
             box-sizing: border-box;
-            @include absolute-position(-11px, 50%);
+            position: fixed;
+            top: -11px;
+            right: 50%;
             margin: {
                 right: -26px;
             }
