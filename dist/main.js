@@ -7399,7 +7399,10 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg'
+                    'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg',
+                    correct: 'components/znkExercise/svg/correct-icon.svg',
+                    wrong: 'components/znkExercise/svg/wrong-icon.svg',
+                    arrow: 'components/znkExercise/svg/arrow-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }])
