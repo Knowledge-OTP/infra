@@ -567,14 +567,28 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 onClickIcon: '&?'
             },
             controllerAs: 'vm',
-            controller: ["CallBtnEnum", "CallsSrv", function (CallBtnEnum, CallsSrv) {
+            controller: ["CallBtnEnum", "CallsSrv", "$log", function (CallBtnEnum, CallsSrv, $log) {
                 var vm = this;
                 var receiverId;
+
+                var isPendingClick = false;
 
                 vm.callBtnEnum = CallBtnEnum;
 
                 function _changeBtnState(state) {
                     vm.callBtnState = state;
+                }
+
+                function _isStateNotOffline() {
+                    return vm.callBtnState !== CallBtnEnum.OFFLINE.enum;
+                }
+
+                function _isNoPendingClick() {
+                    return !isPendingClick;
+                }
+
+                function _clickStatusSetter(clickStatus) {
+                    isPendingClick = clickStatus;
                 }
 
                 // default btn state
@@ -593,7 +607,16 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 };
 
                 vm.clickBtn = function() {
-                    CallsSrv.callsStateChanged(receiverId);
+                    if (_isStateNotOffline() && _isNoPendingClick()) {
+                        _clickStatusSetter(true);
+
+                        CallsSrv.callsStateChanged(receiverId).then(function (data) {
+                            _clickStatusSetter(false);
+                            $log.debug('callBtn: success in callsStateChanged, data: ', data);
+                        }).catch(function (err) {
+                            $log.error('callBtn: error in callsStateChanged, err: ' + err);
+                        });
+                    }
                 };
             }]
         }
@@ -695,44 +718,44 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 return InfraConfigSrv.getGlobalStorage();
             }
 
-            this.getScreenSharingDataPath = function (guid) {
+            this.getCallsDataPath = function (guid) {
                 var SCREEN_SHARING_ROOT_PATH = 'calls';
                 return SCREEN_SHARING_ROOT_PATH + '/' + guid;
             };
 
-            this.getUserScreenSharingRequestsPath  = function (userData) {
-                var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
-                var USER_DATA_PATH = appName  + '/users/' + userData.uid;
+            this.getCallsRequestsPath  = function (uid, isTeacher) {
+                var appName = isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
+                var USER_DATA_PATH = appName  + '/users/' + uid;
                 return USER_DATA_PATH + '/calls';
             };
 
-            this.getScreenSharingData = function (screenSharingGuid) {
-                var screenSharingDataPath = this.getScreenSharingDataPath(screenSharingGuid);
+            this.getCallsData = function (callsGuid) {
+                var callsDataPath = this.getCallsDataPath(callsGuid);
                 return _getStorage().then(function (storage) {
-                    return storage.get(screenSharingDataPath);
+                    return storage.getAndBindToServer(callsDataPath);
                 });
             };
 
-            this.getCurrUserScreenSharingRequests = function(){
+            this.getCurrUserCallsRequests = function(){
                 return UserProfileService.getCurrUserId().then(function(currUid){
                     return _getStorage().then(function(storage){
-                        var currUserScreenSharingDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/calls';
-                        return storage.get(currUserScreenSharingDataPath);
+                        var currUserCallsDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/calls';
+                        return storage.get(currUserCallsDataPath);
                     });
                 });
             };
 
-            this.getCurrUserScreenSharingData = function () {
+            this.getCurrUserCallsData = function () {
                 var self = this;
-                return this.getCurrUserScreenSharingRequests().then(function(currUserScreenSharingRequests){
-                    var screenSharingDataPromMap = {};
-                    angular.forEach(currUserScreenSharingRequests, function(isActive, guid){
-                        if(isActive){
-                            screenSharingDataPromMap[guid] = self.getScreenSharingData(guid);
+                return this.getCurrUserCallsRequests().then(function(currUserCallsRequests){
+                    var callsDataPromMap = {};
+                    angular.forEach(currUserCallsRequests, function(isActive, guid){
+                        if(isActive) {
+                            callsDataPromMap[guid] = self.getCallsData(guid);
                         }
                     });
 
-                    return $q.all(screenSharingDataPromMap);
+                    return $q.all(callsDataPromMap);
                 });
             };
         }]
@@ -814,161 +837,191 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsSrv',
-        function (/* UserProfileService, InfraConfigSrv, $q, UtilitySrv, ENV, $log */) {
+        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "InfraConfigSrv", "CallsStatusEnum", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, InfraConfigSrv, CallsStatusEnum) {
             'ngInject';
 
-            //@todo(oded) will implement all the api calls to pivlo here
+            var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
 
-            //var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
-            //
-            //function _getStorage() {
-            //    return InfraConfigSrv.getGlobalStorage();
-            //}
+            function _getStorage() {
+                return InfraConfigSrv.getGlobalStorage();
+            }
 
-            //function _getScreenSharingInitStatusByInitiator(initiator) {
-            //    var initiatorToInitStatusMap = {};
-            //    initiatorToInitStatusMap[UserScreenSharingStateEnum.VIEWER.enum] = ScreenSharingStatusEnum.PENDING_SHARER.enum;
-            //    initiatorToInitStatusMap[UserScreenSharingStateEnum.SHARER.enum] = ScreenSharingStatusEnum.PENDING_VIEWER.enum;
-            //
-            //    return initiatorToInitStatusMap[initiator] || null;
-            //}
-            //
-            //function _isScreenSharingAlreadyInitiated(sharerId, viewerId) {
-            //    return ScreenSharingDataGetterSrv.getCurrUserScreenSharingData().then(function (screenSharingDataMap) {
-            //        var isInitiated = false;
-            //        var screenSharingDataMapKeys = Object.keys(screenSharingDataMap);
-            //        for (var i in screenSharingDataMapKeys) {
-            //            var screenSharingDataKey = screenSharingDataMapKeys[i];
-            //            var screenSharingData = screenSharingDataMap[screenSharingDataKey];
-            //            isInitiated = screenSharingData.sharerId === sharerId && screenSharingData.viewerId === viewerId;
-            //            if (isInitiated) {
-            //                break;
-            //            }
-            //        }
-            //        return isInitiated;
-            //    });
-            //}
-            //
-            //function _initiateScreenSharing(sharerData, viewerData, initiator) {
-            //    if (angular.isUndefined(viewerData.isTeacher) || angular.isUndefined(sharerData.isTeacher)) {
-            //        var errMSg = 'ScreenSharingSrv: isTeacher property was not provided!!!';
-            //        $log.error(errMSg);
-            //        return $q.reject(errMSg);
-            //    }
-            //
-            //    var initScreenSharingStatus = _getScreenSharingInitStatusByInitiator(initiator);
-            //    if (!initScreenSharingStatus) {
-            //        return $q.reject('ScreenSharingSrv: initiator was not provided');
-            //    }
-            //
-            //    return _isScreenSharingAlreadyInitiated(sharerData.uid, viewerData.uid).then(function (isInitiated) {
-            //        if (isInitiated) {
-            //            var errMsg = 'ScreenSharingSrv: screen sharing was already initiated';
-            //            $log.error(errMsg);
-            //            return $q.reject(errMsg);
-            //        }
-            //
-            //
-            //        var getDataPromMap = {};
-            //
-            //        getDataPromMap.currUserScreenSharingRequests = ScreenSharingDataGetterSrv.getCurrUserScreenSharingRequests();
-            //
-            //        var newScreenSharingGuid = UtilitySrv.general.createGuid();
-            //        getDataPromMap.newScreenSharingData = ScreenSharingDataGetterSrv.getScreenSharingData(newScreenSharingGuid);
-            //
-            //        getDataPromMap.currUid = UserProfileService.getCurrUserId();
-            //
-            //        return $q.all(getDataPromMap).then(function (data) {
-            //            var dataToSave = {};
-            //
-            //            var viewerPath = ScreenSharingDataGetterSrv.getUserScreenSharingRequestsPath(viewerData, newScreenSharingGuid);
-            //            var sharerPath = ScreenSharingDataGetterSrv.getUserScreenSharingRequestsPath(sharerData, newScreenSharingGuid);
-            //            var newScreenSharingData = {
-            //                guid: newScreenSharingGuid,
-            //                sharerId: sharerData.uid,
-            //                viewerId: viewerData.uid,
-            //                status: initScreenSharingStatus,
-            //                viewerPath: viewerPath,
-            //                sharerPath: sharerPath
-            //            };
-            //            angular.extend(data.newScreenSharingData, newScreenSharingData);
-            //
-            //            dataToSave[data.newScreenSharingData.$$path] = data.newScreenSharingData;
-            //            //current user screen sharing requests object update
-            //            data.currUserScreenSharingRequests[newScreenSharingGuid] = true;
-            //            dataToSave[data.currUserScreenSharingRequests.$$path] = data.currUserScreenSharingRequests;
-            //            //other user screen sharing requests object update
-            //            var otherUserScreenSharingPath = viewerData.uid === data.currUid ? sharerPath: viewerPath;
-            //            var viewerScreenSharingDataGuidPath = otherUserScreenSharingPath + '/' + newScreenSharingGuid;
-            //            dataToSave[viewerScreenSharingDataGuidPath] = true;
-            //
-            //            return _getStorage().then(function (StudentStorage) {
-            //                return StudentStorage.update(dataToSave);
-            //            });
-            //        });
-            //
-            //    });
-            //}
-            //
-            //this.shareMyScreen = function (viewerData) {
-            //    return UserProfileService.getCurrUserId().then(function (currUserId) {
-            //        var sharerData = {
-            //            uid: currUserId,
-            //            isTeacher: isTeacherApp
-            //        };
-            //        return _initiateScreenSharing(sharerData, viewerData, UserScreenSharingStateEnum.SHARER.enum);
-            //    });
-            //};
-            //
-            //this.viewOtherUserScreen = function (sharerData) {
-            //    return UserProfileService.getCurrUserId().then(function (currUserId) {
-            //        var viewerData = {
-            //            uid: currUserId,
-            //            isTeacher: isTeacherApp
-            //        };
-            //        return _initiateScreenSharing(sharerData, viewerData, UserScreenSharingStateEnum.VIEWER.enum);
-            //    });
-            //};
-            //
-            //this.confirmSharing = function (screenSharingDataGuid) {
-            //    return ScreenSharingDataGetterSrv.getScreenSharingData(screenSharingDataGuid).then(function (screenSharingData) {
-            //        screenSharingData.status = ScreenSharingStatusEnum.CONFIRMED.enum;
-            //        return screenSharingData.$save();
-            //    });
-            //};
-            //
-            //this.endSharing = function (screenSharingDataGuid) {
-            //    var getDataPromMap = {};
-            //    getDataPromMap.screenSharingData = ScreenSharingDataGetterSrv.getScreenSharingData(screenSharingDataGuid);
-            //    getDataPromMap.currUid = UserProfileService.getCurrUserId();
-            //    getDataPromMap.currUidScreenSharingRequests = ScreenSharingDataGetterSrv.getCurrUserScreenSharingRequests();
-            //    getDataPromMap.storage = _getStorage();
-            //    return $q.all(getDataPromMap).then(function (data) {
-            //        var dataToSave = {};
-            //
-            //        data.screenSharingData.status = ScreenSharingStatusEnum.ENDED.enum;
-            //        dataToSave [data.screenSharingData.$$path] = data.screenSharingData;
-            //
-            //        data.currUidScreenSharingRequests[data.screenSharingData.guid] = false;
-            //        dataToSave[data.currUidScreenSharingRequests.$$path] = data.currUidScreenSharingRequests;
-            //
-            //        var otherUserScreenSharingRequestPath;
-            //        if(data.screenSharingData.viewerId !== data.currUid){
-            //            otherUserScreenSharingRequestPath = data.screenSharingData.viewerPath;
-            //        }else{
-            //            otherUserScreenSharingRequestPath = data.screenSharingData.sharerPath;
-            //        }
-            //        otherUserScreenSharingRequestPath += '/' + data.screenSharingData.guid;
-            //        dataToSave[otherUserScreenSharingRequestPath] = false;
-            //
-            //        return data.storage.update(dataToSave);
-            //    });
-            //};
-
-            this.callsStateChanged = function () {
-
+            var CALL_ACTIONS = {
+               DISCONNECT: 'disconnect',
+               CONNECT: 'connect',
+               DISCONNECT_AND_CONNECT: 'disconnect and connect'
             };
-        }
+
+            function _isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId) {
+                return callsData.callerId === callerId && callsData.receiverId === receiverId;
+            }
+
+            function _isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId) {
+                return callsData.callerId === callerId && callsData.receiverId !== receiverId;
+            }
+
+            function _getUserCallStatus(callerId, receiverId) {
+                return CallsDataGetterSrv.getCurrUserCallsData().then(function (callsDataMap) {
+                    var userCallData = false;
+                    var callsDataMapKeys = Object.keys(callsDataMap);
+
+                    for (var i in callsDataMapKeys) {
+                        if (callsDataMapKeys.hasOwnProperty(i)) {
+                            var callsDataKey = callsDataMapKeys[i];
+                            var callsData = callsDataMap[callsDataKey];
+                            /* if user active, and new call init has same receiverId then disconnect */
+                            if (_isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId)) {
+                                userCallData = {
+                                    action: CALL_ACTIONS.DISCONNECT,
+                                    callerId: callerId,
+                                    newReceiverId: receiverId,
+                                    newCallGuid: callsData.guid
+                                };
+                            /* if user is active with receiverId and new call init with other
+                               receiverId then disconnect from current receiverId and connect with new receiverId */
+                            } else if (_isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId)) {
+                                userCallData = {
+                                    action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
+                                    callerId: callerId,
+                                    newReceiverId: receiverId,
+                                    oldReceiverId: callsData.receiverId,
+                                    oldCallGuid: callsData.guid
+                                };
+                            }
+
+                            if (userCallData) {
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!userCallData) {
+                        /* if user not active, and call init then active user */
+                        userCallData = {
+                            action: CALL_ACTIONS.CONNECT,
+                            callerId: callerId,
+                            newReceiverId: receiverId
+                        };
+                    }
+
+                    return userCallData;
+                });
+            }
+
+            function _connectCall(userCallData) {
+                var getDataPromMap = {};
+
+                getDataPromMap.currUserCallsRequests = CallsDataGetterSrv.getCurrUserCallsRequests();
+
+                var newCallGuid = UtilitySrv.general.createGuid();
+                getDataPromMap.newCallData = CallsDataGetterSrv.getCallsData(newCallGuid);
+
+                getDataPromMap.currUid = UserProfileService.getCurrUserId();
+
+                return $q.all(getDataPromMap).then(function (data) {
+                    var dataToSave = {};
+
+                    var isCallerTeacher = userCallData.callerId === data.currUid && isTeacherApp;
+
+                    var receiverPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.newReceiverId, !isCallerTeacher);
+                    var callerPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.callerId, isCallerTeacher);
+
+                    var newCallData = {
+                        guid: newCallGuid,
+                        callerId: userCallData.callerId,
+                        receiverId: userCallData.newReceiverId,
+                        status: CallsStatusEnum.PENDING_CALL.enum,
+                        callerPath: callerPath,
+                        receiverPath: receiverPath
+                    };
+
+                    angular.extend(data.newCallData, newCallData);
+
+                    dataToSave[data.newCallData.$$path] = data.newCallData;
+                    //current user call requests object update
+                    data.currUserCallsRequests[newCallGuid] = true;
+                    dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
+                    //other user call requests object update
+                    var otherUserCallPath = userCallData.newReceiverId === data.currUid ? callerPath : receiverPath;
+                    var otherUserCallDataGuidPath = otherUserCallPath + '/' + newCallGuid;
+                    dataToSave[otherUserCallDataGuidPath] = true;
+
+                    return _getStorage().then(function (StudentStorage) {
+                        return StudentStorage.update(dataToSave);
+                    });
+                });
+            }
+
+            function _disconnectCall(userCallData) {
+
+                var receiverId = userCallData.oldReceiverId ? userCallData.oldReceiverId : userCallData.newReceiverId;
+                var guid = userCallData.oldCallGuid ? userCallData.oldCallGuid : userCallData.newCallGuid;
+
+                var getDataPromMap = {};
+
+                getDataPromMap.currUserCallsRequests = CallsDataGetterSrv.getCurrUserCallsRequests();
+                getDataPromMap.currCallData = CallsDataGetterSrv.getCallsData(guid);
+                getDataPromMap.currUid = UserProfileService.getCurrUserId();
+
+                return $q.all(getDataPromMap).then(function (data) {
+                    var dataToSave = {};
+                    data.currCallData.status = CallsStatusEnum.ENDED_CALL.enum;
+                    dataToSave[data.currCallData.$$path] = data.currCallData;
+                    //current user call requests object update
+                    data.currUserCallsRequests[guid] = null;
+                    dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
+                    //other user call requests object update
+                    var otherUserCallPath = receiverId === data.currUid ? data.currCallData.callerPath : data.currCallData.receiverPath;
+                    var otherUserCallDataGuidPath = otherUserCallPath + '/' + guid;
+                    dataToSave[otherUserCallDataGuidPath] = null;
+
+                    return _getStorage().then(function (StudentStorage) {
+                        return StudentStorage.update(dataToSave);
+                    });
+                });
+            }
+
+            function _initiateCall(callerId, receiverId) {
+
+                if (angular.isUndefined(callerId) || angular.isUndefined(receiverId)) {
+                    var errMSg = 'CallsSrv: callerId or receiverId are missing!';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+
+                return _getUserCallStatus(callerId, receiverId).then(function (userCallData) {
+                    if (!userCallData) {
+                        var errMsg = 'CallsSrv _initiateCall: userCallStatus is required!';
+                        $log.error(errMsg);
+                        return $q.reject(errMsg);
+                    }
+
+                    var callActionProm;
+
+                    switch (userCallData.action) {
+                        case CALL_ACTIONS.DISCONNECT:
+                            callActionProm = _disconnectCall(userCallData);
+                            break;
+                        case CALL_ACTIONS.CONNECT:
+                            callActionProm = _connectCall(userCallData);
+                            break;
+                        case CALL_ACTIONS.DISCONNECT_AND_CONNECT:
+                            callActionProm = _disconnectCall(userCallData).then(function () {
+                                return _connectCall(userCallData);
+                            });
+                            break;
+                    }
+
+                    return callActionProm;
+                });
+            }
+
+            this.callsStateChanged = function (receiverId) {
+                return UserProfileService.getCurrUserId().then(function(callerId) {
+                    return _initiateCall(callerId, receiverId);
+                });
+            };
+        }]
     );
 })(angular);
 
