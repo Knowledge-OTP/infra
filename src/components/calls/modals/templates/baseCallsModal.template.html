@@ -1,10 +1,6 @@
 <md-dialog aria-label="{{'SHARED_MD_DIALOG.BASE_MODAL.MODAL_NAME' | translate: {modalName: vm.modalName} }}"
            class="baseCallsModal" ng-cloak ng-class="vm.overrideCssClass">
-    <md-toolbar>
-        <div class="close-popup-wrap" ng-click="vm.closeModal()">
-            <svg-icon name="close-popup"></svg-icon>
-        </div>
-    </md-toolbar>
+    <md-toolbar></md-toolbar>
     <md-dialog-content>
         <ng-include src="vm.innerTemplateUrl"></ng-include>
     </md-dialog-content>
