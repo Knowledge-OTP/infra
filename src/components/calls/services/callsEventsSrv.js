@@ -8,7 +8,7 @@
             isEnabled = _isEnabled;
         };
 
-        this.$get = function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv) {
+        this.$get = function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log) {
             'ngInject';
             var CallsEventsSrv = {};
 
@@ -27,6 +27,7 @@
 
                         switch(callsData.status) {
                             case CallsStatusEnum.PENDING_CALL.enum:
+                                $log.debug('call pending');
                                 if (isCurrentUserInitiatedCall(currUid)) {
                                     // show outgoing call modal
                                     CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, callsData);
@@ -36,6 +37,7 @@
                                 }
                                 break;
                             case CallsStatusEnum.DECLINE_CALL.enum:
+                                $log.debug('call declined');
                                 if (isCurrentUserInitiatedCall(currUid)) {
                                     // show outgoing call modal WITH the DECLINED TEXT
                                     CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, callsData);
@@ -45,6 +47,7 @@
                                 }
                                 break;
                             case CallsStatusEnum.ACTIVE_CALL.enum:
+                                $log.debug('call active');
                                 if (isCurrentUserInitiatedCall(currUid)) {
                                     // show outgoing call modal WITH the ANSWERED TEXT, wait 2 seconds and close the modal, show the ActiveCallDRV
                                     CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, callsData);
@@ -56,6 +59,7 @@
                                 }
                                 break;
                             case CallsStatusEnum.ENDED_CALL.enum:
+                                $log.debug('call ended');
                                 if (isCurrentUserInitiatedCall(currUid)) {
                                     // hide the ActiveCallDRV
                                 } else {

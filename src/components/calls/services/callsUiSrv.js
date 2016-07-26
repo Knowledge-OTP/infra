@@ -18,8 +18,10 @@
                 activeCallStatus = false;
             };
 
-            self.showModal = function (modal, modalData) {
-                modal.modalData = modalData;
+            self.showModal = function (modal, callsData) {
+                modal.modalData = {
+                    callsData: callsData
+                };
                 ModalService.showBaseModal(modal);
             };
 
