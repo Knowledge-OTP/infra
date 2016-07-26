@@ -25,16 +25,10 @@
         })
         .controller('demoCtrl', ['$scope', 'CallsUiSrv', function ($scope, CallsUiSrv) {
             $scope.openIncomingCallModal = function() {
-                var modalData = {
-                    'key': 'value'
-                };
                 CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, modalData);
             };
 
             $scope.openOutgoingCallModal = function() {
-                var modalData = {
-                    'key': 'value'
-                };
                 CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, modalData);
             };
         }])
