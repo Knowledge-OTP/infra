@@ -34,56 +34,59 @@
 
             userAssignModuleService.getUserAssignModulesWithProgress = function (userId) {
 
-                function getModuleSummary(assignModule){
-                    return ZnkModuleService.getModuleById(assignModule.moduleId).then(function (moduleObj) {
-                        var exerciseTypeId = ExerciseTypeEnum.PRACTICE.enum;
-                        var exerciseId = moduleObj.exercises.filter(function (exercise) {
-                            return exercise.typeId === exerciseTypeId ? exercise.id : null;
-                        });
-
-                        var status = ExerciseStatusEnum.NEW.enum;
-                        var correctAnswersNum = 0,
-                            wrongAnswersNum = 0,
-                            skippedAnswersNum = 0,
-                            totalAnswered = 0,
-                            duration = 0;
-
-                        if(assignModule.exercisesStatus) {
-                            if (assignModule.exercisesStatus[exerciseTypeId] && assignModule.exercisesStatus[exerciseTypeId][exerciseId]) {
-                                status = assignModule.exercisesStatus[exerciseTypeId][exerciseId];
-                            }
-                        }
-
-                        if (assignModule.exerciseResults) {
-                            if (assignModule.exerciseResults[exerciseTypeId] && assignModule.exerciseResults[exerciseTypeId][exerciseId]) {
-                                correctAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
-                                wrongAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
-                                skippedAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
-                                duration = assignModule.exerciseResults[exerciseTypeId][exerciseId].duration || 0;
-                                totalAnswered = correctAnswersNum + wrongAnswersNum + skippedAnswersNum;
-                            }
-                        }
-                        return {
-                            status: status,
-                            correctAnswersNum: correctAnswersNum,
-                            wrongAnswersNum: wrongAnswersNum,
-                            skippedAnswersNum: skippedAnswersNum,
-                            duration: duration,
-                            totalAnswered: totalAnswered
-                        };
+                function getModuleSummary(assignModule, moduleHeaders){
+                    var exerciseId;
+                    var exerciseTypeId = ExerciseTypeEnum.PRACTICE.enum;
+                    var practiceExercise = moduleHeaders[assignModule.moduleId].exercises.filter(function (exercise) {
+                        return exercise.exerciseTypeId === exerciseTypeId ? exercise.exerciseId : null;
                     });
+
+                    if (practiceExercise) {
+                        exerciseId = practiceExercise.exerciseId;
+                    }
+
+                    var status = ExerciseStatusEnum.NEW.enum;
+                    var correctAnswersNum = 0,
+                        wrongAnswersNum = 0,
+                        skippedAnswersNum = 0,
+                        totalAnswered = 0,
+                        duration = 0;
+
+                    if(assignModule.exercisesStatus) {
+                        if (assignModule.exercisesStatus[exerciseTypeId] && assignModule.exercisesStatus[exerciseTypeId][exerciseId]) {
+                            status = assignModule.exercisesStatus[exerciseTypeId][exerciseId];
+                        }
+                    }
+
+                    if (assignModule.exerciseResults) {
+                        if (assignModule.exerciseResults[exerciseTypeId] && assignModule.exerciseResults[exerciseTypeId][exerciseId]) {
+                            correctAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
+                            wrongAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
+                            skippedAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
+                            duration = assignModule.exerciseResults[exerciseTypeId][exerciseId].duration || 0;
+                            totalAnswered = correctAnswersNum + wrongAnswersNum + skippedAnswersNum;
+                        }
+                    }
+                    return {
+                        status: status,
+                        correctAnswersNum: correctAnswersNum,
+                        wrongAnswersNum: wrongAnswersNum,
+                        skippedAnswersNum: skippedAnswersNum,
+                        duration: duration,
+                        totalAnswered: totalAnswered
+                    };
+
+                    /* return ZnkModuleService.getModuleById(assignModule.moduleId).then(function (moduleObj) {
+
+                     });*/
                 }
 
-                return userAssignModuleService.getUserAssignModules(userId).then(function (assignModules) {
-                    var getProm = $q.when();
-                    angular.forEach(assignModules, function (assignModule) {
-                        getProm = getProm.then(function () {
-                            return getModuleSummary(assignModule).then(function (moduleSummary) {
-                                assignModule.moduleSummary = moduleSummary;
-                            });
+                return ZnkModuleService.getModuleHeaders().then(function (headers) {
+                    var moduleHeaders = headers;
+                    return userAssignModuleService.getUserAssignModules(userId).then(function (assignModules) {
+                        angular.forEach(assignModules, function (assignModule) {
+                            assignModule.moduleSummary = getModuleSummary(assignModule, moduleHeaders);
                         });
-                    });
-                    return getProm.then(function () {
                         return assignModules;
                     });
                 });
@@ -117,7 +120,8 @@
                                 moduleResults[moduleId].name = moduleHeaders[moduleId].name;
                                 moduleResults[moduleId].desc = moduleHeaders[moduleId].desc;
                                 moduleResults[moduleId].subjectId = moduleHeaders[moduleId].subjectId;
-                                moduleResults[moduleId].subjectName = SubjectEnum.getEnumMap()[moduleHeaders[moduleId].subjectId];
+                                moduleResults[moduleId].order = moduleHeaders[moduleId].order;
+                                moduleResults[moduleId].exercises = moduleHeaders[moduleId].exercises;
                                 moduleResults[moduleId].assignDate = Date.now();
                             }
                             moduleResults[moduleId].assign = true;
