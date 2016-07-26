@@ -21,7 +21,6 @@
             }])
         .run(["$translatePartialLoader", function ($translatePartialLoader) {
             'ngInject';
-
             $translatePartialLoader.addPart('znkExercise');
         }]);
 })(angular);

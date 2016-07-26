@@ -8292,7 +8292,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             }])
         .run(["$translatePartialLoader", function ($translatePartialLoader) {
             'ngInject';
-
             $translatePartialLoader.addPart('znkExercise');
         }]);
 })(angular);
