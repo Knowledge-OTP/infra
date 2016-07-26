@@ -23,7 +23,7 @@
             $rootScope.call = { btnState: 2, receiverId: '9311f0b2-57ea-4374-9817-b70e89b1e174' };
             $rootScope.called = { btnState: 2, receiverId: 'eebe2b53-08b7-4296-bcfd-62b69b531473' };
         })
-        .controller('demoCtrl', ['$scope', 'CallsUiSrv', '$timeout', function ($scope, CallsUiSrv) {
+        .controller('demoCtrl', ['$scope', 'CallsUiSrv', function ($scope, CallsUiSrv) {
             $scope.openIncomingCallModal = function() {
                 var modalData = {
                     'key': 'value'
