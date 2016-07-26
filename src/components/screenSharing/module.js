@@ -9,6 +9,7 @@
         'znk.infra.config',
         'znk.infra.enum',
         'znk.infra.svgIcon',
-        'znk.infra.popUp'
+        'znk.infra.popUp',
+        'znk.infra.general'
     ]);
 })(angular);

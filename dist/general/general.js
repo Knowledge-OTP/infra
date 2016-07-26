@@ -54,7 +54,7 @@
                         newVal = '' + newVal;
                     }
 
-                    var _htmlStrRegex = /^<(\w+)( .*|)>(.|\n)*(<\/\1>|)$/;
+                    var _htmlStrRegex = /^<(.*)>.*<\/\1>$/;
                     /**
                      * check if html string , if true create jq lite element of it and append with animation otherwise just append to the dom
                      */

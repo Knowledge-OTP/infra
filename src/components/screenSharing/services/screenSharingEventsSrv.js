@@ -64,6 +64,8 @@
                                 $log.error('ScreenSharingEventsSrv: invalid status was received ' + screenSharingData.status);
 
                         }
+
+                        ScreenSharingSrv._screenSharingDataChanged(screenSharingData);
                     });
                 }
 
