@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsSrv',
-        function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, InfraConfigSrv, CallsStatusEnum) {
+        function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, InfraConfigSrv, CallsStatusEnum, WebcallSrv) {
             'ngInject';
 
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
@@ -83,36 +83,39 @@
 
                 getDataPromMap.currUid = UserProfileService.getCurrUserId();
 
-                return $q.all(getDataPromMap).then(function (data) {
-                    var dataToSave = {};
+                return WebcallSrv.connect(newCallGuid).then(function () {
 
-                    var isCallerTeacher = userCallData.callerId === data.currUid && isTeacherApp;
+                    return $q.all(getDataPromMap).then(function (data) {
+                        var dataToSave = {};
 
-                    var receiverPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.newReceiverId, !isCallerTeacher);
-                    var callerPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.callerId, isCallerTeacher);
+                        var isCallerTeacher = userCallData.callerId === data.currUid && isTeacherApp;
 
-                    var newCallData = {
-                        guid: newCallGuid,
-                        callerId: userCallData.callerId,
-                        receiverId: userCallData.newReceiverId,
-                        status: CallsStatusEnum.PENDING_CALL.enum,
-                        callerPath: callerPath,
-                        receiverPath: receiverPath
-                    };
+                        var receiverPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.newReceiverId, !isCallerTeacher);
+                        var callerPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.callerId, isCallerTeacher);
 
-                    angular.extend(data.newCallData, newCallData);
+                        var newCallData = {
+                            guid: newCallGuid,
+                            callerId: userCallData.callerId,
+                            receiverId: userCallData.newReceiverId,
+                            status: CallsStatusEnum.PENDING_CALL.enum,
+                            callerPath: callerPath,
+                            receiverPath: receiverPath
+                        };
 
-                    dataToSave[data.newCallData.$$path] = data.newCallData;
-                    //current user call requests object update
-                    data.currUserCallsRequests[newCallGuid] = true;
-                    dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
-                    //other user call requests object update
-                    var otherUserCallPath = userCallData.newReceiverId === data.currUid ? callerPath : receiverPath;
-                    var otherUserCallDataGuidPath = otherUserCallPath + '/' + newCallGuid;
-                    dataToSave[otherUserCallDataGuidPath] = true;
+                        angular.extend(data.newCallData, newCallData);
 
-                    return _getStorage().then(function (StudentStorage) {
-                        return StudentStorage.update(dataToSave);
+                        dataToSave[data.newCallData.$$path] = data.newCallData;
+                        //current user call requests object update
+                        data.currUserCallsRequests[newCallGuid] = true;
+                        dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
+                        //other user call requests object update
+                        var otherUserCallPath = userCallData.newReceiverId === data.currUid ? callerPath : receiverPath;
+                        var otherUserCallDataGuidPath = otherUserCallPath + '/' + newCallGuid;
+                        dataToSave[otherUserCallDataGuidPath] = true;
+
+                        return _getStorage().then(function (StudentStorage) {
+                            return StudentStorage.update(dataToSave);
+                        });
                     });
                 });
             }
@@ -128,20 +131,22 @@
                 getDataPromMap.currCallData = CallsDataGetterSrv.getCallsData(guid);
                 getDataPromMap.currUid = UserProfileService.getCurrUserId();
 
-                return $q.all(getDataPromMap).then(function (data) {
-                    var dataToSave = {};
-                    data.currCallData.status = CallsStatusEnum.ENDED_CALL.enum;
-                    dataToSave[data.currCallData.$$path] = data.currCallData;
-                    //current user call requests object update
-                    data.currUserCallsRequests[guid] = null;
-                    dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
-                    //other user call requests object update
-                    var otherUserCallPath = receiverId === data.currUid ? data.currCallData.callerPath : data.currCallData.receiverPath;
-                    var otherUserCallDataGuidPath = otherUserCallPath + '/' + guid;
-                    dataToSave[otherUserCallDataGuidPath] = null;
+                return WebcallSrv.hang().then(function () {
+                    return $q.all(getDataPromMap).then(function (data) {
+                        var dataToSave = {};
+                        data.currCallData.status = CallsStatusEnum.ENDED_CALL.enum;
+                        dataToSave[data.currCallData.$$path] = data.currCallData;
+                        //current user call requests object update
+                        data.currUserCallsRequests[guid] = null;
+                        dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
+                        //other user call requests object update
+                        var otherUserCallPath = receiverId === data.currUid ? data.currCallData.callerPath : data.currCallData.receiverPath;
+                        var otherUserCallDataGuidPath = otherUserCallPath + '/' + guid;
+                        dataToSave[otherUserCallDataGuidPath] = null;
 
-                    return _getStorage().then(function (StudentStorage) {
-                        return StudentStorage.update(dataToSave);
+                        return _getStorage().then(function (StudentStorage) {
+                            return StudentStorage.update(dataToSave);
+                        });
                     });
                 });
             }
