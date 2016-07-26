@@ -8,8 +8,23 @@
 
             var self = this;
 
+            var activeCallStatus;
+
+            self.showActiveCallDrv = function() {
+                activeCallStatus = true;
+            };
+
+            self.hideActiveCallDrv = function() {
+                activeCallStatus = false;
+            };
+
             self.showModal = function (modal, modalData) {
-                ModalService.showBaseModal(modal, modalData);
+                modal.modalData = modalData;
+                ModalService.showBaseModal(modal);
+            };
+
+            self.closeModal = function () {
+                $mdDialog.hide();
             };
 
             self.modals = {
