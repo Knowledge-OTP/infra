@@ -1,0 +1,10 @@
+{
+    "AUDIO_CALLS":{
+        "INCOMING_CALL": "Incoming Call",
+        "OUTGOING_CALL": "Outgoing Call",
+        "REJECT": "DECLINE",
+        "ACCEPT": "ACCEPT",
+        "OK": "OK",
+        "NAME_IS_CALLING": "{{callerName}} is calling"
+    }
+}

@@ -15,7 +15,9 @@
     "angular-translate-loader-partial": "^2.11.0",
     "angular-svg-round-progressbar": "~0.2.7",
     "angular-ui-router": "^0.3.1",
-    "plivo": "https://github.com/Knowledge-OTP/plivo.git"
+    "plivo": "https://github.com/Knowledge-OTP/plivo.git",
+    "angular-material": "^1.0.9",
+    "angular-aria": "^1.5.8"
   },
   "ignore": [
     ".*",
