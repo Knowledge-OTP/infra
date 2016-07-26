@@ -1,3 +1,4 @@
+/* paths*/
 /* fonts size */
 /*
 //backgrounds
@@ -272,30 +273,163 @@ $blueBG8: #75cbe8;
 
 
 */
+/* Lato fonts from google*/
+@import url(//fonts.googleapis.com/css?family=Lato:300);
+@import url(//fonts.googleapis.com/css?family=Lato:300italic);
+@import url(//fonts.googleapis.com/css?family=Lato:400);
+@import url(//fonts.googleapis.com/css?family=Lato:400italic);
+/* Quicksand fonts */
+@import url(//fonts.googleapis.com/css?family=Quicksand);
+@import url(//fonts.googleapis.com/css?family=Quicksand:300);
+@import url(//fonts.googleapis.com/css?family=Quicksand:700);
+/* Material+Icons */
+@import url(//fonts.googleapis.com/icon?family=Material+Icons);
 /* full background image with retina */
-.call-btn {
+md-dialog.baseCallsModal {
+  overflow: visible;
+  width: 395px;
+  max-width: 395px;
+  height: 255px;
+  max-height: 255px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  background: none; }
+  md-dialog.baseCallsModal md-toolbar {
+    height: 40px;
+    max-height: 40px;
+    min-height: 40px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px; }
+    md-dialog.baseCallsModal md-toolbar:not(.md-menu-toolbar) {
+      background-color: #0a9bad; }
+    md-dialog.baseCallsModal md-toolbar .close-popup-wrap {
+      position: absolute;
+      top: -35px;
+      right: -35px;
+      height: 14px;
+      width: 14px;
+      padding: 10px;
+      cursor: pointer; }
+      md-dialog.baseCallsModal md-toolbar .close-popup-wrap svg-icon * {
+        stroke: #fff; }
+  md-dialog.baseCallsModal.outgoing-call-modal md-toolbar:not(.md-menu-toolbar) {
+    background-color: #ff931e; }
+  md-dialog.baseCallsModal.outgoing-call-modal .top-icon-wrap .top-icon .round-icon-wrap {
+    background-color: #ff931e; }
+  md-dialog.baseCallsModal md-dialog-content {
+    height: 100%;
+    background-color: #fff;
+    padding-top: 45px;
+    border-bottom-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    -moz-border-radius-bottomright: 20px;
+    -moz-border-radius-bottomleft: 20px;
+    webkit-border-bottom-right-radius: 20px;
+    -webkit-border-bottom-left-radius: 20px;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-align-items: center;
+        -ms-flex-align: center;
+            align-items: center;
+    overflow: hidden; }
+    md-dialog.baseCallsModal md-dialog-content .modal-main-title {
+      margin-bottom: 27px;
+      font-size: 27px;
+      color: #4f4d4d;
+      font-family: Quicksand;
+      font-weight: 700;
+      text-align: center; }
+    md-dialog.baseCallsModal md-dialog-content .modal-sub-title {
+      font-size: 16px;
+      color: #4f4d4d;
+      font-family: Lato;
+      font-weight: 400;
+      text-align: center;
+      margin-bottom: 40px; }
+    md-dialog.baseCallsModal md-dialog-content .btn-container button {
+      min-width: 155px;
+      height: 35px;
+      line-height: 31px;
+      text-align: center;
+      font-size: 14px;
+      color: #0a9bad;
+      font-family: Lato;
+      font-weight: 400;
+      text-transform: uppercase;
+      background: none;
+      border: 1px solid #0a9bad;
+      border-radius: 20px;
+      margin: 0 5px;
+      outline: none; }
+      md-dialog.baseCallsModal md-dialog-content .btn-container button.primary {
+        border: none;
+        font-size: 14px;
+        color: #fff;
+        font-family: Lato;
+        font-weight: 400;
+        background-color: #0a9bad; }
+  md-dialog.baseCallsModal .top-icon-wrap {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 40px; }
+    md-dialog.baseCallsModal .top-icon-wrap .top-icon {
+      display: -webkit-flex;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-justify-content: center;
+          -ms-flex-pack: center;
+              justify-content: center; }
+      md-dialog.baseCallsModal .top-icon-wrap .top-icon .round-icon-wrap {
+        width: 76px;
+        height: 76px;
+        border-radius: 38px;
+        background-color: #0a9bad;
+        z-index: 9;
+        margin-top: -15px;
+        display: -webkit-flex;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-justify-content: center;
+            -ms-flex-pack: center;
+                justify-content: center;
+        -webkit-align-items: center;
+            -ms-flex-align: center;
+                align-items: center; }
+        md-dialog.baseCallsModal .top-icon-wrap .top-icon .round-icon-wrap svg-icon {
+          width: 35px;
+          stroke: #fff; }
+          md-dialog.baseCallsModal .top-icon-wrap .top-icon .round-icon-wrap svg-icon svg {
+            width: 100%; }
+            md-dialog.baseCallsModal .top-icon-wrap .top-icon .round-icon-wrap svg-icon svg * {
+              fill: #fff; }
+
+call-btn .call-btn {
   cursor: pointer; }
-  .call-btn svg-icon.etutoring-phone-icon {
+  call-btn .call-btn svg-icon.etutoring-phone-icon {
     width: 22px;
     height: 22px;
     border-radius: 50%; }
-    .call-btn svg-icon.etutoring-phone-icon svg {
+    call-btn .call-btn svg-icon.etutoring-phone-icon svg {
       width: 50%; }
-  .call-btn.called svg-icon.etutoring-phone-icon {
+  call-btn .call-btn.called svg-icon.etutoring-phone-icon {
     background-color: #ff6766; }
-    .call-btn.called svg-icon.etutoring-phone-icon svg {
+    call-btn .call-btn.called svg-icon.etutoring-phone-icon svg {
       -webkit-transform: translate(0, 2px) rotate(136deg);
               transform: translate(0, 2px) rotate(136deg); }
-      .call-btn.called svg-icon.etutoring-phone-icon svg path {
+      call-btn .call-btn.called svg-icon.etutoring-phone-icon svg path {
         fill: #fff; }
-  .call-btn.offline svg-icon.etutoring-phone-icon {
+  call-btn .call-btn.offline svg-icon.etutoring-phone-icon {
     border: 1px solid #b7b7b7;
     background-color: #fff; }
-    .call-btn.offline svg-icon.etutoring-phone-icon svg path {
+    call-btn .call-btn.offline svg-icon.etutoring-phone-icon svg path {
       fill: #b7b7b7; }
-  .call-btn.call svg-icon.etutoring-phone-icon {
+  call-btn .call-btn.call svg-icon.etutoring-phone-icon {
     background-color: #ff931e; }
-    .call-btn.call svg-icon.etutoring-phone-icon svg path {
+    call-btn .call-btn.call svg-icon.etutoring-phone-icon svg path {
       fill: #fff; }
 
 active-call .etutoring-active-call {
@@ -322,10 +456,9 @@ active-call .etutoring-active-call {
     text-align: center; }
     active-call .etutoring-active-call .flex-col.callee-status .online-indicator {
       display: inline-block;
-      background: #B33520;
+      background: #87ca4d;
       width: 7px;
       height: 7px;
-      border: 2px solid #ebebeb;
       border-radius: 6px; }
   active-call .etutoring-active-call .flex-col.callee-name {
     -webkit-flex-basis: 60%;
@@ -339,16 +472,16 @@ active-call .etutoring-active-call {
     -webkit-flex-basis: 30%;
         -ms-flex-preferred-size: 30%;
             flex-basis: 30%; }
-    active-call .etutoring-active-call .flex-col.call-controls svg-icon.etutoring-call-mute-icon {
+    active-call .etutoring-active-call .flex-col.call-controls svg-icon.call-mute-icon {
       float: left;
       cursor: pointer;
       width: 21px;
       height: 21px;
       border-radius: 50%;
       border: 1px solid #0a9bad; }
-      active-call .etutoring-active-call .flex-col.call-controls svg-icon.etutoring-call-mute-icon svg {
+      active-call .etutoring-active-call .flex-col.call-controls svg-icon.call-mute-icon svg {
         width: 44%; }
-        active-call .etutoring-active-call .flex-col.call-controls svg-icon.etutoring-call-mute-icon svg path {
+        active-call .etutoring-active-call .flex-col.call-controls svg-icon.call-mute-icon svg path {
           fill: #0a9bad; }
     active-call .etutoring-active-call .flex-col.call-controls call-btn svg-icon.etutoring-phone-icon {
       float: right; }
@@ -358,6 +491,7 @@ active-call .etutoring-active-call {
     font-family: Lato;
     font-weight: 400; }
 
+/* paths*/
 /* fonts size */
 /*
 //backgrounds
@@ -671,6 +805,7 @@ device-not-supported .device-not-supported-inner {
         max-width: 100%;
         height: auto; } }
 
+/* paths*/
 /* fonts size */
 /*
 //backgrounds
@@ -989,6 +1124,7 @@ $blueBG8: #75cbe8;
         font-family: Lato;
         font-weight: 400; }
 
+/* paths*/
 /* fonts size */
 /*
 //backgrounds
@@ -1421,6 +1557,7 @@ $blueBG8: #75cbe8;
   width: 12px;
   height: 46px; }
 
+/* paths*/
 /* fonts size */
 /*
 //backgrounds
@@ -1699,7 +1836,7 @@ $blueBG8: #75cbe8;
 screen-sharing .close-icon-wrapper {
   width: 40px;
   height: 40px;
-  position: absolute;
+  position: fixed;
   top: 0;
   right: 0;
   border-bottom-left-radius: 15px;
@@ -1714,7 +1851,7 @@ screen-sharing .sharer-state .close-icon-wrapper {
   background: #ff931e; }
 
 screen-sharing .viewer-state-container {
-  position: absolute;
+  position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
@@ -1724,7 +1861,7 @@ screen-sharing .viewer-state-container {
 
 screen-sharing .sharer-state-container .square-side {
   background: #ff931e;
-  position: absolute; }
+  position: fixed; }
   screen-sharing .sharer-state-container .square-side.top, screen-sharing .sharer-state-container .square-side.bottom {
     height: 5px;
     right: 0;
@@ -1749,12 +1886,13 @@ screen-sharing .sharer-state-container .eye-wrapper {
   border-radius: 50%;
   height: 30px;
   box-sizing: border-box;
-  position: absolute;
+  position: fixed;
   top: -11px;
   right: 50%;
   margin-right: -26px;
   padding-top: 10px; }
 
+/* paths*/
 /* fonts size */
 /*
 //backgrounds
@@ -2035,6 +2173,7 @@ znk-scroll {
   overflow: hidden;
   position: relative; }
 
+/* paths*/
 /* fonts size */
 /*
 //backgrounds
@@ -2425,6 +2564,7 @@ $blueBG8: #75cbe8;
 .animate-if.ng-leave, .animate-if.ng-enter.ng-enter-active {
   opacity: 1; }
 
+/* paths*/
 /* fonts size */
 /*
 //backgrounds
@@ -2713,6 +2853,7 @@ svg-icon {
   svg-icon svg {
     display: block; }
 
+/* paths*/
 /* fonts size */
 /*
 //backgrounds
@@ -3259,6 +3400,7 @@ znk-audio-play-button .ended-msg {
   font-weight: 400;
   text-align: center; }
 
+/* paths*/
 /* fonts size */
 /*
 //backgrounds
@@ -3552,13 +3694,13 @@ znk-exercise.desktop {
       right: -40px; }
       znk-exercise.desktop .btn-section .btn-container.right-container.question-answered button {
         background: #0a9bad; }
-        znk-exercise.desktop .btn-section .btn-container.right-container.question-answered button svg-icon.chevron .st0 {
+        znk-exercise.desktop .btn-section .btn-container.right-container.question-answered button svg-icon.znk-exercise-chevron .st0 {
           stroke: #fff; }
       znk-exercise.desktop .btn-section .btn-container.right-container button {
         border-top-right-radius: 42px;
         border-bottom-right-radius: 42px;
         padding-right: 3px; }
-        znk-exercise.desktop .btn-section .btn-container.right-container button .chevron {
+        znk-exercise.desktop .btn-section .btn-container.right-container button .znk-exercise-chevron {
           -webkit-transform: rotate(-90deg);
                   transform: rotate(-90deg); }
       znk-exercise.desktop .btn-section .btn-container.right-container.ng-hide-add, znk-exercise.desktop .btn-section .btn-container.right-container.ng-hide-remove {
@@ -3571,7 +3713,7 @@ znk-exercise.desktop {
         border-top-left-radius: 42px;
         border-bottom-left-radius: 42px;
         padding-left: 5px; }
-        znk-exercise.desktop .btn-section .btn-container.left-container button .chevron {
+        znk-exercise.desktop .btn-section .btn-container.left-container button .znk-exercise-chevron {
           -webkit-transform: rotate(90deg);
                   transform: rotate(90deg); }
       znk-exercise.desktop .btn-section .btn-container.left-container.ng-hide-add, znk-exercise.desktop .btn-section .btn-container.left-container.ng-hide-remove {

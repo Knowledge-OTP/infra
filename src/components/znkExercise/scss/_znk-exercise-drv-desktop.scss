@@ -17,7 +17,7 @@ znk-exercise.desktop {
                 &.question-answered{
                     button{
                         background: $bgColor3;
-                        svg-icon.chevron .st0{
+                        svg-icon.znk-exercise-chevron .st0{
                             stroke: $bgColor6;
                         }
                     }
@@ -28,7 +28,7 @@ znk-exercise.desktop {
                     border-bottom-right-radius: 42px;
                     padding-right: 3px;
 
-                    .chevron {
+                    .znk-exercise-chevron {
                         transform: rotate(-90deg);
                     }
                 }
@@ -50,7 +50,7 @@ znk-exercise.desktop {
                     border-bottom-left-radius: 42px;
                     padding-left: 5px;
 
-                    .chevron {
+                    .znk-exercise-chevron {
                         transform: rotate(90deg);
                     }
                 }

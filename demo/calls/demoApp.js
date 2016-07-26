@@ -2,8 +2,16 @@
     'use strict';
 
     angular.module('demo', [
-        'znk.infra.calls'
+        'znk.infra.calls',
+        'ngAria',
+        'ngMaterial',
+        'pascalprecht.translate',
+        'znk.infra.modal'
     ])
+        .config(function (ModalServiceProvider) {
+            ModalServiceProvider.setBaseTemplatePath('components/calls/modals/templates/baseCallsModal.template.html');
+            // components/calls/modals/templates/incomingCall.template.html
+        })
         .run(function ($rootScope) {
             /**
              * to work with storage on act-dev add this to localStorage:
@@ -14,6 +22,27 @@
             $rootScope.offline = { btnState: 1, receiverId: 1 };
             $rootScope.call = { btnState: 2, receiverId: '9311f0b2-57ea-4374-9817-b70e89b1e174' };
             $rootScope.called = { btnState: 3, receiverId: 1 };
+        })
+        .controller('demoCtrl', ['$scope', 'CallsUiSrv', function ($scope, CallsUiSrv) {
+
+            var self = this;
+
+            var modalData = {
+                'key': 'value',
+                'anotherKey': 'anotherValue'
+            };
+
+            $scope.openIncomingCallModal = function() {
+                console.log('openIncomingCallModal');
+                CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, modalData);
+            };
+
+            $scope.openOutgoingCallModal = function() {
+                console.log('openOutgoingCallModal');
+                CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, modalData);
+            };
+        }
+        ])
         }).service('ENV', function () {
             this.firebaseAppScopeName = "act_app";
             this.appContext = 'student';

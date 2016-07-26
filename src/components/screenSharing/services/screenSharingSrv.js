@@ -6,7 +6,11 @@
             'ngInject';
 
             var _this = this;
+
+            var activeScreenSharingData = null;
             var currUserScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
+            var registeredCbToActiveScreenSharingDataChanges = [];
+            var registeredCbToCurrUserScreenSharingStateChange = [];
 
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
 
@@ -116,6 +120,17 @@
                 });
             }
 
+            function _cleanRegisteredCbToActiveScreenSharingData(){
+                activeScreenSharingData = null;
+                registeredCbToActiveScreenSharingDataChanges = [];
+            }
+
+            function _invokeCurrUserScreenSharingStateChangedCb(){
+                registeredCbToCurrUserScreenSharingStateChange.forEach(function(cb){
+                    cb(currUserScreenSharingState);
+                });
+            }
+
             this.shareMyScreen = function (viewerData) {
                 return UserProfileService.getCurrUserId().then(function (currUserId) {
                     var sharerData = {
@@ -177,8 +192,33 @@
                 });
             };
 
+            this.registerToActiveScreenSharingDataChanges = function(cb){
+                if(activeScreenSharingData){
+                    registeredCbToActiveScreenSharingDataChanges.push(cb);
+                    cb(activeScreenSharingData);
+                }
+            };
+
+            this.registerToCurrUserScreenSharingStateChanges = function(cb){
+                registeredCbToCurrUserScreenSharingStateChange.push(cb);
+                cb(currUserScreenSharingState);
+            };
+
+            this.unregisterFromCurrUserScreenSharingStateChanges = function(cb){
+                registeredCbToCurrUserScreenSharingStateChange = registeredCbToCurrUserScreenSharingStateChange.filter(function(iterationCb){
+                    return iterationCb !== cb;
+                });
+            };
+
+            this.getActiveScreenSharingData = function(){
+                if(!activeScreenSharingData){
+                    return $q.reject('ScreenSharingSrv: no active screen sharing data');
+                }
+                return ScreenSharingDataGetterSrv.getScreenSharingData(activeScreenSharingData.guid);
+            };
+
             this._userScreenSharingStateChanged = function (newUserScreenSharingState, screenSharingData) {
-                if(!newUserScreenSharingState){
+                if(!newUserScreenSharingState || (currUserScreenSharingState === newUserScreenSharingState)){
                     return;
                 }
 
@@ -186,15 +226,28 @@
 
                 var isViewerState = newUserScreenSharingState === UserScreenSharingStateEnum.VIEWER.enum;
                 var isSharerState = newUserScreenSharingState === UserScreenSharingStateEnum.SHARER.enum;
-
                 if(isSharerState || isViewerState){
+                    activeScreenSharingData = screenSharingData;
                     ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState).then(function(){
                         _this.endSharing(screenSharingData.guid);
                     });
                 }else{
+                    _cleanRegisteredCbToActiveScreenSharingData();
                     ScreenSharingUiSrv.endScreenSharing();
                 }
 
+                _invokeCurrUserScreenSharingStateChangedCb(currUserScreenSharingState );
+            };
+
+            this._screenSharingDataChanged = function(newScreenSharingData){
+                if(!activeScreenSharingData || activeScreenSharingData.guid !== newScreenSharingData.guid){
+                    return;
+                }
+
+                activeScreenSharingData = newScreenSharingData;
+                registeredCbToActiveScreenSharingDataChanges.forEach(function(cb){
+                    cb(activeScreenSharingData);
+                });
             };
         }
     );

@@ -77,6 +77,11 @@
                         newQuestionIndex = Math.min(newQuestionIndex, questions.length - 1);
 
                         $scope.vm.currentSlide = newQuestionIndex;
+
+                        if(self.__exerciseViewBinding){
+                            self.__exerciseViewBinding.currSlideIndex = newQuestionIndex;
+                        }
+
                         return $scope.vm.currentSlide;
                     });
                 }else{

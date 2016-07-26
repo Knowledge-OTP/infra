@@ -4,6 +4,9 @@
     angular.module('demo', [
         'znk.infra.screenSharing'
     ])
+        .config(function(ScreenSharingUiSrvProvider){
+            ScreenSharingUiSrvProvider.setScreenSharingViewerTemplate('<div style="color: white">Screen sharing Viewer template</div>');
+        })
         .run(function ($rootScope, ScreenSharingUiSrv) {
             $rootScope.activateSharing = function (userSharingState) {
                 ScreenSharingUiSrv.activateScreenSharing(userSharingState).then(function(){
@@ -27,6 +30,6 @@
                 });
             };
 
-            $rootScope.activateSharing(3);
+            $rootScope.activateSharing(2);
         });
 })(angular);
