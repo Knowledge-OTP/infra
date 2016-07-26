@@ -8,7 +8,7 @@
             isEnabled = _isEnabled;
         };
 
-        this.$get = function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log) {
+        this.$get = function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, CallsSrv) {
             'ngInject';
             var CallsEventsSrv = {};
 
@@ -64,6 +64,7 @@
                                 }
                                 CallsUiSrv.hideActiveCallDrv();
                                 // disconnect other user from call
+                                CallsSrv.disconnectCall();
                                 break;
                         }
                     });
