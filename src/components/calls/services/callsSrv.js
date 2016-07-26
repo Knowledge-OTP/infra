@@ -12,10 +12,9 @@
             }
 
             var CALL_ACTIONS = {
-               DISCONNECT: 'disconnect', // if user active, and new call init has same receiverId then disconnect
-               CONNECT: 'connect',  // if user not active, and call init then active user
-               DISCONNECT_AND_CONNECT: 'disconnect and connect' /* if user is active with receiverId and new call init with other
-                 receiverId then disconnect from current receiverId and connect with new receiverId */
+               DISCONNECT: 'disconnect',
+               CONNECT: 'connect',
+               DISCONNECT_AND_CONNECT: 'disconnect and connect'
             };
 
             function _isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId) {
@@ -35,17 +34,23 @@
                         if (callsDataMapKeys.hasOwnProperty(i)) {
                             var callsDataKey = callsDataMapKeys[i];
                             var callsData = callsDataMap[callsDataKey];
-
+                            /* if user active, and new call init has same receiverId then disconnect */
                             if (_isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId)) {
                                 userCallData = {
                                     action: CALL_ACTIONS.DISCONNECT,
-                                    newReceiverId: receiverId
+                                    callerId: callerId,
+                                    newReceiverId: receiverId,
+                                    newCallGuid: callsData.guid
                                 };
+                            /* if user is active with receiverId and new call init with other
+                               receiverId then disconnect from current receiverId and connect with new receiverId */
                             } else if (_isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId)) {
                                 userCallData = {
                                     action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
+                                    callerId: callerId,
                                     newReceiverId: receiverId,
-                                    oldReceiverId: callsData.receiverId
+                                    oldReceiverId: callsData.receiverId,
+                                    oldCallGuid: callsData.guid
                                 };
                             }
 
@@ -56,13 +61,88 @@
                     }
 
                     if (!userCallData) {
+                        /* if user not active, and call init then active user */
                         userCallData = {
                             action: CALL_ACTIONS.CONNECT,
+                            callerId: callerId,
                             newReceiverId: receiverId
                         };
                     }
 
                     return userCallData;
+                });
+            }
+
+            function _connectCall(userCallData) {
+                var getDataPromMap = {};
+
+                getDataPromMap.currUserCallsRequests = CallsDataGetterSrv.getCurrUserCallsRequests();
+
+                var newCallGuid = UtilitySrv.general.createGuid();
+                getDataPromMap.newCallData = CallsDataGetterSrv.getCallsData(newCallGuid);
+
+                getDataPromMap.currUid = UserProfileService.getCurrUserId();
+
+                return $q.all(getDataPromMap).then(function (data) {
+                    var dataToSave = {};
+
+                    var isCallerTeacher = userCallData.callerId === data.currUid && isTeacherApp;
+
+                    var receiverPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.newReceiverId, !isCallerTeacher);
+                    var callerPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.callerId, isCallerTeacher);
+
+                    var newCallData = {
+                        guid: newCallGuid,
+                        callerId: userCallData.callerId,
+                        receiverId: userCallData.newReceiverId,
+                        status: CallsStatusEnum.PENDING_CALL.enum,
+                        callerPath: callerPath,
+                        receiverPath: receiverPath
+                    };
+
+                    angular.extend(data.newCallData, newCallData);
+
+                    dataToSave[data.newCallData.$$path] = data.newCallData;
+                    //current user call requests object update
+                    data.currUserCallsRequests[newCallGuid] = true;
+                    dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
+                    //other user call requests object update
+                    var otherUserCallPath = userCallData.newReceiverId === data.currUid ? callerPath : receiverPath;
+                    var otherUserCallDataGuidPath = otherUserCallPath + '/' + newCallGuid;
+                    dataToSave[otherUserCallDataGuidPath] = true;
+
+                    return _getStorage().then(function (StudentStorage) {
+                        return StudentStorage.update(dataToSave);
+                    });
+                });
+            }
+
+            function _disconnectCall(userCallData) {
+
+                var receiverId = userCallData.oldReceiverId ? userCallData.oldReceiverId : userCallData.newReceiverId;
+                var guid = userCallData.oldCallGuid ? userCallData.oldCallGuid : userCallData.newCallGuid;
+
+                var getDataPromMap = {};
+
+                getDataPromMap.currUserCallsRequests = CallsDataGetterSrv.getCurrUserCallsRequests();
+                getDataPromMap.currCallData = CallsDataGetterSrv.getCallsData(guid);
+                getDataPromMap.currUid = UserProfileService.getCurrUserId();
+
+                return $q.all(getDataPromMap).then(function (data) {
+                    var dataToSave = {};
+                    data.currCallData.status = CallsStatusEnum.ENDED_CALL.enum;
+                    dataToSave[data.currCallData.$$path] = data.currCallData;
+                    //current user call requests object update
+                    data.currUserCallsRequests[guid] = null;
+                    dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
+                    //other user call requests object update
+                    var otherUserCallPath = receiverId === data.currUid ? data.currCallData.callerPath : data.currCallData.receiverPath;
+                    var otherUserCallDataGuidPath = otherUserCallPath + '/' + guid;
+                    dataToSave[otherUserCallDataGuidPath] = null;
+
+                    return _getStorage().then(function (StudentStorage) {
+                        return StudentStorage.update(dataToSave);
+                    });
                 });
             }
 
@@ -81,117 +161,25 @@
                         return $q.reject(errMsg);
                     }
 
-                    switch (userCallData.status) {
+                    switch (userCallData.action) {
                         case CALL_ACTIONS.DISCONNECT:
+                            return _disconnectCall(userCallData);
                             break;
                         case CALL_ACTIONS.CONNECT:
+                             return _connectCall(userCallData);
                             break;
                         case CALL_ACTIONS.DISCONNECT_AND_CONNECT:
+                            return _disconnectCall(userCallData).then(function () {
+                                return _connectCall(userCallData);
+                            });
                             break;
                     }
-
-
-                    var getDataPromMap = {};
-
-                    getDataPromMap.currUserCallsRequests = CallsDataGetterSrv.getCurrUserCallsRequests();
-
-                    var newCallGuid = UtilitySrv.general.createGuid();
-                    getDataPromMap.newCallData = CallsDataGetterSrv.getCallsData(newCallGuid);
-
-                    getDataPromMap.currUid = UserProfileService.getCurrUserId();
-
-                    return $q.all(getDataPromMap).then(function (data) {
-                        var dataToSave = {};
-
-                        var receiverPath = CallsDataGetterSrv.getCallsRequestsPath(receiverId, isTeacherApp);
-                        var callerPath = CallsDataGetterSrv.getCallsRequestsPath(callerId, isTeacherApp);
-
-                        var newCallData = {
-                            guid: newCallGuid,
-                            callerId: callerId,
-                            receiverId: receiverId,
-                            status: CallsStatusEnum.PENDING_CALL.enum,
-                            callerPath: callerPath,
-                            receiverPath: receiverPath
-                        };
-
-                        angular.extend(data.newCallData, newCallData);
-
-                        dataToSave[data.newCallData.$$path] = data.newCallData;
-                        //current user call requests object update
-                        data.currUserCallsRequests[newCallGuid] = true;
-                        dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
-                        //other user call requests object update
-                        var otherUserCallPath = receiverId === data.currUid ? callerPath : receiverPath;
-                        var otherUserCallDataGuidPath = otherUserCallPath + '/' + newCallGuid;
-                        dataToSave[otherUserCallDataGuidPath] = true;
-
-                        return _getStorage().then(function (StudentStorage) {
-                            return StudentStorage.update(dataToSave);
-                        });
-                    });
-
                 });
             }
-            //
-            //this.shareMyScreen = function (viewerData) {
-            //    return UserProfileService.getCurrUserId().then(function (currUserId) {
-            //        var sharerData = {
-            //            uid: currUserId,
-            //            isTeacher: isTeacherApp
-            //        };
-            //        return _initiateScreenSharing(sharerData, viewerData, UserScreenSharingStateEnum.SHARER.enum);
-            //    });
-            //};
-            //
-            //this.viewOtherUserScreen = function (sharerData) {
-            //    return UserProfileService.getCurrUserId().then(function (currUserId) {
-            //        var viewerData = {
-            //            uid: currUserId,
-            //            isTeacher: isTeacherApp
-            //        };
-            //        return _initiateScreenSharing(sharerData, viewerData, UserScreenSharingStateEnum.VIEWER.enum);
-            //    });
-            //};
-            //
-            //this.confirmSharing = function (screenSharingDataGuid) {
-            //    return ScreenSharingDataGetterSrv.getScreenSharingData(screenSharingDataGuid).then(function (screenSharingData) {
-            //        screenSharingData.status = ScreenSharingStatusEnum.CONFIRMED.enum;
-            //        return screenSharingData.$save();
-            //    });
-            //};
-            //
-            //this.endSharing = function (screenSharingDataGuid) {
-            //    var getDataPromMap = {};
-            //    getDataPromMap.screenSharingData = ScreenSharingDataGetterSrv.getScreenSharingData(screenSharingDataGuid);
-            //    getDataPromMap.currUid = UserProfileService.getCurrUserId();
-            //    getDataPromMap.currUidScreenSharingRequests = ScreenSharingDataGetterSrv.getCurrUserScreenSharingRequests();
-            //    getDataPromMap.storage = _getStorage();
-            //    return $q.all(getDataPromMap).then(function (data) {
-            //        var dataToSave = {};
-            //
-            //        data.screenSharingData.status = ScreenSharingStatusEnum.ENDED.enum;
-            //        dataToSave [data.screenSharingData.$$path] = data.screenSharingData;
-            //
-            //        data.currUidScreenSharingRequests[data.screenSharingData.guid] = false;
-            //        dataToSave[data.currUidScreenSharingRequests.$$path] = data.currUidScreenSharingRequests;
-            //
-            //        var otherUserScreenSharingRequestPath;
-            //        if(data.screenSharingData.viewerId !== data.currUid){
-            //            otherUserScreenSharingRequestPath = data.screenSharingData.viewerPath;
-            //        }else{
-            //            otherUserScreenSharingRequestPath = data.screenSharingData.sharerPath;
-            //        }
-            //        otherUserScreenSharingRequestPath += '/' + data.screenSharingData.guid;
-            //        dataToSave[otherUserScreenSharingRequestPath] = false;
-            //
-            //        return data.storage.update(dataToSave);
-            //    });
-            //};
 
             this.callsStateChanged = function (receiverId) {
                 return UserProfileService.getCurrUserId().then(function(callerId) {
-                    _initiateCall(callerId, receiverId);
+                    return _initiateCall(callerId, receiverId);
                 });
             };
         }
