@@ -273,36 +273,80 @@ $blueBG8: #75cbe8;
 
 */
 /* full background image with retina */
-device-not-supported.disabled {
-  display: none; }
+.call-btn {
+  cursor: pointer; }
+  .call-btn svg-icon.etutoring-phone-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%; }
+    .call-btn svg-icon.etutoring-phone-icon svg {
+      width: 50%; }
+  .call-btn.called svg-icon.etutoring-phone-icon {
+    background-color: #ff6766; }
+    .call-btn.called svg-icon.etutoring-phone-icon svg {
+      transform: translate(0, 2px) rotate(136deg); }
+      .call-btn.called svg-icon.etutoring-phone-icon svg path {
+        fill: #fff; }
+  .call-btn.offline svg-icon.etutoring-phone-icon {
+    border: 1px solid #b7b7b7;
+    background-color: #fff; }
+    .call-btn.offline svg-icon.etutoring-phone-icon svg path {
+      fill: #b7b7b7; }
+  .call-btn.call svg-icon.etutoring-phone-icon {
+    background-color: #ff931e; }
+    .call-btn.call svg-icon.etutoring-phone-icon svg path {
+      fill: #fff; }
 
-device-not-supported .device-not-supported-inner {
-  display: none; }
-
-@media screen and (max-width: 1024px) {
-  device-not-supported .device-not-supported-inner {
+active-call .etutoring-active-call {
+  width: 210px;
+  height: 40px;
+  background-color: #f7f7f7;
+  border: 1px solid #ebebeb;
+  border-radius: 20px; }
+  active-call .etutoring-active-call .flex-container {
+    height: 100%;
     display: -ms-flexbox;
     display: flex;
-    -ms-flex-direction: column;
-        flex-direction: column;
     -ms-flex-align: center;
         align-items: center;
-    -ms-flex-pack: center;
-        justify-content: center;
-    padding: 40px;
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    background: white;
-    z-index: 9999;
-    box-sizing: border-box; }
-    device-not-supported .device-not-supported-inner .image-container {
-      background-repeat: no-repeat;
-      background-position: center center;
-      background-size: contain; }
-      device-not-supported .device-not-supported-inner .image-container img {
-        visibility: hidden;
-        max-width: 100%;
-        height: auto; } }
+    padding: 0 5px; }
+  active-call .etutoring-active-call .flex-col.callee-status, active-call .etutoring-active-call .flex-col.callee-name, active-call .etutoring-active-call .flex-col.call-controls {
+    padding: 5px; }
+  active-call .etutoring-active-call .flex-col.callee-status {
+    -ms-flex-preferred-size: 10%;
+        flex-basis: 10%;
+    text-align: center; }
+    active-call .etutoring-active-call .flex-col.callee-status .online-indicator {
+      display: inline-block;
+      background: #87ca4d;
+      width: 7px;
+      height: 7px;
+      border-radius: 6px; }
+  active-call .etutoring-active-call .flex-col.callee-name {
+    -ms-flex-preferred-size: 60%;
+        flex-basis: 60%;
+    font-size: 14px;
+    color: #4f4d4d;
+    font-family: Quicksand;
+    font-weight: 700; }
+  active-call .etutoring-active-call .flex-col.call-controls {
+    -ms-flex-preferred-size: 30%;
+        flex-basis: 30%; }
+    active-call .etutoring-active-call .flex-col.call-controls svg-icon.etutoring-call-mute-icon {
+      float: left;
+      cursor: pointer;
+      width: 21px;
+      height: 21px;
+      border-radius: 50%;
+      border: 1px solid #0a9bad; }
+      active-call .etutoring-active-call .flex-col.call-controls svg-icon.etutoring-call-mute-icon svg {
+        width: 44%; }
+        active-call .etutoring-active-call .flex-col.call-controls svg-icon.etutoring-call-mute-icon svg path {
+          fill: #0a9bad; }
+    active-call .etutoring-active-call .flex-col.call-controls call-btn svg-icon.etutoring-phone-icon {
+      float: right; }
+  active-call .etutoring-active-call .call-duration {
+    font-size: 12px;
+    color: #979797;
+    font-family: Lato;
+    font-weight: 400; }
