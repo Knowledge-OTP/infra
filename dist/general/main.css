@@ -1,3 +1,4 @@
+/* paths*/
 /* fonts size */
 /*
 //backgrounds
@@ -277,6 +278,7 @@ $blueBG8: #75cbe8;
   display: inline-block;
   position: relative; }
   .timer-drv .timer-type1 {
+    display: -webkit-flex;
     display: -ms-flexbox;
     display: flex; }
     .timer-drv .timer-type1 i {
