@@ -1,6 +1,6 @@
 {
   "name": "infra",
-  "version": "v5.0.1",
+  "version": "v5.0.3",
   "authors": [
     "Zinkerz"
   ],
@@ -14,7 +14,8 @@
     "angulartics": "1.0.3",
     "angular-translate-loader-partial": "^2.11.0",
     "angular-svg-round-progressbar": "~0.2.7",
-    "angular-ui-router": "^0.3.1"
+    "angular-ui-router": "^0.3.1",
+    "plivo": "https://github.com/Knowledge-OTP/plivo.git"
   },
   "ignore": [
     ".*",

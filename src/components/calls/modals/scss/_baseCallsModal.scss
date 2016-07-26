@@ -1,0 +1,128 @@
+md-dialog.baseCallsModal {
+    overflow: visible;
+    width: 395px;
+    max-width: 395px;
+    height: 255px;
+    max-height: 255px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    background:none;
+
+    md-toolbar {
+        height: 40px;
+        max-height: 40px;
+        min-height: 40px;
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+
+        &:not(.md-menu-toolbar){
+            background-color: $bgColor3;
+        }
+
+        .close-popup-wrap {
+            @include absolute-position(-35px, -35px);
+            height:14px;
+            width: 14px;
+            padding: 10px;
+            cursor: pointer;
+
+            svg-icon * {
+                stroke: $bgColor6;
+            }
+        }
+    }
+
+    &.outgoing-call-modal {
+        md-toolbar {
+            &:not(.md-menu-toolbar){
+                background-color: $bgColor19;
+            }
+        }
+        .top-icon-wrap {
+            .top-icon {
+                .round-icon-wrap {
+                    background-color: $bgColor19;
+                }
+            }
+        }
+    }
+
+    md-dialog-content {
+        height: 100%;
+        background-color: $bgColor6;
+        padding-top: 45px;
+        @include border-bottom-radius(20px);
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+
+        .modal-main-title {
+            margin-bottom: 27px;
+            @include text-style(27px, $fcColor6, Quicksand, $boldFontWeight);
+            text-align: center;
+        }
+
+        .modal-sub-title {
+            @include text-style(16px, $fcColor6, Lato, $regularFontWeight);
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .btn-container {
+            button {
+                min-width: 155px;
+                height: 35px;
+                line-height: 31px;
+                text-align: center;
+                @include text-style(14px, $fcColor5, Lato, $regularFontWeight);
+                text-transform: uppercase;
+                background: none;
+                border: 1px solid $fcColor5;
+                border-radius: 20px;
+                margin: 0 5px;
+                outline: none;
+                &.primary {
+                    border: none;
+                    @include text-style(14px, $fcColor2, Lato, $regularFontWeight);
+                    background-color: $fcColor5;
+                }
+            }
+        }
+    }
+
+    .top-icon-wrap {
+        position: absolute;
+        top: 0;
+        width: 100%;
+        height: 40px;
+        .top-icon {
+            display: flex;
+            justify-content: center;
+
+            .round-icon-wrap {
+                width: 76px;
+                height: 76px;
+                border-radius: 38px;
+                background-color: $bgColor3;
+                z-index: 9;
+                margin-top: -15px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                svg-icon{
+                    width: 35px;
+                    stroke: $bgColor6;
+                    svg {
+                        width: 100%;
+                        * {
+                            fill: $bgColor6;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

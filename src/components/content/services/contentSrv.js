@@ -47,6 +47,12 @@
 
             var ContentSrv = {};
 
+            var REV_STATUES = {
+                NEW: 'new',
+                OLD: 'old',
+                SAME: 'same'
+            };
+
             function _getContentFunc(){
                 if (!contentFunc){
                     contentFunc = $injector.invoke(setContentFuncRef);
@@ -77,15 +83,39 @@
                         return $q.when({error: 'Not Found', data: dataObj});
                     }
 
-                    if (!userManifest) {
-                        newRev = {rev: publicationManifest.rev, status: 'new'};
-                    } else if (userManifest.rev < publicationManifest.rev) {
-                        newRev = {rev: userManifest.rev, status: 'old'};
-                    } else if (userManifest.rev === publicationManifest.rev) {
-                        newRev = {rev: publicationManifest.rev, status: 'same'};
+                    function _getRevStatusObj(rev, status) {
+                        return { rev: rev, status: status };
+                    }
+
+                    function _isUserHasOldRev() {
+                       return userManifest.rev < publicationManifest.rev;
+                    }
+
+                    function _isUserHasSameRev() {
+                        return userManifest.rev === publicationManifest.rev;
+                    }
+
+                    if (!userManifest) { // if user has no rev yet, set the latest
+
+                        newRev = _getRevStatusObj(publicationManifest.rev, REV_STATUES.NEW);
+
+                    } else if(publicationManifest.takeLatest) { // if on manifest has takeLatest, then take latest and set if it's not the same on user
+
+                        newRev = _getRevStatusObj(publicationManifest.rev, _isUserHasSameRev() ? REV_STATUES.SAME : REV_STATUES.NEW );
+
+                    } else if (_isUserHasOldRev()) {
+
+                        newRev = _getRevStatusObj(userManifest.rev, REV_STATUES.OLD);
+
+                    } else if (_isUserHasSameRev()) {
+
+                        newRev = _getRevStatusObj(publicationManifest.rev, REV_STATUES.SAME);
+
                     } else {
-                        $log.error('ContentSrv: getContent: user revision is weird! rev: ' + userManifest.rev);
-                        newRev = {rev: publicationManifest.rev, status: 'new'};
+
+                        $log.error('ContentSrv: getContent: user revision is weird! for practice: '+ practiceName +' rev: ' + userManifest.rev);
+                        newRev = _getRevStatusObj(publicationManifest.rev, REV_STATUES.NEW);
+
                     }
 
                     return newRev;

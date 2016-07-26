@@ -1,9 +1,8 @@
-<div ng-switch="$ctrl.userSharingState">
+<div ng-switch="$ctrl.userSharingState"
+     ng-class="$ctrl.sharingStateCls">
     <div ng-switch-when="2"
          class="viewer-state-container">
-        <div class="close-icon-wrapper" ng-click="$ctrl.onClose()">
-            <svg-icon name="screen-sharing-close"></svg-icon>
-        </div>
+        <div compile="$ctrl.viewerTemplate"></div>
     </div>
     <div ng-switch-when="3"
          class="sharer-state-container">
@@ -14,5 +13,8 @@
         <div class="eye-wrapper">
             <svg-icon name="screen-sharing-eye"></svg-icon>
         </div>
+    </div>
+    <div class="close-icon-wrapper" ng-click="$ctrl.onClose()">
+        <svg-icon name="screen-sharing-close"></svg-icon>
     </div>
 </div>

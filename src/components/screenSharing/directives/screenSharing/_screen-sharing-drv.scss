@@ -1,24 +1,41 @@
 screen-sharing{
+    .close-icon-wrapper{
+        @include dimension(40px);
+        position: fixed;
+        top: 0;
+        right: 0;
+        border-bottom-left-radius: 15px;
+        text-align: center;
+        line-height: 42px;
+        cursor: pointer;
+    }
+
+    .viewer-state{
+        .close-icon-wrapper{
+            background: $bgColor3;
+        }
+    }
+
+    .sharer-state{
+        .close-icon-wrapper{
+            background: $bgColor19;
+        }
+    }
+
     .viewer-state-container{
-        @include absolute-full-cover;
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
         border: 5px solid $bcColor2;
         background: $tbgColor7;
-
-        .close-icon-wrapper{
-            @include dimension(40px);
-            background: $bgColor3;
-            @include absolute-position(0,0);
-            border-bottom-left-radius: 15px;
-            text-align: center;
-            line-height: 42px;
-            cursor: pointer;
-        }
     }
 
     .sharer-state-container{
         .square-side{
-            background: $bcColor19;
-            position: absolute;
+            background: $bgColor19;
+            position: fixed;
 
             &.top, &.bottom{
                 height: 5px;
@@ -50,18 +67,20 @@ screen-sharing{
         }
 
         .eye-wrapper{
-            background: $bcColor19;
+            background: $bgColor19;
             width: 52px;
             text-align: center;
             border-radius: 50%;
             height: 30px;
             box-sizing: border-box;
-            @include absolute-position(-11px, 50%);
+            position: fixed;
+            top: -11px;
+            right: 50%;
             margin: {
                 right: -26px;
             }
             padding: {
-                top: 12px;
+                top: 10px;
             }
         }
     }

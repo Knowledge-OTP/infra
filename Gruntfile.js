@@ -169,7 +169,7 @@ module.exports = function (grunt) {
         },
         connect: {
             options: {
-                base: ['.tmp', 'bower_components', 'demoShared'],
+                base: ['.tmp', 'bower_components', 'demoShared', 'tmpLocalization'],
                 open: true,
                 livereload: 35730
             },
@@ -258,6 +258,14 @@ module.exports = function (grunt) {
                     }
                 }]
             },
+            serve:{
+                files: [{
+                    expand: true,
+                    cwd: '<%= yeoman.src %>/components',
+                    src: ['*/locale/*.json'],
+                    dest: 'tmpLocalization/'
+                }]
+            },
             dist: {
                 files: [{
                     expand: true,
@@ -334,6 +342,7 @@ module.exports = function (grunt) {
         console.log('serving from', grunt.config('connect').options.base);
         grunt.task.run([
             'build',
+            'copy:serve',
             'wiredep',
             'connect:serve',
             'watch'
