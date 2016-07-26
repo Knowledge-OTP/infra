@@ -1811,10 +1811,10 @@ $blueBG8: #75cbe8;
 
 */
 /* full background image with retina */
-screen-sharing {
+.screen-sharing-ph {
   position: relative;
-  z-index: 10; }
-  screen-sharing .close-icon-wrapper {
+  z-index: 2; }
+  .screen-sharing-ph screen-sharing .close-icon-wrapper {
     width: 40px;
     height: 40px;
     position: fixed;
@@ -1824,11 +1824,11 @@ screen-sharing {
     text-align: center;
     line-height: 42px;
     cursor: pointer; }
-  screen-sharing .viewer-state .close-icon-wrapper {
+  .screen-sharing-ph screen-sharing .viewer-state .close-icon-wrapper {
     background: #0a9bad; }
-  screen-sharing .sharer-state .close-icon-wrapper {
+  .screen-sharing-ph screen-sharing .sharer-state .close-icon-wrapper {
     background: #ff931e; }
-  screen-sharing .viewer-state-container {
+  .screen-sharing-ph screen-sharing .viewer-state-container {
     position: fixed;
     top: 0;
     right: 0;
@@ -1836,26 +1836,26 @@ screen-sharing {
     left: 0;
     border: 5px solid #0a9bad;
     background: rgba(15, 15, 15, 0.85); }
-  screen-sharing .sharer-state-container .square-side {
+  .screen-sharing-ph screen-sharing .sharer-state-container .square-side {
     background: #ff931e;
     position: fixed; }
-    screen-sharing .sharer-state-container .square-side.top, screen-sharing .sharer-state-container .square-side.bottom {
+    .screen-sharing-ph screen-sharing .sharer-state-container .square-side.top, .screen-sharing-ph screen-sharing .sharer-state-container .square-side.bottom {
       height: 5px;
       right: 0;
       left: 0; }
-    screen-sharing .sharer-state-container .square-side.right, screen-sharing .sharer-state-container .square-side.left {
+    .screen-sharing-ph screen-sharing .sharer-state-container .square-side.right, .screen-sharing-ph screen-sharing .sharer-state-container .square-side.left {
       width: 5px;
       top: 0;
       bottom: 0; }
-    screen-sharing .sharer-state-container .square-side.top {
+    .screen-sharing-ph screen-sharing .sharer-state-container .square-side.top {
       top: 0; }
-    screen-sharing .sharer-state-container .square-side.right {
+    .screen-sharing-ph screen-sharing .sharer-state-container .square-side.right {
       right: 0; }
-    screen-sharing .sharer-state-container .square-side.bottom {
+    .screen-sharing-ph screen-sharing .sharer-state-container .square-side.bottom {
       bottom: 0; }
-    screen-sharing .sharer-state-container .square-side.left {
+    .screen-sharing-ph screen-sharing .sharer-state-container .square-side.left {
       left: 0; }
-  screen-sharing .sharer-state-container .eye-wrapper {
+  .screen-sharing-ph screen-sharing .sharer-state-container .eye-wrapper {
     background: #ff931e;
     width: 52px;
     text-align: center;
