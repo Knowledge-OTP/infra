@@ -1,7 +1,9 @@
 screen-sharing{
     .close-icon-wrapper{
         @include dimension(40px);
-        @include absolute-position(0,0);
+        position: fixed;
+        top: 0;
+        right: 0;
         border-bottom-left-radius: 15px;
         text-align: center;
         line-height: 42px;
@@ -21,7 +23,11 @@ screen-sharing{
     }
 
     .viewer-state-container{
-        @include absolute-full-cover;
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
         border: 5px solid $bcColor2;
         background: $tbgColor7;
     }
@@ -29,7 +35,7 @@ screen-sharing{
     .sharer-state-container{
         .square-side{
             background: $bgColor19;
-            position: absolute;
+            position: fixed;
 
             &.top, &.bottom{
                 height: 5px;
@@ -67,7 +73,9 @@ screen-sharing{
             border-radius: 50%;
             height: 30px;
             box-sizing: border-box;
-            @include absolute-position(-11px, 50%);
+            position: fixed;
+            top: -11px;
+            right: 50%;
             margin: {
                 right: -26px;
             }

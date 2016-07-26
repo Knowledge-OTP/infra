@@ -1,11 +1,17 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.screenSharing').service('ScreenSharingUiSrv',
-        function ($rootScope, $timeout, $compile, $animate, PopUpSrv, $translate, $q, $log) {
+    angular.module('znk.infra.screenSharing').provider('ScreenSharingUiSrv',function(){
+        var screenSharingViewerTemplate;
+        this.setScreenSharingViewerTemplate = function(template){
+            screenSharingViewerTemplate = template;
+        };
+
+        this.$get = function ($rootScope, $timeout, $compile, $animate, PopUpSrv, $translate, $q, $log) {
             'ngInject';
 
             var childScope, screenSharingPhElement, readyProm;
+            var ScreenSharingUiSrv = {};
 
             function _init() {
                 var bodyElement = angular.element(document.body);
@@ -45,9 +51,9 @@
 
                     var screenSharingHtmlTemplate =
                         '<div class="show-hide-animation">' +
-                            '<screen-sharing user-sharing-state="d.userSharingState" ' +
-                                            'on-close="d.onClose()">' +
-                            '</screen-sharing>' +
+                        '<screen-sharing user-sharing-state="d.userSharingState" ' +
+                        'on-close="d.onClose()">' +
+                        '</screen-sharing>' +
                         '</div>';
                     var screenSharingElement = angular.element(screenSharingHtmlTemplate);
                     screenSharingPhElement.append(screenSharingElement);
@@ -58,15 +64,15 @@
                 return defer.promise;
             }
 
-            this.activateScreenSharing = function (userSharingState) {
+            ScreenSharingUiSrv.activateScreenSharing = function (userSharingState) {
                 return _activateScreenSharing(userSharingState);
             };
 
-            this.endScreenSharing = function () {
+            ScreenSharingUiSrv.endScreenSharing = function () {
                 _endScreenSharing();
             };
 
-            this.showScreenSharingConfirmationPopUp = function(){
+            ScreenSharingUiSrv.showScreenSharingConfirmationPopUp = function(){
                 var translationsPromMap = {};
                 translationsPromMap.title = $translate('SCREEN_SHARING.SHARE_SCREEN_REQUEST');
                 translationsPromMap.content= $translate('SCREEN_SHARING.WANT_TO_SHARE',{
@@ -91,10 +97,21 @@
                     return $q.reject(err);
                 });
             };
+
+            ScreenSharingUiSrv.__getScreenSharingViewerTemplate = function(){
+                if(!screenSharingViewerTemplate){
+                    $log.error('ScreenSharingUiSrv: viewer template was not set');
+                    return null;
+                }
+
+                return screenSharingViewerTemplate;
+            };
             //was wrapped with timeout since angular will compile the dom after this service initialization
             readyProm = $timeout(function(){
                 _init();
             });
-        }
-    );
+
+            return ScreenSharingUiSrv;
+        };
+    });
 })(angular);

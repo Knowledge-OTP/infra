@@ -3457,7 +3457,7 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
                         newVal = '' + newVal;
                     }
 
-                    var _htmlStrRegex = /^<(\w+)( .*|)>(.|\n)*(<\/\1>|)$/;
+                    var _htmlStrRegex = /^<(.*)>.*<\/\1>$/;
                     /**
                      * check if html string , if true create jq lite element of it and append with animation otherwise just append to the dom
                      */
@@ -5085,7 +5085,8 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
         'znk.infra.config',
         'znk.infra.enum',
         'znk.infra.svgIcon',
-        'znk.infra.popUp'
+        'znk.infra.popUp',
+        'znk.infra.general'
     ]);
 })(angular);
 
@@ -5113,13 +5114,21 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 userSharingState: '<',
                 onClose: '&'
             },
-            controller: ["UserScreenSharingStateEnum", "$log", function (UserScreenSharingStateEnum, $log) {
+            controller: ["UserScreenSharingStateEnum", "$log", "ScreenSharingUiSrv", function (UserScreenSharingStateEnum, $log, ScreenSharingUiSrv) {
                 'ngInject';
+
+                var ctrl = this;
+
+                function _addViewerExternalTemplate(){
+                    ctrl.viewerTemplate = ScreenSharingUiSrv.__getScreenSharingViewerTemplate();
+
+                }
 
                 this.$onInit = function () {
                     switch(this.userSharingState){
                         case UserScreenSharingStateEnum.VIEWER.enum:
                             this.sharingStateCls = 'viewer-state';
+                            _addViewerExternalTemplate();
                             break;
                         case UserScreenSharingStateEnum.SHARER.enum:
                             this.sharingStateCls = 'sharer-state';
@@ -5315,6 +5324,8 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                                 $log.error('ScreenSharingEventsSrv: invalid status was received ' + screenSharingData.status);
 
                         }
+
+                        ScreenSharingSrv._screenSharingDataChanged(screenSharingData);
                     });
                 }
 
@@ -5360,7 +5371,11 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             'ngInject';
 
             var _this = this;
+
+            var activeScreenSharingData = null;
             var currUserScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
+            var registeredCbToActiveScreenSharingDataChanges = [];
+            var registeredCbToCurrUserScreenSharingStateChange = [];
 
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
 
@@ -5470,6 +5485,17 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 });
             }
 
+            function _cleanRegisteredCbToActiveScreenSharingData(){
+                activeScreenSharingData = null;
+                registeredCbToActiveScreenSharingDataChanges = [];
+            }
+
+            function _invokeCurrUserScreenSharingStateChangedCb(){
+                registeredCbToCurrUserScreenSharingStateChange.forEach(function(cb){
+                    cb(currUserScreenSharingState);
+                });
+            }
+
             this.shareMyScreen = function (viewerData) {
                 return UserProfileService.getCurrUserId().then(function (currUserId) {
                     var sharerData = {
@@ -5531,8 +5557,33 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 });
             };
 
+            this.registerToActiveScreenSharingDataChanges = function(cb){
+                if(activeScreenSharingData){
+                    registeredCbToActiveScreenSharingDataChanges.push(cb);
+                    cb(activeScreenSharingData);
+                }
+            };
+
+            this.registerToCurrUserScreenSharingStateChanges = function(cb){
+                registeredCbToCurrUserScreenSharingStateChange.push(cb);
+                cb(currUserScreenSharingState);
+            };
+
+            this.unregisterFromCurrUserScreenSharingStateChanges = function(cb){
+                registeredCbToCurrUserScreenSharingStateChange = registeredCbToCurrUserScreenSharingStateChange.filter(function(iterationCb){
+                    return iterationCb !== cb;
+                });
+            };
+
+            this.getActiveScreenSharingData = function(){
+                if(!activeScreenSharingData){
+                    return $q.reject('ScreenSharingSrv: no active screen sharing data');
+                }
+                return ScreenSharingDataGetterSrv.getScreenSharingData(activeScreenSharingData.guid);
+            };
+
             this._userScreenSharingStateChanged = function (newUserScreenSharingState, screenSharingData) {
-                if(!newUserScreenSharingState){
+                if(!newUserScreenSharingState || (currUserScreenSharingState === newUserScreenSharingState)){
                     return;
                 }
 
@@ -5540,15 +5591,28 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
                 var isViewerState = newUserScreenSharingState === UserScreenSharingStateEnum.VIEWER.enum;
                 var isSharerState = newUserScreenSharingState === UserScreenSharingStateEnum.SHARER.enum;
-
                 if(isSharerState || isViewerState){
+                    activeScreenSharingData = screenSharingData;
                     ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState).then(function(){
                         _this.endSharing(screenSharingData.guid);
                     });
                 }else{
+                    _cleanRegisteredCbToActiveScreenSharingData();
                     ScreenSharingUiSrv.endScreenSharing();
                 }
 
+                _invokeCurrUserScreenSharingStateChangedCb(currUserScreenSharingState );
+            };
+
+            this._screenSharingDataChanged = function(newScreenSharingData){
+                if(!activeScreenSharingData || activeScreenSharingData.guid !== newScreenSharingData.guid){
+                    return;
+                }
+
+                activeScreenSharingData = newScreenSharingData;
+                registeredCbToActiveScreenSharingDataChanges.forEach(function(cb){
+                    cb(activeScreenSharingData);
+                });
             };
         }]
     );
@@ -5557,11 +5621,17 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.screenSharing').service('ScreenSharingUiSrv',
-        ["$rootScope", "$timeout", "$compile", "$animate", "PopUpSrv", "$translate", "$q", "$log", function ($rootScope, $timeout, $compile, $animate, PopUpSrv, $translate, $q, $log) {
+    angular.module('znk.infra.screenSharing').provider('ScreenSharingUiSrv',function(){
+        var screenSharingViewerTemplate;
+        this.setScreenSharingViewerTemplate = function(template){
+            screenSharingViewerTemplate = template;
+        };
+
+        this.$get = ["$rootScope", "$timeout", "$compile", "$animate", "PopUpSrv", "$translate", "$q", "$log", function ($rootScope, $timeout, $compile, $animate, PopUpSrv, $translate, $q, $log) {
             'ngInject';
 
             var childScope, screenSharingPhElement, readyProm;
+            var ScreenSharingUiSrv = {};
 
             function _init() {
                 var bodyElement = angular.element(document.body);
@@ -5601,9 +5671,9 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
                     var screenSharingHtmlTemplate =
                         '<div class="show-hide-animation">' +
-                            '<screen-sharing user-sharing-state="d.userSharingState" ' +
-                                            'on-close="d.onClose()">' +
-                            '</screen-sharing>' +
+                        '<screen-sharing user-sharing-state="d.userSharingState" ' +
+                        'on-close="d.onClose()">' +
+                        '</screen-sharing>' +
                         '</div>';
                     var screenSharingElement = angular.element(screenSharingHtmlTemplate);
                     screenSharingPhElement.append(screenSharingElement);
@@ -5614,15 +5684,15 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 return defer.promise;
             }
 
-            this.activateScreenSharing = function (userSharingState) {
+            ScreenSharingUiSrv.activateScreenSharing = function (userSharingState) {
                 return _activateScreenSharing(userSharingState);
             };
 
-            this.endScreenSharing = function () {
+            ScreenSharingUiSrv.endScreenSharing = function () {
                 _endScreenSharing();
             };
 
-            this.showScreenSharingConfirmationPopUp = function(){
+            ScreenSharingUiSrv.showScreenSharingConfirmationPopUp = function(){
                 var translationsPromMap = {};
                 translationsPromMap.title = $translate('SCREEN_SHARING.SHARE_SCREEN_REQUEST');
                 translationsPromMap.content= $translate('SCREEN_SHARING.WANT_TO_SHARE',{
@@ -5647,12 +5717,23 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                     return $q.reject(err);
                 });
             };
+
+            ScreenSharingUiSrv.__getScreenSharingViewerTemplate = function(){
+                if(!screenSharingViewerTemplate){
+                    $log.error('ScreenSharingUiSrv: viewer template was not set');
+                    return null;
+                }
+
+                return screenSharingViewerTemplate;
+            };
             //was wrapped with timeout since angular will compile the dom after this service initialization
             readyProm = $timeout(function(){
                 _init();
             });
-        }]
-    );
+
+            return ScreenSharingUiSrv;
+        }];
+    });
 })(angular);
 
 angular.module('znk.infra.screenSharing').run(['$templateCache', function($templateCache) {
@@ -5661,6 +5742,7 @@ angular.module('znk.infra.screenSharing').run(['$templateCache', function($templ
     "     ng-class=\"$ctrl.sharingStateCls\">\n" +
     "    <div ng-switch-when=\"2\"\n" +
     "         class=\"viewer-state-container\">\n" +
+    "        <div compile=\"$ctrl.viewerTemplate\"></div>\n" +
     "    </div>\n" +
     "    <div ng-switch-when=\"3\"\n" +
     "         class=\"sharer-state-container\">\n" +
@@ -8046,7 +8128,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    chevron: 'components/znkExercise/svg/chevron-icon.svg',
+                    'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg',
                     correct: 'components/znkExercise/svg/correct-icon.svg',
                     wrong: 'components/znkExercise/svg/wrong-icon.svg',
                     arrow: 'components/znkExercise/svg/arrow-icon.svg'
@@ -9096,6 +9178,10 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
  *      setSlideDirection
  *      forceDoneBtnDisplay
  *      pagerDisplay: function, if true provided than pager will be displayed other it will be hidden.
+ *      bindExerciseViewTo: receive as parameter the view state
+ *          viewState properties:
+ *              currQuestion:
+ *              questionView: it implemented per question
  */
 
 (function (angular) {
@@ -9171,6 +9257,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                             /**
                              *  ACTIONS
                              * */
+
                             scope.actions = scope.actions || {};
 
                             scope.actions.setSlideIndex = function setSlideIndex(index) {
@@ -9239,6 +9326,34 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                                 });
                             };
 
+                            var killExerciseViewListener;
+                            scope.actions.bindExerciseViewTo = function(exerciseView){
+                                if(!angular.isObject(exerciseView)){
+                                    $log.error('znkExerciseDrv: exercise view should be an object');
+                                    return;
+                                }
+
+                                znkExerciseDrvCtrl.__exerciseViewBinding = exerciseView;
+
+                                killExerciseViewListener = scope.$watch(function(){
+                                    return exerciseView.currSlideIndex;
+                                },function(newVal){
+                                    if(angular.isDefined(newVal)){
+                                        znkExerciseDrvCtrl.setCurrentIndex(newVal);
+                                    }
+                                });
+                            };
+
+                            scope.actions.unbindExerciseView = function(){
+                                if(killExerciseViewListener){
+                                    killExerciseViewListener();
+                                    killExerciseViewListener = null;
+                                }
+
+                                if(znkExerciseDrvCtrl.__exerciseViewBinding ){
+                                    znkExerciseDrvCtrl.__exerciseViewBinding = null;
+                                }
+                            };
                             /**
                              *  ACTIONS END
                              * */
@@ -9563,6 +9678,11 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         newQuestionIndex = Math.min(newQuestionIndex, questions.length - 1);
 
                         $scope.vm.currentSlide = newQuestionIndex;
+
+                        if(self.__exerciseViewBinding){
+                            self.__exerciseViewBinding.currSlideIndex = newQuestionIndex;
+                        }
+
                         return $scope.vm.currentSlide;
                     });
                 }else{
@@ -10457,14 +10577,14 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "<div class=\"btn-container left-container ng-hide\"\n" +
     "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
     "    <button ng-click=\"vm.prevQuestion()\">\n" +
-    "        <svg-icon name=\"chevron\"></svg-icon>\n" +
+    "        <svg-icon name=\"znk-exercise-chevron\"></svg-icon>\n" +
     "    </button>\n" +
     "</div>\n" +
     "<div class=\"btn-container right-container ng-hide\"\n" +
     "     ng-show=\"vm.maxQuestionIndex !== vm.currentQuestionIndex && vm.slideLeftAllowed\"\n" +
     "     ng-class=\"{'question-answered': vm.isCurrentQuestionAnswered}\">\n" +
     "    <button ng-click=\"vm.nextQuestion()\">\n" +
-    "        <svg-icon name=\"chevron\"></svg-icon>\n" +
+    "        <svg-icon name=\"znk-exercise-chevron\"></svg-icon>\n" +
     "    </button>\n" +
     "</div>\n" +
     "<div class=\"done-btn-wrap show-opacity-animate\" ng-if=\"vm.showDoneButton\">\n" +

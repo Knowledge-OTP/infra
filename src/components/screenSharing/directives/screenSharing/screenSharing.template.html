@@ -2,6 +2,7 @@
      ng-class="$ctrl.sharingStateCls">
     <div ng-switch-when="2"
          class="viewer-state-container">
+        <div compile="$ctrl.viewerTemplate"></div>
     </div>
     <div ng-switch-when="3"
          class="sharer-state-container">

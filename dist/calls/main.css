@@ -1,4 +1,3 @@
-/* paths*/
 /* fonts size */
 /*
 //backgrounds
@@ -274,44 +273,80 @@ $blueBG8: #75cbe8;
 
 */
 /* full background image with retina */
-.timer-drv {
-  display: inline-block;
-  position: relative; }
-  .timer-drv .timer-type1 {
+.call-btn {
+  cursor: pointer; }
+  .call-btn svg-icon.etutoring-phone-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%; }
+    .call-btn svg-icon.etutoring-phone-icon svg {
+      width: 50%; }
+  .call-btn.called svg-icon.etutoring-phone-icon {
+    background-color: #ff6766; }
+    .call-btn.called svg-icon.etutoring-phone-icon svg {
+      transform: translate(0, 2px) rotate(136deg); }
+      .call-btn.called svg-icon.etutoring-phone-icon svg path {
+        fill: #fff; }
+  .call-btn.offline svg-icon.etutoring-phone-icon {
+    border: 1px solid #b7b7b7;
+    background-color: #fff; }
+    .call-btn.offline svg-icon.etutoring-phone-icon svg path {
+      fill: #b7b7b7; }
+  .call-btn.call svg-icon.etutoring-phone-icon {
+    background-color: #ff931e; }
+    .call-btn.call svg-icon.etutoring-phone-icon svg path {
+      fill: #fff; }
+
+active-call .etutoring-active-call {
+  width: 210px;
+  height: 40px;
+  background-color: #f7f7f7;
+  border: 1px solid #ebebeb;
+  border-radius: 20px; }
+  active-call .etutoring-active-call .flex-container {
+    height: 100%;
     display: -ms-flexbox;
-    display: flex; }
-    .timer-drv .timer-type1 i {
-      color: #fff;
-      font-size: 17px;
-      vertical-align: top; }
-    .timer-drv .timer-type1 .timer-view {
-      font-size: 17px;
-      color: #fff;
-      font-family: Lato;
-      font-weight: 400;
+    display: flex;
+    -ms-flex-align: center;
+        align-items: center;
+    padding: 0 5px; }
+  active-call .etutoring-active-call .flex-col.callee-status, active-call .etutoring-active-call .flex-col.callee-name, active-call .etutoring-active-call .flex-col.call-controls {
+    padding: 5px; }
+  active-call .etutoring-active-call .flex-col.callee-status {
+    -ms-flex-preferred-size: 10%;
+        flex-basis: 10%;
+    text-align: center; }
+    active-call .etutoring-active-call .flex-col.callee-status .online-indicator {
       display: inline-block;
-      margin-left: 10px;
-      vertical-align: top;
-      position: relative;
-      top: 2px; }
-  .timer-drv .timer-type2 {
-    text-align: center;
-    position: relative; }
-    .timer-drv .timer-type2 .timer-display-wrapper {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      padding-top: 20px; }
-      .timer-drv .timer-type2 .timer-display-wrapper .timer-display {
-        font-size: 57px;
-        color: #0a9bad;
-        font-family: Lato;
-        font-weight: 700; }
-      .timer-drv .timer-type2 .timer-display-wrapper .seconds-text {
-        margin-top: -10px;
-        font-size: 16px;
-        color: #0a9bad;
-        font-family: Lato;
-        font-weight: 400; }
+      background: #87ca4d;
+      width: 7px;
+      height: 7px;
+      border-radius: 6px; }
+  active-call .etutoring-active-call .flex-col.callee-name {
+    -ms-flex-preferred-size: 60%;
+        flex-basis: 60%;
+    font-size: 14px;
+    color: #4f4d4d;
+    font-family: Quicksand;
+    font-weight: 700; }
+  active-call .etutoring-active-call .flex-col.call-controls {
+    -ms-flex-preferred-size: 30%;
+        flex-basis: 30%; }
+    active-call .etutoring-active-call .flex-col.call-controls svg-icon.etutoring-call-mute-icon {
+      float: left;
+      cursor: pointer;
+      width: 21px;
+      height: 21px;
+      border-radius: 50%;
+      border: 1px solid #0a9bad; }
+      active-call .etutoring-active-call .flex-col.call-controls svg-icon.etutoring-call-mute-icon svg {
+        width: 44%; }
+        active-call .etutoring-active-call .flex-col.call-controls svg-icon.etutoring-call-mute-icon svg path {
+          fill: #0a9bad; }
+    active-call .etutoring-active-call .flex-col.call-controls call-btn svg-icon.etutoring-phone-icon {
+      float: right; }
+  active-call .etutoring-active-call .call-duration {
+    font-size: 12px;
+    color: #979797;
+    font-family: Lato;
+    font-weight: 400; }
