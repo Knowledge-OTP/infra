@@ -1,4 +1,7 @@
 screen-sharing{
+    position: relative;
+    z-index: 10;
+
     .close-icon-wrapper{
         @include dimension(40px);
         position: fixed;
