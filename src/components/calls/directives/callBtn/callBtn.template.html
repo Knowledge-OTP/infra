@@ -1,0 +1,13 @@
+<md-button
+    ng-click="vm.clickBtn()"
+    class="call-btn"
+     ng-class="{
+          'offline': vm.callBtnState === vm.callBtnEnum.OFFLINE.enum,
+          'call': vm.callBtnState === vm.callBtnEnum.CALL.enum,
+          'called': vm.callBtnState === vm.callBtnEnum.CALLED.enum
+     }">
+    <svg-icon
+        class="etutoring-phone-icon"
+        name="calls-etutoring-phone-icon">
+    </svg-icon>
+</md-button>
