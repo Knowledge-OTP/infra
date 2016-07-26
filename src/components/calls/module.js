@@ -7,6 +7,7 @@
         'znk.infra.config',
         'znk.infra.enum',
         'znk.infra.svgIcon',
-        'pascalprecht.translate'
+        'pascalprecht.translate',
+        'znk.infra.webcall'
     ]);
 })(angular);
