@@ -400,28 +400,28 @@ md-dialog.baseCallsModal {
             md-dialog.baseCallsModal .top-icon-wrap .top-icon .round-icon-wrap svg-icon svg * {
               fill: #fff; }
 
-call-btn .call-btn {
+.call-btn {
   cursor: pointer; }
-  call-btn .call-btn svg-icon.etutoring-phone-icon {
-    width: 22px;
-    height: 22px;
+  .call-btn svg-icon.etutoring-phone-icon {
+    width: 25px;
+    height: 25px;
     border-radius: 50%; }
-    call-btn .call-btn svg-icon.etutoring-phone-icon svg {
+    .call-btn svg-icon.etutoring-phone-icon svg {
       width: 50%; }
-  call-btn .call-btn.called svg-icon.etutoring-phone-icon {
+  .call-btn.called svg-icon.etutoring-phone-icon {
     background-color: #ff6766; }
-    call-btn .call-btn.called svg-icon.etutoring-phone-icon svg {
-      transform: translate(0, 2px) rotate(136deg); }
-      call-btn .call-btn.called svg-icon.etutoring-phone-icon svg path {
+    .call-btn.called svg-icon.etutoring-phone-icon svg {
+      transform: translate(0, 1px) rotate(136deg); }
+      .call-btn.called svg-icon.etutoring-phone-icon svg path {
         fill: #fff; }
-  call-btn .call-btn.offline svg-icon.etutoring-phone-icon {
+  .call-btn.offline svg-icon.etutoring-phone-icon {
     border: 1px solid #b7b7b7;
     background-color: #fff; }
-    call-btn .call-btn.offline svg-icon.etutoring-phone-icon svg path {
+    .call-btn.offline svg-icon.etutoring-phone-icon svg path {
       fill: #b7b7b7; }
-  call-btn .call-btn.call svg-icon.etutoring-phone-icon {
+  .call-btn.call svg-icon.etutoring-phone-icon {
     background-color: #ff931e; }
-    call-btn .call-btn.call svg-icon.etutoring-phone-icon svg path {
+    .call-btn.call svg-icon.etutoring-phone-icon svg path {
       fill: #fff; }
 
 active-call .etutoring-active-call {
@@ -471,6 +471,8 @@ active-call .etutoring-active-call {
         active-call .etutoring-active-call .flex-col.call-controls svg-icon.call-mute-icon svg path {
           fill: #0a9bad; }
     active-call .etutoring-active-call .flex-col.call-controls call-btn svg-icon.etutoring-phone-icon {
+      width: 22px;
+      height: 22px;
       float: right; }
   active-call .etutoring-active-call .call-duration {
     font-size: 12px;
