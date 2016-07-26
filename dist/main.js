@@ -8931,14 +8931,15 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         }
                     });
 
-                    scope.$watch('questionsGetter().length',function(newNum){
-                        var notBindedQuestions = scope.questionsGetter();
-                        if(newNum && !scope.vm.questions){
-                            scope.vm.questions = notBindedQuestions;
-                            return;
+                    scope.$watchGroup(['questionsGetter()', 'questionsGetter().length'],function(newValArr, oldValArr){
+                        var newQuestionsArr = newValArr[0];
+                        scope.vm.questions = newQuestionsArr || [];
+
+                        var newNum = newValArr[1];
+                        var oldNum = oldValArr[1];
+                        if(oldNum && newNum !== oldNum){
+                            scope.vm.swiperActions.updateFollowingSlideAddition();
                         }
-                        scope.vm.questions = notBindedQuestions;
-                        scope.vm.swiperActions.updateFollowingSlideAddition();
                     });
                 }
             };
