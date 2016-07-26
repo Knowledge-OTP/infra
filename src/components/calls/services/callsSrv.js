@@ -161,19 +161,23 @@
                         return $q.reject(errMsg);
                     }
 
+                    var callActionProm;
+
                     switch (userCallData.action) {
                         case CALL_ACTIONS.DISCONNECT:
-                            return _disconnectCall(userCallData);
+                            callActionProm = _disconnectCall(userCallData);
                             break;
                         case CALL_ACTIONS.CONNECT:
-                             return _connectCall(userCallData);
+                            callActionProm = _connectCall(userCallData);
                             break;
                         case CALL_ACTIONS.DISCONNECT_AND_CONNECT:
-                            return _disconnectCall(userCallData).then(function () {
+                            callActionProm = _disconnectCall(userCallData).then(function () {
                                 return _connectCall(userCallData);
                             });
                             break;
                     }
+
+                    return callActionProm;
                 });
             }
 
