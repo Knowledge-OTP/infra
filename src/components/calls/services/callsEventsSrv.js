@@ -10,35 +10,35 @@
 
         this.$get = function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV) {
             'ngInject';
-            var ScreenSharingEventsSrv = {};
+            var CallsEventsSrv = {};
 
-            function _listenToScreenSharingData(guid) {
-                var screenSharingStatusPath = 'calls/' + guid;
+            function _listenToCallsData(guid) {
+                var callsStatusPath = 'calls/' + guid;
 
-                function _cb(screenSharingData) {
-                    if (!screenSharingData || screenSharingData.status !== ScreenSharingStatusEnum.CONFIRMED.enum) {
+                function _cb(callsData) {
+                    if (!callsData || callsData.status !== CallsStatusEnum.CONFIRMED.enum) {
                         return;
                     }
 
                     UserProfileService.getCurrUserId().then(function (currUid) {
-                        var userScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
+                        var userCallsState = UserCallsStateEnum.NONE.enum;
 
-                        if (screenSharingData.viewerId === currUid) {
-                            userScreenSharingState = UserScreenSharingStateEnum.VIEWER.enum;
+                        if (callsData.viewerId === currUid) {
+                            userCallsState = UserCallsStateEnum.VIEWER.enum;
                         }
 
-                        if (screenSharingData.sharerId === currUid) {
-                            userScreenSharingState = UserScreenSharingStateEnum.SHARER.enum;
+                        if (callsData.sharerId === currUid) {
+                            userCallsState = UserCallsStateEnum.SHARER.enum;
                         }
 
-                        if (userScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
-                            ScreenSharingSrv._userScreenSharingStateChanged(userScreenSharingState);
+                        if (userCallsState !== UserCallsStateEnum.NONE.enum) {
+                            CallsSrv._userCallsStateChanged(userCallsState);
                         }
                     });
                 }
 
                 InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
-                    globalStorage.onEvent(StorageSrv.EVENTS.VALUE, screenSharingStatusPath, _cb);
+                    globalStorage.onEvent(StorageSrv.EVENTS.VALUE, callsStatusPath, _cb);
                 });
             }
 
@@ -46,11 +46,11 @@
                 UserProfileService.getCurrUserId().then(function (currUid) {
                     InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
                         var appName = ENV.firebaseAppScopeName;
-                        var userScreenSharingPath = appName + '/users/' + currUid + '/calls';
-                        globalStorage.onEvent(StorageSrv.EVENTS.VALUE, userScreenSharingPath, function (userScreenSharingData) {
-                            if (userScreenSharingData) {
-                                angular.forEach(userScreenSharingData, function (isActive, guid) {
-                                    _listenToScreenSharingData(guid);
+                        var userCallsPath = appName + '/users/' + currUid + '/calls';
+                        globalStorage.onEvent(StorageSrv.EVENTS.VALUE, userCallsPath, function (userCallsData) {
+                            if (userCallsData) {
+                                angular.forEach(userCallsData, function (isActive, guid) {
+                                    _listenToCallsData(guid);
                                 });
                             }
                         });
@@ -58,13 +58,13 @@
                 });
             }
 
-            ScreenSharingEventsSrv.activate = function () {
+            CallsEventsSrv.activate = function () {
                 if (isEnabled) {
                     _startListening();
                 }
             };
 
-            return ScreenSharingEventsSrv;
+            return CallsEventsSrv;
         };
     });
 })(angular);
