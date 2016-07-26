@@ -22,6 +22,7 @@
 "znk.infra.filters",
 "znk.infra.general",
 "znk.infra.hint",
+"znk.infra.modal",
 "znk.infra.moduleResults",
 "znk.infra.personalization",
 "znk.infra.pngSequence",
@@ -456,8 +457,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             'ngInject';
 
             var svgMap = {
-                'calls-incomming-call': 'components/calls/svg/incomming-call-icon.svg',
-                'calls-outcomming-call': 'components/calls/svg/outcomming-call-icon.svg',
+                'incoming-call-icon': 'components/calls/svg/incoming-call-icon.svg',
+                'outgoing-call-icon': 'components/calls/svg/outgoing-call-icon.svg',
                 'calls-etutoring-phone-icon': 'components/calls/svg/etutoring-phone-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
@@ -490,7 +491,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             'ngInject';
 
             var svgMap = {
-                'etutoring-call-mute-icon': 'components/calls/directives/activeCall/svg/etutoring-call-mute-icon.svg'
+                'call-mute-icon': 'components/calls/svg/call-mute-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
         }]);
@@ -592,6 +593,26 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     );
 })(angular);
 
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.calls').controller('IncomingCallModalCtrl', [
+        function () {
+            'ngInject';
+        }]
+    );
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.calls').controller('OutgoingCallModalCtrl', [
+        function () {
+            'ngInject';
+        }]
+    );
+})(angular);
 
 (function(){
     'use strict';
@@ -896,11 +917,33 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.calls').service('CallsUiSrv',
-        function () {
+    angular.module('znk.infra.calls').service('CallsUiSrv', [
+        '$mdDialog', 'ModalService',
+        function ($mdDialog, ModalService) {
             'ngInject';
-            // @todo(oded) will implement here the ui (popups)
-        }
+
+            var self = this;
+
+            self.showModal = function (modal, modalData) {
+                ModalService.showBaseModal(modal, modalData);
+            };
+
+            self.modals = {
+                'INCOMING_CALL': {
+                    svgIcon: 'incoming-call-icon',
+                    innerTemplateUrl: 'components/calls/modals/templates/incomingCall.template.html',
+                    controller: 'IncomingCallModalCtrl',
+                    overrideCssClass: 'incoming-call-modal'
+                },
+                'OUTGOING_CALL': {
+                    svgIcon: 'outgoing-call-icon',
+                    innerTemplateUrl: 'components/calls/modals/templates/outgoingCall.template.html',
+                    controller: 'OutgoingCallModalCtrl',
+                    overrideCssClass: 'outgoing-call-modal'
+                }
+            };
+
+        }]
     );
 })(angular);
 
@@ -916,13 +959,73 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "            <div class=\"call-duration\">{{callDuration}}</div>\n" +
     "        </div>\n" +
     "        <div class=\"call-controls flex-col\">\n" +
-    "            <svg-icon name=\"etutoring-call-mute-icon\"></svg-icon>\n" +
+    "            <svg-icon name=\"call-mute-icon\"></svg-icon>\n" +
     "            <call-btn></call-btn>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>\n" +
     "");
-  $templateCache.put("components/calls/directives/activeCall/svg/etutoring-call-mute-icon.svg",
+  $templateCache.put("components/calls/directives/callBtn/callBtn.template.html",
+    "<md-button\n" +
+    "    ng-click=\"vm.clickBtn()\"\n" +
+    "    class=\"call-btn\"\n" +
+    "     ng-class=\"{\n" +
+    "          'offline': vm.callBtnState === vm.callBtnEnum.OFFLINE.enum,\n" +
+    "          'call': vm.callBtnState === vm.callBtnEnum.CALL.enum,\n" +
+    "          'called': vm.callBtnState === vm.callBtnEnum.CALLED.enum\n" +
+    "     }\">\n" +
+    "    <svg-icon\n" +
+    "        class=\"etutoring-phone-icon\"\n" +
+    "        name=\"calls-etutoring-phone-icon\">\n" +
+    "    </svg-icon>\n" +
+    "</md-button>\n" +
+    "");
+  $templateCache.put("components/calls/modals/templates/baseCallsModal.template.html",
+    "<md-dialog aria-label=\"{{'SHARED_MD_DIALOG.BASE_MODAL.MODAL_NAME' | translate: {modalName: vm.modalName} }}\"\n" +
+    "           class=\"baseCallsModal\" ng-cloak ng-class=\"vm.overrideCssClass\">\n" +
+    "    <md-toolbar>\n" +
+    "        <div class=\"close-popup-wrap\" ng-click=\"vm.closeModal()\">\n" +
+    "            <svg-icon name=\"close-popup\"></svg-icon>\n" +
+    "        </div>\n" +
+    "    </md-toolbar>\n" +
+    "    <md-dialog-content>\n" +
+    "        <ng-include src=\"vm.innerTemplateUrl\"></ng-include>\n" +
+    "    </md-dialog-content>\n" +
+    "    <div class=\"top-icon-wrap\">\n" +
+    "        <div class=\"top-icon\">\n" +
+    "            <div class=\"round-icon-wrap\">\n" +
+    "                <svg-icon class=\"icon\" name=\"{{vm.svgIcon}}\"></svg-icon>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</md-dialog>\n" +
+    "");
+  $templateCache.put("components/calls/modals/templates/incomingCall.template.html",
+    "<div class=\"modal-main-title\">Incoming Call</div>\n" +
+    "<div class=\"modal-sub-title\">Eric Powell Is Calling...</div>\n" +
+    "<div class=\"btn-container\">\n" +
+    "    <div class=\"btn-decline\">\n" +
+    "\n" +
+    "    </div>\n" +
+    "    <div class=\"btn-accept\">\n" +
+    "        <button>Decline</button>\n" +
+    "        <button class=\"primary\">Accept</button>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/calls/modals/templates/outgoingCall.template.html",
+    "<div class=\"modal-main-title\">Outgoing Call</div>\n" +
+    "<div class=\"modal-sub-title\">Calling Eric Powell...</div>\n" +
+    "<div class=\"btn-container\">\n" +
+    "    <div class=\"btn-decline\">\n" +
+    "\n" +
+    "    </div>\n" +
+    "    <div class=\"btn-accept\">\n" +
+    "        <button>Cancel</button>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
+  $templateCache.put("components/calls/svg/call-mute-icon.svg",
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
     "<svg version=\"1.1\"\n" +
     "     id=\"Layer_9\"\n" +
@@ -947,28 +1050,14 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "</g>\n" +
     "</svg>\n" +
     "");
-  $templateCache.put("components/calls/directives/callBtn/callBtn.template.html",
-    "<md-button\n" +
-    "    ng-click=\"vm.clickBtn()\"\n" +
-    "    class=\"call-btn\"\n" +
-    "     ng-class=\"{\n" +
-    "          'offline': vm.callBtnState === vm.callBtnEnum.OFFLINE.enum,\n" +
-    "          'call': vm.callBtnState === vm.callBtnEnum.CALL.enum,\n" +
-    "          'called': vm.callBtnState === vm.callBtnEnum.CALLED.enum\n" +
-    "     }\">\n" +
-    "    <svg-icon\n" +
-    "        class=\"etutoring-phone-icon\"\n" +
-    "        name=\"calls-etutoring-phone-icon\">\n" +
-    "    </svg-icon>\n" +
-    "</md-button>\n" +
-    "");
   $templateCache.put("components/calls/svg/etutoring-phone-icon.svg",
     "<svg x=\"0px\"\n" +
     "     y=\"0px\"\n" +
     "     class=\"calls-phone-icon\"\n" +
-    "     viewBox=\"0 0 124.5 124.8\">\n" +
-    "    <g id=\"XMLID_2_\">\n" +
-    "        <path id=\"XMLID_3_\" d=\"M0.1,28.1c-0.6-6.5,1.8-11.6,6.6-16c3.1-2.8,5.8-5.9,8.9-8.8c4.7-4.4,9.5-4.6,14.2-0.3\n" +
+    "     viewBox=\"0 0 124.5 124.8\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\">\n" +
+    "    <g>\n" +
+    "        <path d=\"M0.1,28.1c-0.6-6.5,1.8-11.6,6.6-16c3.1-2.8,5.8-5.9,8.9-8.8c4.7-4.4,9.5-4.6,14.2-0.3\n" +
     "		c6,5.6,11.7,11.4,17.3,17.3c4.1,4.4,4,8.9,0,13.4c-2.7,3.1-5.7,6.1-8.9,8.8c-2.5,2.2-3.1,4.2-1.4,7.2c9.4,16.2,22.2,29,38.7,37.8\n" +
     "		c1.2,0.7,3.9,0.2,5-0.8c3.2-2.6,5.9-5.8,8.9-8.7c5.3-5,10.1-5.1,15.3-0.1c5.5,5.3,10.9,10.7,16.2,16.3c4.6,4.8,4.6,9.7,0.1,14.6\n" +
     "		c-3.5,3.8-7.2,7.4-10.9,11c-6.4,6-14.1,5.5-21.6,3.6c-22.5-5.6-40.8-18.3-56.7-34.7C17.3,73.6,5.8,56.4,0.9,35.6\n" +
@@ -976,43 +1065,45 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "    </g>\n" +
     "</svg>\n" +
     "");
-  $templateCache.put("components/calls/svg/incomming-call-icon.svg",
+  $templateCache.put("components/calls/svg/incoming-call-icon.svg",
     "<svg x=\"0px\"\n" +
     "     y=\"0px\"\n" +
     "     class=\"calls-incomming-call\"\n" +
-    "	 viewBox=\"0 0 80 80\">\n" +
-    "<g id=\"XMLID_2_\">\n" +
-    "	<path id=\"XMLID_6_\" d=\"M28.8,80c-3.6-1.9-7.3-3.8-10.9-5.7c-0.6-0.3-1.1-0.9-1.8-1.6C21.9,68,27.5,63.5,33,58.9\n" +
+    "	 viewBox=\"0 0 80 80\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\">\n" +
+    "<g>\n" +
+    "	<path d=\"M28.8,80c-3.6-1.9-7.3-3.8-10.9-5.7c-0.6-0.3-1.1-0.9-1.8-1.6C21.9,68,27.5,63.5,33,58.9\n" +
     "		c0.2,0.1,0.4,0.1,0.5,0.1c3.7,2.5,4.1,2.5,7.7-0.3c6.5-5.1,12.4-10.9,17.5-17.5c2.9-3.7,3-4,0.2-8.2c4.5-5.6,9.1-11.2,13.8-17\n" +
     "		c3.6,3.6,5.6,8.1,7.4,12.6c0,0.7,0,1.3,0,2c-0.2,0.3-0.5,0.6-0.6,0.9c-9.7,22-25.6,37.9-47.6,47.6c-0.3,0.1-0.6,0.4-0.9,0.6\n" +
     "		C30.1,80,29.5,80,28.8,80z\"/>\n" +
-    "	<path id=\"XMLID_5_\" d=\"M10.8,0C15.4,4.3,20,8.7,25,13.5c0.7-0.8,1.8-2.3,3-3.5c0.5-0.5,1.4-0.8,2.1-0.6c0.4,0.1,0.7,1.2,0.7,1.8\n" +
+    "	<path d=\"M10.8,0C15.4,4.3,20,8.7,25,13.5c0.7-0.8,1.8-2.3,3-3.5c0.5-0.5,1.4-0.8,2.1-0.6c0.4,0.1,0.7,1.2,0.7,1.8\n" +
     "		c-0.1,5.7-0.3,11.5-0.4,17.2c0,1.4-0.6,2-2,2c-5.7,0.1-11.5,0.3-17.2,0.4c-0.6,0-1.8-0.3-1.8-0.7c-0.1-0.6,0.2-1.6,0.6-2.1\n" +
     "		c1.1-1.3,2.5-2.4,3.3-3.3C8.8,20,4.4,15.4,0,10.8c0-0.5,0-1.1,0-1.6C3.1,6.1,6.1,3.1,9.2,0C9.7,0,10.3,0,10.8,0z\"/>\n" +
-    "	<path id=\"XMLID_4_\" d=\"M56.7,30.7c-0.2-0.1-0.3-0.1-0.3-0.1c-4-3.4-4-3.5-0.7-7.5c2.6-3.2,5.2-6.4,7.8-9.6c2.2-2.7,3.1-2.8,5.8-0.5\n" +
+    "	<path d=\"M56.7,30.7c-0.2-0.1-0.3-0.1-0.3-0.1c-4-3.4-4-3.5-0.7-7.5c2.6-3.2,5.2-6.4,7.8-9.6c2.2-2.7,3.1-2.8,5.8-0.5\n" +
     "		c0.3,0.3,0.6,0.5,1,0.9C65.8,19.6,61.3,25.2,56.7,30.7z\"/>\n" +
-    "	<path id=\"XMLID_3_\" d=\"M13.9,70.4c-0.7-0.9-1.3-1.5-1.8-2.2c-1.1-1.4-1-2.8,0.4-3.9c4.2-3.5,8.4-6.9,12.7-10.3c1.2-1,2.4-1,3.5,0.3\n" +
+    "	<path d=\"M13.9,70.4c-0.7-0.9-1.3-1.5-1.8-2.2c-1.1-1.4-1-2.8,0.4-3.9c4.2-3.5,8.4-6.9,12.7-10.3c1.2-1,2.4-1,3.5,0.3\n" +
     "		c0.7,0.7,1.5,1.3,2.4,2.2C25.2,61.2,19.7,65.8,13.9,70.4z\"/>\n" +
     "</g>\n" +
     "</svg>\n" +
     "");
-  $templateCache.put("components/calls/svg/outcomming-call-icon.svg",
+  $templateCache.put("components/calls/svg/outgoing-call-icon.svg",
     "<svg  x=\"0px\"\n" +
     "      y=\"0px\"\n" +
     "      class=\"calls-outcomming-call\"\n" +
-    "	  viewBox=\"0 0 80 80\">\n" +
-    "<g id=\"XMLID_24_\">\n" +
-    "	<path id=\"XMLID_22_\" d=\"M28.8,80c-3.6-1.9-7.3-3.8-10.9-5.7c-0.6-0.3-1.1-0.9-1.8-1.6C21.9,68,27.5,63.5,33,58.9\n" +
+    "	  viewBox=\"0 0 80 80\"\n" +
+    "      xmlns=\"http://www.w3.org/2000/svg\">\n" +
+    "<g>\n" +
+    "	<path d=\"M28.8,80c-3.6-1.9-7.3-3.8-10.9-5.7c-0.6-0.3-1.1-0.9-1.8-1.6C21.9,68,27.5,63.5,33,58.9\n" +
     "		c0.2,0.1,0.4,0.1,0.5,0.1c3.7,2.5,4.1,2.5,7.7-0.3c6.5-5.1,12.4-10.9,17.5-17.5c2.9-3.7,3-4,0.2-8.2c4.5-5.6,9.1-11.2,13.8-17\n" +
     "		c3.6,3.6,5.6,8.1,7.4,12.6c0,0.7,0,1.3,0,2c-0.2,0.3-0.5,0.6-0.6,0.9c-9.7,22-25.6,37.9-47.6,47.6c-0.3,0.1-0.6,0.4-0.9,0.6\n" +
     "		C30.1,80,29.5,80,28.8,80z\"/>\n" +
-    "	<path id=\"XMLID_21_\" d=\"M21,31.8c-4.6-4.3-9.2-8.7-14.2-13.5c-0.7,0.8-1.8,2.3-3,3.5c-0.5,0.5-1.4,0.8-2.1,0.6\n" +
+    "	<path d=\"M21,31.8c-4.6-4.3-9.2-8.7-14.2-13.5c-0.7,0.8-1.8,2.3-3,3.5c-0.5,0.5-1.4,0.8-2.1,0.6\n" +
     "		C1.3,22.4,1,21.3,1,20.6C1.1,14.9,1.3,9.2,1.4,3.4c0-1.4,0.6-2,2-2C9.2,1.3,14.9,1.1,20.6,1c0.6,0,1.8,0.3,1.8,0.7\n" +
     "		c0.1,0.6-0.2,1.6-0.6,2.1C20.7,5,19.4,6.2,18.5,7c4.5,4.8,8.9,9.4,13.3,14c0,0.5,0,1.1,0,1.6c-3.1,3.1-6.1,6.1-9.2,9.2\n" +
     "		C22.1,31.8,21.6,31.8,21,31.8z\"/>\n" +
-    "	<path id=\"XMLID_20_\" d=\"M56.7,30.7c-0.2-0.1-0.3-0.1-0.3-0.1c-4-3.4-4-3.5-0.7-7.5c2.6-3.2,5.2-6.4,7.8-9.6\n" +
+    "	<path d=\"M56.7,30.7c-0.2-0.1-0.3-0.1-0.3-0.1c-4-3.4-4-3.5-0.7-7.5c2.6-3.2,5.2-6.4,7.8-9.6\n" +
     "		c2.2-2.7,3.1-2.8,5.8-0.5c0.3,0.3,0.6,0.5,1,0.9C65.8,19.6,61.3,25.2,56.7,30.7z\"/>\n" +
-    "	<path id=\"XMLID_19_\" d=\"M13.9,70.4c-0.7-0.9-1.3-1.5-1.8-2.2c-1.1-1.4-1-2.8,0.4-3.9c4.2-3.5,8.4-6.9,12.7-10.3\n" +
+    "	<path d=\"M13.9,70.4c-0.7-0.9-1.3-1.5-1.8-2.2c-1.1-1.4-1-2.8,0.4-3.9c4.2-3.5,8.4-6.9,12.7-10.3\n" +
     "		c1.2-1,2.4-1,3.5,0.3c0.7,0.7,1.5,1.3,2.4,2.2C25.2,61.2,19.7,65.8,13.9,70.4z\"/>\n" +
     "</g>\n" +
     "</svg>\n" +
@@ -4174,6 +4265,60 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
 })(angular);
 
 angular.module('znk.infra.hint').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.modal', []);
+})(angular);
+
+'use strict';
+
+(function (angular) {
+
+    function ModalService() {
+
+        var baseTemplateUrl;
+
+        this.setBaseTemplatePath = function(templateUrl) {
+            baseTemplateUrl = templateUrl;
+        };
+
+        this.$get = ['$mdDialog', function($mdDialog) {
+            var ModalService = {};
+
+            ModalService.showBaseModal = function (popupData) {
+                $mdDialog.show({
+                    locals: {
+                        svgIcon: popupData.svgIcon,
+                        innerTemplateUrl: popupData.innerTemplateUrl,
+                        overrideCssClass: popupData.overrideCssClass,
+                        modalData: popupData.modalData,
+                        modalName: popupData.modalName,
+                        closeModal: function closeModal (){
+                            $mdDialog.hide();
+                        }
+                    },
+                    bindToController: true,
+                    controller: popupData.controller,
+                    controllerAs: 'vm',
+                    templateUrl: baseTemplateUrl,
+                    clickOutsideToClose: true,
+                    escapeToClose: true
+                });
+            };
+
+            return ModalService;
+        }];
+    }
+
+    angular.module('znk.infra.modal').provider('ModalService', ModalService);
+
+})(angular);
+
+angular.module('znk.infra.modal').run(['$templateCache', function($templateCache) {
 
 }]);
 
