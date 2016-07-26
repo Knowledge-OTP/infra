@@ -6,8 +6,15 @@
 
         </div>
         <div class="btn-accept">
-            <button translate=".DECLINE"></button>
-            <button class="primary" translate=".ACCEPT"></button>
+            <button
+                ng-click="vm.declineCall()"
+                translate=".DECLINE">
+            </button>
+            <button
+                ng-click="vm.acceptCall()"
+                class="primary"
+                translate=".ACCEPT">
+            </button>
         </div>
     </div>
 </div>
