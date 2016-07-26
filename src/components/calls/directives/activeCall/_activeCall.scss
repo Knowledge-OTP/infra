@@ -34,7 +34,7 @@ active-call {
             }
             &.call-controls {
                 flex-basis: 30%;
-                svg-icon.etutoring-call-mute-icon  {
+                svg-icon.call-mute-icon {
                     float:left;
                     cursor: pointer;
                     width: 21px;
@@ -51,6 +51,8 @@ active-call {
                 call-btn {
                     svg-icon {
                         &.etutoring-phone-icon {
+                            width: 22px;
+                            height: 22px;
                             float: right;
                         }
                     }

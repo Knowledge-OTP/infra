@@ -20,6 +20,7 @@
         "jasmine": false,
         "it": false,
         "expect": false,
-        "beforeEach": false
+        "beforeEach": false,
+        "Plivo": false
     }
 }

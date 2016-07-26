@@ -2,8 +2,8 @@
         cursor: pointer;
         svg-icon {
             &.etutoring-phone-icon {
-                width: 22px;
-                height: 22px;
+                width: 25px;
+                height: 25px;
                 border-radius: 50%;
                 svg {
                     width: 50%;
@@ -15,7 +15,7 @@
             &.etutoring-phone-icon {
                 background-color: $bgColor1;
                 svg {
-                    transform: translate(0, 2px) rotate(136deg);
+                    transform: translate(0, 1px) rotate(136deg);
                     path {
                         fill: $bgColor6;
                     }
