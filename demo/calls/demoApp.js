@@ -24,22 +24,12 @@
             $rootScope.called = { btnState: 3, receiverId: 1 };
         })
         .controller('demoCtrl', ['$scope', 'CallsUiSrv', function ($scope, CallsUiSrv) {
-
-            var self = this;
-
-            var modalData = {
-                'key': 'value',
-                'anotherKey': 'anotherValue'
-            };
-
             $scope.openIncomingCallModal = function() {
-                console.log('openIncomingCallModal');
-                CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, modalData);
+                CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL);
             };
 
             $scope.openOutgoingCallModal = function() {
-                console.log('openOutgoingCallModal');
-                CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, modalData);
+                CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL);
             };
         }])
         .service('ENV', function () {
