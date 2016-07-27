@@ -17,8 +17,6 @@
 
             this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall');
 
-            this.acceptCall = _baseCall.bind(null, CallsSrv.acceptCall, 'acceptCall');
-
             this.closeModalAndDisconnect = _baseCall.bind(null, CallsSrv.disconnectCall, 'disconnectCall');
         }
     );

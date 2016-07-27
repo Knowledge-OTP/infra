@@ -70,7 +70,14 @@ md-dialog.baseCallsModal {
             margin-bottom: 40px;
         }
 
+        .flex-column {
+            display: flex;
+            flex-direction: column;
+        }
+
         .btn-container {
+            display: flex;
+            justify-content: center;
             button {
                 min-width: 155px;
                 height: 35px;

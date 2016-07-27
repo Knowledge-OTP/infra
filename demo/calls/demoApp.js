@@ -29,7 +29,7 @@
             var scope = $rootScope.$new();
 
             scope.callsData = {};
-            scope.callsData.status = 2;
+            scope.callsData.status = 3;
 
             $scope.openIncomingCallModal = function() {
                 CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, scope);
@@ -41,16 +41,16 @@
         })
         .service('ENV', function () {
             // student
-            // this.firebaseAppScopeName = "act_app";
-            // this.appContext = 'student';
-            // this.studentAppName = 'act_app';
-            // this.dashboardAppName = 'act_dashboard';
+             this.firebaseAppScopeName = "act_app";
+             this.appContext = 'student';
+             this.studentAppName = 'act_app';
+             this.dashboardAppName = 'act_dashboard';
 
             // teacher
-            this.firebaseAppScopeName = "act_dashboard";
-            this.appContext = 'dashboard';
-            this.studentAppName = 'act_app';
-            this.dashboardAppName = 'act_dashboard';
+            //this.firebaseAppScopeName = "act_dashboard";
+            //this.appContext = 'dashboard';
+            //this.studentAppName = 'act_app';
+            //this.dashboardAppName = 'act_dashboard';
         }
     );
 })(angular);
