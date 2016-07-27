@@ -19,7 +19,7 @@
 
             this.acceptCall = _baseCall.bind(null, CallsSrv.acceptCall, 'acceptCall');
 
-            this.closeModalAndDisconnect = _baseCall.bind(null, CallsSrv.disconnectCall, 'disconnectCall');
+            this.closeModal = CallsUiSrv.closeModal;
         }
     );
 })(angular);
