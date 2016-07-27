@@ -24,15 +24,21 @@
             $rootScope.call = { btnState: 2, receiverId: '21794e2b-3051-4016-8491-b3fe70e8212d' };
             $rootScope.called = { btnState: 2, receiverId: 'eebe2b53-08b7-4296-bcfd-62b69b531473' };
         })
-        .controller('demoCtrl', ['$scope', 'CallsUiSrv', function ($scope, CallsUiSrv) {
+        .controller('demoCtrl', function ($scope, CallsUiSrv, $rootScope) {
+
+            var scope = $rootScope.$new();
+
+            scope.callsData = {};
+            scope.callsData.status = 2;
+
             $scope.openIncomingCallModal = function() {
-                CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, modalData);
+                CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, scope);
             };
 
             $scope.openOutgoingCallModal = function() {
-                CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, modalData);
+                CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scope);
             };
-        }])
+        })
         .service('ENV', function () {
             // student
             // this.firebaseAppScopeName = "act_app";

@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
-        function (CallsSrv, CallsUiSrv, $log) {
+        function (CallsSrv, CallsUiSrv, CallsStatusEnum, $log, $mdDialog) {
             'ngInject';
 
             var callsData = this.scope.callsData;
@@ -18,6 +18,8 @@
             this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall');
 
             this.acceptCall = _baseCall.bind(null, CallsSrv.acceptCall, 'acceptCall');
+
+            this.closeModalAndDisconnect = _baseCall.bind(null, CallsSrv.disconnectCall, 'disconnectCall');
         }
     );
 })(angular);
