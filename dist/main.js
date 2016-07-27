@@ -6827,7 +6827,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                     if (angular.isObject(value) && !value.$save) {
                         cachedValue = Object.create({
                             $save: function () {
-                                return self.set(path, this);
+                                return self.update(path, this);
                             }
                         });
                         angular.forEach(value, function (value, key) {
@@ -6879,7 +6879,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                             if (angular.isObject(_entity)) {
                                 var initObj = Object.create({
                                     $save: function () {
-                                        return self.set(processedPath, this);
+                                        return self.update(processedPath, this);
                                     },
                                     $$path: processedPath
                                 });
@@ -9466,8 +9466,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
  *      pagerDisplay: function, if true provided than pager will be displayed other it will be hidden.
  *      bindExerciseViewTo: receive as parameter the view state
  *          viewState properties:
- *              currQuestion:
+ *              currSlideIndex:
  *              questionView: it implemented per question
+ *      unbindExerciseView: remove exercise view binding
  */
 
 (function (angular) {

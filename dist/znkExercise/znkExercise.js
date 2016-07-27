@@ -1064,8 +1064,9 @@
  *      pagerDisplay: function, if true provided than pager will be displayed other it will be hidden.
  *      bindExerciseViewTo: receive as parameter the view state
  *          viewState properties:
- *              currQuestion:
+ *              currSlideIndex:
  *              questionView: it implemented per question
+ *      unbindExerciseView: remove exercise view binding
  */
 
 (function (angular) {
