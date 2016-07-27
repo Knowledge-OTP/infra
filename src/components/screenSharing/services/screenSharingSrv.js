@@ -212,7 +212,7 @@
 
             this.getActiveScreenSharingData = function () {
                 if (!activeScreenSharingDataFromAdapter) {
-                    return null;
+                    return $q.when(null);
                 }
 
                 var dataPromMap = {
