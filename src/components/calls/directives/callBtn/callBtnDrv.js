@@ -57,6 +57,7 @@
                             _clickStatusSetter(false);
                             $log.debug('callBtn: success in callsStateChanged, data: ', data);
                         }).catch(function (err) {
+                            _clickStatusSetter(false);
                             $log.error('callBtn: error in callsStateChanged, err: ' + err);
                         });
                     }
