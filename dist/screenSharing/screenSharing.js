@@ -512,7 +512,7 @@
                     var orig$saveFn = dataMap.screenSharingData.$save;
                     dataMap.screenSharingData.$save = function () {
                         dataMap.screenSharingData.updatedBy = dataMap.currUid;
-                        return orig$saveFn.apply(dataMap.screenSharing);
+                        return orig$saveFn.apply(dataMap.screenSharingData);
                     };
 
                     return dataMap.screenSharingData;
