@@ -48,12 +48,6 @@
                                 break;
                             case CallsStatusEnum.DECLINE_CALL.enum:
                                 $log.debug('call declined');
-                                if (isCurrentUserInitiatedCall(currUid)) {
-                                    // close outgoing call modal
-                                    CallsUiSrv.closeModal();
-                                } else {
-                                    // show incoming call modal WITH the DECLINED TEXT
-                                }
                                 break;
                             case CallsStatusEnum.ACTIVE_CALL.enum:
                                 $log.debug('call active');
