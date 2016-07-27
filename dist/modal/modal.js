@@ -31,12 +31,13 @@
                             $mdDialog.hide();
                         }
                     },
+                    scope: popupData.scope || {},
                     bindToController: true,
                     controller: popupData.controller,
                     controllerAs: 'vm',
                     templateUrl: baseTemplateUrl,
-                    clickOutsideToClose: true,
-                    escapeToClose: true
+                    clickOutsideToClose: angular.isDefined(popupData.clickOutsideToClose) ? popupData.clickOutsideToClose : true,
+                    escapeToClose: angular.isDefined(popupData.escapeToClose) ? popupData.escapeToClose : true
                 });
             };
 
