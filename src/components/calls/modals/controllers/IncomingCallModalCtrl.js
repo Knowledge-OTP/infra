@@ -2,11 +2,12 @@
     'use strict';
 
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
-        function (modalData, CallsSrv, CallsUiSrv, $log) {
+        function (CallsSrv, CallsUiSrv, $log) {
             'ngInject';
 
+            var callsData = this.scope.callsData;
+
             function _baseCall(callFn, methodName) {
-                var callsData = modalData.callsData;
                 callFn(callsData).then(function () {
                     CallsUiSrv.closeModal();
                 }).catch(function (err) {
