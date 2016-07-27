@@ -16,7 +16,7 @@
 
             this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall');
 
-            this.declineCall = _baseCall.bind(null, CallsSrv.acceptCall, 'acceptCall');
+            this.acceptCall = _baseCall.bind(null, CallsSrv.acceptCall, 'acceptCall');
         }
     );
 })(angular);
