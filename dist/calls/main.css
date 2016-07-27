@@ -347,28 +347,38 @@ md-dialog.baseCallsModal {
       font-weight: 400;
       text-align: center;
       margin-bottom: 40px; }
-    md-dialog.baseCallsModal md-dialog-content .btn-container button {
-      min-width: 155px;
-      height: 35px;
-      line-height: 31px;
-      text-align: center;
-      font-size: 14px;
-      color: #0a9bad;
-      font-family: Lato;
-      font-weight: 400;
-      text-transform: uppercase;
-      background: none;
-      border: 1px solid #0a9bad;
-      border-radius: 20px;
-      margin: 0 5px;
-      outline: none; }
-      md-dialog.baseCallsModal md-dialog-content .btn-container button.primary {
-        border: none;
+    md-dialog.baseCallsModal md-dialog-content .flex-column {
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-direction: column;
+          flex-direction: column; }
+    md-dialog.baseCallsModal md-dialog-content .btn-container {
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-pack: center;
+          justify-content: center; }
+      md-dialog.baseCallsModal md-dialog-content .btn-container button {
+        min-width: 155px;
+        height: 35px;
+        line-height: 31px;
+        text-align: center;
         font-size: 14px;
-        color: #fff;
+        color: #0a9bad;
         font-family: Lato;
         font-weight: 400;
-        background-color: #0a9bad; }
+        text-transform: uppercase;
+        background: none;
+        border: 1px solid #0a9bad;
+        border-radius: 20px;
+        margin: 0 5px;
+        outline: none; }
+        md-dialog.baseCallsModal md-dialog-content .btn-container button.primary {
+          border: none;
+          font-size: 14px;
+          color: #fff;
+          font-family: Lato;
+          font-weight: 400;
+          background-color: #0a9bad; }
   md-dialog.baseCallsModal .top-icon-wrap {
     position: absolute;
     top: 0;
