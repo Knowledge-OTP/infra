@@ -530,8 +530,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         .config(["WebcallSrvProvider", function (WebcallSrvProvider) {
             'ngInject';
             WebcallSrvProvider.setCallCred({
-                username:'assafshp160721153735',
-                password:'khjihghs'
+                username:'devUsrZinkerz160726161534',
+                password:'zinkerz$9999'
             });
         }]);
 })(angular);
@@ -691,9 +691,22 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.calls').controller('IncomingCallModalCtrl', [
-        function () {
+    angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
+        ["modalData", "CallsSrv", "CallsUiSrv", "$log", function (modalData, CallsSrv, CallsUiSrv, $log) {
             'ngInject';
+
+            function _baseCall(callFn, methodName) {
+                var callsData = modalData.callsData;
+                callFn(callsData).then(function () {
+                    CallsUiSrv.closeModal();
+                }).catch(function (err) {
+                    $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);
+                });
+            }
+
+            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall');
+
+            this.acceptCall = _baseCall.bind(null, CallsSrv.acceptCall, 'acceptCall');
         }]
     );
 })(angular);
@@ -701,9 +714,17 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.calls').controller('OutgoingCallModalCtrl', ['modalData',
-        function (modalData) {
+    angular.module('znk.infra.calls').controller('OutgoingCallModalCtrl',
+        ["modalData", "CallsSrv", "CallsUiSrv", "$log", function (modalData, CallsSrv, CallsUiSrv, $log) {
             'ngInject';
+            this.declineCall = function() {
+                var callsData = modalData.callsData;
+                CallsSrv.declineCall(callsData).then(function () {
+                    CallsUiSrv.closeModal();
+                }).catch(function (err) {
+                    $log.error('IncomingCallModalCtrl declineCall: err: ' + err);
+                });
+            };
         }]
     );
 })(angular);
@@ -887,64 +908,101 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             isEnabled = _isEnabled;
         };
 
-        this.$get = function (/* UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV */) {
+        this.$get = ["UserProfileService", "InfraConfigSrv", "$q", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "CallsSrv", function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, CallsSrv) {
             'ngInject';
-            //var ScreenSharingEventsSrv = {};
-            //
-            //function _listenToScreenSharingData(guid) {
-            //    var screenSharingStatusPath = 'calls/' + guid;
-            //
-            //    function _cb(screenSharingData) {
-            //        if (!screenSharingData || screenSharingData.status !== ScreenSharingStatusEnum.CONFIRMED.enum) {
-            //            return;
-            //        }
-            //
-            //        UserProfileService.getCurrUserId().then(function (currUid) {
-            //            var userScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
-            //
-            //            if (screenSharingData.viewerId === currUid) {
-            //                userScreenSharingState = UserScreenSharingStateEnum.VIEWER.enum;
-            //            }
-            //
-            //            if (screenSharingData.sharerId === currUid) {
-            //                userScreenSharingState = UserScreenSharingStateEnum.SHARER.enum;
-            //            }
-            //
-            //            if (userScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
-            //                ScreenSharingSrv._userScreenSharingStateChanged(userScreenSharingState);
-            //            }
-            //        });
-            //    }
-            //
-            //    InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
-            //        globalStorage.onEvent(StorageSrv.EVENTS.VALUE, screenSharingStatusPath, _cb);
-            //    });
-            //}
-            //
-            //function _startListening() {
-            //    UserProfileService.getCurrUserId().then(function (currUid) {
-            //        InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
-            //            var appName = ENV.firebaseAppScopeName;
-            //            var userScreenSharingPath = appName + '/users/' + currUid + '/calls';
-            //            globalStorage.onEvent(StorageSrv.EVENTS.VALUE, userScreenSharingPath, function (userScreenSharingData) {
-            //                if (userScreenSharingData) {
-            //                    angular.forEach(userScreenSharingData, function (isActive, guid) {
-            //                        _listenToScreenSharingData(guid);
-            //                    });
-            //                }
-            //            });
-            //        });
-            //    });
-            //}
-            //
-            //ScreenSharingEventsSrv.activate = function () {
-            //    if (isEnabled) {
-            //        _startListening();
-            //    }
-            //};
-            //
-            //return ScreenSharingEventsSrv;
-        };
+            var CallsEventsSrv = {};
+
+            function _listenToCallsData(guid) {
+                var callsStatusPath = 'calls/' + guid;
+
+                function _cb(callsData) {
+
+                    if (!callsData) {
+                        return;
+                    }
+
+                    UserProfileService.getCurrUserId().then(function (currUid) {
+                        switch(callsData.status) {
+                            case CallsStatusEnum.PENDING_CALL.enum:
+                                $log.debug('call pending');
+                                if (isCurrentUserInitiatedCall(currUid)) {
+                                    // show outgoing call modal
+                                    CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, callsData);
+                                } else {
+                                    // show incoming call modal with the ACCEPT & DECLINE buttons
+                                    CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, callsData);
+                                }
+                                break;
+                            case CallsStatusEnum.DECLINE_CALL.enum:
+                                $log.debug('call declined');
+                                if (isCurrentUserInitiatedCall(currUid)) {
+                                    // close outgoing call modal
+                                    CallsUiSrv.closeModal();
+                                } else {
+                                    // show incoming call modal WITH the DECLINED TEXT
+                                    CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, callsData);
+                                }
+                                break;
+                            case CallsStatusEnum.ACTIVE_CALL.enum:
+                                $log.debug('call active');
+                                if (isCurrentUserInitiatedCall(currUid)) {
+                                    // show outgoing call modal WITH the ANSWERED TEXT, wait 2 seconds and close the modal, show the ActiveCallDRV
+                                    CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, callsData);
+                                    CallsUiSrv.showActiveCallDrv();
+                                } else {
+                                    // close the modal, show the ActiveCallDRV
+                                    CallsUiSrv.closeModal();
+                                    CallsUiSrv.showActiveCallDrv();
+                                }
+                                break;
+                            case CallsStatusEnum.ENDED_CALL.enum:
+                                $log.debug('call ended');
+                                if (isCurrentUserInitiatedCall(currUid)) {
+                                    // hide the ActiveCallDRV
+                                } else {
+                                    // hide the ActiveCallDRV
+                                }
+                                CallsUiSrv.hideActiveCallDrv();
+                                // disconnect other user from call
+                                CallsSrv.disconnectCall();
+                                break;
+                        }
+                    });
+
+                    function isCurrentUserInitiatedCall(currUid) {
+                        return (currUid === callsData.callerId);
+                    }
+                }
+
+                InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
+                    globalStorage.onEvent(StorageSrv.EVENTS.VALUE, callsStatusPath, _cb);
+                });
+            }
+
+            function _startListening() {
+                UserProfileService.getCurrUserId().then(function (currUid) {
+                    InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
+                        var appName = ENV.firebaseAppScopeName;
+                        var userCallsPath = appName + '/users/' + currUid + '/calls';
+                        globalStorage.onEvent(StorageSrv.EVENTS.VALUE, userCallsPath, function (userCallsData) {
+                            if (userCallsData) {
+                                angular.forEach(userCallsData, function (isActive, guid) {
+                                    _listenToCallsData(guid);
+                                });
+                            }
+                        });
+                    });
+                });
+            }
+
+            CallsEventsSrv.activate = function () {
+                if (isEnabled) {
+                    _startListening();
+                }
+            };
+
+            return CallsEventsSrv;
+        }];
     });
 })(angular);
 
@@ -952,7 +1010,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsSrv',
-        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "InfraConfigSrv", "CallsStatusEnum", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, InfraConfigSrv, CallsStatusEnum) {
+        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "CallsDataSetterSrv", "WebcallSrv", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv) {
             'ngInject';
 
             var CALL_ACTIONS = {
@@ -1021,36 +1079,29 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 return getDataPromMap;
             }
 
-                return $q.all(getDataPromMap).then(function (data) {
-                    var dataToSave = {};
+            function _handleCallerIdOrReceiverIdUndefined(callsData, methodName) {
+                if (angular.isUndefined(callsData.callerId) || angular.isUndefined(callsData.receiverId)) {
+                    var errMSg = 'CallsSrv '+ methodName +': callerId or receiverId are missing!';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                return $q.when(true);
+            }
 
-                    var isCallerTeacher = userCallData.callerId === data.currUid && isTeacherApp;
+            function _webCallConnect(callId) {
+                return WebcallSrv.connect(callId);
+            }
 
-                    var receiverPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.newReceiverId, !isCallerTeacher);
-                    var callerPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.callerId, isCallerTeacher);
+            function _webCallHang() {
+                return WebcallSrv.hang();
+            }
 
-                    var newCallData = {
-                        guid: newCallGuid,
-                        callerId: userCallData.callerId,
-                        receiverId: userCallData.newReceiverId,
-                        status: CallsStatusEnum.PENDING_CALL.enum,
-                        callerPath: callerPath,
-                        receiverPath: receiverPath
-                    };
-
-                    angular.extend(data.newCallData, newCallData);
-
-                    dataToSave[data.newCallData.$$path] = data.newCallData;
-                    //current user call requests object update
-                    data.currUserCallsRequests[newCallGuid] = true;
-                    dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
-                    //other user call requests object update
-                    var otherUserCallPath = userCallData.newReceiverId === data.currUid ? callerPath : receiverPath;
-                    var otherUserCallDataGuidPath = otherUserCallPath + '/' + newCallGuid;
-                    dataToSave[otherUserCallDataGuidPath] = true;
-
-                    return _getStorage().then(function (StudentStorage) {
-                        return StudentStorage.update(dataToSave);
+            function _connectCall(userCallData) {
+                var newCallGuid = UtilitySrv.general.createGuid();
+                var getDataPromMap = _getDataPromMap(newCallGuid);
+                return _webCallConnect(newCallGuid).then(function () {
+                    return $q.all(getDataPromMap).then(function (data) {
+                         return CallsDataSetterSrv.setNewConnect(data, userCallData, newCallGuid);
                     });
                 });
             }
@@ -1058,27 +1109,29 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             function _disconnectCall(userCallData) {
                 var receiverId = userCallData.oldReceiverId ? userCallData.oldReceiverId : userCallData.newReceiverId;
                 var guid = userCallData.oldCallGuid ? userCallData.oldCallGuid : userCallData.newCallGuid;
+                var getDataPromMap = _getDataPromMap(guid);
+                return _webCallHang().then(function () {
+                    return $q.all(getDataPromMap).then(function (data) {
+                        return CallsDataSetterSrv.setDisconnectCall(data, {
+                            receiverId: receiverId
+                        }, guid);
+                    });
+                });
+            }
 
-                var getDataPromMap = {};
+            function _acceptCall(callsData) {
+                return _webCallConnect(callsData.guid).then(function() {
+                    return CallsDataGetterSrv.getCallsData(callsData.guid).then(function (currCallData) {
+                         return CallsDataSetterSrv.setAcceptCall(currCallData);
+                    });
+                });
+            }
 
-                getDataPromMap.currUserCallsRequests = CallsDataGetterSrv.getCurrUserCallsRequests();
-                getDataPromMap.currCallData = CallsDataGetterSrv.getCallsData(guid);
-                getDataPromMap.currUid = UserProfileService.getCurrUserId();
-
-                return $q.all(getDataPromMap).then(function (data) {
-                    var dataToSave = {};
-                    data.currCallData.status = CallsStatusEnum.ENDED_CALL.enum;
-                    dataToSave[data.currCallData.$$path] = data.currCallData;
-                    //current user call requests object update
-                    data.currUserCallsRequests[guid] = null;
-                    dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
-                    //other user call requests object update
-                    var otherUserCallPath = receiverId === data.currUid ? data.currCallData.callerPath : data.currCallData.receiverPath;
-                    var otherUserCallDataGuidPath = otherUserCallPath + '/' + guid;
-                    dataToSave[otherUserCallDataGuidPath] = null;
-
-                    return _getStorage().then(function (StudentStorage) {
-                        return StudentStorage.update(dataToSave);
+            function _declineCall(callsData) {
+                return _webCallHang().then(function () {
+                    var getDataPromMap = _getDataPromMap(callsData.guid);
+                    return $q.all(getDataPromMap).then(function (data) {
+                       return CallsDataSetterSrv.setDeclineCall(data, callsData, callsData.guid);
                     });
                 });
             }
@@ -1146,8 +1199,25 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 
             var self = this;
 
-            self.showModal = function (modal, modalData) {
-                ModalService.showBaseModal(modal, modalData);
+            var activeCallStatus;
+
+            self.showActiveCallDrv = function() {
+                activeCallStatus = true;
+            };
+
+            self.hideActiveCallDrv = function() {
+                activeCallStatus = false;
+            };
+
+            self.showModal = function (modal, callsData) {
+                modal.modalData = {
+                    callsData: callsData
+                };
+                ModalService.showBaseModal(modal);
+            };
+
+            self.closeModal = function () {
+                $mdDialog.hide();
             };
 
             self.modals = {
@@ -1225,10 +1295,18 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "    <div class=\"btn-container\">\n" +
     "        <div class=\"btn-decline\">\n" +
     "\n" +
-    "    </div>\n" +
-    "    <div class=\"btn-accept\">\n" +
-    "        <button>Decline</button>\n" +
-    "        <button class=\"primary\">Accept</button>\n" +
+    "        </div>\n" +
+    "        <div class=\"btn-accept\">\n" +
+    "            <button\n" +
+    "                ng-click=\"vm.declineCall()\"\n" +
+    "                translate=\".DECLINE\">\n" +
+    "            </button>\n" +
+    "            <button\n" +
+    "                ng-click=\"vm.acceptCall()\"\n" +
+    "                class=\"primary\"\n" +
+    "                translate=\".ACCEPT\">\n" +
+    "            </button>\n" +
+    "        </div>\n" +
     "    </div>\n" +
     "</div>\n" +
     "");
@@ -1241,7 +1319,9 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "\n" +
     "    </div>\n" +
     "    <div class=\"btn-accept\">\n" +
-    "        <button>Cancel</button>\n" +
+    "        <button\n" +
+    "            ng-click=\"vm.declineCall()\"\n" +
+    "            translate=\".CANCEL\"></button>\n" +
     "    </div>\n" +
     "</div>\n" +
     "</div>\n" +
@@ -3618,7 +3698,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
     angular.module('znk.infra.exerciseUtility').factory('ExerciseUtilitySrv',
         function () {
             'ngInject';
-
+            
             var ExerciseUtilitySrv = {};
 
             return ExerciseUtilitySrv;
@@ -3645,7 +3725,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
                 if(!angular.isString(str) || !str.length){
                     return '';
                 }
-
+                
                 return str[0].toUpperCase() + str.substr(1);
             };
         }
@@ -4636,7 +4716,7 @@ angular.module('znk.infra.modal').run(['$templateCache', function($templateCache
 
 (function (angular) {
     'use strict';
-
+    
     angular.module('znk.infra.personalization')
         .service('PersonalizationSrv',
             ["StorageRevSrv", "$log", "$q", function (StorageRevSrv, $log, $q) {
@@ -5389,7 +5469,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
 (function(){
     'use strict';
-
+    
     angular.module('znk.infra.screenSharing').run(
         ["ScreenSharingEventsSrv", function(ScreenSharingEventsSrv){
             'ngInject';
