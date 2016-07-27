@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
-        function (CallsSrv, CallsUiSrv, CallsStatusEnum, $log, $mdDialog) {
+        function (CallsSrv, CallsUiSrv, CallsStatusEnum, $log) {
             'ngInject';
 
             var callsData = this.scope.callsData;
