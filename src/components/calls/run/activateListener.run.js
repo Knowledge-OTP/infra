@@ -2,10 +2,10 @@
     'use strict';
 
     angular.module('znk.infra.calls').run(
-        function(){
+        function(CallsEventsSrv){
             'ngInject';
 
-           // CallsEventsSrv.activate();
+            CallsEventsSrv.activate();
         }
     );
 })();
