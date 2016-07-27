@@ -160,7 +160,7 @@
                 return UserProfileService.getCurrUserId().then(function(currUid){
                     return _getStorage().then(function(storage){
                         var currUserScreenSharingDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/screenSharing';
-                        return storage.get(currUserScreenSharingDataPath);
+                        return storage.getAndBindToServer(currUserScreenSharingDataPath);
                     });
                 });
             };
