@@ -46,7 +46,7 @@
                 dataToSave[data.currCallData.$$path] = data.currCallData;
                 //current user call requests object update
                 data.currUserCallsRequests[guid] = null;
-                dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
+                dataToSave[data.currUserCallsRequests.$$path] = angular.copy(data.currUserCallsRequests);
                 //other user call requests object update
                 var otherUserCallPath = userCallData.receiverId === data.currUid ? data.currCallData.callerPath : data.currCallData.receiverPath;
                 var otherUserCallDataGuidPath = otherUserCallPath + '/' + guid;
