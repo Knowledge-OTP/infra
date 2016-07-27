@@ -24,7 +24,7 @@
                     angular.forEach(resultsGuids, function (resultGuid, resultModuleId) {
                         getProm = getProm.then(function() {
                             return ExerciseResultSrv.getModuleResult(userId, resultModuleId, false).then(function(moduleResult){
-                                if(moduleResult) {
+                                if(moduleResult && !angular.equals(moduleResult, {})) {
                                     moduleResults[moduleResult.moduleId] = moduleResult;
                                 }
                             });
@@ -41,37 +41,40 @@
 
                 function getModuleSummary(assignModule, moduleHeaders){
                     var exerciseId;
-                    var exerciseTypeId = ExerciseTypeEnum.PRACTICE.enum;
-                    var practiceExercise = moduleHeaders[assignModule.moduleId].exercises.filter(function (exercise) {
-                        return exercise.exerciseTypeId === exerciseTypeId ? exercise.exerciseId : null;
-                    });
-
-                    if (practiceExercise) {
-                        exerciseId = practiceExercise.exerciseId;
-                    }
-
-                    var status = ExerciseStatusEnum.NEW.enum;
-                    var correctAnswersNum = 0,
+                    var exerciseTypeId = ExerciseTypeEnum.PRACTICE.enum,
+                        status = ExerciseStatusEnum.NEW.enum,
+                        correctAnswersNum = 0,
                         wrongAnswersNum = 0,
                         skippedAnswersNum = 0,
                         totalAnswered = 0,
                         duration = 0;
 
-                    if(assignModule.exercisesStatus) {
-                        if (assignModule.exercisesStatus[exerciseTypeId] && assignModule.exercisesStatus[exerciseTypeId][exerciseId]) {
-                            status = assignModule.exercisesStatus[exerciseTypeId][exerciseId];
+                    if (moduleHeaders[assignModule.moduleId] && moduleHeaders[assignModule.moduleId].exercises) {
+                        var practiceExercise = moduleHeaders[assignModule.moduleId].exercises.filter(function (exercise) {
+                            return exercise.exerciseTypeId === exerciseTypeId ? exercise.exerciseId : null;
+                        });
+
+                        if (practiceExercise) {
+                            exerciseId = practiceExercise.exerciseId;
+                        }
+
+                        if(assignModule.exercisesStatus) {
+                            if (assignModule.exercisesStatus[exerciseTypeId] && assignModule.exercisesStatus[exerciseTypeId][exerciseId]) {
+                                status = assignModule.exercisesStatus[exerciseTypeId][exerciseId];
+                            }
+                        }
+
+                        if (assignModule.exerciseResults) {
+                            if (assignModule.exerciseResults[exerciseTypeId] && assignModule.exerciseResults[exerciseTypeId][exerciseId]) {
+                                correctAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
+                                wrongAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
+                                skippedAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
+                                duration = assignModule.exerciseResults[exerciseTypeId][exerciseId].duration || 0;
+                                totalAnswered = correctAnswersNum + wrongAnswersNum + skippedAnswersNum;
+                            }
                         }
                     }
 
-                    if (assignModule.exerciseResults) {
-                        if (assignModule.exerciseResults[exerciseTypeId] && assignModule.exerciseResults[exerciseTypeId][exerciseId]) {
-                            correctAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
-                            wrongAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
-                            skippedAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
-                            duration = assignModule.exerciseResults[exerciseTypeId][exerciseId].duration || 0;
-                            totalAnswered = correctAnswersNum + wrongAnswersNum + skippedAnswersNum;
-                        }
-                    }
                     return {
                         status: status,
                         correctAnswersNum: correctAnswersNum,
@@ -80,10 +83,6 @@
                         duration: duration,
                         totalAnswered: totalAnswered
                     };
-
-                    /* return ZnkModuleService.getModuleById(assignModule.moduleId).then(function (moduleObj) {
-
-                     });*/
                 }
 
                 return ZnkModuleService.getModuleHeaders().then(function (headers) {
@@ -115,30 +114,29 @@
 
                 });
                 return getProm.then(function () {
-                    return ZnkModuleService.getModuleHeaders().then(function (moduleHeaders) {
-                        var saveProm = $q.when();
-                        angular.forEach(moduleIds, function (moduleId) {
-                            if(!moduleResults[moduleId]) {
-                                moduleResults[moduleId] =  ExerciseResultSrv.getDefaultModuleResult(moduleId, userId);
-                                moduleResults[moduleId].assignedTutorId = tutorId;
-                                // copy fields from module object to results object for future using
-                                moduleResults[moduleId].name = moduleHeaders[moduleId].name;
-                                moduleResults[moduleId].desc = moduleHeaders[moduleId].desc;
-                                moduleResults[moduleId].subjectId = moduleHeaders[moduleId].subjectId;
-                                moduleResults[moduleId].order = moduleHeaders[moduleId].order;
-                                moduleResults[moduleId].exercises = moduleHeaders[moduleId].exercises;
-                                moduleResults[moduleId].assignDate = Date.now();
-                            }
-                            moduleResults[moduleId].assign = true;
-
-                            saveProm = saveProm.then(function(){
+                    var saveProm = $q.when();
+                    angular.forEach(moduleIds, function (moduleId) {
+                        saveProm = saveProm.then(function(){
+                            return ZnkModuleService.getModuleById(moduleId).then(function (moduleObj) {
+                                if(!moduleResults[moduleId]) {
+                                    moduleResults[moduleId] =  ExerciseResultSrv.getDefaultModuleResult(moduleId, userId);
+                                    moduleResults[moduleId].assignedTutorId = tutorId;
+                                    // copy fields from module object to results object for future using
+                                    moduleResults[moduleId].name = moduleObj.name;
+                                    moduleResults[moduleId].desc = moduleObj.desc;
+                                    moduleResults[moduleId].subjectId = moduleObj.subjectId;
+                                    moduleResults[moduleId].order = moduleObj.order;
+                                    moduleResults[moduleId].exercises = moduleObj.exercises;
+                                    moduleResults[moduleId].assignDate = Date.now();
+                                }
+                                moduleResults[moduleId].assign = true;
                                 return ExerciseResultSrv.setModuleResult(moduleResults[moduleId]);
                             });
                         });
+                    });
 
-                        return saveProm.then(function () {
-                            return moduleResults;
-                        });
+                    return saveProm.then(function () {
+                        return moduleResults;
                     });
                 });
             };
