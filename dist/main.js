@@ -627,6 +627,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                             _clickStatusSetter(false);
                             $log.debug('callBtn: success in callsStateChanged, data: ', data);
                         }).catch(function (err) {
+                            _clickStatusSetter(false);
                             $log.error('callBtn: error in callsStateChanged, err: ' + err);
                         });
                     }
@@ -681,19 +682,19 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 
             var callsData = this.scope.callsData;
 
-            function _baseCall(callFn, methodName) {
-                callFn(callsData).then(function () {
+            function _baseCall(callFn, methodName, params) {
+                callFn(callsData, params).then(function () {
                     CallsUiSrv.closeModal();
                 }).catch(function (err) {
                     $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);
                 });
             }
 
-            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall');
+            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall', false);
 
             this.acceptCall = _baseCall.bind(null, CallsSrv.acceptCall, 'acceptCall');
 
-            this.closeModalAndDisconnect = _baseCall.bind(null, CallsSrv.disconnectCall, 'disconnectCall');
+            this.closeModal = CallsUiSrv.closeModal;
         }]
     );
 })(angular);
@@ -702,20 +703,32 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').controller('OutgoingCallModalCtrl',
-        ["CallsSrv", "CallsUiSrv", "$log", function (CallsSrv, CallsUiSrv, $log) {
+        ["CallsSrv", "CallsUiSrv", "$log", "CallsStatusEnum", "$scope", "$timeout", function (CallsSrv, CallsUiSrv, $log, CallsStatusEnum, $scope, $timeout) {
             'ngInject';
 
             var callsData = this.scope.callsData;
 
-            function _baseCall(callFn, methodName) {
-                callFn(callsData).then(function () {
+            $scope.$watch('callsData', function(newVal) {
+                if (angular.isDefined(newVal) && newVal.status) {
+                     switch(newVal.status) {
+                         case CallsStatusEnum.ACTIVE_CALL.enum:
+                             $timeout(function() {
+                                 CallsUiSrv.closeModal();
+                             }, 2000);
+                             break;
+                     }
+                }
+            });
+
+            function _baseCall(callFn, methodName, params) {
+                callFn(callsData, params).then(function () {
                     CallsUiSrv.closeModal();
                 }).catch(function (err) {
                     $log.error('OutgoingCallModalCtrl '+ methodName +': err: ' + err);
                 });
             }
 
-            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall');
+            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall', true);
 
             this.closeModalAndDisconnect = _baseCall.bind(null, CallsSrv.disconnectCall, 'disconnectCall');
         }]
@@ -847,7 +860,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 var dataToSave = {};
                 // update root
                 data.currCallData.status = CallsStatusEnum.ENDED_CALL.enum;
-                dataToSave[data.currCallData.$$path] = data.currCallData;
+                dataToSave[data.currCallData.$$path] = angular.copy(data.currCallData);
                 //current user call requests object update
                 data.currUserCallsRequests[guid] = null;
                 dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
@@ -864,7 +877,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 var dataToSave = {};
                 // update root
                 data.currCallData.status = CallsStatusEnum.DECLINE_CALL.enum;
-                dataToSave[data.currCallData.$$path] = data.currCallData;
+                dataToSave[data.currCallData.$$path] = angular.copy(data.currCallData);
                 //current user call requests object update
                 data.currUserCallsRequests[guid] = null;
                 dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
@@ -941,12 +954,6 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                 break;
                             case CallsStatusEnum.DECLINE_CALL.enum:
                                 $log.debug('call declined');
-                                if (isCurrentUserInitiatedCall(currUid)) {
-                                    // close outgoing call modal
-                                    CallsUiSrv.closeModal();
-                                } else {
-                                    // show incoming call modal WITH the DECLINED TEXT
-                                }
                                 break;
                             case CallsStatusEnum.ACTIVE_CALL.enum:
                                 $log.debug('call active');
@@ -1126,8 +1133,9 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 });
             }
 
-            function _declineCall(callsData) {
-                return _webCallHang().then(function () {
+            function _declineCall(callsData, hangWebCall) {
+                var prom = hangWebCall ? _webCallHang() : $q.when();
+                return prom.then(function () {
                     var getDataPromMap = _getDataPromMap(callsData.guid);
                     return $q.all(getDataPromMap).then(function (data) {
                        return CallsDataSetterSrv.setDeclineCall(data, callsData, callsData.guid);
@@ -1169,9 +1177,9 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 });
             };
 
-            this.declineCall = function(callsData) {
+            this.declineCall = function(callsData, hangWebCall) {
                 return _handleCallerIdOrReceiverIdUndefined(callsData, 'declineCall').then(function () {
-                    return _declineCall(callsData);
+                    return _declineCall(callsData, hangWebCall);
                 });
             };
             /* used to disconnect the other user from web call */
@@ -1320,13 +1328,13 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "        <!-- Call Declined -->\n" +
     "        <div ng-switch-when=\"2\" class=\"flex-column\">\n" +
     "            <span\n" +
-    "                translate=\".CALLING_DECLINE\"\n" +
+    "                translate=\".CALLING_CANCELED\"\n" +
     "                class=\"modal-sub-title call-status\">\n" +
     "            </span>\n" +
     "            <div class=\"btn-container\">\n" +
     "                <div class=\"btn-ok\">\n" +
     "                    <button\n" +
-    "                        ng-click=\"vm.closeModalAndDisconnect()\"\n" +
+    "                        ng-click=\"vm.closeModal()\"\n" +
     "                        translate=\".OK\">\n" +
     "                    </button>\n" +
     "                </div>\n" +
@@ -5577,7 +5585,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 return UserProfileService.getCurrUserId().then(function(currUid){
                     return _getStorage().then(function(storage){
                         var currUserScreenSharingDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/screenSharing';
-                        return storage.get(currUserScreenSharingDataPath);
+                        return storage.getAndBindToServer(currUserScreenSharingDataPath);
                     });
                 });
             };
@@ -5713,7 +5721,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
             var _this = this;
 
-            var activeScreenSharingData = null;
+            var activeScreenSharingDataFromAdapter = null;
             var currUserScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
             var registeredCbToActiveScreenSharingDataChanges = [];
             var registeredCbToCurrUserScreenSharingStateChange = [];
@@ -5741,7 +5749,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                         var screenSharingData = screenSharingDataMap[screenSharingDataKey];
 
                         var isEnded = screenSharingData.status === ScreenSharingStatusEnum.ENDED.enum;
-                        if(isEnded){
+                        if (isEnded) {
                             _this.endSharing(screenSharingData.guid);
                             continue;
                         }
@@ -5764,7 +5772,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                     return $q.reject(errMsg);
                 }
 
-                if(currUserScreenSharingState !== UserScreenSharingStateEnum.NONE.enum){
+                if (currUserScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
                     errMsg = 'ScreenSharingSrv: screen sharing is already active!!!';
                     $log.debug(errMsg);
                     return $q.reject(errMsg);
@@ -5814,7 +5822,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                         data.currUserScreenSharingRequests[newScreenSharingGuid] = true;
                         dataToSave[data.currUserScreenSharingRequests.$$path] = data.currUserScreenSharingRequests;
                         //other user screen sharing requests object update
-                        var otherUserScreenSharingPath = viewerData.uid === data.currUid ? sharerPath: viewerPath;
+                        var otherUserScreenSharingPath = viewerData.uid === data.currUid ? sharerPath : viewerPath;
                         var viewerScreenSharingDataGuidPath = otherUserScreenSharingPath + '/' + newScreenSharingGuid;
                         dataToSave[viewerScreenSharingDataGuidPath] = true;
 
@@ -5826,13 +5834,13 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 });
             }
 
-            function _cleanRegisteredCbToActiveScreenSharingData(){
-                activeScreenSharingData = null;
+            function _cleanRegisteredCbToActiveScreenSharingData() {
+                activeScreenSharingDataFromAdapter = null;
                 registeredCbToActiveScreenSharingDataChanges = [];
             }
 
-            function _invokeCurrUserScreenSharingStateChangedCb(){
-                registeredCbToCurrUserScreenSharingStateChange.forEach(function(cb){
+            function _invokeCurrUserScreenSharingStateChangedCb() {
+                registeredCbToCurrUserScreenSharingStateChange.forEach(function (cb) {
                     cb(currUserScreenSharingState);
                 });
             }
@@ -5858,7 +5866,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             };
 
             this.confirmSharing = function (screenSharingDataGuid) {
-                if(currUserScreenSharingState !== UserScreenSharingStateEnum.NONE.enum){
+                if (currUserScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
                     var errMsg = 'ScreenSharingSrv: screen sharing is already active!!!';
                     $log.debug(errMsg);
                     return $q.reject(errMsg);
@@ -5886,9 +5894,9 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                     dataToSave[data.currUidScreenSharingRequests.$$path] = data.currUidScreenSharingRequests;
 
                     var otherUserScreenSharingRequestPath;
-                    if(data.screenSharingData.viewerId !== data.currUid){
+                    if (data.screenSharingData.viewerId !== data.currUid) {
                         otherUserScreenSharingRequestPath = data.screenSharingData.viewerPath;
-                    }else{
+                    } else {
                         otherUserScreenSharingRequestPath = data.screenSharingData.sharerPath;
                     }
                     otherUserScreenSharingRequestPath += '/' + data.screenSharingData.guid;
@@ -5898,33 +5906,46 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 });
             };
 
-            this.registerToActiveScreenSharingDataChanges = function(cb){
-                if(activeScreenSharingData){
+            this.registerToActiveScreenSharingDataChanges = function (cb) {
+                if (activeScreenSharingDataFromAdapter) {
                     registeredCbToActiveScreenSharingDataChanges.push(cb);
-                    cb(activeScreenSharingData);
+                    cb(activeScreenSharingDataFromAdapter);
                 }
             };
 
-            this.registerToCurrUserScreenSharingStateChanges = function(cb){
+            this.registerToCurrUserScreenSharingStateChanges = function (cb) {
                 registeredCbToCurrUserScreenSharingStateChange.push(cb);
                 cb(currUserScreenSharingState);
             };
 
-            this.unregisterFromCurrUserScreenSharingStateChanges = function(cb){
-                registeredCbToCurrUserScreenSharingStateChange = registeredCbToCurrUserScreenSharingStateChange.filter(function(iterationCb){
+            this.unregisterFromCurrUserScreenSharingStateChanges = function (cb) {
+                registeredCbToCurrUserScreenSharingStateChange = registeredCbToCurrUserScreenSharingStateChange.filter(function (iterationCb) {
                     return iterationCb !== cb;
                 });
             };
 
-            this.getActiveScreenSharingData = function(){
-                if(!activeScreenSharingData){
-                    return $q.reject('ScreenSharingSrv: no active screen sharing data');
+            this.getActiveScreenSharingData = function () {
+                if (!activeScreenSharingDataFromAdapter) {
+                    return $q.when(null);
                 }
-                return ScreenSharingDataGetterSrv.getScreenSharingData(activeScreenSharingData.guid);
+
+                var dataPromMap = {
+                    screenSharingData: ScreenSharingDataGetterSrv.getScreenSharingData(activeScreenSharingDataFromAdapter.guid),
+                    currUid: UserProfileService.getCurrUserId()
+                };
+                return $q.all(dataPromMap).then(function(dataMap){
+                    var orig$saveFn = dataMap.screenSharingData.$save;
+                    dataMap.screenSharingData.$save = function () {
+                        dataMap.screenSharingData.updatedBy = dataMap.currUid;
+                        return orig$saveFn.apply(dataMap.screenSharingData);
+                    };
+
+                    return dataMap.screenSharingData;
+                });
             };
 
             this._userScreenSharingStateChanged = function (newUserScreenSharingState, screenSharingData) {
-                if(!newUserScreenSharingState || (currUserScreenSharingState === newUserScreenSharingState)){
+                if (!newUserScreenSharingState || (currUserScreenSharingState === newUserScreenSharingState)) {
                     return;
                 }
 
@@ -5932,27 +5953,27 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
                 var isViewerState = newUserScreenSharingState === UserScreenSharingStateEnum.VIEWER.enum;
                 var isSharerState = newUserScreenSharingState === UserScreenSharingStateEnum.SHARER.enum;
-                if(isSharerState || isViewerState){
-                    activeScreenSharingData = screenSharingData;
-                    ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState).then(function(){
+                if (isSharerState || isViewerState) {
+                    activeScreenSharingDataFromAdapter = screenSharingData;
+                    ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState).then(function () {
                         _this.endSharing(screenSharingData.guid);
                     });
-                }else{
+                } else {
                     _cleanRegisteredCbToActiveScreenSharingData();
                     ScreenSharingUiSrv.endScreenSharing();
                 }
 
-                _invokeCurrUserScreenSharingStateChangedCb(currUserScreenSharingState );
+                _invokeCurrUserScreenSharingStateChangedCb(currUserScreenSharingState);
             };
 
-            this._screenSharingDataChanged = function(newScreenSharingData){
-                if(!activeScreenSharingData || activeScreenSharingData.guid !== newScreenSharingData.guid){
+            this._screenSharingDataChanged = function (newScreenSharingData) {
+                if (!activeScreenSharingDataFromAdapter || activeScreenSharingDataFromAdapter.guid !== newScreenSharingData.guid) {
                     return;
                 }
 
-                activeScreenSharingData = newScreenSharingData;
-                registeredCbToActiveScreenSharingDataChanges.forEach(function(cb){
-                    cb(activeScreenSharingData);
+                activeScreenSharingDataFromAdapter = newScreenSharingData;
+                registeredCbToActiveScreenSharingDataChanges.forEach(function (cb) {
+                    cb(activeScreenSharingDataFromAdapter);
                 });
             };
         }]
@@ -7036,7 +7057,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                     if (angular.isObject(value) && !value.$save) {
                         cachedValue = Object.create({
                             $save: function () {
-                                return self.set(path, this);
+                                return self.update(path, this);
                             }
                         });
                         angular.forEach(value, function (value, key) {
@@ -7088,7 +7109,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                             if (angular.isObject(_entity)) {
                                 var initObj = Object.create({
                                     $save: function () {
-                                        return self.set(processedPath, this);
+                                        return self.update(processedPath, this);
                                     },
                                     $$path: processedPath
                                 });
@@ -9232,14 +9253,15 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         }
                     });
 
-                    scope.$watch('questionsGetter().length',function(newNum){
-                        var notBindedQuestions = scope.questionsGetter();
-                        if(newNum && !scope.vm.questions){
-                            scope.vm.questions = notBindedQuestions;
-                            return;
+                    scope.$watchGroup(['questionsGetter()', 'questionsGetter().length'],function(newValArr, oldValArr){
+                        var newQuestionsArr = newValArr[0];
+                        scope.vm.questions = newQuestionsArr || [];
+
+                        var newNum = newValArr[1];
+                        var oldNum = oldValArr[1];
+                        if(oldNum && newNum !== oldNum){
+                            scope.vm.swiperActions.updateFollowingSlideAddition();
                         }
-                        scope.vm.questions = notBindedQuestions;
-                        scope.vm.swiperActions.updateFollowingSlideAddition();
                     });
                 }
             };
@@ -9688,8 +9710,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
  *      pagerDisplay: function, if true provided than pager will be displayed other it will be hidden.
  *      bindExerciseViewTo: receive as parameter the view state
  *          viewState properties:
- *              currQuestion:
+ *              currSlideIndex:
  *              questionView: it implemented per question
+ *      unbindExerciseView: remove exercise view binding
  */
 
 (function (angular) {

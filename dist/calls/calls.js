@@ -132,6 +132,7 @@
                             _clickStatusSetter(false);
                             $log.debug('callBtn: success in callsStateChanged, data: ', data);
                         }).catch(function (err) {
+                            _clickStatusSetter(false);
                             $log.error('callBtn: error in callsStateChanged, err: ' + err);
                         });
                     }
@@ -186,19 +187,19 @@
 
             var callsData = this.scope.callsData;
 
-            function _baseCall(callFn, methodName) {
-                callFn(callsData).then(function () {
+            function _baseCall(callFn, methodName, params) {
+                callFn(callsData, params).then(function () {
                     CallsUiSrv.closeModal();
                 }).catch(function (err) {
                     $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);
                 });
             }
 
-            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall');
+            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall', false);
 
             this.acceptCall = _baseCall.bind(null, CallsSrv.acceptCall, 'acceptCall');
 
-            this.closeModalAndDisconnect = _baseCall.bind(null, CallsSrv.disconnectCall, 'disconnectCall');
+            this.closeModal = CallsUiSrv.closeModal;
         }]
     );
 })(angular);
@@ -207,20 +208,32 @@
     'use strict';
 
     angular.module('znk.infra.calls').controller('OutgoingCallModalCtrl',
-        ["CallsSrv", "CallsUiSrv", "$log", function (CallsSrv, CallsUiSrv, $log) {
+        ["CallsSrv", "CallsUiSrv", "$log", "CallsStatusEnum", "$scope", "$timeout", function (CallsSrv, CallsUiSrv, $log, CallsStatusEnum, $scope, $timeout) {
             'ngInject';
 
             var callsData = this.scope.callsData;
 
-            function _baseCall(callFn, methodName) {
-                callFn(callsData).then(function () {
+            $scope.$watch('callsData', function(newVal) {
+                if (angular.isDefined(newVal) && newVal.status) {
+                     switch(newVal.status) {
+                         case CallsStatusEnum.ACTIVE_CALL.enum:
+                             $timeout(function() {
+                                 CallsUiSrv.closeModal();
+                             }, 2000);
+                             break;
+                     }
+                }
+            });
+
+            function _baseCall(callFn, methodName, params) {
+                callFn(callsData, params).then(function () {
                     CallsUiSrv.closeModal();
                 }).catch(function (err) {
                     $log.error('OutgoingCallModalCtrl '+ methodName +': err: ' + err);
                 });
             }
 
-            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall');
+            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall', true);
 
             this.closeModalAndDisconnect = _baseCall.bind(null, CallsSrv.disconnectCall, 'disconnectCall');
         }]
@@ -352,7 +365,7 @@
                 var dataToSave = {};
                 // update root
                 data.currCallData.status = CallsStatusEnum.ENDED_CALL.enum;
-                dataToSave[data.currCallData.$$path] = data.currCallData;
+                dataToSave[data.currCallData.$$path] = angular.copy(data.currCallData);
                 //current user call requests object update
                 data.currUserCallsRequests[guid] = null;
                 dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
@@ -369,7 +382,7 @@
                 var dataToSave = {};
                 // update root
                 data.currCallData.status = CallsStatusEnum.DECLINE_CALL.enum;
-                dataToSave[data.currCallData.$$path] = data.currCallData;
+                dataToSave[data.currCallData.$$path] = angular.copy(data.currCallData);
                 //current user call requests object update
                 data.currUserCallsRequests[guid] = null;
                 dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
@@ -446,12 +459,6 @@
                                 break;
                             case CallsStatusEnum.DECLINE_CALL.enum:
                                 $log.debug('call declined');
-                                if (isCurrentUserInitiatedCall(currUid)) {
-                                    // close outgoing call modal
-                                    CallsUiSrv.closeModal();
-                                } else {
-                                    // show incoming call modal WITH the DECLINED TEXT
-                                }
                                 break;
                             case CallsStatusEnum.ACTIVE_CALL.enum:
                                 $log.debug('call active');
@@ -631,8 +638,9 @@
                 });
             }
 
-            function _declineCall(callsData) {
-                return _webCallHang().then(function () {
+            function _declineCall(callsData, hangWebCall) {
+                var prom = hangWebCall ? _webCallHang() : $q.when();
+                return prom.then(function () {
                     var getDataPromMap = _getDataPromMap(callsData.guid);
                     return $q.all(getDataPromMap).then(function (data) {
                        return CallsDataSetterSrv.setDeclineCall(data, callsData, callsData.guid);
@@ -674,9 +682,9 @@
                 });
             };
 
-            this.declineCall = function(callsData) {
+            this.declineCall = function(callsData, hangWebCall) {
                 return _handleCallerIdOrReceiverIdUndefined(callsData, 'declineCall').then(function () {
-                    return _declineCall(callsData);
+                    return _declineCall(callsData, hangWebCall);
                 });
             };
             /* used to disconnect the other user from web call */
@@ -825,13 +833,13 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "        <!-- Call Declined -->\n" +
     "        <div ng-switch-when=\"2\" class=\"flex-column\">\n" +
     "            <span\n" +
-    "                translate=\".CALLING_DECLINE\"\n" +
+    "                translate=\".CALLING_CANCELED\"\n" +
     "                class=\"modal-sub-title call-status\">\n" +
     "            </span>\n" +
     "            <div class=\"btn-container\">\n" +
     "                <div class=\"btn-ok\">\n" +
     "                    <button\n" +
-    "                        ng-click=\"vm.closeModalAndDisconnect()\"\n" +
+    "                        ng-click=\"vm.closeModal()\"\n" +
     "                        translate=\".OK\">\n" +
     "                    </button>\n" +
     "                </div>\n" +
