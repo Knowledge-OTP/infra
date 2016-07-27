@@ -4,14 +4,22 @@
     angular.module('znk.infra.calls').controller('OutgoingCallModalCtrl',
         function (CallsSrv, CallsUiSrv, $log) {
             'ngInject';
+
             var callsData = this.scope.callsData;
-            this.declineCall = function() {
-                CallsSrv.declineCall(callsData).then(function () {
+
+            function _baseCall(callFn, methodName) {
+                callFn(callsData).then(function () {
                     CallsUiSrv.closeModal();
                 }).catch(function (err) {
-                    $log.error('IncomingCallModalCtrl declineCall: err: ' + err);
+                    $log.error('OutgoingCallModalCtrl '+ methodName +': err: ' + err);
                 });
-            };
+            }
+
+            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall');
+
+            this.acceptCall = _baseCall.bind(null, CallsSrv.acceptCall, 'acceptCall');
+
+            this.closeModalAndDisconnect = _baseCall.bind(null, CallsSrv.disconnectCall, 'disconnectCall');
         }
     );
 })(angular);
