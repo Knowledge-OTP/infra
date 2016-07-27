@@ -18,10 +18,8 @@
                 activeCallStatus = false;
             };
 
-            self.showModal = function (modal, callsData) {
-                modal.modalData = {
-                    callsData: callsData
-                };
+            self.showModal = function (modal, scope) {
+                modal.scope = scope;
                 ModalService.showBaseModal(modal);
             };
 
@@ -34,13 +32,17 @@
                     svgIcon: 'incoming-call-icon',
                     innerTemplateUrl: 'components/calls/modals/templates/incomingCall.template.html',
                     controller: 'IncomingCallModalCtrl',
-                    overrideCssClass: 'incoming-call-modal'
+                    overrideCssClass: 'incoming-call-modal',
+                    clickOutsideToClose: false,
+                    escapeToClose: false
                 },
                 'OUTGOING_CALL': {
                     svgIcon: 'outgoing-call-icon',
                     innerTemplateUrl: 'components/calls/modals/templates/outgoingCall.template.html',
                     controller: 'OutgoingCallModalCtrl',
-                    overrideCssClass: 'outgoing-call-modal'
+                    overrideCssClass: 'outgoing-call-modal',
+                    clickOutsideToClose: false,
+                    escapeToClose: false
                 }
             };
 

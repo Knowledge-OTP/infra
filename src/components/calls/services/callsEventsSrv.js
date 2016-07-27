@@ -8,9 +8,18 @@
             isEnabled = _isEnabled;
         };
 
-        this.$get = function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, CallsSrv) {
+        this.$get = function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, CallsSrv, $rootScope) {
             'ngInject';
             var CallsEventsSrv = {};
+
+            var scope;
+
+            function getScopeSingleTon() {
+                if (!scope) {
+                    scope = $rootScope.$new();
+                }
+                return scope;
+            }
 
             function _listenToCallsData(guid) {
                 var callsStatusPath = 'calls/' + guid;
@@ -21,16 +30,20 @@
                         return;
                     }
 
+                    var scopeSingleton = getScopeSingleTon();
+
+                    scopeSingleton.callsData = callsData;
+
                     UserProfileService.getCurrUserId().then(function (currUid) {
                         switch(callsData.status) {
                             case CallsStatusEnum.PENDING_CALL.enum:
                                 $log.debug('call pending');
                                 if (isCurrentUserInitiatedCall(currUid)) {
                                     // show outgoing call modal
-                                    CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, callsData);
+                                    CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scopeSingleton);
                                 } else {
                                     // show incoming call modal with the ACCEPT & DECLINE buttons
-                                    CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, callsData);
+                                    CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, scopeSingleton);
                                 }
                                 break;
                             case CallsStatusEnum.DECLINE_CALL.enum:
@@ -40,14 +53,14 @@
                                     CallsUiSrv.closeModal();
                                 } else {
                                     // show incoming call modal WITH the DECLINED TEXT
-                                    CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, callsData);
+                                    CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, scopeSingleton);
                                 }
                                 break;
                             case CallsStatusEnum.ACTIVE_CALL.enum:
                                 $log.debug('call active');
                                 if (isCurrentUserInitiatedCall(currUid)) {
                                     // show outgoing call modal WITH the ANSWERED TEXT, wait 2 seconds and close the modal, show the ActiveCallDRV
-                                    CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, callsData);
+                                    CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scopeSingleton);
                                     CallsUiSrv.showActiveCallDrv();
                                 } else {
                                     // close the modal, show the ActiveCallDRV
