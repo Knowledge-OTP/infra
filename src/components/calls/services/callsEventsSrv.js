@@ -12,6 +12,15 @@
             'ngInject';
             var CallsEventsSrv = {};
 
+            var scope;
+
+            function getScopeSingleTon() {
+                if (!scope) {
+                    scope = $rootScope.$new();
+                }
+                return scope;
+            }
+
             function _listenToCallsData(guid) {
                 var callsStatusPath = 'calls/' + guid;
 
@@ -21,9 +30,9 @@
                         return;
                     }
 
-                    var scope = $rootScope.$new();
+                    var scopeSingleton = getScopeSingleTon();
 
-                    scope.callsData = callsData;
+                    scopeSingleton.callsData = callsData;
 
                     UserProfileService.getCurrUserId().then(function (currUid) {
                         switch(callsData.status) {
@@ -31,7 +40,7 @@
                                 $log.debug('call pending');
                                 if (isCurrentUserInitiatedCall(currUid)) {
                                     // show outgoing call modal
-                                    CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scope);
+                                    CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scopeSingleton);
                                 } else {
                                     // show incoming call modal with the ACCEPT & DECLINE buttons
                                     CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, callsData);
