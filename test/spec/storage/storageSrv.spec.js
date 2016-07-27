@@ -124,14 +124,14 @@ describe('testing service "StorageSrv":', function () {
     });
 
     it('when invoking $save of received entity then save entity function should be invoked', function () {
-        spyOn(adapter, 'set').and.callThrough();
+        spyOn(adapter, 'update').and.callThrough();
 
         var entity = entityCommunicator.get();
         entity.newProp = 'new prop';
         entity.$save();
         $rootScope.$digest();
 
-        expect(adapter.set).toHaveBeenCalledWith(communicatorPath, entity);
+        expect(adapter.update).toHaveBeenCalledWith(communicatorPath, entity);
     });
 
     it('when updating multiple locations are save simultaneously then cache should be updated accordingly', function () {

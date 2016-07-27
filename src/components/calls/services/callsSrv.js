@@ -119,8 +119,9 @@
                 });
             }
 
-            function _declineCall(callsData) {
-                return _webCallHang().then(function () {
+            function _declineCall(callsData, hangWebCall) {
+                var prom = hangWebCall ? _webCallHang() : $q.when();
+                return prom.then(function () {
                     var getDataPromMap = _getDataPromMap(callsData.guid);
                     return $q.all(getDataPromMap).then(function (data) {
                        return CallsDataSetterSrv.setDeclineCall(data, callsData, callsData.guid);
@@ -162,9 +163,9 @@
                 });
             };
 
-            this.declineCall = function(callsData) {
+            this.declineCall = function(callsData, hangWebCall) {
                 return _handleCallerIdOrReceiverIdUndefined(callsData, 'declineCall').then(function () {
-                    return _declineCall(callsData);
+                    return _declineCall(callsData, hangWebCall);
                 });
             };
             /* used to disconnect the other user from web call */
