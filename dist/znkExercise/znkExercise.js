@@ -547,8 +547,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('questionsCarousel', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum',
-        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum) {
+        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum', '$timeout',
+        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum, $timeout) {
             return {
                 templateUrl: function(){
                     var templateUrl = "components/znkExercise/core/template/";
@@ -614,7 +614,9 @@
                         var newNum = newValArr[1];
                         var oldNum = oldValArr[1];
                         if(oldNum && newNum !== oldNum){
-                            scope.vm.swiperActions.updateFollowingSlideAddition();
+                            $timeout(function(){
+                                scope.vm.swiperActions.updateFollowingSlideAddition();
+                            });
                         }
                     });
                 }
