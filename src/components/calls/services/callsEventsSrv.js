@@ -50,7 +50,7 @@
                                 $log.debug('call declined');
                                 if (isCurrentUserInitiatedCall(currUid)) {
                                     // close outgoing call modal
-                                    CallsUiSrv.closeModal();
+                                   // CallsUiSrv.closeModal();
                                 } else {
                                     // show incoming call modal WITH the DECLINED TEXT
                                 }
