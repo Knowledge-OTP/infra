@@ -1,27 +1,22 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.calls').controller('IncomingCallModalCtrl', [
+    angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
         function (modalData, CallsSrv, CallsUiSrv, $log) {
             'ngInject';
 
-            this.declineCall = function() {
+            function _baseCall(callFn, methodName) {
                 var callsData = modalData.callsData;
-                CallsSrv.declineCall(callsData).then(function () {
+                callFn(callsData).then(function () {
                     CallsUiSrv.closeModal();
                 }).catch(function (err) {
-                    $log.error('IncomingCallModalCtrl declineCall: err: ' + err);
+                    $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);
                 });
-            };
+            }
 
-            this.acceptCall = function() {
-                var callsData = modalData.callsData;
-                CallsSrv.acceptCall(callsData).then(function () {
-                    CallsUiSrv.closeModal();
-                }).catch(function (err) {
-                    $log.error('IncomingCallModalCtrl acceptCall: err: ' + err);
-                });
-            };
-        }]
+            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall');
+
+            this.declineCall = _baseCall.bind(null, CallsSrv.acceptCall, 'acceptCall');
+        }
     );
 })(angular);
