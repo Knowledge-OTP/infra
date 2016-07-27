@@ -77,7 +77,7 @@
                 var dataToSave = {};
                 // update root
                 currCallData.status = CallsStatusEnum.ACTIVE_CALL.enum;
-                dataToSave[currCallData.$$path] = currCallData;
+                dataToSave[currCallData.$$path] = angular.copy(currCallData);
                 return _getStorage().then(function (StudentStorage) {
                     return StudentStorage.update(dataToSave);
                 });
