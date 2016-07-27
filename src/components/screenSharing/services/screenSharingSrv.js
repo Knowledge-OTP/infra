@@ -7,7 +7,7 @@
 
             var _this = this;
 
-            var activeScreenSharingData = null;
+            var activeScreenSharingDataFromAdapter = null;
             var currUserScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
             var registeredCbToActiveScreenSharingDataChanges = [];
             var registeredCbToCurrUserScreenSharingStateChange = [];
@@ -35,7 +35,7 @@
                         var screenSharingData = screenSharingDataMap[screenSharingDataKey];
 
                         var isEnded = screenSharingData.status === ScreenSharingStatusEnum.ENDED.enum;
-                        if(isEnded){
+                        if (isEnded) {
                             _this.endSharing(screenSharingData.guid);
                             continue;
                         }
@@ -58,7 +58,7 @@
                     return $q.reject(errMsg);
                 }
 
-                if(currUserScreenSharingState !== UserScreenSharingStateEnum.NONE.enum){
+                if (currUserScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
                     errMsg = 'ScreenSharingSrv: screen sharing is already active!!!';
                     $log.debug(errMsg);
                     return $q.reject(errMsg);
@@ -108,7 +108,7 @@
                         data.currUserScreenSharingRequests[newScreenSharingGuid] = true;
                         dataToSave[data.currUserScreenSharingRequests.$$path] = data.currUserScreenSharingRequests;
                         //other user screen sharing requests object update
-                        var otherUserScreenSharingPath = viewerData.uid === data.currUid ? sharerPath: viewerPath;
+                        var otherUserScreenSharingPath = viewerData.uid === data.currUid ? sharerPath : viewerPath;
                         var viewerScreenSharingDataGuidPath = otherUserScreenSharingPath + '/' + newScreenSharingGuid;
                         dataToSave[viewerScreenSharingDataGuidPath] = true;
 
@@ -120,13 +120,13 @@
                 });
             }
 
-            function _cleanRegisteredCbToActiveScreenSharingData(){
-                activeScreenSharingData = null;
+            function _cleanRegisteredCbToActiveScreenSharingData() {
+                activeScreenSharingDataFromAdapter = null;
                 registeredCbToActiveScreenSharingDataChanges = [];
             }
 
-            function _invokeCurrUserScreenSharingStateChangedCb(){
-                registeredCbToCurrUserScreenSharingStateChange.forEach(function(cb){
+            function _invokeCurrUserScreenSharingStateChangedCb() {
+                registeredCbToCurrUserScreenSharingStateChange.forEach(function (cb) {
                     cb(currUserScreenSharingState);
                 });
             }
@@ -152,7 +152,7 @@
             };
 
             this.confirmSharing = function (screenSharingDataGuid) {
-                if(currUserScreenSharingState !== UserScreenSharingStateEnum.NONE.enum){
+                if (currUserScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
                     var errMsg = 'ScreenSharingSrv: screen sharing is already active!!!';
                     $log.debug(errMsg);
                     return $q.reject(errMsg);
@@ -180,9 +180,9 @@
                     dataToSave[data.currUidScreenSharingRequests.$$path] = data.currUidScreenSharingRequests;
 
                     var otherUserScreenSharingRequestPath;
-                    if(data.screenSharingData.viewerId !== data.currUid){
+                    if (data.screenSharingData.viewerId !== data.currUid) {
                         otherUserScreenSharingRequestPath = data.screenSharingData.viewerPath;
-                    }else{
+                    } else {
                         otherUserScreenSharingRequestPath = data.screenSharingData.sharerPath;
                     }
                     otherUserScreenSharingRequestPath += '/' + data.screenSharingData.guid;
@@ -192,33 +192,46 @@
                 });
             };
 
-            this.registerToActiveScreenSharingDataChanges = function(cb){
-                if(activeScreenSharingData){
+            this.registerToActiveScreenSharingDataChanges = function (cb) {
+                if (activeScreenSharingDataFromAdapter) {
                     registeredCbToActiveScreenSharingDataChanges.push(cb);
-                    cb(activeScreenSharingData);
+                    cb(activeScreenSharingDataFromAdapter);
                 }
             };
 
-            this.registerToCurrUserScreenSharingStateChanges = function(cb){
+            this.registerToCurrUserScreenSharingStateChanges = function (cb) {
                 registeredCbToCurrUserScreenSharingStateChange.push(cb);
                 cb(currUserScreenSharingState);
             };
 
-            this.unregisterFromCurrUserScreenSharingStateChanges = function(cb){
-                registeredCbToCurrUserScreenSharingStateChange = registeredCbToCurrUserScreenSharingStateChange.filter(function(iterationCb){
+            this.unregisterFromCurrUserScreenSharingStateChanges = function (cb) {
+                registeredCbToCurrUserScreenSharingStateChange = registeredCbToCurrUserScreenSharingStateChange.filter(function (iterationCb) {
                     return iterationCb !== cb;
                 });
             };
 
-            this.getActiveScreenSharingData = function(){
-                if(!activeScreenSharingData){
-                    return $q.reject('ScreenSharingSrv: no active screen sharing data');
+            this.getActiveScreenSharingData = function () {
+                if (!activeScreenSharingDataFromAdapter) {
+                    return null;
                 }
-                return ScreenSharingDataGetterSrv.getScreenSharingData(activeScreenSharingData.guid);
+
+                var dataPromMap = {
+                    screenSharingData: ScreenSharingDataGetterSrv.getScreenSharingData(activeScreenSharingDataFromAdapter.guid),
+                    currUid: UserProfileService.getCurrUserId()
+                };
+                return $q.all(dataPromMap).then(function(dataMap){
+                    var orig$saveFn = dataMap.screenSharingData.$save;
+                    dataMap.screenSharingData.$save = function () {
+                        dataMap.screenSharingData.updatedBy = dataMap.currUid;
+                        return orig$saveFn.apply(dataMap.screenSharing);
+                    };
+
+                    return dataMap.screenSharingData;
+                });
             };
 
             this._userScreenSharingStateChanged = function (newUserScreenSharingState, screenSharingData) {
-                if(!newUserScreenSharingState || (currUserScreenSharingState === newUserScreenSharingState)){
+                if (!newUserScreenSharingState || (currUserScreenSharingState === newUserScreenSharingState)) {
                     return;
                 }
 
@@ -226,27 +239,27 @@
 
                 var isViewerState = newUserScreenSharingState === UserScreenSharingStateEnum.VIEWER.enum;
                 var isSharerState = newUserScreenSharingState === UserScreenSharingStateEnum.SHARER.enum;
-                if(isSharerState || isViewerState){
-                    activeScreenSharingData = screenSharingData;
-                    ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState).then(function(){
+                if (isSharerState || isViewerState) {
+                    activeScreenSharingDataFromAdapter = screenSharingData;
+                    ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState).then(function () {
                         _this.endSharing(screenSharingData.guid);
                     });
-                }else{
+                } else {
                     _cleanRegisteredCbToActiveScreenSharingData();
                     ScreenSharingUiSrv.endScreenSharing();
                 }
 
-                _invokeCurrUserScreenSharingStateChangedCb(currUserScreenSharingState );
+                _invokeCurrUserScreenSharingStateChangedCb(currUserScreenSharingState);
             };
 
-            this._screenSharingDataChanged = function(newScreenSharingData){
-                if(!activeScreenSharingData || activeScreenSharingData.guid !== newScreenSharingData.guid){
+            this._screenSharingDataChanged = function (newScreenSharingData) {
+                if (!activeScreenSharingDataFromAdapter || activeScreenSharingDataFromAdapter.guid !== newScreenSharingData.guid) {
                     return;
                 }
 
-                activeScreenSharingData = newScreenSharingData;
-                registeredCbToActiveScreenSharingDataChanges.forEach(function(cb){
-                    cb(activeScreenSharingData);
+                activeScreenSharingDataFromAdapter = newScreenSharingData;
+                registeredCbToActiveScreenSharingDataChanges.forEach(function (cb) {
+                    cb(activeScreenSharingDataFromAdapter);
                 });
             };
         }
