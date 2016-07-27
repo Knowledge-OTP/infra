@@ -8,7 +8,7 @@
             isEnabled = _isEnabled;
         };
 
-        this.$get = function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, CallsSrv) {
+        this.$get = function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, CallsSrv, $rootScope) {
             'ngInject';
             var CallsEventsSrv = {};
 
@@ -21,13 +21,17 @@
                         return;
                     }
 
+                    var scope = $rootScope.$new();
+
+                    scope.callsData = callsData;
+
                     UserProfileService.getCurrUserId().then(function (currUid) {
                         switch(callsData.status) {
                             case CallsStatusEnum.PENDING_CALL.enum:
                                 $log.debug('call pending');
                                 if (isCurrentUserInitiatedCall(currUid)) {
                                     // show outgoing call modal
-                                    CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, callsData);
+                                    CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scope);
                                 } else {
                                     // show incoming call modal with the ACCEPT & DECLINE buttons
                                     CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, callsData);
