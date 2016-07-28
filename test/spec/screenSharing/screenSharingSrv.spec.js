@@ -28,7 +28,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         _deps.GlobalStorage = _deps.TestUtilitySrv.general.asyncToSync(_deps.InfraConfigSrv.getGlobalStorage, _deps.InfraConfigSrv)();
     }));
 
-    function _addScreenSharingRequestToUser(uid, isTeacher, guid){
+    function _addScreenSharingRequestToUser(uid, isTeacher, guid) {
         var appName = isTeacher ? _deps.ENV.dashboardAppName : _deps.ENV.studentAppName;
 
         var path = appName + '/users/' + uid + '/screenSharing';
@@ -38,7 +38,7 @@ describe('testing service "ScreenSharingSrv":', function () {
 
     }
 
-    function _updateScreenSharingData(screenSharingData){
+    function _updateScreenSharingData(screenSharingData) {
         var path = 'screenSharing/' + screenSharingData.guid;
 
         _deps.GlobalStorage.adapter.update(path, screenSharingData);
@@ -153,7 +153,7 @@ describe('testing service "ScreenSharingSrv":', function () {
     });
 
     it('given screen sharing request with status ended exists when trying to share my screen with the same user then new screen sharing' +
-        'data should be create', function(){
+        'data should be create', function () {
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
         var screenSharingDataGuid = '123456789-data-guid';
@@ -163,12 +163,12 @@ describe('testing service "ScreenSharingSrv":', function () {
         };
 
         _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[myUid] = {
-            screenSharing:{}
+            screenSharing: {}
         };
         var myScreenSharingRequestsData = _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[myUid].screenSharing;
 
         _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[otherUid] = {
-            screenSharing:{}
+            screenSharing: {}
         };
         var otherUserScreenSharingRequestsData = _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[otherUid].screenSharing;
 
@@ -237,7 +237,7 @@ describe('testing service "ScreenSharingSrv":', function () {
             }
         };
         var currStudentAppUsersObject = _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users;
-        expect(currStudentAppUsersObject).toEqual(jasmine.objectContaining(expectedStudentAppUsersObject ));
+        expect(currStudentAppUsersObject).toEqual(jasmine.objectContaining(expectedStudentAppUsersObject));
 
         var expectedTeacherAppUsersObject = {};
         expectedTeacherAppUsersObject[sharerId] = {
@@ -246,7 +246,7 @@ describe('testing service "ScreenSharingSrv":', function () {
             }
         };
         var currTeacherAppUsersObject = _deps.GlobalStorage.adapter.__db[_deps.ENV.dashboardAppName].users;
-        expect(currTeacherAppUsersObject ).toEqual(jasmine.objectContaining(expectedTeacherAppUsersObject));
+        expect(currTeacherAppUsersObject).toEqual(jasmine.objectContaining(expectedTeacherAppUsersObject));
     });
 
     it('given i\'m a student when requesting to view other student screen then root shareScreen object and sharer and ' +
@@ -332,14 +332,14 @@ describe('testing service "ScreenSharingSrv":', function () {
             sharerPath: _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing'
         };
 
-        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName] = {users:{}};
+        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName] = {users: {}};
 
         //set viewer screen sharing requests data
-        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[viewerId] = {screenSharing:{}};
+        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[viewerId] = {screenSharing: {}};
         _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[viewerId].screenSharing[screenSharingDataGuid] = true;
 
         //set sharer screen sharing requests data
-        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[sharerId] = {screenSharing:{}};
+        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[sharerId] = {screenSharing: {}};
         _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[sharerId].screenSharing[screenSharingDataGuid] = true;
 
         _deps.ScreenSharingSrvSync.endSharing(screenSharingDataGuid);
@@ -354,13 +354,13 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(_deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[viewerId].screenSharing[screenSharingDataGuid]).toBeFalsy();
     });
 
-    it('when user close the view other user screen modal then screen sharing data status should change to ended', function(){
+    it('when user close the view other user screen modal then screen sharing data status should change to ended', function () {
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
         var screenSharingDataGuid = '123456789-data-guid';
 
-        _addScreenSharingRequestToUser(myUid,false, screenSharingDataGuid);
-        _addScreenSharingRequestToUser(otherUid,false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(myUid, false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(otherUid, false, screenSharingDataGuid);
 
         var viewerId = myUid;
         var sharerId = otherUid;
@@ -371,7 +371,7 @@ describe('testing service "ScreenSharingSrv":', function () {
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.PENDING_VIEWER.enum,
-            viewerPath: viewerScreenSharingRequestsPath ,
+            viewerPath: viewerScreenSharingRequestsPath,
             sharerPath: sharerScreenSharingRequestsPath
         };
         _updateScreenSharingData(screenSharingData);
@@ -387,13 +387,13 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(_deps.ScreenSharingUiSrv.endScreenSharing).toHaveBeenCalled();
     });
 
-    it('when screen sharing is active then new screen sharing requests should be ignored', function(){
+    it('when screen sharing is active then new screen sharing requests should be ignored', function () {
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
         var screenSharingDataGuid = '123456789-data-guid';
 
-        _addScreenSharingRequestToUser(myUid,false, screenSharingDataGuid);
-        _addScreenSharingRequestToUser(otherUid,false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(myUid, false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(otherUid, false, screenSharingDataGuid);
 
         var viewerId = myUid;
         var sharerId = otherUid;
@@ -404,7 +404,7 @@ describe('testing service "ScreenSharingSrv":', function () {
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
-            viewerPath: viewerScreenSharingRequestsPath ,
+            viewerPath: viewerScreenSharingRequestsPath,
             sharerPath: sharerScreenSharingRequestsPath
         };
         _updateScreenSharingData(screenSharingData);
@@ -415,9 +415,9 @@ describe('testing service "ScreenSharingSrv":', function () {
             isTeacher: false
         };
         var shareMyScreenProm = _deps.ScreenSharingSrv.shareMyScreen(viewerData)
-        shareMyScreenProm.then(function(){
+        shareMyScreenProm.then(function () {
             shareMyScreenResult = 'resolved';
-        },function(){
+        }, function () {
             shareMyScreenResult = 'rejected';
         });
         _deps.$rootScope.$digest();
@@ -427,13 +427,13 @@ describe('testing service "ScreenSharingSrv":', function () {
     });
 
     it('given screen sharing is confirmed when screen sharing data is changed then all registered cb should ' +
-        'be invoked', function(){
+        'be invoked', function () {
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
         var screenSharingDataGuid = '123456789-data-guid';
 
-        _addScreenSharingRequestToUser(myUid,false, screenSharingDataGuid);
-        _addScreenSharingRequestToUser(otherUid,false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(myUid, false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(otherUid, false, screenSharingDataGuid);
 
         var viewerId = myUid;
         var sharerId = otherUid;
@@ -444,15 +444,17 @@ describe('testing service "ScreenSharingSrv":', function () {
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
-            viewerPath: viewerScreenSharingRequestsPath ,
+            viewerPath: viewerScreenSharingRequestsPath,
             sharerPath: sharerScreenSharingRequestsPath
         };
         _updateScreenSharingData(screenSharingData);
 
         var valueReceivedInCb;
-        function cb(_newScreenSharingData){
+
+        function cb(_newScreenSharingData) {
             valueReceivedInCb = _newScreenSharingData;
         }
+
         _deps.ScreenSharingSrv.registerToActiveScreenSharingDataChanges(cb);
 
         var screenSharingPath = 'screenSharing/' + screenSharingDataGuid;
@@ -466,14 +468,14 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(valueReceivedInCb).toEqual(newScreenSharingData);
     });
 
-    it('given screen sharing is confirmed when screen sharing status change to ENDED then once screen sharing data is changed' +
-        ' then no registered cn should be invoked', function(){
+    it('given screen sharing is confirmed when unregistering from active screen sharing changes then callback should ' +
+        'not be invoked once the active screen sharing data has changed', function () {
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
         var screenSharingDataGuid = '123456789-data-guid';
 
-        _addScreenSharingRequestToUser(myUid,false, screenSharingDataGuid);
-        _addScreenSharingRequestToUser(otherUid,false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(myUid, false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(otherUid, false, screenSharingDataGuid);
 
         var viewerId = myUid;
         var sharerId = otherUid;
@@ -484,15 +486,60 @@ describe('testing service "ScreenSharingSrv":', function () {
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
-            viewerPath: viewerScreenSharingRequestsPath ,
+            viewerPath: viewerScreenSharingRequestsPath,
             sharerPath: sharerScreenSharingRequestsPath
         };
         _updateScreenSharingData(screenSharingData);
 
         var valueReceivedInCb;
-        function cb(_newScreenSharingData){
+
+        function cb(_newScreenSharingData) {
             valueReceivedInCb = _newScreenSharingData;
         }
+
+        _deps.ScreenSharingSrv.registerToActiveScreenSharingDataChanges(cb);
+        _deps.ScreenSharingSrv.unregisterFromActiveScreenSharingDataChanges(cb);
+
+        var screenSharingPath = 'screenSharing/' + screenSharingDataGuid;
+        var newScreenSharingData = angular.copy(screenSharingData);
+        newScreenSharingData.activeExercise = {
+            exerciseId: 1
+        };
+        _deps.GlobalStorage.adapter.update(screenSharingPath, newScreenSharingData);
+        _deps.$rootScope.$digest();
+
+        expect(valueReceivedInCb).toEqual(screenSharingData);
+    });
+
+    it('given screen sharing is confirmed when screen sharing status change to ENDED then once screen sharing data is changed' +
+        ' then no registered cn should be invoked', function () {
+        var myUid = _deps.UserProfileService.__currUserId;
+        var otherUid = '123456789-other-uid';
+        var screenSharingDataGuid = '123456789-data-guid';
+
+        _addScreenSharingRequestToUser(myUid, false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(otherUid, false, screenSharingDataGuid);
+
+        var viewerId = myUid;
+        var sharerId = otherUid;
+        var viewerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
+        var sharerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
+        var screenSharingData = {
+            guid: screenSharingDataGuid,
+            sharerId: sharerId,
+            viewerId: viewerId,
+            status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
+            viewerPath: viewerScreenSharingRequestsPath,
+            sharerPath: sharerScreenSharingRequestsPath
+        };
+        _updateScreenSharingData(screenSharingData);
+
+        var valueReceivedInCb;
+
+        function cb(_newScreenSharingData) {
+            valueReceivedInCb = _newScreenSharingData;
+        }
+
         _deps.ScreenSharingSrv.registerToActiveScreenSharingDataChanges(cb);
 
         var screenSharingPath = 'screenSharing/' + screenSharingDataGuid;
@@ -508,13 +555,13 @@ describe('testing service "ScreenSharingSrv":', function () {
     });
 
     it('given screen sharing is confirmed when screen sharing data update then registered cb should be invoked only in case' +
-        ' the active screen sharing data was updated', function(){
+        ' the active screen sharing data was updated', function () {
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
         var screenSharingDataGuid = '123456789-data-guid';
 
-        _addScreenSharingRequestToUser(myUid,false, screenSharingDataGuid);
-        _addScreenSharingRequestToUser(otherUid,false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(myUid, false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(otherUid, false, screenSharingDataGuid);
 
         var viewerId = myUid;
         var sharerId = otherUid;
@@ -525,15 +572,17 @@ describe('testing service "ScreenSharingSrv":', function () {
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
-            viewerPath: viewerScreenSharingRequestsPath ,
+            viewerPath: viewerScreenSharingRequestsPath,
             sharerPath: sharerScreenSharingRequestsPath
         };
         _updateScreenSharingData(screenSharingData);
 
         var valueReceivedInCb;
-        function cb(_newScreenSharingData){
+
+        function cb(_newScreenSharingData) {
             valueReceivedInCb = _newScreenSharingData;
         }
+
         _deps.ScreenSharingSrv.registerToActiveScreenSharingDataChanges(cb);
 
         var screenSharingPath = 'screenSharing/' + screenSharingDataGuid;
@@ -549,21 +598,23 @@ describe('testing service "ScreenSharingSrv":', function () {
     });
 
     it('when registering to current user screen sharing state changes then the callback should be invoked once the ' +
-        'current user state change', function(){
+        'current user state change', function () {
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
         var screenSharingDataGuid = '123456789-data-guid';
 
         var valueFromCb;
-        function cb(newUserScreenSharingState){
+
+        function cb(newUserScreenSharingState) {
             valueFromCb = newUserScreenSharingState;
         }
+
         _deps.ScreenSharingSrv.registerToCurrUserScreenSharingStateChanges(cb);
         var expectedValue = _deps.UserScreenSharingStateEnum.NONE.enum;
         expect(valueFromCb).toBe(expectedValue);
 
-        _addScreenSharingRequestToUser(myUid,false, screenSharingDataGuid);
-        _addScreenSharingRequestToUser(otherUid,false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(myUid, false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(otherUid, false, screenSharingDataGuid);
 
         var viewerId = myUid;
         var sharerId = otherUid;
@@ -574,7 +625,7 @@ describe('testing service "ScreenSharingSrv":', function () {
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
-            viewerPath: viewerScreenSharingRequestsPath ,
+            viewerPath: viewerScreenSharingRequestsPath,
             sharerPath: sharerScreenSharingRequestsPath
         };
         _updateScreenSharingData(screenSharingData);
@@ -583,20 +634,22 @@ describe('testing service "ScreenSharingSrv":', function () {
     });
 
     it('when unregistering from user screen sharing state changes then the callback should not be invoke once the ' +
-        'user screen sharing state has changed', function(){
+        'user screen sharing state has changed', function () {
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
         var screenSharingDataGuid = '123456789-data-guid';
 
         var valueFromCb;
-        function cb(newUserScreenSharingState){
+
+        function cb(newUserScreenSharingState) {
             valueFromCb = newUserScreenSharingState;
         }
+
         _deps.ScreenSharingSrv.registerToCurrUserScreenSharingStateChanges(cb);
 
 
-        _addScreenSharingRequestToUser(myUid,false, screenSharingDataGuid);
-        _addScreenSharingRequestToUser(otherUid,false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(myUid, false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(otherUid, false, screenSharingDataGuid);
 
         var viewerId = myUid;
         var sharerId = otherUid;
@@ -607,7 +660,7 @@ describe('testing service "ScreenSharingSrv":', function () {
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
-            viewerPath: viewerScreenSharingRequestsPath ,
+            viewerPath: viewerScreenSharingRequestsPath,
             sharerPath: sharerScreenSharingRequestsPath
         };
         _deps.ScreenSharingSrv.unregisterFromCurrUserScreenSharingStateChanges(cb);
@@ -617,13 +670,13 @@ describe('testing service "ScreenSharingSrv":', function () {
     });
 
     it('given user sharing his screen when saving screen sharing data then updated by field ' +
-        'should be updated correctly', function(){
+        'should be updated correctly', function () {
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
         var screenSharingDataGuid = '123456789-data-guid';
 
-        _addScreenSharingRequestToUser(myUid,false, screenSharingDataGuid);
-        _addScreenSharingRequestToUser(otherUid,false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(myUid, false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(otherUid, false, screenSharingDataGuid);
 
         var viewerId = myUid;
         var sharerId = otherUid;
@@ -634,7 +687,7 @@ describe('testing service "ScreenSharingSrv":', function () {
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
-            viewerPath: viewerScreenSharingRequestsPath ,
+            viewerPath: viewerScreenSharingRequestsPath,
             sharerPath: sharerScreenSharingRequestsPath
         };
         _updateScreenSharingData(screenSharingData);

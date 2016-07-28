@@ -415,8 +415,18 @@
             }
 
             function _invokeCurrUserScreenSharingStateChangedCb() {
-                registeredCbToCurrUserScreenSharingStateChange.forEach(function (cb) {
-                    cb(currUserScreenSharingState);
+                _invokeCbs(registeredCbToCurrUserScreenSharingStateChange, [currUserScreenSharingState]);
+            }
+
+            function _removeCbFromCbArr(cbArr, cb){
+                return cbArr.filter(function (iterationCb) {
+                    return iterationCb !== cb;
+                });
+            }
+
+            function _invokeCbs(cbArr, args){
+                cbArr.forEach(function(cb){
+                    cb.apply(null, args);
                 });
             }
 
@@ -488,15 +498,17 @@
                 }
             };
 
+            this.unregisterFromActiveScreenSharingDataChanges = function(cb){
+                registeredCbToActiveScreenSharingDataChanges =_removeCbFromCbArr(registeredCbToActiveScreenSharingDataChanges, cb);
+            };
+
             this.registerToCurrUserScreenSharingStateChanges = function (cb) {
                 registeredCbToCurrUserScreenSharingStateChange.push(cb);
                 cb(currUserScreenSharingState);
             };
 
             this.unregisterFromCurrUserScreenSharingStateChanges = function (cb) {
-                registeredCbToCurrUserScreenSharingStateChange = registeredCbToCurrUserScreenSharingStateChange.filter(function (iterationCb) {
-                    return iterationCb !== cb;
-                });
+                registeredCbToCurrUserScreenSharingStateChange = _removeCbFromCbArr(registeredCbToCurrUserScreenSharingStateChange,cb);
             };
 
             this.getActiveScreenSharingData = function () {
@@ -547,9 +559,7 @@
                 }
 
                 activeScreenSharingDataFromAdapter = newScreenSharingData;
-                registeredCbToActiveScreenSharingDataChanges.forEach(function (cb) {
-                    cb(activeScreenSharingDataFromAdapter);
-                });
+                _invokeCbs(registeredCbToActiveScreenSharingDataChanges, [activeScreenSharingDataFromAdapter]);
             };
         }]
     );

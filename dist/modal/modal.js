@@ -31,12 +31,13 @@
                             $mdDialog.hide();
                         }
                     },
+                    scope: popupData.scope || {},
                     bindToController: true,
                     controller: popupData.controller,
                     controllerAs: 'vm',
                     templateUrl: baseTemplateUrl,
-                    clickOutsideToClose: true,
-                    escapeToClose: true
+                    clickOutsideToClose: popupData.clickOutsideToClose || true,
+                    escapeToClose: popupData.clickOutsideToClose || true
                 });
             };
 
