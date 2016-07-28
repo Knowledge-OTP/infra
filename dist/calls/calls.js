@@ -412,13 +412,12 @@
             'ngInject';
             var CallsEventsSrv = {};
 
-            var scope;
+            var scopesObj = {};
 
-            function getScopeSingleTon() {
-                if (!scope) {
-                    scope = $rootScope.$new();
-                }
-                return scope;
+            function updateScopeData(callsData) {
+                angular.forEach(scopesObj, function(scope) {
+                    scope.callsData = callsData;
+                });
             }
 
             function _listenToCallsData(guid) {
@@ -430,9 +429,7 @@
                         return;
                     }
 
-                    var scopeSingleton = getScopeSingleTon();
-
-                    scopeSingleton.callsData = callsData;
+                    updateScopeData(callsData);
 
                     UserProfileService.getCurrUserId().then(function (currUid) {
                         switch(callsData.status) {
@@ -440,10 +437,12 @@
                                 $log.debug('call pending');
                                 if (isCurrentUserInitiatedCall(currUid)) {
                                     // show outgoing call modal
-                                    CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scopeSingleton);
+                                    scopesObj.caller = $rootScope.$new();
+                                    CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scopesObj.caller);
                                 } else {
                                     // show incoming call modal with the ACCEPT & DECLINE buttons
-                                    CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, scopeSingleton);
+                                    scopesObj.reciver = $rootScope.$new();
+                                    CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, scopesObj.reciver);
                                 }
                                 break;
                             case CallsStatusEnum.DECLINE_CALL.enum:

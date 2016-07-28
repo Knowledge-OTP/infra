@@ -37,16 +37,17 @@
         })
         .controller('demoCtrl', function ($scope, CallsUiSrv, $rootScope) {
 
-            var scope = $rootScope.$new();
-
-            scope.callsData = {};
-            scope.callsData.status = 3;
-
             $scope.openIncomingCallModal = function() {
+                var scope = $rootScope.$new();
+                scope.callsData = {};
+                scope.callsData.status = 2;
                 CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, scope);
             };
 
             $scope.openOutgoingCallModal = function() {
+                var scope = $rootScope.$new();
+                scope.callsData = {};
+                scope.callsData.status = 3;
                 CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scope);
             };
         })
