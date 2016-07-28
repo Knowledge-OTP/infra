@@ -45,7 +45,7 @@
                     if (ngModelCtrl) {
                         ngModelCtrl.$render = function() {
                             var modelValue = ngModelCtrl.$modelValue;
-                            var curBtnStatus = modelValue.isIdle ? BTN_STATUSES.OFFLINE : BTN_STATUSES.CALL;
+                            var curBtnStatus = modelValue.isIdleOrOffline ? BTN_STATUSES.OFFLINE : BTN_STATUSES.CALL;
                             receiverId = modelValue.receiverId;
                             _changeBtnState(curBtnStatus);
                         };
