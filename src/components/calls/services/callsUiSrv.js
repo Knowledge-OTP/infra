@@ -2,8 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsUiSrv', [
-        '$mdDialog', 'ModalService',
-        function ($mdDialog, ModalService) {
+        '$mdDialog', 'CallsModalService',
+        function ($mdDialog, CallsModalService) {
             'ngInject';
 
             var self = this;
@@ -20,7 +20,7 @@
 
             self.showModal = function (modal, scope) {
                 modal.scope = scope;
-                ModalService.showBaseModal(modal);
+                CallsModalService.showBaseModal(modal);
             };
 
             self.closeModal = function () {

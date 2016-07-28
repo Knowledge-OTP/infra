@@ -9,6 +9,6 @@
         'znk.infra.svgIcon',
         'pascalprecht.translate',
         'znk.infra.webcall',
-        'znk.infra.modal'
+        'znk.infra.callsModals'
     ]);
 })(angular);
