@@ -15,8 +15,16 @@
                 return callsData.callerId === callerId && callsData.receiverId === receiverId;
             }
 
+            function _isNewReceiverIdMatchActiveCallerId(callsData, callerId, receiverId) {
+                return callsData.receiverId === callerId && callsData.callerId === receiverId;
+            }
+
             function _isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId) {
                 return callsData.callerId === callerId && callsData.receiverId !== receiverId;
+            }
+
+            function _isNewReceiverIdNotMatchActiveCallerId(callsData, callerId, receiverId) {
+                return callsData.receiverId === callerId && callsData.callerId !== receiverId;
             }
 
             function _getUserCallStatus(callerId, receiverId) {
@@ -27,24 +35,49 @@
                         if (callsDataMapKeys.hasOwnProperty(i)) {
                             var callsDataKey = callsDataMapKeys[i];
                             var callsData = callsDataMap[callsDataKey];
-                            /* if user active, and new call init has same receiverId then disconnect */
-                            if (_isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId)) {
-                                userCallData = {
-                                    action: CALL_ACTIONS.DISCONNECT,
-                                    callerId: callerId,
-                                    newReceiverId: receiverId,
-                                    newCallGuid: callsData.guid
-                                };
-                            /* if user is active with receiverId and new call init with other
-                               receiverId then disconnect from current receiverId and connect with new receiverId */
-                            } else if (_isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId)) {
-                                userCallData = {
-                                    action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
-                                    callerId: callerId,
-                                    newReceiverId: receiverId,
-                                    oldReceiverId: callsData.receiverId,
-                                    oldCallGuid: callsData.guid
-                                };
+
+                            switch(true) {
+                                /* if user that calls active, and new call init has same receiverId then disconnect */
+                                case _isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CALL_ACTIONS.DISCONNECT,
+                                        callerId: callerId,
+                                        newReceiverId: receiverId,
+                                        newCallGuid: callsData.guid
+                                    };
+                                    break;
+                                /* if user that receive call active, and new call init has same callerId then disconnect */
+                                case _isNewReceiverIdMatchActiveCallerId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CALL_ACTIONS.DISCONNECT,
+                                        callerId: receiverId,
+                                        newReceiverId: callerId,
+                                        newCallGuid: callsData.guid
+                                    };
+                                    break;
+                                /* if user that calls is active with receiverId and new call init with other
+                                 receiverId then disconnect from current receiverId and connect with new receiverId */
+                                case _isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
+                                        callerId: callerId,
+                                        newReceiverId: receiverId,
+                                        oldReceiverId: callsData.receiverId,
+                                        oldCallGuid: callsData.guid
+                                    };
+                                    break;
+                                /* if user that receive calls is active with callerIdId and new call init with other
+                                 receiverId then disconnect from current callerId and connect with new receiverId */
+                                case _isNewReceiverIdNotMatchActiveCallerId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
+                                        callerId: receiverId,
+                                        newReceiverId: callerId,
+                                        oldReceiverId: callsData.callerId,
+                                        oldCallGuid: callsData.guid
+                                    };
+                                    break;
+
                             }
                             if (userCallData) {
                                 break;
