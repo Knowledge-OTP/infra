@@ -933,10 +933,12 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                 if (isCurrentUserInitiatedCall(currUid)) {
                                     // show outgoing call modal
                                     scopesObj.caller = $rootScope.$new();
+                                    scopesObj.caller.callsData = callsData;
                                     CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scopesObj.caller);
                                 } else {
                                     // show incoming call modal with the ACCEPT & DECLINE buttons
                                     scopesObj.reciver = $rootScope.$new();
+                                    scopesObj.reciver.callsData = callsData;
                                     CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, scopesObj.reciver);
                                 }
                                 break;
