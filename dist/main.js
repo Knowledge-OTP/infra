@@ -22,7 +22,6 @@
 "znk.infra.filters",
 "znk.infra.general",
 "znk.infra.hint",
-"znk.infra.modal",
 "znk.infra.personalization",
 "znk.infra.pngSequence",
 "znk.infra.popUp",
@@ -504,7 +503,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         'znk.infra.svgIcon',
         'pascalprecht.translate',
         'znk.infra.webcall',
-        'znk.infra.modal'
+        'znk.infra.callsModals'
     ]);
 })(angular);
 
@@ -1005,6 +1004,56 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.callsModals', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    function CallsModalService() {
+
+        var baseTemplateUrl;
+
+        this.setBaseTemplatePath = function(templateUrl) {
+            baseTemplateUrl = templateUrl;
+        };
+
+        this.$get = ['$mdDialog', function($mdDialog) {
+            var CallsModalService = {};
+
+            CallsModalService.showBaseModal = function (popupData) {
+                $mdDialog.show({
+                    locals: {
+                        svgIcon: popupData.svgIcon,
+                        innerTemplateUrl: popupData.innerTemplateUrl,
+                        overrideCssClass: popupData.overrideCssClass,
+                        modalData: popupData.modalData,
+                        modalName: popupData.modalName,
+                        closeModal: function closeModal (){
+                            $mdDialog.hide();
+                        }
+                    },
+                    scope: popupData.scope || {},
+                    bindToController: true,
+                    controller: popupData.controller,
+                    controllerAs: 'vm',
+                    templateUrl: baseTemplateUrl || popupData.baseTemplateUrl,
+                    clickOutsideToClose: angular.isDefined(popupData.clickOutsideToClose) ? popupData.clickOutsideToClose : true,
+                    escapeToClose: angular.isDefined(popupData.escapeToClose) ? popupData.escapeToClose : true
+                });
+            };
+
+            return CallsModalService;
+        }];
+    }
+
+    angular.module('znk.infra.callsModals').provider('CallsModalService', CallsModalService);
+
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.calls').service('CallsSrv',
         ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "CallsDataSetterSrv", "WebcallSrv", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv) {
             'ngInject';
@@ -1223,8 +1272,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsUiSrv', [
-        '$mdDialog', 'ModalService',
-        function ($mdDialog, ModalService) {
+        '$mdDialog', 'CallsModalService',
+        function ($mdDialog, CallsModalService) {
             'ngInject';
 
             var self = this;
@@ -1241,7 +1290,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 
             self.showModal = function (modal, scope) {
                 modal.scope = scope;
-                ModalService.showBaseModal(modal);
+                CallsModalService.showBaseModal(modal);
             };
 
             self.closeModal = function () {
@@ -4735,61 +4784,6 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
 })(angular);
 
 angular.module('znk.infra.hint').run(['$templateCache', function($templateCache) {
-
-}]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.modal', []);
-})(angular);
-
-'use strict';
-
-(function (angular) {
-
-    function ModalService() {
-
-        var baseTemplateUrl;
-
-        this.setBaseTemplatePath = function(templateUrl) {
-            baseTemplateUrl = templateUrl;
-        };
-
-        this.$get = ['$mdDialog', function($mdDialog) {
-            var ModalService = {};
-
-            ModalService.showBaseModal = function (popupData) {
-                $mdDialog.show({
-                    locals: {
-                        svgIcon: popupData.svgIcon,
-                        innerTemplateUrl: popupData.innerTemplateUrl,
-                        overrideCssClass: popupData.overrideCssClass,
-                        modalData: popupData.modalData,
-                        modalName: popupData.modalName,
-                        closeModal: function closeModal (){
-                            $mdDialog.hide();
-                        }
-                    },
-                    scope: popupData.scope || {},
-                    bindToController: true,
-                    controller: popupData.controller,
-                    controllerAs: 'vm',
-                    templateUrl: baseTemplateUrl || popupData.baseTemplateUrl,
-                    clickOutsideToClose: angular.isDefined(popupData.clickOutsideToClose) ? popupData.clickOutsideToClose : true,
-                    escapeToClose: angular.isDefined(popupData.escapeToClose) ? popupData.escapeToClose : true
-                });
-            };
-
-            return ModalService;
-        }];
-    }
-
-    angular.module('znk.infra.modal').provider('ModalService', ModalService);
-
-})(angular);
-
-angular.module('znk.infra.modal').run(['$templateCache', function($templateCache) {
 
 }]);
 

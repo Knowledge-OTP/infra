@@ -1,8 +1,13 @@
-'use strict';
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.callsModals', []);
+})(angular);
 
 (function (angular) {
+    'use strict';
 
-    function ModalService() {
+    function CallsModalService() {
 
         var baseTemplateUrl;
 
@@ -11,9 +16,9 @@
         };
 
         this.$get = ['$mdDialog', function($mdDialog) {
-            var ModalService = {};
+            var CallsModalService = {};
 
-            ModalService.showBaseModal = function (popupData) {
+            CallsModalService.showBaseModal = function (popupData) {
                 $mdDialog.show({
                     locals: {
                         svgIcon: popupData.svgIcon,
@@ -35,10 +40,10 @@
                 });
             };
 
-            return ModalService;
+            return CallsModalService;
         }];
     }
 
-    angular.module('znk.infra.modal').provider('ModalService', ModalService);
+    angular.module('znk.infra.callsModals').provider('CallsModalService', CallsModalService);
 
 })(angular);

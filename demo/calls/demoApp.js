@@ -7,8 +7,8 @@
         'ngMaterial',
         'pascalprecht.translate'
     ])
-        .config(function (ModalServiceProvider) {
-            ModalServiceProvider.setBaseTemplatePath('components/calls/modals/templates/baseCallsModal.template.html');
+        .config(function (CallsModalServiceProvider) {
+            CallsModalServiceProvider.setBaseTemplatePath('components/calls/modals/templates/baseCallsModal.template.html');
 
             var isTeacher = localStorage.getItem('isTeacher');
 
