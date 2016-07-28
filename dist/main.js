@@ -503,7 +503,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         'znk.infra.enum',
         'znk.infra.svgIcon',
         'pascalprecht.translate',
-        'znk.infra.webcall'
+        'znk.infra.webcall',
+        'znk.infra.modal'
     ]);
 })(angular);
 
@@ -627,6 +628,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                             _clickStatusSetter(false);
                             $log.debug('callBtn: success in callsStateChanged, data: ', data);
                         }).catch(function (err) {
+                            _clickStatusSetter(false);
                             $log.error('callBtn: error in callsStateChanged, err: ' + err);
                         });
                     }
@@ -675,38 +677,25 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.calls').factory('UserCallStateEnum',
-        ["EnumSrv", function (EnumSrv) {
-            'ngInject';
-
-            return new EnumSrv.BaseEnum([
-                ['ACTIVE', 1, 'active'],
-                ['DONE', 2, 'done']
-            ]);
-        }]
-    );
-})(angular);
-
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
-        ["modalData", "CallsSrv", "CallsUiSrv", "$log", function (modalData, CallsSrv, CallsUiSrv, $log) {
+        ["CallsSrv", "CallsUiSrv", "CallsStatusEnum", "$log", function (CallsSrv, CallsUiSrv, CallsStatusEnum, $log) {
             'ngInject';
 
-            function _baseCall(callFn, methodName) {
-                var callsData = modalData.callsData;
-                callFn(callsData).then(function () {
+            var callsData = this.scope.callsData;
+
+            function _baseCall(callFn, methodName, params) {
+                callFn(callsData, params).then(function () {
                     CallsUiSrv.closeModal();
                 }).catch(function (err) {
                     $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);
                 });
             }
 
-            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall');
+            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall', false);
 
             this.acceptCall = _baseCall.bind(null, CallsSrv.acceptCall, 'acceptCall');
+
+            this.closeModal = CallsUiSrv.closeModal;
         }]
     );
 })(angular);
@@ -715,16 +704,34 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').controller('OutgoingCallModalCtrl',
-        ["modalData", "CallsSrv", "CallsUiSrv", "$log", function (modalData, CallsSrv, CallsUiSrv, $log) {
+        ["CallsSrv", "CallsUiSrv", "$log", "CallsStatusEnum", "$scope", "$timeout", function (CallsSrv, CallsUiSrv, $log, CallsStatusEnum, $scope, $timeout) {
             'ngInject';
-            this.declineCall = function() {
-                var callsData = modalData.callsData;
-                CallsSrv.declineCall(callsData).then(function () {
+
+            var callsData = this.scope.callsData;
+
+            $scope.$watch('callsData', function(newVal) {
+                if (angular.isDefined(newVal) && newVal.status) {
+                     switch(newVal.status) {
+                         case CallsStatusEnum.ACTIVE_CALL.enum:
+                             $timeout(function() {
+                                 CallsUiSrv.closeModal();
+                             }, 2000);
+                             break;
+                     }
+                }
+            });
+
+            function _baseCall(callFn, methodName, params) {
+                callFn(callsData, params).then(function () {
                     CallsUiSrv.closeModal();
                 }).catch(function (err) {
-                    $log.error('IncomingCallModalCtrl declineCall: err: ' + err);
+                    $log.error('OutgoingCallModalCtrl '+ methodName +': err: ' + err);
                 });
-            };
+            }
+
+            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall', true);
+
+            this.closeModalAndDisconnect = _baseCall.bind(null, CallsSrv.disconnectCall, 'disconnectCall');
         }]
     );
 })(angular);
@@ -854,7 +861,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 var dataToSave = {};
                 // update root
                 data.currCallData.status = CallsStatusEnum.ENDED_CALL.enum;
-                dataToSave[data.currCallData.$$path] = data.currCallData;
+                dataToSave[data.currCallData.$$path] = angular.copy(data.currCallData);
                 //current user call requests object update
                 data.currUserCallsRequests[guid] = null;
                 dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
@@ -871,7 +878,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 var dataToSave = {};
                 // update root
                 data.currCallData.status = CallsStatusEnum.DECLINE_CALL.enum;
-                dataToSave[data.currCallData.$$path] = data.currCallData;
+                dataToSave[data.currCallData.$$path] = angular.copy(data.currCallData);
                 //current user call requests object update
                 data.currUserCallsRequests[guid] = null;
                 dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
@@ -888,7 +895,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 var dataToSave = {};
                 // update root
                 currCallData.status = CallsStatusEnum.ACTIVE_CALL.enum;
-                dataToSave[currCallData.$$path] = currCallData;
+                dataToSave[currCallData.$$path] = angular.copy(currCallData);
                 return _getStorage().then(function (StudentStorage) {
                     return StudentStorage.update(dataToSave);
                 });
@@ -908,9 +915,18 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             isEnabled = _isEnabled;
         };
 
-        this.$get = ["UserProfileService", "InfraConfigSrv", "$q", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "CallsSrv", function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, CallsSrv) {
+        this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "CallsSrv", "$rootScope", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, CallsSrv, $rootScope) {
             'ngInject';
             var CallsEventsSrv = {};
+
+            var scope;
+
+            function getScopeSingleTon() {
+                if (!scope) {
+                    scope = $rootScope.$new();
+                }
+                return scope;
+            }
 
             function _listenToCallsData(guid) {
                 var callsStatusPath = 'calls/' + guid;
@@ -921,33 +937,29 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                         return;
                     }
 
+                    var scopeSingleton = getScopeSingleTon();
+
+                    scopeSingleton.callsData = callsData;
+
                     UserProfileService.getCurrUserId().then(function (currUid) {
                         switch(callsData.status) {
                             case CallsStatusEnum.PENDING_CALL.enum:
                                 $log.debug('call pending');
                                 if (isCurrentUserInitiatedCall(currUid)) {
                                     // show outgoing call modal
-                                    CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, callsData);
+                                    CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scopeSingleton);
                                 } else {
                                     // show incoming call modal with the ACCEPT & DECLINE buttons
-                                    CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, callsData);
+                                    CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, scopeSingleton);
                                 }
                                 break;
                             case CallsStatusEnum.DECLINE_CALL.enum:
                                 $log.debug('call declined');
-                                if (isCurrentUserInitiatedCall(currUid)) {
-                                    // close outgoing call modal
-                                    CallsUiSrv.closeModal();
-                                } else {
-                                    // show incoming call modal WITH the DECLINED TEXT
-                                    CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, callsData);
-                                }
                                 break;
                             case CallsStatusEnum.ACTIVE_CALL.enum:
                                 $log.debug('call active');
                                 if (isCurrentUserInitiatedCall(currUid)) {
                                     // show outgoing call modal WITH the ANSWERED TEXT, wait 2 seconds and close the modal, show the ActiveCallDRV
-                                    CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, callsData);
                                     CallsUiSrv.showActiveCallDrv();
                                 } else {
                                     // close the modal, show the ActiveCallDRV
@@ -957,11 +969,6 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                 break;
                             case CallsStatusEnum.ENDED_CALL.enum:
                                 $log.debug('call ended');
-                                if (isCurrentUserInitiatedCall(currUid)) {
-                                    // hide the ActiveCallDRV
-                                } else {
-                                    // hide the ActiveCallDRV
-                                }
                                 CallsUiSrv.hideActiveCallDrv();
                                 // disconnect other user from call
                                 CallsSrv.disconnectCall();
@@ -1023,8 +1030,16 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 return callsData.callerId === callerId && callsData.receiverId === receiverId;
             }
 
+            function _isNewReceiverIdMatchActiveCallerId(callsData, callerId, receiverId) {
+                return callsData.receiverId === callerId && callsData.callerId === receiverId;
+            }
+
             function _isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId) {
                 return callsData.callerId === callerId && callsData.receiverId !== receiverId;
+            }
+
+            function _isNewReceiverIdNotMatchActiveCallerId(callsData, callerId, receiverId) {
+                return callsData.receiverId === callerId && callsData.callerId !== receiverId;
             }
 
             function _getUserCallStatus(callerId, receiverId) {
@@ -1035,24 +1050,49 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                         if (callsDataMapKeys.hasOwnProperty(i)) {
                             var callsDataKey = callsDataMapKeys[i];
                             var callsData = callsDataMap[callsDataKey];
-                            /* if user active, and new call init has same receiverId then disconnect */
-                            if (_isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId)) {
-                                userCallData = {
-                                    action: CALL_ACTIONS.DISCONNECT,
-                                    callerId: callerId,
-                                    newReceiverId: receiverId,
-                                    newCallGuid: callsData.guid
-                                };
-                            /* if user is active with receiverId and new call init with other
-                               receiverId then disconnect from current receiverId and connect with new receiverId */
-                            } else if (_isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId)) {
-                                userCallData = {
-                                    action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
-                                    callerId: callerId,
-                                    newReceiverId: receiverId,
-                                    oldReceiverId: callsData.receiverId,
-                                    oldCallGuid: callsData.guid
-                                };
+
+                            switch(true) {
+                                /* if user that calls active, and new call init has same receiverId then disconnect */
+                                case _isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CALL_ACTIONS.DISCONNECT,
+                                        callerId: callerId,
+                                        newReceiverId: receiverId,
+                                        newCallGuid: callsData.guid
+                                    };
+                                    break;
+                                /* if user that receive call active, and new call init has same callerId then disconnect */
+                                case _isNewReceiverIdMatchActiveCallerId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CALL_ACTIONS.DISCONNECT,
+                                        callerId: receiverId,
+                                        newReceiverId: callerId,
+                                        newCallGuid: callsData.guid
+                                    };
+                                    break;
+                                /* if user that calls is active with receiverId and new call init with other
+                                 receiverId then disconnect from current receiverId and connect with new receiverId */
+                                case _isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
+                                        callerId: callerId,
+                                        newReceiverId: receiverId,
+                                        oldReceiverId: callsData.receiverId,
+                                        oldCallGuid: callsData.guid
+                                    };
+                                    break;
+                                /* if user that receive calls is active with callerIdId and new call init with other
+                                 receiverId then disconnect from current callerId and connect with new receiverId */
+                                case _isNewReceiverIdNotMatchActiveCallerId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
+                                        callerId: receiverId,
+                                        newReceiverId: callerId,
+                                        oldReceiverId: callsData.callerId,
+                                        oldCallGuid: callsData.guid
+                                    };
+                                    break;
+
                             }
                             if (userCallData) {
                                 break;
@@ -1127,8 +1167,9 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 });
             }
 
-            function _declineCall(callsData) {
-                return _webCallHang().then(function () {
+            function _declineCall(callsData, hangWebCall) {
+                var prom = hangWebCall ? _webCallHang() : $q.when();
+                return prom.then(function () {
                     var getDataPromMap = _getDataPromMap(callsData.guid);
                     return $q.all(getDataPromMap).then(function (data) {
                        return CallsDataSetterSrv.setDeclineCall(data, callsData, callsData.guid);
@@ -1170,9 +1211,9 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 });
             };
 
-            this.declineCall = function(callsData) {
+            this.declineCall = function(callsData, hangWebCall) {
                 return _handleCallerIdOrReceiverIdUndefined(callsData, 'declineCall').then(function () {
-                    return _declineCall(callsData);
+                    return _declineCall(callsData, hangWebCall);
                 });
             };
             /* used to disconnect the other user from web call */
@@ -1209,10 +1250,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 activeCallStatus = false;
             };
 
-            self.showModal = function (modal, callsData) {
-                modal.modalData = {
-                    callsData: callsData
-                };
+            self.showModal = function (modal, scope) {
+                modal.scope = scope;
                 ModalService.showBaseModal(modal);
             };
 
@@ -1225,13 +1264,17 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     svgIcon: 'incoming-call-icon',
                     innerTemplateUrl: 'components/calls/modals/templates/incomingCall.template.html',
                     controller: 'IncomingCallModalCtrl',
-                    overrideCssClass: 'incoming-call-modal'
+                    overrideCssClass: 'incoming-call-modal',
+                    clickOutsideToClose: false,
+                    escapeToClose: false
                 },
                 'OUTGOING_CALL': {
                     svgIcon: 'outgoing-call-icon',
                     innerTemplateUrl: 'components/calls/modals/templates/outgoingCall.template.html',
                     controller: 'OutgoingCallModalCtrl',
-                    overrideCssClass: 'outgoing-call-modal'
+                    overrideCssClass: 'outgoing-call-modal',
+                    clickOutsideToClose: false,
+                    escapeToClose: false
                 }
             };
 
@@ -1291,39 +1334,89 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
   $templateCache.put("components/calls/modals/templates/incomingCall.template.html",
     "<div translate-namespace=\"AUDIO_CALLS\">\n" +
     "    <div class=\"modal-main-title\" translate=\".INCOMING_CALL\"></div>\n" +
-    "    <div class=\"modal-sub-title\" translate=\".NAME_IS_CALLING\" translate-values=\"{callerName: 'Eric Powell'}\"></div>\n" +
-    "    <div class=\"btn-container\">\n" +
-    "        <div class=\"btn-decline\">\n" +
     "\n" +
+    "    <ng-switch on=\"callsData.status\">\n" +
+    "        <!-- Call Pending -->\n" +
+    "        <div ng-switch-when=\"1\" class=\"flex-column\">\n" +
+    "            <span\n" +
+    "                class=\"modal-sub-title call-status\"\n" +
+    "                translate=\".NAME_IS_CALLING\"\n" +
+    "                translate-values=\"{callerName: 'Eric Powell'}\"></span>\n" +
+    "            <div class=\"btn-container\">\n" +
+    "                <div class=\"btn-decline\">\n" +
+    "                    <button\n" +
+    "                        ng-click=\"vm.declineCall()\"\n" +
+    "                        translate=\".DECLINE\">\n" +
+    "                    </button>\n" +
+    "                </div>\n" +
+    "                <div class=\"btn-accept\">\n" +
+    "                    <button\n" +
+    "                        ng-click=\"vm.acceptCall()\"\n" +
+    "                        class=\"primary\"\n" +
+    "                        translate=\".ACCEPT\">\n" +
+    "                    </button>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
     "        </div>\n" +
-    "        <div class=\"btn-accept\">\n" +
-    "            <button\n" +
-    "                ng-click=\"vm.declineCall()\"\n" +
-    "                translate=\".DECLINE\">\n" +
-    "            </button>\n" +
-    "            <button\n" +
-    "                ng-click=\"vm.acceptCall()\"\n" +
-    "                class=\"primary\"\n" +
-    "                translate=\".ACCEPT\">\n" +
-    "            </button>\n" +
+    "\n" +
+    "        <!-- Call Declined -->\n" +
+    "        <div ng-switch-when=\"2\" class=\"flex-column\">\n" +
+    "            <span\n" +
+    "                translate=\".CALLING_CANCELED\"\n" +
+    "                class=\"modal-sub-title call-status\">\n" +
+    "            </span>\n" +
+    "            <div class=\"btn-container\">\n" +
+    "                <div class=\"btn-ok\">\n" +
+    "                    <button\n" +
+    "                        ng-click=\"vm.closeModal()\"\n" +
+    "                        translate=\".OK\">\n" +
+    "                    </button>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
     "        </div>\n" +
-    "    </div>\n" +
+    "    </ng-switch>\n" +
     "</div>\n" +
     "");
   $templateCache.put("components/calls/modals/templates/outgoingCall.template.html",
     "<div translate-namespace=\"AUDIO_CALLS\">\n" +
-    "<div class=\"modal-main-title\" translate=\".OUTGOING_CALL\"></div>\n" +
-    "<div class=\"modal-sub-title\" translate=\".CALLING_NAME\" translate-values=\"{calleeName: 'Eric Powell'}\"></div>\n" +
-    "<div class=\"btn-container\">\n" +
-    "    <div class=\"btn-decline\">\n" +
-    "\n" +
+    "    <div class=\"modal-main-title\"\n" +
+    "         translate=\".OUTGOING_CALL\">\n" +
     "    </div>\n" +
-    "    <div class=\"btn-accept\">\n" +
-    "        <button\n" +
-    "            ng-click=\"vm.declineCall()\"\n" +
-    "            translate=\".CANCEL\"></button>\n" +
+    "    <div class=\"switch-container\"\n" +
+    "         ng-switch=\"callsData.status\">\n" +
+    "        <div ng-switch-when=\"1\">\n" +
+    "            <div class=\"modal-sub-title\"\n" +
+    "                 translate=\".CALLING_NAME\"\n" +
+    "                 translate-values=\"{calleeName: 'Eric Powell'}\">\n" +
+    "            </div>\n" +
+    "            <div class=\"btn-container\">\n" +
+    "                <div class=\"btn-accept\">\n" +
+    "                    <button\n" +
+    "                        ng-click=\"vm.declineCall()\"\n" +
+    "                        translate=\".CANCEL\">\n" +
+    "                    </button>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "        <div ng-switch-when=\"2\">\n" +
+    "            <div class=\"modal-sub-title\"\n" +
+    "                 translate=\".CALLING_DECLINE\">\n" +
+    "            </div>\n" +
+    "            <div class=\"btn-container\">\n" +
+    "                <div class=\"btn-accept\">\n" +
+    "                    <button\n" +
+    "                        ng-click=\"vm.closeModalAndDisconnect()\"\n" +
+    "                        translate=\".OK\">\n" +
+    "                    </button>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "        <div ng-switch-when=\"3\">\n" +
+    "            <div class=\"modal-sub-title\"\n" +
+    "                 translate=\".CALLING_ANSWERED\">\n" +
+    "            </div>\n" +
+    "        </div>\n" +
     "    </div>\n" +
-    "</div>\n" +
     "</div>\n" +
     "");
   $templateCache.put("components/calls/svg/call-mute-icon.svg",
@@ -4687,12 +4780,13 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                             $mdDialog.hide();
                         }
                     },
+                    scope: popupData.scope || {},
                     bindToController: true,
                     controller: popupData.controller,
                     controllerAs: 'vm',
                     templateUrl: baseTemplateUrl,
-                    clickOutsideToClose: true,
-                    escapeToClose: true
+                    clickOutsideToClose: angular.isDefined(popupData.clickOutsideToClose) ? popupData.clickOutsideToClose : true,
+                    escapeToClose: angular.isDefined(popupData.escapeToClose) ? popupData.escapeToClose : true
                 });
             };
 

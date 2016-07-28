@@ -8,6 +8,9 @@
         "OK": "OK",
         "CANCEL": "Cancel",
         "NAME_IS_CALLING": "{{callerName}} is calling...",
-        "CALLING_NAME": "Calling {{calleeName}}"
+        "CALLING_NAME": "Calling {{calleeName}}",
+        "CALLING_DECLINE": "Call is declined",
+        "CALLING_CANCELED": "Call was canceled",
+        "CALLING_ANSWERED": "Call Answered"
     }
 }

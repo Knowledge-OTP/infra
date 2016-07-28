@@ -5,8 +5,7 @@
         'znk.infra.calls',
         'ngAria',
         'ngMaterial',
-        'pascalprecht.translate',
-        'znk.infra.modal'
+        'pascalprecht.translate'
     ])
         .config(function (ModalServiceProvider) {
             ModalServiceProvider.setBaseTemplatePath('components/calls/modals/templates/baseCallsModal.template.html');
