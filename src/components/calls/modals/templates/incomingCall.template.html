@@ -3,8 +3,11 @@
 
     <ng-switch on="callsData.status">
         <!-- Call Pending -->
-        <div ng-switch-when="1">
-            <span translate=".NAME_IS_CALLING" translate-values="{callerName: 'Eric Powell'}"></span>
+        <div ng-switch-when="1" class="flex-column">
+            <span
+                class="modal-sub-title call-status"
+                translate=".NAME_IS_CALLING"
+                translate-values="{callerName: 'Eric Powell'}"></span>
             <div class="btn-container">
                 <div class="btn-decline">
                     <button
@@ -23,30 +26,19 @@
         </div>
 
         <!-- Call Declined -->
-        <div ng-switch-when="2">
-            <span translate=".CALLING_DECLINE"></span>
+        <div ng-switch-when="2" class="flex-column">
+            <span
+                translate=".CALLING_CANCELED"
+                class="modal-sub-title call-status">
+            </span>
             <div class="btn-container">
                 <div class="btn-ok">
                     <button
-                        ng-click="vm.closeModalAndDisconnect()"
+                        ng-click="vm.closeModal()"
                         translate=".OK">
                     </button>
                 </div>
             </div>
         </div>
-
-        <!-- Call Active -->
-        <div ng-switch-when="3">
-
-        </div>
-
-        <!-- Call Ended -->
-        <div ng-switch-when="4">
-
-        </div>
     </ng-switch>
-
-    <div class="modal-sub-title call-status">
-
-    </div>
 </div>

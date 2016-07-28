@@ -7,19 +7,19 @@
 
             var callsData = this.scope.callsData;
 
-            function _baseCall(callFn, methodName) {
-                callFn(callsData).then(function () {
+            function _baseCall(callFn, methodName, params) {
+                callFn(callsData, params).then(function () {
                     CallsUiSrv.closeModal();
                 }).catch(function (err) {
                     $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);
                 });
             }
 
-            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall');
+            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall', false);
 
             this.acceptCall = _baseCall.bind(null, CallsSrv.acceptCall, 'acceptCall');
 
-            this.closeModalAndDisconnect = _baseCall.bind(null, CallsSrv.disconnectCall, 'disconnectCall');
+            this.closeModal = CallsUiSrv.closeModal;
         }
     );
 })(angular);

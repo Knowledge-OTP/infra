@@ -8,6 +8,7 @@
         'znk.infra.enum',
         'znk.infra.svgIcon',
         'pascalprecht.translate',
-        'znk.infra.webcall'
+        'znk.infra.webcall',
+        'znk.infra.modal'
     ]);
 })(angular);

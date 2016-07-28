@@ -30,6 +30,7 @@
             self.modals = {
                 'INCOMING_CALL': {
                     svgIcon: 'incoming-call-icon',
+                    baseTemplateUrl: 'components/calls/modals/templates/baseCallsModal.template.html',
                     innerTemplateUrl: 'components/calls/modals/templates/incomingCall.template.html',
                     controller: 'IncomingCallModalCtrl',
                     overrideCssClass: 'incoming-call-modal',
@@ -38,6 +39,7 @@
                 },
                 'OUTGOING_CALL': {
                     svgIcon: 'outgoing-call-icon',
+                    baseTemplateUrl: 'components/calls/modals/templates/baseCallsModal.template.html',
                     innerTemplateUrl: 'components/calls/modals/templates/outgoingCall.template.html',
                     controller: 'OutgoingCallModalCtrl',
                     overrideCssClass: 'outgoing-call-modal',

@@ -29,9 +29,9 @@
                     bindToController: true,
                     controller: popupData.controller,
                     controllerAs: 'vm',
-                    templateUrl: baseTemplateUrl,
-                    clickOutsideToClose: popupData.clickOutsideToClose || true,
-                    escapeToClose: popupData.clickOutsideToClose || true
+                    templateUrl: baseTemplateUrl || popupData.baseTemplateUrl,
+                    clickOutsideToClose: angular.isDefined(popupData.clickOutsideToClose) ? popupData.clickOutsideToClose : true,
+                    escapeToClose: angular.isDefined(popupData.escapeToClose) ? popupData.escapeToClose : true
                 });
             };
 
