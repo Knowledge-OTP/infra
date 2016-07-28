@@ -5,8 +5,7 @@
         'znk.infra.calls',
         'ngAria',
         'ngMaterial',
-        'pascalprecht.translate',
-        'znk.infra.modal'
+        'pascalprecht.translate'
     ])
         .config(function (ModalServiceProvider) {
             ModalServiceProvider.setBaseTemplatePath('components/calls/modals/templates/baseCallsModal.template.html');
@@ -31,10 +30,10 @@
              *     znkData   https://act-dev.firebaseio.com/
              *     znkStudentPath	 /act_app
              */
-            $rootScope.offline = { btnState: 1, receiverId: 1 };
+            $rootScope.offline = { isIdleOrOffline: true, receiverId: 1 };
 
-            $rootScope.call = { btnState: 2, receiverId: '21794e2b-3051-4016-8491-b3fe70e8212d' };
-            $rootScope.called = { btnState: 2, receiverId: 'eebe2b53-08b7-4296-bcfd-62b69b531473' };
+            $rootScope.call = { isIdleOrOffline: false, receiverId: '21794e2b-3051-4016-8491-b3fe70e8212d' };
+            $rootScope.called = { isIdleOrOffline: false, receiverId: 'eebe2b53-08b7-4296-bcfd-62b69b531473' };
         })
         .controller('demoCtrl', function ($scope, CallsUiSrv, $rootScope) {
 

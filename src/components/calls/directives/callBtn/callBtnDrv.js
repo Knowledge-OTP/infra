@@ -6,24 +6,27 @@
             require: {
                 parent: '?^ngModel'
             },
-            bindings: {
-                onClickIcon: '&?'
-            },
             controllerAs: 'vm',
-            controller: function (CallBtnEnum, CallsSrv, $log) {
+            controller: function (CallsSrv, $log) {
                 var vm = this;
                 var receiverId;
 
                 var isPendingClick = false;
 
-                vm.callBtnEnum = CallBtnEnum;
+                var BTN_STATUSES = {
+                    OFFLINE: 1,
+                    CALL: 2,
+                    CALLED: 3
+                };
+
+                vm.callBtnEnum = BTN_STATUSES;
 
                 function _changeBtnState(state) {
                     vm.callBtnState = state;
                 }
 
                 function _isStateNotOffline() {
-                    return vm.callBtnState !== CallBtnEnum.OFFLINE.enum;
+                    return vm.callBtnState !== BTN_STATUSES.OFFLINE;
                 }
 
                 function _isNoPendingClick() {
@@ -34,17 +37,19 @@
                     isPendingClick = clickStatus;
                 }
 
-                // default btn state
-                _changeBtnState(CallBtnEnum.CALL.enum);
+                // default btn state offline
+                _changeBtnState(BTN_STATUSES.OFFLINE);
 
                 vm.$onInit = function() {
                     var ngModelCtrl = vm.parent;
                     if (ngModelCtrl) {
                         ngModelCtrl.$render = function() {
                             var modelValue = ngModelCtrl.$modelValue;
-                            var btnState = modelValue.btnState;
-                            receiverId = modelValue.receiverId;
-                            _changeBtnState(btnState);
+                            if (angular.isDefined(modelValue.isIdleOrOffline) && modelValue.receiverId) {
+                                var curBtnStatus = modelValue.isIdleOrOffline ? BTN_STATUSES.OFFLINE : BTN_STATUSES.CALL;
+                                receiverId = modelValue.receiverId;
+                                _changeBtnState(curBtnStatus);
+                            }
                         };
                     }
                 };

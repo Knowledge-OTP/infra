@@ -8,7 +8,8 @@
         'znk.infra.enum',
         'znk.infra.svgIcon',
         'pascalprecht.translate',
-        'znk.infra.webcall'
+        'znk.infra.webcall',
+        'znk.infra.modal'
     ]);
 })(angular);
 
@@ -81,24 +82,27 @@
             require: {
                 parent: '?^ngModel'
             },
-            bindings: {
-                onClickIcon: '&?'
-            },
             controllerAs: 'vm',
-            controller: ["CallBtnEnum", "CallsSrv", "$log", function (CallBtnEnum, CallsSrv, $log) {
+            controller: ["CallsSrv", "$log", function (CallsSrv, $log) {
                 var vm = this;
                 var receiverId;
 
                 var isPendingClick = false;
 
-                vm.callBtnEnum = CallBtnEnum;
+                var BTN_STATUSES = {
+                    OFFLINE: 1,
+                    CALL: 2,
+                    CALLED: 3
+                };
+
+                vm.callBtnEnum = BTN_STATUSES;
 
                 function _changeBtnState(state) {
                     vm.callBtnState = state;
                 }
 
                 function _isStateNotOffline() {
-                    return vm.callBtnState !== CallBtnEnum.OFFLINE.enum;
+                    return vm.callBtnState !== BTN_STATUSES.OFFLINE;
                 }
 
                 function _isNoPendingClick() {
@@ -109,17 +113,19 @@
                     isPendingClick = clickStatus;
                 }
 
-                // default btn state
-                _changeBtnState(CallBtnEnum.CALL.enum);
+                // default btn state offline
+                _changeBtnState(BTN_STATUSES.OFFLINE);
 
                 vm.$onInit = function() {
                     var ngModelCtrl = vm.parent;
                     if (ngModelCtrl) {
                         ngModelCtrl.$render = function() {
                             var modelValue = ngModelCtrl.$modelValue;
-                            var btnState = modelValue.btnState;
-                            receiverId = modelValue.receiverId;
-                            _changeBtnState(btnState);
+                            if (angular.isDefined(modelValue.isIdleOrOffline) && modelValue.receiverId) {
+                                var curBtnStatus = modelValue.isIdleOrOffline ? BTN_STATUSES.OFFLINE : BTN_STATUSES.CALL;
+                                receiverId = modelValue.receiverId;
+                                _changeBtnState(curBtnStatus);
+                            }
                         };
                     }
                 };
@@ -139,23 +145,6 @@
                 };
             }]
         }
-    );
-})(angular);
-
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.calls').factory('CallBtnEnum',
-        ["EnumSrv", function (EnumSrv) {
-            'ngInject';
-
-            return new EnumSrv.BaseEnum([
-                ['OFFLINE', 1, 'offline'],
-                ['CALL', 2, 'call'],
-                ['CALLED', 3, 'called']
-            ]);
-        }]
     );
 })(angular);
 
@@ -534,8 +523,16 @@
                 return callsData.callerId === callerId && callsData.receiverId === receiverId;
             }
 
+            function _isNewReceiverIdMatchActiveCallerId(callsData, callerId, receiverId) {
+                return callsData.receiverId === callerId && callsData.callerId === receiverId;
+            }
+
             function _isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId) {
                 return callsData.callerId === callerId && callsData.receiverId !== receiverId;
+            }
+
+            function _isNewReceiverIdNotMatchActiveCallerId(callsData, callerId, receiverId) {
+                return callsData.receiverId === callerId && callsData.callerId !== receiverId;
             }
 
             function _getUserCallStatus(callerId, receiverId) {
@@ -546,24 +543,49 @@
                         if (callsDataMapKeys.hasOwnProperty(i)) {
                             var callsDataKey = callsDataMapKeys[i];
                             var callsData = callsDataMap[callsDataKey];
-                            /* if user active, and new call init has same receiverId then disconnect */
-                            if (_isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId)) {
-                                userCallData = {
-                                    action: CALL_ACTIONS.DISCONNECT,
-                                    callerId: callerId,
-                                    newReceiverId: receiverId,
-                                    newCallGuid: callsData.guid
-                                };
-                            /* if user is active with receiverId and new call init with other
-                               receiverId then disconnect from current receiverId and connect with new receiverId */
-                            } else if (_isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId)) {
-                                userCallData = {
-                                    action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
-                                    callerId: callerId,
-                                    newReceiverId: receiverId,
-                                    oldReceiverId: callsData.receiverId,
-                                    oldCallGuid: callsData.guid
-                                };
+
+                            switch(true) {
+                                /* if user that calls active, and new call init has same receiverId then disconnect */
+                                case _isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CALL_ACTIONS.DISCONNECT,
+                                        callerId: callerId,
+                                        newReceiverId: receiverId,
+                                        newCallGuid: callsData.guid
+                                    };
+                                    break;
+                                /* if user that receive call active, and new call init has same callerId then disconnect */
+                                case _isNewReceiverIdMatchActiveCallerId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CALL_ACTIONS.DISCONNECT,
+                                        callerId: receiverId,
+                                        newReceiverId: callerId,
+                                        newCallGuid: callsData.guid
+                                    };
+                                    break;
+                                /* if user that calls is active with receiverId and new call init with other
+                                 receiverId then disconnect from current receiverId and connect with new receiverId */
+                                case _isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
+                                        callerId: callerId,
+                                        newReceiverId: receiverId,
+                                        oldReceiverId: callsData.receiverId,
+                                        oldCallGuid: callsData.guid
+                                    };
+                                    break;
+                                /* if user that receive calls is active with callerIdId and new call init with other
+                                 receiverId then disconnect from current callerId and connect with new receiverId */
+                                case _isNewReceiverIdNotMatchActiveCallerId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
+                                        callerId: receiverId,
+                                        newReceiverId: callerId,
+                                        oldReceiverId: callsData.callerId,
+                                        oldCallGuid: callsData.guid
+                                    };
+                                    break;
+
                             }
                             if (userCallData) {
                                 break;
@@ -733,6 +755,7 @@
             self.modals = {
                 'INCOMING_CALL': {
                     svgIcon: 'incoming-call-icon',
+                    baseTemplateUrl: 'components/calls/modals/templates/baseCallsModal.template.html',
                     innerTemplateUrl: 'components/calls/modals/templates/incomingCall.template.html',
                     controller: 'IncomingCallModalCtrl',
                     overrideCssClass: 'incoming-call-modal',
@@ -741,6 +764,7 @@
                 },
                 'OUTGOING_CALL': {
                     svgIcon: 'outgoing-call-icon',
+                    baseTemplateUrl: 'components/calls/modals/templates/baseCallsModal.template.html',
                     innerTemplateUrl: 'components/calls/modals/templates/outgoingCall.template.html',
                     controller: 'OutgoingCallModalCtrl',
                     overrideCssClass: 'outgoing-call-modal',
@@ -776,9 +800,9 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "    ng-click=\"vm.clickBtn()\"\n" +
     "    class=\"call-btn\"\n" +
     "     ng-class=\"{\n" +
-    "          'offline': vm.callBtnState === vm.callBtnEnum.OFFLINE.enum,\n" +
-    "          'call': vm.callBtnState === vm.callBtnEnum.CALL.enum,\n" +
-    "          'called': vm.callBtnState === vm.callBtnEnum.CALLED.enum\n" +
+    "          'offline': vm.callBtnState === vm.callBtnEnum.OFFLINE,\n" +
+    "          'call': vm.callBtnState === vm.callBtnEnum.CALL,\n" +
+    "          'called': vm.callBtnState === vm.callBtnEnum.CALLED\n" +
     "     }\">\n" +
     "    <svg-icon\n" +
     "        class=\"etutoring-phone-icon\"\n" +
