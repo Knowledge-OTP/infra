@@ -82,24 +82,27 @@
             require: {
                 parent: '?^ngModel'
             },
-            bindings: {
-                onClickIcon: '&?'
-            },
             controllerAs: 'vm',
-            controller: ["CallBtnEnum", "CallsSrv", "$log", function (CallBtnEnum, CallsSrv, $log) {
+            controller: ["CallsSrv", "$log", function (CallsSrv, $log) {
                 var vm = this;
                 var receiverId;
 
                 var isPendingClick = false;
 
-                vm.callBtnEnum = CallBtnEnum;
+                var BTN_STATUSES = {
+                    OFFLINE: 1,
+                    CALL: 2,
+                    CALLED: 3
+                };
+
+                vm.callBtnEnum = BTN_STATUSES;
 
                 function _changeBtnState(state) {
                     vm.callBtnState = state;
                 }
 
                 function _isStateNotOffline() {
-                    return vm.callBtnState !== CallBtnEnum.OFFLINE.enum;
+                    return vm.callBtnState !== BTN_STATUSES.OFFLINE;
                 }
 
                 function _isNoPendingClick() {
@@ -111,16 +114,16 @@
                 }
 
                 // default btn state
-                _changeBtnState(CallBtnEnum.CALL.enum);
+                _changeBtnState(BTN_STATUSES.CALL);
 
                 vm.$onInit = function() {
                     var ngModelCtrl = vm.parent;
                     if (ngModelCtrl) {
                         ngModelCtrl.$render = function() {
                             var modelValue = ngModelCtrl.$modelValue;
-                            var btnState = modelValue.btnState;
+                            var curBtnStatus = modelValue.isIdle ? BTN_STATUSES.OFFLINE : BTN_STATUSES.CALL;
                             receiverId = modelValue.receiverId;
-                            _changeBtnState(btnState);
+                            _changeBtnState(curBtnStatus);
                         };
                     }
                 };
@@ -140,23 +143,6 @@
                 };
             }]
         }
-    );
-})(angular);
-
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.calls').factory('CallBtnEnum',
-        ["EnumSrv", function (EnumSrv) {
-            'ngInject';
-
-            return new EnumSrv.BaseEnum([
-                ['OFFLINE', 1, 'offline'],
-                ['CALL', 2, 'call'],
-                ['CALLED', 3, 'called']
-            ]);
-        }]
     );
 })(angular);
 
@@ -812,9 +798,9 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "    ng-click=\"vm.clickBtn()\"\n" +
     "    class=\"call-btn\"\n" +
     "     ng-class=\"{\n" +
-    "          'offline': vm.callBtnState === vm.callBtnEnum.OFFLINE.enum,\n" +
-    "          'call': vm.callBtnState === vm.callBtnEnum.CALL.enum,\n" +
-    "          'called': vm.callBtnState === vm.callBtnEnum.CALLED.enum\n" +
+    "          'offline': vm.callBtnState === vm.callBtnEnum.OFFLINE,\n" +
+    "          'call': vm.callBtnState === vm.callBtnEnum.CALL,\n" +
+    "          'called': vm.callBtnState === vm.callBtnEnum.CALLED\n" +
     "     }\">\n" +
     "    <svg-icon\n" +
     "        class=\"etutoring-phone-icon\"\n" +
