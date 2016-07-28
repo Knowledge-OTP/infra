@@ -1262,6 +1262,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             self.modals = {
                 'INCOMING_CALL': {
                     svgIcon: 'incoming-call-icon',
+                    baseTemplateUrl: 'components/calls/modals/templates/baseCallsModal.template.html',
                     innerTemplateUrl: 'components/calls/modals/templates/incomingCall.template.html',
                     controller: 'IncomingCallModalCtrl',
                     overrideCssClass: 'incoming-call-modal',
@@ -1270,6 +1271,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 },
                 'OUTGOING_CALL': {
                     svgIcon: 'outgoing-call-icon',
+                    baseTemplateUrl: 'components/calls/modals/templates/baseCallsModal.template.html',
                     innerTemplateUrl: 'components/calls/modals/templates/outgoingCall.template.html',
                     controller: 'OutgoingCallModalCtrl',
                     overrideCssClass: 'outgoing-call-modal',
@@ -4784,7 +4786,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                     bindToController: true,
                     controller: popupData.controller,
                     controllerAs: 'vm',
-                    templateUrl: baseTemplateUrl,
+                    templateUrl: baseTemplateUrl || popupData.baseTemplateUrl,
                     clickOutsideToClose: angular.isDefined(popupData.clickOutsideToClose) ? popupData.clickOutsideToClose : true,
                     escapeToClose: angular.isDefined(popupData.escapeToClose) ? popupData.escapeToClose : true
                 });
