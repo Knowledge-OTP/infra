@@ -503,8 +503,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         'znk.infra.enum',
         'znk.infra.svgIcon',
         'pascalprecht.translate',
-        'znk.infra.webcall',
-        'znk.infra.modal'
+        'znk.infra.webcall'
     ]);
 })(angular);
 
@@ -577,27 +576,24 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             require: {
                 parent: '?^ngModel'
             },
+            bindings: {
+                onClickIcon: '&?'
+            },
             controllerAs: 'vm',
-            controller: ["CallsSrv", "$log", function (CallsSrv, $log) {
+            controller: ["CallBtnEnum", "CallsSrv", "$log", function (CallBtnEnum, CallsSrv, $log) {
                 var vm = this;
                 var receiverId;
 
                 var isPendingClick = false;
 
-                var BTN_STATUSES = {
-                    OFFLINE: 1,
-                    CALL: 2,
-                    CALLED: 3
-                };
-
-                vm.callBtnEnum = BTN_STATUSES;
+                vm.callBtnEnum = CallBtnEnum;
 
                 function _changeBtnState(state) {
                     vm.callBtnState = state;
                 }
 
                 function _isStateNotOffline() {
-                    return vm.callBtnState !== BTN_STATUSES.OFFLINE;
+                    return vm.callBtnState !== CallBtnEnum.OFFLINE.enum;
                 }
 
                 function _isNoPendingClick() {
@@ -608,19 +604,17 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     isPendingClick = clickStatus;
                 }
 
-                // default btn state offline
-                _changeBtnState(BTN_STATUSES.OFFLINE);
+                // default btn state
+                _changeBtnState(CallBtnEnum.CALL.enum);
 
                 vm.$onInit = function() {
                     var ngModelCtrl = vm.parent;
                     if (ngModelCtrl) {
                         ngModelCtrl.$render = function() {
                             var modelValue = ngModelCtrl.$modelValue;
-                            if (angular.isDefined(modelValue.isIdleOrOffline) && modelValue.receiverId) {
-                                var curBtnStatus = modelValue.isIdleOrOffline ? BTN_STATUSES.OFFLINE : BTN_STATUSES.CALL;
-                                receiverId = modelValue.receiverId;
-                                _changeBtnState(curBtnStatus);
-                            }
+                            var btnState = modelValue.btnState;
+                            receiverId = modelValue.receiverId;
+                            _changeBtnState(btnState);
                         };
                     }
                 };
@@ -640,6 +634,23 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 };
             }]
         }
+    );
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.calls').factory('CallBtnEnum',
+        ["EnumSrv", function (EnumSrv) {
+            'ngInject';
+
+            return new EnumSrv.BaseEnum([
+                ['OFFLINE', 1, 'offline'],
+                ['CALL', 2, 'call'],
+                ['CALLED', 3, 'called']
+            ]);
+        }]
     );
 })(angular);
 
@@ -1018,16 +1029,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 return callsData.callerId === callerId && callsData.receiverId === receiverId;
             }
 
-            function _isNewReceiverIdMatchActiveCallerId(callsData, callerId, receiverId) {
-                return callsData.receiverId === callerId && callsData.callerId === receiverId;
-            }
-
             function _isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId) {
                 return callsData.callerId === callerId && callsData.receiverId !== receiverId;
-            }
-
-            function _isNewReceiverIdNotMatchActiveCallerId(callsData, callerId, receiverId) {
-                return callsData.receiverId === callerId && callsData.callerId !== receiverId;
             }
 
             function _getUserCallStatus(callerId, receiverId) {
@@ -1038,49 +1041,24 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                         if (callsDataMapKeys.hasOwnProperty(i)) {
                             var callsDataKey = callsDataMapKeys[i];
                             var callsData = callsDataMap[callsDataKey];
-
-                            switch(true) {
-                                /* if user that calls active, and new call init has same receiverId then disconnect */
-                                case _isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId):
-                                    userCallData = {
-                                        action: CALL_ACTIONS.DISCONNECT,
-                                        callerId: callerId,
-                                        newReceiverId: receiverId,
-                                        newCallGuid: callsData.guid
-                                    };
-                                    break;
-                                /* if user that receive call active, and new call init has same callerId then disconnect */
-                                case _isNewReceiverIdMatchActiveCallerId(callsData, callerId, receiverId):
-                                    userCallData = {
-                                        action: CALL_ACTIONS.DISCONNECT,
-                                        callerId: receiverId,
-                                        newReceiverId: callerId,
-                                        newCallGuid: callsData.guid
-                                    };
-                                    break;
-                                /* if user that calls is active with receiverId and new call init with other
-                                 receiverId then disconnect from current receiverId and connect with new receiverId */
-                                case _isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId):
-                                    userCallData = {
-                                        action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
-                                        callerId: callerId,
-                                        newReceiverId: receiverId,
-                                        oldReceiverId: callsData.receiverId,
-                                        oldCallGuid: callsData.guid
-                                    };
-                                    break;
-                                /* if user that receive calls is active with callerIdId and new call init with other
-                                 receiverId then disconnect from current callerId and connect with new receiverId */
-                                case _isNewReceiverIdNotMatchActiveCallerId(callsData, callerId, receiverId):
-                                    userCallData = {
-                                        action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
-                                        callerId: receiverId,
-                                        newReceiverId: callerId,
-                                        oldReceiverId: callsData.callerId,
-                                        oldCallGuid: callsData.guid
-                                    };
-                                    break;
-
+                            /* if user active, and new call init has same receiverId then disconnect */
+                            if (_isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId)) {
+                                userCallData = {
+                                    action: CALL_ACTIONS.DISCONNECT,
+                                    callerId: callerId,
+                                    newReceiverId: receiverId,
+                                    newCallGuid: callsData.guid
+                                };
+                            /* if user is active with receiverId and new call init with other
+                               receiverId then disconnect from current receiverId and connect with new receiverId */
+                            } else if (_isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId)) {
+                                userCallData = {
+                                    action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
+                                    callerId: callerId,
+                                    newReceiverId: receiverId,
+                                    oldReceiverId: callsData.receiverId,
+                                    oldCallGuid: callsData.guid
+                                };
                             }
                             if (userCallData) {
                                 break;
@@ -1250,7 +1228,6 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             self.modals = {
                 'INCOMING_CALL': {
                     svgIcon: 'incoming-call-icon',
-                    baseTemplateUrl: 'components/calls/modals/templates/baseCallsModal.template.html',
                     innerTemplateUrl: 'components/calls/modals/templates/incomingCall.template.html',
                     controller: 'IncomingCallModalCtrl',
                     overrideCssClass: 'incoming-call-modal',
@@ -1259,7 +1236,6 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 },
                 'OUTGOING_CALL': {
                     svgIcon: 'outgoing-call-icon',
-                    baseTemplateUrl: 'components/calls/modals/templates/baseCallsModal.template.html',
                     innerTemplateUrl: 'components/calls/modals/templates/outgoingCall.template.html',
                     controller: 'OutgoingCallModalCtrl',
                     overrideCssClass: 'outgoing-call-modal',
@@ -1295,9 +1271,9 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "    ng-click=\"vm.clickBtn()\"\n" +
     "    class=\"call-btn\"\n" +
     "     ng-class=\"{\n" +
-    "          'offline': vm.callBtnState === vm.callBtnEnum.OFFLINE,\n" +
-    "          'call': vm.callBtnState === vm.callBtnEnum.CALL,\n" +
-    "          'called': vm.callBtnState === vm.callBtnEnum.CALLED\n" +
+    "          'offline': vm.callBtnState === vm.callBtnEnum.OFFLINE.enum,\n" +
+    "          'call': vm.callBtnState === vm.callBtnEnum.CALL.enum,\n" +
+    "          'called': vm.callBtnState === vm.callBtnEnum.CALLED.enum\n" +
     "     }\">\n" +
     "    <svg-icon\n" +
     "        class=\"etutoring-phone-icon\"\n" +
@@ -4774,7 +4750,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                     bindToController: true,
                     controller: popupData.controller,
                     controllerAs: 'vm',
-                    templateUrl: baseTemplateUrl || popupData.baseTemplateUrl,
+                    templateUrl: baseTemplateUrl,
                     clickOutsideToClose: angular.isDefined(popupData.clickOutsideToClose) ? popupData.clickOutsideToClose : true,
                     escapeToClose: angular.isDefined(popupData.escapeToClose) ? popupData.escapeToClose : true
                 });
@@ -5609,7 +5585,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 return UserProfileService.getCurrUserId().then(function(currUid){
                     return _getStorage().then(function(storage){
                         var currUserScreenSharingDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/screenSharing';
-                        return storage.get(currUserScreenSharingDataPath);
+                        return storage.getAndBindToServer(currUserScreenSharingDataPath);
                     });
                 });
             };
@@ -5745,7 +5721,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
             var _this = this;
 
-            var activeScreenSharingData = null;
+            var activeScreenSharingDataFromAdapter = null;
             var currUserScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
             var registeredCbToActiveScreenSharingDataChanges = [];
             var registeredCbToCurrUserScreenSharingStateChange = [];
@@ -5773,7 +5749,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                         var screenSharingData = screenSharingDataMap[screenSharingDataKey];
 
                         var isEnded = screenSharingData.status === ScreenSharingStatusEnum.ENDED.enum;
-                        if(isEnded){
+                        if (isEnded) {
                             _this.endSharing(screenSharingData.guid);
                             continue;
                         }
@@ -5796,7 +5772,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                     return $q.reject(errMsg);
                 }
 
-                if(currUserScreenSharingState !== UserScreenSharingStateEnum.NONE.enum){
+                if (currUserScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
                     errMsg = 'ScreenSharingSrv: screen sharing is already active!!!';
                     $log.debug(errMsg);
                     return $q.reject(errMsg);
@@ -5846,7 +5822,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                         data.currUserScreenSharingRequests[newScreenSharingGuid] = true;
                         dataToSave[data.currUserScreenSharingRequests.$$path] = data.currUserScreenSharingRequests;
                         //other user screen sharing requests object update
-                        var otherUserScreenSharingPath = viewerData.uid === data.currUid ? sharerPath: viewerPath;
+                        var otherUserScreenSharingPath = viewerData.uid === data.currUid ? sharerPath : viewerPath;
                         var viewerScreenSharingDataGuidPath = otherUserScreenSharingPath + '/' + newScreenSharingGuid;
                         dataToSave[viewerScreenSharingDataGuidPath] = true;
 
@@ -5858,13 +5834,13 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 });
             }
 
-            function _cleanRegisteredCbToActiveScreenSharingData(){
-                activeScreenSharingData = null;
+            function _cleanRegisteredCbToActiveScreenSharingData() {
+                activeScreenSharingDataFromAdapter = null;
                 registeredCbToActiveScreenSharingDataChanges = [];
             }
 
-            function _invokeCurrUserScreenSharingStateChangedCb(){
-                registeredCbToCurrUserScreenSharingStateChange.forEach(function(cb){
+            function _invokeCurrUserScreenSharingStateChangedCb() {
+                registeredCbToCurrUserScreenSharingStateChange.forEach(function (cb) {
                     cb(currUserScreenSharingState);
                 });
             }
@@ -5890,7 +5866,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             };
 
             this.confirmSharing = function (screenSharingDataGuid) {
-                if(currUserScreenSharingState !== UserScreenSharingStateEnum.NONE.enum){
+                if (currUserScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
                     var errMsg = 'ScreenSharingSrv: screen sharing is already active!!!';
                     $log.debug(errMsg);
                     return $q.reject(errMsg);
@@ -5918,9 +5894,9 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                     dataToSave[data.currUidScreenSharingRequests.$$path] = data.currUidScreenSharingRequests;
 
                     var otherUserScreenSharingRequestPath;
-                    if(data.screenSharingData.viewerId !== data.currUid){
+                    if (data.screenSharingData.viewerId !== data.currUid) {
                         otherUserScreenSharingRequestPath = data.screenSharingData.viewerPath;
-                    }else{
+                    } else {
                         otherUserScreenSharingRequestPath = data.screenSharingData.sharerPath;
                     }
                     otherUserScreenSharingRequestPath += '/' + data.screenSharingData.guid;
@@ -5930,33 +5906,46 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 });
             };
 
-            this.registerToActiveScreenSharingDataChanges = function(cb){
-                if(activeScreenSharingData){
+            this.registerToActiveScreenSharingDataChanges = function (cb) {
+                if (activeScreenSharingDataFromAdapter) {
                     registeredCbToActiveScreenSharingDataChanges.push(cb);
-                    cb(activeScreenSharingData);
+                    cb(activeScreenSharingDataFromAdapter);
                 }
             };
 
-            this.registerToCurrUserScreenSharingStateChanges = function(cb){
+            this.registerToCurrUserScreenSharingStateChanges = function (cb) {
                 registeredCbToCurrUserScreenSharingStateChange.push(cb);
                 cb(currUserScreenSharingState);
             };
 
-            this.unregisterFromCurrUserScreenSharingStateChanges = function(cb){
-                registeredCbToCurrUserScreenSharingStateChange = registeredCbToCurrUserScreenSharingStateChange.filter(function(iterationCb){
+            this.unregisterFromCurrUserScreenSharingStateChanges = function (cb) {
+                registeredCbToCurrUserScreenSharingStateChange = registeredCbToCurrUserScreenSharingStateChange.filter(function (iterationCb) {
                     return iterationCb !== cb;
                 });
             };
 
-            this.getActiveScreenSharingData = function(){
-                if(!activeScreenSharingData){
-                    return $q.reject('ScreenSharingSrv: no active screen sharing data');
+            this.getActiveScreenSharingData = function () {
+                if (!activeScreenSharingDataFromAdapter) {
+                    return $q.when(null);
                 }
-                return ScreenSharingDataGetterSrv.getScreenSharingData(activeScreenSharingData.guid);
+
+                var dataPromMap = {
+                    screenSharingData: ScreenSharingDataGetterSrv.getScreenSharingData(activeScreenSharingDataFromAdapter.guid),
+                    currUid: UserProfileService.getCurrUserId()
+                };
+                return $q.all(dataPromMap).then(function(dataMap){
+                    var orig$saveFn = dataMap.screenSharingData.$save;
+                    dataMap.screenSharingData.$save = function () {
+                        dataMap.screenSharingData.updatedBy = dataMap.currUid;
+                        return orig$saveFn.apply(dataMap.screenSharingData);
+                    };
+
+                    return dataMap.screenSharingData;
+                });
             };
 
             this._userScreenSharingStateChanged = function (newUserScreenSharingState, screenSharingData) {
-                if(!newUserScreenSharingState || (currUserScreenSharingState === newUserScreenSharingState)){
+                if (!newUserScreenSharingState || (currUserScreenSharingState === newUserScreenSharingState)) {
                     return;
                 }
 
@@ -5964,27 +5953,27 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
                 var isViewerState = newUserScreenSharingState === UserScreenSharingStateEnum.VIEWER.enum;
                 var isSharerState = newUserScreenSharingState === UserScreenSharingStateEnum.SHARER.enum;
-                if(isSharerState || isViewerState){
-                    activeScreenSharingData = screenSharingData;
-                    ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState).then(function(){
+                if (isSharerState || isViewerState) {
+                    activeScreenSharingDataFromAdapter = screenSharingData;
+                    ScreenSharingUiSrv.activateScreenSharing(newUserScreenSharingState).then(function () {
                         _this.endSharing(screenSharingData.guid);
                     });
-                }else{
+                } else {
                     _cleanRegisteredCbToActiveScreenSharingData();
                     ScreenSharingUiSrv.endScreenSharing();
                 }
 
-                _invokeCurrUserScreenSharingStateChangedCb(currUserScreenSharingState );
+                _invokeCurrUserScreenSharingStateChangedCb(currUserScreenSharingState);
             };
 
-            this._screenSharingDataChanged = function(newScreenSharingData){
-                if(!activeScreenSharingData || activeScreenSharingData.guid !== newScreenSharingData.guid){
+            this._screenSharingDataChanged = function (newScreenSharingData) {
+                if (!activeScreenSharingDataFromAdapter || activeScreenSharingDataFromAdapter.guid !== newScreenSharingData.guid) {
                     return;
                 }
 
-                activeScreenSharingData = newScreenSharingData;
-                registeredCbToActiveScreenSharingDataChanges.forEach(function(cb){
-                    cb(activeScreenSharingData);
+                activeScreenSharingDataFromAdapter = newScreenSharingData;
+                registeredCbToActiveScreenSharingDataChanges.forEach(function (cb) {
+                    cb(activeScreenSharingDataFromAdapter);
                 });
             };
         }]
@@ -7068,7 +7057,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                     if (angular.isObject(value) && !value.$save) {
                         cachedValue = Object.create({
                             $save: function () {
-                                return self.set(path, this);
+                                return self.update(path, this);
                             }
                         });
                         angular.forEach(value, function (value, key) {
@@ -7120,7 +7109,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                             if (angular.isObject(_entity)) {
                                 var initObj = Object.create({
                                     $save: function () {
-                                        return self.set(processedPath, this);
+                                        return self.update(processedPath, this);
                                     },
                                     $$path: processedPath
                                 });
@@ -9204,8 +9193,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('questionsCarousel', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum',
-        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum) {
+        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum', '$timeout',
+        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum, $timeout) {
             return {
                 templateUrl: function(){
                     var templateUrl = "components/znkExercise/core/template/";
@@ -9264,14 +9253,17 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         }
                     });
 
-                    scope.$watch('questionsGetter().length',function(newNum){
-                        var notBindedQuestions = scope.questionsGetter();
-                        if(newNum && !scope.vm.questions){
-                            scope.vm.questions = notBindedQuestions;
-                            return;
+                    scope.$watchGroup(['questionsGetter()', 'questionsGetter().length'],function(newValArr, oldValArr){
+                        var newQuestionsArr = newValArr[0];
+                        scope.vm.questions = newQuestionsArr || [];
+
+                        var newNum = newValArr[1];
+                        var oldNum = oldValArr[1];
+                        if(oldNum && newNum !== oldNum){
+                            $timeout(function(){
+                                scope.vm.swiperActions.updateFollowingSlideAddition();
+                            });
                         }
-                        scope.vm.questions = notBindedQuestions;
-                        scope.vm.swiperActions.updateFollowingSlideAddition();
                     });
                 }
             };
@@ -9720,8 +9712,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
  *      pagerDisplay: function, if true provided than pager will be displayed other it will be hidden.
  *      bindExerciseViewTo: receive as parameter the view state
  *          viewState properties:
- *              currQuestion:
+ *              currSlideIndex:
  *              questionView: it implemented per question
+ *      unbindExerciseView: remove exercise view binding
  */
 
 (function (angular) {

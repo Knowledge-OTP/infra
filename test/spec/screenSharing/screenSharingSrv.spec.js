@@ -615,4 +615,33 @@ describe('testing service "ScreenSharingSrv":', function () {
         var expectedValue = _deps.UserScreenSharingStateEnum.NONE.enum;
         expect(valueFromCb).toBe(expectedValue);
     });
+
+    it('given user sharing his screen when saving screen sharing data then updated by field ' +
+        'should be updated correctly', function(){
+        var myUid = _deps.UserProfileService.__currUserId;
+        var otherUid = '123456789-other-uid';
+        var screenSharingDataGuid = '123456789-data-guid';
+
+        _addScreenSharingRequestToUser(myUid,false, screenSharingDataGuid);
+        _addScreenSharingRequestToUser(otherUid,false, screenSharingDataGuid);
+
+        var viewerId = myUid;
+        var sharerId = otherUid;
+        var viewerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
+        var sharerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
+        var screenSharingData = {
+            guid: screenSharingDataGuid,
+            sharerId: sharerId,
+            viewerId: viewerId,
+            status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
+            viewerPath: viewerScreenSharingRequestsPath ,
+            sharerPath: sharerScreenSharingRequestsPath
+        };
+        _updateScreenSharingData(screenSharingData);
+
+        var activeScreenSharingData = _deps.ScreenSharingSrvSync.getActiveScreenSharingData();
+        activeScreenSharingData.$save();
+
+        expect(activeScreenSharingData.updatedBy).toEqual(myUid);
+    });
 });
