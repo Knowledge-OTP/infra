@@ -30,10 +30,10 @@
              *     znkData   https://act-dev.firebaseio.com/
              *     znkStudentPath	 /act_app
              */
-            $rootScope.offline = { btnState: 1, receiverId: 1 };
+            $rootScope.offline = { isIdle: true, receiverId: 1 };
 
-            $rootScope.call = { btnState: 2, receiverId: '21794e2b-3051-4016-8491-b3fe70e8212d' };
-            $rootScope.called = { btnState: 2, receiverId: 'eebe2b53-08b7-4296-bcfd-62b69b531473' };
+            $rootScope.call = { isIdle: false, receiverId: '21794e2b-3051-4016-8491-b3fe70e8212d' };
+            $rootScope.called = { isIdle: false, receiverId: 'eebe2b53-08b7-4296-bcfd-62b69b531473' };
         })
         .controller('demoCtrl', function ($scope, CallsUiSrv, $rootScope) {
 
