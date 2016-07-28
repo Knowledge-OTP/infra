@@ -608,17 +608,19 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     isPendingClick = clickStatus;
                 }
 
-                // default btn state
-                _changeBtnState(BTN_STATUSES.CALL);
+                // default btn state offline
+                _changeBtnState(BTN_STATUSES.OFFLINE);
 
                 vm.$onInit = function() {
                     var ngModelCtrl = vm.parent;
                     if (ngModelCtrl) {
                         ngModelCtrl.$render = function() {
                             var modelValue = ngModelCtrl.$modelValue;
-                            var curBtnStatus = modelValue.isIdleOrOffline ? BTN_STATUSES.OFFLINE : BTN_STATUSES.CALL;
-                            receiverId = modelValue.receiverId;
-                            _changeBtnState(curBtnStatus);
+                            if (modelValue.isIdleOrOffline && modelValue.receiverId) {
+                                var curBtnStatus = modelValue.isIdleOrOffline ? BTN_STATUSES.OFFLINE : BTN_STATUSES.CALL;
+                                receiverId = modelValue.receiverId;
+                                _changeBtnState(curBtnStatus);
+                            }
                         };
                     }
                 };
