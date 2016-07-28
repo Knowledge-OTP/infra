@@ -314,7 +314,8 @@
                         cachedValue = Object.create({
                             $save: function () {
                                 return self.update(path, this);
-                            }
+                            },
+                            $$path: path
                         });
                         angular.forEach(value, function (value, key) {
                             cachedValue[key] = value;
