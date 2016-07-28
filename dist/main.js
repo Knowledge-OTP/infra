@@ -616,7 +616,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     if (ngModelCtrl) {
                         ngModelCtrl.$render = function() {
                             var modelValue = ngModelCtrl.$modelValue;
-                            if (modelValue.isIdleOrOffline && modelValue.receiverId) {
+                            if (angular.isDefined(modelValue.isIdleOrOffline) && modelValue.receiverId) {
                                 var curBtnStatus = modelValue.isIdleOrOffline ? BTN_STATUSES.OFFLINE : BTN_STATUSES.CALL;
                                 receiverId = modelValue.receiverId;
                                 _changeBtnState(curBtnStatus);
