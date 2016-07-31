@@ -5,8 +5,8 @@
         .config(function (WebcallSrvProvider) {
             'ngInject';
             WebcallSrvProvider.setCallCred({
-                username:'assafshp160721153735',
-                password:'khjihghs'
+                username:'ZinkerzDev160731091034',
+                password:'zinkerz$9999'
             });
         });
 })(angular);
