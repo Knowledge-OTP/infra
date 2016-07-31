@@ -60,7 +60,7 @@ angular.module('znk.infra.user').service('UserProfileService',
         };
 
         this.getUserName = function(uid){
-            var path = 'users/' + uid + '/profile/nickName';
+            var path = 'users/' + uid + '/profile/nickname';
 
             return InfraConfigSrv.getGlobalStorage().then(function(globalStorage){
                 return globalStorage.get(path);
