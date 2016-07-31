@@ -26,6 +26,7 @@
                     return storage.getAndBindToServer(callsDataPath);
                 }).catch(function(err){
                     $log.error('Error in _getStorage', err);
+                    return $q.reject(err);
                 });
             };
 
@@ -36,9 +37,11 @@
                         return storage.get(currUserCallsDataPath);
                     }).catch(function(err){
                         $log.error('Error in _getStorage', err);
+                        return $q.reject(err);
                     });
                 }).catch(function(err){
                     $log.error('Error in UserProfileService.getCurrUserId', err);
+                    return $q.reject(err);
                 });
             };
 

@@ -195,6 +195,7 @@
                     return _acceptCall(callsData);
                 }).catch(function(err){
                     $log.error('Error in acceptCall', err);
+                    return $q.reject(err);
                 });
             };
 
@@ -203,6 +204,7 @@
                     return _declineCall(callsData, hangWebCall);
                 }).catch(function(err){
                     $log.error('Error in declineCall', err);
+                    return $q.reject(err);
                 });
             };
             /* used to disconnect the other user from web call */
@@ -215,6 +217,7 @@
                     return _initiateCall(callerId, receiverId);
                 }).catch(function(err){
                     $log.error('Error in callsStateChanged', err);
+                    return $q.reject(err);
                 });
             };
         }
