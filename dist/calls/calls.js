@@ -700,7 +700,7 @@
 
             function _webCallHang() {
                 return WebcallSrv.hang().catch(function(err){
-                    $log.error('Error in _webCallHang', err);
+                    $log.debug('_webCallHang catch', err);
                     return $q.reject(err);
                 });
             }
