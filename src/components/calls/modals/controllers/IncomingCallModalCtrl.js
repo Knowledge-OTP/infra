@@ -2,10 +2,17 @@
     'use strict';
 
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
-        function (CallsSrv, CallsUiSrv, CallsStatusEnum, $log) {
+        function (CallsSrv, CallsUiSrv, CallsStatusEnum, $log, $scope) {
             'ngInject';
 
-            var callsData = this.scope.callsData;
+            var self = this;
+            var callsData = self.scope.callsData;
+
+            $scope.$watch('callsData', function(newVal) {
+                if (angular.isDefined(newVal) && newVal.status) {
+                     callsData = newVal;
+                }
+            });
 
             function _baseCall(callFn, methodName, params) {
                 callFn(callsData, params).then(function () {

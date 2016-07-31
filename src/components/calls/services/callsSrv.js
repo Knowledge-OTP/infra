@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsSrv',
-        function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv, CallsEventsSrv) {
+        function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv, CallsEventsSrv, CallsStatusEnum) {
             'ngInject';
 
             var CALL_ACTIONS = {
@@ -130,11 +130,16 @@
             function _connectCall(userCallData) {
                 var newCallGuid = UtilitySrv.general.createGuid();
                 var getDataPromMap = _getDataPromMap(newCallGuid);
+                // initial popup pending without cancel option until return from firebase
+                var callsData = {
+                    status: CallsStatusEnum.PENDING_CALL.enum
+                };
+                CallsEventsSrv.openOutGoingCall(callsData);
                 return _webCallConnect(newCallGuid).then(function () {
                     return $q.all(getDataPromMap).then(function (data) {
                          return CallsDataSetterSrv.setNewConnect(data, userCallData, newCallGuid).then(function (callsMap) {
-                             var callsData = callsMap['calls/' + newCallGuid];
-                             CallsEventsSrv.openIncomingCall(callsData);
+                             var callsData = angular.copy(callsMap['calls/' + newCallGuid]);
+                             CallsEventsSrv.updateScopeData(callsData);
                          });
                     });
                 });

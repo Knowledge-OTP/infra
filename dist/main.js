@@ -661,10 +661,17 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
-        ["CallsSrv", "CallsUiSrv", "CallsStatusEnum", "$log", function (CallsSrv, CallsUiSrv, CallsStatusEnum, $log) {
+        ["CallsSrv", "CallsUiSrv", "CallsStatusEnum", "$log", "$scope", function (CallsSrv, CallsUiSrv, CallsStatusEnum, $log, $scope) {
             'ngInject';
 
-            var callsData = this.scope.callsData;
+            var self = this;
+            var callsData = self.scope.callsData;
+
+            $scope.$watch('callsData', function(newVal) {
+                if (angular.isDefined(newVal) && newVal.status) {
+                     callsData = newVal;
+                }
+            });
 
             function _baseCall(callFn, methodName, params) {
                 callFn(callsData, params).then(function () {
@@ -690,7 +697,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         ["CallsSrv", "CallsUiSrv", "$log", "CallsStatusEnum", "$scope", "$timeout", function (CallsSrv, CallsUiSrv, $log, CallsStatusEnum, $scope, $timeout) {
             'ngInject';
 
-            var callsData = this.scope.callsData;
+            var self = this;
+            var callsData = self.scope.callsData;
 
             $scope.$watch('callsData', function(newVal) {
                 if (angular.isDefined(newVal) && newVal.status) {
@@ -701,6 +709,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                              }, 2000);
                              break;
                      }
+                    callsData = newVal;
                 }
             });
 
@@ -921,7 +930,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 });
             }
 
-            function openIncomingCall(callsData) {
+            function openOutGoingCall(callsData) {
                 scopesObj.caller = $rootScope.$new();
                 scopesObj.caller.callsData = callsData;
                 CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scopesObj.caller);
@@ -1009,7 +1018,9 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 }
             };
 
-            CallsEventsSrv.openIncomingCall = openIncomingCall;
+            CallsEventsSrv.openOutGoingCall = openOutGoingCall;
+
+            CallsEventsSrv.updateScopeData = updateScopeData;
 
             return CallsEventsSrv;
         }];
@@ -1070,7 +1081,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsSrv',
-        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "CallsDataSetterSrv", "WebcallSrv", "CallsEventsSrv", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv, CallsEventsSrv) {
+        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "CallsDataSetterSrv", "WebcallSrv", "CallsEventsSrv", "CallsStatusEnum", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv, CallsEventsSrv, CallsStatusEnum) {
             'ngInject';
 
             var CALL_ACTIONS = {
@@ -1198,11 +1209,16 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             function _connectCall(userCallData) {
                 var newCallGuid = UtilitySrv.general.createGuid();
                 var getDataPromMap = _getDataPromMap(newCallGuid);
+                // initial popup pending without cancel option until return from firebase
+                var callsData = {
+                    status: CallsStatusEnum.PENDING_CALL.enum
+                };
+                CallsEventsSrv.openOutGoingCall(callsData);
                 return _webCallConnect(newCallGuid).then(function () {
                     return $q.all(getDataPromMap).then(function (data) {
                          return CallsDataSetterSrv.setNewConnect(data, userCallData, newCallGuid).then(function (callsMap) {
-                             var callsData = callsMap['calls/' + newCallGuid];
-                             CallsEventsSrv.openIncomingCall(callsData);
+                             var callsData = angular.copy(callsMap['calls/' + newCallGuid]);
+                             CallsEventsSrv.updateScopeData(callsData);
                          });
                     });
                 });
@@ -1464,6 +1480,7 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "            <div class=\"btn-container\">\n" +
     "                <div class=\"btn-accept\">\n" +
     "                    <button\n" +
+    "                        ng-if=\"callsData.callerId && callsData.receiverId\"\n" +
     "                        ng-click=\"vm.declineCall()\"\n" +
     "                        translate=\".CANCEL\">\n" +
     "                    </button>\n" +
