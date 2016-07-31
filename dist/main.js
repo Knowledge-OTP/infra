@@ -661,24 +661,34 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
-        ["CallsSrv", "CallsUiSrv", "CallsStatusEnum", "$log", "$scope", function (CallsSrv, CallsUiSrv, CallsStatusEnum, $log, $scope) {
+        ["CallsSrv", "CallsUiSrv", "CallsStatusEnum", "$log", function (CallsSrv, CallsUiSrv, CallsStatusEnum, $log) {
             'ngInject';
 
             var self = this;
             var callsData = self.scope.callsData;
 
-            $scope.$watch('callsData', function(newVal) {
-                if (angular.isDefined(newVal) && newVal.status) {
-                     callsData = newVal;
-                }
-            });
+            var isPendingClick = false;
+
+            function _isNoPendingClick() {
+                return !isPendingClick;
+            }
+
+            function _clickStatusSetter(clickStatus) {
+                isPendingClick = clickStatus;
+            }
 
             function _baseCall(callFn, methodName, params) {
-                callFn(callsData, params).then(function () {
-                    CallsUiSrv.closeModal();
-                }).catch(function (err) {
-                    $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);
-                });
+                 callsData = self.scope.callsData;
+                if (_isNoPendingClick()) {
+                    _clickStatusSetter(true);
+                    callFn(callsData, params).then(function () {
+                        _clickStatusSetter(false);
+                        CallsUiSrv.closeModal();
+                    }).catch(function (err) {
+                        _clickStatusSetter(false);
+                        $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);
+                    });
+                }
             }
 
             this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall', false);
@@ -700,6 +710,17 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             var self = this;
             var callsData = self.scope.callsData;
 
+            var isPendingClick = false;
+
+            function _isNoPendingClick() {
+                return !isPendingClick;
+            }
+
+            function _clickStatusSetter(clickStatus) {
+                isPendingClick = clickStatus;
+            }
+
+
             $scope.$watch('callsData', function(newVal) {
                 if (angular.isDefined(newVal) && newVal.status) {
                      switch(newVal.status) {
@@ -714,11 +735,17 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             });
 
             function _baseCall(callFn, methodName, params) {
-                callFn(callsData, params).then(function () {
-                    CallsUiSrv.closeModal();
-                }).catch(function (err) {
-                    $log.error('OutgoingCallModalCtrl '+ methodName +': err: ' + err);
-                });
+                callsData = self.scope.callsData;
+                if (_isNoPendingClick()) {
+                    _clickStatusSetter(true);
+                    callFn(callsData, params).then(function () {
+                        _clickStatusSetter(false);
+                        CallsUiSrv.closeModal();
+                    }).catch(function (err) {
+                        _clickStatusSetter(false);
+                        $log.error('OutgoingCallModalCtrl '+ methodName +': err: ' + err);
+                    });
+                }
             }
 
             this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall', true);
@@ -1480,6 +1507,7 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "            <div class=\"btn-container\">\n" +
     "                <div class=\"btn-accept\">\n" +
     "                    <button\n" +
+    "                        class=\"animate-if\"\n" +
     "                        ng-if=\"callsData.callerId && callsData.receiverId\"\n" +
     "                        ng-click=\"vm.declineCall()\"\n" +
     "                        translate=\".CANCEL\">\n" +
