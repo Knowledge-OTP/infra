@@ -50,24 +50,31 @@
                 scope.callsData.status = 3;
                 CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scope);
             };
+
+            $scope.openErrorModal = function() {
+                var modalData = {
+                    errorMessage: 'An error has occured'
+                };
+                CallsUiSrv.showErrorModal(CallsUiSrv.modals.ERROR, modalData);
+            };
         })
         .service('ENV', function () {
-            var isTeacher = localStorage.getItem('isTeacher');
+                var isTeacher = localStorage.getItem('isTeacher');
 
-            if(isTeacher) {
-                // teacher
-                this.firebaseAppScopeName = "act_dashboard";
-                this.appContext = 'dashboard';
-                this.studentAppName = 'act_app';
-                this.dashboardAppName = 'act_dashboard';
-            } else {
-                // student
-                this.firebaseAppScopeName = "act_app";
-                this.appContext = 'student';
-                this.studentAppName = 'act_app';
-                this.dashboardAppName = 'act_dashboard';
+                if(isTeacher) {
+                    // teacher
+                    this.firebaseAppScopeName = "act_dashboard";
+                    this.appContext = 'dashboard';
+                    this.studentAppName = 'act_app';
+                    this.dashboardAppName = 'act_dashboard';
+                } else {
+                    // student
+                    this.firebaseAppScopeName = "act_app";
+                    this.appContext = 'student';
+                    this.studentAppName = 'act_app';
+                    this.dashboardAppName = 'act_dashboard';
+                }
+
             }
-
-        }
-    );
+        );
 })(angular);

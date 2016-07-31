@@ -23,6 +23,11 @@
                 CallsModalService.showBaseModal(modal);
             };
 
+            self.showErrorModal = function (modal, modalData) {
+                modal.modalData = modalData;
+                CallsModalService.showBaseModal(modal);
+            };
+
             self.closeModal = function () {
                 $mdDialog.hide();
             };
@@ -43,6 +48,15 @@
                     innerTemplateUrl: 'components/calls/modals/templates/outgoingCall.template.html',
                     controller: 'OutgoingCallModalCtrl',
                     overrideCssClass: 'outgoing-call-modal',
+                    clickOutsideToClose: false,
+                    escapeToClose: false
+                },
+                'ERROR': {
+                    svgIcon: 'outgoing-call-icon',
+                    baseTemplateUrl: 'components/calls/modals/templates/baseCallsModal.template.html',
+                    innerTemplateUrl: 'components/calls/modals/templates/errorModal.template.html',
+                    controller: 'ErrorModalCtrl',
+                    overrideCssClass: 'error-modal',
                     clickOutsideToClose: false,
                     escapeToClose: false
                 }
