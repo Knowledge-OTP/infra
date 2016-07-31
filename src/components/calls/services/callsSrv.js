@@ -202,7 +202,7 @@
                 return _handleCallerIdOrReceiverIdUndefined(callsData, 'declineCall').then(function () {
                     return _declineCall(callsData, hangWebCall);
                 }).catch(function(err){
-                    $log.error('Error in acceptCall', err);
+                    $log.error('Error in declineCall', err);
                 });
             };
             /* used to disconnect the other user from web call */
