@@ -231,9 +231,6 @@
 
                 return this.get(path).then(function (pathValue) {
                     self.adapter.onEvent('value', pathValue.$$path, function (serverValue) {
-                        angular.forEach(pathValue, function (value, key) {
-                            delete pathValue[key];
-                        });
                         angular.extend(pathValue, serverValue);
                     });
 

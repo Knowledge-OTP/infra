@@ -268,7 +268,7 @@ describe('testing service "StorageSrv":', function () {
                 }
             }
         };
-        adapter.set(path, angular.copy(expectedPathValue));
+        adapter.update(path, angular.copy(expectedPathValue));
         $rootScope.$digest();
         expectedPathValue = storageDb[path];
         expect(currPathValue).toEqual(expectedPathValue);
