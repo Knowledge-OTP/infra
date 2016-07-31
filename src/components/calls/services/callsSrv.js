@@ -193,12 +193,18 @@
             this.acceptCall = function(callsData) {
                 return _handleCallerIdOrReceiverIdUndefined(callsData, 'acceptCall').then(function () {
                     return _acceptCall(callsData);
+                }).catch(function(err){
+                    $log.error('Error in acceptCall', err);
+                    return $q.reject(err);
                 });
             };
 
             this.declineCall = function(callsData, hangWebCall) {
                 return _handleCallerIdOrReceiverIdUndefined(callsData, 'declineCall').then(function () {
                     return _declineCall(callsData, hangWebCall);
+                }).catch(function(err){
+                    $log.error('Error in declineCall', err);
+                    return $q.reject(err);
                 });
             };
             /* used to disconnect the other user from web call */
@@ -209,6 +215,9 @@
             this.callsStateChanged = function (receiverId) {
                 return UserProfileService.getCurrUserId().then(function(callerId) {
                     return _initiateCall(callerId, receiverId);
+                }).catch(function(err){
+                    $log.error('Error in callsStateChanged', err);
+                    return $q.reject(err);
                 });
             };
         }
