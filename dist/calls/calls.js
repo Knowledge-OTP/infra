@@ -258,7 +258,7 @@
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsDataGetterSrv',
-        ["InfraConfigSrv", "$q", "ENV", "UserProfileService", function (InfraConfigSrv, $q, ENV, UserProfileService) {
+        ["InfraConfigSrv", "$q", "ENV", "UserProfileService", "$log", function (InfraConfigSrv, $q, ENV, UserProfileService, $log) {
             'ngInject';
 
             function _getStorage() {
@@ -280,6 +280,9 @@
                 var callsDataPath = this.getCallsDataPath(callsGuid);
                 return _getStorage().then(function (storage) {
                     return storage.getAndBindToServer(callsDataPath);
+                }).catch(function(err){
+                    $log.error('Error in _getStorage', err);
+                    return $q.reject(err);
                 });
             };
 
@@ -288,7 +291,13 @@
                     return _getStorage().then(function(storage){
                         var currUserCallsDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/calls';
                         return storage.get(currUserCallsDataPath);
+                    }).catch(function(err){
+                        $log.error('Error in _getStorage', err);
+                        return $q.reject(err);
                     });
+                }).catch(function(err){
+                    $log.error('Error in UserProfileService.getCurrUserId', err);
+                    return $q.reject(err);
                 });
             };
 
@@ -683,11 +692,17 @@
             }
 
             function _webCallConnect(callId) {
-                return WebcallSrv.connect(callId);
+                return WebcallSrv.connect(callId).catch(function(err){
+                    $log.error('Error in _webCallConnect', err);
+                    return $q.reject(err);
+                });
             }
 
             function _webCallHang() {
-                return WebcallSrv.hang();
+                return WebcallSrv.hang().catch(function(err){
+                    $log.error('Error in _webCallHang', err);
+                    return $q.reject(err);
+                });
             }
 
             function _connectCall(userCallData) {
@@ -765,12 +780,18 @@
             this.acceptCall = function(callsData) {
                 return _handleCallerIdOrReceiverIdUndefined(callsData, 'acceptCall').then(function () {
                     return _acceptCall(callsData);
+                }).catch(function(err){
+                    $log.error('Error in acceptCall', err);
+                    return $q.reject(err);
                 });
             };
 
             this.declineCall = function(callsData, hangWebCall) {
                 return _handleCallerIdOrReceiverIdUndefined(callsData, 'declineCall').then(function () {
                     return _declineCall(callsData, hangWebCall);
+                }).catch(function(err){
+                    $log.error('Error in declineCall', err);
+                    return $q.reject(err);
                 });
             };
             /* used to disconnect the other user from web call */
@@ -781,6 +802,9 @@
             this.callsStateChanged = function (receiverId) {
                 return UserProfileService.getCurrUserId().then(function(callerId) {
                     return _initiateCall(callerId, receiverId);
+                }).catch(function(err){
+                    $log.error('Error in callsStateChanged', err);
+                    return $q.reject(err);
                 });
             };
         }]

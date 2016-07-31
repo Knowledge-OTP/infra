@@ -114,11 +114,17 @@
             }
 
             function _webCallConnect(callId) {
-                return WebcallSrv.connect(callId);
+                return WebcallSrv.connect(callId).catch(function(err){
+                    $log.error('Error in _webCallConnect', err);
+                    return $q.reject(err);
+                });
             }
 
             function _webCallHang() {
-                return WebcallSrv.hang();
+                return WebcallSrv.hang().catch(function(err){
+                    $log.error('Error in _webCallHang', err);
+                    return $q.reject(err);
+                });
             }
 
             function _connectCall(userCallData) {
