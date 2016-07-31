@@ -1216,12 +1216,11 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 var receiverId = userCallData.oldReceiverId ? userCallData.oldReceiverId : userCallData.newReceiverId;
                 var guid = userCallData.oldCallGuid ? userCallData.oldCallGuid : userCallData.newCallGuid;
                 var getDataPromMap = _getDataPromMap(guid);
-                return _webCallHang().then(function () {
-                    return $q.all(getDataPromMap).then(function (data) {
-                        return CallsDataSetterSrv.setDisconnectCall(data, {
-                            receiverId: receiverId
-                        }, guid);
-                    });
+                _webCallHang();
+                  return $q.all(getDataPromMap).then(function (data) {
+                     return CallsDataSetterSrv.setDisconnectCall(data, {
+                          receiverId: receiverId
+                     }, guid);
                 });
             }
 
