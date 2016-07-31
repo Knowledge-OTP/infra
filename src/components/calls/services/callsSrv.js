@@ -227,8 +227,7 @@
 
             this.callsStateChanged = function (receiverId) {
                 return UserProfileService.getCurrUserId().then(function(callerId) {
-                    //return _initiateCall(callerId, receiverId);
-                    return $q.reject(err);
+                    return _initiateCall(callerId, receiverId);
                 }).catch(function(err){
                     $log.error('Error in callsStateChanged', err);
                     return $q.reject(err);

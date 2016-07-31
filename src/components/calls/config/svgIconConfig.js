@@ -8,6 +8,7 @@
             var svgMap = {
                 'incoming-call-icon': 'components/calls/svg/incoming-call-icon.svg',
                 'outgoing-call-icon': 'components/calls/svg/outgoing-call-icon.svg',
+                'exclamation-mark-icon': 'components/calls/svg/exclamation-mark-icon.svg',
                 'calls-etutoring-phone-icon': 'components/calls/svg/etutoring-phone-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);

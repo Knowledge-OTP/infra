@@ -2,9 +2,10 @@
     'use strict';
 
     angular.module('znk.infra.calls').controller('ErrorModalCtrl',
-        function () {
+        function ($scope, CallsUiSrv) {
             'ngInject';
-            var errorMessage = this.modalData.errorMessage;
+            $scope.errorMessage = this.modalData.errorMessage;
+            $scope.closeModal = CallsUiSrv.closeModal;
         }
     );
 })(angular);

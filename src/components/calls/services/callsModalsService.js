@@ -15,7 +15,8 @@
             baseTemplateUrl = templateUrl;
         };
 
-        this.$get = ['$mdDialog', function($mdDialog) {
+        this.$get = function($mdDialog, $rootScope) {
+            'ngInject';
             var CallsModalService = {};
 
             CallsModalService.showBaseModal = function (popupData) {
@@ -30,7 +31,7 @@
                             $mdDialog.hide();
                         }
                     },
-                    scope: popupData.scope || {},
+                    scope: popupData.scope || $rootScope.$new(),
                     bindToController: true,
                     controller: popupData.controller,
                     controllerAs: 'vm',
@@ -41,7 +42,7 @@
             };
 
             return CallsModalService;
-        }];
+        };
     }
 
     angular.module('znk.infra.callsModals').provider('CallsModalService', CallsModalService);

@@ -52,11 +52,11 @@
                     escapeToClose: false
                 },
                 'ERROR': {
-                    svgIcon: 'outgoing-call-icon',
+                    svgIcon: 'exclamation-mark-icon',
                     baseTemplateUrl: 'components/calls/modals/templates/baseCallsModal.template.html',
                     innerTemplateUrl: 'components/calls/modals/templates/errorModal.template.html',
                     controller: 'ErrorModalCtrl',
-                    overrideCssClass: 'error-modal',
+                    overrideCssClass: 'call-error-modal',
                     clickOutsideToClose: false,
                     escapeToClose: false
                 }
