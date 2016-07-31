@@ -1,4 +1,5 @@
-<znk-swiper class="znk-carousel"
+<znk-swiper ng-if="vm.questions.length"
+            class="znk-carousel"
             ng-model="vm.currSlideIndex"
             actions="vm.swiperActions"
             ng-change="vm.SlideChanged()"

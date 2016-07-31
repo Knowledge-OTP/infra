@@ -18,7 +18,7 @@
             allowedTimeForQuestionByExercise[exerciseTypeConst.TUTORIAL] = 1.5 * 60 * 1000;
             allowedTimeForQuestionByExercise[exerciseTypeConst.DRILL] = 40 * 1000;
             allowedTimeForQuestionByExercise[exerciseTypeConst.PRACTICE] = 40 * 1000;
-            ZnkExerciseSrvProvider.setAllowedTimeForQuestionByExercise(allowedTimeForQuestionByExercise);
+            ZnkExerciseSrvProvider.setAllowedTimeForQuestionMap(allowedTimeForQuestionByExercise);
 
             var map = {
                 1: '<div>question Type 1</div><span>{{$parent.questionGetter().id}}</span>' +
@@ -43,6 +43,8 @@
         .controller('Main', function ($scope, $timeout, ContentSrv, ZnkExerciseUtilitySrv, ExerciseResultSrv, $controller ) {
 
             var resultsData;
+
+            this.showExercise = true;
 
             function setExercise(exerciseName, exerciseId) {
                 /**
@@ -92,8 +94,12 @@
                 });
             }
 
-            setExercise('practice', '165');
-
+            function rebuildExercise() {
+                $scope.hideExercise = true;
+                $timeout(function () {
+                    $scope.hideExercise = false;
+                });
+            }
 
             $scope.d = {};
 
@@ -116,14 +122,7 @@
                 rebuildExercise();
             };
 
-            function rebuildExercise() {
-                $scope.hideExercise = true;
-                $timeout(function () {
-                    $scope.hideExercise = false;
-                });
-            }
-            
-       
+            setExercise('practice', '165');
         })
         .run(function ($rootScope, $translate) {
             $rootScope.$on('$translatePartialLoaderStructureChanged', function () {

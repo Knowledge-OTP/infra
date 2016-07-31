@@ -95,7 +95,10 @@ module.exports = function (grunt) {
                         }
                     }
                 },
-                src: 'demo/**/index.html'
+                src: 'demo/**/index.html',
+                exclude: [
+                    'jquery'
+                ]
             },
             test: {
                 devDependencies: true,

@@ -29,10 +29,12 @@
                 scope:{},
                 transclude: true,
                 compile:function(){
-                    var defer = $q.defer();
-                    var swiperInstanceProm = defer.promise;
+                    var defer, swiperInstanceProm, swiperInstance;
 
                     function preLink(scope,element,attrs,ngModelCtrl){
+                        defer = $q.defer();
+                        swiperInstanceProm = defer.promise;
+
                         if(attrs.actions){
                             if(!scope.$parent.$eval(attrs.actions)){
                                 scope.$parent.$eval(attrs.actions + '={}');
@@ -46,14 +48,14 @@
                             fnToBindFromSwiper.forEach(function(fnName){
                                 actions[fnName] = function(){
                                     var fnArgs = arguments;
-                                    swiperInstanceProm.then(function(swiperInstance){
+                                    swiperInstanceProm.then(function(){
                                         swiperInstance[fnName].apply(swiperInstance,fnArgs);
                                     });
                                 };
                             });
 
                             actions.updateFollowingSlideAddition = function(){
-                                return swiperInstanceProm.then(function(swiperInstance){
+                                return swiperInstanceProm.then(function(){
                                     swiperInstance.updateContainerSize();
                                     swiperInstance.updateSlidesSize();
                                 });
@@ -63,33 +65,39 @@
                         ngModelCtrl.$render = function(){
                             var currSlideIndex = ngModelCtrl.$viewValue;
                             if(angular.isNumber(currSlideIndex)){
-                                swiperInstanceProm.then(function(swiperInstance){
+                                swiperInstanceProm.then(function(){
                                     swiperInstance.slideTo(currSlideIndex);
                                 });
                             }
                         };
 
-                        swiperInstanceProm.then(function(swiperInstance){
-                            swiperInstance.on('onSlideChangeEnd',function(_swipeInstance){
-                                ngModelCtrl.$setViewValue(_swipeInstance.activeIndex);
+                        swiperInstanceProm.then(function(){
+                            swiperInstance.on('onSlideChangeEnd',function(){
+                                ngModelCtrl.$setViewValue(swiperInstance.activeIndex);
                             });
                         });
 
                         scope.$on('$destroy',function(){
-                            swiperInstanceProm.then(function(swiperInstance){
-                                swiperInstance.destroy();
-                            });
+                            if(swiperInstance){
+                                swiperInstance.off('onSlideChangeEnd');
+                                swiperInstance.destroy(true, true);
+                                swiperInstance = null;
+                            }
                         });
                     }
 
                     function postLink(scope,element,attrs,ngModelCtrl){
                         $timeout(function(){
                             var currSlideIndex = ngModelCtrl.$viewValue;
-                            defer.resolve(new Swiper(element[0], {
+
+                            currSlideIndex = Math.max(currSlideIndex, 0);
+
+                            swiperInstance = new Swiper(element[0], {
                                 initialSlide: currSlideIndex || 0,
                                 onlyExternal: true
-                            }));
-                        },0,false);
+                            });
+                            defer.resolve();
+                        });
                     }
 
                     return {
