@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsDataGetterSrv',
-        function (InfraConfigSrv, $q, ENV, UserProfileService) {
+        function (InfraConfigSrv, $q, ENV, UserProfileService, $log) {
             'ngInject';
 
             function _getStorage() {
@@ -24,6 +24,8 @@
                 var callsDataPath = this.getCallsDataPath(callsGuid);
                 return _getStorage().then(function (storage) {
                     return storage.getAndBindToServer(callsDataPath);
+                }).catch(function(err){
+                    $log.error('Error in _getStorage', err);
                 });
             };
 
@@ -32,7 +34,11 @@
                     return _getStorage().then(function(storage){
                         var currUserCallsDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/calls';
                         return storage.get(currUserCallsDataPath);
+                    }).catch(function(err){
+                        $log.error('Error in _getStorage', err);
                     });
+                }).catch(function(err){
+                    $log.error('Error in UserProfileService.getCurrUserId', err);
                 });
             };
 
