@@ -8,16 +8,24 @@
             isEnabled = _isEnabled;
         };
 
-        this.$get = function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, CallsSrv, $rootScope) {
+        this.$get = function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector) {
             'ngInject';
             var CallsEventsSrv = {};
 
             var scopesObj = {};
 
+            var callsSrv;
+
             function updateScopeData(callsData) {
                 angular.forEach(scopesObj, function(scope) {
                     scope.callsData = callsData;
                 });
+            }
+
+            function openIncomingCall(callsData) {
+                scopesObj.caller = $rootScope.$new();
+                scopesObj.caller.callsData = callsData;
+                CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scopesObj.caller);
             }
 
             function _listenToCallsData(guid) {
@@ -37,9 +45,6 @@
                                 $log.debug('call pending');
                                 if (isCurrentUserInitiatedCall(currUid)) {
                                     // show outgoing call modal
-                                    scopesObj.caller = $rootScope.$new();
-                                    scopesObj.caller.callsData = callsData;
-                                    CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scopesObj.caller);
                                 } else {
                                     // show incoming call modal with the ACCEPT & DECLINE buttons
                                     scopesObj.reciver = $rootScope.$new();
@@ -65,7 +70,10 @@
                                 $log.debug('call ended');
                                 CallsUiSrv.hideActiveCallDrv();
                                 // disconnect other user from call
-                                CallsSrv.disconnectCall();
+                                if (!callsSrv) {
+                                    callsSrv = $injector.get('CallsSrv');
+                                }
+                                callsSrv.disconnectCall();
                                 break;
                         }
                     });
@@ -101,6 +109,8 @@
                     _startListening();
                 }
             };
+
+            CallsEventsSrv.openIncomingCall = openIncomingCall;
 
             return CallsEventsSrv;
         };

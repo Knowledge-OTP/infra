@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsSrv',
-        function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv) {
+        function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv, CallsEventsSrv) {
             'ngInject';
 
             var CALL_ACTIONS = {
@@ -126,7 +126,10 @@
                 var getDataPromMap = _getDataPromMap(newCallGuid);
                 return _webCallConnect(newCallGuid).then(function () {
                     return $q.all(getDataPromMap).then(function (data) {
-                         return CallsDataSetterSrv.setNewConnect(data, userCallData, newCallGuid);
+                         return CallsDataSetterSrv.setNewConnect(data, userCallData, newCallGuid).then(function (callsMap) {
+                             var callsData = callsMap['calls/' + newCallGuid];
+                             CallsEventsSrv.openIncomingCall(callsData);
+                         });
                     });
                 });
             }
