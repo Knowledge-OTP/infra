@@ -12,6 +12,7 @@
             <div class="btn-container">
                 <div class="btn-accept">
                     <button
+                        class="animate-if"
                         ng-if="callsData.callerId && callsData.receiverId"
                         ng-click="vm.declineCall()"
                         translate=".CANCEL">
