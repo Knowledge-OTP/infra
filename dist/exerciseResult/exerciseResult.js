@@ -31,7 +31,8 @@
                 return MODULE_RESULTS_PATH + '/' + guid;
             }
 
-            function _getInitExerciseResult(exerciseTypeId,exerciseId,guid){
+            function _getInitExerciseResult(exerciseTypeId, exerciseId, guid){
+
                 var userProm = InfraConfigSrv.getUserData();
                 return userProm.then(function(user) {
                     return {
@@ -235,6 +236,7 @@
             }
 
             this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum, dontInitialize) {
+
                 if(!UtilitySrv.fn.isValidNumber(exerciseTypeId) || !UtilitySrv.fn.isValidNumber(exerciseId)){
                     var errMSg = 'ExerciseResultSrv: exercise type id, exercise id should be number !!!';
                     $log.error(errMSg);
@@ -377,6 +379,7 @@
 
             /* Module Results Functions */
             this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId) {
+
                 return $q.all([
                     this.getExerciseResult(exerciseTypeId, exerciseId, null, null, true),
                     _getInitExerciseResult(exerciseTypeId,exerciseId,UtilitySrv.general.createGuid())
@@ -404,7 +407,7 @@
                             if (!withDefaultResult) {
                                 return null;
                             } else {
-                                defaultResult =  this.getDefaultModuleResult(moduleId, userId);
+                                defaultResult =  ExerciseResultSrv.getDefaultModuleResult(moduleId, userId);
                                 moduleResultGuid = defaultResult.guid;
                             }
                         }
@@ -458,7 +461,7 @@
                 return this.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
                     var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
                     if (userGuidLists[newResult.guid]) {
-                        return  this.getModuleResult(newResult.moduleId).then(function (moduleResult) {
+                        return  ExerciseResultSrv.getModuleResult(newResult.moduleId).then(function (moduleResult) {
                             angular.extend(moduleResult, newResult);
                             return InfraConfigSrv.getStudentStorage().then(function (storage) {
                                 return storage.set(moduleResultPath, moduleResult);
@@ -479,6 +482,7 @@
             };
 
             function moduleExerciseSaveFn(){
+
                 /* jshint validthis: true */
                 return _calcExerciseResultFields(this).then(function (response) {
                     var exerciseResult = response.exerciseResult;
