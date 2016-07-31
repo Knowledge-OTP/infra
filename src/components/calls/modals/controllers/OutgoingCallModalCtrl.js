@@ -5,7 +5,8 @@
         function (CallsSrv, CallsUiSrv, $log, CallsStatusEnum, $scope, $timeout) {
             'ngInject';
 
-            var callsData = this.scope.callsData;
+            var self = this;
+            var callsData = self.scope.callsData;
 
             $scope.$watch('callsData', function(newVal) {
                 if (angular.isDefined(newVal) && newVal.status) {
@@ -16,6 +17,7 @@
                              }, 2000);
                              break;
                      }
+                    callsData = newVal;
                 }
             });
 

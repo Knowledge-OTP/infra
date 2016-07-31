@@ -112,6 +112,8 @@
 
             CallsEventsSrv.openOutGoingCall = openOutGoingCall;
 
+            CallsEventsSrv.updateScopeData = updateScopeData;
+
             return CallsEventsSrv;
         };
     });
