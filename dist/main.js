@@ -902,16 +902,24 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             isEnabled = _isEnabled;
         };
 
-        this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "CallsSrv", "$rootScope", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, CallsSrv, $rootScope) {
+        this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector) {
             'ngInject';
             var CallsEventsSrv = {};
 
             var scopesObj = {};
 
+            var callsSrv;
+
             function updateScopeData(callsData) {
                 angular.forEach(scopesObj, function(scope) {
                     scope.callsData = callsData;
                 });
+            }
+
+            function openIncomingCall(callsData) {
+                scopesObj.caller = $rootScope.$new();
+                scopesObj.caller.callsData = callsData;
+                CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scopesObj.caller);
             }
 
             function _listenToCallsData(guid) {
@@ -931,9 +939,6 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                 $log.debug('call pending');
                                 if (isCurrentUserInitiatedCall(currUid)) {
                                     // show outgoing call modal
-                                    scopesObj.caller = $rootScope.$new();
-                                    scopesObj.caller.callsData = callsData;
-                                    CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scopesObj.caller);
                                 } else {
                                     // show incoming call modal with the ACCEPT & DECLINE buttons
                                     scopesObj.reciver = $rootScope.$new();
@@ -959,7 +964,10 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                 $log.debug('call ended');
                                 CallsUiSrv.hideActiveCallDrv();
                                 // disconnect other user from call
-                                CallsSrv.disconnectCall();
+                                if (!callsSrv) {
+                                    callsSrv = $injector.get('CallsSrv');
+                                }
+                                callsSrv.disconnectCall();
                                 break;
                         }
                     });
@@ -995,6 +1003,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     _startListening();
                 }
             };
+
+            CallsEventsSrv.openIncomingCall = openIncomingCall;
 
             return CallsEventsSrv;
         }];
@@ -1055,7 +1065,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsSrv',
-        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "CallsDataSetterSrv", "WebcallSrv", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv) {
+        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "CallsDataSetterSrv", "WebcallSrv", "CallsEventsSrv", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv, CallsEventsSrv) {
             'ngInject';
 
             var CALL_ACTIONS = {
@@ -1179,7 +1189,10 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 var getDataPromMap = _getDataPromMap(newCallGuid);
                 return _webCallConnect(newCallGuid).then(function () {
                     return $q.all(getDataPromMap).then(function (data) {
-                         return CallsDataSetterSrv.setNewConnect(data, userCallData, newCallGuid);
+                         return CallsDataSetterSrv.setNewConnect(data, userCallData, newCallGuid).then(function (callsMap) {
+                             var callsData = callsMap['calls/' + newCallGuid];
+                             CallsEventsSrv.openIncomingCall(callsData);
+                         });
                     });
                 });
             }
