@@ -1,14 +1,13 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.modal', []);
+    angular.module('znk.infra.callsModals', []);
 })(angular);
 
-'use strict';
-
 (function (angular) {
+    'use strict';
 
-    function ModalService() {
+    function CallsModalService() {
 
         var baseTemplateUrl;
 
@@ -17,9 +16,9 @@
         };
 
         this.$get = ['$mdDialog', function($mdDialog) {
-            var ModalService = {};
+            var CallsModalService = {};
 
-            ModalService.showBaseModal = function (popupData) {
+            CallsModalService.showBaseModal = function (popupData) {
                 $mdDialog.show({
                     locals: {
                         svgIcon: popupData.svgIcon,
@@ -31,23 +30,20 @@
                             $mdDialog.hide();
                         }
                     },
+                    scope: popupData.scope || {},
                     bindToController: true,
                     controller: popupData.controller,
                     controllerAs: 'vm',
-                    templateUrl: baseTemplateUrl,
-                    clickOutsideToClose: true,
-                    escapeToClose: true
+                    templateUrl: baseTemplateUrl || popupData.baseTemplateUrl,
+                    clickOutsideToClose: angular.isDefined(popupData.clickOutsideToClose) ? popupData.clickOutsideToClose : true,
+                    escapeToClose: angular.isDefined(popupData.escapeToClose) ? popupData.escapeToClose : true
                 });
             };
 
-            return ModalService;
+            return CallsModalService;
         }];
     }
 
-    angular.module('znk.infra.modal').provider('ModalService', ModalService);
+    angular.module('znk.infra.callsModals').provider('CallsModalService', CallsModalService);
 
 })(angular);
-
-angular.module('znk.infra.modal').run(['$templateCache', function($templateCache) {
-
-}]);

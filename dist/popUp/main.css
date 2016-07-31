@@ -283,12 +283,15 @@ $blueBG8: #75cbe8;
   right: 0;
   background: rgba(0, 0, 0, 0.7);
   text-align: center;
+  display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  -ms-flex-direction: column;
-      flex-direction: column;
-  -ms-flex-pack: center;
-      justify-content: center; }
+  -webkit-flex-direction: column;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-justify-content: center;
+      -ms-flex-pack: center;
+          justify-content: center; }
   .znk-popup .base-popup .znk-popup-wrapper {
     width: 390px;
     margin-right: auto;
@@ -305,6 +308,7 @@ $blueBG8: #75cbe8;
         top: -12px;
         right: 50%;
         margin-right: -28.5px;
+        display: -webkit-flex;
         display: -ms-flexbox;
         display: flex;
         -ms-flex-pack: center;
@@ -340,6 +344,7 @@ $blueBG8: #75cbe8;
         font-weight: 400;
         margin-top: 6px; }
     .znk-popup .base-popup .znk-popup-wrapper .znk-popup-buttons {
+      display: -webkit-flex;
       display: -ms-flexbox;
       display: flex;
       -ms-flex-pack: center;
@@ -360,6 +365,7 @@ $blueBG8: #75cbe8;
         font-weight: 400;
         border: 1px solid #0a9bad;
         border-radius: 20px;
+        display: -webkit-flex;
         display: -ms-flexbox;
         display: flex;
         -ms-flex-pack: center;

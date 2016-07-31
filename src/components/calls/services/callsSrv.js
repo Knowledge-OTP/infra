@@ -2,14 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsSrv',
-        function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, InfraConfigSrv, CallsStatusEnum, WebcallSrv) {
+        function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv) {
             'ngInject';
-
-            var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
-
-            function _getStorage() {
-                return InfraConfigSrv.getGlobalStorage();
-            }
 
             var CALL_ACTIONS = {
                DISCONNECT: 'disconnect',
@@ -21,45 +15,75 @@
                 return callsData.callerId === callerId && callsData.receiverId === receiverId;
             }
 
+            function _isNewReceiverIdMatchActiveCallerId(callsData, callerId, receiverId) {
+                return callsData.receiverId === callerId && callsData.callerId === receiverId;
+            }
+
             function _isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId) {
                 return callsData.callerId === callerId && callsData.receiverId !== receiverId;
+            }
+
+            function _isNewReceiverIdNotMatchActiveCallerId(callsData, callerId, receiverId) {
+                return callsData.receiverId === callerId && callsData.callerId !== receiverId;
             }
 
             function _getUserCallStatus(callerId, receiverId) {
                 return CallsDataGetterSrv.getCurrUserCallsData().then(function (callsDataMap) {
                     var userCallData = false;
                     var callsDataMapKeys = Object.keys(callsDataMap);
-
                     for (var i in callsDataMapKeys) {
                         if (callsDataMapKeys.hasOwnProperty(i)) {
                             var callsDataKey = callsDataMapKeys[i];
                             var callsData = callsDataMap[callsDataKey];
-                            /* if user active, and new call init has same receiverId then disconnect */
-                            if (_isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId)) {
-                                userCallData = {
-                                    action: CALL_ACTIONS.DISCONNECT,
-                                    callerId: callerId,
-                                    newReceiverId: receiverId,
-                                    newCallGuid: callsData.guid
-                                };
-                            /* if user is active with receiverId and new call init with other
-                               receiverId then disconnect from current receiverId and connect with new receiverId */
-                            } else if (_isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId)) {
-                                userCallData = {
-                                    action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
-                                    callerId: callerId,
-                                    newReceiverId: receiverId,
-                                    oldReceiverId: callsData.receiverId,
-                                    oldCallGuid: callsData.guid
-                                };
-                            }
 
+                            switch(true) {
+                                /* if user that calls active, and new call init has same receiverId then disconnect */
+                                case _isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CALL_ACTIONS.DISCONNECT,
+                                        callerId: callerId,
+                                        newReceiverId: receiverId,
+                                        newCallGuid: callsData.guid
+                                    };
+                                    break;
+                                /* if user that receive call active, and new call init has same callerId then disconnect */
+                                case _isNewReceiverIdMatchActiveCallerId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CALL_ACTIONS.DISCONNECT,
+                                        callerId: receiverId,
+                                        newReceiverId: callerId,
+                                        newCallGuid: callsData.guid
+                                    };
+                                    break;
+                                /* if user that calls is active with receiverId and new call init with other
+                                 receiverId then disconnect from current receiverId and connect with new receiverId */
+                                case _isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
+                                        callerId: callerId,
+                                        newReceiverId: receiverId,
+                                        oldReceiverId: callsData.receiverId,
+                                        oldCallGuid: callsData.guid
+                                    };
+                                    break;
+                                /* if user that receive calls is active with callerIdId and new call init with other
+                                 receiverId then disconnect from current callerId and connect with new receiverId */
+                                case _isNewReceiverIdNotMatchActiveCallerId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
+                                        callerId: receiverId,
+                                        newReceiverId: callerId,
+                                        oldReceiverId: callsData.callerId,
+                                        oldCallGuid: callsData.guid
+                                    };
+                                    break;
+
+                            }
                             if (userCallData) {
                                 break;
                             }
                         }
                     }
-
                     if (!userCallData) {
                         /* if user not active, and call init then active user */
                         userCallData = {
@@ -68,104 +92,83 @@
                             newReceiverId: receiverId
                         };
                     }
-
                     return userCallData;
                 });
             }
 
-            function _connectCall(userCallData) {
+            function _getDataPromMap(guid) {
                 var getDataPromMap = {};
-
                 getDataPromMap.currUserCallsRequests = CallsDataGetterSrv.getCurrUserCallsRequests();
-
-                var newCallGuid = UtilitySrv.general.createGuid();
-                getDataPromMap.newCallData = CallsDataGetterSrv.getCallsData(newCallGuid);
-
+                getDataPromMap.currCallData = CallsDataGetterSrv.getCallsData(guid);
                 getDataPromMap.currUid = UserProfileService.getCurrUserId();
+                return getDataPromMap;
+            }
 
-                return WebcallSrv.connect(newCallGuid).then(function () {
+            function _handleCallerIdOrReceiverIdUndefined(callsData, methodName) {
+                if (angular.isUndefined(callsData.callerId) || angular.isUndefined(callsData.receiverId)) {
+                    var errMSg = 'CallsSrv '+ methodName +': callerId or receiverId are missing!';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                return $q.when(true);
+            }
 
+            function _webCallConnect(callId) {
+                return WebcallSrv.connect(callId);
+            }
+
+            function _webCallHang() {
+                return WebcallSrv.hang();
+            }
+
+            function _connectCall(userCallData) {
+                var newCallGuid = UtilitySrv.general.createGuid();
+                var getDataPromMap = _getDataPromMap(newCallGuid);
+                return _webCallConnect(newCallGuid).then(function () {
                     return $q.all(getDataPromMap).then(function (data) {
-                        var dataToSave = {};
-
-                        var isCallerTeacher = userCallData.callerId === data.currUid && isTeacherApp;
-
-                        var receiverPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.newReceiverId, !isCallerTeacher);
-                        var callerPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.callerId, isCallerTeacher);
-
-                        var newCallData = {
-                            guid: newCallGuid,
-                            callerId: userCallData.callerId,
-                            receiverId: userCallData.newReceiverId,
-                            status: CallsStatusEnum.PENDING_CALL.enum,
-                            callerPath: callerPath,
-                            receiverPath: receiverPath
-                        };
-
-                        angular.extend(data.newCallData, newCallData);
-
-                        dataToSave[data.newCallData.$$path] = data.newCallData;
-                        //current user call requests object update
-                        data.currUserCallsRequests[newCallGuid] = true;
-                        dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
-                        //other user call requests object update
-                        var otherUserCallPath = userCallData.newReceiverId === data.currUid ? callerPath : receiverPath;
-                        var otherUserCallDataGuidPath = otherUserCallPath + '/' + newCallGuid;
-                        dataToSave[otherUserCallDataGuidPath] = true;
-
-                        return _getStorage().then(function (StudentStorage) {
-                            return StudentStorage.update(dataToSave);
-                        });
+                         return CallsDataSetterSrv.setNewConnect(data, userCallData, newCallGuid);
                     });
                 });
             }
 
             function _disconnectCall(userCallData) {
-
                 var receiverId = userCallData.oldReceiverId ? userCallData.oldReceiverId : userCallData.newReceiverId;
                 var guid = userCallData.oldCallGuid ? userCallData.oldCallGuid : userCallData.newCallGuid;
-
-                var getDataPromMap = {};
-
-                getDataPromMap.currUserCallsRequests = CallsDataGetterSrv.getCurrUserCallsRequests();
-                getDataPromMap.currCallData = CallsDataGetterSrv.getCallsData(guid);
-                getDataPromMap.currUid = UserProfileService.getCurrUserId();
-
-                return WebcallSrv.hang().then(function () {
+                var getDataPromMap = _getDataPromMap(guid);
+                return _webCallHang().then(function () {
                     return $q.all(getDataPromMap).then(function (data) {
-                        var dataToSave = {};
-                        data.currCallData.status = CallsStatusEnum.ENDED_CALL.enum;
-                        dataToSave[data.currCallData.$$path] = data.currCallData;
-                        //current user call requests object update
-                        data.currUserCallsRequests[guid] = null;
-                        dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
-                        //other user call requests object update
-                        var otherUserCallPath = receiverId === data.currUid ? data.currCallData.callerPath : data.currCallData.receiverPath;
-                        var otherUserCallDataGuidPath = otherUserCallPath + '/' + guid;
-                        dataToSave[otherUserCallDataGuidPath] = null;
+                        return CallsDataSetterSrv.setDisconnectCall(data, {
+                            receiverId: receiverId
+                        }, guid);
+                    });
+                });
+            }
 
-                        return _getStorage().then(function (StudentStorage) {
-                            return StudentStorage.update(dataToSave);
-                        });
+            function _acceptCall(callsData) {
+                return _webCallConnect(callsData.guid).then(function() {
+                    return CallsDataGetterSrv.getCallsData(callsData.guid).then(function (currCallData) {
+                         return CallsDataSetterSrv.setAcceptCall(currCallData);
+                    });
+                });
+            }
+
+            function _declineCall(callsData, hangWebCall) {
+                var prom = hangWebCall ? _webCallHang() : $q.when();
+                return prom.then(function () {
+                    var getDataPromMap = _getDataPromMap(callsData.guid);
+                    return $q.all(getDataPromMap).then(function (data) {
+                       return CallsDataSetterSrv.setDeclineCall(data, callsData, callsData.guid);
                     });
                 });
             }
 
             function _initiateCall(callerId, receiverId) {
-
                 if (angular.isUndefined(callerId) || angular.isUndefined(receiverId)) {
                     var errMSg = 'CallsSrv: callerId or receiverId are missing!';
                     $log.error(errMSg);
                     return $q.reject(errMSg);
                 }
-
                 return _getUserCallStatus(callerId, receiverId).then(function (userCallData) {
-                    if (!userCallData) {
-                        var errMsg = 'CallsSrv _initiateCall: userCallStatus is required!';
-                        $log.error(errMsg);
-                        return $q.reject(errMsg);
-                    }
-
                     var callActionProm;
 
                     switch (userCallData.action) {
@@ -185,6 +188,23 @@
                     return callActionProm;
                 });
             }
+
+            // api
+            this.acceptCall = function(callsData) {
+                return _handleCallerIdOrReceiverIdUndefined(callsData, 'acceptCall').then(function () {
+                    return _acceptCall(callsData);
+                });
+            };
+
+            this.declineCall = function(callsData, hangWebCall) {
+                return _handleCallerIdOrReceiverIdUndefined(callsData, 'declineCall').then(function () {
+                    return _declineCall(callsData, hangWebCall);
+                });
+            };
+            /* used to disconnect the other user from web call */
+            this.disconnectCall = function() {
+                return _webCallHang();
+            };
 
             this.callsStateChanged = function (receiverId) {
                 return UserProfileService.getCurrUserId().then(function(callerId) {

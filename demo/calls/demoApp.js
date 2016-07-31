@@ -5,12 +5,23 @@
         'znk.infra.calls',
         'ngAria',
         'ngMaterial',
-        'pascalprecht.translate',
-        'znk.infra.modal'
+        'pascalprecht.translate'
     ])
-        .config(function (ModalServiceProvider) {
-            ModalServiceProvider.setBaseTemplatePath('components/calls/modals/templates/baseCallsModal.template.html');
-            // components/calls/modals/templates/incomingCall.template.html
+        .config(function (CallsModalServiceProvider) {
+            CallsModalServiceProvider.setBaseTemplatePath('components/calls/modals/templates/baseCallsModal.template.html');
+
+            var isTeacher = localStorage.getItem('isTeacher');
+
+            localStorage.setItem('znkData', 'https://act-dev.firebaseio.com/');
+            localStorage.setItem('znkStudentPath', '/act_app');
+
+            if(isTeacher) {
+                localStorage.setItem('znkAuthToken', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2IjowLCJkIjp7InVpZCI6ImVlYmUyYjUzLTA4YjctNDI5Ni1iY2ZkLTYyYjY5YjUzMTQ3MyIsImVtYWlsIjoidGVhY2hlcis1NTg4QHppbmtlcnouY29tIn0sImlhdCI6MTQ2OTU1MTk4MH0.lTD8KvalrvncDXYr3PPu884ilFalunv-EIdSTDdmzWo');
+                localStorage.setItem('znkPwd', 123456);
+                localStorage.setItem('znkUser', 'teacher+5588@zinkerz.com');
+            } else {
+                localStorage.setItem('znkAuthToken', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2IjowLCJkIjp7InVpZCI6IjIxNzk0ZTJiLTMwNTEtNDAxNi04NDkxLWIzZmU3MGU4MjEyZCIsImVtYWlsIjoidGVzdGVyQHppbmtlcnouY29tIn0sImlhdCI6MTQ2OTUyMTI4N30.hfEgjFMAQ1eAylEOWxSmkBc2ejAZ0KIL2rb6aS5KjLI');
+            }
         })
         .run(function ($rootScope) {
             /**
@@ -19,24 +30,44 @@
              *     znkData   https://act-dev.firebaseio.com/
              *     znkStudentPath	 /act_app
              */
-            $rootScope.offline = { btnState: 1, receiverId: 1 };
-            $rootScope.call = { btnState: 2, receiverId: '9311f0b2-57ea-4374-9817-b70e89b1e174' };
-            $rootScope.called = { btnState: 3, receiverId: 1 };
+            $rootScope.offline = { isIdleOrOffline: true, receiverId: 1 };
+
+            $rootScope.call = { isIdleOrOffline: false, receiverId: '21794e2b-3051-4016-8491-b3fe70e8212d' };
+            $rootScope.called = { isIdleOrOffline: false, receiverId: 'eebe2b53-08b7-4296-bcfd-62b69b531473' };
         })
-        .controller('demoCtrl', ['$scope', 'CallsUiSrv', function ($scope, CallsUiSrv) {
+        .controller('demoCtrl', function ($scope, CallsUiSrv, $rootScope) {
+
             $scope.openIncomingCallModal = function() {
-                CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL);
+                var scope = $rootScope.$new();
+                scope.callsData = {};
+                scope.callsData.status = 2;
+                CallsUiSrv.showModal(CallsUiSrv.modals.INCOMING_CALL, scope);
             };
 
             $scope.openOutgoingCallModal = function() {
-                CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL);
+                var scope = $rootScope.$new();
+                scope.callsData = {};
+                scope.callsData.status = 3;
+                CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scope);
             };
-        }])
+        })
         .service('ENV', function () {
-            this.firebaseAppScopeName = "act_app";
-            this.appContext = 'student';
-            this.studentAppName = 'act_app';
-            this.dashboardAppName = 'act_dashboard';
+            var isTeacher = localStorage.getItem('isTeacher');
+
+            if(isTeacher) {
+                // teacher
+                this.firebaseAppScopeName = "act_dashboard";
+                this.appContext = 'dashboard';
+                this.studentAppName = 'act_app';
+                this.dashboardAppName = 'act_dashboard';
+            } else {
+                // student
+                this.firebaseAppScopeName = "act_app";
+                this.appContext = 'student';
+                this.studentAppName = 'act_app';
+                this.dashboardAppName = 'act_dashboard';
+            }
+
         }
     );
 })(angular);

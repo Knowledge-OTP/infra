@@ -547,8 +547,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('questionsCarousel', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum',
-        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum) {
+        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum', '$timeout',
+        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum, $timeout) {
             return {
                 templateUrl: function(){
                     var templateUrl = "components/znkExercise/core/template/";
@@ -607,14 +607,17 @@
                         }
                     });
 
-                    scope.$watch('questionsGetter().length',function(newNum){
-                        var notBindedQuestions = scope.questionsGetter();
-                        if(newNum && !scope.vm.questions){
-                            scope.vm.questions = notBindedQuestions;
-                            return;
+                    scope.$watchGroup(['questionsGetter()', 'questionsGetter().length'],function(newValArr, oldValArr){
+                        var newQuestionsArr = newValArr[0];
+                        scope.vm.questions = newQuestionsArr || [];
+
+                        var newNum = newValArr[1];
+                        var oldNum = oldValArr[1];
+                        if(oldNum && newNum !== oldNum){
+                            $timeout(function(){
+                                scope.vm.swiperActions.updateFollowingSlideAddition();
+                            });
                         }
-                        scope.vm.questions = notBindedQuestions;
-                        scope.vm.swiperActions.updateFollowingSlideAddition();
                     });
                 }
             };
@@ -1063,8 +1066,9 @@
  *      pagerDisplay: function, if true provided than pager will be displayed other it will be hidden.
  *      bindExerciseViewTo: receive as parameter the view state
  *          viewState properties:
- *              currQuestion:
+ *              currSlideIndex:
  *              questionView: it implemented per question
+ *      unbindExerciseView: remove exercise view binding
  */
 
 (function (angular) {

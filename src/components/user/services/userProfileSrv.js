@@ -44,4 +44,18 @@ angular.module('znk.infra.user').service('UserProfileService',
                 return authData && authData.uid;
             });
         };
+
+        this.updateUserTeachWorksId = function(uid, userTeachWorksId){
+            return InfraConfigSrv.getGlobalStorage().then(function(GlobalStorage){
+                var path = 'users/' + uid + '/teachworksId';
+                return GlobalStorage.update(path, userTeachWorksId);
+            });
+        };
+
+        this.getUserTeachWorksId = function(uid){
+            return InfraConfigSrv.getGlobalStorage().then(function(GlobalStorage){
+                var path = 'users/' + uid + '/teachworksId';
+                return GlobalStorage.get(path);
+            });
+        };
 });

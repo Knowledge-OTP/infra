@@ -1,13 +1,44 @@
 <div translate-namespace="AUDIO_CALLS">
     <div class="modal-main-title" translate=".INCOMING_CALL"></div>
-    <div class="modal-sub-title" translate=".NAME_IS_CALLING" translate-values="{callerName: 'Eric Powell'}"></div>
-    <div class="btn-container">
-        <div class="btn-decline">
 
+    <ng-switch on="callsData.status">
+        <!-- Call Pending -->
+        <div ng-switch-when="1" class="flex-column">
+            <span
+                class="modal-sub-title call-status"
+                translate=".NAME_IS_CALLING"
+                translate-values="{callerName: 'Eric Powell'}"></span>
+            <div class="btn-container">
+                <div class="btn-decline">
+                    <button
+                        ng-click="vm.declineCall()"
+                        translate=".DECLINE">
+                    </button>
+                </div>
+                <div class="btn-accept">
+                    <button
+                        ng-click="vm.acceptCall()"
+                        class="primary"
+                        translate=".ACCEPT">
+                    </button>
+                </div>
+            </div>
         </div>
-        <div class="btn-accept">
-            <button translate=".DECLINE"></button>
-            <button class="primary" translate=".ACCEPT"></button>
+
+        <!-- Call Declined -->
+        <div ng-switch-when="2" class="flex-column">
+            <span
+                translate=".CALLING_CANCELED"
+                class="modal-sub-title call-status">
+            </span>
+            <div class="btn-container">
+                <div class="btn-ok">
+                    <button
+                        ng-click="vm.closeModal()"
+                        translate=".OK">
+                    </button>
+                </div>
+            </div>
         </div>
-    </div>
+    </ng-switch>
 </div>

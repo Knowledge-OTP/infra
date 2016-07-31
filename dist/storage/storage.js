@@ -313,8 +313,9 @@
                     if (angular.isObject(value) && !value.$save) {
                         cachedValue = Object.create({
                             $save: function () {
-                                return self.set(path, this);
-                            }
+                                return self.update(path, this);
+                            },
+                            $$path: path
                         });
                         angular.forEach(value, function (value, key) {
                             cachedValue[key] = value;
@@ -365,7 +366,7 @@
                             if (angular.isObject(_entity)) {
                                 var initObj = Object.create({
                                     $save: function () {
-                                        return self.set(processedPath, this);
+                                        return self.update(processedPath, this);
                                     },
                                     $$path: processedPath
                                 });
