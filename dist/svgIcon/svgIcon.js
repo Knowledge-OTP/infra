@@ -83,7 +83,7 @@
                         var src = svgMap[name];
 
                         if(!src){
-                            $log.error('SvgIconSrv: src is missing for the following name', name);
+                            $log.error('SvgIconSrv: src is missing for the following name: ' + name);
                             return $q.reject('no source was found');
                         }
 
