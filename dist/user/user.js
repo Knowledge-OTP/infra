@@ -67,6 +67,14 @@ angular.module('znk.infra.user').service('UserProfileService',
                 return GlobalStorage.get(path);
             });
         };
+
+        this.getUserName = function(uid){
+            var path = 'users/' + uid + '/profile/nickName';
+
+            return InfraConfigSrv.getGlobalStorage().then(function(globalStorage){
+                return globalStorage.get(path);
+            });
+        };
 }]);
 
 (function (angular) {
