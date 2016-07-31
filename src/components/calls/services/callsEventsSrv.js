@@ -22,7 +22,7 @@
                 });
             }
 
-            function openIncomingCall(callsData) {
+            function openOutGoingCall(callsData) {
                 scopesObj.caller = $rootScope.$new();
                 scopesObj.caller.callsData = callsData;
                 CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scopesObj.caller);
@@ -110,7 +110,7 @@
                 }
             };
 
-            CallsEventsSrv.openIncomingCall = openIncomingCall;
+            CallsEventsSrv.openOutGoingCall = openOutGoingCall;
 
             return CallsEventsSrv;
         };
