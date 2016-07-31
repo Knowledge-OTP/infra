@@ -3,75 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <link rel="stylesheet" href="znkExercise/main.css">
-    <link rel="stylesheet" href="scroll/main.css">
-    <link rel="stylesheet" href="svgIcon/main.css">
-    <link rel="stylesheet" href="Swiper/dist/css/swiper.css">
+    <!-- bower:css -->
+    <link rel="stylesheet" href="Swiper/dist/css/swiper.css" />
+    <link rel="stylesheet" href="angular-material/angular-material.css" />
+    <!-- endbower-->
+    <link rel="stylesheet" href="main.css" />
 </head>
-<body ng-app="demo" ng-controller="Main">
+<style>
+    body{
+        background: #f2f2f2;
+    }
 
-    <style>
-        body{
-            background: #f2f2f2;
-        }
+    znk-exercise{
+        height: 500px;
+        width: 1000px;
+        margin: 100px 100px 0 auto;
+        display: inline-block;
+        float: right;
+    }
 
-        znk-exercise{
-            height: 500px;
-            width: 1000px;
-            margin: 100px 100px 0 auto;
-            display: inline-block;
-            float: right;
-        }
+    question-builder{
+        overflow: auto;
+        height: 100%;
+        background: white;
+    }
 
-        question-builder{
-            overflow: auto;
-            height: 100%;
-            background: white;
-        }
+</style>
+<body ng-app="demo" ng-controller="Main as $ctrl">
+    <div class="btn-container">
+        <button ng-click="$ctrl.showExercise = !$ctrl.showExercise">Rebuild Exercise</button>
+    </div>
+    <div ng-if="$ctrl.showExercise">
+        <znk-exercise ng-model="results"
+                      questions="questions"
+                      settings="settings"
+                      actions="d.actions">
+        </znk-exercise>
+    </div>
 
-    </style>
-    <znk-exercise ng-model="results"
-                  questions="questions"
-                  settings="settings"
-                  actions="d.actions">
-    </znk-exercise>
-
+    <!-- bower:js -->
     <script src="angular/angular.js"></script>
     <script src="angular-animate/angular-animate.js"></script>
     <script src="Swiper/dist/js/swiper.js"></script>
-    <script src="firebase/firebase-debug.js"></script>
-    <script src="angular-ui-router/release/angular-ui-router.js"></script>
-    <script src="angulartics/dist/angulartics.min.js"></script>
+    <script src="firebase/firebase.js"></script>
+    <script src="ng-idle/angular-idle.js"></script>
     <script src="angular-translate/angular-translate.js"></script>
+    <script src="SHA-1/sha1.js"></script>
+    <script src="angulartics/src/angulartics.js"></script>
     <script src="angular-translate-loader-partial/angular-translate-loader-partial.js"></script>
+    <script src="angular-svg-round-progressbar/build/roundProgress.min.js"></script>
+    <script src="angular-ui-router/release/angular-ui-router.js"></script>
+    <script src="plivo/dist/plivo.min.js"></script>
+    <script src="angular-aria/angular-aria.js"></script>
+    <script src="angular-messages/angular-messages.js"></script>
+    <script src="angular-material/angular-material.js"></script>
+    <!-- endbower -->
 
-
-
-    <script src="config/config.js"></script>
-    <script src="storage/storage.js"></script>
-    <script src="exerciseResult/exerciseResult.js"></script>
-    <script src="utility/utility.js"></script>
-    <script src="contentAvail/contentAvail.js"></script>
-    <script src="content/content.js"></script>
-    <script src="enum/enum.js"></script>
-    <script src="autofocus/autofocus.js"></script>
-    <script src="svgIcon/svgIcon.js"></script>
-    <script src="znkExercise/znkExercise.js"></script>
-    <script src="znkExercise/templates.js"></script>
-    <script src="analytics/analytics.js"></script>
-    <script src="popUp/popUp.js"></script>
-    <script src="exerciseDataGetters/exerciseDataGetters.js"></script>
-    <script src="stats/stats.js"></script>
-
-    <script src="exerciseUtility/exerciseUtility.js"></script>
-
-    <script src="scroll/scroll.js"></script>
-    <script src="scroll/templates.js"></script>
+    <script src="main.js"></script>
 
     <script src="demo.js"></script>
     <script src="storagesConfig.js"></script>
     <script src="contentConfig.js"></script>
-    <script src="env.service.js"></script>
     <script src="env.service.js"></script>
     <script src="infraSrvUserDataConfig.js"></script>
     <script src="analyticsConfig.js"></script>

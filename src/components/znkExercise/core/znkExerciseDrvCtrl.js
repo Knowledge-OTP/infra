@@ -70,11 +70,12 @@
                 if (angular.isDefined(newQuestionIndex)) {
                     var currIndex = self.getCurrentIndex();
                     return canChangeQuestion(newQuestionIndex, currIndex).then(function () {
-                        //minimum index limit
-                        newQuestionIndex = Math.max(0, newQuestionIndex);
                         //max index limit
                         var questions = $scope.questionsGetter() || [];
                         newQuestionIndex = Math.min(newQuestionIndex, questions.length - 1);
+
+                        //minimum index limit
+                        newQuestionIndex = Math.max(0, newQuestionIndex);
 
                         $scope.vm.currentSlide = newQuestionIndex;
 

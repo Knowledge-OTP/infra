@@ -328,12 +328,10 @@ md-dialog.baseCallsModal {
     -moz-border-radius-bottomleft: 20px;
     webkit-border-bottom-right-radius: 20px;
     -webkit-border-bottom-left-radius: 20px;
-    display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
-    -webkit-align-items: center;
-        -ms-flex-align: center;
-            align-items: center;
+    -ms-flex-align: center;
+        align-items: center;
     overflow: hidden; }
     md-dialog.baseCallsModal md-dialog-content .modal-main-title {
       margin-bottom: 27px;
@@ -350,19 +348,15 @@ md-dialog.baseCallsModal {
       text-align: center;
       margin-bottom: 40px; }
     md-dialog.baseCallsModal md-dialog-content .flex-column {
-      display: -webkit-flex;
       display: -ms-flexbox;
       display: flex;
-      -webkit-flex-direction: column;
-          -ms-flex-direction: column;
-              flex-direction: column; }
+      -ms-flex-direction: column;
+          flex-direction: column; }
     md-dialog.baseCallsModal md-dialog-content .btn-container {
-      display: -webkit-flex;
       display: -ms-flexbox;
       display: flex;
-      -webkit-justify-content: center;
-          -ms-flex-pack: center;
-              justify-content: center; }
+      -ms-flex-pack: center;
+          justify-content: center; }
       md-dialog.baseCallsModal md-dialog-content .btn-container button {
         min-width: 155px;
         height: 35px;
@@ -391,12 +385,10 @@ md-dialog.baseCallsModal {
     width: 100%;
     height: 40px; }
     md-dialog.baseCallsModal .top-icon-wrap .top-icon {
-      display: -webkit-flex;
       display: -ms-flexbox;
       display: flex;
-      -webkit-justify-content: center;
-          -ms-flex-pack: center;
-              justify-content: center; }
+      -ms-flex-pack: center;
+          justify-content: center; }
       md-dialog.baseCallsModal .top-icon-wrap .top-icon .round-icon-wrap {
         width: 76px;
         height: 76px;
@@ -404,15 +396,12 @@ md-dialog.baseCallsModal {
         background-color: #0a9bad;
         z-index: 9;
         margin-top: -15px;
-        display: -webkit-flex;
         display: -ms-flexbox;
         display: flex;
-        -webkit-justify-content: center;
-            -ms-flex-pack: center;
-                justify-content: center;
-        -webkit-align-items: center;
-            -ms-flex-align: center;
-                align-items: center; }
+        -ms-flex-pack: center;
+            justify-content: center;
+        -ms-flex-align: center;
+            align-items: center; }
         md-dialog.baseCallsModal .top-icon-wrap .top-icon .round-icon-wrap svg-icon {
           width: 35px;
           stroke: #fff; }
@@ -435,8 +424,7 @@ call-btn button.call-btn {
   call-btn button.call-btn.called svg-icon.etutoring-phone-icon {
     background-color: #ff6766; }
     call-btn button.call-btn.called svg-icon.etutoring-phone-icon svg {
-      -webkit-transform: translate(0, 1px) rotate(136deg);
-              transform: translate(0, 1px) rotate(136deg); }
+      transform: translate(0, 1px) rotate(136deg); }
       call-btn button.call-btn.called svg-icon.etutoring-phone-icon svg path {
         fill: #fff; }
   call-btn button.call-btn.offline svg-icon.etutoring-phone-icon {
@@ -457,19 +445,16 @@ active-call .etutoring-active-call {
   border-radius: 20px; }
   active-call .etutoring-active-call .flex-container {
     height: 100%;
-    display: -webkit-flex;
     display: -ms-flexbox;
     display: flex;
-    -webkit-align-items: center;
-        -ms-flex-align: center;
-            align-items: center;
+    -ms-flex-align: center;
+        align-items: center;
     padding: 0 5px; }
   active-call .etutoring-active-call .flex-col.callee-status, active-call .etutoring-active-call .flex-col.callee-name, active-call .etutoring-active-call .flex-col.call-controls {
     padding: 5px; }
   active-call .etutoring-active-call .flex-col.callee-status {
-    -webkit-flex-basis: 10%;
-        -ms-flex-preferred-size: 10%;
-            flex-basis: 10%;
+    -ms-flex-preferred-size: 10%;
+        flex-basis: 10%;
     text-align: center; }
     active-call .etutoring-active-call .flex-col.callee-status .online-indicator {
       display: inline-block;
@@ -478,9 +463,8 @@ active-call .etutoring-active-call {
       height: 7px;
       border-radius: 6px; }
   active-call .etutoring-active-call .flex-col.callee-name {
-    -webkit-flex-basis: 60%;
-        -ms-flex-preferred-size: 60%;
-            flex-basis: 60%;
+    -ms-flex-preferred-size: 60%;
+        flex-basis: 60%;
     font-size: 14px;
     color: #4f4d4d;
     font-family: Quicksand;
@@ -489,9 +473,8 @@ active-call .etutoring-active-call {
     overflow: hidden;
     text-overflow: ellipsis; }
   active-call .etutoring-active-call .flex-col.call-controls {
-    -webkit-flex-basis: 30%;
-        -ms-flex-preferred-size: 30%;
-            flex-basis: 30%; }
+    -ms-flex-preferred-size: 30%;
+        flex-basis: 30%; }
     active-call .etutoring-active-call .flex-col.call-controls svg-icon.call-mute-icon {
       float: left;
       cursor: pointer;

@@ -9532,10 +9532,12 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 scope:{},
                 transclude: true,
                 compile:function(){
-                    var defer = $q.defer();
-                    var swiperInstanceProm = defer.promise;
+                    var defer, swiperInstanceProm, swiperInstance;
 
                     function preLink(scope,element,attrs,ngModelCtrl){
+                        defer = $q.defer();
+                        swiperInstanceProm = defer.promise;
+
                         if(attrs.actions){
                             if(!scope.$parent.$eval(attrs.actions)){
                                 scope.$parent.$eval(attrs.actions + '={}');
@@ -9549,14 +9551,14 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                             fnToBindFromSwiper.forEach(function(fnName){
                                 actions[fnName] = function(){
                                     var fnArgs = arguments;
-                                    swiperInstanceProm.then(function(swiperInstance){
+                                    swiperInstanceProm.then(function(){
                                         swiperInstance[fnName].apply(swiperInstance,fnArgs);
                                     });
                                 };
                             });
 
                             actions.updateFollowingSlideAddition = function(){
-                                return swiperInstanceProm.then(function(swiperInstance){
+                                return swiperInstanceProm.then(function(){
                                     swiperInstance.updateContainerSize();
                                     swiperInstance.updateSlidesSize();
                                 });
@@ -9566,33 +9568,39 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         ngModelCtrl.$render = function(){
                             var currSlideIndex = ngModelCtrl.$viewValue;
                             if(angular.isNumber(currSlideIndex)){
-                                swiperInstanceProm.then(function(swiperInstance){
+                                swiperInstanceProm.then(function(){
                                     swiperInstance.slideTo(currSlideIndex);
                                 });
                             }
                         };
 
-                        swiperInstanceProm.then(function(swiperInstance){
-                            swiperInstance.on('onSlideChangeEnd',function(_swipeInstance){
-                                ngModelCtrl.$setViewValue(_swipeInstance.activeIndex);
+                        swiperInstanceProm.then(function(){
+                            swiperInstance.on('onSlideChangeEnd',function(){
+                                ngModelCtrl.$setViewValue(swiperInstance.activeIndex);
                             });
                         });
 
                         scope.$on('$destroy',function(){
-                            swiperInstanceProm.then(function(swiperInstance){
-                                swiperInstance.destroy();
-                            });
+                            if(swiperInstance){
+                                swiperInstance.off('onSlideChangeEnd');
+                                swiperInstance.destroy(true, true);
+                                swiperInstance = null;
+                            }
                         });
                     }
 
                     function postLink(scope,element,attrs,ngModelCtrl){
                         $timeout(function(){
                             var currSlideIndex = ngModelCtrl.$viewValue;
-                            defer.resolve(new Swiper(element[0], {
+
+                            currSlideIndex = Math.max(currSlideIndex, 0);
+
+                            swiperInstance = new Swiper(element[0], {
                                 initialSlide: currSlideIndex || 0,
                                 onlyExternal: true
-                            }));
-                        },0,false);
+                            });
+                            defer.resolve();
+                        });
                     }
 
                     return {
@@ -10234,11 +10242,12 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 if (angular.isDefined(newQuestionIndex)) {
                     var currIndex = self.getCurrentIndex();
                     return canChangeQuestion(newQuestionIndex, currIndex).then(function () {
-                        //minimum index limit
-                        newQuestionIndex = Math.max(0, newQuestionIndex);
                         //max index limit
                         var questions = $scope.questionsGetter() || [];
                         newQuestionIndex = Math.min(newQuestionIndex, questions.length - 1);
+
+                        //minimum index limit
+                        newQuestionIndex = Math.max(0, newQuestionIndex);
 
                         $scope.vm.currentSlide = newQuestionIndex;
 
@@ -11188,7 +11197,8 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</div>\n" +
     "");
   $templateCache.put("components/znkExercise/core/template/questionSwiperDesktopTemplate.html",
-    "<znk-swiper class=\"znk-carousel\"\n" +
+    "<znk-swiper ng-if=\"vm.questions.length\"\n" +
+    "            class=\"znk-carousel\"\n" +
     "            ng-model=\"vm.currSlideIndex\"\n" +
     "            actions=\"vm.swiperActions\"\n" +
     "            ng-change=\"vm.SlideChanged()\"\n" +
