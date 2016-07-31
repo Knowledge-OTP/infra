@@ -4,7 +4,7 @@
     angular.module('demoApp', ['znk.infra.webcall'])
         .config(function (WebcallSrvProvider) {
         	WebcallSrvProvider.setCallCred({
-        		username:'devUsrZinkerz160726161534',
+        		username:'ZinkerzDev160731091034',
         		password:'zinkerz$9999'
         	});
         })
