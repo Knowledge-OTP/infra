@@ -121,8 +121,8 @@
                     if (ngModelCtrl) {
                         ngModelCtrl.$render = function() {
                             var modelValue = ngModelCtrl.$modelValue;
-                            if (angular.isDefined(modelValue.isIdleOrOffline) && modelValue.receiverId) {
-                                var curBtnStatus = modelValue.isIdleOrOffline ? BTN_STATUSES.OFFLINE : BTN_STATUSES.CALL;
+                            if (angular.isDefined(modelValue.isOffline) && modelValue.receiverId) {
+                                var curBtnStatus = modelValue.isOffline ? BTN_STATUSES.OFFLINE : BTN_STATUSES.CALL;
                                 receiverId = modelValue.receiverId;
                                 _changeBtnState(curBtnStatus);
                             }
