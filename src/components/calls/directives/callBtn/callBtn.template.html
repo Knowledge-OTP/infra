@@ -2,9 +2,9 @@
     ng-click="vm.clickBtn()"
     class="call-btn"
      ng-class="{
-          'offline': vm.callBtnState === vm.callBtnEnum.OFFLINE,
-          'call': vm.callBtnState === vm.callBtnEnum.CALL,
-          'called': vm.callBtnState === vm.callBtnEnum.CALLED
+          'offline': vm.callBtnState === vm.callBtnEnum.OFFLINE_BTN.enum,
+          'call': vm.callBtnState === vm.callBtnEnum.CALL_BTN.enum,
+          'called': vm.callBtnState === vm.callBtnEnum.CALLED_BTN.enum
      }">
     <svg-icon
         class="etutoring-phone-icon"
