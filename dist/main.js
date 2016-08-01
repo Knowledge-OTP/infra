@@ -851,7 +851,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 }
 
                 angular.forEach(btnStatusCallbackMap[callsData.receiverId], function(cb) {
-                    cb();
+                    cb(status);
                 });
             };
 
@@ -1174,7 +1174,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                 break;
                             case CallsStatusEnum.DECLINE_CALL.enum:
                                 $log.debug('call declined');
-                                if (isCurrentUserInitiatedCall(currUid)) {
+                                if (!isCurrentUserInitiatedCall(currUid)) {
                                     updateScopeData(callsData);
                                 }
                                 break;

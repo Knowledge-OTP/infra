@@ -361,7 +361,7 @@
                 }
 
                 angular.forEach(btnStatusCallbackMap[callsData.receiverId], function(cb) {
-                    cb();
+                    cb(status);
                 });
             };
 
@@ -684,7 +684,7 @@
                                 break;
                             case CallsStatusEnum.DECLINE_CALL.enum:
                                 $log.debug('call declined');
-                                if (isCurrentUserInitiatedCall(currUid)) {
+                                if (!isCurrentUserInitiatedCall(currUid)) {
                                     updateScopeData(callsData);
                                 }
                                 break;
