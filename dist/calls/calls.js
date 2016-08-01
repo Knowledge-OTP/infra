@@ -442,7 +442,7 @@
                 return UserProfileService.getCurrUserId().then(function(currUid){
                     return _getStorage().then(function(storage){
                         var currUserCallsDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/calls';
-                        return storage.get(currUserCallsDataPath);
+                        return storage.getAndBindToServer(currUserCallsDataPath);
                     }).catch(function(err){
                         $log.error('Error in _getStorage', err);
                         return $q.reject(err);
