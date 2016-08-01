@@ -77,8 +77,8 @@
 
             })
         .config(function(CallsUiSrvProvider){
-            var fn = function() {
-              return 'Ran';
+            var fn = function($q) {
+              return $q.when('fake name');
             };
             CallsUiSrvProvider.setCalleeNameFn(fn);
         });
