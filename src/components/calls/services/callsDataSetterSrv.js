@@ -68,6 +68,7 @@
                 var otherUserCallPath = userCallData.receiverId === data.currUid ? data.currCallData.callerPath : data.currCallData.receiverPath;
                 var otherUserCallDataGuidPath = otherUserCallPath + '/' + guid;
                 dataToSave[otherUserCallDataGuidPath] = null;
+
                 return _getStorage().then(function (StudentStorage) {
                     return StudentStorage.update(dataToSave);
                 });
