@@ -326,7 +326,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                                     wrongAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
                                     skippedAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
                                     duration = assignModule.exerciseResults[exerciseTypeId][exerciseId].duration || 0;
-                                    totalAnswered = correctAnswersNum + wrongAnswersNum + skippedAnswersNum;
+                                    totalAnswered = correctAnswersNum + wrongAnswersNum;
                                 }
                             }
                         }
