@@ -18,8 +18,9 @@
                 isPendingClick = clickStatus;
             }
 
-
-            $scope.calleeName = CallsUiSrv.getCalleeName();
+            CallsUiSrv.getCalleeName().then(function(res){
+                $scope.calleeName = res;
+            });
 
             $scope.$watch('callsData', function(newVal) {
                 if (angular.isDefined(newVal) && newVal.status) {

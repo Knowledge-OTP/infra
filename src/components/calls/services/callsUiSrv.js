@@ -69,9 +69,10 @@
                 };
 
                 CallsUiSrv.getCalleeName = function() {
-                    var name = $injector.invoke(calleeNameFn);
-                    //var name = calleeNameFn();
-                    return name;
+                    var nameProm = $injector.invoke(calleeNameFn);
+                    return nameProm.then(function(res){
+                        return res;
+                    });
                 };
 
                 return CallsUiSrv;

@@ -751,8 +751,9 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 isPendingClick = clickStatus;
             }
 
-
-            $scope.calleeName = CallsUiSrv.getCalleeName();
+            CallsUiSrv.getCalleeName().then(function(res){
+                $scope.calleeName = res;
+            });
 
             $scope.$watch('callsData', function(newVal) {
                 if (angular.isDefined(newVal) && newVal.status) {
@@ -1488,9 +1489,10 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 };
 
                 CallsUiSrv.getCalleeName = function() {
-                    var name = $injector.invoke(calleeNameFn);
-                    //var name = calleeNameFn();
-                    return name;
+                    var nameProm = $injector.invoke(calleeNameFn);
+                    return nameProm.then(function(res){
+                        return res;
+                    });
                 };
 
                 return CallsUiSrv;
