@@ -219,11 +219,15 @@
     'use strict';
 
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
-        ["CallsSrv", "CallsUiSrv", "CallsStatusEnum", "$log", function (CallsSrv, CallsUiSrv, CallsStatusEnum, $log) {
+        ["$scope", "CallsSrv", "CallsUiSrv", "CallsStatusEnum", "$log", function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log) {
             'ngInject';
 
             var self = this;
             var callsData = self.scope.callsData;
+
+            CallsUiSrv.getCalleeName().then(function(res){
+                $scope.callerName = res;
+            });
 
             var isPendingClick = false;
 
@@ -1135,7 +1139,7 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "            <span\n" +
     "                class=\"modal-sub-title call-status\"\n" +
     "                translate=\".NAME_IS_CALLING\"\n" +
-    "                translate-values=\"{callerName: 'Eric Powell'}\"></span>\n" +
+    "                translate-values=\"{callerName: callerName}\"></span>\n" +
     "            <div class=\"btn-container\">\n" +
     "                <div class=\"btn-decline\">\n" +
     "                    <button\n" +
