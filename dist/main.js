@@ -643,6 +643,23 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.calls').factory('CallsActionStatusEnum',
+        ["EnumSrv", function (EnumSrv) {
+            'ngInject';
+
+            return new EnumSrv.BaseEnum([
+                ['DISCONNECT_ACTION', 1, 'disconnect'],
+                ['CONNECT_ACTION', 2, 'connect'],
+                ['DISCONNECT_AND_CONNECT_ACTION', 3, 'disconnect and connect']
+            ]);
+        }]
+    );
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.calls').factory('CallsBtnStatusEnum',
         ["EnumSrv", function (EnumSrv) {
             'ngInject';
@@ -840,11 +857,29 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsDataGetterSrv',
-        ["InfraConfigSrv", "$q", "ENV", "UserProfileService", "$log", function (InfraConfigSrv, $q, ENV, UserProfileService, $log) {
+        ["InfraConfigSrv", "$q", "ENV", "UserProfileService", "$log", "CallsActionStatusEnum", function (InfraConfigSrv, $q, ENV, UserProfileService, $log, CallsActionStatusEnum) {
             'ngInject';
+
+            var self = this;
 
             function _getStorage() {
                 return InfraConfigSrv.getGlobalStorage();
+            }
+
+            function _isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId) {
+                return callsData.callerId === callerId && callsData.receiverId === receiverId;
+            }
+
+            function _isNewReceiverIdMatchActiveCallerId(callsData, callerId, receiverId) {
+                return callsData.receiverId === callerId && callsData.callerId === receiverId;
+            }
+
+            function _isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId) {
+                return callsData.callerId === callerId && callsData.receiverId !== receiverId;
+            }
+
+            function _isNewReceiverIdNotMatchActiveCallerId(callsData, callerId, receiverId) {
+                return callsData.receiverId === callerId && callsData.callerId !== receiverId;
             }
 
             this.getCallsDataPath = function (guid) {
@@ -895,6 +930,83 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 
                     return $q.all(callsDataPromMap);
                 });
+            };
+
+            this.getUserCallStatus = function(callerId, receiverId) {
+                return self.getCurrUserCallsData().then(function (callsDataMap) {
+                    var userCallData = false;
+                    var callsDataMapKeys = Object.keys(callsDataMap);
+                    for (var i in callsDataMapKeys) {
+                        if (callsDataMapKeys.hasOwnProperty(i)) {
+                            var callsDataKey = callsDataMapKeys[i];
+                            var callsData = callsDataMap[callsDataKey];
+
+                            switch(true) {
+                                /* if user that calls active, and new call init has same receiverId then disconnect */
+                                case _isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CallsActionStatusEnum.DISCONNECT_ACTION.enum,
+                                        callerId: callerId,
+                                        newReceiverId: receiverId,
+                                        newCallGuid: callsData.guid
+                                    };
+                                    break;
+                                /* if user that receive call active, and new call init has same callerId then disconnect */
+                                case _isNewReceiverIdMatchActiveCallerId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CallsActionStatusEnum.DISCONNECT_ACTION.enum,
+                                        callerId: receiverId,
+                                        newReceiverId: callerId,
+                                        newCallGuid: callsData.guid
+                                    };
+                                    break;
+                                /* if user that calls is active with receiverId and new call init with other
+                                 receiverId then disconnect from current receiverId and connect with new receiverId */
+                                case _isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CallsActionStatusEnum.DISCONNECT_AND_CONNECT_ACTION.enum,
+                                        callerId: callerId,
+                                        newReceiverId: receiverId,
+                                        oldReceiverId: callsData.receiverId,
+                                        oldCallGuid: callsData.guid
+                                    };
+                                    break;
+                                /* if user that receive calls is active with callerIdId and new call init with other
+                                 receiverId then disconnect from current callerId and connect with new receiverId */
+                                case _isNewReceiverIdNotMatchActiveCallerId(callsData, callerId, receiverId):
+                                    userCallData = {
+                                        action: CallsActionStatusEnum.DISCONNECT_AND_CONNECT_ACTION.enum,
+                                        callerId: receiverId,
+                                        newReceiverId: callerId,
+                                        oldReceiverId: callsData.callerId,
+                                        oldCallGuid: callsData.guid
+                                    };
+                                    break;
+
+                            }
+                            if (userCallData) {
+                                break;
+                            }
+                        }
+                    }
+                    if (!userCallData) {
+                        /* if user not active, and call init then active user */
+                        userCallData = {
+                            action: CallsActionStatusEnum.CONNECT_ACTION.enum,
+                            callerId: callerId,
+                            newReceiverId: receiverId
+                        };
+                    }
+                    return userCallData;
+                });
+            };
+
+            this.getDataPromMap = function(guid) {
+                var getDataPromMap = {};
+                getDataPromMap.currUserCallsRequests = self.getCurrUserCallsRequests();
+                getDataPromMap.currCallData = self.getCallsData(guid);
+                getDataPromMap.currUid = UserProfileService.getCurrUserId();
+                return getDataPromMap;
             };
         }]
     );
@@ -958,7 +1070,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 });
             };
 
-            this.setDeclineCall = function(data, userCallData, guid) {
+            this.setDeclineCall = function(data, userCallData, guid, shouldNotUpdateOtherBool) {
                 var dataToSave = {};
                 // update root
                 data.currCallData.status = CallsStatusEnum.DECLINE_CALL.enum;
@@ -967,9 +1079,11 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 data.currUserCallsRequests[guid] = null;
                 dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
                 //other user call requests object update
-                var otherUserCallPath = userCallData.receiverId === data.currUid ? data.currCallData.callerPath : data.currCallData.receiverPath;
-                var otherUserCallDataGuidPath = otherUserCallPath + '/' + guid;
-                dataToSave[otherUserCallDataGuidPath] = null;
+                if (!shouldNotUpdateOtherBool) {
+                    var otherUserCallPath = userCallData.receiverId === data.currUid ? data.currCallData.callerPath : data.currCallData.receiverPath;
+                    var otherUserCallDataGuidPath = otherUserCallPath + '/' + guid;
+                    dataToSave[otherUserCallDataGuidPath] = null;
+                }
                 return _getStorage().then(function (StudentStorage) {
                     return StudentStorage.update(dataToSave);
                 });
@@ -999,11 +1113,13 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             isEnabled = _isEnabled;
         };
 
-        this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "CallsBtnSrv", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, CallsBtnSrv) {
+        this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "CallsBtnSrv", "$q", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, CallsBtnSrv, $q) {
             'ngInject';
             var CallsEventsSrv = {};
 
             var scopesObj = {};
+
+            var isInitialize = false;
 
             var callsSrv;
 
@@ -1019,6 +1135,13 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 CallsUiSrv.showModal(CallsUiSrv.modals.OUTGOING_CALL, scopesObj.caller);
             }
 
+            function getCallsSrv() {
+                if (!callsSrv) {
+                    callsSrv = $injector.get('CallsSrv');
+                }
+                return callsSrv;
+            }
+
             function _listenToCallsData(guid) {
                 var callsStatusPath = 'calls/' + guid;
 
@@ -1028,8 +1151,6 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                         return;
                     }
 
-                    updateScopeData(callsData);
-
                     CallsBtnSrv.updateStatusMap(callsData);
 
                     UserProfileService.getCurrUserId().then(function (currUid) {
@@ -1038,6 +1159,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                 $log.debug('call pending');
                                 if (isCurrentUserInitiatedCall(currUid)) {
                                     // show outgoing call modal
+                                    updateScopeData(callsData);
                                 } else {
                                     // show incoming call modal with the ACCEPT & DECLINE buttons
                                     scopesObj.reciver = $rootScope.$new();
@@ -1047,9 +1169,13 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                 break;
                             case CallsStatusEnum.DECLINE_CALL.enum:
                                 $log.debug('call declined');
+                                if (isCurrentUserInitiatedCall(currUid)) {
+                                    updateScopeData(callsData);
+                                }
                                 break;
                             case CallsStatusEnum.ACTIVE_CALL.enum:
                                 $log.debug('call active');
+                                updateScopeData(callsData);
                                 if (isCurrentUserInitiatedCall(currUid)) {
                                     // show outgoing call modal WITH the ANSWERED TEXT, wait 2 seconds and close the modal, show the ActiveCallDRV
                                     CallsUiSrv.showActiveCallDrv();
@@ -1061,12 +1187,10 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                 break;
                             case CallsStatusEnum.ENDED_CALL.enum:
                                 $log.debug('call ended');
+                                updateScopeData(callsData);
                                 CallsUiSrv.hideActiveCallDrv();
                                 // disconnect other user from call
-                                if (!callsSrv) {
-                                    callsSrv = $injector.get('CallsSrv');
-                                }
-                                callsSrv.disconnectCall();
+                                getCallsSrv().disconnectCall();
                                 break;
                         }
                     });
@@ -1087,11 +1211,20 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                         var appName = ENV.firebaseAppScopeName;
                         var userCallsPath = appName + '/users/' + currUid + '/calls';
                         globalStorage.onEvent(StorageSrv.EVENTS.VALUE, userCallsPath, function (userCallsData) {
-                            if (userCallsData) {
-                                angular.forEach(userCallsData, function (isActive, guid) {
-                                    _listenToCallsData(guid);
-                                });
+                            var prom = $q.when(false);
+                            if (!isInitialize && userCallsData) {
+                                prom = getCallsSrv().disconnectAllCalls(userCallsData);
                             }
+                            prom.then(function (result) {
+                                isInitialize = true;
+                                if (!result) {
+                                    if (userCallsData) {
+                                        angular.forEach(userCallsData, function (isActive, guid) {
+                                            _listenToCallsData(guid);
+                                        });
+                                    }
+                                }
+                            });
                         });
                     });
                 });
@@ -1166,107 +1299,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsSrv',
-        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "CallsDataSetterSrv", "WebcallSrv", "CallsEventsSrv", "CallsStatusEnum", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv, CallsEventsSrv, CallsStatusEnum) {
+        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "CallsDataSetterSrv", "WebcallSrv", "CallsEventsSrv", "CallsStatusEnum", "CallsActionStatusEnum", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv, CallsEventsSrv, CallsStatusEnum, CallsActionStatusEnum) {
             'ngInject';
-
-            var CALL_ACTIONS = {
-               DISCONNECT: 'disconnect',
-               CONNECT: 'connect',
-               DISCONNECT_AND_CONNECT: 'disconnect and connect'
-            };
-
-            function _isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId) {
-                return callsData.callerId === callerId && callsData.receiverId === receiverId;
-            }
-
-            function _isNewReceiverIdMatchActiveCallerId(callsData, callerId, receiverId) {
-                return callsData.receiverId === callerId && callsData.callerId === receiverId;
-            }
-
-            function _isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId) {
-                return callsData.callerId === callerId && callsData.receiverId !== receiverId;
-            }
-
-            function _isNewReceiverIdNotMatchActiveCallerId(callsData, callerId, receiverId) {
-                return callsData.receiverId === callerId && callsData.callerId !== receiverId;
-            }
-
-            function _getUserCallStatus(callerId, receiverId) {
-                return CallsDataGetterSrv.getCurrUserCallsData().then(function (callsDataMap) {
-                    var userCallData = false;
-                    var callsDataMapKeys = Object.keys(callsDataMap);
-                    for (var i in callsDataMapKeys) {
-                        if (callsDataMapKeys.hasOwnProperty(i)) {
-                            var callsDataKey = callsDataMapKeys[i];
-                            var callsData = callsDataMap[callsDataKey];
-
-                            switch(true) {
-                                /* if user that calls active, and new call init has same receiverId then disconnect */
-                                case _isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId):
-                                    userCallData = {
-                                        action: CALL_ACTIONS.DISCONNECT,
-                                        callerId: callerId,
-                                        newReceiverId: receiverId,
-                                        newCallGuid: callsData.guid
-                                    };
-                                    break;
-                                /* if user that receive call active, and new call init has same callerId then disconnect */
-                                case _isNewReceiverIdMatchActiveCallerId(callsData, callerId, receiverId):
-                                    userCallData = {
-                                        action: CALL_ACTIONS.DISCONNECT,
-                                        callerId: receiverId,
-                                        newReceiverId: callerId,
-                                        newCallGuid: callsData.guid
-                                    };
-                                    break;
-                                /* if user that calls is active with receiverId and new call init with other
-                                 receiverId then disconnect from current receiverId and connect with new receiverId */
-                                case _isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId):
-                                    userCallData = {
-                                        action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
-                                        callerId: callerId,
-                                        newReceiverId: receiverId,
-                                        oldReceiverId: callsData.receiverId,
-                                        oldCallGuid: callsData.guid
-                                    };
-                                    break;
-                                /* if user that receive calls is active with callerIdId and new call init with other
-                                 receiverId then disconnect from current callerId and connect with new receiverId */
-                                case _isNewReceiverIdNotMatchActiveCallerId(callsData, callerId, receiverId):
-                                    userCallData = {
-                                        action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
-                                        callerId: receiverId,
-                                        newReceiverId: callerId,
-                                        oldReceiverId: callsData.callerId,
-                                        oldCallGuid: callsData.guid
-                                    };
-                                    break;
-
-                            }
-                            if (userCallData) {
-                                break;
-                            }
-                        }
-                    }
-                    if (!userCallData) {
-                        /* if user not active, and call init then active user */
-                        userCallData = {
-                            action: CALL_ACTIONS.CONNECT,
-                            callerId: callerId,
-                            newReceiverId: receiverId
-                        };
-                    }
-                    return userCallData;
-                });
-            }
-
-            function _getDataPromMap(guid) {
-                var getDataPromMap = {};
-                getDataPromMap.currUserCallsRequests = CallsDataGetterSrv.getCurrUserCallsRequests();
-                getDataPromMap.currCallData = CallsDataGetterSrv.getCallsData(guid);
-                getDataPromMap.currUid = UserProfileService.getCurrUserId();
-                return getDataPromMap;
-            }
 
             function _handleCallerIdOrReceiverIdUndefined(callsData, methodName) {
                 if (angular.isUndefined(callsData.callerId) || angular.isUndefined(callsData.receiverId)) {
@@ -1293,7 +1327,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 
             function _connectCall(userCallData) {
                 var newCallGuid = UtilitySrv.general.createGuid();
-                var getDataPromMap = _getDataPromMap(newCallGuid);
+                var getDataPromMap = CallsDataGetterSrv.getDataPromMap(newCallGuid);
                 // initial popup pending without cancel option until return from firebase
                 var callsData = {
                     status: CallsStatusEnum.PENDING_CALL.enum
@@ -1312,7 +1346,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             function _disconnectCall(userCallData) {
                 var receiverId = userCallData.oldReceiverId ? userCallData.oldReceiverId : userCallData.newReceiverId;
                 var guid = userCallData.oldCallGuid ? userCallData.oldCallGuid : userCallData.newCallGuid;
-                var getDataPromMap = _getDataPromMap(guid);
+                var getDataPromMap = CallsDataGetterSrv.getDataPromMap(guid);
                 _webCallHang();
                   return $q.all(getDataPromMap).then(function (data) {
                      return CallsDataSetterSrv.setDisconnectCall(data, {
@@ -1332,7 +1366,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             function _declineCall(callsData, hangWebCall) {
                 var prom = hangWebCall ? _webCallHang() : $q.when();
                 return prom.then(function () {
-                    var getDataPromMap = _getDataPromMap(callsData.guid);
+                    var getDataPromMap = CallsDataGetterSrv.getDataPromMap(callsData.guid);
                     return $q.all(getDataPromMap).then(function (data) {
                        return CallsDataSetterSrv.setDeclineCall(data, callsData, callsData.guid);
                     });
@@ -1345,17 +1379,17 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     $log.error(errMSg);
                     return $q.reject(errMSg);
                 }
-                return _getUserCallStatus(callerId, receiverId).then(function (userCallData) {
+                return CallsDataGetterSrv.getUserCallStatus(callerId, receiverId).then(function (userCallData) {
                     var callActionProm;
 
                     switch (userCallData.action) {
-                        case CALL_ACTIONS.DISCONNECT:
+                        case CallsActionStatusEnum.DISCONNECT_ACTION.enum:
                             callActionProm = _disconnectCall(userCallData);
                             break;
-                        case CALL_ACTIONS.CONNECT:
+                        case CallsActionStatusEnum.CONNECT_ACTION.enum:
                             callActionProm = _connectCall(userCallData);
                             break;
-                        case CALL_ACTIONS.DISCONNECT_AND_CONNECT:
+                        case CallsActionStatusEnum.DISCONNECT_AND_CONNECT_ACTION.enum:
                             callActionProm = _disconnectCall(userCallData).then(function () {
                                 return _connectCall(userCallData);
                             });
@@ -1387,6 +1421,17 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             /* used to disconnect the other user from web call */
             this.disconnectCall = function() {
                 return _webCallHang();
+            };
+
+            this.disconnectAllCalls = function(userCallsDataMap) {
+                var callsMapProm = [];
+                angular.forEach(userCallsDataMap, function(isActive, guidKey) {
+                    var callProm = CallsDataGetterSrv.getCallsData(guidKey).then(function (callsData) {
+                        return _declineCall(callsData, false);
+                    });
+                    callsMapProm.push(callProm);
+                });
+                return $q.all(callsMapProm);
             };
 
             this.callsStateChanged = function (receiverId) {
