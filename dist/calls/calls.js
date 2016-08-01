@@ -363,6 +363,10 @@
                 angular.forEach(btnStatusCallbackMap[callsData.receiverId], function(cb) {
                     cb(status);
                 });
+
+                angular.forEach(btnStatusCallbackMap[callsData.callerId], function(cb) {
+                    cb(status);
+                });
             };
 
         }]);

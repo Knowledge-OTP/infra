@@ -853,6 +853,10 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 angular.forEach(btnStatusCallbackMap[callsData.receiverId], function(cb) {
                     cb(status);
                 });
+
+                angular.forEach(btnStatusCallbackMap[callsData.callerId], function(cb) {
+                    cb(status);
+                });
             };
 
         }]);
