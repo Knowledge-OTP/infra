@@ -8,6 +8,11 @@
     <link rel="stylesheet" href="angular-material/angular-material.css" />
     <!-- endbower -->
     <link rel="stylesheet" href="main.css">
+    <style>
+        body {
+            margin: 8px;
+        }
+    </style>
 </head>
 <body ng-app="demo">
 
@@ -19,8 +24,9 @@
 
     <h2>Call Pop-ups</h2>
 
-    <div><a href="" ng-click="openIncomingCallModal()">Incoming Call</a></div>
-    <div><a href="" ng-click="openOutgoingCallModal()">Outgoing Call</a></div>
+    <div><a href="" ng-click="openIncomingCallModal()">Open Incoming Call Modal</a></div>
+    <div><a href="" ng-click="openOutgoingCallModal()">Open Outgoing Call Modal</a></div>
+    <div><a href="" ng-click="openErrorModal()">Open Error Modal</a></div>
 
     <hr>
 

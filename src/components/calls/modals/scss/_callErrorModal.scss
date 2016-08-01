@@ -1,0 +1,27 @@
+md-dialog.call-error-modal {
+
+    md-toolbar {
+        &:not(.md-menu-toolbar){
+            background-color: $bgColor1;
+        }
+    }
+
+    .top-icon-wrap {
+        .top-icon {
+            .round-icon-wrap {
+                background-color: $bgColor1;
+
+                svg-icon{
+                    width: 15px;
+                    //stroke: $bgColor6;
+                    svg {
+                        width: 100%;
+                        * {
+                            fill: $bgColor6;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

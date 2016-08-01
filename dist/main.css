@@ -410,6 +410,18 @@ md-dialog.baseCallsModal {
             md-dialog.baseCallsModal .top-icon-wrap .top-icon .round-icon-wrap svg-icon svg * {
               fill: #fff; }
 
+md-dialog.call-error-modal md-toolbar:not(.md-menu-toolbar) {
+  background-color: #ff6766; }
+
+md-dialog.call-error-modal .top-icon-wrap .top-icon .round-icon-wrap {
+  background-color: #ff6766; }
+  md-dialog.call-error-modal .top-icon-wrap .top-icon .round-icon-wrap svg-icon {
+    width: 15px; }
+    md-dialog.call-error-modal .top-icon-wrap .top-icon .round-icon-wrap svg-icon svg {
+      width: 100%; }
+      md-dialog.call-error-modal .top-icon-wrap .top-icon .round-icon-wrap svg-icon svg * {
+        fill: #fff; }
+
 call-btn button.call-btn {
   cursor: pointer;
   background: none;
