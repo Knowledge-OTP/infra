@@ -7,26 +7,20 @@
                 parent: '?^ngModel'
             },
             controllerAs: 'vm',
-            controller: function (CallsSrv, $log) {
+            controller: function (CallsSrv, CallsBtnSrv, CallsBtnStatusEnum, $log) {
                 var vm = this;
                 var receiverId;
 
                 var isPendingClick = false;
 
-                var BTN_STATUSES = {
-                    OFFLINE: 1,
-                    CALL: 2,
-                    CALLED: 3
-                };
-
-                vm.callBtnEnum = BTN_STATUSES;
+                vm.callBtnEnum = CallsBtnStatusEnum;
 
                 function _changeBtnState(state) {
                     vm.callBtnState = state;
                 }
 
                 function _isStateNotOffline() {
-                    return vm.callBtnState !== BTN_STATUSES.OFFLINE;
+                    return vm.callBtnState !== CallsBtnStatusEnum.OFFLINE_BTN.enum;
                 }
 
                 function _isNoPendingClick() {
@@ -37,18 +31,25 @@
                     isPendingClick = clickStatus;
                 }
 
+                function _setBtnCallback(receiverId) {
+                    CallsBtnSrv.setBtnStatusCallback(receiverId, function(state) {
+                        _changeBtnState(state);
+                    });
+                }
+
                 // default btn state offline
-                _changeBtnState(BTN_STATUSES.OFFLINE);
+                _changeBtnState(CallsBtnStatusEnum.OFFLINE_BTN.enum);
 
                 vm.$onInit = function() {
                     var ngModelCtrl = vm.parent;
                     if (ngModelCtrl) {
                         ngModelCtrl.$render = function() {
                             var modelValue = ngModelCtrl.$modelValue;
-                            if (angular.isDefined(modelValue.isIdleOrOffline) && modelValue.receiverId) {
-                                var curBtnStatus = modelValue.isIdleOrOffline ? BTN_STATUSES.OFFLINE : BTN_STATUSES.CALL;
+                            if (angular.isDefined(modelValue.isOffline) && modelValue.receiverId) {
+                                var curBtnStatus = modelValue.isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
                                 receiverId = modelValue.receiverId;
                                 _changeBtnState(curBtnStatus);
+                                _setBtnCallback(modelValue.receiverId);
                             }
                         };
                     }

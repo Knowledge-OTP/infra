@@ -8,7 +8,7 @@
             isEnabled = _isEnabled;
         };
 
-        this.$get = function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector) {
+        this.$get = function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, CallsBtnSrv) {
             'ngInject';
             var CallsEventsSrv = {};
 
@@ -38,6 +38,8 @@
                     }
 
                     updateScopeData(callsData);
+
+                    CallsBtnSrv.updateStatusMap(callsData);
 
                     UserProfileService.getCurrUserId().then(function (currUid) {
                         switch(callsData.status) {

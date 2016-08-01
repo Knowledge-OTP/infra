@@ -8,6 +8,17 @@
             var self = this;
             var callsData = self.scope.callsData;
 
+            var isPendingClick = false;
+
+            function _isNoPendingClick() {
+                return !isPendingClick;
+            }
+
+            function _clickStatusSetter(clickStatus) {
+                isPendingClick = clickStatus;
+            }
+
+
             $scope.calleeName = CallsUiSrv.getCalleeName();
 
             $scope.$watch('callsData', function(newVal) {
@@ -24,11 +35,17 @@
             });
 
             function _baseCall(callFn, methodName, params) {
-                callFn(callsData, params).then(function () {
-                    CallsUiSrv.closeModal();
-                }).catch(function (err) {
-                    $log.error('OutgoingCallModalCtrl '+ methodName +': err: ' + err);
-                });
+                callsData = self.scope.callsData;
+                if (_isNoPendingClick()) {
+                    _clickStatusSetter(true);
+                    callFn(callsData, params).then(function () {
+                        _clickStatusSetter(false);
+                        CallsUiSrv.closeModal();
+                    }).catch(function (err) {
+                        _clickStatusSetter(false);
+                        $log.error('OutgoingCallModalCtrl '+ methodName +': err: ' + err);
+                    });
+                }
             }
 
             this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall', true);
