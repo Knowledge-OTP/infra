@@ -58,7 +58,7 @@
                         escapeToClose: false
                     },
                     'ERROR': {
-                        svgIcon: 'exclamation-mark-icon',
+                        svgIcon: 'call-error-exclamation-mark-icon',
                         baseTemplateUrl: 'components/calls/modals/templates/baseCallsModal.template.html',
                         innerTemplateUrl: 'components/calls/modals/templates/errorModal.template.html',
                         controller: 'ErrorModalCtrl',

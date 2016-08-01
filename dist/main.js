@@ -513,7 +513,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             var svgMap = {
                 'incoming-call-icon': 'components/calls/svg/incoming-call-icon.svg',
                 'outgoing-call-icon': 'components/calls/svg/outgoing-call-icon.svg',
-                'exclamation-mark-icon': 'components/calls/svg/exclamation-mark-icon.svg',
+                'call-error-exclamation-mark-icon': 'components/calls/svg/call-error-exclamation-mark-icon.svg',
                 'calls-etutoring-phone-icon': 'components/calls/svg/etutoring-phone-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
@@ -1529,7 +1529,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                         escapeToClose: false
                     },
                     'ERROR': {
-                        svgIcon: 'exclamation-mark-icon',
+                        svgIcon: 'call-error-exclamation-mark-icon',
                         baseTemplateUrl: 'components/calls/modals/templates/baseCallsModal.template.html',
                         innerTemplateUrl: 'components/calls/modals/templates/errorModal.template.html',
                         controller: 'ErrorModalCtrl',
@@ -1705,6 +1705,35 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "    </div>\n" +
     "</div>\n" +
     "");
+  $templateCache.put("components/calls/svg/call-error-exclamation-mark-icon.svg",
+    "<svg version=\"1.1\"\n" +
+    "     class=\"call-error-exclamation-mark-icon\"\n" +
+    "     id=\"Layer_1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "	 viewBox=\"-556.8 363.3 50.8 197.2\"\n" +
+    "     style=\"enable-background:new -556.8 363.3 50.8 197.2;\"\n" +
+    "     xml:space=\"preserve\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	svg.call-error-exclamation-mark-icon .st0 {\n" +
+    "        fill: none;\n" +
+    "        enable-background: new;\n" +
+    "    }\n" +
+    "    svg.call-error-exclamation-mark-icon {\n" +
+    "       width: 100%;\n" +
+    "        height: auto;\n" +
+    "    }\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<path d=\"M-505.9,401.6c-0.4,19.5-5.2,38.2-8.7,57.1c-2.8,15.5-4.7,31.2-6.7,46.8c-0.3,2.6-1.1,4-3.7,4.3c-1.5,0.2-2.9,0.6-4.4,0.7\n" +
+    "		c-9.2,0.7-9.6,0.4-10.7-8.7c-3.4-29.6-8-58.9-14.6-87.9c-2.3-10.1-3.2-20.4-0.5-30.7c3.7-14.1,17.2-22.3,31.5-19.3\n" +
+    "		c9.2,1.9,14.7,8.8,16.2,20.9C-506.7,390.3-506.4,396-505.9,401.6z\"/>\n" +
+    "	<path d=\"M-528.9,525.7c10.9,0,16.8,5.3,16.9,15.2c0.1,11-9.3,19.7-21.4,19.6c-8.8,0-14.7-7-14.7-17.7\n" +
+    "		C-548.2,530.9-542.4,525.7-528.9,525.7z\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
   $templateCache.put("components/calls/svg/call-mute-icon.svg",
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
     "<svg version=\"1.1\"\n" +
@@ -1743,35 +1772,6 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "		c-3.5,3.8-7.2,7.4-10.9,11c-6.4,6-14.1,5.5-21.6,3.6c-22.5-5.6-40.8-18.3-56.7-34.7C17.3,73.6,5.8,56.4,0.9,35.6\n" +
     "		c-0.2-0.8-0.5-1.6-0.5-2.4C0.2,31.5,0.2,29.8,0.1,28.1z\"/>\n" +
     "    </g>\n" +
-    "</svg>\n" +
-    "");
-  $templateCache.put("components/calls/svg/exclamation-mark-icon.svg",
-    "<svg version=\"1.1\"\n" +
-    "     class=\"exclamation-mark-icon\"\n" +
-    "     id=\"Layer_1\"\n" +
-    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
-    "     x=\"0px\"\n" +
-    "     y=\"0px\"\n" +
-    "	 viewBox=\"-556.8 363.3 50.8 197.2\"\n" +
-    "     style=\"enable-background:new -556.8 363.3 50.8 197.2;\"\n" +
-    "     xml:space=\"preserve\">\n" +
-    "<style type=\"text/css\">\n" +
-    "	svg.exclamation-mark-icon .st0 {\n" +
-    "        fill: none;\n" +
-    "        enable-background: new;\n" +
-    "    }\n" +
-    "    svg.exclamation-mark-icon {\n" +
-    "       width: 100%;\n" +
-    "        height: auto;\n" +
-    "    }\n" +
-    "</style>\n" +
-    "<g>\n" +
-    "	<path d=\"M-505.9,401.6c-0.4,19.5-5.2,38.2-8.7,57.1c-2.8,15.5-4.7,31.2-6.7,46.8c-0.3,2.6-1.1,4-3.7,4.3c-1.5,0.2-2.9,0.6-4.4,0.7\n" +
-    "		c-9.2,0.7-9.6,0.4-10.7-8.7c-3.4-29.6-8-58.9-14.6-87.9c-2.3-10.1-3.2-20.4-0.5-30.7c3.7-14.1,17.2-22.3,31.5-19.3\n" +
-    "		c9.2,1.9,14.7,8.8,16.2,20.9C-506.7,390.3-506.4,396-505.9,401.6z\"/>\n" +
-    "	<path d=\"M-528.9,525.7c10.9,0,16.8,5.3,16.9,15.2c0.1,11-9.3,19.7-21.4,19.6c-8.8,0-14.7-7-14.7-17.7\n" +
-    "		C-548.2,530.9-542.4,525.7-528.9,525.7z\"/>\n" +
-    "</g>\n" +
     "</svg>\n" +
     "");
   $templateCache.put("components/calls/svg/incoming-call-icon.svg",

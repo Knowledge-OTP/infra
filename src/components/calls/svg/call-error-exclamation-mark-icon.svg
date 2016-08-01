@@ -1,5 +1,5 @@
 <svg version="1.1"
-     class="exclamation-mark-icon"
+     class="call-error-exclamation-mark-icon"
      id="Layer_1"
      xmlns="http://www.w3.org/2000/svg"
      x="0px"
@@ -8,11 +8,11 @@
      style="enable-background:new -556.8 363.3 50.8 197.2;"
      xml:space="preserve">
 <style type="text/css">
-	svg.exclamation-mark-icon .st0 {
+	svg.call-error-exclamation-mark-icon .st0 {
         fill: none;
         enable-background: new;
     }
-    svg.exclamation-mark-icon {
+    svg.call-error-exclamation-mark-icon {
        width: 100%;
         height: auto;
     }
