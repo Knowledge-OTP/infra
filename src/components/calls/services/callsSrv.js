@@ -2,107 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsSrv',
-        function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv, CallsEventsSrv, CallsStatusEnum) {
+        function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv, CallsEventsSrv, CallsStatusEnum, CallsActionStatusEnum) {
             'ngInject';
-
-            var CALL_ACTIONS = {
-               DISCONNECT: 'disconnect',
-               CONNECT: 'connect',
-               DISCONNECT_AND_CONNECT: 'disconnect and connect'
-            };
-
-            function _isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId) {
-                return callsData.callerId === callerId && callsData.receiverId === receiverId;
-            }
-
-            function _isNewReceiverIdMatchActiveCallerId(callsData, callerId, receiverId) {
-                return callsData.receiverId === callerId && callsData.callerId === receiverId;
-            }
-
-            function _isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId) {
-                return callsData.callerId === callerId && callsData.receiverId !== receiverId;
-            }
-
-            function _isNewReceiverIdNotMatchActiveCallerId(callsData, callerId, receiverId) {
-                return callsData.receiverId === callerId && callsData.callerId !== receiverId;
-            }
-
-            function _getUserCallStatus(callerId, receiverId) {
-                return CallsDataGetterSrv.getCurrUserCallsData().then(function (callsDataMap) {
-                    var userCallData = false;
-                    var callsDataMapKeys = Object.keys(callsDataMap);
-                    for (var i in callsDataMapKeys) {
-                        if (callsDataMapKeys.hasOwnProperty(i)) {
-                            var callsDataKey = callsDataMapKeys[i];
-                            var callsData = callsDataMap[callsDataKey];
-
-                            switch(true) {
-                                /* if user that calls active, and new call init has same receiverId then disconnect */
-                                case _isNewReceiverIdMatchActiveReceiverId(callsData, callerId, receiverId):
-                                    userCallData = {
-                                        action: CALL_ACTIONS.DISCONNECT,
-                                        callerId: callerId,
-                                        newReceiverId: receiverId,
-                                        newCallGuid: callsData.guid
-                                    };
-                                    break;
-                                /* if user that receive call active, and new call init has same callerId then disconnect */
-                                case _isNewReceiverIdMatchActiveCallerId(callsData, callerId, receiverId):
-                                    userCallData = {
-                                        action: CALL_ACTIONS.DISCONNECT,
-                                        callerId: receiverId,
-                                        newReceiverId: callerId,
-                                        newCallGuid: callsData.guid
-                                    };
-                                    break;
-                                /* if user that calls is active with receiverId and new call init with other
-                                 receiverId then disconnect from current receiverId and connect with new receiverId */
-                                case _isNewReceiverIdNotMatchActiveReceiverId(callsData, callerId, receiverId):
-                                    userCallData = {
-                                        action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
-                                        callerId: callerId,
-                                        newReceiverId: receiverId,
-                                        oldReceiverId: callsData.receiverId,
-                                        oldCallGuid: callsData.guid
-                                    };
-                                    break;
-                                /* if user that receive calls is active with callerIdId and new call init with other
-                                 receiverId then disconnect from current callerId and connect with new receiverId */
-                                case _isNewReceiverIdNotMatchActiveCallerId(callsData, callerId, receiverId):
-                                    userCallData = {
-                                        action: CALL_ACTIONS.DISCONNECT_AND_CONNECT,
-                                        callerId: receiverId,
-                                        newReceiverId: callerId,
-                                        oldReceiverId: callsData.callerId,
-                                        oldCallGuid: callsData.guid
-                                    };
-                                    break;
-
-                            }
-                            if (userCallData) {
-                                break;
-                            }
-                        }
-                    }
-                    if (!userCallData) {
-                        /* if user not active, and call init then active user */
-                        userCallData = {
-                            action: CALL_ACTIONS.CONNECT,
-                            callerId: callerId,
-                            newReceiverId: receiverId
-                        };
-                    }
-                    return userCallData;
-                });
-            }
-
-            function _getDataPromMap(guid) {
-                var getDataPromMap = {};
-                getDataPromMap.currUserCallsRequests = CallsDataGetterSrv.getCurrUserCallsRequests();
-                getDataPromMap.currCallData = CallsDataGetterSrv.getCallsData(guid);
-                getDataPromMap.currUid = UserProfileService.getCurrUserId();
-                return getDataPromMap;
-            }
 
             function _handleCallerIdOrReceiverIdUndefined(callsData, methodName) {
                 if (angular.isUndefined(callsData.callerId) || angular.isUndefined(callsData.receiverId)) {
@@ -129,7 +30,7 @@
 
             function _connectCall(userCallData) {
                 var newCallGuid = UtilitySrv.general.createGuid();
-                var getDataPromMap = _getDataPromMap(newCallGuid);
+                var getDataPromMap = CallsDataGetterSrv.getDataPromMap(newCallGuid);
                 // initial popup pending without cancel option until return from firebase
                 var callsData = {
                     status: CallsStatusEnum.PENDING_CALL.enum
@@ -148,7 +49,7 @@
             function _disconnectCall(userCallData) {
                 var receiverId = userCallData.oldReceiverId ? userCallData.oldReceiverId : userCallData.newReceiverId;
                 var guid = userCallData.oldCallGuid ? userCallData.oldCallGuid : userCallData.newCallGuid;
-                var getDataPromMap = _getDataPromMap(guid);
+                var getDataPromMap = CallsDataGetterSrv.getDataPromMap(guid);
                 _webCallHang();
                   return $q.all(getDataPromMap).then(function (data) {
                      return CallsDataSetterSrv.setDisconnectCall(data, {
@@ -168,7 +69,7 @@
             function _declineCall(callsData, hangWebCall) {
                 var prom = hangWebCall ? _webCallHang() : $q.when();
                 return prom.then(function () {
-                    var getDataPromMap = _getDataPromMap(callsData.guid);
+                    var getDataPromMap = CallsDataGetterSrv.getDataPromMap(callsData.guid);
                     return $q.all(getDataPromMap).then(function (data) {
                        return CallsDataSetterSrv.setDeclineCall(data, callsData, callsData.guid);
                     });
@@ -181,17 +82,17 @@
                     $log.error(errMSg);
                     return $q.reject(errMSg);
                 }
-                return _getUserCallStatus(callerId, receiverId).then(function (userCallData) {
+                return CallsDataGetterSrv.getUserCallStatus(callerId, receiverId).then(function (userCallData) {
                     var callActionProm;
 
                     switch (userCallData.action) {
-                        case CALL_ACTIONS.DISCONNECT:
+                        case CallsActionStatusEnum.DISCONNECT_ACTION.enum:
                             callActionProm = _disconnectCall(userCallData);
                             break;
-                        case CALL_ACTIONS.CONNECT:
+                        case CallsActionStatusEnum.CONNECT_ACTION.enum:
                             callActionProm = _connectCall(userCallData);
                             break;
-                        case CALL_ACTIONS.DISCONNECT_AND_CONNECT:
+                        case CallsActionStatusEnum.DISCONNECT_AND_CONNECT_ACTION.enum:
                             callActionProm = _disconnectCall(userCallData).then(function () {
                                 return _connectCall(userCallData);
                             });
@@ -223,6 +124,17 @@
             /* used to disconnect the other user from web call */
             this.disconnectCall = function() {
                 return _webCallHang();
+            };
+
+            this.disconnectAllCalls = function(userCallsDataMap) {
+                var callsMapProm = [];
+                angular.forEach(userCallsDataMap, function(isActive, guidKey) {
+                    var callProm = CallsDataGetterSrv.getCallsData(guidKey).then(function (callsData) {
+                        return _declineCall(callsData, false);
+                    });
+                    callsMapProm.push(callProm);
+                });
+                return $q.all(callsMapProm);
             };
 
             this.callsStateChanged = function (receiverId) {
