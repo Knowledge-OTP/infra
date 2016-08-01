@@ -56,7 +56,7 @@
                 });
             };
 
-            this.setDeclineCall = function(data, userCallData, guid, shouldNotUpdateOtherBool) {
+            this.setDeclineCall = function(data, userCallData, guid) {
                 var dataToSave = {};
                 // update root
                 data.currCallData.status = CallsStatusEnum.DECLINE_CALL.enum;
@@ -65,11 +65,10 @@
                 data.currUserCallsRequests[guid] = null;
                 dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
                 //other user call requests object update
-                if (!shouldNotUpdateOtherBool) {
-                    var otherUserCallPath = userCallData.receiverId === data.currUid ? data.currCallData.callerPath : data.currCallData.receiverPath;
-                    var otherUserCallDataGuidPath = otherUserCallPath + '/' + guid;
-                    dataToSave[otherUserCallDataGuidPath] = null;
-                }
+                var otherUserCallPath = userCallData.receiverId === data.currUid ? data.currCallData.callerPath : data.currCallData.receiverPath;
+                var otherUserCallDataGuidPath = otherUserCallPath + '/' + guid;
+                dataToSave[otherUserCallDataGuidPath] = null;
+
                 return _getStorage().then(function (StudentStorage) {
                     return StudentStorage.update(dataToSave);
                 });
