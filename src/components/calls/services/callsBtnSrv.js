@@ -34,7 +34,7 @@
                 }
 
                 angular.forEach(btnStatusCallbackMap[callsData.receiverId], function(cb) {
-                    cb();
+                    cb(status);
                 });
             };
 
