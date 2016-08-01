@@ -8,6 +8,8 @@
             var self = this;
             var callsData = self.scope.callsData;
 
+            $scope.calleeName = CallsUiSrv.getCalleeName();
+
             $scope.$watch('callsData', function(newVal) {
                 if (angular.isDefined(newVal) && newVal.status) {
                      switch(newVal.status) {

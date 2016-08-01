@@ -75,6 +75,11 @@
                     this.dashboardAppName = 'act_dashboard';
                 }
 
-            }
-        );
+            })
+        .config(function(CallsUiSrvProvider){
+            var fn = function() {
+              return 'Ran';
+            };
+            CallsUiSrvProvider.setCalleeNameFn(fn);
+        });
 })(angular);
