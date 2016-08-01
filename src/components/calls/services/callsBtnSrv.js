@@ -8,7 +8,10 @@
             var btnStatusCallbackMap = {};
 
             this.setBtnStatusCallback = function(receiverId, cb) {
-                btnStatusCallbackMap[receiverId] = cb;
+                if (!btnStatusCallbackMap[receiverId]) {
+                    btnStatusCallbackMap[receiverId] = [];
+                }
+                btnStatusCallbackMap[receiverId].push(cb);
             };
 
             this.updateStatusMap = function(callsData) {
@@ -30,7 +33,9 @@
                         status = CallsBtnStatusEnum.CALL_BTN.enum;
                 }
 
-                btnStatusCallbackMap[callsData.receiverId](status);
+                angular.forEach(btnStatusCallbackMap[callsData.receiverId], function(cb) {
+                    cb();
+                });
             };
 
         });
