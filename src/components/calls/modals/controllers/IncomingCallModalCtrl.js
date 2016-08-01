@@ -2,11 +2,15 @@
     'use strict';
 
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
-        function (CallsSrv, CallsUiSrv, CallsStatusEnum, $log) {
+        function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log) {
             'ngInject';
 
             var self = this;
             var callsData = self.scope.callsData;
+
+            CallsUiSrv.getCalleeName().then(function(res){
+                $scope.callerName = res;
+            });
 
             var isPendingClick = false;
 
