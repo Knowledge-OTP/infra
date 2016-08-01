@@ -585,7 +585,7 @@
                 });
             };
 
-            this.setDeclineCall = function(data, userCallData, guid, shouldNotUpdateOtherBool) {
+            this.setDeclineCall = function(data, userCallData, guid) {
                 var dataToSave = {};
                 // update root
                 data.currCallData.status = CallsStatusEnum.DECLINE_CALL.enum;
@@ -594,11 +594,10 @@
                 data.currUserCallsRequests[guid] = null;
                 dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
                 //other user call requests object update
-                if (!shouldNotUpdateOtherBool) {
-                    var otherUserCallPath = userCallData.receiverId === data.currUid ? data.currCallData.callerPath : data.currCallData.receiverPath;
-                    var otherUserCallDataGuidPath = otherUserCallPath + '/' + guid;
-                    dataToSave[otherUserCallDataGuidPath] = null;
-                }
+                var otherUserCallPath = userCallData.receiverId === data.currUid ? data.currCallData.callerPath : data.currCallData.receiverPath;
+                var otherUserCallDataGuidPath = otherUserCallPath + '/' + guid;
+                dataToSave[otherUserCallDataGuidPath] = null;
+
                 return _getStorage().then(function (StudentStorage) {
                     return StudentStorage.update(dataToSave);
                 });
@@ -878,12 +877,12 @@
                 });
             }
 
-            function _declineCall(callsData, hangWebCall, shouldNotUpdateOtherBool) {
+            function _declineCall(callsData, hangWebCall) {
                 var prom = hangWebCall ? _webCallHang() : $q.when();
                 return prom.then(function () {
                     var getDataPromMap = CallsDataGetterSrv.getDataPromMap(callsData.guid);
                     return $q.all(getDataPromMap).then(function (data) {
-                       return CallsDataSetterSrv.setDeclineCall(data, callsData, callsData.guid, shouldNotUpdateOtherBool);
+                       return CallsDataSetterSrv.setDeclineCall(data, callsData, callsData.guid);
                     });
                 });
             }
@@ -925,9 +924,9 @@
                 });
             };
 
-            this.declineCall = function(callsData, hangWebCall, shouldNotUpdateOtherBool) {
+            this.declineCall = function(callsData, hangWebCall) {
                 return _handleCallerIdOrReceiverIdUndefined(callsData, 'declineCall').then(function () {
-                    return _declineCall(callsData, hangWebCall, shouldNotUpdateOtherBool);
+                    return _declineCall(callsData, hangWebCall);
                 }).catch(function(err){
                     $log.error('Error in declineCall', err);
                     return $q.reject(err);
@@ -942,7 +941,7 @@
                 var callsMapProm = [];
                 angular.forEach(userCallsDataMap, function(isActive, guidKey) {
                     var callProm = CallsDataGetterSrv.getCallsData(guidKey).then(function (callsData) {
-                        return _declineCall(callsData, false, true);
+                        return _declineCall(callsData, false);
                     });
                     callsMapProm.push(callProm);
                 });
