@@ -574,7 +574,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 parent: '?^ngModel'
             },
             controllerAs: 'vm',
-            controller: ["CallsSrv", "CallsBtnSrv", "CallsBtnStatusEnum", "$log", function (CallsSrv, CallsBtnSrv, CallsBtnStatusEnum, $log) {
+            controller: ["CallsSrv", "CallsBtnSrv", "CallsBtnStatusEnum", "$log", "$timeout", function (CallsSrv, CallsBtnSrv, CallsBtnStatusEnum, $log, $timeout) {
                 var vm = this;
                 var receiverId;
 
@@ -600,7 +600,9 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 
                 function _setBtnCallback(receiverId) {
                     CallsBtnSrv.setBtnStatusCallback(receiverId, function(state) {
-                        _changeBtnState(state);
+                        $timeout(function () {
+                            _changeBtnState(state);
+                        });
                     });
                 }
 
