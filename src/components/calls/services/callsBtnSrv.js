@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsBtnSrv',
-        function (CallsStatusEnum, CallsBtnStatusEnum, UserProfileService) {
+        function (CallsStatusEnum, CallsBtnStatusEnum, UserProfileService, $log) {
             'ngInject';
 
             var btnStatusCallbackMap = {};
