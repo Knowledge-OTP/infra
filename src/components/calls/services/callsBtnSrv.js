@@ -7,6 +7,11 @@
 
              var self = this;
 
+            function _isCallDataHasReceiverIdOrCallerId(callsData, receiverId, callerId) {
+                return callsData.receiverId === (receiverId || callerId) ||
+                callsData.callerId === (callerId || receiverId);
+            }
+
              this.getBtnStatus = function _getBtnStatus(callStatus) {
                 var status;
                 switch(callStatus) {
@@ -32,8 +37,7 @@
                         for (var idKey in callsDataMap) {
                             if (callsDataMap.hasOwnProperty(idKey)) {
                                 var currCallsData = callsDataMap[idKey];
-                                if (currCallsData.receiverId === receiverId ||
-                                    currCallsData.callerId === callerId) {
+                                if (_isCallDataHasReceiverIdOrCallerId(currCallsData, receiverId, callerId)) {
                                     status = self.getBtnStatus(currCallsData.status);
                                     break;
                                 }
@@ -51,8 +55,7 @@
             this.updateBtnStatus = function(receiverId, callsData) {
                 return UserProfileService.getCurrUserId().then(function(callerId) {
                     var status = false;
-                    if (callsData.receiverId === (receiverId || callerId) ||
-                        callsData.callerId === (callerId || receiverId)) {
+                    if (_isCallDataHasReceiverIdOrCallerId(callsData, receiverId, callerId)) {
                          status = self.getBtnStatus(callsData.status);
                     }
                     return status;
