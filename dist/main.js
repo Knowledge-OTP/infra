@@ -7748,6 +7748,13 @@ angular.module('znk.infra.user').service('UserProfileService',
             });
         };
 
+        this.getProfileByUserId = function (userId) {
+            var userProfilePath = 'users/' + userId + '/profile';
+            return InfraConfigSrv.getGlobalStorage().then(function(globalStorage) {
+                return globalStorage.get(userProfilePath);
+            });
+        };
+
         this.setProfile = function (newProfile) {
             return InfraConfigSrv.getGlobalStorage().then(function(globalStorage) {
                 return globalStorage.set(profilePath, newProfile);
