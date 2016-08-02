@@ -14,7 +14,7 @@
         .controller('Main', function ($scope, WebcallSrv) {
             $scope.connect = function () {
                 console.log('connecting');
-                return WebcallSrv.connect('7890').then(function () {
+                return WebcallSrv.connect('1234').then(function () {
                     console.log('connected');
                 }).catch(function (err) {
                     console.log('connect error');
