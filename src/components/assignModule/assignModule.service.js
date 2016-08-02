@@ -121,7 +121,7 @@
                                     moduleResults[moduleId].assignDate = Date.now();
                                 }
                                 moduleResults[moduleId].assign = true;
-                                return ExerciseResultSrv.setModuleResult(moduleResults[moduleId]);
+                                return ExerciseResultSrv.setModuleResult(moduleResults[moduleId], moduleId);
                             });
                         });
                     });
@@ -135,7 +135,7 @@
             userAssignModuleService.setAssignContent = function (userId, moduleId) {
                 return ExerciseResultSrv.getModuleResult(userId, moduleId).then(function (moduleResult) {
                     moduleResult.contentAssign = true;
-                    return ExerciseResultSrv.setModuleResult(moduleResult);
+                    return ExerciseResultSrv.setModuleResult(moduleResult, moduleId);
                 });
             };
 

@@ -457,11 +457,11 @@
                 };
             };
 
-            this.setModuleResult = function (newResult) {
+            this.setModuleResult = function (newResult, moduleId) {
                 return this.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
                     var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
-                    if (userGuidLists[newResult.guid]) {
-                        return  ExerciseResultSrv.getModuleResult(newResult.moduleId).then(function (moduleResult) {
+                    if (userGuidLists[moduleId]) {
+                        return  ExerciseResultSrv.getModuleResult(newResult.uid, newResult.moduleId).then(function (moduleResult) {
                             angular.extend(moduleResult, newResult);
                             return InfraConfigSrv.getStudentStorage().then(function (storage) {
                                 return storage.set(moduleResultPath, moduleResult);

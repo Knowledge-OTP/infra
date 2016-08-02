@@ -384,7 +384,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                                     moduleResults[moduleId].assignDate = Date.now();
                                 }
                                 moduleResults[moduleId].assign = true;
-                                return ExerciseResultSrv.setModuleResult(moduleResults[moduleId]);
+                                return ExerciseResultSrv.setModuleResult(moduleResults[moduleId], moduleId);
                             });
                         });
                     });
@@ -398,7 +398,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             userAssignModuleService.setAssignContent = function (userId, moduleId) {
                 return ExerciseResultSrv.getModuleResult(userId, moduleId).then(function (moduleResult) {
                     moduleResult.contentAssign = true;
-                    return ExerciseResultSrv.setModuleResult(moduleResult);
+                    return ExerciseResultSrv.setModuleResult(moduleResult, moduleId);
                 });
             };
 
@@ -3841,11 +3841,11 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 };
             };
 
-            this.setModuleResult = function (newResult) {
+            this.setModuleResult = function (newResult, moduleId) {
                 return this.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
                     var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
-                    if (userGuidLists[newResult.guid]) {
-                        return  ExerciseResultSrv.getModuleResult(newResult.moduleId).then(function (moduleResult) {
+                    if (userGuidLists[moduleId]) {
+                        return  ExerciseResultSrv.getModuleResult(newResult.uid, newResult.moduleId).then(function (moduleResult) {
                             angular.extend(moduleResult, newResult);
                             return InfraConfigSrv.getStudentStorage().then(function (storage) {
                                 return storage.set(moduleResultPath, moduleResult);
