@@ -84,7 +84,7 @@
                 parent: '?^ngModel'
             },
             controllerAs: 'vm',
-            controller: ["CallsSrv", "CallsBtnSrv", "CallsBtnStatusEnum", "$log", "$timeout", function (CallsSrv, CallsBtnSrv, CallsBtnStatusEnum, $log, $timeout) {
+            controller: ["CallsSrv", "CallsBtnSrv", "CallsBtnStatusEnum", "$log", "$scope", "CALL_UPDATE", function (CallsSrv, CallsBtnSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE) {
                 var vm = this;
                 var receiverId;
 
@@ -108,13 +108,23 @@
                     isPendingClick = clickStatus;
                 }
 
-                function _setBtnCallback(receiverId) {
-                    CallsBtnSrv.setBtnStatusCallback(receiverId, function(state) {
-                        $timeout(function () {
-                            _changeBtnState(state);
-                        });
+                function _initializeBtnStatus(receiverId) {
+                    CallsBtnSrv.initializeBtnStatus(receiverId).then(function (status) {
+                        if (status) {
+                            _changeBtnState(status);
+                        }
                     });
                 }
+
+                $scope.$on(CALL_UPDATE, function (e, callsData) {
+                    if (callsData.status) {
+                        CallsBtnSrv.updateBtnStatus(receiverId, callsData).then(function (status) {
+                            if (status) {
+                                _changeBtnState(status);
+                            }
+                        });
+                    }
+                });
 
                 // default btn state offline
                 _changeBtnState(CallsBtnStatusEnum.OFFLINE_BTN.enum);
@@ -128,8 +138,7 @@
                                 var curBtnStatus = modelValue.isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
                                 receiverId = modelValue.receiverId;
                                 _changeBtnState(curBtnStatus);
-                                CallsBtnSrv.initializeSetBtnStatus(modelValue.receiverId);
-                                _setBtnCallback(modelValue.receiverId);
+                                _initializeBtnStatus(receiverId);
                             }
                         };
                     }
@@ -362,28 +371,21 @@
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsBtnSrv',
-        ["CallsStatusEnum", "CallsBtnStatusEnum", "UserProfileService", "$log", function (CallsStatusEnum, CallsBtnStatusEnum, UserProfileService, $log) {
+        ["CallsStatusEnum", "CallsBtnStatusEnum", "UserProfileService", "$log", "CallsDataGetterSrv", function (CallsStatusEnum, CallsBtnStatusEnum, UserProfileService, $log, CallsDataGetterSrv) {
             'ngInject';
 
-            var btnStatusCallbackMap = {};
+             var self = this;
 
-            this.setBtnStatusCallback = function(receiverId, cb) {
-                if (!btnStatusCallbackMap[receiverId]) {
-                    btnStatusCallbackMap[receiverId] = [];
-                }
+            function _isCallDataHasReceiverIdOrCallerId(callsData, receiverId, callerId) {
+                return callsData.receiverId === receiverId ||
+                       callsData.receiverId === callerId ||
+                       callsData.callerId === callerId ||
+                       callsData.callerId === receiverId;
+            }
 
-                btnStatusCallbackMap[receiverId].push({
-                    cb: cb,
-                    status: false
-                });
-            };
-
-            this.updateStatusMap = function(callsData) {
-                if (!callsData.status && !callsData.receiverId) {
-                    return;
-                }
+             this.getBtnStatus = function _getBtnStatus(callStatus) {
                 var status;
-                switch(callsData.status) {
+                switch(callStatus) {
                     case CallsStatusEnum.PENDING_CALL.enum:
                         status = CallsBtnStatusEnum.CALLED_BTN.enum;
                         break;
@@ -396,35 +398,40 @@
                     case CallsStatusEnum.ENDED_CALL.enum:
                         status = CallsBtnStatusEnum.CALL_BTN.enum;
                 }
+                return status;
+            };
 
-                angular.forEach(btnStatusCallbackMap[callsData.receiverId], function(statusObj) {
-                    statusObj.status = status;
-                    statusObj.cb(status);
-                });
-
-                angular.forEach(btnStatusCallbackMap[callsData.callerId], function(statusObj) {
-                    statusObj.status = status;
-                    statusObj.cb(status);
+            this.initializeBtnStatus = function(receiverId) {
+                return UserProfileService.getCurrUserId().then(function(callerId) {
+                    return CallsDataGetterSrv.getCurrUserCallsData().then(function (callsDataMap) {
+                        var status = false;
+                        for (var idKey in callsDataMap) {
+                            if (callsDataMap.hasOwnProperty(idKey)) {
+                                var currCallsData = callsDataMap[idKey];
+                                if (_isCallDataHasReceiverIdOrCallerId(currCallsData, receiverId, callerId)) {
+                                    status = self.getBtnStatus(currCallsData.status);
+                                    break;
+                                }
+                            }
+                        }
+                        return status;
+                    }).catch(function(err){
+                        $log.error('Error in CallsBtnSrv initializeSetBtnStatus in CallsDataGetterSrv.getCurrUserCallsData(), err: ' + err);
+                    });
+                }).catch(function(err){
+                    $log.error('Error in CallsBtnSrv initializeSetBtnStatus in UserProfileService.getCurrUserId(): err: ' + err);
                 });
             };
 
-            this.initializeSetBtnStatus = function(receiverId) {
+            this.updateBtnStatus = function(receiverId, callsData) {
                 return UserProfileService.getCurrUserId().then(function(callerId) {
-                    for (var idKey in btnStatusCallbackMap) {
-                        if (btnStatusCallbackMap.hasOwnProperty(idKey)) {
-                            if (idKey === receiverId || idKey === callerId) {
-                                var btnStatusCallArr = btnStatusCallbackMap[idKey];
-                                angular.forEach(btnStatusCallArr, function(statusObj) {
-                                    if (statusObj.status) {
-                                        statusObj.cb(statusObj.status);
-                                    }
-                                });
-                                break;
-                            }
-                        }
+                    var status = false;
+                    if (_isCallDataHasReceiverIdOrCallerId(callsData, receiverId, callerId)) {
+                         status = self.getBtnStatus(callsData.status);
                     }
+                    return status;
                 }).catch(function(err){
-                    $log.error('Error in CallsBtnSrv initializeSetBtnStatus: err: ' + err);
+                    $log.error('Error in CallsBtnSrv updateBtnStatus in UserProfileService.getCurrUserId(): err: ' + err);
                 });
             };
 
@@ -683,14 +690,16 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.calls').provider('CallsEventsSrv', function () {
+    angular.module('znk.infra.calls')
+        .constant('CALL_UPDATE', 'CallsEventsSrv: call updated')
+        .provider('CallsEventsSrv', function () {
         var isEnabled = true;
 
         this.enabled = function (_isEnabled) {
             isEnabled = _isEnabled;
         };
 
-        this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "CallsBtnSrv", "$q", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, CallsBtnSrv, $q) {
+        this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "CallsBtnSrv", "$q", "CALL_UPDATE", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, CallsBtnSrv, $q, CALL_UPDATE) {
             'ngInject';
             var CallsEventsSrv = {};
 
@@ -728,9 +737,9 @@
                         return;
                     }
 
-                    CallsBtnSrv.updateStatusMap(callsData);
-
                     updateScopeData(callsData);
+
+                    $rootScope.$broadcast(CALL_UPDATE, callsData);
 
                     UserProfileService.getCurrUserId().then(function (currUid) {
                         switch(callsData.status) {

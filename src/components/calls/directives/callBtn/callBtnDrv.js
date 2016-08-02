@@ -7,7 +7,7 @@
                 parent: '?^ngModel'
             },
             controllerAs: 'vm',
-            controller: function (CallsSrv, CallsBtnSrv, CallsBtnStatusEnum, $log, $timeout) {
+            controller: function (CallsSrv, CallsBtnSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE) {
                 var vm = this;
                 var receiverId;
 
@@ -31,13 +31,23 @@
                     isPendingClick = clickStatus;
                 }
 
-                function _setBtnCallback(receiverId) {
-                    CallsBtnSrv.setBtnStatusCallback(receiverId, function(state) {
-                        $timeout(function () {
-                            _changeBtnState(state);
-                        });
+                function _initializeBtnStatus(receiverId) {
+                    CallsBtnSrv.initializeBtnStatus(receiverId).then(function (status) {
+                        if (status) {
+                            _changeBtnState(status);
+                        }
                     });
                 }
+
+                $scope.$on(CALL_UPDATE, function (e, callsData) {
+                    if (callsData.status) {
+                        CallsBtnSrv.updateBtnStatus(receiverId, callsData).then(function (status) {
+                            if (status) {
+                                _changeBtnState(status);
+                            }
+                        });
+                    }
+                });
 
                 // default btn state offline
                 _changeBtnState(CallsBtnStatusEnum.OFFLINE_BTN.enum);
@@ -51,8 +61,7 @@
                                 var curBtnStatus = modelValue.isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
                                 receiverId = modelValue.receiverId;
                                 _changeBtnState(curBtnStatus);
-                                CallsBtnSrv.initializeSetBtnStatus(modelValue.receiverId);
-                                _setBtnCallback(modelValue.receiverId);
+                                _initializeBtnStatus(receiverId);
                             }
                         };
                     }
