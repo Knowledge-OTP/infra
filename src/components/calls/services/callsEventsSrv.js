@@ -1,14 +1,16 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.calls').provider('CallsEventsSrv', function () {
+    angular.module('znk.infra.calls')
+        .constant('CALL_UPDATE', 'CallsEventsSrv: call updated')
+        .provider('CallsEventsSrv', function () {
         var isEnabled = true;
 
         this.enabled = function (_isEnabled) {
             isEnabled = _isEnabled;
         };
 
-        this.$get = function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, CallsBtnSrv, $q) {
+        this.$get = function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, CallsBtnSrv, $q, CALL_UPDATE) {
             'ngInject';
             var CallsEventsSrv = {};
 
@@ -46,9 +48,9 @@
                         return;
                     }
 
-                    CallsBtnSrv.updateStatusMap(callsData);
-
                     updateScopeData(callsData);
+
+                    $rootScope.$broadcast(CALL_UPDATE, callsData);
 
                     UserProfileService.getCurrUserId().then(function (currUid) {
                         switch(callsData.status) {
