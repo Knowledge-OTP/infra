@@ -3773,6 +3773,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
                     if(!exerciseResult) {
                         exerciseResult = initResults;
+                        exerciseResult.$$path = EXERCISE_RESULTS_PATH + '/' + exerciseResult.guid;
                     }
                     exerciseResult.moduleId = moduleId;
                     exerciseResult.$save = moduleExerciseSaveFn;
