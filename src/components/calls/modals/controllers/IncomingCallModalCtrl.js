@@ -14,6 +14,8 @@
 
             var isPendingClick = false;
 
+            $scope.declineByOther = true;
+
             function _isNoPendingClick() {
                 return !isPendingClick;
             }
@@ -25,6 +27,9 @@
             function _baseCall(callFn, methodName, params) {
                  callsData = self.scope.callsData;
                 if (_isNoPendingClick()) {
+                    if (methodName === 'declineCall') {
+                        $scope.declineByOther = false;
+                    }
                     _clickStatusSetter(true);
                     callFn(callsData, params).then(function () {
                         _clickStatusSetter(false);

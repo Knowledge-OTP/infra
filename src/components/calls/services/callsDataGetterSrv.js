@@ -41,7 +41,7 @@
             this.getCallsData = function (callsGuid) {
                 var callsDataPath = this.getCallsDataPath(callsGuid);
                 return _getStorage().then(function (storage) {
-                    return storage.getAndBindToServer(callsDataPath);
+                    return storage.get(callsDataPath);
                 }).catch(function(err){
                     $log.error('Error in _getStorage', err);
                     return $q.reject(err);
@@ -52,7 +52,7 @@
                 return UserProfileService.getCurrUserId().then(function(currUid){
                     return _getStorage().then(function(storage){
                         var currUserCallsDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/calls';
-                        return storage.getAndBindToServer(currUserCallsDataPath);
+                        return storage.get(currUserCallsDataPath);
                     }).catch(function(err){
                         $log.error('Error in _getStorage', err);
                         return $q.reject(err);

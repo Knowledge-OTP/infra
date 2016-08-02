@@ -26,7 +26,7 @@
         </div>
 
         <!-- Call Declined -->
-        <div ng-switch-when="2" class="flex-column">
+        <div ng-switch-when="2" class="flex-column" ng-if="declineByOther">
             <span
                 translate=".CALLING_CANCELED"
                 class="modal-sub-title call-status">

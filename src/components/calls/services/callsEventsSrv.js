@@ -48,14 +48,13 @@
 
                     CallsBtnSrv.updateStatusMap(callsData);
 
+                    updateScopeData(callsData);
+
                     UserProfileService.getCurrUserId().then(function (currUid) {
                         switch(callsData.status) {
                             case CallsStatusEnum.PENDING_CALL.enum:
                                 $log.debug('call pending');
-                                if (isCurrentUserInitiatedCall(currUid)) {
-                                    // show outgoing call modal
-                                    updateScopeData(callsData);
-                                } else {
+                                if (!isCurrentUserInitiatedCall(currUid)) {
                                     // show incoming call modal with the ACCEPT & DECLINE buttons
                                     scopesObj.reciver = $rootScope.$new();
                                     scopesObj.reciver.callsData = callsData;
@@ -64,11 +63,9 @@
                                 break;
                             case CallsStatusEnum.DECLINE_CALL.enum:
                                 $log.debug('call declined');
-                                    updateScopeData(callsData);
                                 break;
                             case CallsStatusEnum.ACTIVE_CALL.enum:
                                 $log.debug('call active');
-                                updateScopeData(callsData);
                                 if (isCurrentUserInitiatedCall(currUid)) {
                                     // show outgoing call modal WITH the ANSWERED TEXT, wait 2 seconds and close the modal, show the ActiveCallDRV
                                     CallsUiSrv.showActiveCallDrv();
@@ -80,7 +77,6 @@
                                 break;
                             case CallsStatusEnum.ENDED_CALL.enum:
                                 $log.debug('call ended');
-                                updateScopeData(callsData);
                                 CallsUiSrv.hideActiveCallDrv();
                                 // disconnect other user from call
                                 getCallsSrv().disconnectCall();

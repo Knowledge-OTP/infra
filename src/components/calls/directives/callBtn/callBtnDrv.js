@@ -49,6 +49,7 @@
                                 var curBtnStatus = modelValue.isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
                                 receiverId = modelValue.receiverId;
                                 _changeBtnState(curBtnStatus);
+                                CallsBtnSrv.initializeSetBtnStatus(modelValue.receiverId);
                                 _setBtnCallback(modelValue.receiverId);
                             }
                         };
