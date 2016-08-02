@@ -7947,28 +7947,41 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                 deferredMap.init.reject();
             }
 
-            function _onMediaPermission() {
-                $log.debug('_onMediaPermission');
+            function _onMediaPermission(isAllowed) {
+                $log.debug('_onMediaPermission, isAllowed=' + isAllowed);
+                if (!isAllowed){
+                    if (!angular.equals({}, deferredMap.call)) {
+                        deferredMap.call.reject({ errorCode: 1, error:'No persmission'});
+                    }
+                }
             }
 
             function _onLogin() {
                 $log.debug('_onLogin');
-                deferredMap.init.resolve();
+                if (!angular.equals({}, deferredMap.init)) {
+                    deferredMap.init.resolve();
+                }
             }
 
             function _onCallTerminated() {
                 $log.debug('_onCallTerminated');
-                deferredMap.hang.resolve();
+                if (!angular.equals({}, deferredMap.hang)) {
+                    deferredMap.hang.resolve();
+                }
             }
 
             function _onCallAnswered() {
                 $log.debug('_onCallAnswered');
-                deferredMap.call.resolve();
+                if (!angular.equals({}, deferredMap.call)) {
+                    deferredMap.call.resolve();
+                }
             }
 
             function _onCallFailed() {
                 $log.debug('_onCallFailed');
-                deferredMap.call.reject();
+                if (!angular.equals({}, deferredMap.call)) {
+                    deferredMap.call.reject();
+                }
             }
 
             function _onCalling() {
