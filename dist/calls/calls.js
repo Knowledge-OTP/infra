@@ -420,7 +420,8 @@
             this.updateBtnStatus = function(receiverId, callsData) {
                 return UserProfileService.getCurrUserId().then(function(callerId) {
                     var status = false;
-                    if (callsData.receiverId === receiverId || callsData.callerId === callerId) {
+                    if (callsData.receiverId === (receiverId || callerId) ||
+                        callsData.callerId === (callerId || receiverId)) {
                          status = self.getBtnStatus(callsData.status);
                     }
                     return status;
