@@ -22,6 +22,8 @@
                 $scope.calleeName = res;
             });
 
+            $scope.declineByOther = true;
+
             $scope.$watch('callsData', function(newVal) {
                 if (angular.isDefined(newVal) && newVal.status) {
                      switch(newVal.status) {
@@ -38,6 +40,9 @@
             function _baseCall(callFn, methodName, params) {
                 callsData = self.scope.callsData;
                 if (_isNoPendingClick()) {
+                    if (methodName === 'declineCall') {
+                        $scope.declineByOther = false;
+                    }
                     _clickStatusSetter(true);
                     callFn(callsData, params).then(function () {
                         _clickStatusSetter(false);

@@ -84,7 +84,7 @@
                 parent: '?^ngModel'
             },
             controllerAs: 'vm',
-            controller: ["CallsSrv", "CallsBtnSrv", "CallsBtnStatusEnum", "$log", function (CallsSrv, CallsBtnSrv, CallsBtnStatusEnum, $log) {
+            controller: ["CallsSrv", "CallsBtnSrv", "CallsBtnStatusEnum", "$log", "$timeout", function (CallsSrv, CallsBtnSrv, CallsBtnStatusEnum, $log, $timeout) {
                 var vm = this;
                 var receiverId;
 
@@ -110,7 +110,9 @@
 
                 function _setBtnCallback(receiverId) {
                     CallsBtnSrv.setBtnStatusCallback(receiverId, function(state) {
-                        _changeBtnState(state);
+                        $timeout(function () {
+                            _changeBtnState(state);
+                        });
                     });
                 }
 
@@ -126,6 +128,7 @@
                                 var curBtnStatus = modelValue.isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
                                 receiverId = modelValue.receiverId;
                                 _changeBtnState(curBtnStatus);
+                                CallsBtnSrv.initializeSetBtnStatus(modelValue.receiverId);
                                 _setBtnCallback(modelValue.receiverId);
                             }
                         };
@@ -231,6 +234,8 @@
 
             var isPendingClick = false;
 
+            $scope.declineByOther = true;
+
             function _isNoPendingClick() {
                 return !isPendingClick;
             }
@@ -242,6 +247,9 @@
             function _baseCall(callFn, methodName, params) {
                  callsData = self.scope.callsData;
                 if (_isNoPendingClick()) {
+                    if (methodName === 'declineCall') {
+                        $scope.declineByOther = false;
+                    }
                     _clickStatusSetter(true);
                     callFn(callsData, params).then(function () {
                         _clickStatusSetter(false);
@@ -286,6 +294,8 @@
                 $scope.calleeName = res;
             });
 
+            $scope.declineByOther = true;
+
             $scope.$watch('callsData', function(newVal) {
                 if (angular.isDefined(newVal) && newVal.status) {
                      switch(newVal.status) {
@@ -302,6 +312,9 @@
             function _baseCall(callFn, methodName, params) {
                 callsData = self.scope.callsData;
                 if (_isNoPendingClick()) {
+                    if (methodName === 'declineCall') {
+                        $scope.declineByOther = false;
+                    }
                     _clickStatusSetter(true);
                     callFn(callsData, params).then(function () {
                         _clickStatusSetter(false);
@@ -349,7 +362,7 @@
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsBtnSrv',
-        ["CallsStatusEnum", "CallsBtnStatusEnum", function (CallsStatusEnum, CallsBtnStatusEnum) {
+        ["CallsStatusEnum", "CallsBtnStatusEnum", "UserProfileService", "$log", function (CallsStatusEnum, CallsBtnStatusEnum, UserProfileService, $log) {
             'ngInject';
 
             var btnStatusCallbackMap = {};
@@ -358,7 +371,11 @@
                 if (!btnStatusCallbackMap[receiverId]) {
                     btnStatusCallbackMap[receiverId] = [];
                 }
-                btnStatusCallbackMap[receiverId].push(cb);
+
+                btnStatusCallbackMap[receiverId].push({
+                    cb: cb,
+                    status: false
+                });
             };
 
             this.updateStatusMap = function(callsData) {
@@ -380,12 +397,34 @@
                         status = CallsBtnStatusEnum.CALL_BTN.enum;
                 }
 
-                angular.forEach(btnStatusCallbackMap[callsData.receiverId], function(cb) {
-                    cb(status);
+                angular.forEach(btnStatusCallbackMap[callsData.receiverId], function(statusObj) {
+                    statusObj.status = status;
+                    statusObj.cb(status);
                 });
 
-                angular.forEach(btnStatusCallbackMap[callsData.callerId], function(cb) {
-                    cb(status);
+                angular.forEach(btnStatusCallbackMap[callsData.callerId], function(statusObj) {
+                    statusObj.status = status;
+                    statusObj.cb(status);
+                });
+            };
+
+            this.initializeSetBtnStatus = function(receiverId) {
+                return UserProfileService.getCurrUserId().then(function(callerId) {
+                    for (var idKey in btnStatusCallbackMap) {
+                        if (btnStatusCallbackMap.hasOwnProperty(idKey)) {
+                            if (idKey === receiverId || idKey === callerId) {
+                                var btnStatusCallArr = btnStatusCallbackMap[idKey];
+                                angular.forEach(btnStatusCallArr, function(statusObj) {
+                                    if (statusObj.status) {
+                                        statusObj.cb(statusObj.status);
+                                    }
+                                });
+                                break;
+                            }
+                        }
+                    }
+                }).catch(function(err){
+                    $log.error('Error in CallsBtnSrv initializeSetBtnStatus: err: ' + err);
                 });
             };
 
@@ -435,7 +474,7 @@
             this.getCallsData = function (callsGuid) {
                 var callsDataPath = this.getCallsDataPath(callsGuid);
                 return _getStorage().then(function (storage) {
-                    return storage.getAndBindToServer(callsDataPath);
+                    return storage.get(callsDataPath);
                 }).catch(function(err){
                     $log.error('Error in _getStorage', err);
                     return $q.reject(err);
@@ -446,7 +485,7 @@
                 return UserProfileService.getCurrUserId().then(function(currUid){
                     return _getStorage().then(function(storage){
                         var currUserCallsDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/calls';
-                        return storage.getAndBindToServer(currUserCallsDataPath);
+                        return storage.get(currUserCallsDataPath);
                     }).catch(function(err){
                         $log.error('Error in _getStorage', err);
                         return $q.reject(err);
@@ -691,14 +730,13 @@
 
                     CallsBtnSrv.updateStatusMap(callsData);
 
+                    updateScopeData(callsData);
+
                     UserProfileService.getCurrUserId().then(function (currUid) {
                         switch(callsData.status) {
                             case CallsStatusEnum.PENDING_CALL.enum:
                                 $log.debug('call pending');
-                                if (isCurrentUserInitiatedCall(currUid)) {
-                                    // show outgoing call modal
-                                    updateScopeData(callsData);
-                                } else {
+                                if (!isCurrentUserInitiatedCall(currUid)) {
                                     // show incoming call modal with the ACCEPT & DECLINE buttons
                                     scopesObj.reciver = $rootScope.$new();
                                     scopesObj.reciver.callsData = callsData;
@@ -707,11 +745,9 @@
                                 break;
                             case CallsStatusEnum.DECLINE_CALL.enum:
                                 $log.debug('call declined');
-                                    updateScopeData(callsData);
                                 break;
                             case CallsStatusEnum.ACTIVE_CALL.enum:
                                 $log.debug('call active');
-                                updateScopeData(callsData);
                                 if (isCurrentUserInitiatedCall(currUid)) {
                                     // show outgoing call modal WITH the ANSWERED TEXT, wait 2 seconds and close the modal, show the ActiveCallDRV
                                     CallsUiSrv.showActiveCallDrv();
@@ -723,7 +759,6 @@
                                 break;
                             case CallsStatusEnum.ENDED_CALL.enum:
                                 $log.debug('call ended');
-                                updateScopeData(callsData);
                                 CallsUiSrv.hideActiveCallDrv();
                                 // disconnect other user from call
                                 getCallsSrv().disconnectCall();
@@ -864,6 +899,7 @@
 
             function _connectCall(userCallData) {
                 var newCallGuid = UtilitySrv.general.createGuid();
+                $log.debug('new call guid: ' + newCallGuid);
                 var getDataPromMap = CallsDataGetterSrv.getDataPromMap(newCallGuid);
                 // initial popup pending without cancel option until return from firebase
                 var callsData = {
@@ -1158,7 +1194,7 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "        </div>\n" +
     "\n" +
     "        <!-- Call Declined -->\n" +
-    "        <div ng-switch-when=\"2\" class=\"flex-column\">\n" +
+    "        <div ng-switch-when=\"2\" class=\"flex-column\" ng-if=\"declineByOther\">\n" +
     "            <span\n" +
     "                translate=\".CALLING_CANCELED\"\n" +
     "                class=\"modal-sub-title call-status\">\n" +
@@ -1198,7 +1234,7 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "                </div>\n" +
     "            </div>\n" +
     "        </div>\n" +
-    "        <div ng-switch-when=\"2\">\n" +
+    "        <div ng-switch-when=\"2\" ng-if=\"declineByOther\">\n" +
     "            <div class=\"modal-sub-title\"\n" +
     "                 translate=\".CALLING_DECLINE\">\n" +
     "            </div>\n" +

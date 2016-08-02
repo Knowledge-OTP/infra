@@ -30,6 +30,7 @@
 
             function _connectCall(userCallData) {
                 var newCallGuid = UtilitySrv.general.createGuid();
+                $log.debug('new call guid: ' + newCallGuid);
                 var getDataPromMap = CallsDataGetterSrv.getDataPromMap(newCallGuid);
                 // initial popup pending without cancel option until return from firebase
                 var callsData = {

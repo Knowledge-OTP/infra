@@ -7,7 +7,7 @@
                 parent: '?^ngModel'
             },
             controllerAs: 'vm',
-            controller: function (CallsSrv, CallsBtnSrv, CallsBtnStatusEnum, $log) {
+            controller: function (CallsSrv, CallsBtnSrv, CallsBtnStatusEnum, $log, $timeout) {
                 var vm = this;
                 var receiverId;
 
@@ -33,7 +33,9 @@
 
                 function _setBtnCallback(receiverId) {
                     CallsBtnSrv.setBtnStatusCallback(receiverId, function(state) {
-                        _changeBtnState(state);
+                        $timeout(function () {
+                            _changeBtnState(state);
+                        });
                     });
                 }
 
@@ -49,6 +51,7 @@
                                 var curBtnStatus = modelValue.isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
                                 receiverId = modelValue.receiverId;
                                 _changeBtnState(curBtnStatus);
+                                CallsBtnSrv.initializeSetBtnStatus(modelValue.receiverId);
                                 _setBtnCallback(modelValue.receiverId);
                             }
                         };
