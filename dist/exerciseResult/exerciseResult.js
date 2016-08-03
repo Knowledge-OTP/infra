@@ -390,8 +390,8 @@
                     if(!exerciseResult) {
                         exerciseResult = initResults;
                         exerciseResult.$$path = EXERCISE_RESULTS_PATH + '/' + exerciseResult.guid;
+                        exerciseResult.moduleId = moduleId;
                     }
-                    exerciseResult.moduleId = moduleId;
                     exerciseResult.$save = moduleExerciseSaveFn;
                     return exerciseResult;
                 });
@@ -422,7 +422,7 @@
                                 angular.forEach(moduleResult.exerciseResults, function (exerciseResult, exerciseTypeId) {
                                     angular.forEach(exerciseResult, function (exerciseResultGuid, exerciseId) {
                                         getExerciseResultsProm = getExerciseResultsProm.then(function(){
-                                            return ExerciseResultSrv.getModuleExerciseResult(userId, 2, exerciseTypeId, exerciseId).then(function(exerciseResults){
+                                            return ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId).then(function(exerciseResults){
                                                 if(exerciseResults) {
                                                     moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResults;
                                                 }
