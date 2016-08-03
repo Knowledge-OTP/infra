@@ -34,7 +34,9 @@
                 var getDataPromMap = CallsDataGetterSrv.getDataPromMap(newCallGuid);
                 // initial popup pending without cancel option until return from firebase
                 var callsData = {
-                    status: CallsStatusEnum.PENDING_CALL.enum
+                    status: CallsStatusEnum.PENDING_CALL.enum,
+                    callerId: userCallData.callerId,
+                    receiverId: userCallData.newReceiverId
                 };
                 CallsEventsSrv.openOutGoingCall(callsData);
                 return _webCallConnect(newCallGuid).then(function () {

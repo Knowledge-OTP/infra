@@ -727,7 +727,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             var self = this;
             var callsData = self.scope.callsData;
 
-            CallsUiSrv.getCalleeName().then(function(res){
+            CallsUiSrv.getCalleeName(callsData.receiverId, callsData.callerId).then(function(res){
                 $scope.callerName = res;
             });
 
@@ -789,7 +789,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 isPendingClick = clickStatus;
             }
 
-            CallsUiSrv.getCalleeName().then(function(res){
+            CallsUiSrv.getCalleeName(callsData.receiverId, callsData.callerId).then(function(res){
                 $scope.calleeName = res;
             });
 
@@ -1402,7 +1402,9 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 var getDataPromMap = CallsDataGetterSrv.getDataPromMap(newCallGuid);
                 // initial popup pending without cancel option until return from firebase
                 var callsData = {
-                    status: CallsStatusEnum.PENDING_CALL.enum
+                    status: CallsStatusEnum.PENDING_CALL.enum,
+                    callerId: userCallData.callerId,
+                    receiverId: userCallData.newReceiverId
                 };
                 CallsEventsSrv.openOutGoingCall(callsData);
                 return _webCallConnect(newCallGuid).then(function () {
@@ -1526,7 +1528,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             'ngInject';
 
             var calleeNameFn = {};
-            this.setCalleeNameFn = function (func) {
+            this.setCalleeNameFnGetter = function (func) {
                 calleeNameFn = func;
             };
 
@@ -1588,8 +1590,9 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     }
                 };
 
-                CallsUiSrv.getCalleeName = function() {
-                    var nameProm = $injector.invoke(calleeNameFn);
+                CallsUiSrv.getCalleeName = function(receiverId, callerId) {
+                    var namePromOrFnGetter = $injector.invoke(calleeNameFn);
+                    var nameProm = namePromOrFnGetter(receiverId, callerId);
                     return nameProm.then(function(res){
                         return res;
                     });

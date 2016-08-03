@@ -18,7 +18,7 @@
                 isPendingClick = clickStatus;
             }
 
-            CallsUiSrv.getCalleeName().then(function(res){
+            CallsUiSrv.getCalleeName(callsData.receiverId, callsData.callerId).then(function(res){
                 $scope.calleeName = res;
             });
 
