@@ -643,7 +643,7 @@
                 var dataToSave = {};
                 // update root
                 data.currCallData.status = CallsStatusEnum.ENDED_CALL.enum;
-                data.currCallData.endendTime = Date.now();
+                data.currCallData.endedTime = Date.now();
                 dataToSave[data.currCallData.$$path] = angular.copy(data.currCallData);
                 //current user call requests object update
                 data.currUserCallsRequests[guid] = null;
@@ -661,7 +661,7 @@
                 var dataToSave = {};
                 // update root
                 data.currCallData.status = CallsStatusEnum.DECLINE_CALL.enum;
-                data.currCallData.endendTime = Date.now();
+                data.currCallData.endedTime = Date.now();
                 dataToSave[data.currCallData.$$path] = angular.copy(data.currCallData);
                 //current user call requests object update
                 data.currUserCallsRequests[guid] = null;
