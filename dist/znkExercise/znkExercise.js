@@ -1739,11 +1739,11 @@
                             },false);
                         }
 
-                        scope.$parent.$watch(attrs.questions, function pagerQuestionsArrWatcher(questionsArr) {
+                        scope.$parent.$watch(attrs.questions, function pagerQuestionsArrWatcher(questionsArr, oldQuestionsArr) {
                             if (questionsArr) {
                                 scope.questions = questionsArr;
 
-                                if(!isInitialized){
+                                if(!isInitialized || questionsArr !== oldQuestionsArr){
                                     init();
                                 }
                             }
