@@ -1111,7 +1111,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     receiverId: userCallData.newReceiverId,
                     status: CallsStatusEnum.PENDING_CALL.enum,
                     callerPath: callerPath,
-                    receiverPath: receiverPath
+                    receiverPath: receiverPath,
+                    startedTime: Date.now()
                 };
                 // update root call
                 angular.extend(data.currCallData, newCallData);
@@ -1132,6 +1133,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 var dataToSave = {};
                 // update root
                 data.currCallData.status = CallsStatusEnum.ENDED_CALL.enum;
+                data.currCallData.endendTime = Date.now();
                 dataToSave[data.currCallData.$$path] = angular.copy(data.currCallData);
                 //current user call requests object update
                 data.currUserCallsRequests[guid] = null;
@@ -1149,6 +1151,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 var dataToSave = {};
                 // update root
                 data.currCallData.status = CallsStatusEnum.DECLINE_CALL.enum;
+                data.currCallData.endendTime = Date.now();
                 dataToSave[data.currCallData.$$path] = angular.copy(data.currCallData);
                 //current user call requests object update
                 data.currUserCallsRequests[guid] = null;
@@ -1411,6 +1414,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     return $q.all(getDataPromMap).then(function (data) {
                          return CallsDataSetterSrv.setNewConnect(data, userCallData, newCallGuid).then(function (callsMap) {
                              var callsData = angular.copy(callsMap['calls/' + newCallGuid]);
+                             callsData.isInitialized = true;
                              CallsEventsSrv.updateScopeData(callsData);
                          });
                     });
@@ -1729,7 +1733,7 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "                <div class=\"btn-accept\">\n" +
     "                    <button\n" +
     "                        class=\"animate-if\"\n" +
-    "                        ng-if=\"callsData.callerId && callsData.receiverId\"\n" +
+    "                        ng-if=\"callsData.isInitialized\"\n" +
     "                        ng-click=\"vm.declineCall()\"\n" +
     "                        translate=\".CANCEL\">\n" +
     "                    </button>\n" +
