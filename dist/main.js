@@ -10792,10 +10792,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         scope.$parent.$watch(attrs.questions, function pagerQuestionsArrWatcher(questionsArr) {
                             if (questionsArr) {
                                 scope.questions = questionsArr;
-
-                                if(!isInitialized){
-                                    init();
-                                }
+                                init();
                             }
                         });
                     }
