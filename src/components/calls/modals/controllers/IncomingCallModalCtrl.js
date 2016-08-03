@@ -8,7 +8,7 @@
             var self = this;
             var callsData = self.scope.callsData;
 
-            CallsUiSrv.getCalleeName().then(function(res){
+            CallsUiSrv.getCalleeName(callsData.receiverId, callsData.callerId).then(function(res){
                 $scope.callerName = res;
             });
 

@@ -239,7 +239,7 @@
             var self = this;
             var callsData = self.scope.callsData;
 
-            CallsUiSrv.getCalleeName().then(function(res){
+            CallsUiSrv.getCalleeName(callsData.receiverId, callsData.callerId).then(function(res){
                 $scope.callerName = res;
             });
 
@@ -302,7 +302,7 @@
                 isPendingClick = clickStatus;
             }
 
-            CallsUiSrv.getCalleeName().then(function(res){
+            CallsUiSrv.getCalleeName(callsData.receiverId, callsData.callerId).then(function(res){
                 $scope.calleeName = res;
             });
 
@@ -625,7 +625,8 @@
                     receiverId: userCallData.newReceiverId,
                     status: CallsStatusEnum.PENDING_CALL.enum,
                     callerPath: callerPath,
-                    receiverPath: receiverPath
+                    receiverPath: receiverPath,
+                    startedTime: Date.now()
                 };
                 // update root call
                 angular.extend(data.currCallData, newCallData);
@@ -646,6 +647,7 @@
                 var dataToSave = {};
                 // update root
                 data.currCallData.status = CallsStatusEnum.ENDED_CALL.enum;
+                data.currCallData.endedTime = Date.now();
                 dataToSave[data.currCallData.$$path] = angular.copy(data.currCallData);
                 //current user call requests object update
                 data.currUserCallsRequests[guid] = null;
@@ -663,6 +665,7 @@
                 var dataToSave = {};
                 // update root
                 data.currCallData.status = CallsStatusEnum.DECLINE_CALL.enum;
+                data.currCallData.endedTime = Date.now();
                 dataToSave[data.currCallData.$$path] = angular.copy(data.currCallData);
                 //current user call requests object update
                 data.currUserCallsRequests[guid] = null;
@@ -973,13 +976,16 @@
                 var getDataPromMap = CallsDataGetterSrv.getDataPromMap(newCallGuid);
                 // initial popup pending without cancel option until return from firebase
                 var callsData = {
-                    status: CallsStatusEnum.PENDING_CALL.enum
+                    status: CallsStatusEnum.PENDING_CALL.enum,
+                    callerId: userCallData.callerId,
+                    receiverId: userCallData.newReceiverId
                 };
                 CallsEventsSrv.openOutGoingCall(callsData);
                 return _webCallConnect(newCallGuid).then(function () {
                     return $q.all(getDataPromMap).then(function (data) {
                          return CallsDataSetterSrv.setNewConnect(data, userCallData, newCallGuid).then(function (callsMap) {
                              var callsData = angular.copy(callsMap['calls/' + newCallGuid]);
+                             callsData.isInitialized = true;
                              CallsEventsSrv.updateScopeData(callsData);
                          });
                     });
@@ -1097,7 +1103,7 @@
             'ngInject';
 
             var calleeNameFn = {};
-            this.setCalleeNameFn = function (func) {
+            this.setCalleeNameFnGetter = function (func) {
                 calleeNameFn = func;
             };
 
@@ -1159,8 +1165,9 @@
                     }
                 };
 
-                CallsUiSrv.getCalleeName = function() {
-                    var nameProm = $injector.invoke(calleeNameFn);
+                CallsUiSrv.getCalleeName = function(receiverId, callerId) {
+                    var namePromOrFnGetter = $injector.invoke(calleeNameFn);
+                    var nameProm = namePromOrFnGetter(receiverId, callerId);
                     return nameProm.then(function(res){
                         return res;
                     });
@@ -1302,7 +1309,7 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "                <div class=\"btn-accept\">\n" +
     "                    <button\n" +
     "                        class=\"animate-if\"\n" +
-    "                        ng-if=\"callsData.callerId && callsData.receiverId\"\n" +
+    "                        ng-if=\"callsData.isInitialized\"\n" +
     "                        ng-click=\"vm.declineCall()\"\n" +
     "                        translate=\".CANCEL\">\n" +
     "                    </button>\n" +

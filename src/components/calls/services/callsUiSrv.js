@@ -6,7 +6,7 @@
             'ngInject';
 
             var calleeNameFn = {};
-            this.setCalleeNameFn = function (func) {
+            this.setCalleeNameFnGetter = function (func) {
                 calleeNameFn = func;
             };
 
@@ -68,8 +68,9 @@
                     }
                 };
 
-                CallsUiSrv.getCalleeName = function() {
-                    var nameProm = $injector.invoke(calleeNameFn);
+                CallsUiSrv.getCalleeName = function(receiverId, callerId) {
+                    var namePromOrFnGetter = $injector.invoke(calleeNameFn);
+                    var nameProm = namePromOrFnGetter(receiverId, callerId);
                     return nameProm.then(function(res){
                         return res;
                     });
