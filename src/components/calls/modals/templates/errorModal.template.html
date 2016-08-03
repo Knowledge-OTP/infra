@@ -1,6 +1,11 @@
 <div translate-namespace="AUDIO_CALLS">
-    <div class="modal-main-title" translate=".OOPS!"></div>
-    <div class="modal-sub-title">{{errorMessage}}</div>
+    <div class="modal-main-title"
+         translate=".CALL_FAILED_HEADER">
+    </div>
+    <div class="modal-sub-title"
+         translate="{{errorMessage}}"
+         translate-values="{{errorValues}}">
+    </div>
     <div class="btn-container">
         <div class="btn-ok">
             <button

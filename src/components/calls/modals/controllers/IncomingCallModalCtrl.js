@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
-        function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log) {
+        function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log, CallsErrorSrv) {
             'ngInject';
 
             var self = this;
@@ -37,6 +37,7 @@
                     }).catch(function (err) {
                         _clickStatusSetter(false);
                         $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);
+                        CallsErrorSrv.showErrorModal(err);
                     });
                 }
             }

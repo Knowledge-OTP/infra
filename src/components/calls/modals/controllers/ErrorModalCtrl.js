@@ -5,6 +5,7 @@
         function ($scope, CallsUiSrv) {
             'ngInject';
             $scope.errorMessage = this.modalData.errorMessage;
+            $scope.errorValues = this.modalData.errorValues;
             $scope.closeModal = CallsUiSrv.closeModal;
         }
     );

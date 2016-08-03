@@ -7,7 +7,7 @@
                 parent: '?^ngModel'
             },
             controllerAs: 'vm',
-            controller: function (CallsSrv, CallsBtnSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE) {
+            controller: function (CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE) {
                 var vm = this;
                 var receiverId;
 
@@ -77,6 +77,7 @@
                         }).catch(function (err) {
                             _clickStatusSetter(false);
                             $log.error('callBtn: error in callsStateChanged, err: ' + err);
+                            CallsErrorSrv.showErrorModal(err);
                         });
                     }
                 };

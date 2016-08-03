@@ -84,7 +84,7 @@
                 parent: '?^ngModel'
             },
             controllerAs: 'vm',
-            controller: ["CallsSrv", "CallsBtnSrv", "CallsBtnStatusEnum", "$log", "$scope", "CALL_UPDATE", function (CallsSrv, CallsBtnSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE) {
+            controller: ["CallsSrv", "CallsBtnSrv", "CallsErrorSrv", "CallsBtnStatusEnum", "$log", "$scope", "CALL_UPDATE", function (CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE) {
                 var vm = this;
                 var receiverId;
 
@@ -154,6 +154,7 @@
                         }).catch(function (err) {
                             _clickStatusSetter(false);
                             $log.error('callBtn: error in callsStateChanged, err: ' + err);
+                            CallsErrorSrv.showErrorModal(err);
                         });
                     }
                 };
@@ -222,6 +223,7 @@
         ["$scope", "CallsUiSrv", function ($scope, CallsUiSrv) {
             'ngInject';
             $scope.errorMessage = this.modalData.errorMessage;
+            $scope.errorValues = this.modalData.errorValues;
             $scope.closeModal = CallsUiSrv.closeModal;
         }]
     );
@@ -231,7 +233,7 @@
     'use strict';
 
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
-        ["$scope", "CallsSrv", "CallsUiSrv", "CallsStatusEnum", "$log", function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log) {
+        ["$scope", "CallsSrv", "CallsUiSrv", "CallsStatusEnum", "$log", "CallsErrorSrv", function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log, CallsErrorSrv) {
             'ngInject';
 
             var self = this;
@@ -266,6 +268,7 @@
                     }).catch(function (err) {
                         _clickStatusSetter(false);
                         $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);
+                        CallsErrorSrv.showErrorModal(err);
                     });
                 }
             }
@@ -283,7 +286,7 @@
     'use strict';
 
     angular.module('znk.infra.calls').controller('OutgoingCallModalCtrl',
-        ["CallsSrv", "CallsUiSrv", "$log", "CallsStatusEnum", "$scope", "$timeout", function (CallsSrv, CallsUiSrv, $log, CallsStatusEnum, $scope, $timeout) {
+        ["CallsSrv", "CallsUiSrv", "$log", "CallsStatusEnum", "$scope", "$timeout", "CallsErrorSrv", function (CallsSrv, CallsUiSrv, $log, CallsStatusEnum, $scope, $timeout, CallsErrorSrv) {
             'ngInject';
 
             var self = this;
@@ -331,6 +334,7 @@
                     }).catch(function (err) {
                         _clickStatusSetter(false);
                         $log.error('OutgoingCallModalCtrl '+ methodName +': err: ' + err);
+                        CallsErrorSrv.showErrorModal(err);
                     });
                 }
             }
@@ -685,6 +689,63 @@
 
         }]
     );
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.calls').service('CallsErrorSrv',
+        ["CallsUiSrv", "$q", function (CallsUiSrv, $q) {
+            'ngInject';
+
+            var errorCodesList = {
+                1: 'microphone', // this is define in webcall module, if it's changed here, it should changed there also.
+                2: 'general',
+                3: 'alreadyActive'
+            };
+
+            var CALLS_ERROR_TEXT = {
+                microphone: '.CALL_FAILED_DESC_MICROPHONE',
+                general: '.CALL_FAILED_DESC_GENERAL',
+                alreadyActive: '.CALL_FAILED_DESC_ALREADY_ACTIVE'
+            };
+
+            function _showErrorModal(err) {
+                var errorCode = err && err.errorCode ? errorCodesList[err.errorCode] : errorCodesList[2];
+                var modalData = {};
+                var errorProm = $q.when(false);
+
+                switch (errorCode) {
+                    case 'microphone':
+                        modalData.errorMessage = CALLS_ERROR_TEXT.microphone;
+                        break;
+                    case 'general':
+                        modalData.errorMessage = CALLS_ERROR_TEXT.general;
+                        break;
+                    case 'alreadyActive':
+                        modalData.errorMessage = CALLS_ERROR_TEXT.alreadyActive;
+                        errorProm = CallsUiSrv.getCalleeName().then(function (name) {
+                            modalData.errorValues = {
+                                calleeName: name
+                            };
+                            return modalData;
+                        });
+                        break;
+                    default:
+                        modalData.errorMessage = CALLS_ERROR_TEXT.general;
+                        break;
+                }
+
+                return errorProm.then(function () {
+                    return CallsUiSrv.showErrorModal(CallsUiSrv.modals.ERROR, modalData);
+                });
+            }
+
+            this.showErrorModal = function(err) {
+                return _showErrorModal(err);
+            };
+
+        }]);
 })(angular);
 
 (function (angular) {
@@ -1162,8 +1223,13 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "");
   $templateCache.put("components/calls/modals/templates/errorModal.template.html",
     "<div translate-namespace=\"AUDIO_CALLS\">\n" +
-    "    <div class=\"modal-main-title\" translate=\".OOPS!\"></div>\n" +
-    "    <div class=\"modal-sub-title\">{{errorMessage}}</div>\n" +
+    "    <div class=\"modal-main-title\"\n" +
+    "         translate=\".CALL_FAILED_HEADER\">\n" +
+    "    </div>\n" +
+    "    <div class=\"modal-sub-title\"\n" +
+    "         translate=\"{{errorMessage}}\"\n" +
+    "         translate-values=\"{{errorValues}}\">\n" +
+    "    </div>\n" +
     "    <div class=\"btn-container\">\n" +
     "        <div class=\"btn-ok\">\n" +
     "            <button\n" +
