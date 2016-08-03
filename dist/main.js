@@ -538,18 +538,26 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 (function (angular) {
 
     angular.module('znk.infra.calls').directive('activeCall',
-        function () {
+        ["$interval", "$filter", function ($interval, $filter) {
             return {
                 templateUrl: 'components/calls/directives/activeCall/activeCall.template.html',
-                scope: {},
-                link:function(scope) {
-                    scope.teacherName = 'Teacher Name';
-                    scope.callDuration = '10:25';
+                scope: {
+                    calleeName: '@'
+                },
+                link:function(scope, element, attrs) {
+                    scope.calleeName = attrs.calleeName;
+                    var callDuration = 0;
+                        $interval(function () {
+                        callDuration += 1000;
+                        angular.element(element[0].querySelector('.call-duration')).text($filter('formatDuration')(callDuration / 1000, 'mm:ss', true));
+                    }, 1000, 0, false);
                 }
             };
-        });
+        }]);
 
 })(angular);
+
+//     <time>{{12000000 | formatDuration:'Hours: hh, Minutes: mm, Seconds: ss'}}</time></p>
 
 (function (angular) {
     'use strict';
@@ -1609,8 +1617,8 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "            <div class=\"online-indicator\"></div>\n" +
     "        </div>\n" +
     "        <div class=\"callee-name flex-col\" title=\"{}\">\n" +
-    "            {{teacherName}}\n" +
-    "            <div class=\"call-duration\">{{callDuration}}</div>\n" +
+    "            {{calleeName}}\n" +
+    "            <div class=\"call-duration\"></div>\n" +
     "        </div>\n" +
     "        <div class=\"call-controls flex-col\">\n" +
     "            <svg-icon name=\"call-mute-icon\"></svg-icon>\n" +
@@ -4199,10 +4207,11 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
     /**
      * @param time (in seconds)
      * @param exp (expression to display time)
+     * @param showIn2digits - always show time hours, minutes and seconds in 2 digits, for example 1 minute and 1 second will display as 01:01 instead of 1:1 (depends on the passed expression)
      * @returns formatted time string
      */
     angular.module('znk.infra.filters').filter('formatDuration', ['$log', function ($log) {
-        return function (time, exp) {
+        return function (time, exp, showIn2digits) {
             if (!angular.isNumber(time) || isNaN(time)) {
                 $log.error('time is not a number:', time);
                 return '';
@@ -4216,6 +4225,12 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
 
             if (!exp) {
                 exp = defaultFormat;
+            }
+
+            if (showIn2digits) {
+                seconds = (seconds < 10) ? '0' + seconds : seconds;
+                minutes = (minutes < 10) ? '0' + minutes : minutes;
+                hours = (hours < 10) ? '0' + hours : hours;
             }
 
             return exp.replace(/hh/g, hours).replace(/mm/g, minutes).replace(/ss/g, seconds);

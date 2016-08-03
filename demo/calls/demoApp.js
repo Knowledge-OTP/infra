@@ -5,7 +5,8 @@
         'znk.infra.calls',
         'ngAria',
         'ngMaterial',
-        'pascalprecht.translate'
+        'pascalprecht.translate',
+        'znk.infra.filters'
     ])
         .config(function (CallsModalServiceProvider) {
             CallsModalServiceProvider.setBaseTemplatePath('components/calls/modals/templates/baseCallsModal.template.html');
@@ -57,6 +58,11 @@
                 };
                 CallsUiSrv.showErrorModal(CallsUiSrv.modals.ERROR, modalData);
             };
+
+            CallsUiSrv.getCalleeName().then(function(res){
+                $scope.calleeName = res;
+            });
+
         })
         .service('ENV', function () {
                 var isTeacher = localStorage.getItem('isTeacher');
