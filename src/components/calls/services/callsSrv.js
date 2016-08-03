@@ -43,6 +43,7 @@
                     return $q.all(getDataPromMap).then(function (data) {
                          return CallsDataSetterSrv.setNewConnect(data, userCallData, newCallGuid).then(function (callsMap) {
                              var callsData = angular.copy(callsMap['calls/' + newCallGuid]);
+                             callsData.isInitialized = true;
                              CallsEventsSrv.updateScopeData(callsData);
                          });
                     });
