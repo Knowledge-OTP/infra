@@ -1,9 +1,14 @@
 md-dialog.call-error-modal {
-
+    height: auto;
+    max-height: none;
     md-toolbar {
         &:not(.md-menu-toolbar){
             background-color: $bgColor1;
         }
+    }
+
+    .btn-container {
+        margin-bottom: 20px;
     }
 
     .top-icon-wrap {
@@ -12,7 +17,7 @@ md-dialog.call-error-modal {
                 background-color: $bgColor1;
 
                 svg-icon{
-                    width: 15px;
+                    width: 12px;
                     //stroke: $bgColor6;
                     svg {
                         width: 100%;

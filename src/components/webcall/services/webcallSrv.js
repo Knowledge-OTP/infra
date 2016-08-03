@@ -54,6 +54,7 @@
                 $log.debug('_onMediaPermission, isAllowed=' + isAllowed);
                 if (!isAllowed){
                     if (!angular.equals({}, deferredMap.call)) {
+                        // errorCode : 1 calls module CallsErrorSrv service depends on it, if it's changed here, it should changed there also.
                         deferredMap.call.reject({ errorCode: 1, error:'No persmission'});
                     }
                 }
