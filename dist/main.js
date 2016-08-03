@@ -538,16 +538,22 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 (function (angular) {
 
     angular.module('znk.infra.calls').directive('activeCall',
-        function () {
+        ["$interval", "$filter", function ($interval, $filter) {
             return {
                 templateUrl: 'components/calls/directives/activeCall/activeCall.template.html',
-                scope: {},
-                link:function(scope) {
-                    scope.teacherName = 'Teacher Name';
-                    scope.callDuration = '10:25';
+                scope: {
+                    calleeName: '@'
+                },
+                link:function(scope, element, attrs) {
+                    scope.calleeName = attrs.calleeName;
+                    var callDuration = 0;
+                        $interval(function () {
+                        callDuration += 1000;
+                        angular.element(element[0].querySelector('.call-duration')).text($filter('formatDuration')(callDuration / 1000, 'hh:MM:SS', true));
+                    }, 1000, 0, false);
                 }
             };
-        });
+        }]);
 
 })(angular);
 
@@ -1677,8 +1683,8 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "            <div class=\"online-indicator\"></div>\n" +
     "        </div>\n" +
     "        <div class=\"callee-name flex-col\" title=\"{}\">\n" +
-    "            {{teacherName}}\n" +
-    "            <div class=\"call-duration\">{{callDuration}}</div>\n" +
+    "            {{calleeName}}\n" +
+    "            <div class=\"call-duration\"></div>\n" +
     "        </div>\n" +
     "        <div class=\"call-controls flex-col\">\n" +
     "            <svg-icon name=\"call-mute-icon\"></svg-icon>\n" +
@@ -4272,6 +4278,12 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
     /**
      * @param time (in seconds)
      * @param exp (expression to display time)
+     *      'ss' - seconds in hour (1-59)
+     *      'SS' - padded seconds in hour (01-59)
+     *      'mm' - minutes in hour (1)
+     *      'MM' - padded minutes in hour (01-59)
+     *      'hh' - hours (1, 2, 3 etc')
+     *      'HH' - padded hours - (01, 02, 03 etc')
      * @returns formatted time string
      */
     angular.module('znk.infra.filters').filter('formatDuration', ['$log', function ($log) {
@@ -4282,16 +4294,25 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
             }
             var t = Math.round(parseInt(time));
             var hours = parseInt(t / 3600, 10);
+            var paddedHours = (hours < 10) ? '0' + hours : hours;
             t = t - (hours * 3600);
             var minutes = parseInt(t / 60, 10);
+            var paddedMinutes = (minutes < 10) ? '0' + minutes : minutes;
             var seconds = time % 60;
+            var paddedSeconds = (seconds < 10) ? '0' + seconds : seconds;
             var defaultFormat = 'mm:ss';
 
             if (!exp) {
                 exp = defaultFormat;
             }
 
-            return exp.replace(/hh/g, hours).replace(/mm/g, minutes).replace(/ss/g, seconds);
+            return exp.replace(/hh/g, (hours) ? hours : '')
+                .replace(/HH/g, (paddedHours) ? paddedHours : '')
+                .replace(':', (parseInt(paddedHours) || parseInt(hours)) ? ':' : '') // omit the first : if hours === 0 or 00
+                .replace(/mm/g, minutes)
+                .replace(/MM/g, paddedMinutes)
+                .replace(/ss/g, seconds)
+                .replace(/SS/g, paddedSeconds);
         };
     }]);
 })(angular);
