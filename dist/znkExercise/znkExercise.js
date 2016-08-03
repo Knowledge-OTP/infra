@@ -1739,13 +1739,10 @@
                             },false);
                         }
 
-                        scope.$parent.$watch(attrs.questions, function pagerQuestionsArrWatcher(questionsArr, oldQuestionsArr) {
+                        scope.$parent.$watch(attrs.questions, function pagerQuestionsArrWatcher(questionsArr) {
                             if (questionsArr) {
                                 scope.questions = questionsArr;
-
-                                if(!isInitialized || questionsArr !== oldQuestionsArr){
-                                    init();
-                                }
+                                init();
                             }
                         });
                     }
