@@ -1,15 +1,16 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demo',
-        ['znk.infra.znkExercise',
+    angular.module('demo',[
+            'znk.infra.znkExercise',
             'znk.infra.content',
             'ui.router',
             'angulartics',
             'znk.infra.stats',
             'pascalprecht.translate',
             'znk.infra.analytics',
-            'znk.infra.popUp'])
+            'znk.infra.popUp'
+        ])
         .config(function (QuestionTypesSrvProvider, $sceProvider, ZnkExerciseSrvProvider, exerciseTypeConst, $translateProvider, $translatePartialLoaderProvider) {
             $sceProvider.enabled(false);
 
@@ -43,6 +44,8 @@
         .controller('Main', function ($scope, $timeout, ContentSrv, ZnkExerciseUtilitySrv, ExerciseResultSrv, $controller ) {
 
             var resultsData;
+
+            var self = this;
 
             this.showExercise = true;
 
@@ -122,12 +125,36 @@
                 rebuildExercise();
             };
 
+            this.rebuildExercise = function(){
+                self.showExercise = false;
+                $timeout(function(){
+                    self.showExercise = true;
+                });
+            };
+
+            this.updateCurrentAnswer = function(newAnswer){
+                var currSlideIndex = $scope.d.actions.getCurrentIndex();
+                var currentQuestionAnswer = $scope.results[currSlideIndex];
+                currentQuestionAnswer.userAnswer = newAnswer;
+            };
+
             setExercise('practice', '165');
+        })
+        .component('selectAnswer', {
+            template: '<div>{{$ctrl.ngModel.$viewValue}}</div>',
+            require: {
+                ngModel: '^ngModel'
+            },
+            controller: function(){
+                this.$onInit = function(){
+                    this.ngModel;
+                };
+            }
         })
         .run(function ($rootScope, $translate) {
             $rootScope.$on('$translatePartialLoaderStructureChanged', function () {
                 $translate.refresh();
-            })
+            });
         });
 
 })(angular);
