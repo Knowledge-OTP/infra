@@ -5,16 +5,16 @@
         function (CallsStatusEnum, CallsBtnStatusEnum, UserProfileService, $log, CallsDataGetterSrv) {
             'ngInject';
 
-             var self = this;
+            var self = this;
 
             function _isCallDataHasReceiverIdOrCallerId(callsData, receiverId, callerId) {
                 return callsData.receiverId === receiverId ||
-                       callsData.receiverId === callerId ||
-                       callsData.callerId === callerId ||
-                       callsData.callerId === receiverId;
+                    callsData.receiverId === callerId ||
+                    callsData.callerId === callerId ||
+                    callsData.callerId === receiverId;
             }
 
-             this.getBtnStatus = function _getBtnStatus(callStatus) {
+            this.getBtnStatus = function _getBtnStatus(callStatus) {
                 var status;
                 switch(callStatus) {
                     case CallsStatusEnum.PENDING_CALL.enum:
@@ -33,24 +33,8 @@
             };
 
             this.initializeBtnStatus = function(receiverId) {
-                return UserProfileService.getCurrUserId().then(function(callerId) {
-                    return CallsDataGetterSrv.getCurrUserCallsData().then(function (callsDataMap) {
-                        var status = false;
-                        for (var idKey in callsDataMap) {
-                            if (callsDataMap.hasOwnProperty(idKey)) {
-                                var currCallsData = callsDataMap[idKey];
-                                if (_isCallDataHasReceiverIdOrCallerId(currCallsData, receiverId, callerId)) {
-                                    status = self.getBtnStatus(currCallsData.status);
-                                    break;
-                                }
-                            }
-                        }
-                        return status;
-                    }).catch(function(err){
-                        $log.error('Error in CallsBtnSrv initializeSetBtnStatus in CallsDataGetterSrv.getCurrUserCallsData(), err: ' + err);
-                    });
-                }).catch(function(err){
-                    $log.error('Error in CallsBtnSrv initializeSetBtnStatus in UserProfileService.getCurrUserId(): err: ' + err);
+                return CallsDataGetterSrv.getCallStatus(receiverId).then(function(status) {
+                    return self.getBtnStatus(status);
                 });
             };
 
@@ -58,7 +42,7 @@
                 return UserProfileService.getCurrUserId().then(function(callerId) {
                     var status = false;
                     if (_isCallDataHasReceiverIdOrCallerId(callsData, receiverId, callerId)) {
-                         status = self.getBtnStatus(callsData.status);
+                        status = self.getBtnStatus(callsData.status);
                     }
                     return status;
                 }).catch(function(err){

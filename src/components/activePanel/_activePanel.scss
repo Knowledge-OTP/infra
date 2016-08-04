@@ -1,5 +1,6 @@
-active-call {
-    .etutoring-active-call {
+active-panel {
+    visibility: hidden;
+    .active-panel {
         width: 210px;
         height: 40px;
         background-color: $bgColor21;

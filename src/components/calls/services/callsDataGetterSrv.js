@@ -27,6 +27,13 @@
                 return callsData.receiverId === callerId && callsData.callerId !== receiverId;
             }
 
+            function _isCallDataHasReceiverIdOrCallerId(callsData, receiverId, callerId) {
+                return callsData.receiverId === receiverId ||
+                    callsData.receiverId === callerId ||
+                    callsData.callerId === callerId ||
+                    callsData.callerId === receiverId;
+            }
+
             this.getCallsDataPath = function (guid) {
                 var SCREEN_SHARING_ROOT_PATH = 'calls';
                 return SCREEN_SHARING_ROOT_PATH + '/' + guid;
@@ -77,7 +84,7 @@
                 });
             };
 
-            this.getUserCallStatus = function(callerId, receiverId) {
+            this.getUserCallActionStatus = function(callerId, receiverId) {
                 return self.getCurrUserCallsData().then(function (callsDataMap) {
                     var userCallData = false;
                     var callsDataMapKeys = Object.keys(callsDataMap);
@@ -144,6 +151,38 @@
                     }
                     return userCallData;
                 });
+            };
+
+            this.getCallStatus = function(receiverId) {
+                return UserProfileService.getCurrUserId().then(function(callerId) {
+                    return self.getCurrUserCallsData().then(function (callsDataMap) {
+                        var status = false;
+                        for (var idKey in callsDataMap) {
+                            if (callsDataMap.hasOwnProperty(idKey)) {
+                                var currCallsData = callsDataMap[idKey];
+                                if (_isCallDataHasReceiverIdOrCallerId(currCallsData, receiverId, callerId)) {
+                                    status = currCallsData.status;
+                                    break;
+                                }
+                            }
+                        }
+                        return status;
+                    }).catch(function(err){
+                        $log.error('Error in CallsDataGetterSrv getCallStatus, err: ' + err);
+                    });
+                }).catch(function(err){
+                    $log.error('Error in CallsDataGetterSrv getCallStatus, err: ' + err);
+                });
+            };
+
+            var activeCallStatus;
+
+            this.showActiveCallDrv = function() {
+                activeCallStatus = true;
+            };
+
+            this.hideActiveCallDrv = function() {
+                activeCallStatus = false;
             };
 
             this.getDataPromMap = function(guid) {

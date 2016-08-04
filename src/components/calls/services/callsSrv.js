@@ -86,7 +86,7 @@
                     $log.error(errMSg);
                     return $q.reject(errMSg);
                 }
-                return CallsDataGetterSrv.getUserCallStatus(callerId, receiverId).then(function (userCallData) {
+                return CallsDataGetterSrv.getUserCallActionStatus(callerId, receiverId).then(function (userCallData) {
                     var callActionProm;
 
                     switch (userCallData.action) {

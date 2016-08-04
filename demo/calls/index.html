@@ -18,7 +18,11 @@
 
 <div ng-controller="demoCtrl">
     <h2>Active Call Box</h2>
-    <active-call callee-name="{{calleeName}}"></active-call>
+
+    <active-panel
+        actions="actions"
+        callee-name="{{calleeName}}">
+    </active-panel>
 
     <hr>
 

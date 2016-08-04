@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.calls')
+    angular.module('znk.infra.activePanel')
         .config(function (SvgIconSrvProvider) {
             'ngInject';
 

@@ -3,6 +3,4 @@
         './src/scss/imports/fonts',
         './src/scss/imports/mixins';
 
-@import './modals/scss/baseCallsModal',
-        './modals/scss/callErrorModal',
-        './directives/callBtn/call-btn-drv';
+@import './activePanel';
