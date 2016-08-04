@@ -86,25 +86,49 @@
                     $log.error(errMSg);
                     return $q.reject(errMSg);
                 }
-                return CallsDataGetterSrv.getUserCallStatus(callerId, receiverId).then(function (userCallData) {
-                    var callActionProm;
+                return _isReceiverIsInActiveCall().then(function () {
+                    return CallsDataGetterSrv.getUserCallStatus(callerId, receiverId).then(function (userCallData) {
+                        var callActionProm;
 
-                    switch (userCallData.action) {
-                        case CallsActionStatusEnum.DISCONNECT_ACTION.enum:
-                            callActionProm = _disconnectCall(userCallData);
-                            break;
-                        case CallsActionStatusEnum.CONNECT_ACTION.enum:
-                            callActionProm = _connectCall(userCallData);
-                            break;
-                        case CallsActionStatusEnum.DISCONNECT_AND_CONNECT_ACTION.enum:
-                            callActionProm = _disconnectCall(userCallData).then(function () {
-                                return _connectCall(userCallData);
-                            });
-                            break;
-                    }
+                        switch (userCallData.action) {
+                            case CallsActionStatusEnum.DISCONNECT_ACTION.enum:
+                                callActionProm = _disconnectCall(userCallData);
+                                break;
+                            case CallsActionStatusEnum.CONNECT_ACTION.enum:
+                                callActionProm = _connectCall(userCallData);
+                                break;
+                            case CallsActionStatusEnum.DISCONNECT_AND_CONNECT_ACTION.enum:
+                                callActionProm = _disconnectCall(userCallData).then(function () {
+                                    return _connectCall(userCallData);
+                                });
+                                break;
+                        }
 
-                    return callActionProm;
+                        return callActionProm;
+                    });
                 });
+            }
+
+            function _isReceiverIsInActiveCall(receiverId) {
+               return CallsDataGetterSrv.getReceiverCallsData(receiverId).then(function(callsDataMap) {
+                   var callsDataArr = [];
+                   var isInActiveCall = false;
+                   angular.forEach(callsDataMap, function(callData) {
+                        if(callData.status && (callData.status === CallsStatusEnum.PENDING_CALL.enum ||
+                            callData.status ===  CallsStatusEnum.ACTIVE_CALL.enum)) {
+                            callsDataArr.push(callData);
+                        }
+                   });
+                   if (callsDataArr.length > 0) {
+                       $log.error('Error in _isReceiverIsInActiveCall', err);
+                       var err = {
+                           receiverId: receiverId,
+                           errorCode: 3
+                       };
+                       isInActiveCall = $q.reject(err);
+                   }
+                   return isInActiveCall;
+               });
             }
 
             // api
@@ -125,7 +149,7 @@
                     return $q.reject(err);
                 });
             };
-            /* used to disconnect the other user from web call */
+
             this.disconnectCall = function() {
                 return _webCallHang();
             };
