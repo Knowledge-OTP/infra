@@ -458,7 +458,7 @@
             };
 
             StorageSrv.prototype.offEvent = function(){
-                return this.adapter.onEvent.apply(this.adapter, arguments);
+                return this.adapter.offEvent.apply(this.adapter, arguments);
             };
 
             StorageSrv.variables = {

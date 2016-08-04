@@ -220,7 +220,7 @@
                             };
 
                             function setViewValue() {
-                                ngModelCtrl.$setViewValue(angular.copy(scope.vm.questionsWithAnswers));
+                                ngModelCtrl.$setViewValue(scope.vm.questionsWithAnswers);
                             }
                             /**
                              *  RENDER AND SET VIEW VALUE END
@@ -296,7 +296,7 @@
                                     var questionCopy = angular.copy(question);
                                     var answer = answersMap[questionCopy.id] || {};
 
-                                    questionCopy.__questionStatus= angular.copy(answer);
+                                    questionCopy.__questionStatus= answer;
                                     questionCopy.__questionStatus.index = index;
 
                                     return questionCopy;

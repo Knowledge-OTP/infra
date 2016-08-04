@@ -7753,7 +7753,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
             };
 
             StorageSrv.prototype.offEvent = function(){
-                return this.adapter.onEvent.apply(this.adapter, arguments);
+                return this.adapter.offEvent.apply(this.adapter, arguments);
             };
 
             StorageSrv.variables = {
@@ -10490,7 +10490,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                             };
 
                             function setViewValue() {
-                                ngModelCtrl.$setViewValue(angular.copy(scope.vm.questionsWithAnswers));
+                                ngModelCtrl.$setViewValue(scope.vm.questionsWithAnswers);
                             }
                             /**
                              *  RENDER AND SET VIEW VALUE END
@@ -10566,7 +10566,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                                     var questionCopy = angular.copy(question);
                                     var answer = answersMap[questionCopy.id] || {};
 
-                                    questionCopy.__questionStatus= angular.copy(answer);
+                                    questionCopy.__questionStatus= answer;
                                     questionCopy.__questionStatus.index = index;
 
                                     return questionCopy;
