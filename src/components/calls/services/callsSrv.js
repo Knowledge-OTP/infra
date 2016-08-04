@@ -120,11 +120,11 @@
                         }
                    });
                    if (callsDataArr.length > 0) {
-                       $log.error('Error in _isReceiverIsInActiveCall', err);
                        var err = {
                            receiverId: receiverId,
                            errorCode: 3
                        };
+                       $log.error('Error in _isReceiverIsInActiveCall', err);
                        isInActiveCall = $q.reject(err);
                    }
                    return isInActiveCall;
