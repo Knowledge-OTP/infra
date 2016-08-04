@@ -499,7 +499,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         'znk.infra.svgIcon',
         'pascalprecht.translate',
         'znk.infra.webcall',
-        'znk.infra.callsModals'
+        'znk.infra.callsModals',
+        'znk.infra.general'
     ]);
 })(angular);
 
@@ -729,7 +730,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
-        ["$scope", "CallsSrv", "CallsUiSrv", "CallsStatusEnum", "$log", "CallsErrorSrv", function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log, CallsErrorSrv) {
+        ["$scope", "CallsSrv", "CallsUiSrv", "CallsStatusEnum", "$log", "CallsErrorSrv", "$timeout", function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log, CallsErrorSrv, $timeout) {
             'ngInject';
 
             var self = this;
@@ -751,18 +752,42 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 isPendingClick = clickStatus;
             }
 
+            function _fillLoader(bool, methodName) {
+                if (methodName === 'acceptCall') {
+                    if (bool === true) {
+                        $timeout(function() {
+                            self.fillLoader = bool;
+                        }, 2500);
+                    } else {
+                        self.fillLoader = bool;
+                    }
+                }
+            }
+
+            function _startLoader(bool, methodName) {
+                if (methodName === 'acceptCall') {
+                    self.startLoader = bool;
+                }
+            }
+
+            function _updateBtnStatus(bool, methodName) {
+                _clickStatusSetter(bool);
+                _startLoader(bool, methodName);
+                _fillLoader(bool, methodName);
+            }
+
             function _baseCall(callFn, methodName, params) {
                  callsData = self.scope.callsData;
                 if (_isNoPendingClick()) {
                     if (methodName === 'declineCall') {
                         $scope.declineByOther = false;
                     }
-                    _clickStatusSetter(true);
+                    _updateBtnStatus(true, methodName);
                     callFn(callsData, params).then(function () {
-                        _clickStatusSetter(false);
+                        _updateBtnStatus(false, methodName);
                         CallsUiSrv.closeModal();
                     }).catch(function (err) {
-                        _clickStatusSetter(false);
+                        _updateBtnStatus(false, methodName);
                         $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);
                         CallsErrorSrv.showErrorModal(err);
                     });
@@ -1765,7 +1790,14 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "                    <button\n" +
     "                        ng-click=\"vm.acceptCall()\"\n" +
     "                        class=\"primary\"\n" +
-    "                        translate=\".ACCEPT\">\n" +
+    "                        element-loader\n" +
+    "                        fill-loader=\"vm.fillLoader\"\n" +
+    "                        show-loader=\"vm.startLoader\"\n" +
+    "                        bg-loader=\"'#07434A'\"\n" +
+    "                        precentage=\"50\"\n" +
+    "                        font-color=\"'#FFFFFF'\"\n" +
+    "                        bg=\"'#0a9bad'\">\n" +
+    "                        <span translate=\".ACCEPT\"></span>\n" +
     "                    </button>\n" +
     "                </div>\n" +
     "            </div>\n" +
@@ -4476,6 +4508,68 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
             };
         }
     ]);
+})(angular);
+
+/**
+ * attrs -
+ *
+ *  bg
+ *  bgLoader
+ *  fontColor
+ *  precentage
+ *  showLoader
+ *  fillLoader
+ */
+'use strict';
+
+(function (angular) {
+
+    angular.module('znk.infra.general').directive('elementLoader', function () {
+        var directive = {
+            restrict: 'EA',
+            scope: {
+                bg: '=',
+                bgLoader: '=',
+                fontColor: '=',
+                precentage: '=',
+                showLoader: '=',
+                fillLoader: '='
+            },
+            link: function (scope, elem) {
+                var defaultView = function () {
+                    elem[0].className = elem[0].className + ' elem-loader';
+                    elem[0].style.backgroundImage = 'linear-gradient(to right, ' + scope.bg + ' 10%,rgba(255, 255, 255, 0) 0,' + scope.bg + ' 0)';
+                    elem[0].style.backgroundSize = '100%';
+                    elem[0].style.webkitTransition = 'background-size 20000ms cubic-bezier(0.000, 0.915, 0.000, 0.970)';
+                };
+
+                scope.$watch('showLoader', function (newValue) {
+                    if (newValue) {
+                        elem[0].style.color = scope.fontColor;
+                        elem[0].style.backgroundImage = 'linear-gradient(to right, ' + scope.bgLoader + ' 10%,rgba(255, 255, 255, 0) 0,' + scope.bg + ' 0)';
+                        elem[0].style.backgroundSize = '900%';
+                    }
+                }, true);
+
+                scope.$watch('fillLoader', function (newValue) {
+                    if (!!newValue) {
+                        elem[0].style.webkitTransition = 'background-size 100ms ';
+                        elem[0].style.backgroundSize = '1100%';
+                    } else {
+                        if (typeof newValue === 'undefined') {
+                            return;
+                        }
+                        defaultView();
+                    }
+                }, true);
+
+                defaultView();
+            }
+        };
+
+        return directive;
+    });
+
 })(angular);
 
 /**
