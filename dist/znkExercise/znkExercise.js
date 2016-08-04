@@ -1342,7 +1342,7 @@
                                     var questionCopy = angular.copy(question);
                                     var answer = answersMap[questionCopy.id] || {};
 
-                                    questionCopy.__questionStatus= angular.copy(answer);
+                                    questionCopy.__questionStatus= answer;
                                     questionCopy.__questionStatus.index = index;
 
                                     return questionCopy;
