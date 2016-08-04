@@ -10396,7 +10396,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                             };
 
                             function setViewValue() {
-                                ngModelCtrl.$setViewValue(angular.copy(scope.vm.questionsWithAnswers));
+                                ngModelCtrl.$setViewValue(scope.vm.questionsWithAnswers);
                             }
                             /**
                              *  RENDER AND SET VIEW VALUE END
