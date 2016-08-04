@@ -8,10 +8,10 @@
              var self = this;
 
             function _isCallDataHasReceiverIdOrCallerId(callsData, receiverId, callerId) {
-                return callsData.receiverId === receiverId ||
-                       callsData.receiverId === callerId ||
-                       callsData.callerId === callerId ||
-                       callsData.callerId === receiverId;
+                return (callsData.receiverId === receiverId &&
+                       callsData.callerId === callerId) ||
+                       (callsData.receiverId === callerId &&
+                       callsData.callerId === receiverId);
             }
 
              this.getBtnStatus = function _getBtnStatus(callStatus) {
