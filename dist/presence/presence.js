@@ -103,6 +103,14 @@
                     }
                 }
 
+                $rootScope.$on('auth:beforeLogout', function () {
+                    var authData = getAuthData();
+                    if (authData) {
+                        var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
+                        userRef.remove();
+                    }
+                });
+
                 return PresenceService;
             }];
     });
