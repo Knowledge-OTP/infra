@@ -5,6 +5,8 @@
         function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv, CallsEventsSrv, CallsStatusEnum, CallsActionStatusEnum) {
             'ngInject';
 
+            var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
+
             function _handleCallerIdOrReceiverIdUndefined(callsData, methodName) {
                 if (angular.isUndefined(callsData.callerId) || angular.isUndefined(callsData.receiverId)) {
                     var errMSg = 'CallsSrv '+ methodName +': callerId or receiverId are missing!';
@@ -41,7 +43,7 @@
                 CallsEventsSrv.openOutGoingCall(callsData);
                 return _webCallConnect(newCallGuid).then(function () {
                     return $q.all(getDataPromMap).then(function (data) {
-                         return CallsDataSetterSrv.setNewConnect(data, userCallData, newCallGuid).then(function (callsMap) {
+                         return CallsDataSetterSrv.setNewConnect(data, userCallData, newCallGuid, isTeacherApp).then(function (callsMap) {
                              var callsData = angular.copy(callsMap['calls/' + newCallGuid]);
                              callsData.isInitialized = true;
                              CallsEventsSrv.updateScopeData(callsData);
@@ -111,7 +113,7 @@
             }
 
             function _isReceiverIsInActiveCall(receiverId) {
-               return CallsDataGetterSrv.getReceiverCallsData(receiverId).then(function(callsDataMap) {
+               return CallsDataGetterSrv.getReceiverCallsData(receiverId, isTeacherApp).then(function(callsDataMap) {
                    var callsDataArr = [];
                    var isInActiveCall = false;
                    angular.forEach(callsDataMap, function(callData) {

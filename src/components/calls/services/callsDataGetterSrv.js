@@ -27,9 +27,9 @@
                 return callsData.receiverId === callerId && callsData.callerId !== receiverId;
             }
 
-            function _getCallsRequests(uid) {
+            function _getCallsRequests(uid, path) {
                 return _getStorage().then(function(storage){
-                    var currUserCallsDataPath = ENV.firebaseAppScopeName + '/users/' + uid + '/calls';
+                    var currUserCallsDataPath = path ? path : ENV.firebaseAppScopeName + '/users/' + uid + '/calls';
                     return storage.get(currUserCallsDataPath);
                 }).catch(function(err){
                     $log.error('Error in _getStorage', err);
@@ -83,8 +83,9 @@
                 });
             };
 
-            this.getReceiverCallsData = function (receiverId) {
-                return _getCallsRequests(receiverId).then(function(receiverCallsRequests){
+            this.getReceiverCallsData = function (receiverId, isTeacherApp) {
+                var receiverPath = self.getCallsRequestsPath(receiverId, !isTeacherApp);
+                return _getCallsRequests(receiverId, receiverPath).then(function(receiverCallsRequests){
                     return _getCallsDataMap(receiverCallsRequests);
                 });
             };
