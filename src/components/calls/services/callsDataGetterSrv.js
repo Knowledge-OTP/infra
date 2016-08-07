@@ -27,6 +27,13 @@
                 return callsData.receiverId === callerId && callsData.callerId !== receiverId;
             }
 
+            function _isCallDataHasReceiverIdOrCallerId(callsData, receiverId, callerId) {
+                return (callsData.receiverId === receiverId &&
+                    callsData.callerId === callerId) ||
+                    (callsData.receiverId === callerId &&
+                    callsData.callerId === receiverId);
+            }
+
             function _getCallsRequests(uid, path) {
                 return _getStorage().then(function(storage){
                     var currUserCallsDataPath = path ? path : ENV.firebaseAppScopeName + '/users/' + uid + '/calls';
@@ -166,6 +173,8 @@
                 getDataPromMap.currUid = UserProfileService.getCurrUserId();
                 return getDataPromMap;
             };
+
+            this.isCallDataHasReceiverIdOrCallerId = _isCallDataHasReceiverIdOrCallerId;
         }
     );
 })(angular);

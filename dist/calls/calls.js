@@ -411,13 +411,6 @@
 
              var self = this;
 
-            function _isCallDataHasReceiverIdOrCallerId(callsData, receiverId, callerId) {
-                return (callsData.receiverId === receiverId &&
-                       callsData.callerId === callerId) ||
-                       (callsData.receiverId === callerId &&
-                       callsData.callerId === receiverId);
-            }
-
              this.getBtnStatus = function _getBtnStatus(callStatus) {
                 var status;
                 switch(callStatus) {
@@ -443,7 +436,7 @@
                         for (var idKey in callsDataMap) {
                             if (callsDataMap.hasOwnProperty(idKey)) {
                                 var currCallsData = callsDataMap[idKey];
-                                if (_isCallDataHasReceiverIdOrCallerId(currCallsData, receiverId, callerId)) {
+                                if (CallsDataGetterSrv.isCallDataHasReceiverIdOrCallerId(currCallsData, receiverId, callerId)) {
                                     status = self.getBtnStatus(currCallsData.status);
                                     break;
                                 }
@@ -461,7 +454,7 @@
             this.updateBtnStatus = function(receiverId, callsData) {
                 return UserProfileService.getCurrUserId().then(function(callerId) {
                     var status = false;
-                    if (_isCallDataHasReceiverIdOrCallerId(callsData, receiverId, callerId)) {
+                    if (CallsDataGetterSrv.isCallDataHasReceiverIdOrCallerId(callsData, receiverId, callerId)) {
                          status = self.getBtnStatus(callsData.status);
                     }
                     return status;
@@ -500,6 +493,13 @@
 
             function _isNewReceiverIdNotMatchActiveCallerId(callsData, callerId, receiverId) {
                 return callsData.receiverId === callerId && callsData.callerId !== receiverId;
+            }
+
+            function _isCallDataHasReceiverIdOrCallerId(callsData, receiverId, callerId) {
+                return (callsData.receiverId === receiverId &&
+                    callsData.callerId === callerId) ||
+                    (callsData.receiverId === callerId &&
+                    callsData.callerId === receiverId);
             }
 
             function _getCallsRequests(uid, path) {
@@ -641,6 +641,8 @@
                 getDataPromMap.currUid = UserProfileService.getCurrUserId();
                 return getDataPromMap;
             };
+
+            this.isCallDataHasReceiverIdOrCallerId = _isCallDataHasReceiverIdOrCallerId;
         }]
     );
 })(angular);
@@ -1106,7 +1108,7 @@
                    angular.forEach(callsDataMap, function(callData) {
                         if(callData.status && (callData.status === CallsStatusEnum.PENDING_CALL.enum ||
                             callData.status === CallsStatusEnum.ACTIVE_CALL.enum) &&
-                            (callData.callerId !== callerId || callData.receiverId !== callerId)) {
+                            !CallsDataGetterSrv.isCallDataHasReceiverIdOrCallerId(callData, receiverId, callerId)) {
                             callsDataArr.push(callData);
                         }
                    });
