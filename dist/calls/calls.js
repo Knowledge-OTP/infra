@@ -1033,6 +1033,7 @@
                              var callsData = angular.copy(callsMap['calls/' + newCallGuid]);
                              callsData.isInitialized = true;
                              CallsEventsSrv.updateScopeData(callsData);
+                             return callsMap;
                          });
                     });
                 });
