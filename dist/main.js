@@ -1595,9 +1595,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                    var isInActiveCall = false;
                    angular.forEach(callsDataMap, function(callData) {
                         if(callData.status && (callData.status === CallsStatusEnum.PENDING_CALL.enum ||
-                            callData.status === CallsStatusEnum.ACTIVE_CALL.enum
-                            (callData.callerId !== callerId || callData.receiverId !== callerId))
-                        ) {
+                            callData.status === CallsStatusEnum.ACTIVE_CALL.enum) &&
+                            (callData.callerId !== callerId || callData.receiverId !== callerId)) {
                             callsDataArr.push(callData);
                         }
                    });
