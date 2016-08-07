@@ -1,0 +1,22 @@
+<div ng-if="::showProgressBubble()" class="progress-bubble-wrapper" ng-style="{left: progressWidth + '%'}">
+    <div class="progress-percentage">
+        <div>{{progressWidth}}%
+            <div translate="ZNK_PROGRESS_BAR.MASTERY"></div>
+        </div>
+    </div>
+    <div class="progress-bubble">
+        <div class="down-triangle gray-triangle"></div>
+        <div class="down-triangle"></div>
+    </div>
+</div>
+
+<div class="progress-wrap">
+    <div class="progress" ng-style="{width: progressWidth + '%'}"></div>
+    <div class="answer-count ng-hide" ng-show="{{::showProgressValue}}" ng-style="{left: progressWidth + '%'}">
+        {{progressValue}}
+    </div>
+</div>
+
+
+
+
