@@ -10,5 +10,5 @@
             function (SvgIconSrvProvider) {
                 var svgMap = {};
                 SvgIconSrvProvider.registerSvgSources(svgMap);
-            }])
+            }]);
 })(angular);

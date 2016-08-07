@@ -16,7 +16,7 @@
                     showProgressValue: '@',
                     showProgressBubble: '&'
                 },
-                link: function (scope, element, attrs) {
+                link: function () {
                     $translatePartialLoader.addPart('znkProgressBar');
                 }
             };
