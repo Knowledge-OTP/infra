@@ -70,16 +70,16 @@
                                     $log.debug('call active');
                                     if (isCurrentUserInitiatedCall(currUid)) {
                                         // show outgoing call modal WITH the ANSWERED TEXT, wait 2 seconds and close the modal, show the ActiveCallDRV
-                                        ActivePanelSrv.showActivePanelDrv();
+                                        ActivePanelSrv.showActivePanelDrv('calls');
                                     } else {
                                         // close the modal, show the ActiveCallDRV
                                         CallsUiSrv.closeModal();
-                                        ActivePanelSrv.showActivePanelDrv();
+                                        ActivePanelSrv.showActivePanelDrv('calls');
                                     }
                                     break;
                                 case CallsStatusEnum.ENDED_CALL.enum:
                                     $log.debug('call ended');
-                                    ActivePanelSrv.hideActivePanelDrv();
+                                    ActivePanelSrv.hideActivePanelDrv('calls');
                                     // disconnect other user from call
                                     getCallsSrv().disconnectCall();
                                     break;

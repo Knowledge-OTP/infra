@@ -5,18 +5,16 @@
         function () {
             'ngInject';
 
-            var self = this;
-
             var actions = {};
 
             this.getActions = function () {
                 return actions;
             };
 
-            function _base(name) {
+            function _base(name, arg1) {
                 var fn = actions[name];
                 if (angular.isFunction(fn)) {
-                    fn();
+                    fn(arg1);
                 }
             }
 
