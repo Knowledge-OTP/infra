@@ -1,5 +1,12 @@
-active-call {
-    .etutoring-active-call {
+active-panel {
+    &.visible {
+        .active-panel {
+            opacity: 1;
+        }
+    }
+    .active-panel {
+        transition: 1.5s;
+        opacity: 0;
         width: 210px;
         height: 40px;
         background-color: $bgColor21;

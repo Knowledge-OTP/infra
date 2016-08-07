@@ -97,7 +97,7 @@
                 });
             };
 
-            this.getUserCallStatus = function(callerId, receiverId) {
+            this.getUserCallActionStatus = function(callerId, receiverId) {
                 return self.getCurrUserCallsData().then(function (callsDataMap) {
                     var userCallData = false;
                     var callsDataMapKeys = Object.keys(callsDataMap);
@@ -163,6 +163,28 @@
                         };
                     }
                     return userCallData;
+                });
+            };
+
+            this.getCallStatus = function(receiverId) {
+                return UserProfileService.getCurrUserId().then(function(callerId) {
+                    return self.getCurrUserCallsData().then(function (callsDataMap) {
+                        var status = false;
+                        for (var idKey in callsDataMap) {
+                            if (callsDataMap.hasOwnProperty(idKey)) {
+                                var currCallsData = callsDataMap[idKey];
+                                if (_isCallDataHasReceiverIdOrCallerId(currCallsData, receiverId, callerId)) {
+                                    status = currCallsData.status;
+                                    break;
+                                }
+                            }
+                        }
+                        return status;
+                    }).catch(function(err){
+                        $log.error('Error in CallsDataGetterSrv getCallStatus, err: ' + err);
+                    });
+                }).catch(function(err){
+                    $log.error('Error in CallsDataGetterSrv getCallStatus, err: ' + err);
                 });
             };
 

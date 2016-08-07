@@ -3,6 +3,7 @@
 
     angular.module('demo', [
         'znk.infra.calls',
+        'znk.infra.activePanel',
         'ngAria',
         'ngMaterial',
         'pascalprecht.translate',
@@ -36,7 +37,9 @@
             $rootScope.call = { isOffline: false, receiverId: '21794e2b-3051-4016-8491-b3fe70e8212d' };
             $rootScope.called = { isOffline: false, receiverId: 'eebe2b53-08b7-4296-bcfd-62b69b531473' };
         })
-        .controller('demoCtrl', function ($scope, CallsUiSrv, $rootScope) {
+        .controller('demoCtrl', function ($scope, CallsUiSrv, $rootScope, ActivePanelSrv, $log) {
+
+            $scope.actions = ActivePanelSrv.getActions();
 
             $scope.openIncomingCallModal = function() {
                 var scope = $rootScope.$new();
@@ -65,23 +68,23 @@
 
         })
         .service('ENV', function () {
-                var isTeacher = localStorage.getItem('isTeacher');
+            var isTeacher = localStorage.getItem('isTeacher');
 
-                if(isTeacher) {
-                    // teacher
-                    this.firebaseAppScopeName = "act_dashboard";
-                    this.appContext = 'dashboard';
-                    this.studentAppName = 'act_app';
-                    this.dashboardAppName = 'act_dashboard';
-                } else {
-                    // student
-                    this.firebaseAppScopeName = "act_app";
-                    this.appContext = 'student';
-                    this.studentAppName = 'act_app';
-                    this.dashboardAppName = 'act_dashboard';
-                }
+            if(isTeacher) {
+                // teacher
+                this.firebaseAppScopeName = "act_dashboard";
+                this.appContext = 'dashboard';
+                this.studentAppName = 'act_app';
+                this.dashboardAppName = 'act_dashboard';
+            } else {
+                // student
+                this.firebaseAppScopeName = "act_app";
+                this.appContext = 'student';
+                this.studentAppName = 'act_app';
+                this.dashboardAppName = 'act_dashboard';
+            }
 
-            })
+        })
         .config(function(CallsUiSrvProvider){
             var fn = function($q) {
               return function(reciverId, callerId) {

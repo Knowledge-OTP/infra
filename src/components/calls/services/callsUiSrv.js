@@ -14,16 +14,6 @@
 
                 var CallsUiSrv = {};
 
-                var activeCallStatus;
-
-                CallsUiSrv.showActiveCallDrv = function() {
-                    activeCallStatus = true;
-                };
-
-                CallsUiSrv.hideActiveCallDrv = function() {
-                    activeCallStatus = false;
-                };
-
                 CallsUiSrv.showModal = function (modal, scope) {
                     modal.scope = scope;
                     CallsModalService.showBaseModal(modal);
