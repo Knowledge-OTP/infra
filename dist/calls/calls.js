@@ -502,9 +502,9 @@
                 return callsData.receiverId === callerId && callsData.callerId !== receiverId;
             }
 
-            function _getCallsRequests(uid) {
+            function _getCallsRequests(uid, path) {
                 return _getStorage().then(function(storage){
-                    var currUserCallsDataPath = ENV.firebaseAppScopeName + '/users/' + uid + '/calls';
+                    var currUserCallsDataPath = path ? path : ENV.firebaseAppScopeName + '/users/' + uid + '/calls';
                     return storage.get(currUserCallsDataPath);
                 }).catch(function(err){
                     $log.error('Error in _getStorage', err);
@@ -558,8 +558,9 @@
                 });
             };
 
-            this.getReceiverCallsData = function (receiverId) {
-                return _getCallsRequests(receiverId).then(function(receiverCallsRequests){
+            this.getReceiverCallsData = function (receiverId, isTeacherApp) {
+                var receiverPath = self.getCallsRequestsPath(receiverId, !isTeacherApp);
+                return _getCallsRequests(receiverId, receiverPath).then(function(receiverCallsRequests){
                     return _getCallsDataMap(receiverCallsRequests);
                 });
             };
@@ -651,13 +652,11 @@
         ["InfraConfigSrv", "$q", "ENV", "CallsStatusEnum", "CallsDataGetterSrv", function (InfraConfigSrv, $q, ENV, CallsStatusEnum, CallsDataGetterSrv) {
             'ngInject';
 
-            var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
-
             function _getStorage() {
                 return InfraConfigSrv.getGlobalStorage();
             }
 
-            this.setNewConnect = function(data, userCallData, guid) {
+            this.setNewConnect = function(data, userCallData, guid, isTeacherApp) {
                 var dataToSave = {};
                 var isCallerTeacher = userCallData.callerId === data.currUid && isTeacherApp;
                 var receiverPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.newReceiverId, !isCallerTeacher);
@@ -993,6 +992,8 @@
         ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "CallsDataSetterSrv", "WebcallSrv", "CallsEventsSrv", "CallsStatusEnum", "CallsActionStatusEnum", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv, CallsEventsSrv, CallsStatusEnum, CallsActionStatusEnum) {
             'ngInject';
 
+            var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
+
             function _handleCallerIdOrReceiverIdUndefined(callsData, methodName) {
                 if (angular.isUndefined(callsData.callerId) || angular.isUndefined(callsData.receiverId)) {
                     var errMSg = 'CallsSrv '+ methodName +': callerId or receiverId are missing!';
@@ -1029,7 +1030,7 @@
                 CallsEventsSrv.openOutGoingCall(callsData);
                 return _webCallConnect(newCallGuid).then(function () {
                     return $q.all(getDataPromMap).then(function (data) {
-                         return CallsDataSetterSrv.setNewConnect(data, userCallData, newCallGuid).then(function (callsMap) {
+                         return CallsDataSetterSrv.setNewConnect(data, userCallData, newCallGuid, isTeacherApp).then(function (callsMap) {
                              var callsData = angular.copy(callsMap['calls/' + newCallGuid]);
                              callsData.isInitialized = true;
                              CallsEventsSrv.updateScopeData(callsData);
@@ -1099,7 +1100,7 @@
             }
 
             function _isReceiverIsInActiveCall(receiverId) {
-               return CallsDataGetterSrv.getReceiverCallsData(receiverId).then(function(callsDataMap) {
+               return CallsDataGetterSrv.getReceiverCallsData(receiverId, isTeacherApp).then(function(callsDataMap) {
                    var callsDataArr = [];
                    var isInActiveCall = false;
                    angular.forEach(callsDataMap, function(callData) {
