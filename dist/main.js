@@ -776,14 +776,14 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 _fillLoader(bool, methodName);
             }
 
-            function _baseCall(callFn, methodName, params) {
+            function _baseCall(callFn, methodName) {
                  callsData = self.scope.callsData;
                 if (_isNoPendingClick()) {
                     if (methodName === 'declineCall') {
                         $scope.declineByOther = false;
                     }
                     _updateBtnStatus(true, methodName);
-                    callFn(callsData, params).then(function () {
+                    callFn(callsData).then(function () {
                         _updateBtnStatus(false, methodName);
                         CallsUiSrv.closeModal();
                     }).catch(function (err) {
@@ -794,7 +794,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 }
             }
 
-            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall', false);
+            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall');
 
             this.acceptCall = _baseCall.bind(null, CallsSrv.acceptCall, 'acceptCall');
 
@@ -842,14 +842,14 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 }
             });
 
-            function _baseCall(callFn, methodName, params) {
+            function _baseCall(callFn, methodName) {
                 callsData = self.scope.callsData;
                 if (_isNoPendingClick()) {
                     if (methodName === 'declineCall') {
                         $scope.declineByOther = false;
                     }
                     _clickStatusSetter(true);
-                    callFn(callsData, params).then(function () {
+                    callFn(callsData).then(function () {
                         _clickStatusSetter(false);
                         CallsUiSrv.closeModal();
                     }).catch(function (err) {
@@ -860,7 +860,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 }
             }
 
-            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall', true);
+            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall');
 
             this.closeModalAndDisconnect = _baseCall.bind(null, CallsSrv.disconnectCall, 'disconnectCall');
         }]
@@ -1522,12 +1522,12 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 CallsEventsSrv.openOutGoingCall(callsData);
                 return _webCallConnect(newCallGuid).then(function () {
                     return $q.all(getDataPromMap).then(function (data) {
-                         return CallsDataSetterSrv.setNewConnect(data, userCallData, newCallGuid, isTeacherApp).then(function (callsMap) {
-                             var callsData = angular.copy(callsMap['calls/' + newCallGuid]);
-                             callsData.isInitialized = true;
-                             CallsEventsSrv.updateScopeData(callsData);
-                             return callsMap;
-                         });
+                        return CallsDataSetterSrv.setNewConnect(data, userCallData, newCallGuid, isTeacherApp).then(function (callsMap) {
+                            var callsData = angular.copy(callsMap['calls/' + newCallGuid]);
+                            callsData.isInitialized = true;
+                            CallsEventsSrv.updateScopeData(callsData);
+                            return callsMap;
+                        });
                     });
                 });
             }
@@ -1537,28 +1537,26 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 var guid = userCallData.oldCallGuid ? userCallData.oldCallGuid : userCallData.newCallGuid;
                 var getDataPromMap = CallsDataGetterSrv.getDataPromMap(guid);
                 _webCallHang();
-                  return $q.all(getDataPromMap).then(function (data) {
-                     return CallsDataSetterSrv.setDisconnectCall(data, {
-                          receiverId: receiverId
-                     }, guid);
+                return $q.all(getDataPromMap).then(function (data) {
+                    return CallsDataSetterSrv.setDisconnectCall(data, {
+                        receiverId: receiverId
+                    }, guid);
                 });
             }
 
             function _acceptCall(callsData) {
                 return _webCallConnect(callsData.guid).then(function() {
                     return CallsDataGetterSrv.getCallsData(callsData.guid).then(function (currCallData) {
-                         return CallsDataSetterSrv.setAcceptCall(currCallData);
+                        return CallsDataSetterSrv.setAcceptCall(currCallData);
                     });
                 });
             }
 
-            function _declineCall(callsData, hangWebCall) {
-                var prom = hangWebCall ? _webCallHang() : $q.when();
-                return prom.then(function () {
-                    var getDataPromMap = CallsDataGetterSrv.getDataPromMap(callsData.guid);
-                    return $q.all(getDataPromMap).then(function (data) {
-                       return CallsDataSetterSrv.setDeclineCall(data, callsData, callsData.guid);
-                    });
+            function _declineCall(callsData) {
+                _webCallHang();
+                var getDataPromMap = CallsDataGetterSrv.getDataPromMap(callsData.guid);
+                return $q.all(getDataPromMap).then(function (data) {
+                    return CallsDataSetterSrv.setDeclineCall(data, callsData, callsData.guid);
                 });
             }
 
@@ -1592,26 +1590,26 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             }
 
             function _isReceiverIsInActiveCall(receiverId, callerId) {
-               return CallsDataGetterSrv.getReceiverCallsData(receiverId, isTeacherApp).then(function(callsDataMap) {
-                   var callsDataArr = [];
-                   var isInActiveCall = false;
-                   angular.forEach(callsDataMap, function(callData) {
+                return CallsDataGetterSrv.getReceiverCallsData(receiverId, isTeacherApp).then(function(callsDataMap) {
+                    var callsDataArr = [];
+                    var isInActiveCall = false;
+                    angular.forEach(callsDataMap, function(callData) {
                         if(callData.status && (callData.status === CallsStatusEnum.PENDING_CALL.enum ||
                             callData.status === CallsStatusEnum.ACTIVE_CALL.enum) &&
                             !CallsDataGetterSrv.isCallDataHasReceiverIdOrCallerId(callData, receiverId, callerId)) {
                             callsDataArr.push(callData);
                         }
-                   });
-                   if (callsDataArr.length > 0) {
-                       var err = {
-                           receiverId: receiverId,
-                           errorCode: 3
-                       };
-                       $log.error('Error in _isReceiverIsInActiveCall', err);
-                       isInActiveCall = $q.reject(err);
-                   }
-                   return isInActiveCall;
-               });
+                    });
+                    if (callsDataArr.length > 0) {
+                        var err = {
+                            receiverId: receiverId,
+                            errorCode: 3
+                        };
+                        $log.error('Error in _isReceiverIsInActiveCall', err);
+                        isInActiveCall = $q.reject(err);
+                    }
+                    return isInActiveCall;
+                });
             }
 
             // api
@@ -1624,9 +1622,9 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 });
             };
 
-            this.declineCall = function(callsData, hangWebCall) {
+            this.declineCall = function(callsData) {
                 return _handleCallerIdOrReceiverIdUndefined(callsData, 'declineCall').then(function () {
-                    return _declineCall(callsData, hangWebCall);
+                    return _declineCall(callsData);
                 }).catch(function(err){
                     $log.error('Error in declineCall', err);
                     return $q.reject(err);
