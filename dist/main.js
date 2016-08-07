@@ -1566,7 +1566,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     $log.error(errMSg);
                     return $q.reject(errMSg);
                 }
-                return _isReceiverIsInActiveCall(receiverId).then(function () {
+                return _isReceiverIsInActiveCall(receiverId, callerId).then(function () {
                     return CallsDataGetterSrv.getUserCallStatus(callerId, receiverId).then(function (userCallData) {
                         var callActionProm;
 
@@ -1589,13 +1589,15 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 });
             }
 
-            function _isReceiverIsInActiveCall(receiverId) {
+            function _isReceiverIsInActiveCall(receiverId, callerId) {
                return CallsDataGetterSrv.getReceiverCallsData(receiverId, isTeacherApp).then(function(callsDataMap) {
                    var callsDataArr = [];
                    var isInActiveCall = false;
                    angular.forEach(callsDataMap, function(callData) {
                         if(callData.status && (callData.status === CallsStatusEnum.PENDING_CALL.enum ||
-                            callData.status ===  CallsStatusEnum.ACTIVE_CALL.enum)) {
+                            callData.status === CallsStatusEnum.ACTIVE_CALL.enum
+                            (callData.callerId !== callerId || callData.receiverId !== callerId))
+                        ) {
                             callsDataArr.push(callData);
                         }
                    });
