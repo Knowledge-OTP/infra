@@ -88,7 +88,7 @@
                     return $q.reject(errMSg);
                 }
                 return _isReceiverIsInActiveCall(receiverId, callerId).then(function () {
-                    return CallsDataGetterSrv.getUserCallStatus(callerId, receiverId).then(function (userCallData) {
+                    return CallsDataGetterSrv.getUserCallActionStatus(callerId, receiverId).then(function (userCallData) {
                         var callActionProm;
 
                         switch (userCallData.action) {
