@@ -1006,14 +1006,14 @@
             }
 
             function _webCallConnect(callId) {
-                return WebcallSrv.connect(callId).catch(function(err){
+                return WebcallSrv.connect(callId).catch(function(err) {
                     $log.error('Error in _webCallConnect', err);
                     return $q.reject(err);
                 });
             }
 
             function _webCallHang() {
-                return WebcallSrv.hang().catch(function(err){
+                return WebcallSrv.hang().catch(function(err) {
                     $log.debug('_webCallHang catch', err);
                     return $q.reject(err);
                 });
@@ -1141,8 +1141,14 @@
                 });
             };
 
-            this.disconnectCall = function() {
-                return _webCallHang();
+            this.disconnectCall = function(useWebCallHangProm) {
+                var prom = $q.when();
+                if (useWebCallHangProm) {
+                    prom = _webCallHang();
+                } else {
+                    _webCallHang();
+                }
+                return prom;
             };
 
             this.disconnectAllCalls = function(userCallsDataMap) {
