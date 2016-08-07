@@ -188,16 +188,6 @@
                 });
             };
 
-            var activeCallStatus;
-
-            this.showActiveCallDrv = function() {
-                activeCallStatus = true;
-            };
-
-            this.hideActiveCallDrv = function() {
-                activeCallStatus = false;
-            };
-
             this.getDataPromMap = function(guid) {
                 var getDataPromMap = {};
                 getDataPromMap.currUserCallsRequests = self.getCurrUserCallsRequests();
