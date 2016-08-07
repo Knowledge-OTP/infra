@@ -152,7 +152,7 @@
                 });
             };
 
-            this.disconnectCall = function(useWebCallHangProm) {
+            this.disconnectCall = function(callsData, useWebCallHangProm) {
                 var prom = $q.when();
                 if (useWebCallHangProm) {
                     prom = _webCallHang();
