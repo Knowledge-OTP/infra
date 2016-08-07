@@ -5,13 +5,11 @@
         function (InfraConfigSrv, $q, ENV, CallsStatusEnum, CallsDataGetterSrv) {
             'ngInject';
 
-            var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
-
             function _getStorage() {
                 return InfraConfigSrv.getGlobalStorage();
             }
 
-            this.setNewConnect = function(data, userCallData, guid) {
+            this.setNewConnect = function(data, userCallData, guid, isTeacherApp) {
                 var dataToSave = {};
                 var isCallerTeacher = userCallData.callerId === data.currUid && isTeacherApp;
                 var receiverPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.newReceiverId, !isCallerTeacher);

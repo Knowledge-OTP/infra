@@ -48,14 +48,14 @@
                 _fillLoader(bool, methodName);
             }
 
-            function _baseCall(callFn, methodName, params) {
+            function _baseCall(callFn, methodName) {
                  callsData = self.scope.callsData;
                 if (_isNoPendingClick()) {
                     if (methodName === 'declineCall') {
                         $scope.declineByOther = false;
                     }
                     _updateBtnStatus(true, methodName);
-                    callFn(callsData, params).then(function () {
+                    callFn(callsData).then(function () {
                         _updateBtnStatus(false, methodName);
                         CallsUiSrv.closeModal();
                     }).catch(function (err) {
@@ -66,7 +66,7 @@
                 }
             }
 
-            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall', false);
+            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall');
 
             this.acceptCall = _baseCall.bind(null, CallsSrv.acceptCall, 'acceptCall');
 

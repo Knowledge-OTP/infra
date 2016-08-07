@@ -5,6 +5,8 @@
         function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv, CallsEventsSrv, CallsStatusEnum, CallsActionStatusEnum) {
             'ngInject';
 
+            var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
+
             function _handleCallerIdOrReceiverIdUndefined(callsData, methodName) {
                 if (angular.isUndefined(callsData.callerId) || angular.isUndefined(callsData.receiverId)) {
                     var errMSg = 'CallsSrv '+ methodName +': callerId or receiverId are missing!';
@@ -15,14 +17,14 @@
             }
 
             function _webCallConnect(callId) {
-                return WebcallSrv.connect(callId).catch(function(err){
+                return WebcallSrv.connect(callId).catch(function(err) {
                     $log.error('Error in _webCallConnect', err);
                     return $q.reject(err);
                 });
             }
 
             function _webCallHang() {
-                return WebcallSrv.hang().catch(function(err){
+                return WebcallSrv.hang().catch(function(err) {
                     $log.debug('_webCallHang catch', err);
                     return $q.reject(err);
                 });
@@ -41,11 +43,12 @@
                 CallsEventsSrv.openOutGoingCall(callsData);
                 return _webCallConnect(newCallGuid).then(function () {
                     return $q.all(getDataPromMap).then(function (data) {
-                         return CallsDataSetterSrv.setNewConnect(data, userCallData, newCallGuid).then(function (callsMap) {
-                             var callsData = angular.copy(callsMap['calls/' + newCallGuid]);
-                             callsData.isInitialized = true;
-                             CallsEventsSrv.updateScopeData(callsData);
-                         });
+                        return CallsDataSetterSrv.setNewConnect(data, userCallData, newCallGuid, isTeacherApp).then(function (callsMap) {
+                            var callsData = angular.copy(callsMap['calls/' + newCallGuid]);
+                            callsData.isInitialized = true;
+                            CallsEventsSrv.updateScopeData(callsData);
+                            return callsMap;
+                        });
                     });
                 });
             }
@@ -55,28 +58,26 @@
                 var guid = userCallData.oldCallGuid ? userCallData.oldCallGuid : userCallData.newCallGuid;
                 var getDataPromMap = CallsDataGetterSrv.getDataPromMap(guid);
                 _webCallHang();
-                  return $q.all(getDataPromMap).then(function (data) {
-                     return CallsDataSetterSrv.setDisconnectCall(data, {
-                          receiverId: receiverId
-                     }, guid);
+                return $q.all(getDataPromMap).then(function (data) {
+                    return CallsDataSetterSrv.setDisconnectCall(data, {
+                        receiverId: receiverId
+                    }, guid);
                 });
             }
 
             function _acceptCall(callsData) {
                 return _webCallConnect(callsData.guid).then(function() {
                     return CallsDataGetterSrv.getCallsData(callsData.guid).then(function (currCallData) {
-                         return CallsDataSetterSrv.setAcceptCall(currCallData);
+                        return CallsDataSetterSrv.setAcceptCall(currCallData);
                     });
                 });
             }
 
-            function _declineCall(callsData, hangWebCall) {
-                var prom = hangWebCall ? _webCallHang() : $q.when();
-                return prom.then(function () {
-                    var getDataPromMap = CallsDataGetterSrv.getDataPromMap(callsData.guid);
-                    return $q.all(getDataPromMap).then(function (data) {
-                       return CallsDataSetterSrv.setDeclineCall(data, callsData, callsData.guid);
-                    });
+            function _declineCall(callsData) {
+                _webCallHang();
+                var getDataPromMap = CallsDataGetterSrv.getDataPromMap(callsData.guid);
+                return $q.all(getDataPromMap).then(function (data) {
+                    return CallsDataSetterSrv.setDeclineCall(data, callsData, callsData.guid);
                 });
             }
 
@@ -86,24 +87,49 @@
                     $log.error(errMSg);
                     return $q.reject(errMSg);
                 }
-                return CallsDataGetterSrv.getUserCallStatus(callerId, receiverId).then(function (userCallData) {
-                    var callActionProm;
+                return _isReceiverIsInActiveCall(receiverId, callerId).then(function () {
+                    return CallsDataGetterSrv.getUserCallStatus(callerId, receiverId).then(function (userCallData) {
+                        var callActionProm;
 
-                    switch (userCallData.action) {
-                        case CallsActionStatusEnum.DISCONNECT_ACTION.enum:
-                            callActionProm = _disconnectCall(userCallData);
-                            break;
-                        case CallsActionStatusEnum.CONNECT_ACTION.enum:
-                            callActionProm = _connectCall(userCallData);
-                            break;
-                        case CallsActionStatusEnum.DISCONNECT_AND_CONNECT_ACTION.enum:
-                            callActionProm = _disconnectCall(userCallData).then(function () {
-                                return _connectCall(userCallData);
-                            });
-                            break;
+                        switch (userCallData.action) {
+                            case CallsActionStatusEnum.DISCONNECT_ACTION.enum:
+                                callActionProm = _disconnectCall(userCallData);
+                                break;
+                            case CallsActionStatusEnum.CONNECT_ACTION.enum:
+                                callActionProm = _connectCall(userCallData);
+                                break;
+                            case CallsActionStatusEnum.DISCONNECT_AND_CONNECT_ACTION.enum:
+                                callActionProm = _disconnectCall(userCallData).then(function () {
+                                    return _connectCall(userCallData);
+                                });
+                                break;
+                        }
+
+                        return callActionProm;
+                    });
+                });
+            }
+
+            function _isReceiverIsInActiveCall(receiverId, callerId) {
+                return CallsDataGetterSrv.getReceiverCallsData(receiverId, isTeacherApp).then(function(callsDataMap) {
+                    var callsDataArr = [];
+                    var isInActiveCall = false;
+                    angular.forEach(callsDataMap, function(callData) {
+                        if(callData.status && (callData.status === CallsStatusEnum.PENDING_CALL.enum ||
+                            callData.status === CallsStatusEnum.ACTIVE_CALL.enum) &&
+                            !CallsDataGetterSrv.isCallDataHasReceiverIdOrCallerId(callData, receiverId, callerId)) {
+                            callsDataArr.push(callData);
+                        }
+                    });
+                    if (callsDataArr.length > 0) {
+                        var err = {
+                            receiverId: receiverId,
+                            errorCode: 3
+                        };
+                        $log.error('Error in _isReceiverIsInActiveCall', err);
+                        isInActiveCall = $q.reject(err);
                     }
-
-                    return callActionProm;
+                    return isInActiveCall;
                 });
             }
 
@@ -117,17 +143,23 @@
                 });
             };
 
-            this.declineCall = function(callsData, hangWebCall) {
+            this.declineCall = function(callsData) {
                 return _handleCallerIdOrReceiverIdUndefined(callsData, 'declineCall').then(function () {
-                    return _declineCall(callsData, hangWebCall);
+                    return _declineCall(callsData);
                 }).catch(function(err){
                     $log.error('Error in declineCall', err);
                     return $q.reject(err);
                 });
             };
-            /* used to disconnect the other user from web call */
-            this.disconnectCall = function() {
-                return _webCallHang();
+
+            this.disconnectCall = function(callsData, useWebCallHangProm) {
+                var prom = $q.when();
+                if (useWebCallHangProm) {
+                    prom = _webCallHang();
+                } else {
+                    _webCallHang();
+                }
+                return prom;
             };
 
             this.disconnectAllCalls = function(userCallsDataMap) {
