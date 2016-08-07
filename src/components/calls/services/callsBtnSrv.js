@@ -26,24 +26,6 @@
             };
 
             this.initializeBtnStatus = function(receiverId) {
-                return UserProfileService.getCurrUserId().then(function(callerId) {
-                    return CallsDataGetterSrv.getCurrUserCallsData().then(function (callsDataMap) {
-                        var status = false;
-                        for (var idKey in callsDataMap) {
-                            if (callsDataMap.hasOwnProperty(idKey)) {
-                                var currCallsData = callsDataMap[idKey];
-                                if (CallsDataGetterSrv.isCallDataHasReceiverIdOrCallerId(currCallsData, receiverId, callerId)) {
-                                    status = self.getBtnStatus(currCallsData.status);
-                                    break;
-                                }
-                            }
-                        }
-                        return status;
-                    }).catch(function(err){
-                        $log.error('Error in CallsBtnSrv initializeSetBtnStatus in CallsDataGetterSrv.getCurrUserCallsData(), err: ' + err);
-                    });
-                }).catch(function(err){
-                    $log.error('Error in CallsBtnSrv initializeSetBtnStatus in UserProfileService.getCurrUserId(): err: ' + err);
                 return CallsDataGetterSrv.getCallStatus(receiverId).then(function(status) {
                     return self.getBtnStatus(status);
                 });
@@ -60,6 +42,5 @@
                     $log.error('Error in CallsBtnSrv updateBtnStatus in UserProfileService.getCurrUserId(): err: ' + err);
                 });
             };
-
         });
 })(angular);
