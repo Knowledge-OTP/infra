@@ -628,7 +628,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         'pascalprecht.translate',
         'znk.infra.webcall',
         'znk.infra.callsModals',
-        'znk.infra.general'
+        'znk.infra.general',
+        'znk.infra.activePanel'
     ]);
 })(angular);
 
