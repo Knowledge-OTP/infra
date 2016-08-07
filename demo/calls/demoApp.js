@@ -87,9 +87,10 @@
         })
         .config(function(CallsUiSrvProvider){
             var fn = function($q) {
-                return function(reciverId, callerId) {
-                    return $q.when('fake name ' + 'reciverId: ' + reciverId + ' callerId: ' + callerId);
-                }
+              return function(reciverId, callerId) {
+                  console.log('reciverId: ' + reciverId + ' callerId: ' + callerId);
+                  return $q.when('fake name');
+              }
             };
             CallsUiSrvProvider.setCalleeNameFnGetter(fn);
         });

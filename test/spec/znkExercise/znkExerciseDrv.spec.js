@@ -528,22 +528,6 @@ describe('testing directive "znkExerciseDrv":', function () {
         expect(currentIndex).toBe(expectedResult);
     });
 
-    it('given review mode when trying to change user answer then it should not be updated', function () {
-        var scopeContent = createDirectiveHtml(undefined, undefined, {viewMode: ZnkExerciseViewModeEnum.REVIEW.enum});
-        var isolateScope = scopeContent.isolateScope;
-        var content = scopeContent.content;
-        var ngModelCtrl = content.getNgModelCtrl();
-        var expectedValue = angular.copy(ngModelCtrl.$modelValue);
-
-        isolateScope.vm.questionsWithAnswers[0].__questionStatus.userAnswer = 4;
-        isolateScope.vm.questionAnswered();
-        //$rootScope.$digest();
-        //var expectedResult = 4;
-        //var currentIndex = isolateScope.vm.getCurrentIndex();
-        var currModelValue = ngModelCtrl.$modelValue;
-        expect(currModelValue).toEqual(expectedValue);
-    });
-
     it('when current slide direction is all then direction-left and direction-right class should be added',
         function () {
             var scopeContent = createDirectiveHtml();

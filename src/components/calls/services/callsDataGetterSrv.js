@@ -28,10 +28,30 @@
             }
 
             function _isCallDataHasReceiverIdOrCallerId(callsData, receiverId, callerId) {
-                return callsData.receiverId === receiverId ||
-                    callsData.receiverId === callerId ||
-                    callsData.callerId === callerId ||
-                    callsData.callerId === receiverId;
+                return (callsData.receiverId === receiverId &&
+                    callsData.callerId === callerId) ||
+                    (callsData.receiverId === callerId &&
+                    callsData.callerId === receiverId);
+            }
+
+            function _getCallsRequests(uid, path) {
+                return _getStorage().then(function(storage){
+                    var currUserCallsDataPath = path ? path : ENV.firebaseAppScopeName + '/users/' + uid + '/calls';
+                    return storage.get(currUserCallsDataPath);
+                }).catch(function(err){
+                    $log.error('Error in _getStorage', err);
+                    return $q.reject(err);
+                });
+            }
+
+            function _getCallsDataMap(callsRequests) {
+                var callsDataPromMap = {};
+                angular.forEach(callsRequests, function(isActive, guid){
+                    if(isActive) {
+                        callsDataPromMap[guid] = self.getCallsData(guid);
+                    }
+                });
+                return $q.all(callsDataPromMap);
             }
 
             this.getCallsDataPath = function (guid) {
@@ -46,7 +66,7 @@
             };
 
             this.getCallsData = function (callsGuid) {
-                var callsDataPath = this.getCallsDataPath(callsGuid);
+                var callsDataPath = self.getCallsDataPath(callsGuid);
                 return _getStorage().then(function (storage) {
                     return storage.get(callsDataPath);
                 }).catch(function(err){
@@ -57,13 +77,7 @@
 
             this.getCurrUserCallsRequests = function(){
                 return UserProfileService.getCurrUserId().then(function(currUid){
-                    return _getStorage().then(function(storage){
-                        var currUserCallsDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/calls';
-                        return storage.get(currUserCallsDataPath);
-                    }).catch(function(err){
-                        $log.error('Error in _getStorage', err);
-                        return $q.reject(err);
-                    });
+                    return _getCallsRequests(currUid);
                 }).catch(function(err){
                     $log.error('Error in UserProfileService.getCurrUserId', err);
                     return $q.reject(err);
@@ -71,16 +85,15 @@
             };
 
             this.getCurrUserCallsData = function () {
-                var self = this;
-                return this.getCurrUserCallsRequests().then(function(currUserCallsRequests){
-                    var callsDataPromMap = {};
-                    angular.forEach(currUserCallsRequests, function(isActive, guid){
-                        if(isActive) {
-                            callsDataPromMap[guid] = self.getCallsData(guid);
-                        }
-                    });
+                return self.getCurrUserCallsRequests().then(function(currUserCallsRequests){
+                      return _getCallsDataMap(currUserCallsRequests);
+                });
+            };
 
-                    return $q.all(callsDataPromMap);
+            this.getReceiverCallsData = function (receiverId, isTeacherApp) {
+                var receiverPath = self.getCallsRequestsPath(receiverId, !isTeacherApp);
+                return _getCallsRequests(receiverId, receiverPath).then(function(receiverCallsRequests){
+                    return _getCallsDataMap(receiverCallsRequests);
                 });
             };
 
@@ -192,6 +205,8 @@
                 getDataPromMap.currUid = UserProfileService.getCurrUserId();
                 return getDataPromMap;
             };
+
+            this.isCallDataHasReceiverIdOrCallerId = _isCallDataHasReceiverIdOrCallerId;
         }
     );
 })(angular);

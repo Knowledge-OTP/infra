@@ -19,7 +19,14 @@
                     <button
                         ng-click="vm.acceptCall()"
                         class="primary"
-                        translate=".ACCEPT">
+                        element-loader
+                        fill-loader="vm.fillLoader"
+                        show-loader="vm.startLoader"
+                        bg-loader="'#07434A'"
+                        precentage="50"
+                        font-color="'#FFFFFF'"
+                        bg="'#0a9bad'">
+                        <span translate=".ACCEPT"></span>
                     </button>
                 </div>
             </div>

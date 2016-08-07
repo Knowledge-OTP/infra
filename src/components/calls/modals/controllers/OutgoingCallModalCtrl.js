@@ -37,14 +37,14 @@
                 }
             });
 
-            function _baseCall(callFn, methodName, params) {
+            function _baseCall(callFn, methodName) {
                 callsData = self.scope.callsData;
                 if (_isNoPendingClick()) {
                     if (methodName === 'declineCall') {
                         $scope.declineByOther = false;
                     }
                     _clickStatusSetter(true);
-                    callFn(callsData, params).then(function () {
+                    callFn(callsData).then(function () {
                         _clickStatusSetter(false);
                         CallsUiSrv.closeModal();
                     }).catch(function (err) {
@@ -55,7 +55,7 @@
                 }
             }
 
-            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall', true);
+            this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall');
 
             this.closeModalAndDisconnect = _baseCall.bind(null, CallsSrv.disconnectCall, 'disconnectCall');
         }
