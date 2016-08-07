@@ -1,17 +1,26 @@
+/**
+ * attrs:
+ */
+
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkProgressBar').controller('znkProgressBar', [
-        function () {
+    angular.module('znk.infra.znkProgressBar').directive('znkProgressBar',
+        function ($translatePartialLoader) {
+        'ngInject';
             return {
-                templateUrl: 'src/components/znkProgressBar/znkProgressBar.template.html',
+                templateUrl: 'components/znkProgressBar/znkProgressBar.template.html',
                 scope: {
                     progressWidth: '@',
                     progressValue: '@',
                     showProgressValue: '@',
                     showProgressBubble: '&'
+                },
+                link: function (scope, element, attrs) {
+                    $translatePartialLoader.addPart('znkProgressBar');
                 }
-            }
+            };
         }
-    ]);
+    );
 })(angular);
+

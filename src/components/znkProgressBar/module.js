@@ -2,16 +2,13 @@
     'use strict';
 
     angular.module('znk.infra.znkProgressBar', [
+        'znk.infra.svgIcon',
+        'pascalprecht.translate'
     ])
         .config([
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
-                var svgMap = {
-                };
+                var svgMap = {};
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }])
-        .run(function ($translatePartialLoader) {
-            'ngInject';
-            $translatePartialLoader.addPart('znkProgressBar');
-        });
 })(angular);

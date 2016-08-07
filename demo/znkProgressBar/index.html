@@ -3,13 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="main.css" />
 
     <script src="angular/angular.js"></script>
-    <script src="webcall/webcall.js"></script>
-    <script src="plivo/dist/plivo.min.js"></script>
+    <script src="angular-translate/angular-translate.js"></script>
+    <script src="angular-translate-loader-partial/angular-translate-loader-partial.js"></script>
+
+    <script src="svgIcon/svgIcon.js"></script>
+    <script src="znkProgressBar/znkProgressBar.js"></script>
+
     <script src="demoApp.js"></script>
 </head>
 <body ng-app="demoApp">
-
+<znk-progress-bar show-progress-bubble="true"
+                  progress-width ="20">
+</znk-progress-bar>
 </body>
 </html>

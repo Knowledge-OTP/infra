@@ -1,3 +1,7 @@
+@import './src/scss/imports/variables',
+'./src/scss/imports/colors',
+'./src/scss/imports/mixins';
+
 [znk-progress-bar],znk-progress-bar{
     height: 40px;
 
@@ -7,7 +11,7 @@
 
         .progress-percentage{
             @include absolute-position(7px, null, null, -23px);
-            @include text-style(18px, $fcColor7, Quicksand, $regularFontWeight);
+            @include text-style(18px, $fcColor6, Quicksand, $regularFontWeight);
             z-index: 1;
 
             div{
@@ -16,7 +20,7 @@
                 text-align: center;
 
                 div{
-                    @include text-style(9px, $fcColor11, Lato, $extraLightFontWeight);
+                    @include text-style(9px, $fcColor9, Lato, $extraLightFontWeight);
                     position: relative;
                     bottom: 6px;
                 }
@@ -27,9 +31,9 @@
             @include dimension(52px,40px);
             position: relative;
             left: -25px;
-            background-color: $bgColor2;
+            background-color: $bgColor6;
             border-radius: 8px;
-            border-bottom: 1px $bgColor32 solid;
+            border-bottom: 1px $bgColor23 solid;
 
             .down-triangle{
                 @include dimension(0px,0px);
@@ -38,12 +42,12 @@
                 top: 28px;
                 border-left: 10px solid transparent;
                 border-right: 10px solid transparent;
-                border-top: 10px solid $bgColor2;
+                border-top: 10px solid $bgColor6;
             }
 
             .down-triangle.gray-triangle{
                 top: 40px;
-                border-top: 10px solid $bgColor32;
+                border-top: 10px solid $bgColor23;
             }
         }
     }
@@ -51,18 +55,18 @@
     .progress-wrap {
         width: 100%;
         height: 7px;
-        background: $bgColor33;
+        background: $bgColor24;
         border-radius: 3px;
         position: relative;
         .progress {
-            background: $bgColor23;
+            background: $bgColor3;
             height: 100%;
             border-top-left-radius: 3px;
             border-bottom-left-radius: 3px;
         }
         .answer-count {
             font-size: 12px;
-            color: $bgColor23;
+            color: $bgColor3;
             position: absolute;
             top: -3px;
             right: -15px;
