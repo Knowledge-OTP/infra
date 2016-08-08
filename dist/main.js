@@ -1460,7 +1460,6 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                             switch(callsData.status) {
                                 case CallsStatusEnum.PENDING_CALL.enum:
                                     $log.debug('call pending');
-                                    ActivePanelSrv.showActivePanelDrv('calls'); // TODO: remove
                                     if (!isCurrentUserInitiatedCall(currUid)) {
                                         // show incoming call modal with the ACCEPT & DECLINE buttons
                                         scopesObj.reciver = $rootScope.$new();
