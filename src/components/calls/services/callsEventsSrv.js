@@ -10,7 +10,7 @@
                 isEnabled = _isEnabled;
             };
 
-            this.$get = function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, $q, CALL_UPDATE, ActivePanelSrv) {
+            this.$get = function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, $q, CALL_UPDATE, ActivePanelSrv, ActivePanelStatusEnum) {
                 'ngInject';
                 var CallsEventsSrv = {};
 
@@ -56,6 +56,7 @@
                             switch(callsData.status) {
                                 case CallsStatusEnum.PENDING_CALL.enum:
                                     $log.debug('call pending');
+                                    // ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum); // TODO: remove!
                                     if (!isCurrentUserInitiatedCall(currUid)) {
                                         // show incoming call modal with the ACCEPT & DECLINE buttons
                                         scopesObj.reciver = $rootScope.$new();
@@ -71,18 +72,23 @@
                                     break;
                                 case CallsStatusEnum.ACTIVE_CALL.enum:
                                     $log.debug('call active');
-                                    if (isCurrentUserInitiatedCall(currUid)) {
+                                    if (!isCurrentUserInitiatedCall(currUid)) {
+                                        CallsUiSrv.closeModal();
                                         // show outgoing call modal WITH the ANSWERED TEXT, wait 2 seconds and close the modal, show the ActiveCallDRV
-                                        ActivePanelSrv.showActivePanelDrv('calls');
+                                        //ActivePanelSrv.showActivePanelDrv('calls');
+                                        //ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
                                     } else {
                                         // close the modal, show the ActiveCallDRV
-                                        CallsUiSrv.closeModal();
-                                        ActivePanelSrv.showActivePanelDrv('calls');
+                                        // CallsUiSrv.closeModal();
+                                        //ActivePanelSrv.showActivePanelDrv('calls');
+                                        //ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
                                     }
+                                    ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
                                     break;
                                 case CallsStatusEnum.ENDED_CALL.enum:
                                     $log.debug('call ended');
-                                    ActivePanelSrv.hideActivePanelDrv('calls');
+                                    // ActivePanelSrv.hideActivePanelDrv('calls');
+                                    ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.INACTIVE.enum);
                                     // disconnect other user from call
                                     getCallsSrv().disconnectCall();
                                     break;
