@@ -139,5 +139,12 @@
             self.getElement = function(){
                 return $element;
             };
+
+            self.getCurrentQuestion = function(){
+                return self.getQuestions().then(function(questions){
+                    var currIndex = self.getCurrentIndex();
+                    return questions[currIndex];
+                });
+            };
         }]);
 })(angular);
