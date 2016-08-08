@@ -118,7 +118,10 @@
         function () {
             'ngInject';
 
+            var self = this;
+
             var actions = {};
+
             var STATUSES = {
                 ACTIVE: 1,
                 NOT_ACTIVE: 2
@@ -133,29 +136,26 @@
                 return actions;
             };
 
-            function _base(name, arg1) {
+            function _base(name, origin) {
                 var fn = actions[name];
                 if (angular.isFunction(fn)) {
-                    fn(arg1);
+                    if (origin === 'calls') {
+                        switch (name) {
+                            case 'showUI' :
+                                self.currentStatus.calls = STATUSES.ACTIVE;
+                                break;
+                            case 'hideUI' :
+                                self.currentStatus.calls = STATUSES.NOT_ACTIVE;
+                                break;
+                        }
+                    }
+                    fn(origin);
                 }
             }
 
             this.showActivePanelDrv = _base.bind(null, 'showUI');
 
             this.hideActivePanelDrv = _base.bind(null, 'hideUI');
-
-            // if (name === 'hideUI') {
-            //     angular.forEach(currentStatus, function(value, key) {
-            //         // if (value === STATUSES[NOT_ACTIVE]) {
-            //         //     runFn = false;
-            //         // } else {
-            //         //     runFn = true;
-            //         // }
-            //         console.log(value);
-            //     });
-            //     debugger;
-            // }
-
         });
 })(angular);
 
@@ -1460,7 +1460,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                             switch(callsData.status) {
                                 case CallsStatusEnum.PENDING_CALL.enum:
                                     $log.debug('call pending');
-                                    ActivePanelSrv.hideActivePanelDrv('calls'); // TODO: remove
+                                    ActivePanelSrv.showActivePanelDrv('calls'); // TODO: remove
                                     if (!isCurrentUserInitiatedCall(currUid)) {
                                         // show incoming call modal with the ACCEPT & DECLINE buttons
                                         scopesObj.reciver = $rootScope.$new();
