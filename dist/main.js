@@ -119,6 +119,15 @@
             'ngInject';
 
             var actions = {};
+            var STATUSES = {
+                ACTIVE: 1,
+                NOT_ACTIVE: 2
+            };
+
+            this.currentStatus = {
+                calls: STATUSES.NOT_ACTIVE,
+                screenSharing: STATUSES.NOT_ACTIVE
+            };
 
             this.getActions = function () {
                 return actions;
@@ -134,6 +143,18 @@
             this.showActivePanelDrv = _base.bind(null, 'showUI');
 
             this.hideActivePanelDrv = _base.bind(null, 'hideUI');
+
+            // if (name === 'hideUI') {
+            //     angular.forEach(currentStatus, function(value, key) {
+            //         // if (value === STATUSES[NOT_ACTIVE]) {
+            //         //     runFn = false;
+            //         // } else {
+            //         //     runFn = true;
+            //         // }
+            //         console.log(value);
+            //     });
+            //     debugger;
+            // }
 
         });
 })(angular);
@@ -1439,6 +1460,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                             switch(callsData.status) {
                                 case CallsStatusEnum.PENDING_CALL.enum:
                                     $log.debug('call pending');
+                                    ActivePanelSrv.hideActivePanelDrv('calls'); // TODO: remove
                                     if (!isCurrentUserInitiatedCall(currUid)) {
                                         // show incoming call modal with the ACCEPT & DECLINE buttons
                                         scopesObj.reciver = $rootScope.$new();
