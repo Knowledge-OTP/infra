@@ -71,8 +71,6 @@
 
                     scope.calleeName = attrs.calleeName;
 
-                    scope.actions.onStatusChange = function () {};
-
                     scope.actions.hideUI = function (origin) {
                         $log.debug('hideUI', origin);
                         element.removeClass('visible');
