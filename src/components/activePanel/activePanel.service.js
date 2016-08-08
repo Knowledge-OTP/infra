@@ -9,14 +9,14 @@
 
             var actions = {};
 
-            var STATUSES = {
+            this.STATUSES = {
                 ACTIVE: 1,
                 NOT_ACTIVE: 2
             };
 
             this.currentStatus = {
-                calls: STATUSES.NOT_ACTIVE,
-                screenSharing: STATUSES.NOT_ACTIVE
+                calls: self.STATUSES.NOT_ACTIVE,
+                screenSharing: self.STATUSES.NOT_ACTIVE
             };
 
             this.getActions = function () {
@@ -29,10 +29,10 @@
                     if (origin === 'calls') {
                         switch (name) {
                             case 'showUI' :
-                                self.currentStatus.calls = STATUSES.ACTIVE;
+                                self.currentStatus.calls = self.STATUSES.ACTIVE;
                                 break;
                             case 'hideUI' :
-                                self.currentStatus.calls = STATUSES.NOT_ACTIVE;
+                                self.currentStatus.calls = self.STATUSES.NOT_ACTIVE;
                                 break;
                         }
                     }
