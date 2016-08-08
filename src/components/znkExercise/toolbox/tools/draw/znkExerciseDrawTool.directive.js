@@ -48,8 +48,8 @@
                         // Bresenham's line algorithm. We use this to ensure smooth lines are drawn
                         var x1 = Math.floor((e.pageX - offset.left) / pixSize - 1),
                             y1 = Math.floor((e.pageY - offset.top) / pixSize - 1);
-                        var x0 = (lastPoint == null) ? x1 : lastPoint[0];
-                        var y0 = (lastPoint == null) ? y1 : lastPoint[1];
+                        var x0 = (lastPoint === null) ? x1 : lastPoint[0];
+                        var y0 = (lastPoint === null) ? y1 : lastPoint[1];
                         var dx = Math.abs(x1 - x0), dy = Math.abs(y1 - y0);
                         var sx = (x0 < x1) ? 1 : -1, sy = (y0 < y1) ? 1 : -1, err = dx - dy;
                         while (true) {
@@ -148,7 +148,6 @@
                     }
 
                     function _resetCanvas() {
-                        debugger;
                         canvasContext.clearRect(0, 0, canvasDomElement.width, canvasDomElement.height);
                         _unregisterEvents();
                     }
