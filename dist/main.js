@@ -67,6 +67,8 @@
                 },
                 link:function(scope, element, attrs) {
 
+                    scope.actions = scope.actions || {};
+
                     var callDuration = 0,
                         durationToDisplay,
                         timerInterval;
