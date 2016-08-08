@@ -142,10 +142,8 @@
                     angular.forEach(moduleResults, function (assignModule) {
                         assignModule.moduleSummary = getModuleSummary(assignModule);
 
-                        if (!assignModule.contentAssign) {
-                            var modulePath = 'moduleResults/' + assignModule.guid + '/contentAssign';
-                            studentStorage.onEvent('value', modulePath, onContentAssignCB.bind(null, assignModule, studentStorage, cb));
-                        }
+                        var modulePath = 'moduleResults/' + assignModule.guid;
+                        studentStorage.onEvent('value', modulePath, onModuleResultsChangedCB.bind(null, assignModule, cb));
                     });
 
                     userAssignModuleService.assignModules = moduleResults;
@@ -153,14 +151,9 @@
                 });
             }
 
-            function onContentAssignCB(assignModule, studentStorage, cb, contentAssign) {
-                if (contentAssign) {
-                    var modulePath = 'moduleResults/' + assignModule.guid + '/contentAssign';
-                    studentStorage.offEvent('value', modulePath, onContentAssignCB);
-
-                    userAssignModuleService.assignModules[assignModule.moduleId].contentAssign = contentAssign;
-                    applyCB(cb);
-                }
+            function onModuleResultsChangedCB(assignModule, cb, newModuleResults) {
+                userAssignModuleService.assignModules[assignModule.moduleId] = newModuleResults;
+                applyCB(cb);
             }
 
             function applyCB(cb) {
