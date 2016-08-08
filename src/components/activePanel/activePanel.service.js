@@ -27,22 +27,18 @@
             this.onStatusChange = function () {
                 switch (true) {
                     // if call is active and screen share is active, show box
-                    case currentStatus.calls === ActivePanelStatusEnum.ACTIVE.enum
-                    && currentStatus.screenSharing === ActivePanelStatusEnum.ACTIVE.enum :
+                    case currentStatus.calls === ActivePanelStatusEnum.ACTIVE.enum && currentStatus.screenSharing === ActivePanelStatusEnum.ACTIVE.enum :
 
                     // if call is active and screen share is inactive, show box
-                    case currentStatus.calls === ActivePanelStatusEnum.ACTIVE.enum
-                    && currentStatus.screenSharing === ActivePanelStatusEnum.INACTIVE.enum :
+                    case currentStatus.calls === ActivePanelStatusEnum.ACTIVE.enum && currentStatus.screenSharing === ActivePanelStatusEnum.INACTIVE.enum :
 
                     // if call is inactive and screen share is active, show box
-                    case currentStatus.calls === ActivePanelStatusEnum.INACTIVE.enum
-                    && currentStatus.screenSharing === ActivePanelStatusEnum.ACTIVE.enum :
+                    case currentStatus.calls === ActivePanelStatusEnum.INACTIVE.enum && currentStatus.screenSharing === ActivePanelStatusEnum.ACTIVE.enum :
                         showActivePanelDrv();
                         break;
 
                     // if call is inactive and screen share is inactive, hide box
-                    case currentStatus.calls === ActivePanelStatusEnum.INACTIVE.enum
-                    && currentStatus.screenSharing === ActivePanelStatusEnum.INACTIVE.enum :
+                    case currentStatus.calls === ActivePanelStatusEnum.INACTIVE.enum && currentStatus.screenSharing === ActivePanelStatusEnum.INACTIVE.enum :
                         hideActivePanelDrv();
                         break;
 
