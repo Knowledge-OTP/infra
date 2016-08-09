@@ -165,8 +165,11 @@
                         return;
                     }
 
+                    var _firstOnWasInvoked = this.__registeredEvents[type][path].firstOnWasInvoked;
+
                     if (angular.isUndefined(cb)) {
                         this.__registeredEvents[type][path] = [];
+                        this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
                         return;
                     }
 
@@ -178,6 +181,7 @@
                         }
                     });
                     this.__registeredEvents[type][path] = newEventCbArr;
+                    this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
                 }
             };
             StorageFirebaseAdapter.prototype = storageFirebaseAdapterPrototype;

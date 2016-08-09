@@ -7624,8 +7624,11 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                         return;
                     }
 
+                    var _firstOnWasInvoked = this.__registeredEvents[type][path].firstOnWasInvoked;
+
                     if (angular.isUndefined(cb)) {
                         this.__registeredEvents[type][path] = [];
+                        this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
                         return;
                     }
 
@@ -7637,6 +7640,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                         }
                     });
                     this.__registeredEvents[type][path] = newEventCbArr;
+                    this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
                 }
             };
             StorageFirebaseAdapter.prototype = storageFirebaseAdapterPrototype;
