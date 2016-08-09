@@ -67,6 +67,8 @@
                 },
                 link:function(scope, element, attrs) {
 
+                    $log.debug('ActivePanelDirective');
+
                     scope.actions = scope.actions || {};
 
                     var callDuration = 0,
@@ -92,6 +94,7 @@
                     };
 
                     scope.actions.startTimer = function () {
+                        $log.debug('call timer started');
                         timerInterval = $interval(function () {
                             callDuration += 1000;
                             durationToDisplay = $filter('formatDuration')(callDuration / 1000, 'hh:MM:SS', true);
@@ -121,8 +124,10 @@
     'use strict';
 
     angular.module('znk.infra.activePanel').service('ActivePanelSrv',
-        ["ActivePanelStatusEnum", "activePanelComponentEnum", "$log", function (ActivePanelStatusEnum, activePanelComponentEnum, $log) {
+        ["ActivePanelStatusEnum", "ActivePanelComponentEnum", "$log", function (ActivePanelStatusEnum, ActivePanelComponentEnum, $log) {
             'ngInject';
+
+            $log.debug('ActivePanelSrv');
 
             var actions = {};
 
@@ -133,6 +138,13 @@
             };
 
             this.updateStatus = function (component, status) {
+
+                // if (currentStatus.hasOwnProperty(component)) {
+                //     currentStatus[component] = status;
+                // } else {
+                //     $log.error('no such component in currentStatus');
+                // }
+
                 if (!component) {
                     $log.error('must pass the component arg to function');
                     return;
@@ -149,15 +161,9 @@
                     return (currentStatus.calls === ActivePanelStatusEnum.ACTIVE.enum);
                 }
 
-                // if (currentStatus.hasOwnProperty(component)) {
-                //     currentStatus[component] = status;
-                // } else {
-                //     $log.error('no such component in currentStatus');
-                // }
-
                 // default for show drv = false
                 switch (true) {
-                    case component === 'calls' && status === ActivePanelStatusEnum.ACTIVE.enum :
+                    case component === ActivePanelComponentEnum.CALLS.enum && status === ActivePanelStatusEnum.ACTIVE.enum :
                         // component = call, status = active
                         // show true
                         // start timer
@@ -168,7 +174,7 @@
                         callBtnMode('hangup');
                         break;
 
-                    case component === 'calls' && status === ActivePanelStatusEnum.INACTIVE.enum :
+                    case component === ActivePanelComponentEnum.CALLS.enum && status === ActivePanelStatusEnum.INACTIVE.enum :
                         // component = call, status = inactive (hangup, disc')
                         // stopTimer
                         // call btn is in call mode
@@ -181,7 +187,7 @@
                         }
                         break;
 
-                    case component === 'screenShare' && status === ActivePanelStatusEnum.ACTIVE.enum :
+                    case component === ActivePanelComponentEnum.SCREEN_SHARE.enum && status === ActivePanelStatusEnum.ACTIVE.enum :
                         // component = screenShare, status = active
                         // show drv
                         // screenShare buttons are disabled
@@ -190,7 +196,7 @@
                         screenShareBtnsMode('disabled');
                         break;
 
-                    case component === 'screenShare' && status === ActivePanelStatusEnum.INACTIVE.enum :
+                    case component === ActivePanelComponentEnum.SCREEN_SHARE.enum && status === ActivePanelStatusEnum.INACTIVE.enum :
                         // component = screenShare, status = inactive
                         // check if call is active, if not hide drv
                         // return shareScreen btns to enabled state
@@ -202,7 +208,7 @@
                         break;
 
                     default:
-                        $log.error('This should not happen!', component, status, currentStatus);
+                        hideActivePanelDrv();
                         break;
                 }
             };
@@ -235,7 +241,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.activePanel').factory('activePanelComponentEnum',
+    angular.module('znk.infra.activePanel').factory('ActivePanelComponentEnum',
         ["EnumSrv", function (EnumSrv) {
             'ngInject';
 
@@ -1517,7 +1523,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 isEnabled = _isEnabled;
             };
 
-            this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "$q", "CALL_UPDATE", "ActivePanelSrv", "ActivePanelStatusEnum", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, $q, CALL_UPDATE, ActivePanelSrv, ActivePanelStatusEnum) {
+            this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "$q", "CALL_UPDATE", "ActivePanelSrv", "ActivePanelComponentEnum", "ActivePanelStatusEnum", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, $q, CALL_UPDATE, ActivePanelSrv, ActivePanelComponentEnum, ActivePanelStatusEnum) {
                 'ngInject';
                 var CallsEventsSrv = {};
 
@@ -1590,12 +1596,12 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                         //ActivePanelSrv.showActivePanelDrv('calls');
                                         //ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
                                     }
-                                    ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
+                                    ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.ACTIVE.enum);
                                     break;
                                 case CallsStatusEnum.ENDED_CALL.enum:
                                     $log.debug('call ended');
                                     // ActivePanelSrv.hideActivePanelDrv('calls');
-                                    ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.INACTIVE.enum);
+                                    ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.INACTIVE.enum);
                                     // disconnect other user from call
                                     getCallsSrv().disconnectCall();
                                     break;

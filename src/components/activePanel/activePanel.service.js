@@ -2,8 +2,10 @@
     'use strict';
 
     angular.module('znk.infra.activePanel').service('ActivePanelSrv',
-        function (ActivePanelStatusEnum, activePanelComponentEnum, $log) {
+        function (ActivePanelStatusEnum, ActivePanelComponentEnum, $log) {
             'ngInject';
+
+            $log.debug('ActivePanelSrv');
 
             var actions = {};
 
@@ -14,6 +16,13 @@
             };
 
             this.updateStatus = function (component, status) {
+
+                // if (currentStatus.hasOwnProperty(component)) {
+                //     currentStatus[component] = status;
+                // } else {
+                //     $log.error('no such component in currentStatus');
+                // }
+
                 if (!component) {
                     $log.error('must pass the component arg to function');
                     return;
@@ -30,15 +39,9 @@
                     return (currentStatus.calls === ActivePanelStatusEnum.ACTIVE.enum);
                 }
 
-                // if (currentStatus.hasOwnProperty(component)) {
-                //     currentStatus[component] = status;
-                // } else {
-                //     $log.error('no such component in currentStatus');
-                // }
-
                 // default for show drv = false
                 switch (true) {
-                    case component === 'calls' && status === ActivePanelStatusEnum.ACTIVE.enum :
+                    case component === ActivePanelComponentEnum.CALLS.enum && status === ActivePanelStatusEnum.ACTIVE.enum :
                         // component = call, status = active
                         // show true
                         // start timer
@@ -49,7 +52,7 @@
                         callBtnMode('hangup');
                         break;
 
-                    case component === 'calls' && status === ActivePanelStatusEnum.INACTIVE.enum :
+                    case component === ActivePanelComponentEnum.CALLS.enum && status === ActivePanelStatusEnum.INACTIVE.enum :
                         // component = call, status = inactive (hangup, disc')
                         // stopTimer
                         // call btn is in call mode
@@ -62,7 +65,7 @@
                         }
                         break;
 
-                    case component === 'screenShare' && status === ActivePanelStatusEnum.ACTIVE.enum :
+                    case component === ActivePanelComponentEnum.SCREEN_SHARE.enum && status === ActivePanelStatusEnum.ACTIVE.enum :
                         // component = screenShare, status = active
                         // show drv
                         // screenShare buttons are disabled
@@ -71,7 +74,7 @@
                         screenShareBtnsMode('disabled');
                         break;
 
-                    case component === 'screenShare' && status === ActivePanelStatusEnum.INACTIVE.enum :
+                    case component === ActivePanelComponentEnum.SCREEN_SHARE.enum && status === ActivePanelStatusEnum.INACTIVE.enum :
                         // component = screenShare, status = inactive
                         // check if call is active, if not hide drv
                         // return shareScreen btns to enabled state
@@ -83,7 +86,7 @@
                         break;
 
                     default:
-                        $log.error('This should not happen!', component, status, currentStatus);
+                        hideActivePanelDrv();
                         break;
                 }
             };

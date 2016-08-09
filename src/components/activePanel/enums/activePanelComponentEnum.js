@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.activePanel').factory('activePanelComponentEnum',
+    angular.module('znk.infra.activePanel').factory('ActivePanelComponentEnum',
         function (EnumSrv) {
             'ngInject';
 

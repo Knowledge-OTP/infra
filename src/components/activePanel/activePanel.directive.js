@@ -12,6 +12,8 @@
                 },
                 link:function(scope, element, attrs) {
 
+                    $log.debug('ActivePanelDirective');
+
                     scope.actions = scope.actions || {};
 
                     var callDuration = 0,
@@ -37,6 +39,7 @@
                     };
 
                     scope.actions.startTimer = function () {
+                        $log.debug('call timer started');
                         timerInterval = $interval(function () {
                             callDuration += 1000;
                             durationToDisplay = $filter('formatDuration')(callDuration / 1000, 'hh:MM:SS', true);

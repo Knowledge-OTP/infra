@@ -775,7 +775,7 @@
                 isEnabled = _isEnabled;
             };
 
-            this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "$q", "CALL_UPDATE", "ActivePanelSrv", "ActivePanelStatusEnum", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, $q, CALL_UPDATE, ActivePanelSrv, ActivePanelStatusEnum) {
+            this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "$q", "CALL_UPDATE", "ActivePanelSrv", "ActivePanelComponentEnum", "ActivePanelStatusEnum", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, $q, CALL_UPDATE, ActivePanelSrv, ActivePanelComponentEnum, ActivePanelStatusEnum) {
                 'ngInject';
                 var CallsEventsSrv = {};
 
@@ -848,12 +848,12 @@
                                         //ActivePanelSrv.showActivePanelDrv('calls');
                                         //ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
                                     }
-                                    ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
+                                    ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.ACTIVE.enum);
                                     break;
                                 case CallsStatusEnum.ENDED_CALL.enum:
                                     $log.debug('call ended');
                                     // ActivePanelSrv.hideActivePanelDrv('calls');
-                                    ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.INACTIVE.enum);
+                                    ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.INACTIVE.enum);
                                     // disconnect other user from call
                                     getCallsSrv().disconnectCall();
                                     break;
