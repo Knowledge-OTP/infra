@@ -25,7 +25,7 @@ describe('testing service "AssignModule":', function () {
             actions = TestUtilitySrv.general.convertAllAsyncToSync(UserAssignModuleService);
         }]));
 
-	it('test uid that does not exists return an empty obj', function () {
+	xit('test uid that does not exists return an empty obj', function () {
 		var uid=100;
 
         spyOn(ExerciseResultSrv, "getUserModuleResultsGuids").and.returnValue($q.when({}));

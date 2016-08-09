@@ -18,9 +18,9 @@ describe('testing service "storageFirebaseAdapter":', function () {
         }
     ]));
 
-    var syncedAdapter;
+    var adapter, syncedAdapter;
     beforeEach(function () {
-        var adapter = new StorageFirebaseAdapter(endpoint);
+        adapter = new StorageFirebaseAdapter(endpoint);
         adapter.__refMap.rootRef.changeAuthState({
             uid: 1
             //provider: 'custom',
@@ -226,5 +226,23 @@ describe('testing service "storageFirebaseAdapter":', function () {
         $timeout.flush();
 
         expect(receivedEventValue).toBeUndefined();
+    });
+
+    it('when registered 2 callbacks to "value" event, 2 callbacks should be triggered ', function () {
+        var path = 'pathTo';
+        var receivedEventValue = 0;
+        var expectedResult = 2;
+
+        function cb() {
+            receivedEventValue++;
+        }
+
+        adapter.onEvent(StorageSrv.EVENTS.VALUE, path, cb);
+        adapter.onEvent(StorageSrv.EVENTS.VALUE, path, cb);
+        var pathRef = adapter.__refMap[path];
+        pathRef.flush();
+        $timeout.flush();
+
+        expect(receivedEventValue).toBe(expectedResult);
     });
 });
