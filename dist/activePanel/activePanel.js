@@ -111,7 +111,7 @@
                         break;
 
                     default:
-                        $log.error('This shouldn\'t happen!');
+                        $log.error('This should not happen!');
                         break;
                 }
             };
@@ -120,26 +120,28 @@
                 return actions;
             };
 
-            function _base(name, origin) {
+            function _base(name) {
                 var fn = actions[name];
                 if (angular.isFunction(fn)) {
-                    if (origin === 'calls') {
-                        switch (name) {
-                            case 'showUI' :
-                                self.currentStatus.calls = ActivePanelStatusEnum.ACTIVE.enum;
-                                break;
-                            case 'hideUI' :
-                                self.currentStatus.calls = ActivePanelStatusEnum.INACTIVE.enum;
-                                break;
-                        }
-                    }
-                    fn(origin);
+                    fn();
                 }
             }
 
             var showActivePanelDrv = _base.bind(null, 'showUI');
 
             var hideActivePanelDrv = _base.bind(null, 'hideUI');
+
+            // if (origin === 'calls') {
+            //     switch (name) {
+            //         case 'showUI' :
+            //             self.currentStatus.calls = ActivePanelStatusEnum.ACTIVE.enum;
+            //             break;
+            //         case 'hideUI' :
+            //             self.currentStatus.calls = ActivePanelStatusEnum.INACTIVE.enum;
+            //             break;
+            //     }
+            // }
+
         }]);
 })(angular);
 
