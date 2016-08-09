@@ -534,8 +534,10 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     angular.forEach(moduleResults, function (assignModule) {
                         assignModule.moduleSummary = getModuleSummary(assignModule);
 
-                        var modulePath = 'moduleResults/' + assignModule.guid;
-                        studentStorage.onEvent('value', modulePath, onModuleResultsChangedCB.bind(null, assignModule, cb));
+                        if (!assignModule.contentAssign) {
+                            var modulePath = 'moduleResults/' + assignModule.guid + '/contentAssign';
+                            studentStorage.onEvent('value', modulePath, onContentAssignChangedCB.bind(null, assignModule, cb));
+                        }
                     });
 
                     userAssignModuleService.assignModules = moduleResults;
@@ -543,9 +545,11 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
             }
 
-            function onModuleResultsChangedCB(assignModule, cb, newModuleResults) {
-                userAssignModuleService.assignModules[assignModule.moduleId] = newModuleResults;
-                applyCB(cb);
+            function onContentAssignChangedCB(assignModule, cb, contentAssign) {
+                if (contentAssign) {
+                    userAssignModuleService.assignModules[assignModule.moduleId].contentAssign = contentAssign;
+                    applyCB(cb);
+                }
             }
 
             function applyCB(cb) {
@@ -7577,6 +7581,10 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                         var ref = this.getRef(path);
                         ref.on(type, function (snapshot) {
                             var newVal = snapshot.val();
+                            self.__invokeEventCb(type, path, [newVal]);
+                        });
+                    } else {
+                        this.get(path).then(function (newVal) {
                             self.__invokeEventCb(type, path, [newVal]);
                         });
                     }

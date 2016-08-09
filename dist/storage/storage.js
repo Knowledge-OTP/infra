@@ -135,6 +135,10 @@
                             var newVal = snapshot.val();
                             self.__invokeEventCb(type, path, [newVal]);
                         });
+                    } else {
+                        this.get(path).then(function (newVal) {
+                            self.__invokeEventCb(type, path, [newVal]);
+                        });
                     }
 
                     var evtCbArr = this.__registeredEvents[type][path];

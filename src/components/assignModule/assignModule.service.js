@@ -142,8 +142,10 @@
                     angular.forEach(moduleResults, function (assignModule) {
                         assignModule.moduleSummary = getModuleSummary(assignModule);
 
-                        var modulePath = 'moduleResults/' + assignModule.guid;
-                        studentStorage.onEvent('value', modulePath, onModuleResultsChangedCB.bind(null, assignModule, cb));
+                        if (!assignModule.contentAssign) {
+                            var modulePath = 'moduleResults/' + assignModule.guid + '/contentAssign';
+                            studentStorage.onEvent('value', modulePath, onContentAssignChangedCB.bind(null, assignModule, cb));
+                        }
                     });
 
                     userAssignModuleService.assignModules = moduleResults;
@@ -151,9 +153,11 @@
                 });
             }
 
-            function onModuleResultsChangedCB(assignModule, cb, newModuleResults) {
-                userAssignModuleService.assignModules[assignModule.moduleId] = newModuleResults;
-                applyCB(cb);
+            function onContentAssignChangedCB(assignModule, cb, contentAssign) {
+                if (contentAssign) {
+                    userAssignModuleService.assignModules[assignModule.moduleId].contentAssign = contentAssign;
+                    applyCB(cb);
+                }
             }
 
             function applyCB(cb) {
