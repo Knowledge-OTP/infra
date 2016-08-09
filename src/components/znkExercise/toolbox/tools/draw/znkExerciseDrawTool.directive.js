@@ -73,24 +73,26 @@
                     };
 
                     function _getFbRef() {
+                        if (!scope.settings || !scope.settings.exerciseDrawingPathPrefix) {
+                            var errMsg = 'znkExerciseDrawTool';
+                            $log.error(errMsg);
+                            return $q.reject(errMsg);
+                        }
+
+                        var pathPrefixProm;
+                        if(angular.isFunction(scope.settings.exerciseDrawingPathPrefix)){
+                            pathPrefixProm = scope.settings.exerciseDrawingPathPrefix();
+                        }else{
+                            pathPrefixProm = scope.settings.exerciseDrawingPathPrefix;
+                        }
+
                         var dataPromMap = {
                             currQuestion: toolBoxCtrl.getCurrentQuestion(),
-                            globalStorage: InfraConfigSrv.getGlobalStorage()
+                            globalStorage: InfraConfigSrv.getGlobalStorage(),
+                            pathPrefix: $q.when(pathPrefixProm)
                         };
                         return $q.all(dataPromMap).then(function (data) {
-                            if (!scope.settings.exerciseDrawingPathPrefix) {
-                                var errMsg = 'znkExerciseDrawTool';
-                                $log.error(errMsg);
-                                return $q.reject(errMsg);
-                            }
-
-                            var path;
-                            if(angular.isFunction(scope.settings.exerciseDrawingPathPrefix)){
-                                path = scope.settings.exerciseDrawingPathPrefix();
-                            }else{
-                                path = scope.settings.exerciseDrawingPathPrefix;
-                            }
-                            path += '/' + data.currQuestion.id;
+                            var path = 'exerciseDrawings/' + data.pathPrefix + '/' + data.currQuestion.id;
                             return data.globalStorage.adapter.getRef(path);
                         });
                     }

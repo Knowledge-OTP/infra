@@ -20,6 +20,7 @@
  *      toolBox:{
  *          drawing:{
  *              exerciseDrawingPathPrefix: exercise drawing path prefix, question id will be concat to it for the full path.
+ *              toucheColorId
  *          }
  *      }
  *
