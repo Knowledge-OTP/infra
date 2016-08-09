@@ -228,7 +228,7 @@ describe('testing service "storageFirebaseAdapter":', function () {
         expect(receivedEventValue).toBeUndefined();
     });
 
-    fit('when registered 2 callbacks to "value" event, 2 callbacks should be triggered ', function () {
+    it('when registered 2 callbacks to "value" event, 2 callbacks should be triggered ', function () {
         var path = 'pathTo';
         var receivedEventValue = 0;
         var expectedResult = 2;
