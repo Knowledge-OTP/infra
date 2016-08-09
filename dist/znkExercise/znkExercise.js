@@ -16,7 +16,12 @@
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg'
+                    'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg',
+                    'znk-exercise-eraser': 'components/znkExercise/svg/tools-eraser.svg',
+                    'znk-exercise-pencil': 'components/znkExercise/svg/tools-pencil.svg',
+                    'znk-exercise-pointer': 'components/znkExercise/svg/tools-pointer.svg',
+                    'znk-exercise-remove': 'components/znkExercise/svg/tools-remove.svg',
+                    'znk-exercise-touche': 'components/znkExercise/svg/tools-touche.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }])
@@ -1061,10 +1066,14 @@
  *      onExerciseReady
  *      onSlideChange
  *      initSlideIndex
- *      toolBoxWrapperClass
  *      initSlideDirection
  *      initForceDoneBtnDisplay: null-default behaviour(default value), false-done button will be hidden, true-done button will be dispalyed
  *      initPagerDisplay: true- displayed(default value), false- hidden
+ *      toolBox:{
+ *          drawing:{
+ *              exerciseDrawingPathPrefix: exercise drawing path prefix, question id will be concat to it for the full path.
+ *          }
+ *      }
  *
  *  actions:
  *      setSlideIndex
@@ -1775,6 +1784,9 @@
             return {
                 templateUrl: 'components/znkExercise/toolbox/core/znkExerciseToolBoxDirective.template.html',
                 require: '^znkExercise',
+                scope:{
+                    settings: '<'
+                },
                 controllerAs: '$ctrl',
                 controller: function(){
                     this.getCurrentQuestion = function(){
@@ -2184,96 +2196,129 @@
 
 /**
  * attrs:
+ *  settings:
+ *      exerciseDrawingPathPrefix
+ *      toucheColorId
  */
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseDrawTool',
-        ["ZnkExerciseEvents", "InfraConfigSrv", "UserProfileService", "$q", function (ZnkExerciseEvents, InfraConfigSrv, UserProfileService, $q) {
+        ["ZnkExerciseEvents", "InfraConfigSrv", "$log", "$q", "$compile", function (ZnkExerciseEvents, InfraConfigSrv, $log, $q, $compile) {
             'ngInject';
 
-            function getOffset(el) {
-                el = el.getBoundingClientRect();
-                return {
-                    left: el.left + window.scrollX,
-                    top: el.top + window.scrollY
-                };
-            }
+            var TOUCHE_COLORS = {
+                1: '#0072bc',
+                2: '#af667d'
+            };
 
             return {
                 templateUrl: 'components/znkExercise/toolbox/tools/draw/znkExerciseDrawToolDirective.template.html',
                 require: '^znkExerciseToolBox',
                 scope: {
-                    znkExerciseElementGetter: '&znkExerciseElement'
+                    settings: '<'
                 },
                 link: function (scope, element, attrs, toolBoxCtrl) {
                     var canvasDomElement,
                         canvasContext,
-                        drawingRef,
-                        exerciseDrawingRef,
-                        offset;
+                        drawer,
+                        eventsManager,
+                        pixSize = 4;
 
-                    var pixSize = 1, lastPoint = null, currentColor = "000";
+                    var DRAWING_MODES = {
+                        'NONE': 1,
+                        'VIEW': 2,
+                        'VIEW_DRAW': 3,
+                        'VIEW_ERASE': 4
+                    };
 
-                    InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
-                        drawingRef = globalStorage.adapter.getRef('exerciseDrawings');
-                    });
+                    var TOOLS = {
+                        TOUCHE: 1,
+                        PENCIL: 2,
+                        ERASER: 3
+                    };
 
-                    function _init(){
-                        var znkExerciseElement = toolBoxCtrl.getZnkExerciseElement();
-                        var canvasContainerElement = angular.element('<div class="draw-tool-container"><canvas width="1000" height="200"></canvas></div>');
-                        canvasDomElement = canvasContainerElement.children()[0];
-                        canvasContext = canvasDomElement.getContext("2d");
-                        znkExerciseElement.append(canvasContainerElement);
+                    scope.d = {};
+
+                    scope.d.DRAWING_MODES = DRAWING_MODES;
+
+                    scope.d.TOOLS = TOOLS;
+
+                    scope.d.drawMode = DRAWING_MODES.NONE;
+
+                    scope.d.toolClicked = function (tool) {
+                        switch (tool) {
+                            case TOOLS.TOUCHE:
+                                scope.d.drawMode = scope.d.drawMode === DRAWING_MODES.NONE ? DRAWING_MODES.VIEW : DRAWING_MODES.NONE;
+                                break;
+                            case TOOLS.PENCIL:
+                                scope.d.drawMode = scope.d.drawMode === DRAWING_MODES.VIEW_DRAW ? DRAWING_MODES.VIEW : DRAWING_MODES.VIEW_DRAW;
+                                break;
+                            case TOOLS.ERASER:
+                                scope.d.drawMode = scope.d.drawMode === DRAWING_MODES.VIEW_ERASE ? DRAWING_MODES.VIEW : DRAWING_MODES.VIEW_ERASE;
+                                break;
+                        }
+                    };
+
+                    scope.d.cleanCanvas = function(){
+                        drawer.clean();
+                        _getFbRef().then(function(exerciseDrawingRef){
+                            exerciseDrawingRef.set(null);
+                        });
+                    };
+
+                    function _getFbRef() {
+                        var dataPromMap = {
+                            currQuestion: toolBoxCtrl.getCurrentQuestion(),
+                            globalStorage: InfraConfigSrv.getGlobalStorage()
+                        };
+                        return $q.all(dataPromMap).then(function (data) {
+                            if (!scope.settings.exerciseDrawingPathPrefix) {
+                                var errMsg = 'znkExerciseDrawTool';
+                                $log.error(errMsg);
+                                return $q.reject(errMsg);
+                            }
+
+                            var path;
+                            if(angular.isFunction(scope.settings.exerciseDrawingPathPrefix)){
+                                path = scope.settings.exerciseDrawingPathPrefix();
+                            }else{
+                                path = scope.settings.exerciseDrawingPathPrefix;
+                            }
+                            path += '/' + data.currQuestion.id;
+                            return data.globalStorage.adapter.getRef(path);
+                        });
                     }
 
-                    function _draw(e) {
-                        // Bresenham's line algorithm. We use this to ensure smooth lines are drawn
-                        var x1 = Math.floor((e.pageX - offset.left) / pixSize - 1),
-                            y1 = Math.floor((e.pageY - offset.top) / pixSize - 1);
-                        var x0 = (lastPoint === null) ? x1 : lastPoint[0];
-                        var y0 = (lastPoint === null) ? y1 : lastPoint[1];
-                        var dx = Math.abs(x1 - x0), dy = Math.abs(y1 - y0);
-                        var sx = (x0 < x1) ? 1 : -1, sy = (y0 < y1) ? 1 : -1, err = dx - dy;
-                        while (true) {
-                            //write the pixel into Firebase, or if we are drawing white, remove the pixel
-                            exerciseDrawingRef.child(x0 + ":" + y0).set(currentColor === "fff" ? null : currentColor);
-
-                            if (x0 === x1 && y0 === y1) {
-                                break;
-                            }
-
-                            var e2 = 2 * err;
-                            if (e2 > -dy) {
-                                err = err - dy;
-                                x0 = x0 + sx;
-                            }
-                            if (e2 < dx) {
-                                err = err + dx;
-                                y0 = y0 + sy;
-                            }
+                    function _getToucheColor(drawMode) {
+                        if(drawMode === DRAWING_MODES.VIEW_ERASE){
+                            return null;
                         }
-                        lastPoint = [x1, y1];
+
+                        if(!scope.settings.toucheColorId){
+                            $log.error('znkExerciseDrawTool: touche color was not set');
+                            return null;
+                        }
+                        return scope.settings.toucheColorId;
+                    }
+
+                    function Drawer() {
+                        this.lastPoint = null;
+                    }
+
+                    function EventsManager() {
+                        this._fbRegisterProm = $q.when();
                     }
 
                     function _mousemoveCb(evt) {
-                        _draw(evt);
-                    }
-
-                    function _startPainting() {
-                        lastPoint = null;
-                        canvasDomElement.addEventListener('mousemove', _mousemoveCb);
-                    }
-
-                    function _stopPainting() {
-                        canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
+                        drawer.draw(evt);
                     }
 
                     function _mousedownCb(evt) {
                         //left mouse
                         if (evt.which === 1) {
-                            _startPainting();
+                            canvasDomElement.addEventListener('mousemove', _mousemoveCb);
                             canvasDomElement.addEventListener('mouseup', _mouseupCb);
                         }
                     }
@@ -2281,83 +2326,250 @@
                     function _mouseupCb(evt) {
                         //left mouse
                         if (evt.which === 1) {
-                            _stopPainting();
+                            drawer.stopDrawing();
+                            canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
                             canvasDomElement.removeEventListener('mouseup', _mouseupCb);
                         }
                     }
 
-                    // Add callbacks that are fired any time the pixel data changes and adjusts the canvas appropriately.
-                    // Note that child_added events will be fired for initial pixel data as well.
-                    function _drawPixel(snapshot) {
+                    function _fbChildChanged(snapShot){
+                        var coordsStr = snapShot.key();
+                        var color = snapShot.val();
+                        drawer.drawPixel(coordsStr, color);
+                    }
+
+                    function _fbChildRemoved(snapShot){
+                        var coordsStr = snapShot.key();
+                        drawer.clearPixel(coordsStr);
+                    }
+
+                    function _setDrawMode(drawMode) {
+                        switch (drawMode) {
+                            case DRAWING_MODES.NONE:
+                                eventsManager.cleanListeners();
+                                break;
+                            case DRAWING_MODES.VIEW:
+                                eventsManager.killMouseEvents();
+                                eventsManager.registerFbListeners();
+                                break;
+                            default:
+                                eventsManager.registerMouseEvents();
+                                eventsManager.registerFbListeners();
+                                drawer.toucheColor = _getToucheColor(drawMode);
+                        }
+                    }
+
+                    function _updateQuestionDrawMode(drawMode){
+                        toolBoxCtrl.getCurrentQuestion().then(function(currQuestion){
+                            currQuestion.__questionStatus.drawingToolViewMode = drawMode;
+                        });
+                    }
+
+                    function _init() {
+                        var znkExerciseElement = toolBoxCtrl.getZnkExerciseElement();
+                        var znkExerciseDomElement = znkExerciseElement[0];
+
+                        var canvasContainerElement = angular.element(
+                            '<div class="draw-tool-container" ng-show="d.drawMode !== d.DRAWING_MODES.NONE">' +
+                            '<canvas></canvas>' +
+                            '</div>'
+                        );
+
+                        canvasDomElement = canvasContainerElement.children()[0];
+                        canvasDomElement.setAttribute('height', znkExerciseDomElement.offsetHeight);
+                        canvasDomElement.setAttribute('width', znkExerciseDomElement.offsetWidth);
+
+                        canvasContext = canvasDomElement.getContext("2d");
+
+                        znkExerciseElement.append(canvasContainerElement);
+                        $compile(canvasContainerElement)(scope);
+
+                        drawer = new Drawer();
+                        eventsManager = new EventsManager();
+                    }
+
+                    Drawer.prototype.drawPixel = function (coordStr, colorId) {
                         if (!canvasContext) {
                             return;
                         }
 
-                        var coords = snapshot.key().split(":");
+                        var coords = coordStr.split(":");
                         canvasContext.beginPath();
-                        canvasContext.fillStyle = 'blue';
+                        canvasContext.fillStyle = TOUCHE_COLORS[colorId];
                         canvasContext.arc(parseInt(coords[0]), parseInt(coords[1]), pixSize, 0, 2 * Math.PI);
                         canvasContext.fill();
                         canvasContext.closePath();
                         // canvasContext.fillStyle = "#" + snapshot.val();
                         //
                         // canvasContext.fillRect(parseInt(coords[0]) * pixSize, parseInt(coords[1]) * pixSize, pixSize, pixSize);
-                    }
+                    };
 
-                    function _clearPixel(snapshot){
+                    Drawer.prototype.clearPixel = function (coordStr) {
                         if (!canvasContext) {
                             return;
                         }
 
-                        var coords = snapshot.key().split(":");
-                        canvasContext.clearRect(parseInt(coords[0]) * pixSize, parseInt(coords[1]) * pixSize, pixSize, pixSize);
-                    }
+                        console.log(coordStr);
+                        var coords = coordStr.split(":");
+                        var xCoor = +coords[0] - pixSize;
+                        var yCoor = +coords[1] - pixSize;
+                        canvasContext.clearRect(xCoor ,yCoor, pixSize * 2, pixSize * 2);
+                    };
 
-                    function _registerEvents() {
+                    Drawer.prototype.draw = function (e) {
+                        var self = this;
+
+                        var currXCoor = e.offsetX;
+                        var currYCoor = e.offsetY;
+
+                        var prevXCoor = self.lastPoint ? self.lastPoint[0] : currXCoor - 1;
+                        var prevYCoor = self.lastPoint ? self.lastPoint[1] : currYCoor - 1;
+
+                        self.lastPoint = [currXCoor, currYCoor];
+
+                        var xDiff = Math.abs(currXCoor - prevXCoor);
+                        var yDiff = Math.abs(currYCoor - prevYCoor);
+
+                        var pixelsNumToDraw = Math.max(xDiff, yDiff);
+                        var xStepOffset = xDiff / pixelsNumToDraw;
+                        var yStepOffset = yDiff / pixelsNumToDraw;
+                        var pixelsToDrawMap = {};
+                        for(var i=1; i<=pixelsNumToDraw; i++){
+                            var pixelXOffset = (currXCoor - prevXCoor > 0) ? 1 : -1;
+                            pixelXOffset *= Math.round(i * xStepOffset);
+
+                            var pixelYOffset = (currYCoor - prevYCoor > 0) ? 1 : -1;
+                            pixelYOffset *= Math.round(i * yStepOffset);
+
+                            var pixelToDrawXCoor = Math.round(prevXCoor + pixelXOffset);
+                            var pixelToDrawYCoor = Math.round(prevYCoor + pixelYOffset);
+
+                            pixelsToDrawMap[pixelToDrawXCoor + ':' + pixelToDrawYCoor] = self.toucheColor;
+                        }
+
+                        angular.forEach(pixelsToDrawMap, function(color, coordsStr){
+                            if(color){
+                                self.drawPixel(coordsStr, color);
+                            }else{
+                                self.clearPixel(coordsStr);
+                            }
+                        });
+
+                        _getFbRef().then(function(exerciseDrawingRef){
+                            exerciseDrawingRef.update(pixelsToDrawMap);
+                        });
+                        // // Bresenham's line algorithm. We use this to ensure smooth lines are drawn
+                        // var x1 = Math.floor((e.pageX - offset.left) / pixSize - 1),
+                        //     y1 = Math.floor((e.pageY - offset.top) / pixSize - 1);
+                        // var x0 = (this.lastPoint === null) ? x1 : this.lastPoint[0];
+                        // var y0 = (this.lastPoint === null) ? y1 : this.lastPoint[1];
+                        // var dx = Math.abs(x1 - x0), dy = Math.abs(y1 - y0);
+                        // var sx = (x0 < x1) ? 1 : -1, sy = (y0 < y1) ? 1 : -1, err = dx - dy;
+                        // return _getFbRef().then(function (exerciseDrawingRef) {
+                        //     while (true) {
+                        //         //write the pixel into Firebase, or if we are drawing white, remove the pixel
+                        //         exerciseDrawingRef.child(x0 + ":" + y0).set(self.toucheColor);
+                        //
+                        //         if (x0 === x1 && y0 === y1) {
+                        //             break;
+                        //         }
+                        //
+                        //         var e2 = 2 * err;
+                        //         if (e2 > -dy) {
+                        //             err = err - dy;
+                        //             x0 = x0 + sx;
+                        //         }
+                        //         if (e2 < dx) {
+                        //             err = err + dx;
+                        //             y0 = y0 + sy;
+                        //         }
+                        //     }
+                        //     self.lastPoint = [x1, y1];
+                        // });
+                    };
+
+                    Drawer.prototype.stopDrawing = function(){
+                        this.lastPoint = null;
+                    };
+
+                    Drawer.prototype.clean = function(){
+                        canvasContext.clearRect(0 ,0, canvasDomElement.offsetWidth, canvasDomElement.offsetHeight);
+                    };
+
+                    EventsManager.prototype.registerMouseEvents = function () {
+                        if (this._mouseEventsRegistered) {
+                            return;
+                        }
+                        this._mouseEventsRegistered = true;
+
                         canvasDomElement.addEventListener('mousedown', _mousedownCb);
-                        exerciseDrawingRef.on("child_added", _drawPixel);
-                        exerciseDrawingRef.on("child_changed", _drawPixel);
-                        exerciseDrawingRef.on("child_removed", _clearPixel);
-                    }
+                    };
 
-                    function _unregisterEvents() {
+                    EventsManager.prototype.registerFbListeners = function () {
+                        var self = this;
+
+                        this._fbRegisterProm = this._fbRegisterProm.then(function () {
+                            return _getFbRef().then(function (fbRef) {
+                                if (self._fbEventsRegistered) {
+                                    return;
+                                }
+
+                                self._fbEventsRegistered = true;
+
+                                fbRef.on("child_added", _fbChildChanged);
+                                fbRef.on("child_changed", _fbChildChanged);
+                                fbRef.on("child_removed", _fbChildRemoved);
+                            });
+                        });
+                    };
+
+                    EventsManager.prototype.killMouseEvents = function () {
+                        this._mouseEventsRegistered = false;
+
                         canvasDomElement.removeEventListener('mousedown', _mousedownCb);
                         canvasDomElement.removeEventListener('mouseup', _mouseupCb);
                         canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
-                        if(exerciseDrawingRef){
-                            exerciseDrawingRef.off("child_added", _drawPixel);
-                            exerciseDrawingRef.off("child_changed", _drawPixel);
-                            exerciseDrawingRef.off("child_removed", _clearPixel);
-                        }
-                    }
+                    };
 
-                    function _resetCanvas() {
-                        canvasContext.clearRect(0, 0, canvasDomElement.width, canvasDomElement.height);
-                        _unregisterEvents();
-                    }
+                    EventsManager.prototype.killFbListeners = function () {
+                        var self = this;
 
-                    function _activateTool() {
-                        var dataPromMap = {};
-                        dataPromMap.currQuestion = toolBoxCtrl.getCurrentQuestion();
-                        dataPromMap.currUid = UserProfileService.getCurrUserId();
-                        $q.all(dataPromMap).then(function (data) {
-                            _resetCanvas();
+                        this._fbRegisterProm = this._fbRegisterProm.then(function () {
+                            return _getFbRef().then(function (fbRef) {
+                                self._fbEventsRegistered = false;
 
-                            offset = getOffset(canvasDomElement);
-
-                            var exercisePath = data.currUid + '/' + data.currQuestion.id;
-                            exerciseDrawingRef = drawingRef.child(exercisePath);
-
-                            _registerEvents();
+                                fbRef.off("child_added", drawer.drawPixel);
+                                fbRef.off("child_changed", drawer.drawPixel);
+                                fbRef.off("child_removed", drawer.clearPixel);
+                            });
                         });
-                    }
+                    };
 
-                    scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function () {
-                        _activateTool();
+                    EventsManager.prototype.cleanListeners = function () {
+                        this.killFbListeners();
+                        this.killFbListeners();
+                    };
+
+                    scope.$watch('d.drawMode', function (newDrawMode) {
+                        if (!newDrawMode) {
+                            return;
+                        }
+
+                        _setDrawMode(newDrawMode);
+                        _updateQuestionDrawMode(newDrawMode);
                     });
 
                     scope.$on('$destroy', function () {
-                        _unregisterEvents();
+                        eventsManager.cleanListeners();
+                    });
+
+                    scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function () {
+                        drawer.clean();
+                        eventsManager.cleanListeners();
+                        toolBoxCtrl.getCurrentQuestion().then(function(currQuestion){
+                            var questionDrawMode = currQuestion.__questionStatus.drawingToolViewMode || DRAWING_MODES.NONE;
+                            scope.d.drawMode = questionDrawMode;
+                        });
                     });
 
                     _init();
@@ -2793,7 +3005,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "                    questions=\"vm.questionsWithAnswers\"\n" +
     "                    ng-model=\"vm.currentSlide\">\n" +
     "</znk-exercise-pager>\n" +
-    "<znk-exercise-tool-box current-slide=\"vm.currentSlide\">\n" +
+    "<znk-exercise-tool-box settings=\"settings.toolBox\">\n" +
     "</znk-exercise-tool-box>\n" +
     "");
   $templateCache.put("components/znkExercise/core/template/znkExercisePagerDrv.html",
@@ -2884,6 +3096,175 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</g>\n" +
     "</svg>\n" +
     "");
+  $templateCache.put("components/znkExercise/svg/tools-eraser.svg",
+    "<svg version=\"1.1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "	 viewBox=\"0 0 180.8 171.2\"\n" +
+    "     xml:space=\"preserve\"\n" +
+    "     class=\"znk-exercise-eraser\">\n" +
+    "<style type=\"text/css\">\n" +
+    "    .znk-exercise-eraser {\n" +
+    "        width: 26px;\n" +
+    "    }\n" +
+    "\n" +
+    "    .znk-exercise-eraser .st0 {\n" +
+    "        fill: none;\n" +
+    "    }\n" +
+    "\n" +
+    "    .znk-exercise-eraser .st1 {\n" +
+    "        fill: url(#znk-exercise-eraser-SVGID_1_);\n" +
+    "    }\n" +
+    "</style>\n" +
+    "<pattern  x=\"-3207.2\" y=\"-3890.7\" width=\"4.5\" height=\"4.3\" patternUnits=\"userSpaceOnUse\" id=\"New_Pattern_Swatch_3\" viewBox=\"0 -4.3 4.5 4.3\" style=\"overflow:visible;\">\n" +
+    "	<g>\n" +
+    "		<polygon class=\"st0\" points=\"0,0 4.5,0 4.5,-4.3 0,-4.3 		\"/>\n" +
+    "		<polygon points=\"0.7,-3.6 0,-3.6 0,-4.3 0.7,-4.3 		\"/>\n" +
+    "		<polygon points=\"4.5,-3.6 3.8,-3.6 3.8,-4.3 4.5,-4.3 		\"/>\n" +
+    "		<polygon points=\"0.7,0 0,0 0,-0.7 0.7,-0.7 		\"/>\n" +
+    "		<polygon points=\"4.5,0 3.8,0 3.8,-0.7 4.5,-0.7 		\"/>\n" +
+    "	</g>\n" +
+    "</pattern>\n" +
+    "<path d=\"M89.5,171.2H57.9c-0.5,0-1.1-0.2-1.5-0.5l-44.3-33.1c-1.1-0.8-1.3-2.4-0.5-3.5l58.6-78.5c0.8-1.1,2.4-1.3,3.5-0.5\n" +
+    "	c1.1,0.8,1.3,2.4,0.5,3.5l-57.1,76.4l41.6,31.1h29.6l47.2-61.8c0.8-1.1,2.4-1.3,3.5-0.5c1.1,0.8,1.3,2.4,0.5,3.5l-47.9,62.8\n" +
+    "	C91.1,170.9,90.3,171.2,89.5,171.2z\"/>\n" +
+    "<g>\n" +
+    "\n" +
+    "		<pattern  id=\"znk-exercise-eraser-SVGID_1_\"\n" +
+    "                  xlink:href=\"#New_Pattern_Swatch_3\"\n" +
+    "                  patternTransform=\"matrix(1.4011 -0.2109 0.2109 1.4011 2667.2153 506.0711)\">\n" +
+    "	</pattern>\n" +
+    "	<polyline class=\"st1\" points=\"134.6,109.5 127.3,118.6 127.3,118.6 61.8,70.2 72.4,56.9 113,2.5 178.3,51.2 137.7,105.6 	\"/>\n" +
+    "	<path d=\"M127.3,121.1c-0.5,0-1-0.2-1.5-0.5L60.3,72.2c-0.5-0.4-0.9-1-1-1.7c-0.1-0.7,0.1-1.4,0.5-1.9l10.6-13.3L111,1\n" +
+    "		c0.4-0.5,1-0.9,1.6-1c0.7-0.1,1.3,0.1,1.9,0.5l65.3,48.7c1.1,0.8,1.3,2.4,0.5,3.5l-40.6,54.4c-0.8,1-2.1,1.3-3.2,0.7\n" +
+    "		c0.8,0.9,0.9,2.3,0.1,3.2l-7.3,9.1C128.8,120.8,128.1,121.1,127.3,121.1z M65.4,69.7l61.5,45.4l5.8-7.2c0.8-1,2.1-1.2,3.1-0.6\n" +
+    "		c-0.8-0.9-0.9-2.2-0.1-3.2l39.1-52.4L113.5,6L74.4,58.4L65.4,69.7z\"/>\n" +
+    "</g>\n" +
+    "<rect y=\"166.2\" width=\"89.5\" height=\"5\"/>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/tools-pencil.svg",
+    "<svg version=\"1.1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "	 viewBox=\"0 0 138.2 171.4\"\n" +
+    "     xml:space=\"preserve\"\n" +
+    "     class=\"znk-exercise-pencil\">\n" +
+    "<style>\n" +
+    "    .znk-exercise-pencil{\n" +
+    "        width: 20px;\n" +
+    "    }\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<g>\n" +
+    "		<path d=\"M0,171.4C0,171.4,0,171.4,0,171.4c3.7-19,7.5-38,11.2-57L94.6,6.6c9.3-6.9,19.5-8.3,30.7-4.6c2.4,1.9,4.7,3.7,7.1,5.6\n" +
+    "			c6.3,9.9,7.6,20.1,3.2,30.8L52.3,146.2C34.9,154.6,17.4,163,0,171.4z M50.3,140c26.9-34.9,53.6-69.1,80-103.7\n" +
+    "			c5.5-7.3,3.8-18.5-2.6-24.8c-9.6-9.5-23.3-8.7-31.6,1.9c-25.2,32.5-50.3,65-75.4,97.6c-1,1.2-1.7,2.6-2.6,4l7.6,5.9\n" +
+    "			c1.4-1.9,2.6-3.4,3.8-5c22.8-29.5,45.6-59.1,68.5-88.6c0.8-1,1.4-2.2,2.4-2.9c1.2-0.8,2.7-1.1,4-1.6c0,1.6,0.3,3.2-0.1,4.7\n" +
+    "			c-0.4,1.3-1.7,2.3-2.5,3.5C79,60.1,56.3,89.5,33.6,118.9c-1.3,1.6-2.5,3.3-3.8,4.9l9.5,7.4c1.6-2.1,2.9-3.8,4.2-5.5\n" +
+    "			c23.2-30,46.3-59.9,69.5-89.8c1.1-1.4,3.3-1.8,5-2.7c-0.4,1.9-0.5,3.9-1.2,5.6c-0.5,1.3-1.7,2.3-2.6,3.5\n" +
+    "			c-22.4,29-44.8,57.9-67.1,86.9c-1.3,1.7-2.6,3.3-4,5.2L50.3,140z M16.3,120.6c-0.4,0.5-3.8,19.1-5.8,30.2c-0.6,3.6,2.9,6.4,6.2,5\n" +
+    "			c8.9-3.7,23.2-9.7,29-12.5L16.3,120.6z\"/>\n" +
+    "	</g>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/tools-pointer.svg",
+    "<svg version=\"1.1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "     class=\"znk-exercise-pointer\"\n" +
+    "	 viewBox=\"0 0 150.4 169.6\"\n" +
+    "     xml:space=\"preserve\">\n" +
+    "<style>\n" +
+    "    .znk-exercise-pointer{\n" +
+    "        width: 18px;\n" +
+    "    }\n" +
+    "</style>\n" +
+    "<path d=\"M34.4,169.6c-1.6,0-3.2-0.5-4.6-1.6l-13-10.1c-3.2-2.5-3.9-7-1.6-10.3l33.2-48.5c0.4-0.6,0.5-1.4,0.3-2.2\n" +
+    "	c-0.2-0.7-0.8-1.3-1.5-1.5L4.4,81.1C1.9,80.2,0.2,78,0,75.3c-0.2-2.6,1.2-5.1,3.6-6.3L143,0.5c1.8-0.9,3.9-0.7,5.4,0.5\n" +
+    "	c1.6,1.2,2.3,3.2,1.9,5.1l-31.2,152.1c-0.5,2.6-2.6,4.6-5.2,5.1c-2.6,0.5-5.2-0.6-6.7-2.8l-24.7-37.6c-0.4-0.7-1.1-1.1-1.9-1.1\n" +
+    "	c-0.8-0.1-1.5,0.3-2,0.8L40.1,167C38.6,168.7,36.5,169.6,34.4,169.6z M145.3,5C145.2,5,145.2,5,145.3,5L5.8,73.5C5,73.9,5,74.7,5,75\n" +
+    "	c0,0.3,0.2,1,1,1.3l42.8,14.4c2.2,0.8,3.9,2.5,4.7,4.7c0.7,2.2,0.4,4.6-0.9,6.6l-33.2,48.5c-0.8,1.1-0.5,2.7,0.6,3.5l13,10.1\n" +
+    "	c1.1,0.8,2.6,0.7,3.5-0.3l38.5-44.4c1.5-1.8,3.8-2.7,6.1-2.6c2.4,0.2,4.5,1.4,5.8,3.4l24.7,37.6c0.5,0.8,1.3,0.7,1.6,0.7\n" +
+    "	c0.3-0.1,1-0.3,1.2-1.2L145.4,5.2C145.4,5.2,145.4,5.1,145.3,5C145.3,5,145.3,5,145.3,5z\"/>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/tools-remove.svg",
+    "<svg version=\"1.1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "	 viewBox=\"0 0 176.3 173.8\"\n" +
+    "     xml:space=\"preserve\"\n" +
+    "class=\"znk-exercise-remove\">\n" +
+    "    <style>\n" +
+    "       .znk-exercise-remove{\n" +
+    "           width: 22px;\n" +
+    "       }\n" +
+    "    </style>\n" +
+    "<g>\n" +
+    "	<path d=\"M173.3,20.8H3c-1.7,0-3-1.3-3-3s1.3-3,3-3h170.3c1.7,0,3,1.3,3,3S174.9,20.8,173.3,20.8z\"/>\n" +
+    "	<path d=\"M89.1,173.8H41.5c-10.5,0-13.7-9.8-13.9-14.9L19.6,21.4c-0.1-1.7,1.2-3.1,2.8-3.2c1.6-0.1,3.1,1.2,3.2,2.8l8.1,137.5\n" +
+    "		c0.1,1,0.7,9.3,7.9,9.3h47.6c1.7,0,3,1.3,3,3S90.8,173.8,89.1,173.8z\"/>\n" +
+    "	<path d=\"M136.7,173.8H89.1c-1.7,0-3-1.3-3-3s1.3-3,3-3h47.6c7.2,0,7.9-8.3,7.9-9.2l8.1-137.5c0.1-1.7,1.5-2.9,3.2-2.8\n" +
+    "		c1.7,0.1,2.9,1.5,2.8,3.2l-8.1,137.5C150.4,164.1,147.2,173.8,136.7,173.8z\"/>\n" +
+    "	<path d=\"M120.5,20.8c-1.7,0-3-1.3-3-3v-6.4c0-3-2.4-5.4-5.4-5.4H65.5c-3,0-5.4,2.4-5.4,5.4v6.4c0,1.7-1.3,3-3,3s-3-1.3-3-3v-6.4\n" +
+    "		C54.1,5.1,59.2,0,65.5,0h46.6c6.3,0,11.4,5.1,11.4,11.4v6.4C123.5,19.5,122.2,20.8,120.5,20.8z\"/>\n" +
+    "	<path d=\"M62.5,147.7c-1.7,0-3-1.3-3-3v-103c0-1.7,1.3-3,3-3s3,1.3,3,3v103C65.5,146.3,64.2,147.7,62.5,147.7z\"/>\n" +
+    "	<path d=\"M89.1,147.7c-1.7,0-3-1.3-3-3v-103c0-1.7,1.3-3,3-3s3,1.3,3,3v103C92.1,146.3,90.8,147.7,89.1,147.7z\"/>\n" +
+    "	<path d=\"M114.6,147.7c-1.7,0-3-1.3-3-3v-103c0-1.7,1.3-3,3-3s3,1.3,3,3v103C117.6,146.3,116.3,147.7,114.6,147.7z\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/tools-touche.svg",
+    "<svg version=\"1.1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "	 viewBox=\"0 0 47.6 53.2\"\n" +
+    "     xml:space=\"preserve\"\n" +
+    "     class=\"znk-exercise-touche-svg\">\n" +
+    "<style type=\"text/css\">\n" +
+    "    .znk-exercise-touche-svg {\n" +
+    "        width: 23px;\n" +
+    "    }\n" +
+    "\n" +
+    "    .znk-exercise-touche-svg .st0 {\n" +
+    "        fill: none;\n" +
+    "        stroke: #000000;\n" +
+    "        stroke-width: 2;\n" +
+    "        stroke-linecap: round;\n" +
+    "        stroke-linejoin: round;\n" +
+    "        stroke-miterlimit: 10;\n" +
+    "    }\n" +
+    "\n" +
+    "    .znk-exercise-touche-svg .st1 {\n" +
+    "        fill: none;\n" +
+    "        stroke: #000000;\n" +
+    "        stroke-width: 2;\n" +
+    "        stroke-linejoin: round;\n" +
+    "        stroke-miterlimit: 10;\n" +
+    "    }\n" +
+    "</style>\n" +
+    "<path class=\"st0\" d=\"M39.9,22.8v25.1c0,2.4-1.9,4.3-4.3,4.3H5.3c-2.4,0-4.3-1.9-4.3-4.3V12.6c0-2.4,1.9-4.3,4.3-4.3h15.7\"/>\n" +
+    "<g>\n" +
+    "	<path class=\"st1\" d=\"M22.4,33.8l23.7-23.7c0.7-0.7,0.7-1.8,0-2.4l-6.2-6.2c-0.7-0.7-1.8-0.7-2.4,0L13.8,25.2L22.4,33.8z\"/>\n" +
+    "	<line class=\"st1\" x1=\"34.2\" y1=\"4.8\" x2=\"42.8\" y2=\"13.4\"/>\n" +
+    "	<line class=\"st0\" x1=\"32.8\" y1=\"11.4\" x2=\"19.1\" y2=\"25.2\"/>\n" +
+    "	<polyline class=\"st1\" points=\"13.8,25.2 11.6,36 22.4,33.8 	\"/>\n" +
+    "</g>\n" +
+    "<path class=\"st0\" d=\"M11,39.2c-1.8,1-6.4,4.1-3.2,5s13-2.1,13.1,0s-1,2.9-1,2.9\"/>\n" +
+    "</svg>\n" +
+    "");
   $templateCache.put("components/znkExercise/svg/wrong-icon.svg",
     "<svg version=\"1.1\"\n" +
     "     class=\"wrong-icon-svg\"\n" +
@@ -2911,11 +3292,33 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</svg>\n" +
     "");
   $templateCache.put("components/znkExercise/toolbox/core/znkExerciseToolBoxDirective.template.html",
-    "<div>\n" +
-    "    <znk-exercise-draw-tool></znk-exercise-draw-tool>\n" +
-    "</div>\n" +
+    "<znk-exercise-draw-tool settings=\"$ctrl.settings.drawing\">\n" +
+    "</znk-exercise-draw-tool>\n" +
+    "\n" +
     "");
   $templateCache.put("components/znkExercise/toolbox/tools/draw/znkExerciseDrawToolDirective.template.html",
-    "<svg-icon></svg-icon>\n" +
+    "<svg-icon name=\"znk-exercise-touche\"\n" +
+    "          ng-click=\"d.toolClicked(d.TOOLS.TOUCHE)\"\n" +
+    "          ng-class=\"{\n" +
+    "            active:d.drawMode !== d.DRAWING_MODES.NONE\n" +
+    "          }\">\n" +
+    "</svg-icon>\n" +
+    "<!--<svg-icon name=\"znk-exercise-pointer\">-->\n" +
+    "<!--</svg-icon>-->\n" +
+    "<svg-icon name=\"znk-exercise-pencil\"\n" +
+    "          ng-click=\"d.toolClicked(d.TOOLS.PENCIL)\"\n" +
+    "          ng-class=\"{\n" +
+    "            active:d.drawMode === d.DRAWING_MODES.VIEW_DRAW\n" +
+    "          }\">\n" +
+    "</svg-icon>\n" +
+    "<svg-icon name=\"znk-exercise-eraser\"\n" +
+    "          ng-click=\"d.toolClicked(d.TOOLS.ERASER)\"\n" +
+    "          ng-class=\"{\n" +
+    "            active:d.drawMode === d.DRAWING_MODES.VIEW_ERASE\n" +
+    "          }\">\n" +
+    "</svg-icon>\n" +
+    "<svg-icon name=\"znk-exercise-remove\"\n" +
+    "          ng-click=\"d.cleanCanvas()\">\n" +
+    "</svg-icon>\n" +
     "");
 }]);

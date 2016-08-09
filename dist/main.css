@@ -4151,6 +4151,34 @@ znk-exercise .draw-tool-container {
   left: 0;
   z-index: 1; }
 
+znk-exercise-draw-tool {
+  height: 100%;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+      flex-direction: column;
+  -ms-flex-align: center;
+      align-items: center; }
+  znk-exercise-draw-tool > svg-icon {
+    -ms-flex-positive: 1;
+        flex-grow: 1; }
+    znk-exercise-draw-tool > svg-icon.active .znk-exercise-touche-svg .st0, znk-exercise-draw-tool > svg-icon.active .znk-exercise-touche-svg .st1 {
+      stroke: #0a9bad; }
+    znk-exercise-draw-tool > svg-icon.active .znk-exercise-pencil path {
+      fill: #0a9bad; }
+    znk-exercise-draw-tool > svg-icon.active .znk-exercise-eraser path, znk-exercise-draw-tool > svg-icon.active .znk-exercise-eraser rect, znk-exercise-draw-tool > svg-icon.active .znk-exercise-eraser .st1 {
+      fill: #0a9bad; }
+
+znk-exercise-tool-box {
+  height: 234px;
+  width: 38px;
+  background: #fbfafa;
+  border-radius: 30px;
+  display: block;
+  position: absolute;
+  right: -42px;
+  top: 7px; }
+
 znk-exercise:not(.done-btn-show) .question-bottom-shadow {
   width: 0; }
 

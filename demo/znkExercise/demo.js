@@ -116,7 +116,8 @@
                 initForceDoneBtnDisplay: true,
                 toolBox: {
                     drawing:{
-                        exerciseDrawingPathPrefix: 'dummy-uid'
+                        exerciseDrawingPathPrefix: 'dummy-prefix',
+                        toucheColorId: 1
                     }
                 }
             };

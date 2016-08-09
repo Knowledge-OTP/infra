@@ -4,3 +4,34 @@ znk-exercise{
         z-index: 1;
     }
 }
+
+znk-exercise-draw-tool{
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    & > svg-icon{
+        flex-grow: 1;
+
+        &.active {
+            .znk-exercise-touche-svg {
+                .st0, .st1{
+                    stroke: $bgColor3;
+                }
+            }
+
+            .znk-exercise-pencil{
+                path{
+                    fill: $bgColor3;
+                }
+            }
+
+            .znk-exercise-eraser{
+                path, rect, .st1{
+                    fill: $bgColor3;
+                }
+            }
+        }
+    }
+}
