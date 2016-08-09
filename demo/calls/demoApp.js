@@ -86,8 +86,8 @@
         })
         .config(function(CallsUiSrvProvider){
             var fn = function($q) {
-              return function(reciverId, callerId) {
-                  console.log('reciverId: ' + reciverId + ' callerId: ' + callerId);
+              return function(receiverId, callerId) {
+                  console.log('receiverId: ' + receiverId + ' callerId: ' + callerId);
                   return $q.when('fake name');
               }
             };
