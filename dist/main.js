@@ -394,8 +394,8 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv', 'UserProfileService',
-        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, UserProfileService) {
+        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv',
+        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv) {
             var userAssignModuleService = {};
             userAssignModuleService.assignModules = {};
 
@@ -405,25 +405,15 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 ['COMPLETED', ExerciseStatusEnum.COMPLETED.enum, 'completed']
             ]);
 
-            userAssignModuleService.offExternalOnValue = function () {
-                UserProfileService.getCurrUserId().then(function (userId) {
-                    if (!angular.isDefined(userId)) {
-                        return $q.when();
-                    }
-                    InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
-                        studentStorage.offEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB);
-                    });
+            userAssignModuleService.offExternalOnValue = function (userId) {
+                InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
+                    studentStorage.offEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB);
                 });
             };
 
-            userAssignModuleService.registerExternalOnValueCB = function (cb) {
-                UserProfileService.getCurrUserId().then(function (userId) {
-                    if (!angular.isDefined(userId)) {
-                        return $q.when();
-                    }
-                    InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
-                        studentStorage.onEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB.bind(null, userId, cb, studentStorage));
-                    });
+            userAssignModuleService.registerExternalOnValueCB = function (cb, userId) {
+                InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
+                    studentStorage.onEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB.bind(null, userId, cb, studentStorage));
                 });
             };
 
