@@ -12,6 +12,9 @@
             return {
                 templateUrl: 'components/znkExercise/toolbox/core/znkExerciseToolBoxDirective.template.html',
                 require: '^znkExercise',
+                scope:{
+                    settings: '<'
+                },
                 controllerAs: '$ctrl',
                 controller: function(){
                     this.getCurrentQuestion = function(){

@@ -113,7 +113,12 @@
                     alert('On done was invoked');
                 },
                 initPagerDisplay: false,
-                initForceDoneBtnDisplay: true
+                initForceDoneBtnDisplay: true,
+                toolBox: {
+                    drawing:{
+                        exerciseDrawingPathPrefix: 'dummy-uid'
+                    }
+                }
             };
 
             $scope.setSlideDirection = function (slideDirection) {

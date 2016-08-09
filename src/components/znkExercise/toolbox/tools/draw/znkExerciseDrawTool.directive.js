@@ -6,7 +6,7 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseDrawTool',
-        function (ZnkExerciseEvents, InfraConfigSrv, UserProfileService, $q) {
+        function (ZnkExerciseEvents, InfraConfigSrv, $log, $q) {
             'ngInject';
 
             function getOffset(el) {
@@ -21,7 +21,7 @@
                 templateUrl: 'components/znkExercise/toolbox/tools/draw/znkExerciseDrawToolDirective.template.html',
                 require: '^znkExerciseToolBox',
                 scope: {
-                    znkExerciseElementGetter: '&znkExerciseElement'
+                    settings: '<'
                 },
                 link: function (scope, element, attrs, toolBoxCtrl) {
                     var canvasDomElement,
@@ -155,13 +155,17 @@
                     function _activateTool() {
                         var dataPromMap = {};
                         dataPromMap.currQuestion = toolBoxCtrl.getCurrentQuestion();
-                        dataPromMap.currUid = UserProfileService.getCurrUserId();
                         $q.all(dataPromMap).then(function (data) {
                             _resetCanvas();
 
                             offset = getOffset(canvasDomElement);
 
-                            var exercisePath = data.currUid + '/' + data.currQuestion.id;
+                            if(!scope.settings || !scope.settings.exerciseDrawingPathPrefix){
+                                $log.error('znkExerciseDrawTool: settings for drawing tool were not set');
+                                return;
+                            }
+
+                            var exercisePath = scope.settings.exerciseDrawingPathPrefix + '/' + data.currQuestion.id;
                             exerciseDrawingRef = drawingRef.child(exercisePath);
 
                             _registerEvents();

@@ -4,7 +4,8 @@
 
 @import 'scss/znk-exercise-drv-desktop',
         'scss/znk-exercise-pager-drv',
-        'toolbox/scss/draw-tool';
+        'toolbox/scss/draw-tool',
+        'toolbox/scss/tool-box';
 
 znk-exercise {
     &:not(.done-btn-show){
