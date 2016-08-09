@@ -56,7 +56,7 @@
                             switch(callsData.status) {
                                 case CallsStatusEnum.PENDING_CALL.enum:
                                     $log.debug('call pending');
-                                    // ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum); // TODO: remove!
+                                    ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum); // TODO: remove!
                                     if (!isCurrentUserInitiatedCall(currUid)) {
                                         // show incoming call modal with the ACCEPT & DECLINE buttons
                                         scopesObj.reciver = $rootScope.$new();

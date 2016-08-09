@@ -20,29 +20,33 @@
 
                     scope.calleeName = attrs.calleeName;
 
-                    scope.actions.hideUI = function (origin) {
-                        $log.debug('hideUI', origin);
+                    scope.actions.hideUI = function () {
+                        $log.debug('hideUI');
                         element.removeClass('visible');
-                        if (origin === 'calls') {
-                            destroyTimer();
-                        }
+                        // if (origin === 'calls') {
+                        //     destroyTimer();
+                        // }
                     };
 
-                    scope.actions.showUI = function (origin) {
-                        $log.debug('showUI', origin);
+                    scope.actions.showUI = function () {
+                        $log.debug('showUI');
                         element.addClass('visible');
-                        if (origin === 'calls') {
-                            startTimer();
-                        }
+                        // if (origin === 'calls') {
+                        //     startTimer();
+                        // }
                     };
 
-                    function startTimer() {
+                    scope.actions.startTimer = function () {
                         timerInterval = $interval(function () {
                             callDuration += 1000;
                             durationToDisplay = $filter('formatDuration')(callDuration / 1000, 'hh:MM:SS', true);
                             angular.element(element[0].querySelector('.call-duration')).text(durationToDisplay);
                         }, 1000, 0, false);
-                    }
+                    };
+
+                    scope.actions.stopTimer = function () {
+                        $interval.cancel(timerInterval);
+                    };
 
                     function destroyTimer() {
                         $interval.cancel(timerInterval);
