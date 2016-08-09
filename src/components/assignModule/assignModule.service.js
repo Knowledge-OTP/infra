@@ -13,6 +13,17 @@
                 ['COMPLETED', ExerciseStatusEnum.COMPLETED.enum, 'completed']
             ]);
 
+            userAssignModuleService.offExternalOnValue = function () {
+                UserProfileService.getCurrUserId().then(function (userId) {
+                    if (!angular.isDefined(userId)) {
+                        return $q.when();
+                    }
+                    InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
+                        studentStorage.offEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB);
+                    });
+                });
+            };
+
             userAssignModuleService.registerExternalOnValueCB = function (cb) {
                 UserProfileService.getCurrUserId().then(function (userId) {
                     if (!angular.isDefined(userId)) {
