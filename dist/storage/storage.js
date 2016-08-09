@@ -132,13 +132,16 @@
 
                         var ref = this.getRef(path);
                         ref.on(type, function (snapshot) {
+                            self.__registeredEvents[type][path].firstOnWasInvoked = true;
                             var newVal = snapshot.val();
                             self.__invokeEventCb(type, path, [newVal]);
                         });
                     } else {
-                        this.get(path).then(function (newVal) {
-                            self.__invokeEventCb(type, path, [newVal]);
-                        });
+                        if (self.__registeredEvents[type][path].firstOnWasInvoked) {
+                            self.get(path).then(function (newVal) {
+                                cb(newVal);
+                            });
+                        }
                     }
 
                     var evtCbArr = this.__registeredEvents[type][path];
