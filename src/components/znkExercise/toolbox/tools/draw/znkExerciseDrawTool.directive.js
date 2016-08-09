@@ -176,7 +176,9 @@
                         var znkExerciseDomElement = znkExerciseElement[0];
 
                         var canvasContainerElement = angular.element(
-                            '<div class="draw-tool-container" ng-show="d.drawMode !== d.DRAWING_MODES.NONE">' +
+                            '<div class="draw-tool-container" ' +
+                                 'ng-show="d.drawMode !== d.DRAWING_MODES.NONE" ' +
+                                 'ng-class="{\'no-pointer-events\': d.drawMode === d.DRAWING_MODES.VIEW}">' +
                             '<canvas></canvas>' +
                             '</div>'
                         );

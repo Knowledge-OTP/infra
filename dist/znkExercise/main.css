@@ -466,6 +466,8 @@ znk-exercise .draw-tool-container {
   bottom: 0;
   left: 0;
   z-index: 1; }
+  znk-exercise .draw-tool-container.no-pointer-events {
+    pointer-events: none; }
 
 znk-exercise-draw-tool {
   height: 100%;

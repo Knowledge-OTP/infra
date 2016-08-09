@@ -2,6 +2,10 @@ znk-exercise{
     .draw-tool-container{
         @include absolute-full-cover;
         z-index: 1;
+
+        &.no-pointer-events{
+            pointer-events: none;
+        }
     }
 }
 
