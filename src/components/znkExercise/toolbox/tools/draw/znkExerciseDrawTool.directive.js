@@ -13,6 +13,7 @@
             'ngInject';
 
             var TOUCHE_COLORS = {
+                0: 0,// deleted
                 1: '#0072bc',
                 2: '#af667d'
             };
@@ -257,9 +258,8 @@
                         }
 
                         var coords = coordStr.split(":");
-                        var xCoor = +coords[0];
-                        var yCoor = +coords[1];
-                        canvasContext.clearRect(xCoor, yCoor, pixSize, pixSize);
+
+                        canvasContext.clearRect(parseInt(coords[0]) - pixSize, parseInt(coords[1]) - pixSize, 2 * pixSize, 2 * pixSize);
                     };
 
                     Drawer.prototype.draw = function (e) {
@@ -291,18 +291,6 @@
                             var pixelToDrawYCoor = Math.round(prevYCoor + pixelYOffset);
 
                             pixelsToDrawMap[pixelToDrawXCoor + ':' + pixelToDrawYCoor] = self.toucheColor;
-
-                            //since we drawing more than one pixel then we must delete all the extra surrounding pixels
-                            if(!self.toucheColor){
-                                var rectInitX = (+pixelToDrawXCoor);
-                                var rectInitY = (pixelToDrawYCoor);
-                                var rectWidth = 2 * pixSize;
-                                for (var xI = 0; xI < rectWidth; xI++) {
-                                    for (var yI = 0; yI < rectWidth; yI++) {
-                                        pixelsToDrawMap[(rectInitX + xI) + ':' + (rectInitY + yI)] = self.toucheColor;
-                                    }
-                                }
-                            }
                         }
 
                         angular.forEach(pixelsToDrawMap, function (color, coordsStr) {
