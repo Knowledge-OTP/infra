@@ -1,9 +1,8 @@
 (function (angular) {
     'use strict';
-
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv', 'StorageSrv',
-        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, StorageSrv) {
+        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv',
+        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv) {
             var userAssignModuleService = {};
             userAssignModuleService.assignModules = {};
 
@@ -107,13 +106,14 @@
                     if (moduleResult && !angular.equals(moduleResult, {})) {
                         moduleResult.moduleSummary = getModuleSummary(moduleResult);
 
-                        angular.forEach(moduleResult.exerciseResults, function (exerciseTypeId) {
-                            angular.forEach(exerciseTypeId, function (exerciseId) {
-                                var exerciseResultsPath = 'exerciseResults/' + '';
-                                StorageSrv.getAndBindToServer(exerciseResultsPath);
+                        InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
+                            angular.forEach(moduleResult.exerciseResults, function (exerciseTypeId) {
+                                angular.forEach(exerciseTypeId, function (exercise) {
+                                    var exerciseResultsPath = 'exerciseResults/' + exercise.guid;
+                                    studentStorage.getAndBindToServer(exerciseResultsPath);
+                                });
                             });
                         });
-
                     }
                     return moduleResult;
                 });

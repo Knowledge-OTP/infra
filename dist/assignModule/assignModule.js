@@ -5,7 +5,6 @@
 
 (function (angular) {
     'use strict';
-
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
         'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv',
         function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv) {
@@ -29,6 +28,7 @@
                     studentStorage.onEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB.bind(null, userId, cb, studentStorage));
                 });
             };
+
             userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId) {
                 if (!angular.isArray(moduleIds)) {
                     var errMSg = 'UserAssignModuleService: 1st argument should be array of module ids';
@@ -93,6 +93,7 @@
                     getProm = getResultsByModuleId(userId, moduleId).then(function (moduleResult) {
                         moduleResults[moduleResult.moduleId] = moduleResult;
 
+
                         var modulePath = 'moduleResults/' + moduleResult.guid;
                         studentStorage.onEvent('child_changed', modulePath, onModuleResultChangedCB.bind(null, userId, moduleId, cb));
                     });
@@ -109,6 +110,15 @@
                 return ExerciseResultSrv.getModuleResult(userId, moduleId, false).then(function (moduleResult) {
                     if (moduleResult && !angular.equals(moduleResult, {})) {
                         moduleResult.moduleSummary = getModuleSummary(moduleResult);
+
+                        InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
+                            angular.forEach(moduleResult.exerciseResults, function (exerciseTypeId) {
+                                angular.forEach(exerciseTypeId, function (exercise) {
+                                    var exerciseResultsPath = 'exerciseResults/' + exercise.guid;
+                                    studentStorage.getAndBindToServer(exerciseResultsPath);
+                                });
+                            });
+                        });
                     }
                     return moduleResult;
                 });
