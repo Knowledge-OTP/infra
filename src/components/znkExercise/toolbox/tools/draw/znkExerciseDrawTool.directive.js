@@ -181,7 +181,7 @@
 
                         this.exerciseDrawingRefProm = _getFbRef();
 
-                        var FLUSH_TIME = 3000;
+                        var FLUSH_TIME = 500;
                         var self = this;
                         $timeout(function(){
                             self.flush();

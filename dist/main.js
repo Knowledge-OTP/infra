@@ -11732,7 +11732,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                         this.exerciseDrawingRefProm = _getFbRef();
 
-                        var FLUSH_TIME = 3000;
+                        var FLUSH_TIME = 500;
                         var self = this;
                         $timeout(function(){
                             self.flush();
