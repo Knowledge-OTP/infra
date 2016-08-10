@@ -11147,6 +11147,10 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     this.getZnkExerciseElement = function(){
                         return this.znkExerciseCtrl.getElement();
                     };
+
+                    this.isExerciseReady = function(){
+                        return this.znkExerciseCtrl.isExerciseReady();
+                    };
                 },
                 bindToController: true,
                 link: function(scope, element, attrs, znkExerciseCtrl){
@@ -11556,7 +11560,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseDrawTool',
-        ["ZnkExerciseEvents", "InfraConfigSrv", "$log", "$q", "$compile", function (ZnkExerciseEvents, InfraConfigSrv, $log, $q, $compile) {
+        ["ZnkExerciseEvents", "InfraConfigSrv", "$log", "$q", "$compile", "$timeout", function (ZnkExerciseEvents, InfraConfigSrv, $log, $q, $compile, $timeout) {
             'ngInject';
 
             var TOUCHE_COLORS = {
@@ -11612,9 +11616,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         }
                     };
 
-                    scope.d.cleanCanvas = function(){
+                    scope.d.cleanCanvas = function () {
                         drawer.clean();
-                        _getFbRef().then(function(exerciseDrawingRef){
+                        _getFbRef().then(function (exerciseDrawingRef) {
                             exerciseDrawingRef.set(null);
                         });
                     };
@@ -11627,9 +11631,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         }
 
                         var pathPrefixProm;
-                        if(angular.isFunction(scope.settings.exerciseDrawingPathPrefix)){
+                        if (angular.isFunction(scope.settings.exerciseDrawingPathPrefix)) {
                             pathPrefixProm = scope.settings.exerciseDrawingPathPrefix();
-                        }else{
+                        } else {
                             pathPrefixProm = scope.settings.exerciseDrawingPathPrefix;
                         }
 
@@ -11645,23 +11649,15 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     }
 
                     function _getToucheColor(drawMode) {
-                        if(drawMode === DRAWING_MODES.VIEW_ERASE){
+                        if (drawMode === DRAWING_MODES.VIEW_ERASE) {
                             return null;
                         }
 
-                        if(!scope.settings.toucheColorId){
+                        if (!scope.settings.toucheColorId) {
                             $log.error('znkExerciseDrawTool: touche color was not set');
                             return null;
                         }
                         return scope.settings.toucheColorId;
-                    }
-
-                    function Drawer() {
-                        this.lastPoint = null;
-                    }
-
-                    function EventsManager() {
-                        this._fbRegisterProm = $q.when();
                     }
 
                     function _mousemoveCb(evt) {
@@ -11671,6 +11667,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     function _mousedownCb(evt) {
                         //left mouse
                         if (evt.which === 1) {
+                            $timeout(function () {
+                                scope.d.mouseDown = true;
+                            });
                             canvasDomElement.addEventListener('mousemove', _mousemoveCb);
                             canvasDomElement.addEventListener('mouseup', _mouseupCb);
                         }
@@ -11679,19 +11678,22 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     function _mouseupCb(evt) {
                         //left mouse
                         if (evt.which === 1) {
+                            $timeout(function () {
+                                scope.d.mouseDown = false;
+                            });
                             drawer.stopDrawing();
                             canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
                             canvasDomElement.removeEventListener('mouseup', _mouseupCb);
                         }
                     }
 
-                    function _fbChildChanged(snapShot){
+                    function _fbChildChanged(snapShot) {
                         var coordsStr = snapShot.key();
                         var color = snapShot.val();
                         drawer.drawPixel(coordsStr, color);
                     }
 
-                    function _fbChildRemoved(snapShot){
+                    function _fbChildRemoved(snapShot) {
                         var coordsStr = snapShot.key();
                         drawer.clearPixel(coordsStr);
                     }
@@ -11712,8 +11714,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         }
                     }
 
-                    function _updateQuestionDrawMode(drawMode){
-                        toolBoxCtrl.getCurrentQuestion().then(function(currQuestion){
+                    function _updateQuestionDrawMode(drawMode) {
+                        toolBoxCtrl.getCurrentQuestion().then(function (currQuestion) {
                             currQuestion.__questionStatus.drawingToolViewMode = drawMode;
                         });
                     }
@@ -11724,15 +11726,20 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                         var canvasContainerElement = angular.element(
                             '<div class="draw-tool-container" ' +
-                                 'ng-show="d.drawMode !== d.DRAWING_MODES.NONE" ' +
-                                 'ng-class="{\'no-pointer-events\': d.drawMode === d.DRAWING_MODES.VIEW}">' +
+                            'ng-show="d.drawMode !== d.DRAWING_MODES.NONE" ' +
+                            'ng-class="{' +
+                            '\'no-pointer-events\': d.drawMode === d.DRAWING_MODES.VIEW,' +
+                            '\'crosshair-cursor\': d.drawMode !== d.DRAWING_MODES.NONE && d.drawMode !== d.DRAWING_MODES.VIEW' +
+                            '}">' +
                             '<canvas></canvas>' +
                             '</div>'
                         );
 
                         canvasDomElement = canvasContainerElement.children()[0];
-                        canvasDomElement.setAttribute('height', znkExerciseDomElement.offsetHeight);
-                        canvasDomElement.setAttribute('width', znkExerciseDomElement.offsetWidth);
+                        toolBoxCtrl.isExerciseReady().then(function () {
+                            canvasDomElement.setAttribute('height', znkExerciseDomElement.offsetHeight);
+                            canvasDomElement.setAttribute('width', znkExerciseDomElement.offsetWidth);
+                        });
 
                         canvasContext = canvasDomElement.getContext("2d");
 
@@ -11741,6 +11748,10 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                         drawer = new Drawer();
                         eventsManager = new EventsManager();
+                    }
+
+                    function Drawer() {
+                        this.lastPoint = null;
                     }
 
                     Drawer.prototype.drawPixel = function (coordStr, colorId) {
@@ -11764,11 +11775,10 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                             return;
                         }
 
-                        console.log(coordStr);
                         var coords = coordStr.split(":");
                         var xCoor = +coords[0] - pixSize;
                         var yCoor = +coords[1] - pixSize;
-                        canvasContext.clearRect(xCoor ,yCoor, pixSize * 2, pixSize * 2);
+                        canvasContext.clearRect(xCoor, yCoor, pixSize * 2, pixSize * 2);
                     };
 
                     Drawer.prototype.draw = function (e) {
@@ -11789,7 +11799,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         var xStepOffset = xDiff / pixelsNumToDraw;
                         var yStepOffset = yDiff / pixelsNumToDraw;
                         var pixelsToDrawMap = {};
-                        for(var i=1; i<=pixelsNumToDraw; i++){
+                        for (var i = 1; i <= pixelsNumToDraw; i++) {
                             var pixelXOffset = (currXCoor - prevXCoor > 0) ? 1 : -1;
                             pixelXOffset *= Math.round(i * xStepOffset);
 
@@ -11802,15 +11812,26 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                             pixelsToDrawMap[pixelToDrawXCoor + ':' + pixelToDrawYCoor] = self.toucheColor;
                         }
 
-                        angular.forEach(pixelsToDrawMap, function(color, coordsStr){
-                            if(color){
+                        angular.forEach(pixelsToDrawMap, function (color, coordsStr) {
+                            if (color) {
                                 self.drawPixel(coordsStr, color);
-                            }else{
+                            } else {
                                 self.clearPixel(coordsStr);
+                                var coords = coordsStr.split(':');
+                                var rectInitX = (+coords[0]) - pixSize;
+                                var rectInitY = (+coords[1]) - pixSize;
+                                //since we drawing more than one pixel then we must delete all the extra surrounding pixels
+                                var rectWidth = 2 * pixSize;
+                                for (var xI = 0; xI < rectWidth; xI++) {
+                                    for (var yI = 0; yI < rectWidth; yI++) {
+                                        pixelsToDrawMap[(rectInitX + xI) + ':' + (rectInitY + yI)] = self.toucheColor;
+                                    }
+                                }
                             }
                         });
 
-                        _getFbRef().then(function(exerciseDrawingRef){
+                        _getFbRef().then(function (exerciseDrawingRef) {
+                            console.log(pixelsToDrawMap);
                             exerciseDrawingRef.update(pixelsToDrawMap);
                         });
                         // // Bresenham's line algorithm. We use this to ensure smooth lines are drawn
@@ -11843,13 +11864,17 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         // });
                     };
 
-                    Drawer.prototype.stopDrawing = function(){
+                    Drawer.prototype.stopDrawing = function () {
                         this.lastPoint = null;
                     };
 
-                    Drawer.prototype.clean = function(){
-                        canvasContext.clearRect(0 ,0, canvasDomElement.offsetWidth, canvasDomElement.offsetHeight);
+                    Drawer.prototype.clean = function () {
+                        canvasContext.clearRect(0, 0, canvasDomElement.offsetWidth, canvasDomElement.offsetHeight);
                     };
+
+                    function EventsManager() {
+                        this._fbRegisterProm = $q.when();
+                    }
 
                     EventsManager.prototype.registerMouseEvents = function () {
                         if (this._mouseEventsRegistered) {
@@ -11901,7 +11926,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     };
 
                     EventsManager.prototype.cleanListeners = function () {
-                        this.killFbListeners();
+                        this.killMouseEvents();
                         this.killFbListeners();
                     };
 
@@ -11921,7 +11946,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function () {
                         drawer.clean();
                         eventsManager.cleanListeners();
-                        toolBoxCtrl.getCurrentQuestion().then(function(currQuestion){
+                        toolBoxCtrl.getCurrentQuestion().then(function (currQuestion) {
                             var questionDrawMode = currQuestion.__questionStatus.drawingToolViewMode || DRAWING_MODES.NONE;
                             scope.d.drawMode = questionDrawMode;
                         });

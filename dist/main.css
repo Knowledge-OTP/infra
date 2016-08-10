@@ -4152,6 +4152,8 @@ znk-exercise .draw-tool-container {
   z-index: 1; }
   znk-exercise .draw-tool-container.no-pointer-events {
     pointer-events: none; }
+  znk-exercise .draw-tool-container.crosshair-cursor {
+    cursor: crosshair; }
 
 znk-exercise-draw-tool {
   height: 100%;
@@ -4163,13 +4165,16 @@ znk-exercise-draw-tool {
       align-items: center; }
   znk-exercise-draw-tool > svg-icon {
     -ms-flex-positive: 1;
-        flex-grow: 1; }
+        flex-grow: 1;
+    cursor: pointer; }
     znk-exercise-draw-tool > svg-icon.active .znk-exercise-touche-svg .st0, znk-exercise-draw-tool > svg-icon.active .znk-exercise-touche-svg .st1 {
       stroke: #0a9bad; }
     znk-exercise-draw-tool > svg-icon.active .znk-exercise-pencil path {
       fill: #0a9bad; }
     znk-exercise-draw-tool > svg-icon.active .znk-exercise-eraser path, znk-exercise-draw-tool > svg-icon.active .znk-exercise-eraser rect, znk-exercise-draw-tool > svg-icon.active .znk-exercise-eraser .st1 {
       fill: #0a9bad; }
+    znk-exercise-draw-tool > svg-icon[name="znk-exercise-touche"] {
+      border-bottom: 1px solid #cccccc; }
 
 znk-exercise-tool-box {
   height: 234px;
