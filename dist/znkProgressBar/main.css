@@ -1,69 +1,5 @@
-//font color
-$fcColor1: #363636;
-$fcColor2: #fff;
-$fcColor3: #ff6766;
-$fcColor4: #2AB79E;
-$fcColor5: #0a9bad;
-$fcColor6: #4f4d4d;
-$fcColor7: #87ca4d;
-$fcColor8: #b7b7b7;
-$fcColor9: #757a83;
-$fcColor10: #ff6766;
-$fcColor11: #cccccc;
-$fcColor12: #d2d2d2;
-$fcColor13 : #979797;
-$fcColor14 : #161616;
-
-//background color
-$bgColor1: #ff6766;
-$bgColor2: #87ca4d;
-$bgColor3: #0a9bad;
-$bgColor4: #f6f6f6;
-$bgColor5: #888888;
-$bgColor6: #fff;
-$bgColor7: #e8e7e7;
-$bgColor8: #f7f6f6;
-$bgColor9: #e8e7e7;
-$bgColor10: #f5f8fa;
-$bgColor11: #e55958;
-$bgColor12: #80c248;
-$bgColor13: #fafafa;
-$bgColor14: #6ac1cc;
-$bgColor15: #f08a1c;
-$bgColor16: #2c808a;
-$bgColor17: #ebebeb;
-$bgColor18: #c2c3c5;
-$bgColor19: #ff931e;
-$bgColor20: #b7b7b7;
-$bgColor21 : #f7f7f7;
-$bgColor22 : #B33520;
-$bgColor23: #c1c1c3;
-$bgColor24: #e8e8e7;
-$bgColor25: #fbfafa;
-
-//border color
-$bcColor1: #87ca4d;
-$bcColor2: #0a9bad;
-$bcColor3: #CFCFCF;
-$bcColor4: #ff6766;
-$bcColor5: #757a83;
-$bcColor6: #ff931e;
-$bcColor7: #d2d2d2;
-$bcColor8: #b7b7b7;
-$bcColor9 : #87ca4d;
-$bcColor10 : #d3d0d0;
-$bcColor11 : #ebebeb;
-$bcColor12 : #cccccc;
-
-//background with transparency
-$tbgColor1: rgba(0,0,0,0.7);
-$tbgColor2: rgba(255, 255, 255, 0.91);
-$tbgColor3: rgba(0, 0, 0, 0.08);
-$tbgColor4: rgba(0, 0, 0, 0.08);
-$tbgColor5: rgba(255, 255, 255, 0.3);
-$tbgColor6: rgba(255, 255, 255, 0.08);
-$tbgColor7: rgba(15, 15, 15, 0.85);
-
+/* paths*/
+/* fonts size */
 /*
 //backgrounds
 $greyBG1: #B4BAD9;
@@ -337,3 +273,68 @@ $blueBG8: #75cbe8;
 
 
 */
+/* full background image with retina */
+[znk-progress-bar], znk-progress-bar {
+  height: 40px; }
+  [znk-progress-bar] .progress-bubble-wrapper, znk-progress-bar .progress-bubble-wrapper {
+    width: 0px;
+    height: 55px;
+    position: relative; }
+    [znk-progress-bar] .progress-bubble-wrapper .progress-percentage, znk-progress-bar .progress-bubble-wrapper .progress-percentage {
+      position: absolute;
+      top: 7px;
+      left: -23px;
+      font-size: 18px;
+      color: #4f4d4d;
+      font-family: Quicksand;
+      font-weight: 400;
+      z-index: 1; }
+      [znk-progress-bar] .progress-bubble-wrapper .progress-percentage div, znk-progress-bar .progress-bubble-wrapper .progress-percentage div {
+        width: 50px;
+        margin: 0 auto;
+        text-align: center; }
+        [znk-progress-bar] .progress-bubble-wrapper .progress-percentage div div, znk-progress-bar .progress-bubble-wrapper .progress-percentage div div {
+          font-size: 9px;
+          color: #757a83;
+          font-family: Lato;
+          font-weight: 100;
+          position: relative;
+          bottom: 6px; }
+    [znk-progress-bar] .progress-bubble-wrapper .progress-bubble, znk-progress-bar .progress-bubble-wrapper .progress-bubble {
+      width: 52px;
+      height: 40px;
+      position: relative;
+      left: -25px;
+      background-color: #fff;
+      border-radius: 8px;
+      border-bottom: 1px #c1c1c3 solid; }
+      [znk-progress-bar] .progress-bubble-wrapper .progress-bubble .down-triangle, znk-progress-bar .progress-bubble-wrapper .progress-bubble .down-triangle {
+        width: 0px;
+        height: 0px;
+        position: relative;
+        left: 15px;
+        top: 28px;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-top: 10px solid #fff; }
+      [znk-progress-bar] .progress-bubble-wrapper .progress-bubble .down-triangle.gray-triangle, znk-progress-bar .progress-bubble-wrapper .progress-bubble .down-triangle.gray-triangle {
+        top: 40px;
+        border-top: 10px solid #c1c1c3; }
+  [znk-progress-bar] .progress-wrap, znk-progress-bar .progress-wrap {
+    width: 100%;
+    height: 7px;
+    background: #e8e8e7;
+    border-radius: 3px;
+    position: relative; }
+    [znk-progress-bar] .progress-wrap .progress, znk-progress-bar .progress-wrap .progress {
+      background: #0a9bad;
+      height: 100%;
+      border-top-left-radius: 3px;
+      border-bottom-left-radius: 3px; }
+    [znk-progress-bar] .progress-wrap .answer-count, znk-progress-bar .progress-wrap .answer-count {
+      font-size: 12px;
+      color: #0a9bad;
+      position: absolute;
+      top: -3px;
+      right: -15px;
+      margin-right: -3px; }

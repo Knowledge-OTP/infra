@@ -14,10 +14,15 @@
  *      onExerciseReady
  *      onSlideChange
  *      initSlideIndex
- *      toolBoxWrapperClass
  *      initSlideDirection
  *      initForceDoneBtnDisplay: null-default behaviour(default value), false-done button will be hidden, true-done button will be dispalyed
  *      initPagerDisplay: true- displayed(default value), false- hidden
+ *      toolBox:{
+ *          drawing:{
+ *              exerciseDrawingPathPrefix: exercise drawing path prefix, question id will be concat to it for the full path.
+ *              toucheColorId
+ *          }
+ *      }
  *
  *  actions:
  *      setSlideIndex
