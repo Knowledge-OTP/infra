@@ -8,12 +8,17 @@
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {
                     calleeName: '@',
-                    actions: '='
+                    actions: '=',
+                    callBtnModel: '='
                 },
                 link:function(scope, element, attrs) {
                     // scope.actions = scope.actions || {};
                     if (!angular.isObject(scope.actions)) {
                         scope.actions = {};
+                    }
+
+                    if (!angular.isObject(scope.callBtnModel)) {
+                        scope.callBtnModel = {};
                     }
 
                     var callDuration = 0,

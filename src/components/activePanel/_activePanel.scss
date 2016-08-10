@@ -5,17 +5,20 @@ active-panel {
             opacity: 1;
         }
     }
-    &.screen-share-mode {
-
-    }
     .active-panel {
         transition: 1.5s;
         opacity: 0;
-        width: 260px;
+        //width: 260px;
+        width: 210px;
         height: 40px;
         background-color: $bgColor21;
         border: 1px solid $bcColor11;
         border-radius: 20px;
+        svg-icon {
+            &:focus {
+                outline: none;
+            }
+        }
         .flex-container {
             height: 100%;
             display:flex;
@@ -48,20 +51,6 @@ active-panel {
             }
             &.call-controls {
                 flex-basis: 50%;
-                //svg-icon.call-mute-icon {
-                //    float:left;
-                //    cursor: pointer;
-                //    width: 21px;
-                //    height: 21px;
-                //    border-radius: 50%;
-                //    border: 1px solid $bgColor3;
-                //    svg {
-                //        width: 44%;
-                //        path {
-                //            fill: $bgColor3;
-                //        }
-                //    }
-                //}
                 svg-icon.active-panel-share-screen-icon {
                     float:left;
                     cursor: pointer;
@@ -109,6 +98,14 @@ active-panel {
         }
         .call-duration {
             @include text-style(12px, $fcColor13, Lato, $regularFontWeight);
+        }
+    }
+    &.screen-share-mode {
+        .active-panel {
+            background-color: $bgColor26;
+            .callee-name {
+                color: $bgColor6;
+            }
         }
     }
 }
