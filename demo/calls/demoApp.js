@@ -37,9 +37,11 @@
             $rootScope.call = { isOffline: false, receiverId: '21794e2b-3051-4016-8491-b3fe70e8212d' };
             $rootScope.called = { isOffline: false, receiverId: 'eebe2b53-08b7-4296-bcfd-62b69b531473' };
         })
-        .controller('demoCtrl', function ($scope, CallsUiSrv, $rootScope, ActivePanelSrv) {
+        .controller('demoCtrl', function ($scope, CallsUiSrv, $rootScope, ActivePanelSrv, ActivePanelStatusEnum, ActivePanelComponentEnum) {
 
             $scope.actions = ActivePanelSrv.getActions();
+
+            ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.ACTIVE.enum); // TODO: remove!
 
             $scope.openIncomingCallModal = function() {
                 var scope = $rootScope.$new();

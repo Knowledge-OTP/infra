@@ -20,8 +20,6 @@
                 },
                 link:function(scope, element, attrs) {
 
-                    $log.debug('ActivePanelDirective');
-
                     scope.actions = scope.actions || {};
 
                     var callDuration = 0,
@@ -33,17 +31,11 @@
                     scope.actions.hideUI = function () {
                         $log.debug('hideUI');
                         element.removeClass('visible');
-                        // if (origin === 'calls') {
-                        //     destroyTimer();
-                        // }
                     };
 
                     scope.actions.showUI = function () {
                         $log.debug('showUI');
                         element.addClass('visible');
-                        // if (origin === 'calls') {
-                        //     startTimer();
-                        // }
                     };
 
                     scope.actions.startTimer = function () {
@@ -57,6 +49,14 @@
 
                     scope.actions.stopTimer = function () {
                         $interval.cancel(timerInterval);
+                    };
+
+                    scope.actions.screenShareMode = function (bool) {
+                        if (bool) {
+                            element.addClass('screen-share-mode');
+                        } else {
+                            element.removeClass('screen-share-mode');
+                        }
                     };
 
                     function destroyTimer() {
@@ -80,18 +80,14 @@
         ["ActivePanelStatusEnum", "ActivePanelComponentEnum", "$log", function (ActivePanelStatusEnum, ActivePanelComponentEnum, $log) {
             'ngInject';
 
-            $log.debug('ActivePanelSrv');
-
             var actions = {};
 
-            // TODO: add enum for component name
             var currentStatus = {
                 calls: ActivePanelStatusEnum.INACTIVE.enum,
                 screenSharing: ActivePanelStatusEnum.INACTIVE.enum
             };
 
             this.updateStatus = function (component, status) {
-
                 // if (currentStatus.hasOwnProperty(component)) {
                 //     currentStatus[component] = status;
                 // } else {
@@ -146,6 +142,7 @@
                         // screenShare buttons are disabled
                         currentStatus.screenSharing = ActivePanelStatusEnum.ACTIVE.enum;
                         showActivePanelDrv();
+                        screenShareMode(true);
                         screenShareBtnsMode('disabled');
                         break;
 
@@ -157,6 +154,7 @@
                         if (!isCallActive()) {
                             hideActivePanelDrv();
                         }
+                        screenShareMode(false);
                         screenShareBtnsMode('enabled');
                         break;
 
@@ -170,10 +168,13 @@
                 return actions;
             };
 
-            function _base(name) {
+            function _base(name, param1) {
+                if (angular.isUndefined(actions) || angular.equals(actions, {})) {
+                    return $log.error('actions is undefined');
+                }
                 var fn = actions[name];
                 if (angular.isFunction(fn)) {
-                    fn();
+                    fn(param1);
                 }
             }
 
@@ -186,6 +187,8 @@
             var stopTimer = _base.bind(null, 'stopTimer');
 
             var callBtnMode = _base.bind(null, 'callBtnMode');
+
+            var screenShareMode = _base.bind(null, 'screenShareMode');
 
             var screenShareBtnsMode = _base.bind(null, 'screenShareBtnsMode');
         }]);

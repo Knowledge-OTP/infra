@@ -1,8 +1,12 @@
 active-panel {
+    z-index: 9999;
     &.visible {
         .active-panel {
             opacity: 1;
         }
+    }
+    &.screen-share-mode {
+
     }
     .active-panel {
         transition: 1.5s;

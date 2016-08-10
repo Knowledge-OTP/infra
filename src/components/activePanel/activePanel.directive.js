@@ -12,8 +12,6 @@
                 },
                 link:function(scope, element, attrs) {
 
-                    $log.debug('ActivePanelDirective');
-
                     scope.actions = scope.actions || {};
 
                     var callDuration = 0,
@@ -25,17 +23,11 @@
                     scope.actions.hideUI = function () {
                         $log.debug('hideUI');
                         element.removeClass('visible');
-                        // if (origin === 'calls') {
-                        //     destroyTimer();
-                        // }
                     };
 
                     scope.actions.showUI = function () {
                         $log.debug('showUI');
                         element.addClass('visible');
-                        // if (origin === 'calls') {
-                        //     startTimer();
-                        // }
                     };
 
                     scope.actions.startTimer = function () {
@@ -49,6 +41,14 @@
 
                     scope.actions.stopTimer = function () {
                         $interval.cancel(timerInterval);
+                    };
+
+                    scope.actions.screenShareMode = function (bool) {
+                        if (bool) {
+                            element.addClass('screen-share-mode');
+                        } else {
+                            element.removeClass('screen-share-mode');
+                        }
                     };
 
                     function destroyTimer() {
