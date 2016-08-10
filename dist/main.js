@@ -11889,7 +11889,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                     function _getToucheColor(drawMode) {
                         if (drawMode === DRAWING_MODES.VIEW_ERASE) {
-                            return null;
+                            return 0;
                         }
 
                         if (!scope.settings.toucheColorId) {
@@ -11929,7 +11929,12 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     function _fbChildChanged(snapShot) {
                         var coordsStr = snapShot.key();
                         var color = snapShot.val();
-                        drawer.drawPixel(coordsStr, color);
+                        if(color === 0){
+                            drawer.clearPixel(coordsStr);
+                        }else{
+
+                            drawer.drawPixel(coordsStr, color);
+                        }
                     }
 
                     function _fbChildRemoved(snapShot) {
@@ -12047,7 +12052,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                         var coords = coordStr.split(":");
 
-                        canvasContext.clearRect(parseInt(coords[0]) - pixSize, parseInt(coords[1]) - pixSize, 2 * pixSize, 2 * pixSize);
+                        canvasContext.clearRect(parseInt(coords[0]) - pixSize, parseInt(coords[1])- pixSize, 2 * pixSize, 2 * pixSize);
                     };
 
                     Drawer.prototype.draw = function (e) {
