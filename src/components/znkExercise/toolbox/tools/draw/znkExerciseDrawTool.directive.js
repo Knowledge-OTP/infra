@@ -209,14 +209,8 @@
                         }
 
                         var coords = coordStr.split(":");
-                        canvasContext.beginPath();
                         canvasContext.fillStyle = TOUCHE_COLORS[colorId];
-                        canvasContext.arc(parseInt(coords[0]), parseInt(coords[1]), pixSize, 0, 2 * Math.PI);
-                        canvasContext.fill();
-                        canvasContext.closePath();
-                        // canvasContext.fillStyle = "#" + snapshot.val();
-                        //
-                        // canvasContext.fillRect(parseInt(coords[0]) * pixSize, parseInt(coords[1]) * pixSize, pixSize, pixSize);
+                        canvasContext.fillRect(parseInt(coords[0]), parseInt(coords[1]), pixSize, pixSize);
                     };
 
                     Drawer.prototype.clearPixel = function (coordStr) {
@@ -225,9 +219,9 @@
                         }
 
                         var coords = coordStr.split(":");
-                        var xCoor = +coords[0] - pixSize;
-                        var yCoor = +coords[1] - pixSize;
-                        canvasContext.clearRect(xCoor, yCoor, pixSize * 2, pixSize * 2);
+                        var xCoor = +coords[0];
+                        var yCoor = +coords[1];
+                        canvasContext.clearRect(xCoor, yCoor, pixSize, pixSize);
                     };
 
                     Drawer.prototype.draw = function (e) {
@@ -259,17 +253,11 @@
                             var pixelToDrawYCoor = Math.round(prevYCoor + pixelYOffset);
 
                             pixelsToDrawMap[pixelToDrawXCoor + ':' + pixelToDrawYCoor] = self.toucheColor;
-                        }
 
-                        angular.forEach(pixelsToDrawMap, function (color, coordsStr) {
-                            if (color) {
-                                self.drawPixel(coordsStr, color);
-                            } else {
-                                self.clearPixel(coordsStr);
-                                var coords = coordsStr.split(':');
-                                var rectInitX = (+coords[0]) - pixSize;
-                                var rectInitY = (+coords[1]) - pixSize;
-                                //since we drawing more than one pixel then we must delete all the extra surrounding pixels
+                            //since we drawing more than one pixel then we must delete all the extra surrounding pixels
+                            if(!self.toucheColor){
+                                var rectInitX = (+pixelToDrawXCoor);
+                                var rectInitY = (pixelToDrawYCoor);
                                 var rectWidth = 2 * pixSize;
                                 for (var xI = 0; xI < rectWidth; xI++) {
                                     for (var yI = 0; yI < rectWidth; yI++) {
@@ -277,40 +265,19 @@
                                     }
                                 }
                             }
+                        }
+
+                        angular.forEach(pixelsToDrawMap, function (color, coordsStr) {
+                            if (color) {
+                                self.drawPixel(coordsStr, color);
+                            } else {
+                                self.clearPixel(coordsStr);
+                            }
                         });
 
                         _getFbRef().then(function (exerciseDrawingRef) {
-                            console.log(pixelsToDrawMap);
                             exerciseDrawingRef.update(pixelsToDrawMap);
                         });
-                        // // Bresenham's line algorithm. We use this to ensure smooth lines are drawn
-                        // var x1 = Math.floor((e.pageX - offset.left) / pixSize - 1),
-                        //     y1 = Math.floor((e.pageY - offset.top) / pixSize - 1);
-                        // var x0 = (this.lastPoint === null) ? x1 : this.lastPoint[0];
-                        // var y0 = (this.lastPoint === null) ? y1 : this.lastPoint[1];
-                        // var dx = Math.abs(x1 - x0), dy = Math.abs(y1 - y0);
-                        // var sx = (x0 < x1) ? 1 : -1, sy = (y0 < y1) ? 1 : -1, err = dx - dy;
-                        // return _getFbRef().then(function (exerciseDrawingRef) {
-                        //     while (true) {
-                        //         //write the pixel into Firebase, or if we are drawing white, remove the pixel
-                        //         exerciseDrawingRef.child(x0 + ":" + y0).set(self.toucheColor);
-                        //
-                        //         if (x0 === x1 && y0 === y1) {
-                        //             break;
-                        //         }
-                        //
-                        //         var e2 = 2 * err;
-                        //         if (e2 > -dy) {
-                        //             err = err - dy;
-                        //             x0 = x0 + sx;
-                        //         }
-                        //         if (e2 < dx) {
-                        //             err = err + dx;
-                        //             y0 = y0 + sy;
-                        //         }
-                        //     }
-                        //     self.lastPoint = [x1, y1];
-                        // });
                     };
 
                     Drawer.prototype.stopDrawing = function () {
