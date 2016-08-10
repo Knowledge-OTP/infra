@@ -42,8 +42,8 @@
             $scope.actions = ActivePanelSrv.getActions();
 
             $timeout(function(){
-                ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.ACTIVE.enum); // TODO: remove!
-            }, 3000);
+                ActivePanelSrv.updateStatus(ActivePanelComponentEnum.SCREEN_SHARE.enum, ActivePanelStatusEnum.ACTIVE.enum); // TODO: remove!
+            }, 2000);
 
             $scope.openIncomingCallModal = function() {
                 var scope = $rootScope.$new();

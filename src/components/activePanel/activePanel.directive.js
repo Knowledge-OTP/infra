@@ -71,6 +71,9 @@
                     element.on('$destroy', function() {
                         destroyTimer();
                     });
+
+                    // scope.iama = 'student';
+                    scope.iama = 'teacher';
                 }
             };
         });
