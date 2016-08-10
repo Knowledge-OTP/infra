@@ -94,9 +94,6 @@
             };
 
             function _base(name, param1) {
-                if (angular.isUndefined(actions) || angular.equals(actions, {})) {
-                    return $log.error('actions is undefined');
-                }
                 var fn = actions[name];
                 if (angular.isFunction(fn)) {
                     fn(param1);

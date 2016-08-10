@@ -66,8 +66,10 @@
                     actions: '='
                 },
                 link:function(scope, element, attrs) {
-
-                    scope.actions = scope.actions || {};
+                    // scope.actions = scope.actions || {};
+                    if (!angular.isObject(scope.actions)) {
+                        scope.actions = {};
+                    }
 
                     var callDuration = 0,
                         durationToDisplay,
@@ -99,11 +101,20 @@
                     };
 
                     scope.actions.screenShareMode = function (bool) {
+                        $log.debug('screenShareMode');
                         if (bool) {
                             element.addClass('screen-share-mode');
                         } else {
                             element.removeClass('screen-share-mode');
                         }
+                    };
+
+                    scope.actions.callBtnMode = function () {
+                        $log.debug('callBtnMode');
+                    };
+
+                    scope.actions.screenShareBtnsMode = function () {
+                        $log.debug('screenShareBtnsMode');
                     };
 
                     function destroyTimer() {
@@ -216,9 +227,6 @@
             };
 
             function _base(name, param1) {
-                if (angular.isUndefined(actions) || angular.equals(actions, {})) {
-                    return $log.error('actions is undefined');
-                }
                 var fn = actions[name];
                 if (angular.isFunction(fn)) {
                     fn(param1);

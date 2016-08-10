@@ -11,8 +11,10 @@
                     actions: '='
                 },
                 link:function(scope, element, attrs) {
-
-                    scope.actions = scope.actions || {};
+                    // scope.actions = scope.actions || {};
+                    if (!angular.isObject(scope.actions)) {
+                        scope.actions = {};
+                    }
 
                     var callDuration = 0,
                         durationToDisplay,
@@ -44,11 +46,20 @@
                     };
 
                     scope.actions.screenShareMode = function (bool) {
+                        $log.debug('screenShareMode');
                         if (bool) {
                             element.addClass('screen-share-mode');
                         } else {
                             element.removeClass('screen-share-mode');
                         }
+                    };
+
+                    scope.actions.callBtnMode = function () {
+                        $log.debug('callBtnMode');
+                    };
+
+                    scope.actions.screenShareBtnsMode = function () {
+                        $log.debug('screenShareBtnsMode');
                     };
 
                     function destroyTimer() {
