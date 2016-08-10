@@ -38,6 +38,9 @@
                ng-model="$ctrl.newAnswer">
         <button ng-click="$ctrl.updateCurrentAnswer($ctrl.newAnswer)">update answer</button>
     </div>
+    <div class="btn-container">
+        <button ng-click="$ctrl.results.$save()">save result</button>
+    </div>
     <div ng-if="$ctrl.showExercise">
         <znk-exercise ng-model="results"
                       questions="questions"

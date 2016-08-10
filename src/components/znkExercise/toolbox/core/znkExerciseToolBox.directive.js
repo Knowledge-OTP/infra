@@ -24,6 +24,10 @@
                     this.getZnkExerciseElement = function(){
                         return this.znkExerciseCtrl.getElement();
                     };
+
+                    this.isExerciseReady = function(){
+                        return this.znkExerciseCtrl.isExerciseReady();
+                    };
                 },
                 bindToController: true,
                 link: function(scope, element, attrs, znkExerciseCtrl){

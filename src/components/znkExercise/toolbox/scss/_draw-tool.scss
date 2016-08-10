@@ -6,6 +6,10 @@ znk-exercise{
         &.no-pointer-events{
             pointer-events: none;
         }
+
+        &.crosshair-cursor{
+            cursor: crosshair;
+        }
     }
 }
 
@@ -17,6 +21,7 @@ znk-exercise-draw-tool{
 
     & > svg-icon{
         flex-grow: 1;
+        cursor: pointer;
 
         &.active {
             .znk-exercise-touche-svg {
@@ -36,6 +41,10 @@ znk-exercise-draw-tool{
                     fill: $bgColor3;
                 }
             }
+        }
+
+        &[name="znk-exercise-touche"]{
+            border-bottom: 1px solid $bcColor12;
         }
     }
 }
