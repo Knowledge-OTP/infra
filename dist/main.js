@@ -41,6 +41,7 @@
 "znk.infra.znkAudioPlayer",
 "znk.infra.znkExercise",
 "znk.infra.znkModule",
+"znk.infra.znkProgressBar",
 "znk.infra.znkTimeline"
     ]);
 })(angular);
@@ -393,9 +394,10 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log',
-        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log) {
+        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv',
+        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv) {
             var userAssignModuleService = {};
+            userAssignModuleService.assignModules = {};
 
             userAssignModuleService.assignModuleStatus = new EnumSrv.BaseEnum([
                 ['UNLOCKED', ExerciseStatusEnum.NEW.enum, 'unlocked'],
@@ -403,83 +405,20 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 ['COMPLETED', ExerciseStatusEnum.COMPLETED.enum, 'completed']
             ]);
 
-            userAssignModuleService.getUserAssignModules = function (userId) {
-                return ExerciseResultSrv.getUserModuleResultsGuids(userId).then(function (resultsGuids) {
-                    var moduleResults = {};
-                    var getProm = $q.when();
-                    angular.forEach(resultsGuids, function (resultGuid, resultModuleId) {
-                        getProm = getProm.then(function() {
-                            return ExerciseResultSrv.getModuleResult(userId, resultModuleId, false).then(function(moduleResult){
-                                if(moduleResult && !angular.equals(moduleResult, {})) {
-                                    moduleResults[moduleResult.moduleId] = moduleResult;
-                                }
-                            });
-                        });
-                    });
-
-                    return getProm.then(function () {
-                        return moduleResults;
-                    });
+            userAssignModuleService.offExternalOnValue = function (userId) {
+                InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
+                    studentStorage.offEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB);
                 });
             };
 
-            userAssignModuleService.getUserAssignModulesWithProgress = function (userId) {
-                function getModuleSummary(assignModule){
-                    var exerciseId;
-                    var exerciseTypeId = ExerciseTypeEnum.PRACTICE.enum,
-                        status = ExerciseStatusEnum.NEW.enum,
-                        correctAnswersNum = 0,
-                        wrongAnswersNum = 0,
-                        skippedAnswersNum = 0,
-                        totalAnswered = 0,
-                        duration = 0;
-
-                    if (assignModule.exercises) {
-                        var practiceExercise = assignModule.exercises.filter(function (exercise) {
-                            return exercise.exerciseTypeId === exerciseTypeId ? exercise.exerciseId : null;
-                        });
-
-                        if (practiceExercise && practiceExercise.length) {
-                            exerciseId = practiceExercise[0].exerciseId;
-
-                            if(assignModule.exercisesStatus) {
-                                if (assignModule.exercisesStatus[exerciseTypeId] && assignModule.exercisesStatus[exerciseTypeId][exerciseId]) {
-                                    status = assignModule.exercisesStatus[exerciseTypeId][exerciseId];
-                                }
-                            }
-
-                            if (assignModule.exerciseResults) {
-                                if (assignModule.exerciseResults[exerciseTypeId] && assignModule.exerciseResults[exerciseTypeId][exerciseId]) {
-                                    correctAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
-                                    wrongAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
-                                    skippedAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
-                                    duration = assignModule.exerciseResults[exerciseTypeId][exerciseId].duration || 0;
-                                    totalAnswered = correctAnswersNum + wrongAnswersNum;
-                                }
-                            }
-                        }
-                    }
-
-                    return {
-                        status: status,
-                        correctAnswersNum: correctAnswersNum,
-                        wrongAnswersNum: wrongAnswersNum,
-                        skippedAnswersNum: skippedAnswersNum,
-                        duration: duration,
-                        totalAnswered: totalAnswered
-                    };
-                }
-
-                return userAssignModuleService.getUserAssignModules(userId).then(function (assignModules) {
-                    angular.forEach(assignModules, function (assignModule) {
-                        assignModule.moduleSummary = getModuleSummary(assignModule);
-                    });
-                    return assignModules;
+            userAssignModuleService.registerExternalOnValueCB = function (cb, userId) {
+                InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
+                    studentStorage.onEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB.bind(null, userId, cb, studentStorage));
                 });
             };
 
             userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId) {
-                if(!angular.isArray(moduleIds)){
+                if (!angular.isArray(moduleIds)) {
                     var errMSg = 'UserAssignModuleService: 1st argument should be array of module ids';
                     $log.error(errMSg);
                     return $q.reject(errMSg);
@@ -487,7 +426,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 var moduleResults = {};
                 var getProm = $q.when();
                 angular.forEach(moduleIds, function (moduleId) {
-                    getProm = getProm.then(function(){
+                    getProm = getProm.then(function () {
                         return ExerciseResultSrv.getModuleResult(userId, moduleId, false).then(function (moduleResult) {
                             moduleResults[moduleId] = moduleResult;
                             return moduleResults;
@@ -498,10 +437,10 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 return getProm.then(function () {
                     var saveProm = $q.when();
                     angular.forEach(moduleIds, function (moduleId) {
-                        saveProm = saveProm.then(function(){
+                        saveProm = saveProm.then(function () {
                             return ZnkModuleService.getModuleById(moduleId).then(function (moduleObj) {
-                                if(!moduleResults[moduleId]) {
-                                    moduleResults[moduleId] =  ExerciseResultSrv.getDefaultModuleResult(moduleId, userId);
+                                if (!moduleResults[moduleId]) {
+                                    moduleResults[moduleId] = ExerciseResultSrv.getDefaultModuleResult(moduleId, userId);
                                     moduleResults[moduleId].assignedTutorId = tutorId;
                                     // copy fields from module object to results object for future using
                                     moduleResults[moduleId].name = moduleObj.name;
@@ -529,6 +468,96 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     return ExerciseResultSrv.setModuleResult(moduleResult, moduleId);
                 });
             };
+
+            function getModuleSummary(assignModule) {
+                var exerciseId;
+                var exerciseTypeId = ExerciseTypeEnum.PRACTICE.enum,
+                    status = ExerciseStatusEnum.NEW.enum,
+                    correctAnswersNum = 0,
+                    wrongAnswersNum = 0,
+                    skippedAnswersNum = 0,
+                    totalAnswered = 0,
+                    duration = 0;
+
+                if (assignModule.exercises) {
+                    var practiceExercise = assignModule.exercises.filter(function (exercise) {
+                        return exercise.exerciseTypeId === exerciseTypeId ? exercise.exerciseId : null;
+                    });
+
+                    if (practiceExercise && practiceExercise.length) {
+                        exerciseId = practiceExercise[0].exerciseId;
+
+                        if (assignModule.exercisesStatus) {
+                            if (assignModule.exercisesStatus[exerciseTypeId] && assignModule.exercisesStatus[exerciseTypeId][exerciseId]) {
+                                status = assignModule.exercisesStatus[exerciseTypeId][exerciseId];
+                            }
+                        }
+
+                        if (assignModule.exerciseResults) {
+                            if (assignModule.exerciseResults[exerciseTypeId] && assignModule.exerciseResults[exerciseTypeId][exerciseId]) {
+                                correctAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
+                                wrongAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
+                                skippedAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
+                                duration = assignModule.exerciseResults[exerciseTypeId][exerciseId].duration || 0;
+                                totalAnswered = correctAnswersNum + wrongAnswersNum;
+                            }
+                        }
+                    }
+                }
+
+                return {
+                    status: status,
+                    correctAnswersNum: correctAnswersNum,
+                    wrongAnswersNum: wrongAnswersNum,
+                    skippedAnswersNum: skippedAnswersNum,
+                    duration: duration,
+                    totalAnswered: totalAnswered
+                };
+            }
+
+            function onValueEventCB(userId, cb, studentStorage, moduleResultsGuids) {
+                if (angular.isUndefined(moduleResultsGuids)) {
+                    return;
+                }
+                var moduleResults = {};
+                var getProm = $q.when();
+                var getPromArr = [];
+                angular.forEach(moduleResultsGuids, function (resultGuid, moduleId) {
+                    getProm = ExerciseResultSrv.getModuleResult(userId, moduleId, false).then(function (moduleResult) {
+                        if (moduleResult && !angular.equals(moduleResult, {})) {
+                            moduleResults[moduleResult.moduleId] = moduleResult;
+                        }
+                    });
+                    getPromArr.push(getProm);
+                });
+
+                $q.all(getPromArr).then(function () {
+                    angular.forEach(moduleResults, function (assignModule) {
+                        assignModule.moduleSummary = getModuleSummary(assignModule);
+
+                        if (!assignModule.contentAssign) {
+                            var modulePath = 'moduleResults/' + assignModule.guid + '/contentAssign';
+                            studentStorage.onEvent('value', modulePath, onContentAssignChangedCB.bind(null, assignModule, cb));
+                        }
+                    });
+
+                    userAssignModuleService.assignModules = moduleResults;
+                    applyCB(cb);
+                });
+            }
+
+            function onContentAssignChangedCB(assignModule, cb, contentAssign) {
+                if (contentAssign) {
+                    userAssignModuleService.assignModules[assignModule.moduleId].contentAssign = contentAssign;
+                    applyCB(cb);
+                }
+            }
+
+            function applyCB(cb) {
+                if (angular.isFunction(cb)) {
+                    cb(userAssignModuleService.assignModules);
+                }
+            }
 
             return userAssignModuleService;
         }
@@ -628,7 +657,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         'pascalprecht.translate',
         'znk.infra.webcall',
         'znk.infra.callsModals',
-        'znk.infra.general'
+        'znk.infra.general',
+        'znk.infra.activePanel'
     ]);
 })(angular);
 
@@ -5928,6 +5958,14 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
                     }
                 }
 
+                $rootScope.$on('auth:beforeLogout', function () {
+                    var authData = getAuthData();
+                    if (authData) {
+                        var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
+                        userRef.remove();
+                    }
+                });
+
                 return PresenceService;
             }];
     });
@@ -7543,9 +7581,16 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
 
                         var ref = this.getRef(path);
                         ref.on(type, function (snapshot) {
+                            self.__registeredEvents[type][path].firstOnWasInvoked = true;
                             var newVal = snapshot.val();
                             self.__invokeEventCb(type, path, [newVal]);
                         });
+                    } else {
+                        if (self.__registeredEvents[type][path].firstOnWasInvoked) {
+                            self.get(path).then(function (newVal) {
+                                cb(newVal);
+                            });
+                        }
                     }
 
                     var evtCbArr = this.__registeredEvents[type][path];
@@ -7569,8 +7614,11 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                         return;
                     }
 
+                    var _firstOnWasInvoked = this.__registeredEvents[type][path].firstOnWasInvoked;
+
                     if (angular.isUndefined(cb)) {
                         this.__registeredEvents[type][path] = [];
+                        this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
                         return;
                     }
 
@@ -7582,6 +7630,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                         }
                     });
                     this.__registeredEvents[type][path] = newEventCbArr;
+                    this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
                 }
             };
             StorageFirebaseAdapter.prototype = storageFirebaseAdapterPrototype;
@@ -12057,6 +12106,75 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
 
 angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
 
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkProgressBar', [
+        'znk.infra.svgIcon',
+        'pascalprecht.translate'
+    ])
+        .config([
+            'SvgIconSrvProvider',
+            function (SvgIconSrvProvider) {
+                var svgMap = {};
+                SvgIconSrvProvider.registerSvgSources(svgMap);
+            }]);
+})(angular);
+
+/**
+ * attrs:
+ */
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkProgressBar').directive('znkProgressBar',
+        ["$translatePartialLoader", function ($translatePartialLoader) {
+        'ngInject';
+            return {
+                templateUrl: 'components/znkProgressBar/znkProgressBar.template.html',
+                scope: {
+                    progressWidth: '@',
+                    progressValue: '@',
+                    showProgressValue: '@',
+                    showProgressBubble: '&'
+                },
+                link: function () {
+                    $translatePartialLoader.addPart('znkProgressBar');
+                }
+            };
+        }]
+    );
+})(angular);
+
+
+angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/znkProgressBar/znkProgressBar.template.html",
+    "<div ng-if=\"::showProgressBubble()\" class=\"progress-bubble-wrapper\" ng-style=\"{left: progressWidth + '%'}\">\n" +
+    "    <div class=\"progress-percentage\">\n" +
+    "        <div>{{progressWidth}}%\n" +
+    "            <div translate=\"ZNK_PROGRESS_BAR.MASTERY\"></div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "    <div class=\"progress-bubble\">\n" +
+    "        <div class=\"down-triangle gray-triangle\"></div>\n" +
+    "        <div class=\"down-triangle\"></div>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "\n" +
+    "<div class=\"progress-wrap\">\n" +
+    "    <div class=\"progress\" ng-style=\"{width: progressWidth + '%'}\"></div>\n" +
+    "    <div class=\"answer-count ng-hide\" ng-show=\"{{::showProgressValue}}\" ng-style=\"{left: progressWidth + '%'}\">\n" +
+    "        {{progressValue}}\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "\n" +
+    "");
 }]);
 
 (function (angular) {

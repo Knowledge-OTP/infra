@@ -132,9 +132,16 @@
 
                         var ref = this.getRef(path);
                         ref.on(type, function (snapshot) {
+                            self.__registeredEvents[type][path].firstOnWasInvoked = true;
                             var newVal = snapshot.val();
                             self.__invokeEventCb(type, path, [newVal]);
                         });
+                    } else {
+                        if (self.__registeredEvents[type][path].firstOnWasInvoked) {
+                            self.get(path).then(function (newVal) {
+                                cb(newVal);
+                            });
+                        }
                     }
 
                     var evtCbArr = this.__registeredEvents[type][path];
@@ -158,8 +165,11 @@
                         return;
                     }
 
+                    var _firstOnWasInvoked = this.__registeredEvents[type][path].firstOnWasInvoked;
+
                     if (angular.isUndefined(cb)) {
                         this.__registeredEvents[type][path] = [];
+                        this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
                         return;
                     }
 
@@ -171,6 +181,7 @@
                         }
                     });
                     this.__registeredEvents[type][path] = newEventCbArr;
+                    this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
                 }
             };
             StorageFirebaseAdapter.prototype = storageFirebaseAdapterPrototype;
