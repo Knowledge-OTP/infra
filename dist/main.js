@@ -416,7 +416,6 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     studentStorage.onEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB.bind(null, userId, cb, studentStorage));
                 });
             };
-
             userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId) {
                 if (!angular.isArray(moduleIds)) {
                     var errMSg = 'UserAssignModuleService: 1st argument should be array of module ids';
@@ -493,7 +492,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
             }
 
-            function getResultsByModuleId (userId, moduleId){
+            function getResultsByModuleId(userId, moduleId) {
                 return ExerciseResultSrv.getModuleResult(userId, moduleId, false).then(function (moduleResult) {
                     if (moduleResult && !angular.equals(moduleResult, {})) {
                         moduleResult.moduleSummary = getModuleSummary(moduleResult);
@@ -4211,6 +4210,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                                 moduleResult.exercisesStatus[exerciseTypeId][exerciseId] = exerciseStatuses[exerciseTypeId][exerciseId].status;
                             }
 
+                            moduleResult.lastUpdate = Date.now();
                             var modulePath = _getModuleResultPath(moduleResult.guid);
                             dataToSave[modulePath] = moduleResult;
 

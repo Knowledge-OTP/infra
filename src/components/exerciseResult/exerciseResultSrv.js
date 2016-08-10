@@ -514,6 +514,7 @@
                                 moduleResult.exercisesStatus[exerciseTypeId][exerciseId] = exerciseStatuses[exerciseTypeId][exerciseId].status;
                             }
 
+                            moduleResult.lastUpdate = Date.now();
                             var modulePath = _getModuleResultPath(moduleResult.guid);
                             dataToSave[modulePath] = moduleResult;
 

@@ -29,7 +29,6 @@
                     studentStorage.onEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB.bind(null, userId, cb, studentStorage));
                 });
             };
-
             userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId) {
                 if (!angular.isArray(moduleIds)) {
                     var errMSg = 'UserAssignModuleService: 1st argument should be array of module ids';
@@ -106,7 +105,7 @@
                 });
             }
 
-            function getResultsByModuleId (userId, moduleId){
+            function getResultsByModuleId(userId, moduleId) {
                 return ExerciseResultSrv.getModuleResult(userId, moduleId, false).then(function (moduleResult) {
                     if (moduleResult && !angular.equals(moduleResult, {})) {
                         moduleResult.moduleSummary = getModuleSummary(moduleResult);
