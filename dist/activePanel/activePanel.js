@@ -212,10 +212,10 @@
             'ngInject';
 
             var svgMap = {
-                'call-mute-icon': 'components/calls/svg/call-mute-icon.svg',
-                'share-screen-icon': 'components/activePanel/svg/share-screen-icon.svg',
-                'track-teacher-icon': 'components/activePanel/svg/track-teacher-icon.svg',
-                'track-student-icon': 'components/activePanel/svg/track-student-icon.svg'
+                'active-panel-call-mute-icon': 'components/calls/svg/call-mute-icon.svg',
+                'active-panel-share-screen-icon': 'components/activePanel/svg/share-screen-icon.svg',
+                'active-panel-track-teacher-icon': 'components/activePanel/svg/track-teacher-icon.svg',
+                'active-panel-track-student-icon': 'components/activePanel/svg/track-student-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
         }]);
@@ -235,10 +235,10 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "        <div class=\"call-controls flex-col\">\n" +
     "            <!--<svg-icon name=\"call-mute-icon\"></svg-icon>-->\n" +
     "            <!--<div class=\"share-my-screen\"></div>-->\n" +
-    "            <svg-icon ng-hide=\"true\" name=\"share-screen-icon\"></svg-icon>\n" +
+    "            <svg-icon ng-hide=\"true\" name=\"active-panel-share-screen-icon\"></svg-icon>\n" +
     "            <ng-switch ng-hide=\"true\" on=\"iama\" class=\"show-other-screen\">\n" +
-    "                <svg-icon ng-switch-when=\"teacher\" name=\"track-student-icon\"></svg-icon>\n" +
-    "                <svg-icon ng-switch-when=\"student\" name=\"track-teacher-icon\"></svg-icon>\n" +
+    "                <svg-icon ng-switch-when=\"teacher\" name=\"active-panel-track-student-icon\"></svg-icon>\n" +
+    "                <svg-icon ng-switch-when=\"student\" name=\"active-panel-track-teacher-icon\"></svg-icon>\n" +
     "            </ng-switch>\n" +
     "            <call-btn></call-btn>\n" +
     "        </div>\n" +
@@ -252,6 +252,7 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
     "     x=\"0px\"\n" +
     "     y=\"0px\"\n" +
+    "     class=\"active-panel-share-screen-icon\"\n" +
     "	 viewBox=\"0 0 138 141.3\"\n" +
     "     xml:space=\"preserve\">\n" +
     "<path d=\"M113.2,0H24.8C11.2,0,0,11.2,0,24.8v55.4C0,93.8,11.2,105,24.8,105h88.4c13.6,0,24.8-11.2,24.8-24.8V24.8\n" +
@@ -267,6 +268,7 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
     "     x=\"0px\"\n" +
     "	 y=\"0px\"\n" +
+    "     class=\"active-panel-track-student-icon\"\n" +
     "     viewBox=\"0 0 138 141.3\"\n" +
     "     xml:space=\"preserve\">\n" +
     "<style type=\"text/css\">\n" +
@@ -293,6 +295,7 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
     "     x=\"0px\"\n" +
     "	 y=\"0px\"\n" +
+    "     class=\"active-panel-track-teacher-icon\"\n" +
     "     viewBox=\"-326 51.7 138 141.3\"\n" +
     "     xml:space=\"preserve\">\n" +
     "<style type=\"text/css\">\n" +

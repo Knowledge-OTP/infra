@@ -62,7 +62,7 @@ active-panel {
                 //        }
                 //    }
                 //}
-                svg-icon.share-screen-icon {
+                svg-icon.active-panel-share-screen-icon {
                     float:left;
                     cursor: pointer;
                     width: 28px;
@@ -77,8 +77,8 @@ active-panel {
                     }
                 }
 
-                svg-icon.track-student-icon,
-                svg-icon.track-teacher-icon {
+                svg-icon.active-panel-track-student-icon,
+                svg-icon.active-panel-track-teacher-icon {
                     float:left;
                     cursor: pointer;
                     width: 28px;

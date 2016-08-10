@@ -329,19 +329,19 @@ active-panel {
     active-panel .active-panel .flex-col.call-controls {
       -ms-flex-preferred-size: 50%;
           flex-basis: 50%; }
-      active-panel .active-panel .flex-col.call-controls svg-icon.share-screen-icon {
+      active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-share-screen-icon {
         float: left;
         cursor: pointer;
         width: 28px;
         height: 28px;
         border-radius: 50%;
         border: 1px solid #0a9bad; }
-        active-panel .active-panel .flex-col.call-controls svg-icon.share-screen-icon svg {
+        active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-share-screen-icon svg {
           width: 44%; }
-          active-panel .active-panel .flex-col.call-controls svg-icon.share-screen-icon svg path {
+          active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-share-screen-icon svg path {
             fill: #0a9bad; }
-      active-panel .active-panel .flex-col.call-controls svg-icon.track-student-icon,
-      active-panel .active-panel .flex-col.call-controls svg-icon.track-teacher-icon {
+      active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-track-student-icon,
+      active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-track-teacher-icon {
         float: left;
         cursor: pointer;
         width: 28px;
@@ -349,11 +349,11 @@ active-panel {
         border-radius: 50%;
         background-color: #0a9bad;
         margin-left: 7px; }
-        active-panel .active-panel .flex-col.call-controls svg-icon.track-student-icon svg,
-        active-panel .active-panel .flex-col.call-controls svg-icon.track-teacher-icon svg {
+        active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-track-student-icon svg,
+        active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-track-teacher-icon svg {
           width: 44%; }
-          active-panel .active-panel .flex-col.call-controls svg-icon.track-student-icon svg path,
-          active-panel .active-panel .flex-col.call-controls svg-icon.track-teacher-icon svg path {
+          active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-track-student-icon svg path,
+          active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-track-teacher-icon svg path {
             fill: #fff; }
       active-panel .active-panel .flex-col.call-controls call-btn {
         float: right;

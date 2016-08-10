@@ -10,10 +10,10 @@
         <div class="call-controls flex-col">
             <!--<svg-icon name="call-mute-icon"></svg-icon>-->
             <!--<div class="share-my-screen"></div>-->
-            <svg-icon ng-hide="true" name="share-screen-icon"></svg-icon>
+            <svg-icon ng-hide="true" name="active-panel-share-screen-icon"></svg-icon>
             <ng-switch ng-hide="true" on="iama" class="show-other-screen">
-                <svg-icon ng-switch-when="teacher" name="track-student-icon"></svg-icon>
-                <svg-icon ng-switch-when="student" name="track-teacher-icon"></svg-icon>
+                <svg-icon ng-switch-when="teacher" name="active-panel-track-student-icon"></svg-icon>
+                <svg-icon ng-switch-when="student" name="active-panel-track-teacher-icon"></svg-icon>
             </ng-switch>
             <call-btn></call-btn>
         </div>
