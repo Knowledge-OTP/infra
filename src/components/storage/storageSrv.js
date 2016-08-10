@@ -73,7 +73,8 @@
             }
 
             StorageSrv.EVENTS = {
-                'VALUE': 'value'
+                'VALUE': 'value',
+                'CHILD_CHANGED': 'child_changed'
             };
 
             StorageSrv.prototype.__processPath = function (pathStrOrObj) {
