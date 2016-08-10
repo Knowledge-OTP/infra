@@ -41,8 +41,18 @@
 
             $scope.actions = ActivePanelSrv.getActions();
 
+            $scope.callBtnModel = {
+                // presence: newValue.presence,
+                // isOffline: newValue.presence !== PresenceService.userStatus.ONLINE,
+                // receiverId: newValue.receiverUid
+            };
+
+            // TODO: remove!
             $timeout(function(){
-                ActivePanelSrv.updateStatus(ActivePanelComponentEnum.SCREEN_SHARE.enum, ActivePanelStatusEnum.ACTIVE.enum); // TODO: remove!
+                ActivePanelSrv.updateStatus(ActivePanelComponentEnum.SCREEN_SHARE.enum, ActivePanelStatusEnum.ACTIVE.enum);
+                $timeout(function(){
+                    ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.ACTIVE.enum);
+                }, 2000);
             }, 2000);
 
             $scope.openIncomingCallModal = function() {

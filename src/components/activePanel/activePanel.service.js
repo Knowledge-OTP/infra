@@ -61,7 +61,7 @@
                         // screenShare buttons are disabled
                         currentStatus.screenSharing = ActivePanelStatusEnum.ACTIVE.enum;
                         actions.showUI();
-                        //screenShareMode(true);
+                        actions.screenShareMode(true);
                         //screenShareBtnsMode('disabled');
                         break;
 
@@ -73,7 +73,7 @@
                         if (!isCallActive()) {
                             actions.hideUI();
                         }
-                        //screenShareMode(false);
+                        actions.screenShareMode(false);
                         //screenShareBtnsMode('enabled');
                         break;
 
