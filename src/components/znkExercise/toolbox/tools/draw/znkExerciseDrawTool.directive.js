@@ -28,6 +28,7 @@
                         canvasContext,
                         drawer,
                         eventsManager,
+                        serverDrawingUpdater,
                         pixSize = 4;
 
                     var DRAWING_MODES = {
@@ -169,6 +170,42 @@
                         });
                     }
 
+                    function ServerDrawingUpdater(){
+                        this.pixelsMapToUpdate = {};
+                    }
+
+                    ServerDrawingUpdater.prototype._triggerServerUpdate = function(){
+                        if(this.exerciseDrawingRefProm){
+                            return;
+                        }
+
+                        this.exerciseDrawingRefProm = _getFbRef();
+
+                        var FLUSH_TIME = 3000;
+                        var self = this;
+                        $timeout(function(){
+                            self.flush();
+                        },FLUSH_TIME,false);
+                    };
+
+                    ServerDrawingUpdater.prototype.update = function(pixelsMapToUpdate){
+                        angular.extend(this.pixelsMapToUpdate, pixelsMapToUpdate);
+                        this._triggerServerUpdate();
+                    };
+
+                    ServerDrawingUpdater.prototype.flush = function(){
+                        var self = this;
+                        if(!this.exerciseDrawingRefProm){
+                            return $q.when();
+                        }
+
+                        return this.exerciseDrawingRefProm.then(function (exerciseDrawingRef) {
+                            self.exerciseDrawingRefProm = null;
+                            exerciseDrawingRef.update(self.pixelsMapToUpdate);
+                            self.pixelsMapToUpdate = {};
+                        });
+                    };
+
                     function _init() {
                         var znkExerciseElement = toolBoxCtrl.getZnkExerciseElement();
                         var znkExerciseDomElement = znkExerciseElement[0];
@@ -197,6 +234,7 @@
 
                         drawer = new Drawer();
                         eventsManager = new EventsManager();
+                        serverDrawingUpdater = new ServerDrawingUpdater();
                     }
 
                     function Drawer() {
@@ -275,9 +313,7 @@
                             }
                         });
 
-                        _getFbRef().then(function (exerciseDrawingRef) {
-                            exerciseDrawingRef.update(pixelsToDrawMap);
-                        });
+                        serverDrawingUpdater.update(pixelsToDrawMap);
                     };
 
                     Drawer.prototype.stopDrawing = function () {
@@ -360,11 +396,13 @@
                     });
 
                     scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function () {
-                        drawer.clean();
-                        eventsManager.cleanListeners();
-                        toolBoxCtrl.getCurrentQuestion().then(function (currQuestion) {
-                            var questionDrawMode = currQuestion.__questionStatus.drawingToolViewMode || DRAWING_MODES.NONE;
-                            scope.d.drawMode = questionDrawMode;
+                        serverDrawingUpdater.flush().then(function(){
+                            drawer.clean();
+                            eventsManager.cleanListeners();
+                            toolBoxCtrl.getCurrentQuestion().then(function (currQuestion) {
+                                var questionDrawMode = currQuestion.__questionStatus.drawingToolViewMode || DRAWING_MODES.NONE;
+                                scope.d.drawMode = questionDrawMode;
+                            });
                         });
                     });
 
