@@ -297,6 +297,8 @@ active-panel {
     background-color: #f7f7f7;
     border: 1px solid #ebebeb;
     border-radius: 20px; }
+    active-panel .active-panel svg-icon:focus {
+      outline: none; }
     active-panel .active-panel .flex-container {
       height: 100%;
       display: -ms-flexbox;
@@ -366,3 +368,7 @@ active-panel {
       color: #979797;
       font-family: Lato;
       font-weight: 400; }
+  active-panel.screen-share-mode .active-panel {
+    background-color: #464646; }
+    active-panel.screen-share-mode .active-panel .callee-name {
+      color: #fff; }

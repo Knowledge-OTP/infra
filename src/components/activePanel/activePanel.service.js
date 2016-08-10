@@ -70,9 +70,9 @@
                         // check if call is active, if not hide drv
                         // return shareScreen btns to enabled state
                         currentStatus.screenSharing = ActivePanelStatusEnum.INACTIVE.enum;
-                        // if (!isCallActive()) {
-                        //     actions.hideUI();
-                        // }
+                        if (!isCallActive()) {
+                            //actions.hideUI(); // TODO: is this needed?
+                        }
                         actions.screenShareMode(false);
                         //screenShareBtnsMode('enabled');
                         break;

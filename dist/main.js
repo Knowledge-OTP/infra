@@ -63,12 +63,17 @@
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {
                     calleeName: '@',
-                    actions: '='
+                    actions: '=',
+                    callBtnModel: '='
                 },
                 link:function(scope, element, attrs) {
                     // scope.actions = scope.actions || {};
                     if (!angular.isObject(scope.actions)) {
                         scope.actions = {};
+                    }
+
+                    if (!angular.isObject(scope.callBtnModel)) {
+                        scope.callBtnModel = {};
                     }
 
                     var callDuration = 0,
@@ -197,7 +202,7 @@
                         // screenShare buttons are disabled
                         currentStatus.screenSharing = ActivePanelStatusEnum.ACTIVE.enum;
                         actions.showUI();
-                        //screenShareMode(true);
+                        actions.screenShareMode(true);
                         //screenShareBtnsMode('disabled');
                         break;
 
@@ -207,9 +212,9 @@
                         // return shareScreen btns to enabled state
                         currentStatus.screenSharing = ActivePanelStatusEnum.INACTIVE.enum;
                         if (!isCallActive()) {
-                            actions.hideUI();
+                            //actions.hideUI(); // TODO: is this needed?
                         }
-                        //screenShareMode(false);
+                        actions.screenShareMode(false);
                         //screenShareBtnsMode('enabled');
                         break;
 
@@ -287,7 +292,7 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "                <svg-icon ng-switch-when=\"teacher\" name=\"active-panel-track-student-icon\"></svg-icon>\n" +
     "                <svg-icon ng-switch-when=\"student\" name=\"active-panel-track-teacher-icon\"></svg-icon>\n" +
     "            </ng-switch>\n" +
-    "            <call-btn></call-btn>\n" +
+    "            <call-btn ng-model=\"callBtnModel\"></call-btn>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>\n" +
