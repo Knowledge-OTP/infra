@@ -45,9 +45,9 @@
                         $interval.cancel(timerInterval);
                     };
 
-                    scope.actions.screenShareMode = function (bool) {
+                    scope.actions.screenShareMode = function (isScreenShareMode) {
                         $log.debug('screenShareMode');
-                        if (bool) {
+                        if (isScreenShareMode) {
                             element.addClass('screen-share-mode');
                         } else {
                             element.removeClass('screen-share-mode');

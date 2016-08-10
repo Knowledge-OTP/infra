@@ -100,9 +100,9 @@
                         $interval.cancel(timerInterval);
                     };
 
-                    scope.actions.screenShareMode = function (bool) {
+                    scope.actions.screenShareMode = function (isScreenShareMode) {
                         $log.debug('screenShareMode');
-                        if (bool) {
+                        if (isScreenShareMode) {
                             element.addClass('screen-share-mode');
                         } else {
                             element.removeClass('screen-share-mode');
@@ -143,17 +143,18 @@
 
             var actions = {};
 
+            this.getActions = function () {
+                return actions;
+            };
+
             var currentStatus = {
                 calls: ActivePanelStatusEnum.INACTIVE.enum,
                 screenSharing: ActivePanelStatusEnum.INACTIVE.enum
             };
 
             this.updateStatus = function (component, status) {
-                if (!component) {
-                    $log.error('must pass the component arg to function');
-                    return;
-                } else if (!status) {
-                    $log.error('must pass the status arg to function');
+                if (!component || !status) {
+                    $log.error('must pass the component & status args to function');
                     return;
                 }
 
@@ -165,7 +166,6 @@
                     return (currentStatus.calls === ActivePanelStatusEnum.ACTIVE.enum);
                 }
 
-                // default for show drv = false
                 switch (true) {
                     case component === ActivePanelComponentEnum.CALLS.enum && status === ActivePanelStatusEnum.ACTIVE.enum :
                         // component = call, status = active
@@ -173,21 +173,21 @@
                         // start timer
                         // call btn in hangup mode
                         currentStatus.calls = ActivePanelStatusEnum.ACTIVE.enum;
-                        showActivePanelDrv();
-                        startTimer();
+                        actions.showUI();
+                        actions.startTimer();
                         //callBtnMode('hangup');
                         break;
 
                     case component === ActivePanelComponentEnum.CALLS.enum && status === ActivePanelStatusEnum.INACTIVE.enum :
                         // component = call, status = inactive (hangup, disc')
-                        // stopTimer
+                        // actions.stopTimer
                         // call btn is in call mode
                         // if screenShare is inactive, hide drv
                         currentStatus.calls = ActivePanelStatusEnum.INACTIVE.enum;
-                        stopTimer();
+                        actions.stopTimer();
                         //callBtnMode('call');
                         if (!isScreenSharingActive()) {
-                            hideActivePanelDrv();
+                            actions.hideUI();
                         }
                         break;
 
@@ -196,7 +196,7 @@
                         // show drv
                         // screenShare buttons are disabled
                         currentStatus.screenSharing = ActivePanelStatusEnum.ACTIVE.enum;
-                        showActivePanelDrv();
+                        actions.showUI();
                         //screenShareMode(true);
                         //screenShareBtnsMode('disabled');
                         break;
@@ -207,42 +207,17 @@
                         // return shareScreen btns to enabled state
                         currentStatus.screenSharing = ActivePanelStatusEnum.INACTIVE.enum;
                         if (!isCallActive()) {
-                            hideActivePanelDrv();
+                            actions.hideUI();
                         }
                         //screenShareMode(false);
                         //screenShareBtnsMode('enabled');
                         break;
 
                     default:
-                        hideActivePanelDrv();
+                        actions.hideUI();
                         break;
                 }
             };
-
-            this.getActions = function () {
-                return actions;
-            };
-
-            function _base(name, param1) {
-                var fn = actions[name];
-                if (angular.isFunction(fn)) {
-                    fn(param1);
-                }
-            }
-
-            var showActivePanelDrv = _base.bind(null, 'showUI');
-
-            var hideActivePanelDrv = _base.bind(null, 'hideUI');
-
-            var startTimer = _base.bind(null, 'startTimer');
-
-            var stopTimer = _base.bind(null, 'stopTimer');
-
-            // var callBtnMode = _base.bind(null, 'callBtnMode');
-            //
-            // var screenShareMode = _base.bind(null, 'screenShareMode');
-            //
-            // var screenShareBtnsMode = _base.bind(null, 'screenShareBtnsMode');
         }]);
 })(angular);
 
@@ -319,9 +294,13 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "");
   $templateCache.put("components/activePanel/svg/share-screen-icon.svg",
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-    "<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n" +
-    "<svg version=\"1.1\" id=\"Layer_7\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
-    "	 viewBox=\"0 0 138 141.3\" style=\"enable-background:new 0 0 138 141.3;\" xml:space=\"preserve\">\n" +
+    "<svg version=\"1.1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "	 viewBox=\"0 0 138 141.3\"\n" +
+    "     xml:space=\"preserve\">\n" +
     "<path d=\"M113.2,0H24.8C11.2,0,0,11.2,0,24.8v55.4C0,93.8,11.2,105,24.8,105h88.4c13.6,0,24.8-11.2,24.8-24.8V24.8\n" +
     "	C138,11.2,126.8,0,113.2,0z M71.1,82V63.4c0,0-28.8-4-42.7,15.3c0,0-5.1-34.6,42.9-40.4l-0.3-20L114.3,50L71.1,82z\"/>\n" +
     "<path d=\"M57.4,118.6h22.7c1,0,1.9,0.4,2.4,1.1c2.2,3.1,8.8,11.9,15.3,17.3c1.8,1.5,0.6,4.2-1.9,4.2H42.2c-2.5,0-3.8-2.7-1.9-4.2\n" +
@@ -330,11 +309,15 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "");
   $templateCache.put("components/activePanel/svg/track-student-icon.svg",
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-    "<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n" +
-    "<svg version=\"1.1\" id=\"Isolation_Mode\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\"\n" +
-    "	 y=\"0px\" viewBox=\"0 0 138 141.3\" style=\"enable-background:new 0 0 138 141.3;\" xml:space=\"preserve\">\n" +
+    "<svg version=\"1.1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "	 y=\"0px\"\n" +
+    "     viewBox=\"0 0 138 141.3\"\n" +
+    "     xml:space=\"preserve\">\n" +
     "<style type=\"text/css\">\n" +
-    "	.st0{fill:none;stroke:#000000;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
+    "	svg.track-student-icon .st0{fill:none;stroke:#000000;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
     "</style>\n" +
     "<path d=\"M57.4,118.6h22.7c1,0,1.9,0.4,2.4,1.1c2.2,3.1,8.8,11.9,15.3,17.3c1.8,1.5,0.6,4.2-1.9,4.2H42.2c-2.5,0-3.8-2.7-1.9-4.2\n" +
     "	c4.9-4,11.6-10.4,14.5-16.9C55.2,119.2,56.2,118.6,57.4,118.6z\"/>\n" +
@@ -352,11 +335,15 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "");
   $templateCache.put("components/activePanel/svg/track-teacher-icon.svg",
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-    "<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n" +
-    "<svg version=\"1.1\" id=\"Isolation_Mode\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\"\n" +
-    "	 y=\"0px\" viewBox=\"-326 51.7 138 141.3\" style=\"enable-background:new -326 51.7 138 141.3;\" xml:space=\"preserve\">\n" +
+    "<svg version=\"1.1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "	 y=\"0px\"\n" +
+    "     viewBox=\"-326 51.7 138 141.3\"\n" +
+    "     xml:space=\"preserve\">\n" +
     "<style type=\"text/css\">\n" +
-    "	.st0{fill:none;stroke:#000000;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
+    "	svg.track-teacher-icon .st0{fill:none;stroke:#000000;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
     "</style>\n" +
     "<path d=\"M-268.6,170.3h22.7c1,0,1.9,0.4,2.4,1.1c2.2,3.1,8.8,11.9,15.3,17.3c1.8,1.5,0.6,4.2-1.9,4.2h-53.7c-2.5,0-3.8-2.7-1.9-4.2\n" +
     "	c4.9-4,11.6-10.4,14.5-16.9C-270.8,170.9-269.8,170.3-268.6,170.3z\"/>\n" +

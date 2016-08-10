@@ -7,17 +7,18 @@
 
             var actions = {};
 
+            this.getActions = function () {
+                return actions;
+            };
+
             var currentStatus = {
                 calls: ActivePanelStatusEnum.INACTIVE.enum,
                 screenSharing: ActivePanelStatusEnum.INACTIVE.enum
             };
 
             this.updateStatus = function (component, status) {
-                if (!component) {
-                    $log.error('must pass the component arg to function');
-                    return;
-                } else if (!status) {
-                    $log.error('must pass the status arg to function');
+                if (!component || !status) {
+                    $log.error('must pass the component & status args to function');
                     return;
                 }
 
@@ -29,7 +30,6 @@
                     return (currentStatus.calls === ActivePanelStatusEnum.ACTIVE.enum);
                 }
 
-                // default for show drv = false
                 switch (true) {
                     case component === ActivePanelComponentEnum.CALLS.enum && status === ActivePanelStatusEnum.ACTIVE.enum :
                         // component = call, status = active
@@ -37,21 +37,21 @@
                         // start timer
                         // call btn in hangup mode
                         currentStatus.calls = ActivePanelStatusEnum.ACTIVE.enum;
-                        showActivePanelDrv();
-                        startTimer();
+                        actions.showUI();
+                        actions.startTimer();
                         //callBtnMode('hangup');
                         break;
 
                     case component === ActivePanelComponentEnum.CALLS.enum && status === ActivePanelStatusEnum.INACTIVE.enum :
                         // component = call, status = inactive (hangup, disc')
-                        // stopTimer
+                        // actions.stopTimer
                         // call btn is in call mode
                         // if screenShare is inactive, hide drv
                         currentStatus.calls = ActivePanelStatusEnum.INACTIVE.enum;
-                        stopTimer();
+                        actions.stopTimer();
                         //callBtnMode('call');
                         if (!isScreenSharingActive()) {
-                            hideActivePanelDrv();
+                            actions.hideUI();
                         }
                         break;
 
@@ -60,7 +60,7 @@
                         // show drv
                         // screenShare buttons are disabled
                         currentStatus.screenSharing = ActivePanelStatusEnum.ACTIVE.enum;
-                        showActivePanelDrv();
+                        actions.showUI();
                         //screenShareMode(true);
                         //screenShareBtnsMode('disabled');
                         break;
@@ -71,41 +71,16 @@
                         // return shareScreen btns to enabled state
                         currentStatus.screenSharing = ActivePanelStatusEnum.INACTIVE.enum;
                         if (!isCallActive()) {
-                            hideActivePanelDrv();
+                            actions.hideUI();
                         }
                         //screenShareMode(false);
                         //screenShareBtnsMode('enabled');
                         break;
 
                     default:
-                        hideActivePanelDrv();
+                        actions.hideUI();
                         break;
                 }
             };
-
-            this.getActions = function () {
-                return actions;
-            };
-
-            function _base(name, param1) {
-                var fn = actions[name];
-                if (angular.isFunction(fn)) {
-                    fn(param1);
-                }
-            }
-
-            var showActivePanelDrv = _base.bind(null, 'showUI');
-
-            var hideActivePanelDrv = _base.bind(null, 'hideUI');
-
-            var startTimer = _base.bind(null, 'startTimer');
-
-            var stopTimer = _base.bind(null, 'stopTimer');
-
-            // var callBtnMode = _base.bind(null, 'callBtnMode');
-            //
-            // var screenShareMode = _base.bind(null, 'screenShareMode');
-            //
-            // var screenShareBtnsMode = _base.bind(null, 'screenShareBtnsMode');
         });
 })(angular);
