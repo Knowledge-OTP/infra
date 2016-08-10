@@ -13,6 +13,11 @@ active-panel {
         background-color: $bgColor21;
         border: 1px solid $bcColor11;
         border-radius: 20px;
+        svg-icon {
+            &:focus {
+                outline: none;
+            }
+        }
         .flex-container {
             height: 100%;
             display:flex;
