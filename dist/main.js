@@ -11988,33 +11988,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         eventsManager = new EventsManager();
                     }
 
-                    function _mousemoveCb(evt) {
-                        drawer.draw(evt);
-                    }
-
-                    function _mousedownCb(evt) {
-                        //left mouse
-                        if (evt.which === 1) {
-                            $timeout(function () {
-                                scope.d.mouseDown = true;
-                            });
-                            canvasDomElement.addEventListener('mousemove', _mousemoveCb);
-                            canvasDomElement.addEventListener('mouseup', _mouseupCb);
-                        }
-                    }
-
-                    function _mouseupCb(evt) {
-                        //left mouse
-                        if (evt.which === 1) {
-                            $timeout(function () {
-                                scope.d.mouseDown = false;
-                            });
-                            drawer.stopDrawing();
-                            canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
-                            canvasDomElement.removeEventListener('mouseup', _mouseupCb);
-                        }
-                    }
-
                     function ServerDrawingUpdater(questionUid){
                         if(angular.isUndefined(questionUid)){
                             $log.error('znkExerciseDrawTool: Question id was not provided');
@@ -12148,6 +12121,36 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         drawer.clearPixel(coordsStr);
                     }
 
+                    function _mousemoveCb(evt) {
+                        drawer.draw(evt);
+                        evt.stopImmediatePropagation();
+                        evt.preventDefault();
+                        return false;
+                    }
+
+                    function _mousedownCb(evt) {
+                        //left mouse
+                        if (evt.which === 1) {
+                            canvasDomElement.addEventListener('mousemove', _mousemoveCb);
+                            canvasDomElement.addEventListener('mouseup', _mouseupCb);
+                            evt.stopImmediatePropagation();
+                            evt.preventDefault();
+                            return false;
+                        }
+                    }
+
+                    function _mouseupCb(evt) {
+                        //left mouse
+                        if (evt.which === 1) {
+                            drawer.stopDrawing();
+                            canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
+                            canvasDomElement.removeEventListener('mouseup', _mouseupCb);
+                            evt.stopImmediatePropagation();
+                            evt.preventDefault();
+                            return false;
+                        }
+                    }
+
                     function EventsManager() {
                         this._fbRegisterProm = $q.when();
                     }
@@ -12162,11 +12165,11 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     };
 
                     EventsManager.prototype.killMouseEvents = function () {
-                        this._mouseEventsRegistered = false;
-
                         canvasDomElement.removeEventListener('mousedown', _mousedownCb);
                         canvasDomElement.removeEventListener('mouseup', _mouseupCb);
                         canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
+
+                        this._mouseEventsRegistered = null;
                     };
 
                     EventsManager.prototype.registerFbListeners = function (questionId) {
@@ -12179,6 +12182,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                         return _getFbRef(questionId).then(function (ref) {
                             if(self.ref){
+                                if(self.ref.key() === ref.key()){
+                                    return;
+                                }
                                 self.killFbListeners();
                             }
 
@@ -12198,6 +12204,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         this.ref.off("child_added", _fbChildChanged);
                         this.ref.off("child_changed", _fbChildChanged);
                         this.ref.off("child_removed", _fbChildRemoved);
+
+                        this.ref = null;
                     };
 
                     EventsManager.prototype.cleanListeners = function () {
