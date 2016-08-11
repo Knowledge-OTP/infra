@@ -195,36 +195,6 @@
                         eventsManager = new EventsManager();
                     }
 
-                    function _mousemoveCb(evt) {
-                        drawer.draw(evt);
-                        evt.stopImmediatePropagation();
-                        evt.preventDefault();
-                        return false;
-                    }
-
-                    function _mousedownCb(evt) {
-                        //left mouse
-                        if (evt.which === 1) {
-                            canvasDomElement.addEventListener('mousemove', _mousemoveCb);
-                            canvasDomElement.addEventListener('mouseup', _mouseupCb);
-                            evt.stopImmediatePropagation();
-                            evt.preventDefault();
-                            return false;
-                        }
-                    }
-
-                    function _mouseupCb(evt) {
-                        //left mouse
-                        if (evt.which === 1) {
-                            drawer.stopDrawing();
-                            canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
-                            canvasDomElement.removeEventListener('mouseup', _mouseupCb);
-                            evt.stopImmediatePropagation();
-                            evt.preventDefault();
-                            return false;
-                        }
-                    }
-
                     function ServerDrawingUpdater(questionUid){
                         if(angular.isUndefined(questionUid)){
                             $log.error('znkExerciseDrawTool: Question id was not provided');
@@ -358,6 +328,36 @@
                         drawer.clearPixel(coordsStr);
                     }
 
+                    function _mousemoveCb(evt) {
+                        drawer.draw(evt);
+                        evt.stopImmediatePropagation();
+                        evt.preventDefault();
+                        return false;
+                    }
+
+                    function _mousedownCb(evt) {
+                        //left mouse
+                        if (evt.which === 1) {
+                            canvasDomElement.addEventListener('mousemove', _mousemoveCb);
+                            canvasDomElement.addEventListener('mouseup', _mouseupCb);
+                            evt.stopImmediatePropagation();
+                            evt.preventDefault();
+                            return false;
+                        }
+                    }
+
+                    function _mouseupCb(evt) {
+                        //left mouse
+                        if (evt.which === 1) {
+                            drawer.stopDrawing();
+                            canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
+                            canvasDomElement.removeEventListener('mouseup', _mouseupCb);
+                            evt.stopImmediatePropagation();
+                            evt.preventDefault();
+                            return false;
+                        }
+                    }
+
                     function EventsManager() {
                         this._fbRegisterProm = $q.when();
                     }
@@ -372,7 +372,7 @@
                     };
 
                     EventsManager.prototype.killMouseEvents = function () {
-                        this._mouseEventsRegistered = false;
+                        this._mouseEventsRegistered = null;
 
                         canvasDomElement.removeEventListener('mousedown', _mousedownCb);
                         canvasDomElement.removeEventListener('mouseup', _mouseupCb);
@@ -389,6 +389,9 @@
 
                         return _getFbRef(questionId).then(function (ref) {
                             if(self.ref){
+                                if(self.ref.key() === ref.key()){
+                                    return;
+                                }
                                 self.killFbListeners();
                             }
 
@@ -404,6 +407,8 @@
                         if(!this.ref){
                             return;
                         }
+
+                        this.ref = null;
 
                         this.ref.off("child_added", _fbChildChanged);
                         this.ref.off("child_changed", _fbChildChanged);
