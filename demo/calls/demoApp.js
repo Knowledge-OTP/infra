@@ -37,9 +37,23 @@
             $rootScope.call = { isOffline: false, receiverId: '21794e2b-3051-4016-8491-b3fe70e8212d' };
             $rootScope.called = { isOffline: false, receiverId: 'eebe2b53-08b7-4296-bcfd-62b69b531473' };
         })
-        .controller('demoCtrl', function ($scope, CallsUiSrv, $rootScope, ActivePanelSrv, $log) {
+        .controller('demoCtrl', function ($scope, CallsUiSrv, $rootScope, ActivePanelSrv, ActivePanelStatusEnum, ActivePanelComponentEnum, $timeout) {
 
             $scope.actions = ActivePanelSrv.getActions();
+
+            $scope.callBtnModel = {
+                // presence: newValue.presence,
+                // isOffline: newValue.presence !== PresenceService.userStatus.ONLINE,
+                // receiverId: newValue.receiverUid
+            };
+
+            // TODO: remove!
+            $timeout(function(){
+                ActivePanelSrv.updateStatus(ActivePanelComponentEnum.SCREEN_SHARE.enum, ActivePanelStatusEnum.ACTIVE.enum);
+                $timeout(function(){
+                    ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.ACTIVE.enum);
+                }, 2000);
+            }, 2000);
 
             $scope.openIncomingCallModal = function() {
                 var scope = $rootScope.$new();
@@ -65,7 +79,6 @@
             CallsUiSrv.getCalleeName().then(function(res){
                 $scope.calleeName = res;
             });
-
         })
         .service('ENV', function () {
             var isTeacher = localStorage.getItem('isTeacher');
@@ -87,10 +100,10 @@
         })
         .config(function(CallsUiSrvProvider){
             var fn = function($q) {
-              return function(reciverId, callerId) {
-                  console.log('reciverId: ' + reciverId + ' callerId: ' + callerId);
-                  return $q.when('fake name');
-              }
+                return function(receiverId, callerId) {
+                    console.log('receiverId: ' + receiverId + ' callerId: ' + callerId);
+                    return $q.when('fake name');
+                }
             };
             CallsUiSrvProvider.setCalleeNameFnGetter(fn);
         });
