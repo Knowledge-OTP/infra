@@ -11802,7 +11802,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseDrawTool',
-        ["ZnkExerciseEvents", "InfraConfigSrv", "$log", "$q", "$compile", "$timeout", function (ZnkExerciseEvents, InfraConfigSrv, $log, $q, $compile, $timeout) {
+        ["ZnkExerciseEvents", "InfraConfigSrv", "$log", "$q", "$compile", "$timeout", "$window", function (ZnkExerciseEvents, InfraConfigSrv, $log, $q, $compile, $timeout, $window) {
             'ngInject';
 
             var TOUCHE_COLORS = {
@@ -12065,7 +12065,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                         var coords = coordStr.split(":");
                         canvasContext.fillStyle = TOUCHE_COLORS[colorId];
-                        canvasContext.fillRect(parseInt(coords[0]), parseInt(coords[1]), PIXEL_SIZE, PIXEL_SIZE);
+                        $window.requestAnimationFrame(function(){
+                            canvasContext.fillRect(parseInt(coords[0]), parseInt(coords[1]), PIXEL_SIZE, PIXEL_SIZE);
+                        });
                     };
 
                     Drawer.prototype.clearPixel = function (coordStr) {
@@ -12075,7 +12077,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                         var coords = coordStr.split(":");
 
-                        canvasContext.clearRect(parseInt(coords[0]) - PIXEL_SIZE, parseInt(coords[1])- PIXEL_SIZE, 2 * PIXEL_SIZE, 2 * PIXEL_SIZE);
+                        $window.requestAnimationFrame(function(){
+                            canvasContext.clearRect(parseInt(coords[0]) - PIXEL_SIZE, parseInt(coords[1])- PIXEL_SIZE, 2 * PIXEL_SIZE, 2 * PIXEL_SIZE);
+                        });
                     };
 
                     Drawer.prototype.draw = function (e) {

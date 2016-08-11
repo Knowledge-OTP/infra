@@ -9,7 +9,7 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseDrawTool',
-        function (ZnkExerciseEvents, InfraConfigSrv, $log, $q, $compile, $timeout) {
+        function (ZnkExerciseEvents, InfraConfigSrv, $log, $q, $compile, $timeout, $window) {
             'ngInject';
 
             var TOUCHE_COLORS = {
@@ -272,7 +272,9 @@
 
                         var coords = coordStr.split(":");
                         canvasContext.fillStyle = TOUCHE_COLORS[colorId];
-                        canvasContext.fillRect(parseInt(coords[0]), parseInt(coords[1]), PIXEL_SIZE, PIXEL_SIZE);
+                        $window.requestAnimationFrame(function(){
+                            canvasContext.fillRect(parseInt(coords[0]), parseInt(coords[1]), PIXEL_SIZE, PIXEL_SIZE);
+                        });
                     };
 
                     Drawer.prototype.clearPixel = function (coordStr) {
@@ -282,7 +284,9 @@
 
                         var coords = coordStr.split(":");
 
-                        canvasContext.clearRect(parseInt(coords[0]) - PIXEL_SIZE, parseInt(coords[1])- PIXEL_SIZE, 2 * PIXEL_SIZE, 2 * PIXEL_SIZE);
+                        $window.requestAnimationFrame(function(){
+                            canvasContext.clearRect(parseInt(coords[0]) - PIXEL_SIZE, parseInt(coords[1])- PIXEL_SIZE, 2 * PIXEL_SIZE, 2 * PIXEL_SIZE);
+                        });
                     };
 
                     Drawer.prototype.draw = function (e) {
