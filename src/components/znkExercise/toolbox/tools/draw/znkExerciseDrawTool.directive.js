@@ -372,11 +372,11 @@
                     };
 
                     EventsManager.prototype.killMouseEvents = function () {
-                        this._mouseEventsRegistered = null;
-
                         canvasDomElement.removeEventListener('mousedown', _mousedownCb);
                         canvasDomElement.removeEventListener('mouseup', _mouseupCb);
                         canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
+
+                        this._mouseEventsRegistered = null;
                     };
 
                     EventsManager.prototype.registerFbListeners = function (questionId) {
@@ -408,11 +408,11 @@
                             return;
                         }
 
-                        this.ref = null;
-
                         this.ref.off("child_added", _fbChildChanged);
                         this.ref.off("child_changed", _fbChildChanged);
                         this.ref.off("child_removed", _fbChildRemoved);
+
+                        this.ref = null;
                     };
 
                     EventsManager.prototype.cleanListeners = function () {
