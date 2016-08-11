@@ -2445,8 +2445,8 @@
                         }
 
                         var coords = coordStr.split(":");
-                        canvasContext.fillStyle = TOUCHE_COLORS[colorId];
                         $window.requestAnimationFrame(function(){
+                            canvasContext.fillStyle = TOUCHE_COLORS[colorId];
                             canvasContext.fillRect(parseInt(coords[0]), parseInt(coords[1]), PIXEL_SIZE, PIXEL_SIZE);
                         });
                     };
