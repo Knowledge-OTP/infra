@@ -11579,7 +11579,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         serverDrawingUpdater,
                         currQuestion;
 
-                    var PIXEL_SIZE = 4;
+                    var PIXEL_SIZE = 2;
                     var SERVER_UPDATED_FLUSH_TIME = 0;
 
                     var DRAWING_MODES = {
