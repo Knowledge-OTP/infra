@@ -11990,28 +11990,31 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                     function _mousemoveCb(evt) {
                         drawer.draw(evt);
+                        evt.stopImmediatePropagation();
+                        evt.preventDefault();
+                        return false;
                     }
 
                     function _mousedownCb(evt) {
                         //left mouse
                         if (evt.which === 1) {
-                            $timeout(function () {
-                                scope.d.mouseDown = true;
-                            });
                             canvasDomElement.addEventListener('mousemove', _mousemoveCb);
                             canvasDomElement.addEventListener('mouseup', _mouseupCb);
+                            evt.stopImmediatePropagation();
+                            evt.preventDefault();
+                            return false;
                         }
                     }
 
                     function _mouseupCb(evt) {
                         //left mouse
                         if (evt.which === 1) {
-                            $timeout(function () {
-                                scope.d.mouseDown = false;
-                            });
                             drawer.stopDrawing();
                             canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
                             canvasDomElement.removeEventListener('mouseup', _mouseupCb);
+                            evt.stopImmediatePropagation();
+                            evt.preventDefault();
+                            return false;
                         }
                     }
 
