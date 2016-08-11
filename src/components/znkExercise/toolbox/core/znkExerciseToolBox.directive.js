@@ -32,8 +32,10 @@
                     };
                 },
                 bindToController: true,
-                link: function(scope, element, attrs, znkExerciseCtrl){
-                    scope.$ctrl.znkExerciseCtrl = znkExerciseCtrl;
+                link: {
+                    pre: function(scope, element, attrs, znkExerciseCtrl){
+                        scope.$ctrl.znkExerciseCtrl = znkExerciseCtrl;
+                    }
                 }
             };
         }
