@@ -78,6 +78,7 @@
 
             function onValueEventCB(userId, cb, studentStorage, moduleResultsGuids) {
                 if (angular.isUndefined(moduleResultsGuids) || !moduleResultsGuids) {
+                    userAssignModuleService.assignModules = {};
                     applyCB(cb);
                     return;
                 }
