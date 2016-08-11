@@ -11064,17 +11064,13 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                                     return;
                                 }
 
-                                var currQuestion = getCurrentQuestion();
-
-                                updateTimeSpentOnQuestion(prevValue);
-                                if (toolboxModalSettings.actions && toolboxModalSettings.actions.setToolValue) {
-                                    toolboxModalSettings.actions.setToolValue(ZnkExerciseSrv.toolBoxTools.BOOKMARK, !!currQuestion.__questionStatus.bookmark);
-                                }
-                                //added since the sliders current was not changed yet
-                                $timeout(function(){
+                                znkExerciseDrvCtrl.isExerciseReady().then(function(){
+                                    updateTimeSpentOnQuestion(prevValue);
+                                    var currQuestion = getCurrentQuestion();
                                     scope.settings.onSlideChange(currQuestion, value);
                                     scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value ,prevValue ,currQuestion);
-                                },0,false);
+                                });
+
                                 //var url = $location.url() + '/' + scope.vm.questionsWithAnswers[value].id;
                                 //$analytics.pageTrack(url);
                             });
@@ -11823,7 +11819,10 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         drawer,
                         eventsManager,
                         serverDrawingUpdater,
-                        pixSize = 4;
+                        currQuestion;
+
+                    var PIXEL_SIZE = 2;
+                    var SERVER_UPDATED_FLUSH_TIME = 0;
 
                     var DRAWING_MODES = {
                         'NONE': 1,
@@ -11847,6 +11846,11 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     scope.d.drawMode = DRAWING_MODES.NONE;
 
                     scope.d.toolClicked = function (tool) {
+                        if(!currQuestion){
+                            $log.debug('znkExerciseDrawTool: curr question was not set yet');
+                            return;
+                        }
+
                         switch (tool) {
                             case TOOLS.TOUCHE:
                                 scope.d.drawMode = scope.d.drawMode === DRAWING_MODES.NONE ? DRAWING_MODES.VIEW : DRAWING_MODES.NONE;
@@ -11862,15 +11866,29 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                     scope.d.cleanCanvas = function () {
                         drawer.clean();
-                        _getFbRef().then(function (exerciseDrawingRef) {
+                        if(!currQuestion){
+                            var errMsg = 'znkExerciseDrawTool:_getFbRef: curr question was not set yet';
+                            $log.debug(errMsg);
+                            return;
+                        }
+
+                        _getFbRef(currQuestion.id).then(function (exerciseDrawingRef) {
                             exerciseDrawingRef.set(null);
                         });
                     };
 
-                    function _getFbRef() {
+                    function _getFbRef(currQuestionId) {
+                        var errMsg;
+
                         if (!scope.settings || !scope.settings.exerciseDrawingPathPrefix) {
-                            var errMsg = 'znkExerciseDrawTool';
+                            errMsg = 'znkExerciseDrawTool';
                             $log.error(errMsg);
+                            return $q.reject(errMsg);
+                        }
+
+                        if(!currQuestionId){
+                            errMsg = 'znkExerciseDrawTool:_getFbRef: curr question was not set yet';
+                            $log.debug(errMsg);
                             return $q.reject(errMsg);
                         }
 
@@ -11882,12 +11900,12 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         }
 
                         var dataPromMap = {
-                            currQuestion: toolBoxCtrl.getCurrentQuestion(),
                             globalStorage: InfraConfigSrv.getGlobalStorage(),
                             pathPrefix: $q.when(pathPrefixProm)
                         };
+
                         return $q.all(dataPromMap).then(function (data) {
-                            var path = 'exerciseDrawings/' + data.pathPrefix + '/' + data.currQuestion.id;
+                            var path = 'exerciseDrawings/' + data.pathPrefix + '/' + currQuestionId;
                             return data.globalStorage.adapter.getRef(path);
                         });
                     }
@@ -11904,61 +11922,19 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         return scope.settings.toucheColorId;
                     }
 
-                    function _mousemoveCb(evt) {
-                        drawer.draw(evt);
-                    }
-
-                    function _mousedownCb(evt) {
-                        //left mouse
-                        if (evt.which === 1) {
-                            $timeout(function () {
-                                scope.d.mouseDown = true;
-                            });
-                            canvasDomElement.addEventListener('mousemove', _mousemoveCb);
-                            canvasDomElement.addEventListener('mouseup', _mouseupCb);
-                        }
-                    }
-
-                    function _mouseupCb(evt) {
-                        //left mouse
-                        if (evt.which === 1) {
-                            $timeout(function () {
-                                scope.d.mouseDown = false;
-                            });
-                            drawer.stopDrawing();
-                            canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
-                            canvasDomElement.removeEventListener('mouseup', _mouseupCb);
-                        }
-                    }
-
-                    function _fbChildChanged(snapShot) {
-                        var coordsStr = snapShot.key();
-                        var color = snapShot.val();
-                        if(color === 0){
-                            drawer.clearPixel(coordsStr);
-                        }else{
-
-                            drawer.drawPixel(coordsStr, color);
-                        }
-                    }
-
-                    function _fbChildRemoved(snapShot) {
-                        var coordsStr = snapShot.key();
-                        drawer.clearPixel(coordsStr);
-                    }
-
                     function _setDrawMode(drawMode) {
                         switch (drawMode) {
                             case DRAWING_MODES.NONE:
                                 eventsManager.cleanListeners();
+                                drawer.clean();
                                 break;
                             case DRAWING_MODES.VIEW:
                                 eventsManager.killMouseEvents();
-                                eventsManager.registerFbListeners();
+                                eventsManager.registerFbListeners(currQuestion.id);
                                 break;
                             default:
                                 eventsManager.registerMouseEvents();
-                                eventsManager.registerFbListeners();
+                                eventsManager.registerFbListeners(currQuestion.id);
                                 drawer.toucheColor = _getToucheColor(drawMode);
                         }
                     }
@@ -11969,41 +11945,14 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         });
                     }
 
-                    function ServerDrawingUpdater(){
-                        this.pixelsMapToUpdate = {};
-                    }
-
-                    ServerDrawingUpdater.prototype._triggerServerUpdate = function(){
-                        if(this.exerciseDrawingRefProm){
+                    function _reloadCanvas(){
+                        if(scope.d.drawMode === DRAWING_MODES.NONE){
                             return;
                         }
 
-                        this.exerciseDrawingRefProm = _getFbRef();
-
-                        var FLUSH_TIME = 0;
-                        var self = this;
-                        $timeout(function(){
-                            self.flush();
-                        },FLUSH_TIME,false);
-                    };
-
-                    ServerDrawingUpdater.prototype.update = function(pixelsMapToUpdate){
-                        angular.extend(this.pixelsMapToUpdate, pixelsMapToUpdate);
-                        this._triggerServerUpdate();
-                    };
-
-                    ServerDrawingUpdater.prototype.flush = function(){
-                        var self = this;
-                        if(!this.exerciseDrawingRefProm){
-                            return $q.when();
-                        }
-
-                        return this.exerciseDrawingRefProm.then(function (exerciseDrawingRef) {
-                            self.exerciseDrawingRefProm = null;
-                            exerciseDrawingRef.update(self.pixelsMapToUpdate);
-                            self.pixelsMapToUpdate = {};
-                        });
-                    };
+                        drawer.clean();
+                        eventsManager.registerFbListeners(currQuestion.id);
+                    }
 
                     function _init() {
                         var znkExerciseElement = toolBoxCtrl.getZnkExerciseElement();
@@ -12033,8 +11982,73 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                         drawer = new Drawer();
                         eventsManager = new EventsManager();
-                        serverDrawingUpdater = new ServerDrawingUpdater();
                     }
+
+                    function _mousemoveCb(evt) {
+                        drawer.draw(evt);
+                    }
+
+                    function _mousedownCb(evt) {
+                        //left mouse
+                        if (evt.which === 1) {
+                            $timeout(function () {
+                                scope.d.mouseDown = true;
+                            });
+                            canvasDomElement.addEventListener('mousemove', _mousemoveCb);
+                            canvasDomElement.addEventListener('mouseup', _mouseupCb);
+                        }
+                    }
+
+                    function _mouseupCb(evt) {
+                        //left mouse
+                        if (evt.which === 1) {
+                            $timeout(function () {
+                                scope.d.mouseDown = false;
+                            });
+                            drawer.stopDrawing();
+                            canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
+                            canvasDomElement.removeEventListener('mouseup', _mouseupCb);
+                        }
+                    }
+
+                    function ServerDrawingUpdater(questionUid){
+                        if(angular.isUndefined(questionUid)){
+                            $log.error('znkExerciseDrawTool: Question id was not provided');
+                            return;
+                        }
+
+                        this.pixelsMapToUpdate = {};
+
+                        this.exerciseDrawingRefProm = _getFbRef(questionUid);
+                    }
+
+                    ServerDrawingUpdater.prototype._triggerServerUpdate = function(){
+                        if(this.alreadyTriggered){
+                            return;
+                        }
+
+                        this.alreadyTriggered = true;
+
+                        var self = this;
+                        $timeout(function(){
+                            self.alreadyTriggered = false;
+                            self.flush();
+                        },SERVER_UPDATED_FLUSH_TIME,false);
+                    };
+
+                    ServerDrawingUpdater.prototype.update = function(pixelsMapToUpdate){
+                        angular.extend(this.pixelsMapToUpdate, pixelsMapToUpdate);
+                        this._triggerServerUpdate();
+                    };
+
+                    ServerDrawingUpdater.prototype.flush = function(){
+                        var self = this;
+
+                        return this.exerciseDrawingRefProm.then(function (exerciseDrawingRef) {
+                            exerciseDrawingRef.update(self.pixelsMapToUpdate);
+                            self.pixelsMapToUpdate = {};
+                        });
+                    };
 
                     function Drawer() {
                         this.lastPoint = null;
@@ -12047,7 +12061,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                         var coords = coordStr.split(":");
                         canvasContext.fillStyle = TOUCHE_COLORS[colorId];
-                        canvasContext.fillRect(parseInt(coords[0]), parseInt(coords[1]), pixSize, pixSize);
+                        canvasContext.fillRect(parseInt(coords[0]), parseInt(coords[1]), PIXEL_SIZE, PIXEL_SIZE);
                     };
 
                     Drawer.prototype.clearPixel = function (coordStr) {
@@ -12057,7 +12071,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                         var coords = coordStr.split(":");
 
-                        canvasContext.clearRect(parseInt(coords[0]) - pixSize, parseInt(coords[1])- pixSize, 2 * pixSize, 2 * pixSize);
+                        canvasContext.clearRect(parseInt(coords[0]) - PIXEL_SIZE, parseInt(coords[1])- PIXEL_SIZE, 2 * PIXEL_SIZE, 2 * PIXEL_SIZE);
                     };
 
                     Drawer.prototype.draw = function (e) {
@@ -12110,6 +12124,22 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         canvasContext.clearRect(0, 0, canvasDomElement.offsetWidth, canvasDomElement.offsetHeight);
                     };
 
+                    function _fbChildChanged(snapShot) {
+                        var coordsStr = snapShot.key();
+                        var color = snapShot.val();
+
+                        if(color === 0){
+                            drawer.clearPixel(coordsStr);
+                        }else{
+                            drawer.drawPixel(coordsStr, color);
+                        }
+                    }
+
+                    function _fbChildRemoved(snapShot) {
+                        var coordsStr = snapShot.key();
+                        drawer.clearPixel(coordsStr);
+                    }
+
                     function EventsManager() {
                         this._fbRegisterProm = $q.when();
                     }
@@ -12123,24 +12153,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         canvasDomElement.addEventListener('mousedown', _mousedownCb);
                     };
 
-                    EventsManager.prototype.registerFbListeners = function () {
-                        var self = this;
-
-                        this._fbRegisterProm = this._fbRegisterProm.then(function () {
-                            return _getFbRef().then(function (fbRef) {
-                                if (self._fbEventsRegistered) {
-                                    return;
-                                }
-
-                                self._fbEventsRegistered = true;
-
-                                fbRef.on("child_added", _fbChildChanged);
-                                fbRef.on("child_changed", _fbChildChanged);
-                                fbRef.on("child_removed", _fbChildRemoved);
-                            });
-                        });
-                    };
-
                     EventsManager.prototype.killMouseEvents = function () {
                         this._mouseEventsRegistered = false;
 
@@ -12149,18 +12161,35 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
                     };
 
-                    EventsManager.prototype.killFbListeners = function () {
+                    EventsManager.prototype.registerFbListeners = function (questionId) {
+                        if(angular.isUndefined(questionId)){
+                            $log.error('znkExerciseDrawTool:registerFbListeners: questionId was not provided');
+                            return;
+                        }
+
                         var self = this;
 
-                        this._fbRegisterProm = this._fbRegisterProm.then(function () {
-                            return _getFbRef().then(function (fbRef) {
-                                self._fbEventsRegistered = false;
+                        return _getFbRef(questionId).then(function (ref) {
+                            if(self.ref){
+                                self.killFbListeners();
+                            }
 
-                                fbRef.off("child_added", drawer.drawPixel);
-                                fbRef.off("child_changed", drawer.drawPixel);
-                                fbRef.off("child_removed", drawer.clearPixel);
-                            });
+                            self.ref = ref;
+
+                            self.ref.on("child_added", _fbChildChanged);
+                            self.ref.on("child_changed", _fbChildChanged);
+                            self.ref.on("child_removed", _fbChildRemoved);
                         });
+                    };
+
+                    EventsManager.prototype.killFbListeners = function () {
+                        if(!this.ref){
+                            return;
+                        }
+
+                        this.ref.off("child_added", _fbChildChanged);
+                        this.ref.off("child_changed", _fbChildChanged);
+                        this.ref.off("child_removed", _fbChildRemoved);
                     };
 
                     EventsManager.prototype.cleanListeners = function () {
@@ -12181,15 +12210,15 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         eventsManager.cleanListeners();
                     });
 
-                    scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function () {
-                        serverDrawingUpdater.flush().then(function(){
-                            drawer.clean();
-                            eventsManager.cleanListeners();
-                            toolBoxCtrl.getCurrentQuestion().then(function (currQuestion) {
-                                var questionDrawMode = currQuestion.__questionStatus.drawingToolViewMode || DRAWING_MODES.NONE;
-                                scope.d.drawMode = questionDrawMode;
-                            });
-                        });
+                    scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex, oldIndex, _currQuestion) {
+                        currQuestion = _currQuestion;
+
+                        if(serverDrawingUpdater){
+                            serverDrawingUpdater.flush();
+                        }
+                        serverDrawingUpdater = new ServerDrawingUpdater(currQuestion.id);
+
+                        _reloadCanvas();
                     });
 
                     _init();

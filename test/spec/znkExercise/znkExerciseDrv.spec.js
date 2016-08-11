@@ -336,7 +336,7 @@ describe('testing directive "znkExerciseDrv":', function () {
         expect(scope.d.answers[0].timeSpent).toBe(initSpentTime);
     });
 
-    it('when blackboard tool is opened then it data should be set with current question black board data', function () {
+    xit('when blackboard tool is opened then it data should be set with current question black board data', function () {
         var modalSettings;
         ZnkExerciseSrv.openExerciseToolBoxModal = function (_modalSettings) {
             modalSettings = _modalSettings;
@@ -354,7 +354,7 @@ describe('testing directive "znkExerciseDrv":', function () {
         expect(modalSettings.actions.setToolValue).toHaveBeenCalledWith(ZnkExerciseSrv.toolBoxTools.BLACKBOARD, scope.d.answers[0].blackboardData);
     });
 
-    it('when blackboard tool is closed then it data should be saved in current question black board data', function () {
+    xit('when blackboard tool is closed then it data should be saved in current question black board data', function () {
         var modalSettings;
         ZnkExerciseSrv.openExerciseToolBoxModal = function (_modalSettings) {
             modalSettings = _modalSettings;
@@ -371,7 +371,7 @@ describe('testing directive "znkExerciseDrv":', function () {
         expect(scope.d.answers[0].blackboardData).toBe(newBlackBoardData);
     });
 
-    it('when slide is changed then bookmark tool value should be set', function () {
+    xit('when slide is changed then bookmark tool value should be set', function () {
         var modalSettings;
         ZnkExerciseSrv.openExerciseToolBoxModal = function (_modalSettings) {
             modalSettings = _modalSettings;
@@ -389,7 +389,7 @@ describe('testing directive "znkExerciseDrv":', function () {
         expect(modalSettings.actions.setToolValue).toHaveBeenCalledWith(ZnkExerciseSrv.toolBoxTools.BOOKMARK, !!scope.d.answers[1].bookmark);
     });
 
-    it('when clicking on bookmark tool in tool box modal then question bookmark should be reversed', function () {
+    xit('when clicking on bookmark tool in tool box modal then question bookmark should be reversed', function () {
         var modalSettings;
         ZnkExerciseSrv.openExerciseToolBoxModal = function (_modalSettings) {
             modalSettings = _modalSettings;
