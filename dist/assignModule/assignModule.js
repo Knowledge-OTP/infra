@@ -5,7 +5,6 @@
 
 (function (angular) {
     'use strict';
-
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
         'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv',
         function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv) {
@@ -82,6 +81,63 @@
                 });
             };
 
+            function onValueEventCB(userId, cb, studentStorage, moduleResultsGuids) {
+                if (angular.isUndefined(moduleResultsGuids) || !moduleResultsGuids) {
+                    userAssignModuleService.assignModules = {};
+                    applyCB(cb);
+                    return;
+                }
+                var moduleResults = {};
+                var getProm = $q.when();
+                var getPromArr = [];
+                angular.forEach(moduleResultsGuids, function (resultGuid, moduleId) {
+                    getProm = getResultsByModuleId(userId, moduleId).then(function (moduleResult) {
+                        moduleResults[moduleResult.moduleId] = moduleResult;
+
+
+                        var modulePath = 'moduleResults/' + moduleResult.guid;
+                        studentStorage.onEvent('child_changed', modulePath, onModuleResultChangedCB.bind(null, userId, moduleId, cb));
+                    });
+                    getPromArr.push(getProm);
+                });
+
+                $q.all(getPromArr).then(function () {
+                    userAssignModuleService.assignModules = moduleResults;
+                    applyCB(cb);
+                });
+            }
+
+            function getResultsByModuleId(userId, moduleId) {
+                return ExerciseResultSrv.getModuleResult(userId, moduleId, false).then(function (moduleResult) {
+                    if (moduleResult && !angular.equals(moduleResult, {})) {
+                        moduleResult.moduleSummary = getModuleSummary(moduleResult);
+
+                        InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
+                            angular.forEach(moduleResult.exerciseResults, function (exerciseTypeId) {
+                                angular.forEach(exerciseTypeId, function (exercise) {
+                                    var exerciseResultsPath = 'exerciseResults/' + exercise.guid;
+                                    studentStorage.getAndBindToServer(exerciseResultsPath);
+                                });
+                            });
+                        });
+                    }
+                    return moduleResult;
+                });
+            }
+
+            function onModuleResultChangedCB(userId, moduleId, cb) {
+                getResultsByModuleId(userId, moduleId).then(function (moduleResult) {
+                    userAssignModuleService.assignModules[moduleId] = moduleResult;
+                    applyCB(cb);
+                });
+            }
+
+            function applyCB(cb) {
+                if (angular.isFunction(cb)) {
+                    cb(userAssignModuleService.assignModules);
+                }
+            }
+
             function getModuleSummary(assignModule) {
                 var exerciseId;
                 var exerciseTypeId = ExerciseTypeEnum.PRACTICE.enum,
@@ -126,50 +182,6 @@
                     duration: duration,
                     totalAnswered: totalAnswered
                 };
-            }
-
-            function onValueEventCB(userId, cb, studentStorage, moduleResultsGuids) {
-                if (angular.isUndefined(moduleResultsGuids)) {
-                    return;
-                }
-                var moduleResults = {};
-                var getProm = $q.when();
-                var getPromArr = [];
-                angular.forEach(moduleResultsGuids, function (resultGuid, moduleId) {
-                    getProm = ExerciseResultSrv.getModuleResult(userId, moduleId, false).then(function (moduleResult) {
-                        if (moduleResult && !angular.equals(moduleResult, {})) {
-                            moduleResults[moduleResult.moduleId] = moduleResult;
-                        }
-                    });
-                    getPromArr.push(getProm);
-                });
-
-                $q.all(getPromArr).then(function () {
-                    angular.forEach(moduleResults, function (assignModule) {
-                        assignModule.moduleSummary = getModuleSummary(assignModule);
-
-                        if (!assignModule.contentAssign) {
-                            var modulePath = 'moduleResults/' + assignModule.guid + '/contentAssign';
-                            studentStorage.onEvent('value', modulePath, onContentAssignChangedCB.bind(null, assignModule, cb));
-                        }
-                    });
-
-                    userAssignModuleService.assignModules = moduleResults;
-                    applyCB(cb);
-                });
-            }
-
-            function onContentAssignChangedCB(assignModule, cb, contentAssign) {
-                if (contentAssign) {
-                    userAssignModuleService.assignModules[assignModule.moduleId].contentAssign = contentAssign;
-                    applyCB(cb);
-                }
-            }
-
-            function applyCB(cb) {
-                if (angular.isFunction(cb)) {
-                    cb(userAssignModuleService.assignModules);
-                }
             }
 
             return userAssignModuleService;
