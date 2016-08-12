@@ -1,0 +1,50 @@
+znk-exercise{
+    .draw-tool-container{
+        @include absolute-full-cover;
+        z-index: 1;
+
+        &.no-pointer-events{
+            pointer-events: none;
+        }
+
+        &.crosshair-cursor{
+            cursor: crosshair;
+        }
+    }
+}
+
+znk-exercise-draw-tool{
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    & > svg-icon{
+        flex-grow: 1;
+        cursor: pointer;
+
+        &.active {
+            .znk-exercise-touche-svg {
+                .st0, .st1{
+                    stroke: $bgColor3;
+                }
+            }
+
+            .znk-exercise-pencil{
+                path{
+                    fill: $bgColor3;
+                }
+            }
+
+            .znk-exercise-eraser{
+                path, rect, .st1{
+                    fill: $bgColor3;
+                }
+            }
+        }
+
+        &[name="znk-exercise-touche"]{
+            border-bottom: 1px solid $bcColor12;
+        }
+    }
+}

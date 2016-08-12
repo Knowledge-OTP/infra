@@ -285,68 +285,90 @@ $blueBG8: #75cbe8;
 /* Material+Icons */
 @import url(//fonts.googleapis.com/icon?family=Material+Icons);
 /* full background image with retina */
-active-panel.visible .active-panel {
-  opacity: 1; }
-
-active-panel .active-panel {
-  transition: 1.5s;
-  opacity: 0;
-  width: 210px;
-  height: 40px;
-  background-color: #f7f7f7;
-  border: 1px solid #ebebeb;
-  border-radius: 20px; }
-  active-panel .active-panel .flex-container {
-    height: 100%;
-    display: -ms-flexbox;
-    display: flex;
-    -ms-flex-align: center;
-        align-items: center;
-    padding: 0 5px; }
-  active-panel .active-panel .flex-col.callee-status, active-panel .active-panel .flex-col.callee-name, active-panel .active-panel .flex-col.call-controls {
-    padding: 5px; }
-  active-panel .active-panel .flex-col.callee-status {
-    -ms-flex-preferred-size: 10%;
-        flex-basis: 10%;
-    text-align: center; }
-    active-panel .active-panel .flex-col.callee-status .online-indicator {
-      display: inline-block;
-      background: #87ca4d;
-      width: 7px;
-      height: 7px;
-      border-radius: 6px; }
-  active-panel .active-panel .flex-col.callee-name {
-    -ms-flex-preferred-size: 60%;
-        flex-basis: 60%;
-    font-size: 14px;
-    color: #4f4d4d;
-    font-family: Quicksand;
-    font-weight: 700;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis; }
-  active-panel .active-panel .flex-col.call-controls {
-    -ms-flex-preferred-size: 30%;
-        flex-basis: 30%; }
-    active-panel .active-panel .flex-col.call-controls svg-icon.call-mute-icon {
-      float: left;
-      cursor: pointer;
-      width: 21px;
-      height: 21px;
-      border-radius: 50%;
-      border: 1px solid #0a9bad; }
-      active-panel .active-panel .flex-col.call-controls svg-icon.call-mute-icon svg {
-        width: 44%; }
-        active-panel .active-panel .flex-col.call-controls svg-icon.call-mute-icon svg path {
-          fill: #0a9bad; }
-    active-panel .active-panel .flex-col.call-controls call-btn {
-      float: right; }
-      active-panel .active-panel .flex-col.call-controls call-btn svg-icon.etutoring-phone-icon {
-        width: 22px;
-        height: 22px;
-        float: right; }
-  active-panel .active-panel .call-duration {
-    font-size: 12px;
-    color: #979797;
-    font-family: Lato;
-    font-weight: 400; }
+active-panel {
+  z-index: 9999; }
+  active-panel.visible .active-panel {
+    opacity: 1; }
+  active-panel .active-panel {
+    transition: 1.5s;
+    opacity: 0;
+    width: 210px;
+    height: 40px;
+    background-color: #f7f7f7;
+    border: 1px solid #ebebeb;
+    border-radius: 20px; }
+    active-panel .active-panel svg-icon:focus {
+      outline: none; }
+    active-panel .active-panel .flex-container {
+      height: 100%;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-align: center;
+          align-items: center;
+      padding: 0 5px; }
+    active-panel .active-panel .flex-col.callee-status, active-panel .active-panel .flex-col.callee-name, active-panel .active-panel .flex-col.call-controls {
+      padding: 5px; }
+    active-panel .active-panel .flex-col.callee-status {
+      -ms-flex-preferred-size: 5%;
+          flex-basis: 5%;
+      text-align: center; }
+      active-panel .active-panel .flex-col.callee-status .online-indicator {
+        display: inline-block;
+        background: #87ca4d;
+        width: 7px;
+        height: 7px;
+        border-radius: 6px; }
+    active-panel .active-panel .flex-col.callee-name {
+      -ms-flex-preferred-size: 45%;
+          flex-basis: 45%;
+      font-size: 14px;
+      color: #4f4d4d;
+      font-family: Quicksand;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis; }
+    active-panel .active-panel .flex-col.call-controls {
+      -ms-flex-preferred-size: 50%;
+          flex-basis: 50%; }
+      active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-share-screen-icon {
+        float: left;
+        cursor: pointer;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 1px solid #0a9bad; }
+        active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-share-screen-icon svg {
+          width: 44%; }
+          active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-share-screen-icon svg path {
+            fill: #0a9bad; }
+      active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-track-student-icon,
+      active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-track-teacher-icon {
+        float: left;
+        cursor: pointer;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background-color: #0a9bad;
+        margin-left: 7px; }
+        active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-track-student-icon svg,
+        active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-track-teacher-icon svg {
+          width: 44%; }
+          active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-track-student-icon svg path,
+          active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-track-teacher-icon svg path {
+            fill: #fff; }
+      active-panel .active-panel .flex-col.call-controls call-btn {
+        float: right;
+        margin-left: 7px; }
+        active-panel .active-panel .flex-col.call-controls call-btn svg-icon.etutoring-phone-icon {
+          width: 28px;
+          height: 28px; }
+    active-panel .active-panel .call-duration {
+      font-size: 12px;
+      color: #979797;
+      font-family: Lato;
+      font-weight: 400; }
+  active-panel.screen-share-mode .active-panel {
+    background-color: #464646; }
+    active-panel.screen-share-mode .active-panel .callee-name {
+      color: #fff; }

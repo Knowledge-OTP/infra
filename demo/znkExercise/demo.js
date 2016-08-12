@@ -67,6 +67,8 @@
                     var exerciseType = angular.isDefined(exercise.examId) ? 4 : +exercise.parentTypeId;
 
                     ExerciseResultSrv.getExerciseResult(exerciseType, +exercise.id, examId).then(function (results) {
+                        self.results = results;
+
                         resultsData = results;
                         $scope.questions = exercise.questions;
                         if (results.questionResults.length === 0) {
@@ -113,7 +115,13 @@
                     alert('On done was invoked');
                 },
                 initPagerDisplay: false,
-                initForceDoneBtnDisplay: true
+                initForceDoneBtnDisplay: true,
+                toolBox: {
+                    drawing:{
+                        exerciseDrawingPathPrefix: 'dummy-prefix',
+                        toucheColorId: 1
+                    }
+                }
             };
 
             $scope.setSlideDirection = function (slideDirection) {

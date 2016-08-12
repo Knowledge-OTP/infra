@@ -1,0 +1,39 @@
+<svg version="1.1"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     x="0px"
+     y="0px"
+	 viewBox="0 0 47.6 53.2"
+     xml:space="preserve"
+     class="znk-exercise-touche-svg">
+<style type="text/css">
+    .znk-exercise-touche-svg {
+        width: 23px;
+    }
+
+    .znk-exercise-touche-svg .st0 {
+        fill: none;
+        stroke: #000000;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-miterlimit: 10;
+    }
+
+    .znk-exercise-touche-svg .st1 {
+        fill: none;
+        stroke: #000000;
+        stroke-width: 2;
+        stroke-linejoin: round;
+        stroke-miterlimit: 10;
+    }
+</style>
+<path class="st0" d="M39.9,22.8v25.1c0,2.4-1.9,4.3-4.3,4.3H5.3c-2.4,0-4.3-1.9-4.3-4.3V12.6c0-2.4,1.9-4.3,4.3-4.3h15.7"/>
+<g>
+	<path class="st1" d="M22.4,33.8l23.7-23.7c0.7-0.7,0.7-1.8,0-2.4l-6.2-6.2c-0.7-0.7-1.8-0.7-2.4,0L13.8,25.2L22.4,33.8z"/>
+	<line class="st1" x1="34.2" y1="4.8" x2="42.8" y2="13.4"/>
+	<line class="st0" x1="32.8" y1="11.4" x2="19.1" y2="25.2"/>
+	<polyline class="st1" points="13.8,25.2 11.6,36 22.4,33.8 	"/>
+</g>
+<path class="st0" d="M11,39.2c-1.8,1-6.4,4.1-3.2,5s13-2.1,13.1,0s-1,2.9-1,2.9"/>
+</svg>

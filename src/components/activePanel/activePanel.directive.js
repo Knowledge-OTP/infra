@@ -8,9 +8,18 @@
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {
                     calleeName: '@',
-                    actions: '='
+                    actions: '=',
+                    callBtnModel: '='
                 },
                 link:function(scope, element, attrs) {
+                    // scope.actions = scope.actions || {};
+                    if (!angular.isObject(scope.actions)) {
+                        scope.actions = {};
+                    }
+
+                    if (!angular.isObject(scope.callBtnModel)) {
+                        scope.callBtnModel = {};
+                    }
 
                     var callDuration = 0,
                         durationToDisplay,
@@ -18,31 +27,45 @@
 
                     scope.calleeName = attrs.calleeName;
 
-                    scope.actions.onStatusChange = function () {};
-
-                    scope.actions.hideUI = function (origin) {
-                        $log.debug('hideUI', origin);
+                    scope.actions.hideUI = function () {
+                        $log.debug('hideUI');
                         element.removeClass('visible');
-                        if (origin === 'calls') {
-                            destroyTimer();
-                        }
                     };
 
-                    scope.actions.showUI = function (origin) {
-                        $log.debug('showUI', origin);
+                    scope.actions.showUI = function () {
+                        $log.debug('showUI');
                         element.addClass('visible');
-                        if (origin === 'calls') {
-                            startTimer();
-                        }
                     };
 
-                    function startTimer() {
+                    scope.actions.startTimer = function () {
+                        $log.debug('call timer started');
                         timerInterval = $interval(function () {
                             callDuration += 1000;
                             durationToDisplay = $filter('formatDuration')(callDuration / 1000, 'hh:MM:SS', true);
                             angular.element(element[0].querySelector('.call-duration')).text(durationToDisplay);
                         }, 1000, 0, false);
-                    }
+                    };
+
+                    scope.actions.stopTimer = function () {
+                        $interval.cancel(timerInterval);
+                    };
+
+                    scope.actions.screenShareMode = function (isScreenShareMode) {
+                        $log.debug('screenShareMode');
+                        if (isScreenShareMode) {
+                            element.addClass('screen-share-mode');
+                        } else {
+                            element.removeClass('screen-share-mode');
+                        }
+                    };
+
+                    scope.actions.callBtnMode = function () {
+                        $log.debug('callBtnMode');
+                    };
+
+                    scope.actions.screenShareBtnsMode = function () {
+                        $log.debug('screenShareBtnsMode');
+                    };
 
                     function destroyTimer() {
                         $interval.cancel(timerInterval);
@@ -53,6 +76,9 @@
                     element.on('$destroy', function() {
                         destroyTimer();
                     });
+
+                    // scope.iama = 'student';
+                    scope.iama = 'teacher';
                 }
             };
         });

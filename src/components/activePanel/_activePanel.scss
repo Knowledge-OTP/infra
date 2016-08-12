@@ -1,4 +1,5 @@
 active-panel {
+    z-index: 9999;
     &.visible {
         .active-panel {
             opacity: 1;
@@ -7,11 +8,17 @@ active-panel {
     .active-panel {
         transition: 1.5s;
         opacity: 0;
+        //width: 260px;
         width: 210px;
         height: 40px;
         background-color: $bgColor21;
         border: 1px solid $bcColor11;
         border-radius: 20px;
+        svg-icon {
+            &:focus {
+                outline: none;
+            }
+        }
         .flex-container {
             height: 100%;
             display:flex;
@@ -25,7 +32,7 @@ active-panel {
                 padding: 5px;
             }
             &.callee-status {
-                flex-basis: 10%;
+                flex-basis: 5%;
                 text-align: center;
                 .online-indicator {
                     display: inline-block;
@@ -36,19 +43,19 @@ active-panel {
                 }
             }
             &.callee-name {
-                flex-basis: 60%;
+                flex-basis: 45%;
                 @include text-style(14px, $fcColor6, Quicksand, $boldFontWeight);
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
             &.call-controls {
-                flex-basis: 30%;
-                svg-icon.call-mute-icon {
+                flex-basis: 50%;
+                svg-icon.active-panel-share-screen-icon {
                     float:left;
                     cursor: pointer;
-                    width: 21px;
-                    height: 21px;
+                    width: 28px;
+                    height: 28px;
                     border-radius: 50%;
                     border: 1px solid $bgColor3;
                     svg {
@@ -58,13 +65,32 @@ active-panel {
                         }
                     }
                 }
+
+                svg-icon.active-panel-track-student-icon,
+                svg-icon.active-panel-track-teacher-icon {
+                    float:left;
+                    cursor: pointer;
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 50%;
+                    background-color: $bgColor3;
+                    margin-left: 7px;
+                    svg {
+                        width: 44%;
+                        path {
+                            fill: $bgColor6;
+                        }
+                    }
+                }
+
                 call-btn {
+                    //float: left;
                     float: right;
+                    margin-left: 7px;
                     svg-icon {
                         &.etutoring-phone-icon {
-                            width: 22px;
-                            height: 22px;
-                            float: right;
+                            width: 28px;
+                            height: 28px;
                         }
                     }
                 }
@@ -72,6 +98,14 @@ active-panel {
         }
         .call-duration {
             @include text-style(12px, $fcColor13, Lato, $regularFontWeight);
+        }
+    }
+    &.screen-share-mode {
+        .active-panel {
+            background-color: $bgColor26;
+            .callee-name {
+                color: $bgColor6;
+            }
         }
     }
 }

@@ -49,7 +49,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.activePanel', []);
+    angular.module('znk.infra.activePanel', [
+        'znk.infra.enum'
+    ]);
 })(angular);
 
 'use strict';
@@ -62,9 +64,18 @@
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {
                     calleeName: '@',
-                    actions: '='
+                    actions: '=',
+                    callBtnModel: '='
                 },
                 link:function(scope, element, attrs) {
+                    // scope.actions = scope.actions || {};
+                    if (!angular.isObject(scope.actions)) {
+                        scope.actions = {};
+                    }
+
+                    if (!angular.isObject(scope.callBtnModel)) {
+                        scope.callBtnModel = {};
+                    }
 
                     var callDuration = 0,
                         durationToDisplay,
@@ -72,31 +83,45 @@
 
                     scope.calleeName = attrs.calleeName;
 
-                    scope.actions.onStatusChange = function () {};
-
-                    scope.actions.hideUI = function (origin) {
-                        $log.debug('hideUI', origin);
+                    scope.actions.hideUI = function () {
+                        $log.debug('hideUI');
                         element.removeClass('visible');
-                        if (origin === 'calls') {
-                            destroyTimer();
-                        }
                     };
 
-                    scope.actions.showUI = function (origin) {
-                        $log.debug('showUI', origin);
+                    scope.actions.showUI = function () {
+                        $log.debug('showUI');
                         element.addClass('visible');
-                        if (origin === 'calls') {
-                            startTimer();
-                        }
                     };
 
-                    function startTimer() {
+                    scope.actions.startTimer = function () {
+                        $log.debug('call timer started');
                         timerInterval = $interval(function () {
                             callDuration += 1000;
                             durationToDisplay = $filter('formatDuration')(callDuration / 1000, 'hh:MM:SS', true);
                             angular.element(element[0].querySelector('.call-duration')).text(durationToDisplay);
                         }, 1000, 0, false);
-                    }
+                    };
+
+                    scope.actions.stopTimer = function () {
+                        $interval.cancel(timerInterval);
+                    };
+
+                    scope.actions.screenShareMode = function (isScreenShareMode) {
+                        $log.debug('screenShareMode');
+                        if (isScreenShareMode) {
+                            element.addClass('screen-share-mode');
+                        } else {
+                            element.removeClass('screen-share-mode');
+                        }
+                    };
+
+                    scope.actions.callBtnMode = function () {
+                        $log.debug('callBtnMode');
+                    };
+
+                    scope.actions.screenShareBtnsMode = function () {
+                        $log.debug('screenShareBtnsMode');
+                    };
 
                     function destroyTimer() {
                         $interval.cancel(timerInterval);
@@ -107,6 +132,9 @@
                     element.on('$destroy', function() {
                         destroyTimer();
                     });
+
+                    // scope.iama = 'student';
+                    scope.iama = 'teacher';
                 }
             };
         }]);
@@ -116,7 +144,7 @@
     'use strict';
 
     angular.module('znk.infra.activePanel').service('ActivePanelSrv',
-        function () {
+        ["ActivePanelStatusEnum", "ActivePanelComponentEnum", "$log", function (ActivePanelStatusEnum, ActivePanelComponentEnum, $log) {
             'ngInject';
 
             var actions = {};
@@ -125,18 +153,108 @@
                 return actions;
             };
 
-            function _base(name, arg1) {
-                var fn = actions[name];
-                if (angular.isFunction(fn)) {
-                    fn(arg1);
+            var currentStatus = {
+                calls: ActivePanelStatusEnum.INACTIVE.enum,
+                screenSharing: ActivePanelStatusEnum.INACTIVE.enum
+            };
+
+            this.updateStatus = function (component, status) {
+                if (!component || !status) {
+                    $log.error('must pass the component & status args to function');
+                    return;
                 }
-            }
 
-            this.showActivePanelDrv = _base.bind(null, 'showUI');
+                function isScreenSharingActive() {
+                    return (currentStatus.screenSharing === ActivePanelStatusEnum.ACTIVE.enum);
+                }
 
-            this.hideActivePanelDrv = _base.bind(null, 'hideUI');
+                function isCallActive() {
+                    return (currentStatus.calls === ActivePanelStatusEnum.ACTIVE.enum);
+                }
 
-        });
+                switch (true) {
+                    case component === ActivePanelComponentEnum.CALLS.enum && status === ActivePanelStatusEnum.ACTIVE.enum :
+                        // component = call, status = active
+                        // show true
+                        // start timer
+                        // call btn in hangup mode
+                        currentStatus.calls = ActivePanelStatusEnum.ACTIVE.enum;
+                        actions.showUI();
+                        actions.startTimer();
+                        //callBtnMode('hangup');
+                        break;
+
+                    case component === ActivePanelComponentEnum.CALLS.enum && status === ActivePanelStatusEnum.INACTIVE.enum :
+                        // component = call, status = inactive (hangup, disc')
+                        // actions.stopTimer
+                        // call btn is in call mode
+                        // if screenShare is inactive, hide drv
+                        currentStatus.calls = ActivePanelStatusEnum.INACTIVE.enum;
+                        actions.stopTimer();
+                        //callBtnMode('call');
+                        if (!isScreenSharingActive()) {
+                            actions.hideUI();
+                        }
+                        break;
+
+                    case component === ActivePanelComponentEnum.SCREEN_SHARE.enum && status === ActivePanelStatusEnum.ACTIVE.enum :
+                        // component = screenShare, status = active
+                        // show drv
+                        // screenShare buttons are disabled
+                        currentStatus.screenSharing = ActivePanelStatusEnum.ACTIVE.enum;
+                        actions.showUI();
+                        actions.screenShareMode(true);
+                        //screenShareBtnsMode('disabled');
+                        break;
+
+                    case component === ActivePanelComponentEnum.SCREEN_SHARE.enum && status === ActivePanelStatusEnum.INACTIVE.enum :
+                        // component = screenShare, status = inactive
+                        // check if call is active, if not hide drv
+                        // return shareScreen btns to enabled state
+                        currentStatus.screenSharing = ActivePanelStatusEnum.INACTIVE.enum;
+                        if (!isCallActive()) {
+                            //actions.hideUI(); // TODO: is this needed?
+                        }
+                        actions.screenShareMode(false);
+                        //screenShareBtnsMode('enabled');
+                        break;
+
+                    default:
+                        actions.hideUI();
+                        break;
+                }
+            };
+        }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.activePanel').factory('ActivePanelComponentEnum',
+        ["EnumSrv", function (EnumSrv) {
+            'ngInject';
+
+            return new EnumSrv.BaseEnum([
+                ['CALLS', 1, 'calls'],
+                ['SCREEN_SHARE', 2, 'screenShare']
+            ]);
+        }]
+    );
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.activePanel').factory('ActivePanelStatusEnum',
+        ["EnumSrv", function (EnumSrv) {
+            'ngInject';
+
+            return new EnumSrv.BaseEnum([
+                ['ACTIVE', 1, 'active'],
+                ['INACTIVE', 2, 'inactive']
+            ]);
+        }]
+    );
 })(angular);
 
 (function (angular) {
@@ -147,7 +265,10 @@
             'ngInject';
 
             var svgMap = {
-                'call-mute-icon': 'components/calls/svg/call-mute-icon.svg'
+                'active-panel-call-mute-icon': 'components/calls/svg/call-mute-icon.svg',
+                'active-panel-share-screen-icon': 'components/activePanel/svg/share-screen-icon.svg',
+                'active-panel-track-teacher-icon': 'components/activePanel/svg/track-teacher-icon.svg',
+                'active-panel-track-student-icon': 'components/activePanel/svg/track-student-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
         }]);
@@ -165,11 +286,89 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "            <div class=\"call-duration\">&nbsp;</div>\n" +
     "        </div>\n" +
     "        <div class=\"call-controls flex-col\">\n" +
-    "            <svg-icon name=\"call-mute-icon\"></svg-icon>\n" +
-    "            <call-btn></call-btn>\n" +
+    "            <!--<svg-icon name=\"call-mute-icon\"></svg-icon>-->\n" +
+    "            <!--<div class=\"share-my-screen\"></div>-->\n" +
+    "            <svg-icon ng-hide=\"true\" name=\"active-panel-share-screen-icon\"></svg-icon>\n" +
+    "            <ng-switch ng-hide=\"true\" on=\"iama\" class=\"show-other-screen\">\n" +
+    "                <svg-icon ng-switch-when=\"teacher\" name=\"active-panel-track-student-icon\"></svg-icon>\n" +
+    "                <svg-icon ng-switch-when=\"student\" name=\"active-panel-track-teacher-icon\"></svg-icon>\n" +
+    "            </ng-switch>\n" +
+    "            <call-btn ng-model=\"callBtnModel\"></call-btn>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>\n" +
+    "");
+  $templateCache.put("components/activePanel/svg/share-screen-icon.svg",
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+    "<svg version=\"1.1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "     class=\"active-panel-share-screen-icon\"\n" +
+    "	 viewBox=\"0 0 138 141.3\"\n" +
+    "     xml:space=\"preserve\">\n" +
+    "<path d=\"M113.2,0H24.8C11.2,0,0,11.2,0,24.8v55.4C0,93.8,11.2,105,24.8,105h88.4c13.6,0,24.8-11.2,24.8-24.8V24.8\n" +
+    "	C138,11.2,126.8,0,113.2,0z M71.1,82V63.4c0,0-28.8-4-42.7,15.3c0,0-5.1-34.6,42.9-40.4l-0.3-20L114.3,50L71.1,82z\"/>\n" +
+    "<path d=\"M57.4,118.6h22.7c1,0,1.9,0.4,2.4,1.1c2.2,3.1,8.8,11.9,15.3,17.3c1.8,1.5,0.6,4.2-1.9,4.2H42.2c-2.5,0-3.8-2.7-1.9-4.2\n" +
+    "	c4.9-4,11.6-10.4,14.5-16.9C55.2,119.2,56.2,118.6,57.4,118.6z\"/>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/activePanel/svg/track-student-icon.svg",
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+    "<svg version=\"1.1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "	 y=\"0px\"\n" +
+    "     class=\"active-panel-track-student-icon\"\n" +
+    "     viewBox=\"0 0 138 141.3\"\n" +
+    "     xml:space=\"preserve\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	svg.active-panel-track-student-icon .st0{fill:none;stroke:#000000;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
+    "</style>\n" +
+    "<path d=\"M57.4,118.6h22.7c1,0,1.9,0.4,2.4,1.1c2.2,3.1,8.8,11.9,15.3,17.3c1.8,1.5,0.6,4.2-1.9,4.2H42.2c-2.5,0-3.8-2.7-1.9-4.2\n" +
+    "	c4.9-4,11.6-10.4,14.5-16.9C55.2,119.2,56.2,118.6,57.4,118.6z\"/>\n" +
+    "<path class=\"st0\" d=\"M110.2,28.8\"/>\n" +
+    "<path d=\"M113.2,0H24.8C11.2,0,0,11.2,0,24.8v55.4C0,93.8,11.2,105,24.8,105h88.4c13.6,0,24.8-11.2,24.8-24.8V24.8\n" +
+    "	C138,11.2,126.8,0,113.2,0z M44.4,20.6c8-3.8,16-7.4,24-11.1c0.7-0.3,1.5-0.6,2.2-0.8C71.3,9,72,9.2,72.7,9.5c8,3.7,16,7.3,24,11.1\n" +
+    "	c1,0.5,1.7,1.6,2.5,2.4c-0.8,0.7-1.5,1.7-2.5,2.1c-7.9,3.7-15.8,7.4-23.8,10.9c-1.3,0.6-3.2,0.6-4.5,0c-8.1-3.5-16.1-7.3-24-11\n" +
+    "	c-0.9-0.4-1.6-1.5-2.4-2.2C42.8,22.1,43.5,21,44.4,20.6z M92.5,52.8c-2.1,0-2.2-1.2-2.2-2.8c0-3.5-0.2-6.9,0.1-10.4\n" +
+    "	c0.2-2.8,0.8-5.5,1.3-8.2c0.1-0.4,0.8-0.7,1.9-1.6c0.4,7.3,0.7,13.8,1,20.3C94.7,51.5,94.7,52.8,92.5,52.8z M80.6,52.6\n" +
+    "	c-6.1,4.7-14.5,5-20.7,0.6c-6.4-4.5-8.9-12.4-6.1-20.3c3,1.4,6.3,2.5,9,4.3c5.3,3.4,10.4,3.3,15.7,0c2.3-1.5,5-2.4,7.7-3.6\n" +
+    "	C88.7,40.1,86.4,48.1,80.6,52.6z M99.3,88.5c-3.7,2.8-8,4-12.4,4.8c-5.6,1-11.3,1.6-14.6,2c-10.5-0.3-18.5-1.2-26.1-4\n" +
+    "	c-8.2-3-9.5-5.8-6.6-13.9c3-8.2,8.3-14.2,16.4-17.5c1.6-0.6,3.8-0.8,5.4-0.2c5.9,2.1,11.5,2.1,17.4,0c1.5-0.6,3.7-0.4,5.2,0.3\n" +
+    "	c10,4.2,15.5,12.1,17.8,22.6C102.3,85.1,101.3,87,99.3,88.5z\"/>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/activePanel/svg/track-teacher-icon.svg",
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+    "<svg version=\"1.1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "	 y=\"0px\"\n" +
+    "     class=\"active-panel-track-teacher-icon\"\n" +
+    "     viewBox=\"-326 51.7 138 141.3\"\n" +
+    "     xml:space=\"preserve\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	svg.active-panel-track-teacher-icon .st0{fill:none;stroke:#000000;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
+    "</style>\n" +
+    "<path d=\"M-268.6,170.3h22.7c1,0,1.9,0.4,2.4,1.1c2.2,3.1,8.8,11.9,15.3,17.3c1.8,1.5,0.6,4.2-1.9,4.2h-53.7c-2.5,0-3.8-2.7-1.9-4.2\n" +
+    "	c4.9-4,11.6-10.4,14.5-16.9C-270.8,170.9-269.8,170.3-268.6,170.3z\"/>\n" +
+    "<path class=\"st0\" d=\"M-215.8,80.5\"/>\n" +
+    "<path d=\"M-212.8,51.7h-88.4c-13.6,0-24.8,11.2-24.8,24.8v55.4c0,13.6,11.2,24.8,24.8,24.8h88.4c13.6,0,24.8-11.2,24.8-24.8V76.5\n" +
+    "	C-188,62.9-199.2,51.7-212.8,51.7z M-306.4,69.9c0-2.7,2.2-5,5-5h73.9c2.7,0,5,2.2,5,5v22.7c0,1.8-1.5,3.3-3.3,3.3s-3.3-1.5-3.3-3.3\n" +
+    "	v-21h-70.7v53h22.6c1.8,0,3.3,1.5,3.3,3.3c0,1.8-1.5,3.3-3.3,3.3h-24.2c-2.7,0-5-2.2-5-5V69.9z M-272.8,91c-0.9,0-1.7-0.7-1.7-1.7\n" +
+    "	c0-0.9,0.7-1.7,1.7-1.7h33.6c0.9,0,1.7,0.7,1.7,1.7c0,0.9-0.7,1.7-1.7,1.7H-272.8z M-245.8,100.5c0,0.9-0.7,1.7-1.7,1.7h-25.3\n" +
+    "	c-0.9,0-1.7-0.7-1.7-1.7s0.7-1.7,1.7-1.7h25.4C-246.5,98.8-245.8,99.6-245.8,100.5z M-239.2,79.9h-33.6c-0.9,0-1.7-0.7-1.7-1.7\n" +
+    "	s0.7-1.7,1.7-1.7h33.6c0.9,0,1.7,0.7,1.7,1.7S-238.2,79.9-239.2,79.9z M-264.5,140.5h-44.1c-0.9,0-1.7-0.7-1.7-1.7s0.7-1.7,1.7-1.7\n" +
+    "	h44.1c0.9,0,1.7,0.7,1.7,1.7S-263.6,140.5-264.5,140.5z M-251.3,145.2l1.8-5.7l-5.1,1.6c-0.6,0.2-1.2,0.2-1.8,0.1\n" +
+    "	c-1.3-0.3-3.6-1.3-5.9-4.7c-2.9-4.1-7.6-11.4-9.6-14.4c-0.5-0.7-0.9-1.9-0.9-2.8c0-0.8,0.2-1.6,0.5-2.3c-0.1-0.1-0.3-0.2-0.4-0.4\n" +
+    "	l-14.8-20.4c-0.5-0.7-0.4-1.8,0.4-2.3c0.7-0.5,1.8-0.4,2.3,0.4l14.8,20.5c0.1,0.2,0.2,0.3,0.2,0.5c0.7-0.1,1.4-0.1,2.3,0.2\n" +
+    "	c1,0.3,2.2,1.3,2.7,2.1l7.8,13.6c0.5,1,1.7,1.3,2.7,0.8l18.3-9.9h0.5c-3-2.4-4.8-6.1-4.8-10.3c0-7.4,6-13.3,13.3-13.3\n" +
+    "	c0.3,0,0.7,0,1,0c6.9,0.5,12.3,6.3,12.3,13.3c0,4.9-2.6,9.1-6.5,11.4h0.4c0,0,16.6,5.8,16.2,21.9L-251.3,145.2L-251.3,145.2z\"/>\n" +
+    "</svg>\n" +
     "");
 }]);
 
@@ -1434,7 +1633,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 isEnabled = _isEnabled;
             };
 
-            this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "$q", "CALL_UPDATE", "ActivePanelSrv", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, $q, CALL_UPDATE, ActivePanelSrv) {
+            this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "$q", "CALL_UPDATE", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, $q, CALL_UPDATE) {
                 'ngInject';
                 var CallsEventsSrv = {};
 
@@ -1495,18 +1694,22 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                     break;
                                 case CallsStatusEnum.ACTIVE_CALL.enum:
                                     $log.debug('call active');
-                                    if (isCurrentUserInitiatedCall(currUid)) {
+                                    if (!isCurrentUserInitiatedCall(currUid)) {
+                                        CallsUiSrv.closeModal();
                                         // show outgoing call modal WITH the ANSWERED TEXT, wait 2 seconds and close the modal, show the ActiveCallDRV
-                                        ActivePanelSrv.showActivePanelDrv('calls');
+                                        // ActivePanelSrv.showActivePanelDrv('calls');
+                                        // ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
                                     } else {
                                         // close the modal, show the ActiveCallDRV
-                                        CallsUiSrv.closeModal();
-                                        ActivePanelSrv.showActivePanelDrv('calls');
+                                        // CallsUiSrv.closeModal();
+                                        // ActivePanelSrv.showActivePanelDrv('calls');
+                                        // ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
                                     }
+                                    // ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.ACTIVE.enum);
                                     break;
                                 case CallsStatusEnum.ENDED_CALL.enum:
                                     $log.debug('call ended');
-                                    ActivePanelSrv.hideActivePanelDrv('calls');
+                                    // ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.INACTIVE.enum);
                                     // disconnect other user from call
                                     getCallsSrv().disconnectCall();
                                     break;
@@ -9412,13 +9615,19 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
         'znk.infra.autofocus',
         'znk.infra.exerciseUtility',
         'znk.infra.analytics',
-        'znk.infra.popUp'
+        'znk.infra.popUp',
+        'znk.infra.user'
     ])
         .config([
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg'
+                    'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg',
+                    'znk-exercise-eraser': 'components/znkExercise/svg/tools-eraser.svg',
+                    'znk-exercise-pencil': 'components/znkExercise/svg/tools-pencil.svg',
+                    'znk-exercise-pointer': 'components/znkExercise/svg/tools-pointer.svg',
+                    'znk-exercise-remove': 'components/znkExercise/svg/tools-remove.svg',
+                    'znk-exercise-touche': 'components/znkExercise/svg/tools-touche.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }])
@@ -10463,10 +10672,15 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
  *      onExerciseReady
  *      onSlideChange
  *      initSlideIndex
- *      toolBoxWrapperClass
  *      initSlideDirection
  *      initForceDoneBtnDisplay: null-default behaviour(default value), false-done button will be hidden, true-done button will be dispalyed
  *      initPagerDisplay: true- displayed(default value), false- hidden
+ *      toolBox:{
+ *          drawing:{
+ *              exerciseDrawingPathPrefix: exercise drawing path prefix, question id will be concat to it for the full path.
+ *              toucheColorId
+ *          }
+ *      }
  *
  *  actions:
  *      setSlideIndex
@@ -10864,17 +11078,13 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                                     return;
                                 }
 
-                                var currQuestion = getCurrentQuestion();
-
-                                updateTimeSpentOnQuestion(prevValue);
-                                if (toolboxModalSettings.actions && toolboxModalSettings.actions.setToolValue) {
-                                    toolboxModalSettings.actions.setToolValue(ZnkExerciseSrv.toolBoxTools.BOOKMARK, !!currQuestion.__questionStatus.bookmark);
-                                }
-                                //added since the sliders current was not changed yet
-                                $timeout(function(){
+                                znkExerciseDrvCtrl.isExerciseReady().then(function(){
+                                    updateTimeSpentOnQuestion(prevValue);
+                                    var currQuestion = getCurrentQuestion();
                                     scope.settings.onSlideChange(currQuestion, value);
                                     scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value ,prevValue ,currQuestion);
-                                },0,false);
+                                });
+
                                 //var url = $location.url() + '/' + scope.vm.questionsWithAnswers[value].id;
                                 //$analytics.pageTrack(url);
                             });
@@ -11038,6 +11248,13 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             self.getElement = function(){
                 return $element;
             };
+
+            self.getCurrentQuestion = function(){
+                return self.getQuestions().then(function(questions){
+                    var currIndex = self.getCurrentIndex();
+                    return questions[currIndex];
+                });
+            };
         }]);
 })(angular);
 
@@ -11153,6 +11370,51 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             };
         }
     ]);
+})(angular);
+
+
+/**
+ * attrs:
+ */
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('znkExerciseToolBox',
+        function () {
+            'ngInject';
+
+            return {
+                templateUrl: 'components/znkExercise/toolbox/core/znkExerciseToolBoxDirective.template.html',
+                require: '^znkExercise',
+                scope:{
+                    settings: '<'
+                },
+                controllerAs: '$ctrl',
+                controller: ["$element", function($element){
+                    'ngInject';// jshint ignore: line
+
+                    this.getCurrentQuestion = function(){
+                        return this.znkExerciseCtrl.getCurrentQuestion();
+                    };
+
+                    this.getZnkExerciseElement = function(){
+                        return $element.parent();
+                    };
+
+                    this.isExerciseReady = function(){
+                        return this.znkExerciseCtrl.isExerciseReady();
+                    };
+                }],
+                bindToController: true,
+                link: {
+                    pre: function(scope, element, attrs, znkExerciseCtrl){
+                        scope.$ctrl.znkExerciseCtrl = znkExerciseCtrl;
+                    }
+                }
+            };
+        }
+    );
 })(angular);
 
 
@@ -11541,6 +11803,459 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     }]);
 
 }(angular));
+
+
+/**
+ * attrs:
+ *  settings:
+ *      exerciseDrawingPathPrefix
+ *      toucheColorId
+ */
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('znkExerciseDrawTool',
+        ["ZnkExerciseEvents", "InfraConfigSrv", "$log", "$q", "$compile", "$timeout", "$window", function (ZnkExerciseEvents, InfraConfigSrv, $log, $q, $compile, $timeout, $window) {
+            'ngInject';
+
+            var TOUCHE_COLORS = {
+                0: 0,// deleted
+                1: '#0072bc',
+                2: '#af667d'
+            };
+
+            return {
+                templateUrl: 'components/znkExercise/toolbox/tools/draw/znkExerciseDrawToolDirective.template.html',
+                require: '^znkExerciseToolBox',
+                scope: {
+                    settings: '<'
+                },
+                link: function (scope, element, attrs, toolBoxCtrl) {
+                    var canvasDomElement,
+                        canvasContext,
+                        drawer,
+                        eventsManager,
+                        serverDrawingUpdater,
+                        currQuestion;
+
+                    var PIXEL_SIZE = 2;
+                    var SERVER_UPDATED_FLUSH_TIME = 0;
+
+                    var DRAWING_MODES = {
+                        'NONE': 1,
+                        'VIEW': 2,
+                        'VIEW_DRAW': 3,
+                        'VIEW_ERASE': 4
+                    };
+
+                    var TOOLS = {
+                        TOUCHE: 1,
+                        PENCIL: 2,
+                        ERASER: 3
+                    };
+
+                    scope.d = {};
+
+                    scope.d.DRAWING_MODES = DRAWING_MODES;
+
+                    scope.d.TOOLS = TOOLS;
+
+                    scope.d.drawMode = DRAWING_MODES.NONE;
+
+                    scope.d.toolClicked = function (tool) {
+                        if(!currQuestion){
+                            $log.debug('znkExerciseDrawTool: curr question was not set yet');
+                            return;
+                        }
+
+                        switch (tool) {
+                            case TOOLS.TOUCHE:
+                                scope.d.drawMode = scope.d.drawMode === DRAWING_MODES.NONE ? DRAWING_MODES.VIEW : DRAWING_MODES.NONE;
+                                break;
+                            case TOOLS.PENCIL:
+                                scope.d.drawMode = scope.d.drawMode === DRAWING_MODES.VIEW_DRAW ? DRAWING_MODES.VIEW : DRAWING_MODES.VIEW_DRAW;
+                                break;
+                            case TOOLS.ERASER:
+                                scope.d.drawMode = scope.d.drawMode === DRAWING_MODES.VIEW_ERASE ? DRAWING_MODES.VIEW : DRAWING_MODES.VIEW_ERASE;
+                                break;
+                        }
+                    };
+
+                    scope.d.cleanCanvas = function () {
+                        drawer.clean();
+                        if(!currQuestion){
+                            var errMsg = 'znkExerciseDrawTool:_getFbRef: curr question was not set yet';
+                            $log.debug(errMsg);
+                            return;
+                        }
+
+                        _getFbRef(currQuestion.id).then(function (exerciseDrawingRef) {
+                            exerciseDrawingRef.set(null);
+                        });
+                    };
+
+                    function _getFbRef(currQuestionId) {
+                        var errMsg;
+
+                        if (!scope.settings || !scope.settings.exerciseDrawingPathPrefix) {
+                            errMsg = 'znkExerciseDrawTool';
+                            $log.error(errMsg);
+                            return $q.reject(errMsg);
+                        }
+
+                        if(!currQuestionId){
+                            errMsg = 'znkExerciseDrawTool:_getFbRef: curr question was not set yet';
+                            $log.debug(errMsg);
+                            return $q.reject(errMsg);
+                        }
+
+                        var pathPrefixProm;
+                        if (angular.isFunction(scope.settings.exerciseDrawingPathPrefix)) {
+                            pathPrefixProm = scope.settings.exerciseDrawingPathPrefix();
+                        } else {
+                            pathPrefixProm = scope.settings.exerciseDrawingPathPrefix;
+                        }
+
+                        var dataPromMap = {
+                            globalStorage: InfraConfigSrv.getGlobalStorage(),
+                            pathPrefix: $q.when(pathPrefixProm)
+                        };
+
+                        return $q.all(dataPromMap).then(function (data) {
+                            var path = 'exerciseDrawings/' + data.pathPrefix + '/' + currQuestionId;
+                            return data.globalStorage.adapter.getRef(path);
+                        });
+                    }
+
+                    function _getToucheColor(drawMode) {
+                        if (drawMode === DRAWING_MODES.VIEW_ERASE) {
+                            return 0;
+                        }
+
+                        if (!scope.settings.toucheColorId) {
+                            $log.error('znkExerciseDrawTool: touche color was not set');
+                            return null;
+                        }
+                        return scope.settings.toucheColorId;
+                    }
+
+                    function _setDrawMode(drawMode) {
+                        switch (drawMode) {
+                            case DRAWING_MODES.NONE:
+                                eventsManager.cleanListeners();
+                                drawer.clean();
+                                break;
+                            case DRAWING_MODES.VIEW:
+                                eventsManager.killMouseEvents();
+                                eventsManager.registerFbListeners(currQuestion.id);
+                                break;
+                            default:
+                                eventsManager.registerMouseEvents();
+                                eventsManager.registerFbListeners(currQuestion.id);
+                                drawer.toucheColor = _getToucheColor(drawMode);
+                        }
+                    }
+
+                    function _updateQuestionDrawMode(drawMode) {
+                        toolBoxCtrl.getCurrentQuestion().then(function (currQuestion) {
+                            currQuestion.__questionStatus.drawingToolViewMode = drawMode;
+                        });
+                    }
+
+                    function _reloadCanvas(){
+                        if(scope.d.drawMode === DRAWING_MODES.NONE){
+                            return;
+                        }
+
+                        drawer.clean();
+                        eventsManager.registerFbListeners(currQuestion.id);
+                    }
+
+                    function _init() {
+                        var znkExerciseElement = toolBoxCtrl.getZnkExerciseElement();
+                        var znkExerciseDomElement = znkExerciseElement[0];
+
+                        var canvasContainerElement = angular.element(
+                            '<div class="draw-tool-container" ' +
+                            'ng-show="d.drawMode !== d.DRAWING_MODES.NONE" ' +
+                            'ng-class="{' +
+                            '\'no-pointer-events\': d.drawMode === d.DRAWING_MODES.VIEW,' +
+                            '\'crosshair-cursor\': d.drawMode !== d.DRAWING_MODES.NONE && d.drawMode !== d.DRAWING_MODES.VIEW' +
+                            '}">' +
+                            '<canvas></canvas>' +
+                            '</div>'
+                        );
+
+                        canvasDomElement = canvasContainerElement.children()[0];
+                        toolBoxCtrl.isExerciseReady().then(function () {
+                            canvasDomElement.setAttribute('height', znkExerciseDomElement.offsetHeight);
+                            canvasDomElement.setAttribute('width', znkExerciseDomElement.offsetWidth);
+                        });
+
+                        canvasContext = canvasDomElement.getContext("2d");
+
+                        znkExerciseElement.append(canvasContainerElement);
+                        $compile(canvasContainerElement)(scope);
+
+                        drawer = new Drawer();
+                        eventsManager = new EventsManager();
+                    }
+
+                    function ServerDrawingUpdater(questionUid){
+                        if(angular.isUndefined(questionUid)){
+                            $log.error('znkExerciseDrawTool: Question id was not provided');
+                            return;
+                        }
+
+                        this.pixelsMapToUpdate = {};
+
+                        this.exerciseDrawingRefProm = _getFbRef(questionUid);
+                    }
+
+                    ServerDrawingUpdater.prototype._triggerServerUpdate = function(){
+                        if(this.alreadyTriggered){
+                            return;
+                        }
+
+                        this.alreadyTriggered = true;
+
+                        var self = this;
+                        $timeout(function(){
+                            self.alreadyTriggered = false;
+                            self.flush();
+                        },SERVER_UPDATED_FLUSH_TIME,false);
+                    };
+
+                    ServerDrawingUpdater.prototype.update = function(pixelsMapToUpdate){
+                        angular.extend(this.pixelsMapToUpdate, pixelsMapToUpdate);
+                        this._triggerServerUpdate();
+                    };
+
+                    ServerDrawingUpdater.prototype.flush = function(){
+                        var self = this;
+
+                        return this.exerciseDrawingRefProm.then(function (exerciseDrawingRef) {
+                            exerciseDrawingRef.update(self.pixelsMapToUpdate);
+                            self.pixelsMapToUpdate = {};
+                        });
+                    };
+
+                    function Drawer() {
+                        this.lastPoint = null;
+                    }
+
+                    Drawer.prototype.drawPixel = function (coordStr, colorId) {
+                        if (!canvasContext) {
+                            return;
+                        }
+
+                        var coords = coordStr.split(":");
+                        $window.requestAnimationFrame(function(){
+                            canvasContext.fillStyle = TOUCHE_COLORS[colorId];
+                            canvasContext.fillRect(parseInt(coords[0]), parseInt(coords[1]), PIXEL_SIZE, PIXEL_SIZE);
+                        });
+                    };
+
+                    Drawer.prototype.clearPixel = function (coordStr) {
+                        if (!canvasContext) {
+                            return;
+                        }
+
+                        var coords = coordStr.split(":");
+
+                        $window.requestAnimationFrame(function(){
+                            canvasContext.clearRect(parseInt(coords[0]) - PIXEL_SIZE, parseInt(coords[1])- PIXEL_SIZE, 2 * PIXEL_SIZE, 2 * PIXEL_SIZE);
+                        });
+                    };
+
+                    Drawer.prototype.draw = function (e) {
+                        var self = this;
+
+                        var currXCoor = e.offsetX;
+                        var currYCoor = e.offsetY;
+
+                        var prevXCoor = self.lastPoint ? self.lastPoint[0] : currXCoor - 1;
+                        var prevYCoor = self.lastPoint ? self.lastPoint[1] : currYCoor - 1;
+
+                        self.lastPoint = [currXCoor, currYCoor];
+
+                        var xDiff = Math.abs(currXCoor - prevXCoor);
+                        var yDiff = Math.abs(currYCoor - prevYCoor);
+
+                        var pixelsNumToDraw = Math.max(xDiff, yDiff);
+                        var xStepOffset = xDiff / pixelsNumToDraw;
+                        var yStepOffset = yDiff / pixelsNumToDraw;
+                        var pixelsToDrawMap = {};
+                        for (var i = 1; i <= pixelsNumToDraw; i++) {
+                            var pixelXOffset = (currXCoor - prevXCoor > 0) ? 1 : -1;
+                            pixelXOffset *= Math.round(i * xStepOffset);
+
+                            var pixelYOffset = (currYCoor - prevYCoor > 0) ? 1 : -1;
+                            pixelYOffset *= Math.round(i * yStepOffset);
+
+                            var pixelToDrawXCoor = Math.round(prevXCoor + pixelXOffset);
+                            var pixelToDrawYCoor = Math.round(prevYCoor + pixelYOffset);
+
+                            pixelsToDrawMap[pixelToDrawXCoor + ':' + pixelToDrawYCoor] = self.toucheColor;
+                        }
+
+                        angular.forEach(pixelsToDrawMap, function (color, coordsStr) {
+                            if (color) {
+                                self.drawPixel(coordsStr, color);
+                            } else {
+                                self.clearPixel(coordsStr);
+                            }
+                        });
+
+                        serverDrawingUpdater.update(pixelsToDrawMap);
+                    };
+
+                    Drawer.prototype.stopDrawing = function () {
+                        this.lastPoint = null;
+                    };
+
+                    Drawer.prototype.clean = function () {
+                        canvasContext.clearRect(0, 0, canvasDomElement.offsetWidth, canvasDomElement.offsetHeight);
+                    };
+
+                    function _fbChildChanged(snapShot) {
+                        var coordsStr = snapShot.key();
+                        var color = snapShot.val();
+
+                        if(color === 0){
+                            drawer.clearPixel(coordsStr);
+                        }else{
+                            drawer.drawPixel(coordsStr, color);
+                        }
+                    }
+
+                    function _fbChildRemoved(snapShot) {
+                        var coordsStr = snapShot.key();
+                        drawer.clearPixel(coordsStr);
+                    }
+
+                    function _mousemoveCb(evt) {
+                        drawer.draw(evt);
+                        evt.stopImmediatePropagation();
+                        evt.preventDefault();
+                        return false;
+                    }
+
+                    function _mousedownCb(evt) {
+                        //left mouse
+                        if (evt.which === 1) {
+                            canvasDomElement.addEventListener('mousemove', _mousemoveCb);
+                            canvasDomElement.addEventListener('mouseup', _mouseupCb);
+                            evt.stopImmediatePropagation();
+                            evt.preventDefault();
+                            return false;
+                        }
+                    }
+
+                    function _mouseupCb(evt) {
+                        //left mouse
+                        if (evt.which === 1) {
+                            drawer.stopDrawing();
+                            canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
+                            canvasDomElement.removeEventListener('mouseup', _mouseupCb);
+                            evt.stopImmediatePropagation();
+                            evt.preventDefault();
+                            return false;
+                        }
+                    }
+
+                    function EventsManager() {
+                        this._fbRegisterProm = $q.when();
+                    }
+
+                    EventsManager.prototype.registerMouseEvents = function () {
+                        if (this._mouseEventsRegistered) {
+                            return;
+                        }
+                        this._mouseEventsRegistered = true;
+
+                        canvasDomElement.addEventListener('mousedown', _mousedownCb);
+                    };
+
+                    EventsManager.prototype.killMouseEvents = function () {
+                        canvasDomElement.removeEventListener('mousedown', _mousedownCb);
+                        canvasDomElement.removeEventListener('mouseup', _mouseupCb);
+                        canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
+
+                        this._mouseEventsRegistered = null;
+                    };
+
+                    EventsManager.prototype.registerFbListeners = function (questionId) {
+                        if(angular.isUndefined(questionId)){
+                            $log.error('znkExerciseDrawTool:registerFbListeners: questionId was not provided');
+                            return;
+                        }
+
+                        var self = this;
+
+                        return _getFbRef(questionId).then(function (ref) {
+                            if(self.ref){
+                                if(self.ref.key() === ref.key()){
+                                    return;
+                                }
+                                self.killFbListeners();
+                            }
+
+                            self.ref = ref;
+
+                            self.ref.on("child_added", _fbChildChanged);
+                            self.ref.on("child_changed", _fbChildChanged);
+                            self.ref.on("child_removed", _fbChildRemoved);
+                        });
+                    };
+
+                    EventsManager.prototype.killFbListeners = function () {
+                        if(!this.ref){
+                            return;
+                        }
+
+                        this.ref.off("child_added", _fbChildChanged);
+                        this.ref.off("child_changed", _fbChildChanged);
+                        this.ref.off("child_removed", _fbChildRemoved);
+
+                        this.ref = null;
+                    };
+
+                    EventsManager.prototype.cleanListeners = function () {
+                        this.killMouseEvents();
+                        this.killFbListeners();
+                    };
+
+                    scope.$watch('d.drawMode', function (newDrawMode) {
+                        if (!newDrawMode) {
+                            return;
+                        }
+
+                        _setDrawMode(newDrawMode);
+                        _updateQuestionDrawMode(newDrawMode);
+                    });
+
+                    scope.$on('$destroy', function () {
+                        eventsManager.cleanListeners();
+                    });
+
+                    scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex, oldIndex, _currQuestion) {
+                        currQuestion = _currQuestion;
+
+                        if(serverDrawingUpdater){
+                            serverDrawingUpdater.flush();
+                        }
+                        serverDrawingUpdater = new ServerDrawingUpdater(currQuestion.id);
+
+                        _reloadCanvas();
+                    });
+
+                    _init();
+                }
+            };
+        }]);
+})(angular);
 
 
 (function (angular) {
@@ -11969,6 +12684,8 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "                    questions=\"vm.questionsWithAnswers\"\n" +
     "                    ng-model=\"vm.currentSlide\">\n" +
     "</znk-exercise-pager>\n" +
+    "<znk-exercise-tool-box settings=\"settings.toolBox\">\n" +
+    "</znk-exercise-tool-box>\n" +
     "");
   $templateCache.put("components/znkExercise/core/template/znkExercisePagerDrv.html",
     "<znk-scroll>\n" +
@@ -12058,6 +12775,175 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</g>\n" +
     "</svg>\n" +
     "");
+  $templateCache.put("components/znkExercise/svg/tools-eraser.svg",
+    "<svg version=\"1.1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "	 viewBox=\"0 0 180.8 171.2\"\n" +
+    "     xml:space=\"preserve\"\n" +
+    "     class=\"znk-exercise-eraser\">\n" +
+    "<style type=\"text/css\">\n" +
+    "    .znk-exercise-eraser {\n" +
+    "        width: 26px;\n" +
+    "    }\n" +
+    "\n" +
+    "    .znk-exercise-eraser .st0 {\n" +
+    "        fill: none;\n" +
+    "    }\n" +
+    "\n" +
+    "    .znk-exercise-eraser .st1 {\n" +
+    "        fill: url(#znk-exercise-eraser-SVGID_1_);\n" +
+    "    }\n" +
+    "</style>\n" +
+    "<pattern  x=\"-3207.2\" y=\"-3890.7\" width=\"4.5\" height=\"4.3\" patternUnits=\"userSpaceOnUse\" id=\"New_Pattern_Swatch_3\" viewBox=\"0 -4.3 4.5 4.3\" style=\"overflow:visible;\">\n" +
+    "	<g>\n" +
+    "		<polygon class=\"st0\" points=\"0,0 4.5,0 4.5,-4.3 0,-4.3 		\"/>\n" +
+    "		<polygon points=\"0.7,-3.6 0,-3.6 0,-4.3 0.7,-4.3 		\"/>\n" +
+    "		<polygon points=\"4.5,-3.6 3.8,-3.6 3.8,-4.3 4.5,-4.3 		\"/>\n" +
+    "		<polygon points=\"0.7,0 0,0 0,-0.7 0.7,-0.7 		\"/>\n" +
+    "		<polygon points=\"4.5,0 3.8,0 3.8,-0.7 4.5,-0.7 		\"/>\n" +
+    "	</g>\n" +
+    "</pattern>\n" +
+    "<path d=\"M89.5,171.2H57.9c-0.5,0-1.1-0.2-1.5-0.5l-44.3-33.1c-1.1-0.8-1.3-2.4-0.5-3.5l58.6-78.5c0.8-1.1,2.4-1.3,3.5-0.5\n" +
+    "	c1.1,0.8,1.3,2.4,0.5,3.5l-57.1,76.4l41.6,31.1h29.6l47.2-61.8c0.8-1.1,2.4-1.3,3.5-0.5c1.1,0.8,1.3,2.4,0.5,3.5l-47.9,62.8\n" +
+    "	C91.1,170.9,90.3,171.2,89.5,171.2z\"/>\n" +
+    "<g>\n" +
+    "\n" +
+    "		<pattern  id=\"znk-exercise-eraser-SVGID_1_\"\n" +
+    "                  xlink:href=\"#New_Pattern_Swatch_3\"\n" +
+    "                  patternTransform=\"matrix(1.4011 -0.2109 0.2109 1.4011 2667.2153 506.0711)\">\n" +
+    "	</pattern>\n" +
+    "	<polyline class=\"st1\" points=\"134.6,109.5 127.3,118.6 127.3,118.6 61.8,70.2 72.4,56.9 113,2.5 178.3,51.2 137.7,105.6 	\"/>\n" +
+    "	<path d=\"M127.3,121.1c-0.5,0-1-0.2-1.5-0.5L60.3,72.2c-0.5-0.4-0.9-1-1-1.7c-0.1-0.7,0.1-1.4,0.5-1.9l10.6-13.3L111,1\n" +
+    "		c0.4-0.5,1-0.9,1.6-1c0.7-0.1,1.3,0.1,1.9,0.5l65.3,48.7c1.1,0.8,1.3,2.4,0.5,3.5l-40.6,54.4c-0.8,1-2.1,1.3-3.2,0.7\n" +
+    "		c0.8,0.9,0.9,2.3,0.1,3.2l-7.3,9.1C128.8,120.8,128.1,121.1,127.3,121.1z M65.4,69.7l61.5,45.4l5.8-7.2c0.8-1,2.1-1.2,3.1-0.6\n" +
+    "		c-0.8-0.9-0.9-2.2-0.1-3.2l39.1-52.4L113.5,6L74.4,58.4L65.4,69.7z\"/>\n" +
+    "</g>\n" +
+    "<rect y=\"166.2\" width=\"89.5\" height=\"5\"/>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/tools-pencil.svg",
+    "<svg version=\"1.1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "	 viewBox=\"0 0 138.2 171.4\"\n" +
+    "     xml:space=\"preserve\"\n" +
+    "     class=\"znk-exercise-pencil\">\n" +
+    "<style>\n" +
+    "    .znk-exercise-pencil{\n" +
+    "        width: 20px;\n" +
+    "    }\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<g>\n" +
+    "		<path d=\"M0,171.4C0,171.4,0,171.4,0,171.4c3.7-19,7.5-38,11.2-57L94.6,6.6c9.3-6.9,19.5-8.3,30.7-4.6c2.4,1.9,4.7,3.7,7.1,5.6\n" +
+    "			c6.3,9.9,7.6,20.1,3.2,30.8L52.3,146.2C34.9,154.6,17.4,163,0,171.4z M50.3,140c26.9-34.9,53.6-69.1,80-103.7\n" +
+    "			c5.5-7.3,3.8-18.5-2.6-24.8c-9.6-9.5-23.3-8.7-31.6,1.9c-25.2,32.5-50.3,65-75.4,97.6c-1,1.2-1.7,2.6-2.6,4l7.6,5.9\n" +
+    "			c1.4-1.9,2.6-3.4,3.8-5c22.8-29.5,45.6-59.1,68.5-88.6c0.8-1,1.4-2.2,2.4-2.9c1.2-0.8,2.7-1.1,4-1.6c0,1.6,0.3,3.2-0.1,4.7\n" +
+    "			c-0.4,1.3-1.7,2.3-2.5,3.5C79,60.1,56.3,89.5,33.6,118.9c-1.3,1.6-2.5,3.3-3.8,4.9l9.5,7.4c1.6-2.1,2.9-3.8,4.2-5.5\n" +
+    "			c23.2-30,46.3-59.9,69.5-89.8c1.1-1.4,3.3-1.8,5-2.7c-0.4,1.9-0.5,3.9-1.2,5.6c-0.5,1.3-1.7,2.3-2.6,3.5\n" +
+    "			c-22.4,29-44.8,57.9-67.1,86.9c-1.3,1.7-2.6,3.3-4,5.2L50.3,140z M16.3,120.6c-0.4,0.5-3.8,19.1-5.8,30.2c-0.6,3.6,2.9,6.4,6.2,5\n" +
+    "			c8.9-3.7,23.2-9.7,29-12.5L16.3,120.6z\"/>\n" +
+    "	</g>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/tools-pointer.svg",
+    "<svg version=\"1.1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "     class=\"znk-exercise-pointer\"\n" +
+    "	 viewBox=\"0 0 150.4 169.6\"\n" +
+    "     xml:space=\"preserve\">\n" +
+    "<style>\n" +
+    "    .znk-exercise-pointer{\n" +
+    "        width: 18px;\n" +
+    "    }\n" +
+    "</style>\n" +
+    "<path d=\"M34.4,169.6c-1.6,0-3.2-0.5-4.6-1.6l-13-10.1c-3.2-2.5-3.9-7-1.6-10.3l33.2-48.5c0.4-0.6,0.5-1.4,0.3-2.2\n" +
+    "	c-0.2-0.7-0.8-1.3-1.5-1.5L4.4,81.1C1.9,80.2,0.2,78,0,75.3c-0.2-2.6,1.2-5.1,3.6-6.3L143,0.5c1.8-0.9,3.9-0.7,5.4,0.5\n" +
+    "	c1.6,1.2,2.3,3.2,1.9,5.1l-31.2,152.1c-0.5,2.6-2.6,4.6-5.2,5.1c-2.6,0.5-5.2-0.6-6.7-2.8l-24.7-37.6c-0.4-0.7-1.1-1.1-1.9-1.1\n" +
+    "	c-0.8-0.1-1.5,0.3-2,0.8L40.1,167C38.6,168.7,36.5,169.6,34.4,169.6z M145.3,5C145.2,5,145.2,5,145.3,5L5.8,73.5C5,73.9,5,74.7,5,75\n" +
+    "	c0,0.3,0.2,1,1,1.3l42.8,14.4c2.2,0.8,3.9,2.5,4.7,4.7c0.7,2.2,0.4,4.6-0.9,6.6l-33.2,48.5c-0.8,1.1-0.5,2.7,0.6,3.5l13,10.1\n" +
+    "	c1.1,0.8,2.6,0.7,3.5-0.3l38.5-44.4c1.5-1.8,3.8-2.7,6.1-2.6c2.4,0.2,4.5,1.4,5.8,3.4l24.7,37.6c0.5,0.8,1.3,0.7,1.6,0.7\n" +
+    "	c0.3-0.1,1-0.3,1.2-1.2L145.4,5.2C145.4,5.2,145.4,5.1,145.3,5C145.3,5,145.3,5,145.3,5z\"/>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/tools-remove.svg",
+    "<svg version=\"1.1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "	 viewBox=\"0 0 176.3 173.8\"\n" +
+    "     xml:space=\"preserve\"\n" +
+    "class=\"znk-exercise-remove\">\n" +
+    "    <style>\n" +
+    "       .znk-exercise-remove{\n" +
+    "           width: 22px;\n" +
+    "       }\n" +
+    "    </style>\n" +
+    "<g>\n" +
+    "	<path d=\"M173.3,20.8H3c-1.7,0-3-1.3-3-3s1.3-3,3-3h170.3c1.7,0,3,1.3,3,3S174.9,20.8,173.3,20.8z\"/>\n" +
+    "	<path d=\"M89.1,173.8H41.5c-10.5,0-13.7-9.8-13.9-14.9L19.6,21.4c-0.1-1.7,1.2-3.1,2.8-3.2c1.6-0.1,3.1,1.2,3.2,2.8l8.1,137.5\n" +
+    "		c0.1,1,0.7,9.3,7.9,9.3h47.6c1.7,0,3,1.3,3,3S90.8,173.8,89.1,173.8z\"/>\n" +
+    "	<path d=\"M136.7,173.8H89.1c-1.7,0-3-1.3-3-3s1.3-3,3-3h47.6c7.2,0,7.9-8.3,7.9-9.2l8.1-137.5c0.1-1.7,1.5-2.9,3.2-2.8\n" +
+    "		c1.7,0.1,2.9,1.5,2.8,3.2l-8.1,137.5C150.4,164.1,147.2,173.8,136.7,173.8z\"/>\n" +
+    "	<path d=\"M120.5,20.8c-1.7,0-3-1.3-3-3v-6.4c0-3-2.4-5.4-5.4-5.4H65.5c-3,0-5.4,2.4-5.4,5.4v6.4c0,1.7-1.3,3-3,3s-3-1.3-3-3v-6.4\n" +
+    "		C54.1,5.1,59.2,0,65.5,0h46.6c6.3,0,11.4,5.1,11.4,11.4v6.4C123.5,19.5,122.2,20.8,120.5,20.8z\"/>\n" +
+    "	<path d=\"M62.5,147.7c-1.7,0-3-1.3-3-3v-103c0-1.7,1.3-3,3-3s3,1.3,3,3v103C65.5,146.3,64.2,147.7,62.5,147.7z\"/>\n" +
+    "	<path d=\"M89.1,147.7c-1.7,0-3-1.3-3-3v-103c0-1.7,1.3-3,3-3s3,1.3,3,3v103C92.1,146.3,90.8,147.7,89.1,147.7z\"/>\n" +
+    "	<path d=\"M114.6,147.7c-1.7,0-3-1.3-3-3v-103c0-1.7,1.3-3,3-3s3,1.3,3,3v103C117.6,146.3,116.3,147.7,114.6,147.7z\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/tools-touche.svg",
+    "<svg version=\"1.1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "	 viewBox=\"0 0 47.6 53.2\"\n" +
+    "     xml:space=\"preserve\"\n" +
+    "     class=\"znk-exercise-touche-svg\">\n" +
+    "<style type=\"text/css\">\n" +
+    "    .znk-exercise-touche-svg {\n" +
+    "        width: 23px;\n" +
+    "    }\n" +
+    "\n" +
+    "    .znk-exercise-touche-svg .st0 {\n" +
+    "        fill: none;\n" +
+    "        stroke: #000000;\n" +
+    "        stroke-width: 2;\n" +
+    "        stroke-linecap: round;\n" +
+    "        stroke-linejoin: round;\n" +
+    "        stroke-miterlimit: 10;\n" +
+    "    }\n" +
+    "\n" +
+    "    .znk-exercise-touche-svg .st1 {\n" +
+    "        fill: none;\n" +
+    "        stroke: #000000;\n" +
+    "        stroke-width: 2;\n" +
+    "        stroke-linejoin: round;\n" +
+    "        stroke-miterlimit: 10;\n" +
+    "    }\n" +
+    "</style>\n" +
+    "<path class=\"st0\" d=\"M39.9,22.8v25.1c0,2.4-1.9,4.3-4.3,4.3H5.3c-2.4,0-4.3-1.9-4.3-4.3V12.6c0-2.4,1.9-4.3,4.3-4.3h15.7\"/>\n" +
+    "<g>\n" +
+    "	<path class=\"st1\" d=\"M22.4,33.8l23.7-23.7c0.7-0.7,0.7-1.8,0-2.4l-6.2-6.2c-0.7-0.7-1.8-0.7-2.4,0L13.8,25.2L22.4,33.8z\"/>\n" +
+    "	<line class=\"st1\" x1=\"34.2\" y1=\"4.8\" x2=\"42.8\" y2=\"13.4\"/>\n" +
+    "	<line class=\"st0\" x1=\"32.8\" y1=\"11.4\" x2=\"19.1\" y2=\"25.2\"/>\n" +
+    "	<polyline class=\"st1\" points=\"13.8,25.2 11.6,36 22.4,33.8 	\"/>\n" +
+    "</g>\n" +
+    "<path class=\"st0\" d=\"M11,39.2c-1.8,1-6.4,4.1-3.2,5s13-2.1,13.1,0s-1,2.9-1,2.9\"/>\n" +
+    "</svg>\n" +
+    "");
   $templateCache.put("components/znkExercise/svg/wrong-icon.svg",
     "<svg version=\"1.1\"\n" +
     "     class=\"wrong-icon-svg\"\n" +
@@ -12083,6 +12969,36 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "	<line class=\"st0\" x1=\"7.5\" y1=\"7.5\" x2=\"119\" y2=\"119\"/>\n" +
     "</g>\n" +
     "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/toolbox/core/znkExerciseToolBoxDirective.template.html",
+    "<znk-exercise-draw-tool settings=\"$ctrl.settings.drawing\">\n" +
+    "</znk-exercise-draw-tool>\n" +
+    "\n" +
+    "");
+  $templateCache.put("components/znkExercise/toolbox/tools/draw/znkExerciseDrawToolDirective.template.html",
+    "<svg-icon name=\"znk-exercise-touche\"\n" +
+    "          ng-click=\"d.toolClicked(d.TOOLS.TOUCHE)\"\n" +
+    "          ng-class=\"{\n" +
+    "            active:d.drawMode !== d.DRAWING_MODES.NONE\n" +
+    "          }\">\n" +
+    "</svg-icon>\n" +
+    "<!--<svg-icon name=\"znk-exercise-pointer\">-->\n" +
+    "<!--</svg-icon>-->\n" +
+    "<svg-icon name=\"znk-exercise-pencil\"\n" +
+    "          ng-click=\"d.toolClicked(d.TOOLS.PENCIL)\"\n" +
+    "          ng-class=\"{\n" +
+    "            active:d.drawMode === d.DRAWING_MODES.VIEW_DRAW\n" +
+    "          }\">\n" +
+    "</svg-icon>\n" +
+    "<svg-icon name=\"znk-exercise-eraser\"\n" +
+    "          ng-click=\"d.toolClicked(d.TOOLS.ERASER)\"\n" +
+    "          ng-class=\"{\n" +
+    "            active:d.drawMode === d.DRAWING_MODES.VIEW_ERASE\n" +
+    "          }\">\n" +
+    "</svg-icon>\n" +
+    "<svg-icon name=\"znk-exercise-remove\"\n" +
+    "          ng-click=\"d.cleanCanvas()\">\n" +
+    "</svg-icon>\n" +
     "");
 }]);
 
