@@ -34,7 +34,7 @@
                 var getProm = $q.when();
                 angular.forEach(moduleIds, function (moduleId) {
                     getProm = getProm.then(function () {
-                        return ExerciseResultSrv.getModuleResult(userId, moduleId, false).then(function (moduleResult) {
+                        return ExerciseResultSrv.getModuleResult(userId, moduleId, false, false).then(function (moduleResult) {
                             moduleResults[moduleId] = moduleResult;
                             return moduleResults;
                         });
@@ -103,7 +103,7 @@
             }
 
             function getResultsByModuleId(userId, moduleId) {
-                return ExerciseResultSrv.getModuleResult(userId, moduleId, false).then(function (moduleResult) {
+                return ExerciseResultSrv.getModuleResult(userId, moduleId, false, true).then(function (moduleResult) {
                     if (moduleResult && !angular.equals(moduleResult, {})) {
                         moduleResult.moduleSummary = getModuleSummary(moduleResult);
 
