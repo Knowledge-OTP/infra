@@ -62,6 +62,7 @@
                         _updateBtnStatus(false, methodName);
                         $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);
                         CallsErrorSrv.showErrorModal(err);
+                        CallsSrv.declineCall(callsData);
                     });
                 }
             }
