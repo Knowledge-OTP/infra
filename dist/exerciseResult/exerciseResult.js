@@ -397,7 +397,7 @@
                 });
             };
 
-            this.getModuleResult = function (userId, moduleId, withDefaultResult) {
+            this.getModuleResult = function (userId, moduleId, withDefaultResult, withExerciseResults) {
                 return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                     var userResultsPath = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
                     return StudentStorageSrv.get(userResultsPath).then(function (moduleResultsGuids) {
@@ -418,7 +418,7 @@
 
                             var getExerciseResultsProm = $q.when();
 
-                            if(moduleResult.exerciseResults) {
+                            if(moduleResult.exerciseResults && withExerciseResults) {
                                 angular.forEach(moduleResult.exerciseResults, function (exerciseResult, exerciseTypeId) {
                                     angular.forEach(exerciseResult, function (exerciseResultGuid, exerciseId) {
                                         getExerciseResultsProm = getExerciseResultsProm.then(function(){
@@ -501,7 +501,7 @@
                         exerciseResultsGuids[exerciseTypeId][exerciseId] = exerciseResult.guid;
                         dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
 
-                        return ExerciseResultSrv.getModuleResult(exerciseResult.uid, exerciseResult.moduleId, exerciseResult.exerciseTypeId, exerciseResult.exerciseId).then(function (moduleResult) {
+                        return ExerciseResultSrv.getModuleResult(exerciseResult.uid, exerciseResult.moduleId).then(function (moduleResult) {
                             if(!moduleResult.exerciseResults) {
                                 moduleResult.exerciseResults = {};
                             }
@@ -523,6 +523,7 @@
                                 moduleResult.exercisesStatus[exerciseTypeId][exerciseId] = exerciseStatuses[exerciseTypeId][exerciseId].status;
                             }
 
+                            moduleResult.lastUpdate = Date.now();
                             var modulePath = _getModuleResultPath(moduleResult.guid);
                             dataToSave[modulePath] = moduleResult;
 
