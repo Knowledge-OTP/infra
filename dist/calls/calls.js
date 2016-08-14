@@ -36,11 +36,11 @@
     'use strict';
 
     angular.module('znk.infra.calls')
-        .config(["WebcallSrvProvider", function (WebcallSrvProvider) {
+        .config(["WebcallSrvProvider", "ENV", function (WebcallSrvProvider, ENV) {
             'ngInject';
             WebcallSrvProvider.setCallCred({
-                username:'devUsrZinkerz160726161534',
-                password:'zinkerz$9999'
+                username: ENV.plivoUsername,
+                password: ENV.plivoPassword
             });
         }]);
 })(angular);
@@ -263,6 +263,7 @@
                         _updateBtnStatus(false, methodName);
                         $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);
                         CallsErrorSrv.showErrorModal(err);
+                        CallsSrv.declineCall(callsData);
                     });
                 }
             }
