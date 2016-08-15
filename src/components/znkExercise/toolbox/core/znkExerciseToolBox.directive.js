@@ -16,13 +16,15 @@
                     settings: '<'
                 },
                 controllerAs: '$ctrl',
-                controller: function(){
+                controller: function($element){
+                    'ngInject';// jshint ignore: line
+
                     this.getCurrentQuestion = function(){
                         return this.znkExerciseCtrl.getCurrentQuestion();
                     };
 
                     this.getZnkExerciseElement = function(){
-                        return this.znkExerciseCtrl.getElement();
+                        return $element.parent();
                     };
 
                     this.isExerciseReady = function(){
@@ -30,8 +32,10 @@
                     };
                 },
                 bindToController: true,
-                link: function(scope, element, attrs, znkExerciseCtrl){
-                    scope.$ctrl.znkExerciseCtrl = znkExerciseCtrl;
+                link: {
+                    pre: function(scope, element, attrs, znkExerciseCtrl){
+                        scope.$ctrl.znkExerciseCtrl = znkExerciseCtrl;
+                    }
                 }
             };
         }

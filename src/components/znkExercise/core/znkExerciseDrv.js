@@ -420,17 +420,13 @@
                                     return;
                                 }
 
-                                var currQuestion = getCurrentQuestion();
-
-                                updateTimeSpentOnQuestion(prevValue);
-                                if (toolboxModalSettings.actions && toolboxModalSettings.actions.setToolValue) {
-                                    toolboxModalSettings.actions.setToolValue(ZnkExerciseSrv.toolBoxTools.BOOKMARK, !!currQuestion.__questionStatus.bookmark);
-                                }
-                                //added since the sliders current was not changed yet
-                                $timeout(function(){
+                                znkExerciseDrvCtrl.isExerciseReady().then(function(){
+                                    updateTimeSpentOnQuestion(prevValue);
+                                    var currQuestion = getCurrentQuestion();
                                     scope.settings.onSlideChange(currQuestion, value);
                                     scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value ,prevValue ,currQuestion);
-                                },0,false);
+                                });
+
                                 //var url = $location.url() + '/' + scope.vm.questionsWithAnswers[value].id;
                                 //$analytics.pageTrack(url);
                             });

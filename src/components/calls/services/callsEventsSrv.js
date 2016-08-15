@@ -80,13 +80,13 @@
                                     if (!isCurrentUserInitiatedCall(currUid)) {
                                         CallsUiSrv.closeModal();
                                         // show outgoing call modal WITH the ANSWERED TEXT, wait 2 seconds and close the modal, show the ActiveCallDRV
-                                        //ActivePanelSrv.showActivePanelDrv('calls');
-                                        //ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
+                                        // ActivePanelSrv.showActivePanelDrv('calls');
+                                        // ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
                                     } else {
                                         // close the modal, show the ActiveCallDRV
                                         // CallsUiSrv.closeModal();
-                                        //ActivePanelSrv.showActivePanelDrv('calls');
-                                        //ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
+                                        // ActivePanelSrv.showActivePanelDrv('calls');
+                                        // ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
                                     }
                                     // ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.ACTIVE.enum);
                                     break;
