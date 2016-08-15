@@ -1,5 +1,10 @@
 (function (angular) {
     'use strict';
+    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.exerciseResult', 'znk.infra.userContext']);
+})(angular);
+
+(function (angular) {
+    'use strict';
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
         'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv', 'StudentContextSrv',
         function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, StudentContextSrv) {
@@ -205,3 +210,7 @@
     ]);
 })(angular);
 
+
+angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
+
+}]);
