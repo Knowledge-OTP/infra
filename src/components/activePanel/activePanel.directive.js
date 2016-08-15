@@ -3,37 +3,13 @@
 (function (angular) {
 
     angular.module('znk.infra.activePanel')
-        .provider('activePanelConfig', function () {
-            'ngInject';
-            this.setReceiverUID = function (receiverUID) {
-                this.receiverUID = receiverUID;
-                debugger;
-            };
-
-            this.$get = function () {
-                var self = this;
-
-                this.getReceiverUID = function() {
-                    return self.receiverUID;
-                }
-            };
-        })
-        .directive('activePanel', function (activePanelConfig, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum) {
+        .directive('activePanel', function ($interval, $filter, $log, CallsUiSrv, CallsEventsSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {
                     // callBtnModel: '='
                 },
-                controller: function ($scope, activePanelConfig) {
-                    // if (bilingualButtonConfig.locale === 'es') {
-                    //     $scope.greeting = 'Hola Mundo';
-                    // }
-                    console.log(activePanelConfig);
-                    debugger;
-                },
                 link: function(scope, element, attrs) {
-
-                    console.log(activePanelConfig);
 
                     scope.d = {
                         states: {

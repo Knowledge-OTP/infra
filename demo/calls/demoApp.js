@@ -86,9 +86,5 @@
                 }
             };
             CallsUiSrvProvider.setCalleeNameFnGetter(fn);
-        })
-        .config(function(activePanelConfigProvider){
-            var receiverUID = 'some-uid-bla-bla';
-            activePanelConfigProvider.setReceiverUID(receiverUID);
         });
 })(angular);
