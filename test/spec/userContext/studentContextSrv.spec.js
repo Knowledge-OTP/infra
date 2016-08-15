@@ -1,7 +1,7 @@
 describe('testing service "StudentContextSrv":', function () {
     'use strict';
 
-    beforeEach(module('znk.infra-dashboard.userContext', 'htmlTemplates', 'testUtility'));
+    beforeEach(module('znk.infra.userContext', 'htmlTemplates', 'testUtility'));
 
     var StudentContextSrv, $q;
     beforeEach(inject([

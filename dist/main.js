@@ -8430,13 +8430,13 @@ angular.module('znk.infra.user').run(['$templateCache', function($templateCache)
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra-dashboard.userContext', []);
+    angular.module('znk.infra.userContext', []);
 })(angular);
 
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra-dashboard.userContext').service('StudentContextSrv', ['$window', '$log',
+    angular.module('znk.infra.userContext').service('StudentContextSrv', ['$window', '$log',
 
         function ($window, $log) {
             var StudentContextSrv = {};
@@ -8477,7 +8477,7 @@ angular.module('znk.infra.user').run(['$templateCache', function($templateCache)
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra-dashboard.userContext').service('TeacherContextSrv', ['$window', '$log',
+    angular.module('znk.infra.userContext').service('TeacherContextSrv', ['$window', '$log',
 
         function ($window, $log) {
             var TeacherContextSrv = {};
