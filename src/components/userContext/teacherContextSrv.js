@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra-dashboard.userContext').service('TeacherContextSrv', ['$window', '$log',
+    angular.module('znk.infra.userContext').service('TeacherContextSrv', ['$window', '$log',
 
         function ($window, $log) {
             var TeacherContextSrv = {};
@@ -24,7 +24,6 @@
                     }
                 }
                 return _currentTeacherUid;
-
             };
 
             TeacherContextSrv.setCurrentUid = function (uid) {

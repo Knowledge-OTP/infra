@@ -30,7 +30,6 @@
                     }
                 }
                 return _currentStudentUid;
-
             };
 
             StudentContextSrv.setCurrentUid = function (uid) {
@@ -72,7 +71,6 @@
                     }
                 }
                 return _currentTeacherUid;
-
             };
 
             TeacherContextSrv.setCurrentUid = function (uid) {

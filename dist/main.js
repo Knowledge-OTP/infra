@@ -8459,7 +8459,6 @@ angular.module('znk.infra.user').run(['$templateCache', function($templateCache)
                     }
                 }
                 return _currentStudentUid;
-
             };
 
             StudentContextSrv.setCurrentUid = function (uid) {
@@ -8501,7 +8500,6 @@ angular.module('znk.infra.user').run(['$templateCache', function($templateCache)
                     }
                 }
                 return _currentTeacherUid;
-
             };
 
             TeacherContextSrv.setCurrentUid = function (uid) {
