@@ -35,6 +35,7 @@
 "znk.infra.storage",
 "znk.infra.svgIcon",
 "znk.infra.user",
+"znk.infra.userContext",
 "znk.infra.utility",
 "znk.infra.webcall",
 "znk.infra.workouts",
@@ -8423,6 +8424,58 @@ angular.module('znk.infra.user').service('UserProfileService',
 })(angular);
 
 angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra-dashboard.userContext', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra-dashboard.userContext').service('StudentContextSrv', ['$window', '$log',
+
+        function ($window, $log) {
+            var StudentContextSrv = {};
+
+            var _storageStudentUidKey = 'currentStudentUid';
+            var _currentStudentUid = '';
+
+            StudentContextSrv.getCurrUid = function () {
+                if (_currentStudentUid.length === 0) {
+                    if ($window.sessionStorage) {
+                        var storedCurrentUid = $window.sessionStorage.getItem(_storageStudentUidKey);
+                        if (storedCurrentUid) {
+                            _currentStudentUid = storedCurrentUid;
+
+                        } else {
+                            $log.error('StudentContextSrv: no student uid');
+                        }
+                    } else {
+                        $log.error('StudentContextSrv: no student uid');
+                    }
+                }
+                return _currentStudentUid;
+
+            };
+
+            StudentContextSrv.setCurrentUid = function (uid) {
+                _currentStudentUid = uid;
+
+                if ($window.sessionStorage) {
+                    $window.sessionStorage.setItem(_storageStudentUidKey, uid);
+                }
+            };
+
+            return StudentContextSrv;
+        }
+    ]);
+})(angular);
+
+angular.module('znk.infra.userContext').run(['$templateCache', function($templateCache) {
 
 }]);
 
