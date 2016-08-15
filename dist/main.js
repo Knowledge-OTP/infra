@@ -587,7 +587,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
 (function (angular) {
     'use strict';
-    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.exerciseResult']);
+    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.exerciseResult', 'znk.infra.userContext']);
 })(angular);
 
 (function (angular) {
@@ -608,12 +608,21 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             userAssignModuleService.offExternalOnValue = function (userId) {
                 InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
                     studentStorage.offEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB);
+
+                    if (registerEvents[userId].changeCB) {
+                        angular.forEach(registerEvents[userId].changeCB, function (val, resultGuid) {
+                            studentStorage.offEvent('child_changed', 'moduleResults/' + resultGuid, onModuleResultChangedCB);
+                        });
+                    }
                 });
             };
 
             userAssignModuleService.registerExternalOnValueCB = function (cb, userId) {
                 InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
-                    registerEvents[userId] = cb;
+                    registerEvents[userId] = {
+                        valueCB: cb,
+                        changeCB: {}
+                    };
                     studentStorage.onEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB);
                 });
             };
@@ -670,31 +679,38 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
             };
 
-            function onValueEventCB(cb, moduleResultsGuids) {
-                StudentContextSrv.getCurrUid().then(function (userId) {
-                    InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
-                        if (angular.isUndefined(moduleResultsGuids) || !moduleResultsGuids) {
-                            userAssignModuleService.assignModules = {};
-                            applyCB(cb);
-                            return;
-                        }
-                        var moduleResults = {};
-                        var getProm = $q.when();
-                        var getPromArr = [];
-                        angular.forEach(moduleResultsGuids, function (resultGuid, moduleId) {
-                            getProm = getResultsByModuleId(userId, moduleId).then(function (moduleResult) {
-                                moduleResults[moduleResult.moduleId] = moduleResult;
+            function onValueEventCB(moduleResultsGuids) {
+                if (angular.isUndefined(moduleResultsGuids) || !moduleResultsGuids) {
+                    var userId = StudentContextSrv.getCurrUid();
+                    userAssignModuleService.assignModules = {};
+                    applyCB(registerEvents[userId].valueCB);
+                    return;
+                }
+                buildResultsFromGuids(moduleResultsGuids);
+            }
 
-                                var modulePath = 'moduleResults/' + moduleResult.guid;
-                                studentStorage.onEvent('child_changed', modulePath, onModuleResultChangedCB.bind(null, userId, moduleId, cb));
-                            });
-                            getPromArr.push(getProm);
-                        });
+            function buildResultsFromGuids(moduleResultsGuids) {
+                InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
+                    var moduleResults = {};
+                    var getProm = $q.when();
+                    var getPromArr = [];
+                    var userId = StudentContextSrv.getCurrUid();
 
-                        $q.all(getPromArr).then(function () {
-                            userAssignModuleService.assignModules = moduleResults;
-                            applyCB(registerEvents[userId]);
+                    angular.forEach(moduleResultsGuids, function (resultGuid, moduleId) {
+                        getProm = getResultsByModuleId(userId, moduleId).then(function (moduleResult) {
+                            moduleResults[moduleResult.moduleId] = moduleResult;
+
+                            if (!registerEvents[userId].changeCB[moduleResult.guid]) {
+                                registerEvents[userId].changeCB[moduleResult.guid] = true;
+                                studentStorage.onEvent('child_changed', 'moduleResults/' + moduleResult.guid, onModuleResultChangedCB);
+                            }
                         });
+                        getPromArr.push(getProm);
+                    });
+
+                    $q.all(getPromArr).then(function () {
+                        userAssignModuleService.assignModules = moduleResults;
+                        applyCB(registerEvents[userId].valueCB);
                     });
                 });
             }
@@ -717,10 +733,10 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
             }
 
-            function onModuleResultChangedCB(userId, moduleId, cb) {
-                getResultsByModuleId(userId, moduleId).then(function (moduleResult) {
-                    userAssignModuleService.assignModules[moduleId] = moduleResult;
-                    applyCB(cb);
+            function onModuleResultChangedCB() {
+                var userId = StudentContextSrv.getCurrUid();
+                ExerciseResultSrv.getUserModuleResultsGuids(userId).then(function (moduleResultsGuids) {
+                    buildResultsFromGuids(moduleResultsGuids);
                 });
             }
 
