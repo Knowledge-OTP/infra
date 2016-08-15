@@ -593,9 +593,10 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 (function (angular) {
     'use strict';
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv',
-        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv) {
+        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv', 'StudentContextSrv',
+        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, StudentContextSrv) {
             var userAssignModuleService = {};
+            var registerEvents = {};
             userAssignModuleService.assignModules = {};
 
             userAssignModuleService.assignModuleStatus = new EnumSrv.BaseEnum([
@@ -612,7 +613,8 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
             userAssignModuleService.registerExternalOnValueCB = function (cb, userId) {
                 InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
-                    studentStorage.onEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB.bind(null, userId, cb, studentStorage));
+                    registerEvents[userId] = cb;
+                    studentStorage.onEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB);
                 });
             };
 
@@ -668,29 +670,32 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
             };
 
-            function onValueEventCB(userId, cb, studentStorage, moduleResultsGuids) {
-                if (angular.isUndefined(moduleResultsGuids) || !moduleResultsGuids) {
-                    userAssignModuleService.assignModules = {};
-                    applyCB(cb);
-                    return;
-                }
-                var moduleResults = {};
-                var getProm = $q.when();
-                var getPromArr = [];
-                angular.forEach(moduleResultsGuids, function (resultGuid, moduleId) {
-                    getProm = getResultsByModuleId(userId, moduleId).then(function (moduleResult) {
-                        moduleResults[moduleResult.moduleId] = moduleResult;
+            function onValueEventCB(cb, moduleResultsGuids) {
+                StudentContextSrv.getCurrUid().then(function (userId) {
+                    InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
+                        if (angular.isUndefined(moduleResultsGuids) || !moduleResultsGuids) {
+                            userAssignModuleService.assignModules = {};
+                            applyCB(cb);
+                            return;
+                        }
+                        var moduleResults = {};
+                        var getProm = $q.when();
+                        var getPromArr = [];
+                        angular.forEach(moduleResultsGuids, function (resultGuid, moduleId) {
+                            getProm = getResultsByModuleId(userId, moduleId).then(function (moduleResult) {
+                                moduleResults[moduleResult.moduleId] = moduleResult;
 
+                                var modulePath = 'moduleResults/' + moduleResult.guid;
+                                studentStorage.onEvent('child_changed', modulePath, onModuleResultChangedCB.bind(null, userId, moduleId, cb));
+                            });
+                            getPromArr.push(getProm);
+                        });
 
-                        var modulePath = 'moduleResults/' + moduleResult.guid;
-                        studentStorage.onEvent('child_changed', modulePath, onModuleResultChangedCB.bind(null, userId, moduleId, cb));
+                        $q.all(getPromArr).then(function () {
+                            userAssignModuleService.assignModules = moduleResults;
+                            applyCB(registerEvents[userId]);
+                        });
                     });
-                    getPromArr.push(getProm);
-                });
-
-                $q.all(getPromArr).then(function () {
-                    userAssignModuleService.assignModules = moduleResults;
-                    applyCB(cb);
                 });
             }
 
