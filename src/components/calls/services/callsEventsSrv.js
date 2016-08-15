@@ -4,14 +4,18 @@
     angular.module('znk.infra.calls')
         .constant('CALL_UPDATE', 'CallsEventsSrv: call updated')
         .provider('CallsEventsSrv', function () {
+
             var isEnabled = true;
 
             this.enabled = function (_isEnabled) {
                 isEnabled = _isEnabled;
             };
 
-            this.$get = function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, $q, CALL_UPDATE, ActivePanelSrv, ActivePanelComponentEnum, ActivePanelStatusEnum) {
+            this.$get = function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, $q, CALL_UPDATE) {
                 'ngInject';
+                var registeredCbToCurrUserCallStateChange = [];
+                var currUserCallState;
+
                 var CallsEventsSrv = {};
 
                 var scopesObj = {};
@@ -40,11 +44,13 @@
                 }
 
                 function _listenToCallsData(guid) {
+                    $log.debug('_listenToCallsData');
                     var callsStatusPath = 'calls/' + guid;
 
                     function _cb(callsData) {
 
                         if (!callsData) {
+                            currUserCallState = callsData;
                             return;
                         }
 
@@ -82,15 +88,16 @@
                                         //ActivePanelSrv.showActivePanelDrv('calls');
                                         //ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
                                     }
-                                    ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.ACTIVE.enum);
+                                    // ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.ACTIVE.enum);
                                     break;
                                 case CallsStatusEnum.ENDED_CALL.enum:
                                     $log.debug('call ended');
-                                    ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.INACTIVE.enum);
+                                    // ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.INACTIVE.enum);
                                     // disconnect other user from call
                                     getCallsSrv().disconnectCall();
                                     break;
                             }
+                            _invokeCbs(registeredCbToCurrUserCallStateChange, [callsData]);
                         });
 
                         function isCurrentUserInitiatedCall(currUid) {
@@ -128,6 +135,12 @@
                     });
                 }
 
+                function _invokeCbs(cbArr, args){
+                    cbArr.forEach(function(cb){
+                        cb.apply(null, args);
+                    });
+                }
+
                 CallsEventsSrv.activate = function () {
                     if (isEnabled) {
                         _startListening();
@@ -137,6 +150,11 @@
                 CallsEventsSrv.openOutGoingCall = openOutGoingCall;
 
                 CallsEventsSrv.updateScopeData = updateScopeData;
+
+                CallsEventsSrv.registerToCurrUserCallStateChanges = function (cb) {
+                    registeredCbToCurrUserCallStateChange.push(cb);
+                    cb(currUserCallState);
+                };
 
                 return CallsEventsSrv;
             };

@@ -7,9 +7,8 @@ active-panel {
     }
     .active-panel {
         transition: 1.5s;
-        opacity: 0;
-        //width: 260px;
-        width: 210px;
+        //opacity: 0;
+        width: 250px;
         height: 40px;
         background-color: $bgColor21;
         border: 1px solid $bcColor11;
