@@ -13,24 +13,48 @@
                 ['COMPLETED', ExerciseStatusEnum.COMPLETED.enum, 'completed']
             ]);
 
-            userAssignModuleService.offExternalOnValue = function (userId) {
+            userAssignModuleService.offExternalOnValue = function (userId, valueCB, changeCB) {
                 InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
                     studentStorage.offEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB);
+                    angular.forEach(registerEvents[userId].valueCB, function (cb, index) {
+                        if (cb === valueCB) {
+                            registerEvents[userId].valueCB.splice(index, 1);
+                        }
+                    });
 
                     if (registerEvents[userId].changeCB) {
-                        angular.forEach(registerEvents[userId].changeCB, function (val, resultGuid) {
-                            studentStorage.offEvent('child_changed', 'moduleResults/' + resultGuid, onModuleResultChangedCB);
+                        angular.forEach(registerEvents[userId].changeCB, function (cbData, index) {
+                            if (cbData.cb === changeCB) {
+                                angular.forEach(cbData.guids, function (resultGuid) {
+                                    studentStorage.offEvent('child_changed', 'moduleResults/' + resultGuid, onModuleResultChangedCB);
+                                });
+                                registerEvents[userId].changeCB.splice(index, 1);
+                            }
                         });
                     }
                 });
             };
 
-            userAssignModuleService.registerExternalOnValueCB = function (cb, userId) {
+            userAssignModuleService.registerExternalOnValueCB = function (userId, valueCB, changeCB) {
                 InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
-                    registerEvents[userId] = {
-                        valueCB: cb,
-                        changeCB: {}
-                    };
+                    if (!registerEvents[userId]) {
+                        registerEvents[userId] = {};
+                    }
+
+                    if (!registerEvents[userId].valueCB) {
+                        registerEvents[userId].valueCB = [];
+                    }
+                    registerEvents[userId].valueCB.push(valueCB);
+
+                    if (!registerEvents[userId].changeCB) {
+                        registerEvents[userId].changeCB = [];
+                    }
+                    registerEvents[userId].changeCB.push({
+                        cb: changeCB,
+                        guids: []
+                    });
+
+
                     studentStorage.onEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB);
                 });
             };
@@ -108,10 +132,12 @@
                         getProm = getResultsByModuleId(userId, moduleId).then(function (moduleResult) {
                             moduleResults[moduleResult.moduleId] = moduleResult;
 
-                            if (!registerEvents[userId].changeCB[moduleResult.guid]) {
-                                registerEvents[userId].changeCB[moduleResult.guid] = true;
-                                studentStorage.onEvent('child_changed', 'moduleResults/' + moduleResult.guid, onModuleResultChangedCB);
-                            }
+                            angular.forEach(registerEvents[userId].changeCB, function (cbData) {
+                                if (cbData.guids.indexOf(moduleResult.guid) === -1) {
+                                    cbData.guids.push(moduleResult.guid);
+                                    studentStorage.onEvent('child_changed', 'moduleResults/' + moduleResult.guid, onModuleResultChangedCB);
+                                }
+                            });
                         });
                         getPromArr.push(getProm);
                     });
@@ -148,10 +174,12 @@
                 });
             }
 
-            function applyCB(cb) {
-                if (angular.isFunction(cb)) {
-                    cb(userAssignModuleService.assignModules);
-                }
+            function applyCB(cbArr) {
+                angular.forEach(cbArr, function (valueCB) {
+                    if (angular.isFunction(valueCB)) {
+                        valueCB(userAssignModuleService.assignModules);
+                    }
+                });
             }
 
             function getModuleSummary(assignModule) {
