@@ -2185,6 +2185,9 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "                    </button>\n" +
     "                </div>\n" +
     "            </div>\n" +
+    "            <audio autoplay=\"true\" loop=\"true\">\n" +
+    "                <source src=\"https://dfz02hjbsqn5e.cloudfront.net/general/incomingCall.mp3\" type=\"audio/mp3\">\n" +
+    "            </audio>\n" +
     "        </div>\n" +
     "\n" +
     "        <!-- Call Declined -->\n" +
