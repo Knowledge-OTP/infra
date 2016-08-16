@@ -22,8 +22,9 @@
                     // callBtnModel: '='
                 },
                 link: function(scope, element) {
-                    var receiverId;
-                    var callDuration = 0,
+                    var receiverId,
+                        isOffline,
+                        callDuration = 0,
                         durationToDisplay,
                         timerInterval,
                         screenShareStatus = '0',
@@ -38,8 +39,8 @@
                             receiverId = TeacherContextSrv.getCurrUid();
                         }
 
-                        PresenceService.getCurrentUserStatus(receiverId).then(function (res) {
-                            console.log('PresenceService.getCurrentUserStatus', res);
+                        PresenceService.getCurrentUserStatus(receiverId).then(function (currentUserStatus) {
+                            isOffline = currentUserStatus !== PresenceService.userStatus.ONLINE;
                         });
                     });
 
@@ -51,8 +52,7 @@
                             BOTH_ACTIVE: '11'
                         },
                         callBtnModel: {
-                            // presence: newValue.presence,
-                            // isOffline: newValue.presence !== PresenceService.userStatus.ONLINE,
+                            isOffline: isOffline,
                             receiverId: receiverId
                         },
                         showShareScreenBtns: true,
