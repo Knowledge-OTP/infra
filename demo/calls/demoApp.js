@@ -3,7 +3,6 @@
 
     angular.module('demo', [
         'znk.infra.calls',
-        'znk.infra.activePanel',
         'ngAria',
         'ngMaterial',
         'pascalprecht.translate',
@@ -33,11 +32,10 @@
              *     znkStudentPath	 /act_app
              */
             $rootScope.offline = { isOffline: true, receiverId: 1 };
-
             $rootScope.call = { isOffline: false, receiverId: '21794e2b-3051-4016-8491-b3fe70e8212d' };
             $rootScope.called = { isOffline: false, receiverId: 'eebe2b53-08b7-4296-bcfd-62b69b531473' };
         })
-        .controller('demoCtrl', function ($scope, CallsUiSrv, $rootScope, ActivePanelSrv) {
+        .controller('demoCtrl', function ($scope, CallsUiSrv, $rootScope) {
 
             $scope.openIncomingCallModal = function() {
                 var scope = $rootScope.$new();

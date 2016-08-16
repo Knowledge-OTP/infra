@@ -5,6 +5,14 @@ active-panel {
             opacity: 1;
         }
     }
+    &.screen-share-mode {
+        .active-panel {
+            background-color: $bgColor26;
+            .callee-name {
+                color: $bgColor6;
+            }
+        }
+    }
     .active-panel {
         transition: 1.5s;
         //opacity: 0;
@@ -97,14 +105,6 @@ active-panel {
         }
         .call-duration {
             @include text-style(12px, $fcColor13, Lato, $regularFontWeight);
-        }
-    }
-    &.screen-share-mode {
-        .active-panel {
-            background-color: $bgColor26;
-            .callee-name {
-                color: $bgColor6;
-            }
         }
     }
 }

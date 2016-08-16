@@ -3,13 +3,45 @@
 (function (angular) {
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', function ($interval, $filter, $log, CallsUiSrv, CallsEventsSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum) {
+        .directive('activePanel', function ($interval,
+                                            $filter,
+                                            $log,
+                                            CallsUiSrv,
+                                            CallsEventsSrv,
+                                            CallsStatusEnum,
+                                            ScreenSharingSrv,
+                                            UserScreenSharingStateEnum,
+                                            UserProfileService,
+                                            StudentContextSrv,
+                                            TeacherContextSrv,
+                                            PresenceService,
+                                            ENV) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {
                     // callBtnModel: '='
                 },
-                link: function(scope, element, attrs) {
+                link: function(scope, element) {
+                    var receiverId;
+                    var callDuration = 0,
+                        durationToDisplay,
+                        timerInterval,
+                        screenShareStatus = '0',
+                        callStatus = '0';
+
+                    UserProfileService.getCurrUserId().then(function (currUid) {
+                        // var currentUserUID = currUid;
+                        console.log(currUid);
+                        if (ENV.appContext === 'dashboard') {
+                            receiverId = StudentContextSrv.getCurrUid();
+                        } else if (ENV.appContext === 'student') {
+                            receiverId = TeacherContextSrv.getCurrUid();
+                        }
+
+                        PresenceService.getCurrentUserStatus(receiverId).then(function (res) {
+                            console.log('PresenceService.getCurrentUserStatus', res);
+                        });
+                    });
 
                     scope.d = {
                         states: {
@@ -18,20 +50,14 @@
                             SCREEN_SHARE_ACTIVE: '10',
                             BOTH_ACTIVE: '11'
                         },
-                        // callBtnModel: {
-                        //     // presence: newValue.presence,
-                        //     isOffline: newValue.presence !== PresenceService.userStatus.ONLINE,
-                        //     receiverId: newValue.receiverUid
-                        // },
+                        callBtnModel: {
+                            // presence: newValue.presence,
+                            // isOffline: newValue.presence !== PresenceService.userStatus.ONLINE,
+                            receiverId: receiverId
+                        },
                         showShareScreenBtns: true,
                         calleeName: ''
                     };
-
-                    var callDuration = 0,
-                        durationToDisplay,
-                        timerInterval,
-                        screenShareStatus = '0',
-                        callStatus = '0';
 
                     CallsUiSrv.getCalleeName().then(function(calleeName){
                         scope.d.calleeName = calleeName;
@@ -163,8 +189,7 @@
                                 // callBtnMode('hangup');
                                 break;
                             case scope.d.states.SCREEN_SHARE_ACTIVE :
-                                // component = screenShare, status = active
-                                //             // show drv
+                                // show drv
                                 //             // screenShare buttons are disabled
                                 //             currentStatus.screenSharing = ActivePanelStatusEnum.ACTIVE.enum;
                                 //             actions.showUI();
