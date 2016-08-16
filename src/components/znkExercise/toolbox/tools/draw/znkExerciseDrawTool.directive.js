@@ -54,10 +54,8 @@
 
                     scope.d.TOOLS = TOOLS;
 
-                    scope.d.drawMode = DRAWING_MODES.NONE;
-
                     scope.d.toolClicked = function (tool) {
-                        if(!currQuestion){
+                        if (!currQuestion) {
                             $log.debug('znkExerciseDrawTool: curr question was not set yet');
                             return;
                         }
@@ -77,7 +75,7 @@
 
                     scope.d.cleanCanvas = function () {
                         drawer.clean();
-                        if(!currQuestion){
+                        if (!currQuestion) {
                             var errMsg = 'znkExerciseDrawTool:_getFbRef: curr question was not set yet';
                             $log.debug(errMsg);
                             return;
@@ -97,7 +95,7 @@
                             return $q.reject(errMsg);
                         }
 
-                        if(!currQuestionId){
+                        if (!currQuestionId) {
                             errMsg = 'znkExerciseDrawTool:_getFbRef: curr question was not set yet';
                             $log.debug(errMsg);
                             return $q.reject(errMsg);
@@ -156,8 +154,8 @@
                         });
                     }
 
-                    function _reloadCanvas(){
-                        if(scope.d.drawMode === DRAWING_MODES.NONE){
+                    function _reloadCanvas() {
+                        if (scope.d.drawMode === DRAWING_MODES.NONE) {
                             return;
                         }
 
@@ -195,8 +193,8 @@
                         eventsManager = new EventsManager();
                     }
 
-                    function ServerDrawingUpdater(questionUid){
-                        if(angular.isUndefined(questionUid)){
+                    function ServerDrawingUpdater(questionUid) {
+                        if (angular.isUndefined(questionUid)) {
                             $log.error('znkExerciseDrawTool: Question id was not provided');
                             return;
                         }
@@ -206,26 +204,26 @@
                         this.exerciseDrawingRefProm = _getFbRef(questionUid);
                     }
 
-                    ServerDrawingUpdater.prototype._triggerServerUpdate = function(){
-                        if(this.alreadyTriggered){
+                    ServerDrawingUpdater.prototype._triggerServerUpdate = function () {
+                        if (this.alreadyTriggered) {
                             return;
                         }
 
                         this.alreadyTriggered = true;
 
                         var self = this;
-                        $timeout(function(){
+                        $timeout(function () {
                             self.alreadyTriggered = false;
                             self.flush();
-                        },SERVER_UPDATED_FLUSH_TIME,false);
+                        }, SERVER_UPDATED_FLUSH_TIME, false);
                     };
 
-                    ServerDrawingUpdater.prototype.update = function(pixelsMapToUpdate){
+                    ServerDrawingUpdater.prototype.update = function (pixelsMapToUpdate) {
                         angular.extend(this.pixelsMapToUpdate, pixelsMapToUpdate);
                         this._triggerServerUpdate();
                     };
 
-                    ServerDrawingUpdater.prototype.flush = function(){
+                    ServerDrawingUpdater.prototype.flush = function () {
                         var self = this;
 
                         return this.exerciseDrawingRefProm.then(function (exerciseDrawingRef) {
@@ -244,7 +242,7 @@
                         }
 
                         var coords = coordStr.split(":");
-                        $window.requestAnimationFrame(function(){
+                        $window.requestAnimationFrame(function () {
                             canvasContext.fillStyle = TOUCHE_COLORS[colorId];
                             canvasContext.fillRect(parseInt(coords[0]), parseInt(coords[1]), PIXEL_SIZE, PIXEL_SIZE);
                         });
@@ -257,8 +255,8 @@
 
                         var coords = coordStr.split(":");
 
-                        $window.requestAnimationFrame(function(){
-                            canvasContext.clearRect(parseInt(coords[0]) - PIXEL_SIZE, parseInt(coords[1])- PIXEL_SIZE, 2 * PIXEL_SIZE, 2 * PIXEL_SIZE);
+                        $window.requestAnimationFrame(function () {
+                            canvasContext.clearRect(parseInt(coords[0]) - PIXEL_SIZE, parseInt(coords[1]) - PIXEL_SIZE, 2 * PIXEL_SIZE, 2 * PIXEL_SIZE);
                         });
                     };
 
@@ -316,9 +314,9 @@
                         var coordsStr = snapShot.key();
                         var color = snapShot.val();
 
-                        if(color === 0){
+                        if (color === 0) {
                             drawer.clearPixel(coordsStr);
-                        }else{
+                        } else {
                             drawer.drawPixel(coordsStr, color);
                         }
                     }
@@ -380,7 +378,7 @@
                     };
 
                     EventsManager.prototype.registerFbListeners = function (questionId) {
-                        if(angular.isUndefined(questionId)){
+                        if (angular.isUndefined(questionId)) {
                             $log.error('znkExerciseDrawTool:registerFbListeners: questionId was not provided');
                             return;
                         }
@@ -388,8 +386,8 @@
                         var self = this;
 
                         return _getFbRef(questionId).then(function (ref) {
-                            if(self.ref){
-                                if(self.ref.key() === ref.key()){
+                            if (self.ref) {
+                                if (self.ref.key() === ref.key()) {
                                     return;
                                 }
                                 self.killFbListeners();
@@ -404,7 +402,7 @@
                     };
 
                     EventsManager.prototype.killFbListeners = function () {
-                        if(!this.ref){
+                        if (!this.ref) {
                             return;
                         }
 
@@ -434,9 +432,13 @@
                     });
 
                     scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex, oldIndex, _currQuestion) {
+                        if (angular.isUndefined(scope.d.drawMode)) {
+                            scope.d.drawMode = DRAWING_MODES.VIEW;
+                        }
+
                         currQuestion = _currQuestion;
 
-                        if(serverDrawingUpdater){
+                        if (serverDrawingUpdater) {
                             serverDrawingUpdater.flush();
                         }
                         serverDrawingUpdater = new ServerDrawingUpdater(currQuestion.id);
