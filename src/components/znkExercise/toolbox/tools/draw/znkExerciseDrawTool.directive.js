@@ -32,8 +32,8 @@
                         serverDrawingUpdater,
                         currQuestion;
 
-                    var PIXEL_SIZE = 2;
-                    var SERVER_UPDATED_FLUSH_TIME = 0;
+                    var PIXEL_SIZE = 6;
+                    var SERVER_UPDATED_FLUSH_TIME = 500;
 
                     var DRAWING_MODES = {
                         'NONE': 1,
