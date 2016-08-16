@@ -370,7 +370,7 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "                <svg-icon ng-switch-when=\"teacher\" name=\"active-panel-track-student-icon\"></svg-icon>\n" +
     "                <svg-icon ng-switch-when=\"student\" name=\"active-panel-track-teacher-icon\"></svg-icon>\n" +
     "            </ng-switch>\n" +
-    "            <call-btn ng-model=\"callBtnModel\"></call-btn>\n" +
+    "            <call-btn ng-model=\"d.callBtnModel\"></call-btn>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>\n" +
