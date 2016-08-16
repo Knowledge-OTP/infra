@@ -58,17 +58,17 @@ active-panel {
             }
             &.call-controls {
                 flex-basis: 50%;
-                svg-icon.active-panel-share-screen-icon {
+                svg-icon.share-my-screen {
                     float:left;
                     cursor: pointer;
                     width: 28px;
                     height: 28px;
                     border-radius: 50%;
-                    border: 1px solid $bgColor3;
+                    background-color: $bgColor19;
                     svg {
                         width: 44%;
                         path {
-                            fill: $bgColor3;
+                            fill: $bgColor6;
                         }
                     }
                 }
@@ -81,7 +81,7 @@ active-panel {
                     height: 28px;
                     border-radius: 50%;
                     background-color: $bgColor3;
-                    margin-left: 7px;
+                    margin-right: 7px;
                     svg {
                         width: 44%;
                         path {

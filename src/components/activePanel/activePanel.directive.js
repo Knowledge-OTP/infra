@@ -14,50 +14,67 @@
                                             UserProfileService,
                                             StudentContextSrv,
                                             TeacherContextSrv,
-                                            PresenceService,
+                                            // PresenceService,
                                             ENV) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
-                scope: {
-                    // callBtnModel: '='
-                },
+                scope: {},
                 link: function(scope, element) {
                     var receiverId,
+                        currentUserUID,
                         isOffline,
                         callDuration = 0,
                         durationToDisplay,
                         timerInterval,
-                        screenShareStatus = '0',
-                        callStatus = '0';
+                        screenShareStatus = 0,
+                        callStatus = 0;
 
                     UserProfileService.getCurrUserId().then(function (currUid) {
-                        // var currentUserUID = currUid;
+                        currentUserUID = currUid;
                         console.log(currUid);
                         if (ENV.appContext === 'dashboard') {
                             receiverId = StudentContextSrv.getCurrUid();
+                            scope.d.isTeacher = true;
                         } else if (ENV.appContext === 'student') {
                             receiverId = TeacherContextSrv.getCurrUid();
+                            scope.d.isTeacher = false;
                         }
 
-                        PresenceService.getCurrentUserStatus(receiverId).then(function (currentUserStatus) {
-                            isOffline = currentUserStatus !== PresenceService.userStatus.ONLINE;
-                        });
+                        // PresenceService.getCurrentUserStatus(receiverId).then(function (currentUserStatus) {
+                        //     isOffline = currentUserStatus !== PresenceService.userStatus.ONLINE;
+                        // });
                     });
 
                     scope.d = {
                         states: {
-                            NONE: '00',
-                            CALL_ACTIVE: '01',
-                            SCREEN_SHARE_ACTIVE: '10',
-                            BOTH_ACTIVE: '11'
+                            NONE: 0,
+                            CALL_ACTIVE: 1,
+                            SCREEN_SHARE_ACTIVE: 10,
+                            BOTH_ACTIVE: 11
                         },
                         callBtnModel: {
                             isOffline: isOffline,
                             receiverId: receiverId
                         },
                         showShareScreenBtns: true,
-                        calleeName: ''
+                        calleeName: '',
+                        viewOtherUserScreen: function () {
+                            var userData = {
+                                isTeacher: !scope.d.isTeacher,
+                                uid: receiverId
+                            };
+                            ScreenSharingSrv.viewOtherUserScreen(userData);
+                        },
+                        shareMyScreen: function () {
+                            var userData = {
+                                isTeacher: !scope.d.isTeacher,
+                                uid: receiverId
+                            };
+                            ScreenSharingSrv.shareMyScreen(userData);
+                        }
                     };
+
+                    scope.d.currStatus = scope.d.states.NONE;
 
                     CallsUiSrv.getCalleeName().then(function(calleeName){
                         scope.d.calleeName = calleeName;
@@ -104,100 +121,107 @@
                      * @param component
                      * @param status
                      */
-                    // this.nonono_updateStatus = function (component, status) {
-                    //     if (!component || !status) {
-                    //         $log.error('must pass the component & status args to function');
-                    //         return;
-                    //     }
-                    //
-                    //     function isScreenSharingActive() {
-                    //         return (currentStatus.screenSharing === ActivePanelStatusEnum.ACTIVE.enum);
-                    //     }
-                    //
-                    //     function isCallActive() {
-                    //         return (currentStatus.calls === ActivePanelStatusEnum.ACTIVE.enum);
-                    //     }
-                    //
-                    //     switch (true) {
-                    //         case component === ActivePanelComponentEnum.CALLS.enum && status === ActivePanelStatusEnum.ACTIVE.enum :
-                    //             // component = call, status = active
-                    //             // show true
-                    //             // start timer
-                    //             // call btn in hangup mode
-                    //             currentStatus.calls = ActivePanelStatusEnum.ACTIVE.enum;
-                    //             actions.showUI();
-                    //             actions.startTimer();
-                    //             //callBtnMode('hangup');
-                    //             break;
-                    //
-                    //         case component === ActivePanelComponentEnum.CALLS.enum && status === ActivePanelStatusEnum.INACTIVE.enum :
-                    //             // component = call, status = inactive (hangup, disc')
-                    //             // actions.stopTimer
-                    //             // call btn is in call mode
-                    //             // if screenShare is inactive, hide drv
-                    //             currentStatus.calls = ActivePanelStatusEnum.INACTIVE.enum;
-                    //             actions.stopTimer();
-                    //             //callBtnMode('call');
-                    //             if (!isScreenSharingActive()) {
-                    //                 actions.hideUI();
-                    //             }
-                    //             break;
-                    //
-                    //         case component === ActivePanelComponentEnum.SCREEN_SHARE.enum && status === ActivePanelStatusEnum.ACTIVE.enum :
-                    //             // component = screenShare, status = active
-                    //             // show drv
-                    //             // screenShare buttons are disabled
-                    //             currentStatus.screenSharing = ActivePanelStatusEnum.ACTIVE.enum;
-                    //             actions.showUI();
-                    //             actions.screenShareMode(true);
-                    //             //screenShareBtnsMode('disabled');
-                    //             break;
-                    //
-                    //         case component === ActivePanelComponentEnum.SCREEN_SHARE.enum && status === ActivePanelStatusEnum.INACTIVE.enum :
-                    //             // component = screenShare, status = inactive
-                    //             // check if call is active, if not hide drv
-                    //             // return shareScreen btns to enabled state
-                    //             currentStatus.screenSharing = ActivePanelStatusEnum.INACTIVE.enum;
-                    //             if (!isCallActive()) {
-                    //                 //actions.hideUI(); // TODO: is this needed?
-                    //             }
-                    //             actions.screenShareMode(false);
-                    //             //screenShareBtnsMode('enabled');
-                    //             break;
-                    //
-                    //         default:
-                    //             actions.hideUI();
-                    //             break;
-                    //     }
-                    // };
+                    this.nonono_updateStatus = function (component, status) {
+                        if (!component || !status) {
+                            $log.error('must pass the component & status args to function');
+                            return;
+                        }
+
+                        function isScreenSharingActive() {
+                            return (currentStatus.screenSharing === ActivePanelStatusEnum.ACTIVE.enum);
+                        }
+
+                        function isCallActive() {
+                            return (currentStatus.calls === ActivePanelStatusEnum.ACTIVE.enum);
+                        }
+
+                        switch (true) {
+                            case component === ActivePanelComponentEnum.CALLS.enum && status === ActivePanelStatusEnum.ACTIVE.enum :
+                                // component = call, status = active
+                                // show true
+                                // start timer
+                                // call btn in hangup mode
+                                currentStatus.calls = ActivePanelStatusEnum.ACTIVE.enum;
+                                actions.showUI();
+                                actions.startTimer();
+                                //callBtnMode('hangup');
+                                break;
+
+                            case component === ActivePanelComponentEnum.CALLS.enum && status === ActivePanelStatusEnum.INACTIVE.enum :
+                                // component = call, status = inactive (hangup, disc')
+                                // actions.stopTimer
+                                // call btn is in call mode
+                                // if screenShare is inactive, hide drv
+                                currentStatus.calls = ActivePanelStatusEnum.INACTIVE.enum;
+                                actions.stopTimer();
+                                //callBtnMode('call');
+                                if (!isScreenSharingActive()) {
+                                    actions.hideUI();
+                                }
+                                break;
+
+                            case component === ActivePanelComponentEnum.SCREEN_SHARE.enum && status === ActivePanelStatusEnum.ACTIVE.enum :
+                                // component = screenShare, status = active
+                                // show drv
+                                // screenShare buttons are disabled
+                                currentStatus.screenSharing = ActivePanelStatusEnum.ACTIVE.enum;
+                                actions.showUI();
+                                actions.screenShareMode(true);
+                                //screenShareBtnsMode('disabled');
+                                break;
+
+                            case component === ActivePanelComponentEnum.SCREEN_SHARE.enum && status === ActivePanelStatusEnum.INACTIVE.enum :
+                                // component = screenShare, status = inactive
+                                // check if call is active, if not hide drv
+                                // return shareScreen btns to enabled state
+                                currentStatus.screenSharing = ActivePanelStatusEnum.INACTIVE.enum;
+                                if (!isCallActive()) {
+                                    //actions.hideUI(); // TODO: is this needed?
+                                }
+                                actions.screenShareMode(false);
+                                //screenShareBtnsMode('enabled');
+                                break;
+
+                            default:
+                                actions.hideUI();
+                                break;
+                        }
+                    };
 
                     function updateStatus() {
-                        //scope.d.currStatus = screenShareStatus + callStatus;
                         // test:
-                        // scope.d.currStatus = scope.d.states.NONE;
-                        scope.d.currStatus = scope.d.states.CALL_ACTIVE;
-                        // scope.d.currStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
-                        // scope.d.currStatus = scope.d.states.BOTH_ACTIVE;
+                        callStatus = scope.d.states.CALL_ACTIVE;
+                        // callStatus = 0;
+                        // screenShareStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
+                        // screenShareStatus = 0;
+
+                        scope.d.currStatus = screenShareStatus + callStatus;
+                        $log.debug(scope.d.currStatus);
 
                         switch (scope.d.currStatus) {
                             case scope.d.states.NONE :
                                 // actions.hideUI();
+                                $log.debug('states.NONE');
                                 break;
                             case scope.d.states.CALL_ACTIVE :
                                 actions.startTimer();
                                 // call btn in hangup mode
                                 // callBtnMode('hangup');
+                                $log.debug('states.CALL_ACTIVE');
                                 break;
                             case scope.d.states.SCREEN_SHARE_ACTIVE :
+                                // component = screenShare, status = active
                                 // show drv
-                                //             // screenShare buttons are disabled
-                                //             currentStatus.screenSharing = ActivePanelStatusEnum.ACTIVE.enum;
-                                //             actions.showUI();
-                                //             actions.screenShareMode(true);
-                                //             //screenShareBtnsMode('disabled');
+                                // screenShare buttons are disabled
+                                currentStatus.screenSharing = ActivePanelStatusEnum.ACTIVE.enum;
+                                actions.showUI();
+                                actions.screenShareMode(true);
+                                //screenShareBtnsMode('disabled');
+                                $log.debug('states.SCREEN_SHARE_ACTIVE');
                                 break;
                             case scope.d.states.BOTH_ACTIVE :
                                 //
+                                $log.debug('states.BOTH_ACTIVE');
                                 break;
 
                             default :
@@ -214,10 +238,6 @@
                     element.on('$destroy', function() {
                         destroyTimer();
                     });
-
-                    // scope.iama = 'student';
-                    scope.iama = 'teacher';
-
 
                     // Listen to status changes in Calls
                     var listenToCallsStatus = function (callsData) {

@@ -1,20 +1,23 @@
 <div class="active-panel ng-hide" ng-hide="d.currStatus === d.states.NONE">
     <div class="flex-container">
         <div class="callee-status flex-col">
-            <div class="online-indicator"></div>
+            <div class="online-indicator ng-hide"></div>
         </div>
         <div class="callee-name flex-col" title="{}">
             {{d.calleeName}}
             <div class="call-duration">&nbsp;</div>
         </div>
         <div class="call-controls flex-col">
-            <!--<svg-icon name="call-mute-icon"></svg-icon>-->
-            <!--<div class="share-my-screen"></div>-->
-            <svg-icon ng-show="d.showShareScreenBtns" name="active-panel-share-screen-icon"></svg-icon>
-            <ng-switch ng-show="d.showShareScreenBtns" on="iama" class="show-other-screen">
-                <svg-icon ng-switch-when="teacher" name="active-panel-track-student-icon"></svg-icon>
-                <svg-icon ng-switch-when="student" name="active-panel-track-teacher-icon"></svg-icon>
-            </ng-switch>
+
+            <div ng-click="d.viewOtherUserScreen()"
+                 ng-show="d.showShareScreenBtns"
+                 class="show-other-screen">
+                <svg-icon ng-if="d.isTeacher" name="active-panel-track-student-icon"></svg-icon>
+                <svg-icon ng-if="!d.isTeacher" name="active-panel-track-teacher-icon"></svg-icon>
+            </div>
+
+            <svg-icon disable-click-drv="false" ng-click="d.shareMyScreen()" name="active-panel-share-screen-icon" class="share-my-screen"></svg-icon>
+
             <call-btn ng-model="d.callBtnModel"></call-btn>
         </div>
     </div>

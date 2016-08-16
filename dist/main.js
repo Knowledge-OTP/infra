@@ -988,15 +988,28 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         }]);
 })(angular);
 
+// (function (angular) {
+//     'use strict';
+//
+//     angular.module('znk.infra.calls')
+//         .config(function (WebcallSrvProvider, ENV) {
+//             'ngInject';
+//             WebcallSrvProvider.setCallCred({
+//                 username: ENV.plivoUsername,
+//                 password: ENV.plivoPassword
+//             });
+//         });
+// })(angular);
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.calls')
-        .config(["WebcallSrvProvider", "ENV", function (WebcallSrvProvider, ENV) {
+        .config(["WebcallSrvProvider", function (WebcallSrvProvider) {
             'ngInject';
+            // TODO: revert this file before pushing!
             WebcallSrvProvider.setCallCred({
-                username: ENV.plivoUsername,
-                password: ENV.plivoPassword
+                username: 'devUsrZinkerz160726161534',
+                password: 'zinkerz$9999'
             });
         }]);
 })(angular);
@@ -6190,17 +6203,17 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
     'use strict';
 
     angular.module('znk.infra.presence', ['ngIdle'])
-        .config([
-            'IdleProvider', 'KeepaliveProvider', 'ENV',
-            function (IdleProvider, KeepaliveProvider, ENV) {
-                // userIdleTime: how many sec until user is 'IDLE'
-                // idleTimeout: how many sec after idle to stop track the user, 0: keep track
-                // idleKeepalive: keepalive interval in sec
-
-                IdleProvider.idle(ENV.userIdleTime || 30);
-                IdleProvider.timeout(ENV.idleTimeout || 0);
-                KeepaliveProvider.interval(ENV.idleKeepalive || 2);
-            }])
+        // .config([
+        //     'IdleProvider', 'KeepaliveProvider', 'ENV',
+        //     function (IdleProvider, KeepaliveProvider, ENV) {
+        //         // userIdleTime: how many sec until user is 'IDLE'
+        //         // idleTimeout: how many sec after idle to stop track the user, 0: keep track
+        //         // idleKeepalive: keepalive interval in sec
+        //
+        //         IdleProvider.idle(ENV.userIdleTime || 30);
+        //         IdleProvider.timeout(ENV.idleTimeout || 0);
+        //         KeepaliveProvider.interval(ENV.idleKeepalive || 2);
+        //     }])
         .run([
             'PresenceService', 'Idle',
             function (PresenceService, Idle) {
@@ -6222,10 +6235,10 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
         };
 
         this.$get = [
-            '$log', '$injector', 'ENV', '$rootScope', 'StorageFirebaseAdapter',
-            function ($log, $injector, ENV, $rootScope, StorageFirebaseAdapter) {
+            '$log', '$injector', '$rootScope', 'StorageFirebaseAdapter',
+            function ($log, $injector, $rootScope, StorageFirebaseAdapter) {
                 var PresenceService = {};
-                var rootRef = new StorageFirebaseAdapter(ENV.fbDataEndPoint);
+                var rootRef = new StorageFirebaseAdapter('https://act-dev.firebaseio.com/');
                 var PRESENCE_PATH = 'presence/';
 
                 PresenceService.userStatus = {
