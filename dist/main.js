@@ -52,8 +52,7 @@
 
     angular.module('znk.infra.activePanel', [
         'znk.infra.enum',
-        'znk.infra.screenSharing',
-        'znk.infra.userContext'
+        'znk.infra.screenSharing'
     ]);
 })(angular);
 
@@ -62,7 +61,7 @@
 (function (angular) {
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "CallsEventsSrv", "CallsStatusEnum", "ScreenSharingSrv", "UserScreenSharingStateEnum", "UserProfileService", "StudentContextSrv", "TeacherContextSrv", "PresenceService", "ENV", function ($q,
+        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "CallsEventsSrv", "CallsStatusEnum", "ScreenSharingSrv", "UserScreenSharingStateEnum", "UserProfileService", "PresenceService", function ($q,
                                             $interval,
                                             $filter,
                                             $log,
@@ -72,10 +71,7 @@
                                             ScreenSharingSrv,
                                             UserScreenSharingStateEnum,
                                             UserProfileService,
-                                            StudentContextSrv,
-                                            TeacherContextSrv,
-                                            PresenceService,
-                                            ENV) {
+                                            PresenceService) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
@@ -91,15 +87,15 @@
                         screenShareStatus = 0,
                         callStatus = 0;
 
-                    if (ENV.appContext === 'dashboard') {
-                        $log.debug('appContext === dashboard');
-                        receiverId = StudentContextSrv.getCurrUid();
-                        isTeacher = true;
-                    } else if (ENV.appContext === 'student') {
-                        $log.debug('appContext === student');
-                        receiverId = TeacherContextSrv.getCurrUid();
-                        isTeacher = false;
-                    }
+                    // if (ENV.appContext === 'dashboard') {
+                    //     $log.debug('appContext === dashboard');
+                    //     receiverId = StudentContextSrv.getCurrUid();
+                    //     isTeacher = true;
+                    // } else if (ENV.appContext === 'student') {
+                    //     $log.debug('appContext === student');
+                    //     receiverId = TeacherContextSrv.getCurrUid();
+                    //     isTeacher = false;
+                    // }
 
                     $q.all([PresenceService.getCurrentUserStatus(receiverId), CallsUiSrv.getCalleeName()], function(res){
                         console.log('res: ', res);
@@ -269,6 +265,7 @@
                         switch (scope.d.currStatus) {
                             case scope.d.states.NONE :
                                 $log.debug('states.NONE');
+                                receiverId = null;
                                 actions.stopTimer();
                                 break;
                             case scope.d.states.CALL_ACTIVE :
@@ -308,6 +305,9 @@
                     // Listen to status changes in Calls
                     var listenToCallsStatus = function (callsData) {
                         if (callsData) {
+                            if (!receiverId) {
+                                receiverId = callsData.receiverId;
+                            }
                             if (callsData.status === CallsStatusEnum.ACTIVE_CALL.enum) {
                                 callStatus = scope.d.states.CALL_ACTIVE;
                             } else {

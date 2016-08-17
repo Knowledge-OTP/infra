@@ -13,10 +13,7 @@
                                             ScreenSharingSrv,
                                             UserScreenSharingStateEnum,
                                             UserProfileService,
-                                            StudentContextSrv,
-                                            TeacherContextSrv,
-                                            PresenceService,
-                                            ENV) {
+                                            PresenceService) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
@@ -32,20 +29,25 @@
                         screenShareStatus = 0,
                         callStatus = 0;
 
-                    if (ENV.appContext === 'dashboard') {
-                        $log.debug('appContext === dashboard');
-                        receiverId = StudentContextSrv.getCurrUid();
-                        isTeacher = true;
-                    } else if (ENV.appContext === 'student') {
-                        $log.debug('appContext === student');
-                        receiverId = TeacherContextSrv.getCurrUid();
-                        isTeacher = false;
-                    }
+                    // if (ENV.appContext === 'dashboard') {
+                    //     $log.debug('appContext === dashboard');
+                    //     receiverId = StudentContextSrv.getCurrUid();
+                    //     isTeacher = true;
+                    // } else if (ENV.appContext === 'student') {
+                    //     $log.debug('appContext === student');
+                    //     receiverId = TeacherContextSrv.getCurrUid();
+                    //     isTeacher = false;
+                    // }
 
-                    $q.all([PresenceService.getCurrentUserStatus(receiverId), CallsUiSrv.getCalleeName()], function(res){
+                    var promsArr = [
+                        // PresenceService.getCurrentUserStatus(receiverId),
+                        CallsUiSrv.getCalleeName()
+                    ];
+
+                    $q.all([promsArr], function(res){
                         console.log('res: ', res);
-                        isOffline = res[0] !== PresenceService.userStatus.ONLINE;
-                        calleeName = (res[1]) ? (res[1]) : '';
+                        // isOffline = res[0] !== PresenceService.userStatus.ONLINE;
+                        calleeName = (res[0]) ? (res[0]) : '';
                     });
 
                     scope.d = {
@@ -210,6 +212,7 @@
                         switch (scope.d.currStatus) {
                             case scope.d.states.NONE :
                                 $log.debug('states.NONE');
+                                receiverId = null;
                                 actions.stopTimer();
                                 break;
                             case scope.d.states.CALL_ACTIVE :
@@ -249,6 +252,9 @@
                     // Listen to status changes in Calls
                     var listenToCallsStatus = function (callsData) {
                         if (callsData) {
+                            if (!receiverId) {
+                                receiverId = callsData.receiverId;
+                            }
                             if (callsData.status === CallsStatusEnum.ACTIVE_CALL.enum) {
                                 callStatus = scope.d.states.CALL_ACTIVE;
                             } else {
