@@ -1791,6 +1791,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                     $log.debug('call declined');
                                     if (isCurrentUserInitiatedCall(currUid)) {
                                         getCallsSrv().disconnectCall();
+                                    } else {
+                                        getCallsSrv().declineCall(callsData);
                                     }
                                     break;
                                 case CallsStatusEnum.ACTIVE_CALL.enum:
