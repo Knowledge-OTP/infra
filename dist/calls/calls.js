@@ -58,13 +58,15 @@
 
                 var vm = this;
 
-                var audioTag = $element.find('audio')[0];
-
                 function stopAudio() {
-                    audioTag.pause();
-                    audioTag.currentTime = 0;
-                    audioTag.setAttribute("muted", "true");
-                    $element.remove();
+                    var audioTag = $element.find('audio');
+                    if (audioTag) {
+                        audioTag = audioTag[0];
+                        audioTag.pause();
+                        audioTag.currentTime = 0;
+                        audioTag.setAttribute("muted", "true");
+                        audioTag.remove();
+                    }
                 }
 
                 vm.$onInit = function() {
