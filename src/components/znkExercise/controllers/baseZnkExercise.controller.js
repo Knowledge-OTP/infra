@@ -26,11 +26,11 @@
             }
 
             function _getAllowedTimeForExercise() {
-                if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
+                if (exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
                     return exercise.time;
                 }
 
-                var allowedTimeForQuestion  = ZnkExerciseSrv.getAllowedTimeForQuestion(exerciseTypeId);
+                var allowedTimeForQuestion = ZnkExerciseSrv.getAllowedTimeForQuestion(exerciseTypeId);
                 return allowedTimeForQuestion * exercise.questions.length;
             }
 
@@ -87,6 +87,10 @@
                 initSlideIndex = exerciseResult.questionResults.findIndex(function (question) {
                     return !question.userAnswer;
                 });
+
+                if (initSlideIndex === -1) {
+                    initSlideIndex = 0;
+                }
             }
 
             var defExerciseSettings = {
