@@ -56,39 +56,39 @@
                         console.log('res: ', res);
                         isOffline = res[0] !== PresenceService.userStatus.ONLINE;
                         calleeName = (res[1]) ? (res[1]) : '';
-
-                        scope.d = {
-                            states: {
-                                NONE: 0,
-                                CALL_ACTIVE: 1,
-                                SCREEN_SHARE_ACTIVE: 10,
-                                BOTH_ACTIVE: 11
-                            },
-                            callBtnModel: {
-                                isOffline: isOffline,
-                                receiverId: receiverId
-                            },
-                            showShareScreenBtns: true,
-                            calleeName: calleeName,
-                            isTeacher: isTeacher,
-                            viewOtherUserScreen: function () {
-                                var userData = {
-                                    isTeacher: !scope.d.isTeacher,
-                                    uid: receiverId
-                                };
-                                ScreenSharingSrv.viewOtherUserScreen(userData);
-                            },
-                            shareMyScreen: function () {
-                                var userData = {
-                                    isTeacher: !scope.d.isTeacher,
-                                    uid: receiverId
-                                };
-                                ScreenSharingSrv.shareMyScreen(userData);
-                            }
-                        };
-
-                        scope.d.currStatus = scope.d.states.NONE;
                     });
+
+                    scope.d = {
+                        states: {
+                            NONE: 0,
+                            CALL_ACTIVE: 1,
+                            SCREEN_SHARE_ACTIVE: 10,
+                            BOTH_ACTIVE: 11
+                        },
+                        callBtnModel: {
+                            isOffline: isOffline,
+                            receiverId: receiverId
+                        },
+                        showShareScreenBtns: true,
+                        calleeName: calleeName,
+                        isTeacher: isTeacher,
+                        viewOtherUserScreen: function () {
+                            var userData = {
+                                isTeacher: !scope.d.isTeacher,
+                                uid: receiverId
+                            };
+                            ScreenSharingSrv.viewOtherUserScreen(userData);
+                        },
+                        shareMyScreen: function () {
+                            var userData = {
+                                isTeacher: !scope.d.isTeacher,
+                                uid: receiverId
+                            };
+                            ScreenSharingSrv.shareMyScreen(userData);
+                        }
+                    };
+
+                    scope.d.currStatus = scope.d.states.NONE;
 
                     // UserProfileService.getCurrUserId().then(function (currUid) {
                     //     currentUserUID = currUid;
