@@ -4731,25 +4731,43 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
 
 (function (angular) {
     'use strict';
-
+    /**
+     * params:
+     *  time - in milliseconds
+     *  expr -
+     *      hh - total hours in duration
+     *      mm - total minutes in duration
+     *      ss - total seconds in duration
+     *      rss - seconds modulo
+     */
     angular.module('znk.infra.filters').filter('formatTimeDuration', ['$log', function ($log) {
-            return function (time, exp) {
-                if (!angular.isNumber(time) || isNaN(time)) {
-                    $log.error('time is not a number:', time);
-                    return '';
-                }
-                var t = Math.round(parseInt(time));
-                var hours = parseInt(t / 3600000, 10);
-                var minutes = parseInt(t / 60000, 10);
-                var seconds = time / 1000;
-                var defaultFormat = 'mm';
+        return function (time, exp) {
+            if (!angular.isNumber(time) || isNaN(time)) {
+                $log.error('time is not a number:', time);
+                return '';
+            }
 
-                if (!exp) {
-                    exp = defaultFormat;
-                }
-                return exp.replace(/hh/g, hours).replace(/mm/g, minutes).replace(/ss/g, seconds);
-            };
-        }]);
+            time = Math.round(parseInt(time), 10);
+
+            var hours = parseInt(time / 3600000, 10);
+            var minutes = parseInt(time / 60000, 10);
+            var seconds = parseInt(time / 1000, 10);
+
+            var rss = seconds - (minutes * 60);
+
+            var defaultFormat = 'mm';
+
+            if (!exp) {
+                exp = defaultFormat;
+            }
+
+            return exp
+                .replace(/rss/g, rss)
+                .replace(/hh/g, hours)
+                .replace(/mm/g, minutes)
+                .replace(/ss/g, seconds);
+        };
+    }]);
 })(angular);
 
 angular.module('znk.infra.filters').run(['$templateCache', function($templateCache) {
@@ -11949,8 +11967,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         serverDrawingUpdater,
                         currQuestion;
 
-                    var PIXEL_SIZE = 2;
-                    var SERVER_UPDATED_FLUSH_TIME = 0;
+                    var PIXEL_SIZE = 6;
+                    var SERVER_UPDATED_FLUSH_TIME = 500;
 
                     var DRAWING_MODES = {
                         'NONE': 1,
