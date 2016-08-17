@@ -63,6 +63,7 @@
                 function stopAudio() {
                     audioTag.pause();
                     audioTag.currentTime = 0;
+                    audioTag.setAttribute("muted", "true");
                 }
 
                 vm.$onInit = function() {

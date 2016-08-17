@@ -971,6 +971,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 function stopAudio() {
                     audioTag.pause();
                     audioTag.currentTime = 0;
+                    audioTag.setAttribute("muted", "true");
                 }
 
                 vm.$onInit = function() {
