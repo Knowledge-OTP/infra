@@ -394,7 +394,7 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "                 <!--}\">-->\n" +
     "            </div>\n" +
     "        </div>\n" +
-    "        <div class=\"callee-name flex-col\" title=\"{}\">\n" +
+    "        <div class=\"callee-name flex-col\">\n" +
     "            {{d.calleeName}}\n" +
     "            <div class=\"call-duration\">&nbsp;</div>\n" +
     "        </div>\n" +
