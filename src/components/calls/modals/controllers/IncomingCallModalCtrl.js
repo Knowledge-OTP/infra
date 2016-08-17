@@ -2,11 +2,15 @@
     'use strict';
 
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
-        function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log, CallsErrorSrv, $timeout) {
+        function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log, CallsErrorSrv, $timeout, $window, ENV) {
             'ngInject';
 
             var self = this;
             var callsData = self.scope.callsData;
+
+            var mySound;
+
+            var soundSrc = ENV.mediaEndpoint + '/general/incomingCall.mp3';
 
             CallsUiSrv.getCalleeName(callsData.receiverId, callsData.callerId).then(function(res){
                 $scope.callerName = res;
@@ -48,6 +52,33 @@
                 _fillLoader(bool, methodName);
             }
 
+            function playAudio() {
+                if ($window.Audio) {
+                    try {
+                        mySound = new $window.Audio(soundSrc);
+                        mySound.addEventListener('ended', function() {
+                            this.currentTime = 0;
+                            this.play();
+                        }, false);
+                        mySound.play();
+                    } catch(e) {
+                        $log.error('IncomingCallModalCtrl: playAudio failed!' +' err: ' + e);
+                    }
+                } else {
+                    $log.error('IncomingCallModalCtrl: audio is not supported!');
+                }
+            }
+
+            function stopAudio() {
+                if ($window.Audio && angular.isDefined(mySound)) {
+                    mySound.pause();
+                    mySound.currentTime = 0;
+                    mySound = new $window.Audio('');
+                }
+            }
+
+            playAudio();
+
             function _baseCall(callFn, methodName) {
                  callsData = self.scope.callsData;
                 if (_isNoPendingClick()) {
@@ -56,11 +87,13 @@
                     }
                     _updateBtnStatus(true, methodName);
                     callFn(callsData).then(function () {
+                        stopAudio();
                         _updateBtnStatus(false, methodName);
                         CallsUiSrv.closeModal();
                     }).catch(function (err) {
                         _updateBtnStatus(false, methodName);
                         $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);
+                        stopAudio();
                         CallsErrorSrv.showErrorModal(err);
                         CallsSrv.declineCall(callsData);
                     });
