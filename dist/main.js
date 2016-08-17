@@ -61,7 +61,7 @@
 (function (angular) {
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "CallsEventsSrv", "CallsStatusEnum", "ScreenSharingSrv", "UserScreenSharingStateEnum", "UserProfileService", "PresenceService", function ($q,
+        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "CallsEventsSrv", "CallsStatusEnum", "ScreenSharingSrv", "UserScreenSharingStateEnum", "UserProfileService", "PresenceService", "ENV", function ($q,
                                             $interval,
                                             $filter,
                                             $log,
@@ -71,7 +71,8 @@
                                             ScreenSharingSrv,
                                             UserScreenSharingStateEnum,
                                             UserProfileService,
-                                            PresenceService) {
+                                            PresenceService,
+                                            ENV) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
@@ -87,20 +88,25 @@
                         screenShareStatus = 0,
                         callStatus = 0;
 
-                    // if (ENV.appContext === 'dashboard') {
-                    //     $log.debug('appContext === dashboard');
-                    //     receiverId = StudentContextSrv.getCurrUid();
-                    //     isTeacher = true;
-                    // } else if (ENV.appContext === 'student') {
-                    //     $log.debug('appContext === student');
-                    //     receiverId = TeacherContextSrv.getCurrUid();
-                    //     isTeacher = false;
-                    // }
+                    if (ENV.appContext === 'dashboard') {
+                        $log.debug('appContext === dashboard');
+                        // receiverId = StudentContextSrv.getCurrUid();
+                        isTeacher = true;
+                    } else if (ENV.appContext === 'student') {
+                        $log.debug('appContext === student');
+                        // receiverId = TeacherContextSrv.getCurrUid();
+                        isTeacher = false;
+                    }
 
-                    $q.all([PresenceService.getCurrentUserStatus(receiverId), CallsUiSrv.getCalleeName()], function(res){
-                        console.log('res: ', res);
-                        isOffline = res[0] !== PresenceService.userStatus.ONLINE;
-                        calleeName = (res[1]) ? (res[1]) : '';
+                    var promsArr = [
+                        // PresenceService.getCurrentUserStatus(receiverId),
+                        CallsUiSrv.getCalleeName()
+                    ];
+
+                    $q.all([promsArr], function(res){
+                        // console.log('res: ', res);
+                        // isOffline = res[0] !== PresenceService.userStatus.ONLINE;
+                        calleeName = (res[0]) ? (res[0]) : '';
                     });
 
                     scope.d = {

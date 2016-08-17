@@ -13,7 +13,8 @@
                                             ScreenSharingSrv,
                                             UserScreenSharingStateEnum,
                                             UserProfileService,
-                                            PresenceService) {
+                                            PresenceService,
+                                            ENV) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
@@ -29,15 +30,15 @@
                         screenShareStatus = 0,
                         callStatus = 0;
 
-                    // if (ENV.appContext === 'dashboard') {
-                    //     $log.debug('appContext === dashboard');
-                    //     receiverId = StudentContextSrv.getCurrUid();
-                    //     isTeacher = true;
-                    // } else if (ENV.appContext === 'student') {
-                    //     $log.debug('appContext === student');
-                    //     receiverId = TeacherContextSrv.getCurrUid();
-                    //     isTeacher = false;
-                    // }
+                    if (ENV.appContext === 'dashboard') {
+                        $log.debug('appContext === dashboard');
+                        // receiverId = StudentContextSrv.getCurrUid();
+                        isTeacher = true;
+                    } else if (ENV.appContext === 'student') {
+                        $log.debug('appContext === student');
+                        // receiverId = TeacherContextSrv.getCurrUid();
+                        isTeacher = false;
+                    }
 
                     var promsArr = [
                         // PresenceService.getCurrentUserStatus(receiverId),
@@ -45,7 +46,7 @@
                     ];
 
                     $q.all([promsArr], function(res){
-                        console.log('res: ', res);
+                        // console.log('res: ', res);
                         // isOffline = res[0] !== PresenceService.userStatus.ONLINE;
                         calleeName = (res[0]) ? (res[0]) : '';
                     });
