@@ -11,7 +11,7 @@
 
                 var vm = this;
 
-                var audioTag = $element[0];
+                var audioTag = $element.find('audio');
 
                 function stopAudio() {
                     audioTag.pause();
