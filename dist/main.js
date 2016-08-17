@@ -972,6 +972,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     audioTag.pause();
                     audioTag.currentTime = 0;
                     audioTag.setAttribute("muted", "true");
+                    $element.remove();
                 }
 
                 vm.$onInit = function() {

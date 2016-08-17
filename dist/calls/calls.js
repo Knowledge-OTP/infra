@@ -64,6 +64,7 @@
                     audioTag.pause();
                     audioTag.currentTime = 0;
                     audioTag.setAttribute("muted", "true");
+                    $element.remove();
                 }
 
                 vm.$onInit = function() {
