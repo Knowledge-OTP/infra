@@ -218,6 +218,7 @@
                         switch (scope.d.currStatus) {
                             case scope.d.states.NONE :
                                 $log.debug('states.NONE');
+                                actions.stopTimer();
                                 break;
                             case scope.d.states.CALL_ACTIVE :
                                 actions.startTimer();
@@ -229,7 +230,7 @@
                                 // component = screenShare, status = active
                                 // show drv
                                 // screenShare buttons are disabled
-                                actions.showUI();
+                                // actions.showUI();
                                 actions.screenShareMode(true);
                                 //screenShareBtnsMode('disabled');
                                 $log.debug('states.SCREEN_SHARE_ACTIVE');
