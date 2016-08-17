@@ -82,7 +82,7 @@
         })
         .service('ENV', function () {
             var isTeacher = localStorage.getItem('isTeacher');
-
+            this.mediaEndpoint = '//dfz02hjbsqn5e.cloudfront.net';
             if(isTeacher) {
                 // teacher
                 this.firebaseAppScopeName = "act_dashboard";

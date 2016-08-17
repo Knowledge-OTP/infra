@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
-        function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log, CallsErrorSrv, $timeout, $window) {
+        function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log, CallsErrorSrv, $timeout, $window, ENV) {
             'ngInject';
 
             var self = this;
@@ -10,7 +10,7 @@
 
             var mySound;
 
-            var soundSrc = 'https://dfz02hjbsqn5e.cloudfront.net/general/incomingCall.mp3';
+            var soundSrc = ENV.mediaEndpoint + '/general/incomingCall.mp3';
 
             CallsUiSrv.getCalleeName(callsData.receiverId, callsData.callerId).then(function(res){
                 $scope.callerName = res;
@@ -53,22 +53,26 @@
             }
 
             function playAudio() {
-                try {
+                if ($window.Audio) {
+                    try {
                         mySound = new $window.Audio(soundSrc);
                         mySound.addEventListener('ended', function() {
                             this.currentTime = 0;
                             this.play();
                         }, false);
                         mySound.play();
-                } catch(e) {
-                    $log.error('IncomingCallModalCtrl playAudio failed!' +' err: ' + e);
+                    } catch(e) {
+                        $log.error('IncomingCallModalCtrl playAudio failed!' +' err: ' + e);
+                    }
                 }
             }
 
             function stopAudio() {
-                mySound.pause();
-                mySound.currentTime = 0;
-                mySound = new $window.Audio('');
+                if ($window.Audio && angular.isDefined(mySound)) {
+                    mySound.pause();
+                    mySound.currentTime = 0;
+                    mySound = new $window.Audio('');
+                }
             }
 
             playAudio();
