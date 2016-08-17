@@ -2,11 +2,15 @@
     'use strict';
 
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
-        function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log, CallsErrorSrv, $timeout) {
+        function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log, CallsErrorSrv, $timeout, $window) {
             'ngInject';
 
             var self = this;
             var callsData = self.scope.callsData;
+
+            var mySound;
+
+            var soundSrc = 'https://dfz02hjbsqn5e.cloudfront.net/general/incomingCall.mp3';
 
             CallsUiSrv.getCalleeName(callsData.receiverId, callsData.callerId).then(function(res){
                 $scope.callerName = res;
@@ -15,8 +19,6 @@
             var isPendingClick = false;
 
             $scope.declineByOther = true;
-
-            $scope.audioTagModel = {};
 
             function _isNoPendingClick() {
                 return !isPendingClick;
@@ -50,11 +52,26 @@
                 _fillLoader(bool, methodName);
             }
 
-            function stopAudio() {
-                $scope.audioTagModel = {
-                    stopPlay: true
-                };
+            function playAudio() {
+                try {
+                        mySound = new $window.Audio(soundSrc);
+                        mySound.addEventListener('ended', function() {
+                            this.currentTime = 0;
+                            this.play();
+                        }, false);
+                        mySound.play();
+                } catch(e) {
+                    $log.error('IncomingCallModalCtrl playAudio failed!' +' err: ' + e);
+                }
             }
+
+            function stopAudio() {
+                mySound.pause();
+                mySound.currentTime = 0;
+                mySound = new $window.Audio('');
+            }
+
+            playAudio();
 
             function _baseCall(callFn, methodName) {
                  callsData = self.scope.callsData;

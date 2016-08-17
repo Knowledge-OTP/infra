@@ -48,51 +48,6 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.calls').component('callsAudioTag', {
-            templateUrl: 'components/calls/directives/audioTag/audioTag.template.html',
-            require: {
-                parent: '?^ngModel'
-            },
-            controllerAs: 'vm',
-            controller: ["$element", function ($element) {
-
-                var vm = this;
-
-                function stopAudio() {
-                    var audioTag = $element.find('audio');
-                    if (audioTag) {
-                        audioTag = audioTag[0];
-                        audioTag.pause();
-                        audioTag.currentTime = 0;
-                        audioTag.setAttribute("muted", "true");
-                        audioTag.remove();
-                    }
-                }
-
-                vm.$onInit = function() {
-                    var ngModelCtrl = vm.parent;
-                    if (ngModelCtrl) {
-                        ngModelCtrl.$render = function() {
-                            var modelValue = ngModelCtrl.$modelValue;
-                            if (angular.isDefined(modelValue.stopPlay) && modelValue.stopPlay === true) {
-                                stopAudio();
-                            }
-                        };
-                    }
-                };
-
-                $element.on('$destroy', function() {
-                    stopAudio();
-                });
-            }]
-        }
-    );
-})(angular);
-
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.calls').component('callBtn', {
             templateUrl: 'components/calls/directives/callBtn/callBtn.template.html',
             require: {
@@ -248,11 +203,15 @@
     'use strict';
 
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
-        ["$scope", "CallsSrv", "CallsUiSrv", "CallsStatusEnum", "$log", "CallsErrorSrv", "$timeout", function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log, CallsErrorSrv, $timeout) {
+        ["$scope", "CallsSrv", "CallsUiSrv", "CallsStatusEnum", "$log", "CallsErrorSrv", "$timeout", "$window", function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log, CallsErrorSrv, $timeout, $window) {
             'ngInject';
 
             var self = this;
             var callsData = self.scope.callsData;
+
+            var mySound;
+
+            var soundSrc = 'https://dfz02hjbsqn5e.cloudfront.net/general/incomingCall.mp3';
 
             CallsUiSrv.getCalleeName(callsData.receiverId, callsData.callerId).then(function(res){
                 $scope.callerName = res;
@@ -261,8 +220,6 @@
             var isPendingClick = false;
 
             $scope.declineByOther = true;
-
-            $scope.audioTagModel = {};
 
             function _isNoPendingClick() {
                 return !isPendingClick;
@@ -296,11 +253,26 @@
                 _fillLoader(bool, methodName);
             }
 
-            function stopAudio() {
-                $scope.audioTagModel = {
-                    stopPlay: true
-                };
+            function playAudio() {
+                try {
+                        mySound = new $window.Audio(soundSrc);
+                        mySound.addEventListener('ended', function() {
+                            this.currentTime = 0;
+                            this.play();
+                        }, false);
+                        mySound.play();
+                } catch(e) {
+                    $log.error('IncomingCallModalCtrl playAudio failed!' +' err: ' + e);
+                }
             }
+
+            function stopAudio() {
+                mySound.pause();
+                mySound.currentTime = 0;
+                mySound = new $window.Audio('');
+            }
+
+            playAudio();
 
             function _baseCall(callFn, methodName) {
                  callsData = self.scope.callsData;
@@ -1277,11 +1249,6 @@
 })(angular);
 
 angular.module('znk.infra.calls').run(['$templateCache', function($templateCache) {
-  $templateCache.put("components/calls/directives/audioTag/audioTag.template.html",
-    "<audio autoplay=\"true\" loop=\"true\">\n" +
-    "    <source src=\"https://dfz02hjbsqn5e.cloudfront.net/general/incomingCall.mp3\" type=\"audio/mp3\">\n" +
-    "</audio>\n" +
-    "");
   $templateCache.put("components/calls/directives/callBtn/callBtn.template.html",
     "<button\n" +
     "    ng-click=\"vm.clickBtn()\"\n" +
@@ -1365,7 +1332,6 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "                    </button>\n" +
     "                </div>\n" +
     "            </div>\n" +
-    "            <calls-audio-tag ng-model=\"audioTagModel\"></calls-audio-tag>\n" +
     "        </div>\n" +
     "\n" +
     "        <!-- Call Declined -->\n" +
