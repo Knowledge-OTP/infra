@@ -1171,8 +1171,10 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                         }, false);
                         mySound.play();
                     } catch(e) {
-                        $log.error('IncomingCallModalCtrl playAudio failed!' +' err: ' + e);
+                        $log.error('IncomingCallModalCtrl: playAudio failed!' +' err: ' + e);
                     }
+                } else {
+                    $log.error('IncomingCallModalCtrl: audio is not supported!');
                 }
             }
 
