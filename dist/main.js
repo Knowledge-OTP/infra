@@ -966,7 +966,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 
                 var vm = this;
 
-                var audioTag = $element.find('audio');
+                var audioTag = $element.find('audio')[0];
 
                 function stopAudio() {
                     audioTag.pause();
