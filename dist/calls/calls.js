@@ -881,11 +881,7 @@
                                     break;
                                 case CallsStatusEnum.DECLINE_CALL.enum:
                                     $log.debug('call declined');
-                                    if (isCurrentUserInitiatedCall(currUid)) {
-                                        getCallsSrv().disconnectCall();
-                                    } else {
-                                        getCallsSrv().declineCall(callsData);
-                                    }
+                                    getCallsSrv().disconnectCall();
                                     break;
                                 case CallsStatusEnum.ACTIVE_CALL.enum:
                                     $log.debug('call active');
