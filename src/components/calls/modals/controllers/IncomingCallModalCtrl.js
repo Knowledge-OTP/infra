@@ -16,6 +16,19 @@
                 $scope.callerName = res;
             });
 
+            var otherUserDecline = false;
+
+            $scope.$watch('callsData', function(newVal) {
+                if (angular.isDefined(newVal) && newVal.status) {
+                    switch(newVal.status) {
+                        case CallsStatusEnum.DECLINE_CALL.enum:
+                            otherUserDecline = true;
+                            break;
+                    }
+                    callsData = newVal;
+                }
+            });
+
             var isPendingClick = false;
 
             $scope.declineByOther = true;
@@ -90,6 +103,10 @@
                         stopAudio();
                         _updateBtnStatus(false, methodName);
                         CallsUiSrv.closeModal();
+                        if (methodName === 'acceptCall' && otherUserDecline) {
+                            CallsSrv.declineCall(callsData);
+                            otherUserDecline = false;
+                        }
                     }).catch(function (err) {
                         _updateBtnStatus(false, methodName);
                         $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);

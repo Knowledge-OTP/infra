@@ -1125,6 +1125,19 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 $scope.callerName = res;
             });
 
+            var otherUserDecline = false;
+
+            $scope.$watch('callsData', function(newVal) {
+                if (angular.isDefined(newVal) && newVal.status) {
+                    switch(newVal.status) {
+                        case CallsStatusEnum.DECLINE_CALL.enum:
+                            otherUserDecline = true;
+                            break;
+                    }
+                    callsData = newVal;
+                }
+            });
+
             var isPendingClick = false;
 
             $scope.declineByOther = true;
@@ -1199,6 +1212,10 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                         stopAudio();
                         _updateBtnStatus(false, methodName);
                         CallsUiSrv.closeModal();
+                        if (methodName === 'acceptCall' && otherUserDecline) {
+                            CallsSrv.declineCall(callsData);
+                            otherUserDecline = false;
+                        }
                     }).catch(function (err) {
                         _updateBtnStatus(false, methodName);
                         $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);
@@ -1985,8 +2002,14 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             }
 
             function _initiateCall(callerId, receiverId) {
+                var errMSg;
                 if (angular.isUndefined(callerId) || angular.isUndefined(receiverId)) {
-                    var errMSg = 'CallsSrv: callerId or receiverId are missing!';
+                    errMSg = 'CallsSrv: callerId or receiverId are missing!';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                if (callerId === receiverId) {
+                    errMSg = 'CallsSrv: callerId and receiverId are the same!! can\'t call yourself!!';
                     $log.error(errMSg);
                     return $q.reject(errMSg);
                 }
