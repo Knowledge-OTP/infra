@@ -260,8 +260,8 @@
                         // screenShareStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
                         // screenShareStatus = 0;
 
-                        //scope.d.currStatus = screenShareStatus + callStatus;
-                        scope.d.currStatus = 1;
+                        scope.d.currStatus = screenShareStatus + callStatus;
+                        // scope.d.currStatus = 1;
                         $log.debug(scope.d.currStatus);
 
                         switch (scope.d.currStatus) {
