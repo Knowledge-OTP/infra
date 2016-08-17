@@ -126,6 +126,7 @@
                                 isTeacher: !scope.d.isTeacher,
                                 uid: receiverId
                             };
+                            $log('viewOtherUserScreen: ', userData);
                             ScreenSharingSrv.viewOtherUserScreen(userData);
                         },
                         shareMyScreen: function () {
@@ -133,6 +134,7 @@
                                 isTeacher: !scope.d.isTeacher,
                                 uid: receiverId
                             };
+                            $log('shareMyScreen: ', userData);
                             ScreenSharingSrv.shareMyScreen(userData);
                         }
                     };
