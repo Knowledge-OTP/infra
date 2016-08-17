@@ -48,6 +48,47 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.calls').component('callsAudioTag', {
+            templateUrl: 'components/calls/directives/audioTag/audioTag.template.html',
+            require: {
+                parent: '?^ngModel'
+            },
+            controllerAs: 'vm',
+            controller: ["$element", function ($element) {
+
+                var vm = this;
+
+                var audioTag = $element[0];
+
+                function stopAudio() {
+                    audioTag.pause();
+                    audioTag.currentTime = 0;
+                }
+
+                vm.$onInit = function() {
+                    var ngModelCtrl = vm.parent;
+                    if (ngModelCtrl) {
+                        ngModelCtrl.$render = function() {
+                            var modelValue = ngModelCtrl.$modelValue;
+                            if (angular.isDefined(modelValue.stopPlay) && modelValue.stopPlay === true) {
+                                stopAudio();
+                            }
+                        };
+                    }
+                };
+
+                $element.on('$destroy', function() {
+                    stopAudio();
+                });
+            }]
+        }
+    );
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.calls').component('callBtn', {
             templateUrl: 'components/calls/directives/callBtn/callBtn.template.html',
             require: {
@@ -217,6 +258,8 @@
 
             $scope.declineByOther = true;
 
+            $scope.audioTagModel = {};
+
             function _isNoPendingClick() {
                 return !isPendingClick;
             }
@@ -249,6 +292,12 @@
                 _fillLoader(bool, methodName);
             }
 
+            function stopAudio() {
+                $scope.audioTagModel = {
+                    stopPlay: true
+                };
+            }
+
             function _baseCall(callFn, methodName) {
                  callsData = self.scope.callsData;
                 if (_isNoPendingClick()) {
@@ -257,11 +306,13 @@
                     }
                     _updateBtnStatus(true, methodName);
                     callFn(callsData).then(function () {
+                        stopAudio();
                         _updateBtnStatus(false, methodName);
                         CallsUiSrv.closeModal();
                     }).catch(function (err) {
                         _updateBtnStatus(false, methodName);
                         $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);
+                        stopAudio();
                         CallsErrorSrv.showErrorModal(err);
                         CallsSrv.declineCall(callsData);
                     });
@@ -1222,6 +1273,11 @@
 })(angular);
 
 angular.module('znk.infra.calls').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/calls/directives/audioTag/audioTag.template.html",
+    "<audio autoplay=\"true\" loop=\"true\">\n" +
+    "    <source src=\"https://dfz02hjbsqn5e.cloudfront.net/general/incomingCall.mp3\" type=\"audio/mp3\">\n" +
+    "</audio>\n" +
+    "");
   $templateCache.put("components/calls/directives/callBtn/callBtn.template.html",
     "<button\n" +
     "    ng-click=\"vm.clickBtn()\"\n" +
@@ -1305,9 +1361,7 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "                    </button>\n" +
     "                </div>\n" +
     "            </div>\n" +
-    "            <audio autoplay=\"true\" loop=\"true\">\n" +
-    "                <source src=\"https://dfz02hjbsqn5e.cloudfront.net/general/incomingCall.mp3\" type=\"audio/mp3\">\n" +
-    "            </audio>\n" +
+    "            <calls-audio-tag ng-model=\"audioTagModel\"></calls-audio-tag>\n" +
     "        </div>\n" +
     "\n" +
     "        <!-- Call Declined -->\n" +
