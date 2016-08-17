@@ -308,7 +308,7 @@
                     // Listen to status changes in Calls
                     var listenToCallsStatus = function (callsData) {
                         if (callsData) {
-                            if (callsData === CallsStatusEnum.ACTIVE_CALL.enum) {
+                            if (callsData.status === CallsStatusEnum.ACTIVE_CALL.enum) {
                                 callStatus = scope.d.states.CALL_ACTIVE;
                             }
                             updateStatus();
