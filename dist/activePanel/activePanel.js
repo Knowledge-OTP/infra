@@ -220,14 +220,12 @@
                                 $log.debug('states.NONE');
                                 break;
                             case scope.d.states.CALL_ACTIVE :
-                                scope.d.currStatus = scope.d.states.CALL_ACTIVE;
                                 actions.startTimer();
                                 // call btn in hangup mode
                                 // callBtnMode('hangup');
                                 $log.debug('states.CALL_ACTIVE');
                                 break;
                             case scope.d.states.SCREEN_SHARE_ACTIVE :
-                                scope.d.currStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
                                 // component = screenShare, status = active
                                 // show drv
                                 // screenShare buttons are disabled
@@ -237,7 +235,6 @@
                                 $log.debug('states.SCREEN_SHARE_ACTIVE');
                                 break;
                             case scope.d.states.BOTH_ACTIVE :
-                                scope.d.currStatus = scope.d.states.BOTH_ACTIVE;
                                 $log.debug('states.BOTH_ACTIVE');
                                 break;
 
@@ -261,6 +258,8 @@
                         if (callsData) {
                             if (callsData.status === CallsStatusEnum.ACTIVE_CALL.enum) {
                                 callStatus = scope.d.states.CALL_ACTIVE;
+                            } else {
+                                callStatus = 0;
                             }
                             updateStatus();
                         }
@@ -271,6 +270,8 @@
                         if (screenSharingStatus) {
                             if (screenSharingStatus !== UserScreenSharingStateEnum.NONE.enum) {
                                 screenShareStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
+                            } else {
+                                screenShareStatus = 0;
                             }
                             updateStatus();
                         }
