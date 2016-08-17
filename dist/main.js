@@ -260,12 +260,12 @@
                         // screenShareStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
                         // screenShareStatus = 0;
 
-                        scope.d.currStatus = screenShareStatus + callStatus;
+                        //scope.d.currStatus = screenShareStatus + callStatus;
+                        scope.d.currStatus = 1;
                         $log.debug(scope.d.currStatus);
 
                         switch (scope.d.currStatus) {
                             case scope.d.states.NONE :
-                                // actions.hideUI();
                                 $log.debug('states.NONE');
                                 break;
                             case scope.d.states.CALL_ACTIVE :
@@ -377,7 +377,7 @@
 
 angular.module('znk.infra.activePanel').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/activePanel/activePanel.template.html",
-    "<div class=\"active-panel ng-hide\" ng-hide=\"d.currStatus === d.states.NONE\">\n" +
+    "<div class=\"active-panel ng-hide\" ng-show=\"d.currStatus !== d.states.NONE\">\n" +
     "    <div class=\"flex-container\">\n" +
     "        <div class=\"callee-status flex-col\">\n" +
     "            <div class=\"online-indicator\">\n" +
