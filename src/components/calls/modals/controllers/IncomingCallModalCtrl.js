@@ -16,6 +16,8 @@
 
             $scope.declineByOther = true;
 
+            $scope.audioTagModel = {};
+
             function _isNoPendingClick() {
                 return !isPendingClick;
             }
@@ -48,6 +50,12 @@
                 _fillLoader(bool, methodName);
             }
 
+            function stopAudio() {
+                $scope.audioTagModel = {
+                    stopPlay: true
+                };
+            }
+
             function _baseCall(callFn, methodName) {
                  callsData = self.scope.callsData;
                 if (_isNoPendingClick()) {
@@ -56,11 +64,13 @@
                     }
                     _updateBtnStatus(true, methodName);
                     callFn(callsData).then(function () {
+                        stopAudio();
                         _updateBtnStatus(false, methodName);
                         CallsUiSrv.closeModal();
                     }).catch(function (err) {
                         _updateBtnStatus(false, methodName);
                         $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);
+                        stopAudio();
                         CallsErrorSrv.showErrorModal(err);
                         CallsSrv.declineCall(callsData);
                     });
