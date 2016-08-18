@@ -5791,8 +5791,8 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
             };
 
             mailSenderService.postMailRequest = function (mailObject) {
-                return UserProfileService.getProfile().then(function (profile) {
-                    mailObject.uid = profile.uid;
+                return UserProfileService.getCurrUserId().then(function (userId) {
+                    mailObject.uid = userId;
                     return $http.post(backendUrl, mailObject, httpConfig).then(
                         function (response) {
                             return {
