@@ -273,6 +273,11 @@
                             if (screenSharingStatus !== UserScreenSharingStateEnum.NONE.enum) {
                                 screenShareStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
                                 screenShareIsViewer = (screenSharingStatus === UserScreenSharingStateEnum.VIEWER.enum);
+                                ScreenSharingSrv.getActiveScreenSharingData().then(function(activeScreenShareData){
+                                    if (activeScreenShareData && !receiverId) {
+                                        receiverId = activeScreenShareData;
+                                    }
+                                });
                             } else {
                                 screenShareStatus = 0;
                             }
@@ -280,13 +285,7 @@
                         }
                     };
 
-                    var listenToScreenShareData = function (activeScreenSharingData) {
-                        console.log('mega cookie 17!!', activeScreenSharingData);
-                    };
-
                     ScreenSharingSrv.registerToCurrUserScreenSharingStateChanges(listenToScreenShareStatus);
-
-                    ScreenSharingSrv.registerToActiveScreenSharingDataChanges(listenToScreenShareData);
 
                     CallsEventsSrv.registerToCurrUserCallStateChanges(listenToCallsStatus);
 
