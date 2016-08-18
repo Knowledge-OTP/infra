@@ -111,12 +111,13 @@
                         startTimer: function () {
                             $log.debug('call timer started');
                             if (callDuration !== 0) {
-                                timerInterval = $interval(function () {
-                                    callDuration += 1000;
-                                    durationToDisplay = $filter('formatDuration')(callDuration / 1000, 'hh:MM:SS', true);
-                                    angular.element(element[0].querySelector('.call-duration')).text(durationToDisplay);
-                                }, 1000, 0, false);
+                                return;
                             }
+                            timerInterval = $interval(function () {
+                                callDuration += 1000;
+                                durationToDisplay = $filter('formatDuration')(callDuration / 1000, 'hh:MM:SS', true);
+                                angular.element(element[0].querySelector('.call-duration')).text(durationToDisplay);
+                            }, 1000, 0, false);
                         },
                         stopTimer: function () {
                             // $interval.cancel(timerInterval);
