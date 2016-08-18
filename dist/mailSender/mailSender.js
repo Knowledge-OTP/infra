@@ -5,7 +5,7 @@
 
 (function (angular) {
     'use strict';
-    angular.module('znk.infra.mailSender').service('MailSenderServiceS', [
+    angular.module('znk.infra.mailSender').service('MailSenderService', [
         '$log', 'ENV', '$http', 'UserProfileService',
         function ($log, ENV, $http, UserProfileService) {
             var mailSenderService = {};
