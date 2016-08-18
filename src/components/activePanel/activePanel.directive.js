@@ -47,7 +47,6 @@
                     ];
 
                     $q.all([promsArr], function(res){
-                        // console.log('res: ', res);
                         // isOffline = res[0] !== PresenceService.userStatus.ONLINE;
                         calleeName = (res[0]) ? (res[0]) : '';
                     });
@@ -102,14 +101,17 @@
                         },
                         startTimer: function () {
                             $log.debug('call timer started');
-                            timerInterval = $interval(function () {
-                                callDuration += 1000;
-                                durationToDisplay = $filter('formatDuration')(callDuration / 1000, 'hh:MM:SS', true);
-                                angular.element(element[0].querySelector('.call-duration')).text(durationToDisplay);
-                            }, 1000, 0, false);
+                            if (callDuration !== 0) {
+                                timerInterval = $interval(function () {
+                                    callDuration += 1000;
+                                    durationToDisplay = $filter('formatDuration')(callDuration / 1000, 'hh:MM:SS', true);
+                                    angular.element(element[0].querySelector('.call-duration')).text(durationToDisplay);
+                                }, 1000, 0, false);
+                            }
                         },
                         stopTimer: function () {
-                            $interval.cancel(timerInterval);
+                            // $interval.cancel(timerInterval);
+                            destroyTimer();
                         },
                         screenShareMode: function (isScreenShareMode) {
                             if (isScreenShareMode && screenShareIsViewer) {
