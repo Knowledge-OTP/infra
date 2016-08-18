@@ -332,8 +332,8 @@
                                 screenShareStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
                                 screenShareIsViewer = (screenSharingStatus === UserScreenSharingStateEnum.VIEWER.enum);
                                 ScreenSharingSrv.getActiveScreenSharingData().then(function(activeScreenShareData){
-                                    if (activeScreenShareData && !receiverId) {
-                                        receiverId = activeScreenShareData;
+                                    if (!receiverId && activeScreenShareData) {
+                                        receiverId = (screenShareIsViewer) ? activeScreenShareData.viewerId : activeScreenShareData.sharerId;
                                     }
                                 });
                             } else {
