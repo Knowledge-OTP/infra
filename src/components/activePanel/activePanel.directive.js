@@ -28,7 +28,8 @@
                         timerInterval,
                         calleeName,
                         screenShareStatus = 0,
-                        callStatus = 0;
+                        callStatus = 0,
+                        screenShareIsViewer;
 
                     if (ENV.appContext === 'dashboard') {
                         $log.debug('appContext === dashboard');
@@ -111,11 +112,12 @@
                             $interval.cancel(timerInterval);
                         },
                         screenShareMode: function (isScreenShareMode) {
-                            $log.debug('screenShareMode');
-                            if (isScreenShareMode) {
+                            if (isScreenShareMode && screenShareIsViewer) {
                                 element.addClass('screen-share-mode');
+                                $log.debug('screenShareMode activate');
                             } else {
                                 element.removeClass('screen-share-mode');
+                                $log.debug('screenShareMode remove');
                             }
                         },
                         callBtnMode: function () {
@@ -270,6 +272,7 @@
                         if (screenSharingStatus) {
                             if (screenSharingStatus !== UserScreenSharingStateEnum.NONE.enum) {
                                 screenShareStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
+                                screenShareIsViewer = (screenSharingStatus === UserScreenSharingStateEnum.VIEWER.enum);
                             } else {
                                 screenShareStatus = 0;
                             }
