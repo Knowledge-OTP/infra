@@ -31,11 +31,11 @@
                         callStatus = 0,
                         screenShareIsViewer;
 
-                    if (ENV.appContext === 'dashboard') {
+                    if (ENV.appContext.toLowerCase() === 'dashboard') {
                         $log.debug('appContext === dashboard');
                         // receiverId = StudentContextSrv.getCurrUid();
                         isTeacher = true;
-                    } else if (ENV.appContext === 'student') {
+                    } else if (ENV.appContext.toLowerCase() === 'student') {
                         $log.debug('appContext === student');
                         // receiverId = TeacherContextSrv.getCurrUid();
                         isTeacher = false;
@@ -280,7 +280,13 @@
                         }
                     };
 
+                    var listenToScreenShareData = function (activeScreenSharingData) {
+                        console.log('mega cookie 17!!', activeScreenSharingData);
+                    };
+
                     ScreenSharingSrv.registerToCurrUserScreenSharingStateChanges(listenToScreenShareStatus);
+
+                    ScreenSharingSrv.registerToActiveScreenSharingDataChanges(listenToScreenShareData);
 
                     CallsEventsSrv.registerToCurrUserCallStateChanges(listenToCallsStatus);
 
