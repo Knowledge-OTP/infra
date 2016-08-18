@@ -83,7 +83,7 @@
                         }
                     };
 
-                    scope.d.currStatus = scope.d.states.NONE;
+                    // scope.d.currStatus = scope.d.states.NONE;
 
                     // UserProfileService.getCurrUserId().then(function (currUid) {
                     //     currentUserUID = currUid;
