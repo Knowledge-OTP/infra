@@ -12,7 +12,7 @@
         .config(function (QuestionTypesSrvProvider) {
             var map = {
                 1: '<div>question Type 1</div><span>{{$parent.questionGetter().id}}</span>' +
-                '<div ng-bind-html="$parent.questionGetter().content"></div>' +
+                '<div compile="$parent.questionGetter().content"></div>' +
                 '<answer-builder></answer-builder>'
             };
             QuestionTypesSrvProvider.setQuestionTypesHtmlTemplate(map);
