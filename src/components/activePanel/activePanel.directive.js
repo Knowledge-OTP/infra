@@ -217,7 +217,7 @@
                                 $log.debug('states.NONE');
                                 receiverId = null;
                                 actions.stopTimer();
-                                actions.screenShareMode(true);
+                                actions.screenShareMode(false);
                                 break;
                             case scope.d.states.CALL_ACTIVE :
                                 actions.startTimer();
