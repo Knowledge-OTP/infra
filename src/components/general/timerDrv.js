@@ -44,7 +44,6 @@
 
                     scope.ngModelCtrl = ngModelCtrl;
 
-
                     function padNum(num) {
                         if (('' + Math.abs(+num)).length < 2) {
                             return (num < 0 ? '-' : '') + '0' + Math.abs(+num);
@@ -94,13 +93,14 @@
                     var INTERVAL_TIME = 1000;
 
                     scope.type = scope.typeGetter() || 1;
-                    scope.config = scope.configGetter() || {};
+
                     var configDefaults = {
                         format: 'mm:ss',
                         stopOnZero: true,
                         stroke: 2
                     };
-                    scope.config = angular.extend(configDefaults, scope.config);
+                    var config = (scope.configGetter && scope.configGetter()) || {};
+                    scope.config = angular.extend(configDefaults, config);
 
                     switch (scope.type) {
                         case timerTypes.ROUND_PROGRESSBAR:
