@@ -227,15 +227,14 @@
                                 break;
                             case scope.d.states.SCREEN_SHARE_ACTIVE :
                                 // component = screenShare, status = active
-                                // show drv
                                 // screenShare buttons are disabled
-                                // actions.showUI();
                                 actions.screenShareMode(true);
                                 //screenShareBtnsMode('disabled');
                                 $log.debug('states.SCREEN_SHARE_ACTIVE');
                                 break;
                             case scope.d.states.BOTH_ACTIVE :
                                 $log.debug('states.BOTH_ACTIVE');
+                                actions.screenShareMode(true);
                                 break;
 
                             default :
