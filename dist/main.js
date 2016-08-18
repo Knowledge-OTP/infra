@@ -10176,7 +10176,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             };
 
             $scope.baseZnkExerciseCtrl.onFinishTime = function () {
-
                 var contentProm = $translate('ZNK_EXERCISE.TIME_UP_CONTENT');
                 var titleProm = $translate('ZNK_EXERCISE.TIME_UP_TITLE');
                 var buttonFinishProm = $translate('ZNK_EXERCISE.STOP');

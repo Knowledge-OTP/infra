@@ -345,7 +345,8 @@ znk-exercise.desktop {
     top: 0;
     right: 0;
     bottom: 0;
-    left: 0; }
+    left: 0;
+    background: #fff; }
     znk-exercise.desktop questions-carousel.znk-carousel-container .znk-carousel {
       position: absolute;
       top: 0;
