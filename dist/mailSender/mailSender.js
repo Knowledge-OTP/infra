@@ -6,8 +6,8 @@
 (function (angular) {
     'use strict';
     angular.module('znk.infra.mailSender').service('MailSenderService', [
-        '$log', 'ENV', '$http', 'UserProfileService',
-        function ($log, ENV, $http, UserProfileService) {
+        '$log', 'ENV', '$http', 'UserProfileService', '$q',
+        function ($log, ENV, $http, UserProfileService, $q) {
             var mailSenderService = {};
             var backendUrl = ENV.backendEndpoint + 'mail';
             var httpConfig = {
@@ -22,12 +22,11 @@
                             return {
                                 data: response.data
                             };
-                        },
-                        function (error) {
-                            return {
-                                data: error.data
-                            };
+                        }).catch(function (error) {
+                        return $q.reject({
+                            data: error.data
                         });
+                    });
                 });
             };
 
