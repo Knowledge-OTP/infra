@@ -2,15 +2,6 @@
     'use strict';
 
     angular.module('demoApp', ['znk.infra.znkTimeline'])
-        .config(['TimelineSrvProvider', function(TimelineSrvProvider) {
-            TimelineSrvProvider.setImages({
-                drill: 'components/znkTimeline/svg/icons/timeline-drills-icon.svg',
-                game: 'components/znkTimeline/svg/icons/timeline-mini-challenge-icon.svg',
-                tutorial: 'components/znkTimeline/svg/icons/timeline-tips-tricks-icon.svg',
-                diagnostic: 'components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg',
-                section: 'components/znkTimeline/svg/icons/timeline-test-icon.svg'
-            });
-        }])
         .controller('Main', function ($scope) {
 
            $scope.currentSubjectId = 2;
