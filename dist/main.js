@@ -13592,7 +13592,14 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
 
     angular.module('znk.infra.znkTimeline').provider('TimelineSrv', function () {
 
-        var imgObj;
+        var imgObj = {
+            drill: 'components/znkTimeline/svg/icons/timeline-drills-icon.svg',
+            practice: 'components/znkTimeline/svg/icons/timeline-practice-icon.svg',
+            game: 'components/znkTimeline/svg/icons/timeline-mini-challenge-icon.svg',
+            tutorial: 'components/znkTimeline/svg/icons/timeline-tips-tricks-icon.svg',
+            diagnostic: 'components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg',
+            section: 'components/znkTimeline/svg/icons/timeline-test-icon.svg'
+        };
 
         var colorsObj = { 0: '#75cbe8', 1: '#f9d41b', 2: '#ff5895', 5: '#AF89D2', 6: '#51CDBA' };
 
@@ -13719,6 +13726,25 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templat
     "	<path class=\"st0\" d=\"M-76.9,285.8v1.8c0,1.2,0.9,2.1,2.1,2.1c1.2,0,2.1-0.9,2.1-2.1v-1.8H-76.9z\"/>\n" +
     "	<path class=\"st0\" d=\"M-68.5,283.2c0,0.7-0.5,1.2-1.2,1.2h-9.7c-0.7,0-1.2-0.5-1.2-1.2l0,0c0-0.7,0.5-1.2,1.2-1.2h9.7\n" +
     "		C-69,282-68.5,282.5-68.5,283.2L-68.5,283.2z\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkTimeline/svg/icons/timeline-practice-icon.svg",
+    "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"0 0 255.2 169\" style=\"enable-background:new 0 0 255.2 169;\" xml:space=\"preserve\" class=\"practice-icon-svg\" width=\"15px\" height=\"15px\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.practice-icon-svg .st0{fill:none;stroke:#fff;stroke-width:12;stroke-linecap:round;stroke-linejoin:round;}\n" +
+    "	.practice-icon-svg .st1{fill:none;stroke:#fff;stroke-width:12;stroke-linecap:round;}\n" +
+    "	.practice-icon-svg .st2{fill:none;stroke:#fff;stroke-width:12;stroke-linecap:round;stroke-linejoin:round;}\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<polyline class=\"st0\" points=\"142,41 3,41 3,166 59,166 	\"/>\n" +
+    "	<line class=\"st1\" x1=\"35\" y1=\"75\" x2=\"93\" y2=\"75\"/>\n" +
+    "	<line class=\"st1\" x1=\"35\" y1=\"102\" x2=\"77\" y2=\"102\"/>\n" +
+    "	<line class=\"st1\" x1=\"35\" y1=\"129\" x2=\"79\" y2=\"129\"/>\n" +
+    "	<polygon class=\"st0\" points=\"216.8,3 111.2,106.8 93,161.8 146.8,146 252.2,41 	\"/>\n" +
+    "	<line class=\"st2\" x1=\"193.2\" y1=\"31.7\" x2=\"224\" y2=\"64.8\"/>\n" +
+    "	<polygon points=\"102.5,139.7 114.5,153.8 97.2,157.3 	\"/>\n" +
     "</g>\n" +
     "</svg>\n" +
     "");
