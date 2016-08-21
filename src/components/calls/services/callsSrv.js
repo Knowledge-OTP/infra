@@ -82,8 +82,14 @@
             }
 
             function _initiateCall(callerId, receiverId) {
+                var errMSg;
                 if (angular.isUndefined(callerId) || angular.isUndefined(receiverId)) {
-                    var errMSg = 'CallsSrv: callerId or receiverId are missing!';
+                    errMSg = 'CallsSrv: callerId or receiverId are missing!';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                if (callerId === receiverId) {
+                    errMSg = 'CallsSrv: callerId and receiverId are the same!! can\'t call yourself!!';
                     $log.error(errMSg);
                     return $q.reject(errMSg);
                 }

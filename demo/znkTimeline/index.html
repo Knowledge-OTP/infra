@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <!-- bower:css -->
+    <link rel="stylesheet" href="Swiper/dist/css/swiper.css" />
+    <link rel="stylesheet" href="angular-material/angular-material.css" />
+    <!-- endbower-->
+    <link rel="stylesheet" href="main.css" />
 </head>
 <body ng-app="demoApp" ng-controller="Main">
 
@@ -15,19 +20,25 @@
 
     <canvas znk-timeline timeline-data="timeLineData" timeline-settings="options"></canvas>
 
+    <!-- bower:js -->
     <script src="angular/angular.js"></script>
+    <script src="angular-animate/angular-animate.js"></script>
+    <script src="Swiper/dist/js/swiper.js"></script>
+    <script src="firebase/firebase.js"></script>
+    <script src="ng-idle/angular-idle.js"></script>
+    <script src="angular-translate/angular-translate.js"></script>
+    <script src="SHA-1/sha1.js"></script>
+    <script src="angulartics/src/angulartics.js"></script>
+    <script src="angular-translate-loader-partial/angular-translate-loader-partial.js"></script>
+    <script src="angular-svg-round-progressbar/build/roundProgress.min.js"></script>
+    <script src="angular-ui-router/release/angular-ui-router.js"></script>
+    <script src="plivo/dist/plivo.min.js"></script>
+    <script src="angular-aria/angular-aria.js"></script>
+    <script src="angular-messages/angular-messages.js"></script>
+    <script src="angular-material/angular-material.js"></script>
+    <!-- endbower -->
 
-    <script src="components/enums/module.js"></script>
-    <script src="components/enums/services/enumSrv.js"></script>
-    <script src="components/enums/enums/exerciseTypeEnum.js"></script>
-
-    <script src="components/svgIcon/module.js"></script>
-    <script src="components/svgIcon/svgIconDrv.js"></script>
-    <script src="components/svgIcon/svgIconSrv.js"></script>
-
-    <script src="components/znkTimeline/module.js"></script>
-    <script src="components/znkTimeline/timeline.service.js"></script>
-    <script src="components/znkTimeline/timeline.directive.js"></script>
+    <script src="main.js"></script>
 
     <script src="demoApp.js"></script>
 </body>

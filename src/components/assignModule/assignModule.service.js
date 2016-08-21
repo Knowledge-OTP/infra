@@ -1,9 +1,10 @@
 (function (angular) {
     'use strict';
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv',
-        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv) {
+        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv', 'StudentContextSrv',
+        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, StudentContextSrv) {
             var userAssignModuleService = {};
+            var registerEvents = {};
             userAssignModuleService.assignModules = {};
 
             userAssignModuleService.assignModuleStatus = new EnumSrv.BaseEnum([
@@ -12,15 +13,49 @@
                 ['COMPLETED', ExerciseStatusEnum.COMPLETED.enum, 'completed']
             ]);
 
-            userAssignModuleService.offExternalOnValue = function (userId) {
+            userAssignModuleService.offExternalOnValue = function (userId, valueCB, changeCB) {
                 InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
                     studentStorage.offEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB);
+                    angular.forEach(registerEvents[userId].valueCB, function (cb, index) {
+                        if (cb === valueCB) {
+                            registerEvents[userId].valueCB.splice(index, 1);
+                        }
+                    });
+
+                    if (registerEvents[userId].changeCB) {
+                        angular.forEach(registerEvents[userId].changeCB, function (cbData, index) {
+                            if (cbData.cb === changeCB) {
+                                angular.forEach(cbData.guids, function (resultGuid) {
+                                    studentStorage.offEvent('child_changed', 'moduleResults/' + resultGuid, onModuleResultChangedCB);
+                                });
+                                registerEvents[userId].changeCB.splice(index, 1);
+                            }
+                        });
+                    }
                 });
             };
 
-            userAssignModuleService.registerExternalOnValueCB = function (cb, userId) {
+            userAssignModuleService.registerExternalOnValueCB = function (userId, valueCB, changeCB) {
                 InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
-                    studentStorage.onEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB.bind(null, userId, cb, studentStorage));
+                    if (!registerEvents[userId]) {
+                        registerEvents[userId] = {};
+                    }
+
+                    if (!registerEvents[userId].valueCB) {
+                        registerEvents[userId].valueCB = [];
+                    }
+                    registerEvents[userId].valueCB.push(valueCB);
+
+                    if (!registerEvents[userId].changeCB) {
+                        registerEvents[userId].changeCB = [];
+                    }
+                    registerEvents[userId].changeCB.push({
+                        cb: changeCB,
+                        guids: []
+                    });
+
+
+                    studentStorage.onEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB);
                 });
             };
 
@@ -76,29 +111,41 @@
                 });
             };
 
-            function onValueEventCB(userId, cb, studentStorage, moduleResultsGuids) {
+            function onValueEventCB(moduleResultsGuids) {
                 if (angular.isUndefined(moduleResultsGuids) || !moduleResultsGuids) {
+                    var userId = StudentContextSrv.getCurrUid();
                     userAssignModuleService.assignModules = {};
-                    applyCB(cb);
+                    applyCB(registerEvents[userId].valueCB);
                     return;
                 }
-                var moduleResults = {};
-                var getProm = $q.when();
-                var getPromArr = [];
-                angular.forEach(moduleResultsGuids, function (resultGuid, moduleId) {
-                    getProm = getResultsByModuleId(userId, moduleId).then(function (moduleResult) {
-                        moduleResults[moduleResult.moduleId] = moduleResult;
+                buildResultsFromGuids(moduleResultsGuids);
+            }
 
+            function buildResultsFromGuids(moduleResultsGuids) {
+                InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
+                    var moduleResults = {};
+                    var getProm = $q.when();
+                    var getPromArr = [];
+                    var userId = StudentContextSrv.getCurrUid();
 
-                        var modulePath = 'moduleResults/' + moduleResult.guid;
-                        studentStorage.onEvent('child_changed', modulePath, onModuleResultChangedCB.bind(null, userId, moduleId, cb));
+                    angular.forEach(moduleResultsGuids, function (resultGuid, moduleId) {
+                        getProm = getResultsByModuleId(userId, moduleId).then(function (moduleResult) {
+                            moduleResults[moduleResult.moduleId] = moduleResult;
+
+                            angular.forEach(registerEvents[userId].changeCB, function (cbData) {
+                                if (cbData.guids.indexOf(moduleResult.guid) === -1) {
+                                    cbData.guids.push(moduleResult.guid);
+                                    studentStorage.onEvent('child_changed', 'moduleResults/' + moduleResult.guid, onModuleResultChangedCB);
+                                }
+                            });
+                        });
+                        getPromArr.push(getProm);
                     });
-                    getPromArr.push(getProm);
-                });
 
-                $q.all(getPromArr).then(function () {
-                    userAssignModuleService.assignModules = moduleResults;
-                    applyCB(cb);
+                    $q.all(getPromArr).then(function () {
+                        userAssignModuleService.assignModules = moduleResults;
+                        applyCB(registerEvents[userId].valueCB);
+                    });
                 });
             }
 
@@ -120,17 +167,19 @@
                 });
             }
 
-            function onModuleResultChangedCB(userId, moduleId, cb) {
-                getResultsByModuleId(userId, moduleId).then(function (moduleResult) {
-                    userAssignModuleService.assignModules[moduleId] = moduleResult;
-                    applyCB(cb);
+            function onModuleResultChangedCB() {
+                var userId = StudentContextSrv.getCurrUid();
+                ExerciseResultSrv.getUserModuleResultsGuids(userId).then(function (moduleResultsGuids) {
+                    buildResultsFromGuids(moduleResultsGuids);
                 });
             }
 
-            function applyCB(cb) {
-                if (angular.isFunction(cb)) {
-                    cb(userAssignModuleService.assignModules);
-                }
+            function applyCB(cbArr) {
+                angular.forEach(cbArr, function (valueCB) {
+                    if (angular.isFunction(valueCB)) {
+                        valueCB(userAssignModuleService.assignModules);
+                    }
+                });
             }
 
             function getModuleSummary(assignModule) {

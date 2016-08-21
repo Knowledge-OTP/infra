@@ -203,14 +203,31 @@
     'use strict';
 
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
-        ["$scope", "CallsSrv", "CallsUiSrv", "CallsStatusEnum", "$log", "CallsErrorSrv", "$timeout", function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log, CallsErrorSrv, $timeout) {
+        ["$scope", "CallsSrv", "CallsUiSrv", "CallsStatusEnum", "$log", "CallsErrorSrv", "$timeout", "$window", "ENV", function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log, CallsErrorSrv, $timeout, $window, ENV) {
             'ngInject';
 
             var self = this;
             var callsData = self.scope.callsData;
 
+            var mySound;
+
+            var soundSrc = ENV.mediaEndpoint + '/general/incomingCall.mp3';
+
             CallsUiSrv.getCalleeName(callsData.receiverId, callsData.callerId).then(function(res){
                 $scope.callerName = res;
+            });
+
+            var otherUserDecline = false;
+
+            $scope.$watch('callsData', function(newVal) {
+                if (angular.isDefined(newVal) && newVal.status) {
+                    switch(newVal.status) {
+                        case CallsStatusEnum.DECLINE_CALL.enum:
+                            otherUserDecline = true;
+                            break;
+                    }
+                    callsData = newVal;
+                }
             });
 
             var isPendingClick = false;
@@ -249,6 +266,33 @@
                 _fillLoader(bool, methodName);
             }
 
+            function playAudio() {
+                if ($window.Audio) {
+                    try {
+                        mySound = new $window.Audio(soundSrc);
+                        mySound.addEventListener('ended', function() {
+                            this.currentTime = 0;
+                            this.play();
+                        }, false);
+                        mySound.play();
+                    } catch(e) {
+                        $log.error('IncomingCallModalCtrl: playAudio failed!' +' err: ' + e);
+                    }
+                } else {
+                    $log.error('IncomingCallModalCtrl: audio is not supported!');
+                }
+            }
+
+            function stopAudio() {
+                if ($window.Audio && angular.isDefined(mySound)) {
+                    mySound.pause();
+                    mySound.currentTime = 0;
+                    mySound = new $window.Audio('');
+                }
+            }
+
+            playAudio();
+
             function _baseCall(callFn, methodName) {
                  callsData = self.scope.callsData;
                 if (_isNoPendingClick()) {
@@ -257,11 +301,17 @@
                     }
                     _updateBtnStatus(true, methodName);
                     callFn(callsData).then(function () {
+                        stopAudio();
                         _updateBtnStatus(false, methodName);
                         CallsUiSrv.closeModal();
+                        if (methodName === 'acceptCall' && otherUserDecline) {
+                            CallsSrv.declineCall(callsData);
+                            otherUserDecline = false;
+                        }
                     }).catch(function (err) {
                         _updateBtnStatus(false, methodName);
                         $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);
+                        stopAudio();
                         CallsErrorSrv.showErrorModal(err);
                         CallsSrv.declineCall(callsData);
                     });
@@ -831,9 +881,7 @@
                                     break;
                                 case CallsStatusEnum.DECLINE_CALL.enum:
                                     $log.debug('call declined');
-                                    if (isCurrentUserInitiatedCall(currUid)) {
-                                        getCallsSrv().disconnectCall();
-                                    }
+                                    getCallsSrv().disconnectCall();
                                     break;
                                 case CallsStatusEnum.ACTIVE_CALL.enum:
                                     $log.debug('call active');
@@ -1044,8 +1092,14 @@
             }
 
             function _initiateCall(callerId, receiverId) {
+                var errMSg;
                 if (angular.isUndefined(callerId) || angular.isUndefined(receiverId)) {
-                    var errMSg = 'CallsSrv: callerId or receiverId are missing!';
+                    errMSg = 'CallsSrv: callerId or receiverId are missing!';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                if (callerId === receiverId) {
+                    errMSg = 'CallsSrv: callerId and receiverId are the same!! can\'t call yourself!!';
                     $log.error(errMSg);
                     return $q.reject(errMSg);
                 }

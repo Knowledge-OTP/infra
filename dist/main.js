@@ -587,15 +587,16 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
 (function (angular) {
     'use strict';
-    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.exerciseResult']);
+    angular.module('znk.infra.assignModule', ['znk.infra.znkModule', 'znk.infra.exerciseResult', 'znk.infra.userContext']);
 })(angular);
 
 (function (angular) {
     'use strict';
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv',
-        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv) {
+        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv', 'StudentContextSrv',
+        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, StudentContextSrv) {
             var userAssignModuleService = {};
+            var registerEvents = {};
             userAssignModuleService.assignModules = {};
 
             userAssignModuleService.assignModuleStatus = new EnumSrv.BaseEnum([
@@ -604,15 +605,49 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 ['COMPLETED', ExerciseStatusEnum.COMPLETED.enum, 'completed']
             ]);
 
-            userAssignModuleService.offExternalOnValue = function (userId) {
+            userAssignModuleService.offExternalOnValue = function (userId, valueCB, changeCB) {
                 InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
                     studentStorage.offEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB);
+                    angular.forEach(registerEvents[userId].valueCB, function (cb, index) {
+                        if (cb === valueCB) {
+                            registerEvents[userId].valueCB.splice(index, 1);
+                        }
+                    });
+
+                    if (registerEvents[userId].changeCB) {
+                        angular.forEach(registerEvents[userId].changeCB, function (cbData, index) {
+                            if (cbData.cb === changeCB) {
+                                angular.forEach(cbData.guids, function (resultGuid) {
+                                    studentStorage.offEvent('child_changed', 'moduleResults/' + resultGuid, onModuleResultChangedCB);
+                                });
+                                registerEvents[userId].changeCB.splice(index, 1);
+                            }
+                        });
+                    }
                 });
             };
 
-            userAssignModuleService.registerExternalOnValueCB = function (cb, userId) {
+            userAssignModuleService.registerExternalOnValueCB = function (userId, valueCB, changeCB) {
                 InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
-                    studentStorage.onEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB.bind(null, userId, cb, studentStorage));
+                    if (!registerEvents[userId]) {
+                        registerEvents[userId] = {};
+                    }
+
+                    if (!registerEvents[userId].valueCB) {
+                        registerEvents[userId].valueCB = [];
+                    }
+                    registerEvents[userId].valueCB.push(valueCB);
+
+                    if (!registerEvents[userId].changeCB) {
+                        registerEvents[userId].changeCB = [];
+                    }
+                    registerEvents[userId].changeCB.push({
+                        cb: changeCB,
+                        guids: []
+                    });
+
+
+                    studentStorage.onEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB);
                 });
             };
 
@@ -668,29 +703,41 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
             };
 
-            function onValueEventCB(userId, cb, studentStorage, moduleResultsGuids) {
+            function onValueEventCB(moduleResultsGuids) {
                 if (angular.isUndefined(moduleResultsGuids) || !moduleResultsGuids) {
+                    var userId = StudentContextSrv.getCurrUid();
                     userAssignModuleService.assignModules = {};
-                    applyCB(cb);
+                    applyCB(registerEvents[userId].valueCB);
                     return;
                 }
-                var moduleResults = {};
-                var getProm = $q.when();
-                var getPromArr = [];
-                angular.forEach(moduleResultsGuids, function (resultGuid, moduleId) {
-                    getProm = getResultsByModuleId(userId, moduleId).then(function (moduleResult) {
-                        moduleResults[moduleResult.moduleId] = moduleResult;
+                buildResultsFromGuids(moduleResultsGuids);
+            }
 
+            function buildResultsFromGuids(moduleResultsGuids) {
+                InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
+                    var moduleResults = {};
+                    var getProm = $q.when();
+                    var getPromArr = [];
+                    var userId = StudentContextSrv.getCurrUid();
 
-                        var modulePath = 'moduleResults/' + moduleResult.guid;
-                        studentStorage.onEvent('child_changed', modulePath, onModuleResultChangedCB.bind(null, userId, moduleId, cb));
+                    angular.forEach(moduleResultsGuids, function (resultGuid, moduleId) {
+                        getProm = getResultsByModuleId(userId, moduleId).then(function (moduleResult) {
+                            moduleResults[moduleResult.moduleId] = moduleResult;
+
+                            angular.forEach(registerEvents[userId].changeCB, function (cbData) {
+                                if (cbData.guids.indexOf(moduleResult.guid) === -1) {
+                                    cbData.guids.push(moduleResult.guid);
+                                    studentStorage.onEvent('child_changed', 'moduleResults/' + moduleResult.guid, onModuleResultChangedCB);
+                                }
+                            });
+                        });
+                        getPromArr.push(getProm);
                     });
-                    getPromArr.push(getProm);
-                });
 
-                $q.all(getPromArr).then(function () {
-                    userAssignModuleService.assignModules = moduleResults;
-                    applyCB(cb);
+                    $q.all(getPromArr).then(function () {
+                        userAssignModuleService.assignModules = moduleResults;
+                        applyCB(registerEvents[userId].valueCB);
+                    });
                 });
             }
 
@@ -712,17 +759,19 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
             }
 
-            function onModuleResultChangedCB(userId, moduleId, cb) {
-                getResultsByModuleId(userId, moduleId).then(function (moduleResult) {
-                    userAssignModuleService.assignModules[moduleId] = moduleResult;
-                    applyCB(cb);
+            function onModuleResultChangedCB() {
+                var userId = StudentContextSrv.getCurrUid();
+                ExerciseResultSrv.getUserModuleResultsGuids(userId).then(function (moduleResultsGuids) {
+                    buildResultsFromGuids(moduleResultsGuids);
                 });
             }
 
-            function applyCB(cb) {
-                if (angular.isFunction(cb)) {
-                    cb(userAssignModuleService.assignModules);
-                }
+            function applyCB(cbArr) {
+                angular.forEach(cbArr, function (valueCB) {
+                    if (angular.isFunction(valueCB)) {
+                        valueCB(userAssignModuleService.assignModules);
+                    }
+                });
             }
 
             function getModuleSummary(assignModule) {
@@ -1062,14 +1111,31 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
-        ["$scope", "CallsSrv", "CallsUiSrv", "CallsStatusEnum", "$log", "CallsErrorSrv", "$timeout", function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log, CallsErrorSrv, $timeout) {
+        ["$scope", "CallsSrv", "CallsUiSrv", "CallsStatusEnum", "$log", "CallsErrorSrv", "$timeout", "$window", "ENV", function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log, CallsErrorSrv, $timeout, $window, ENV) {
             'ngInject';
 
             var self = this;
             var callsData = self.scope.callsData;
 
+            var mySound;
+
+            var soundSrc = ENV.mediaEndpoint + '/general/incomingCall.mp3';
+
             CallsUiSrv.getCalleeName(callsData.receiverId, callsData.callerId).then(function(res){
                 $scope.callerName = res;
+            });
+
+            var otherUserDecline = false;
+
+            $scope.$watch('callsData', function(newVal) {
+                if (angular.isDefined(newVal) && newVal.status) {
+                    switch(newVal.status) {
+                        case CallsStatusEnum.DECLINE_CALL.enum:
+                            otherUserDecline = true;
+                            break;
+                    }
+                    callsData = newVal;
+                }
             });
 
             var isPendingClick = false;
@@ -1108,6 +1174,33 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 _fillLoader(bool, methodName);
             }
 
+            function playAudio() {
+                if ($window.Audio) {
+                    try {
+                        mySound = new $window.Audio(soundSrc);
+                        mySound.addEventListener('ended', function() {
+                            this.currentTime = 0;
+                            this.play();
+                        }, false);
+                        mySound.play();
+                    } catch(e) {
+                        $log.error('IncomingCallModalCtrl: playAudio failed!' +' err: ' + e);
+                    }
+                } else {
+                    $log.error('IncomingCallModalCtrl: audio is not supported!');
+                }
+            }
+
+            function stopAudio() {
+                if ($window.Audio && angular.isDefined(mySound)) {
+                    mySound.pause();
+                    mySound.currentTime = 0;
+                    mySound = new $window.Audio('');
+                }
+            }
+
+            playAudio();
+
             function _baseCall(callFn, methodName) {
                  callsData = self.scope.callsData;
                 if (_isNoPendingClick()) {
@@ -1116,11 +1209,17 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     }
                     _updateBtnStatus(true, methodName);
                     callFn(callsData).then(function () {
+                        stopAudio();
                         _updateBtnStatus(false, methodName);
                         CallsUiSrv.closeModal();
+                        if (methodName === 'acceptCall' && otherUserDecline) {
+                            CallsSrv.declineCall(callsData);
+                            otherUserDecline = false;
+                        }
                     }).catch(function (err) {
                         _updateBtnStatus(false, methodName);
                         $log.error('IncomingCallModalCtrl '+ methodName +': err: ' + err);
+                        stopAudio();
                         CallsErrorSrv.showErrorModal(err);
                         CallsSrv.declineCall(callsData);
                     });
@@ -1690,9 +1789,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                     break;
                                 case CallsStatusEnum.DECLINE_CALL.enum:
                                     $log.debug('call declined');
-                                    if (isCurrentUserInitiatedCall(currUid)) {
-                                        getCallsSrv().disconnectCall();
-                                    }
+                                    getCallsSrv().disconnectCall();
                                     break;
                                 case CallsStatusEnum.ACTIVE_CALL.enum:
                                     $log.debug('call active');
@@ -1903,8 +2000,14 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             }
 
             function _initiateCall(callerId, receiverId) {
+                var errMSg;
                 if (angular.isUndefined(callerId) || angular.isUndefined(receiverId)) {
-                    var errMSg = 'CallsSrv: callerId or receiverId are missing!';
+                    errMSg = 'CallsSrv: callerId or receiverId are missing!';
+                    $log.error(errMSg);
+                    return $q.reject(errMSg);
+                }
+                if (callerId === receiverId) {
+                    errMSg = 'CallsSrv: callerId and receiverId are the same!! can\'t call yourself!!';
                     $log.error(errMSg);
                     return $q.reject(errMSg);
                 }
@@ -4293,8 +4396,8 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                     if(!exerciseResult) {
                         exerciseResult = initResults;
                         exerciseResult.$$path = EXERCISE_RESULTS_PATH + '/' + exerciseResult.guid;
-                        exerciseResult.moduleId = moduleId;
                     }
+                    exerciseResult.moduleId = moduleId;
                     exerciseResult.$save = moduleExerciseSaveFn;
                     return exerciseResult;
                 });
@@ -11994,10 +12097,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                     scope.d.TOOLS = TOOLS;
 
-                    scope.d.drawMode = DRAWING_MODES.NONE;
-
                     scope.d.toolClicked = function (tool) {
-                        if(!currQuestion){
+                        if (!currQuestion) {
                             $log.debug('znkExerciseDrawTool: curr question was not set yet');
                             return;
                         }
@@ -12017,7 +12118,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                     scope.d.cleanCanvas = function () {
                         drawer.clean();
-                        if(!currQuestion){
+                        if (!currQuestion) {
                             var errMsg = 'znkExerciseDrawTool:_getFbRef: curr question was not set yet';
                             $log.debug(errMsg);
                             return;
@@ -12037,7 +12138,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                             return $q.reject(errMsg);
                         }
 
-                        if(!currQuestionId){
+                        if (!currQuestionId) {
                             errMsg = 'znkExerciseDrawTool:_getFbRef: curr question was not set yet';
                             $log.debug(errMsg);
                             return $q.reject(errMsg);
@@ -12097,8 +12198,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         });
                     }
 
-                    function _reloadCanvas(){
-                        if(scope.d.drawMode === DRAWING_MODES.NONE){
+                    function _reloadCanvas() {
+                        if (scope.d.drawMode === DRAWING_MODES.NONE) {
                             return;
                         }
 
@@ -12136,8 +12237,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         eventsManager = new EventsManager();
                     }
 
-                    function ServerDrawingUpdater(questionUid){
-                        if(angular.isUndefined(questionUid)){
+                    function ServerDrawingUpdater(questionUid) {
+                        if (angular.isUndefined(questionUid)) {
                             $log.error('znkExerciseDrawTool: Question id was not provided');
                             return;
                         }
@@ -12147,26 +12248,26 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         this.exerciseDrawingRefProm = _getFbRef(questionUid);
                     }
 
-                    ServerDrawingUpdater.prototype._triggerServerUpdate = function(){
-                        if(this.alreadyTriggered){
+                    ServerDrawingUpdater.prototype._triggerServerUpdate = function () {
+                        if (this.alreadyTriggered) {
                             return;
                         }
 
                         this.alreadyTriggered = true;
 
                         var self = this;
-                        $timeout(function(){
+                        $timeout(function () {
                             self.alreadyTriggered = false;
                             self.flush();
-                        },SERVER_UPDATED_FLUSH_TIME,false);
+                        }, SERVER_UPDATED_FLUSH_TIME, false);
                     };
 
-                    ServerDrawingUpdater.prototype.update = function(pixelsMapToUpdate){
+                    ServerDrawingUpdater.prototype.update = function (pixelsMapToUpdate) {
                         angular.extend(this.pixelsMapToUpdate, pixelsMapToUpdate);
                         this._triggerServerUpdate();
                     };
 
-                    ServerDrawingUpdater.prototype.flush = function(){
+                    ServerDrawingUpdater.prototype.flush = function () {
                         var self = this;
 
                         return this.exerciseDrawingRefProm.then(function (exerciseDrawingRef) {
@@ -12185,7 +12286,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         }
 
                         var coords = coordStr.split(":");
-                        $window.requestAnimationFrame(function(){
+                        $window.requestAnimationFrame(function () {
                             canvasContext.fillStyle = TOUCHE_COLORS[colorId];
                             canvasContext.fillRect(parseInt(coords[0]), parseInt(coords[1]), PIXEL_SIZE, PIXEL_SIZE);
                         });
@@ -12198,8 +12299,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                         var coords = coordStr.split(":");
 
-                        $window.requestAnimationFrame(function(){
-                            canvasContext.clearRect(parseInt(coords[0]) - PIXEL_SIZE, parseInt(coords[1])- PIXEL_SIZE, 2 * PIXEL_SIZE, 2 * PIXEL_SIZE);
+                        $window.requestAnimationFrame(function () {
+                            canvasContext.clearRect(parseInt(coords[0]) - PIXEL_SIZE, parseInt(coords[1]) - PIXEL_SIZE, 2 * PIXEL_SIZE, 2 * PIXEL_SIZE);
                         });
                     };
 
@@ -12257,9 +12358,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         var coordsStr = snapShot.key();
                         var color = snapShot.val();
 
-                        if(color === 0){
+                        if (color === 0) {
                             drawer.clearPixel(coordsStr);
-                        }else{
+                        } else {
                             drawer.drawPixel(coordsStr, color);
                         }
                     }
@@ -12321,7 +12422,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     };
 
                     EventsManager.prototype.registerFbListeners = function (questionId) {
-                        if(angular.isUndefined(questionId)){
+                        if (angular.isUndefined(questionId)) {
                             $log.error('znkExerciseDrawTool:registerFbListeners: questionId was not provided');
                             return;
                         }
@@ -12329,8 +12430,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         var self = this;
 
                         return _getFbRef(questionId).then(function (ref) {
-                            if(self.ref){
-                                if(self.ref.key() === ref.key()){
+                            if (self.ref) {
+                                if (self.ref.key() === ref.key()) {
                                     return;
                                 }
                                 self.killFbListeners();
@@ -12345,7 +12446,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     };
 
                     EventsManager.prototype.killFbListeners = function () {
-                        if(!this.ref){
+                        if (!this.ref) {
                             return;
                         }
 
@@ -12375,9 +12476,13 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     });
 
                     scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex, oldIndex, _currQuestion) {
+                        if (angular.isUndefined(scope.d.drawMode)) {
+                            scope.d.drawMode = DRAWING_MODES.VIEW;
+                        }
+
                         currQuestion = _currQuestion;
 
-                        if(serverDrawingUpdater){
+                        if (serverDrawingUpdater) {
                             serverDrawingUpdater.flush();
                         }
                         serverDrawingUpdater = new ServerDrawingUpdater(currQuestion.id);
@@ -13262,7 +13367,8 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
                     var settings = angular.extend({
                         width: $window.innerWidth,
                         height: $window.innerHeight,
-                        images: TimelineSrv.getImages()
+                        images: TimelineSrv.getImages(),
+                        colors: TimelineSrv.getColors()
                     }, scope.timelineSettings || {});
 
                     var dataObj;
@@ -13325,7 +13431,8 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
                             ctx.lineWidth = settings.lineWidth;
                         }
 
-                        if (angular.isDefined(timelineData.id) && settings.colors && angular.isArray(settings.colors)) {
+                        if (angular.isDefined(timelineData.id) && settings.colors &&
+                            angular.isObject(settings.colors) && !angular.isArray(settings.colors)) {
                             ctx.strokeStyle = settings.colors[timelineData.id];
                             ctx.fillStyle = settings.colors[timelineData.id];
                         }
@@ -13470,28 +13577,52 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
 
 })(angular);
 
+/**
+ * TimelineSrv
+ *   setImages ie:
+ *                 {
+ *                    tutorial: '{path to image}'
+ *                 }
+ *  setColors ie: {
+ *                   0: '#75cbe8'
+ *                }
+ */
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkTimeline').provider('TimelineSrv', ['SvgIconSrvProvider', function () {
+    angular.module('znk.infra.znkTimeline').provider('TimelineSrv', function () {
 
         var imgObj;
+
+        var colorsObj = { 0: '#75cbe8', 1: '#f9d41b', 2: '#ff5895', 5: '#AF89D2', 6: '#51CDBA' };
 
         this.setImages = function(obj) {
             imgObj = obj;
         };
 
-        this.$get = ['$log', function($log) {
-             return {
-                 getImages: function() {
-                     if (!angular.isObject(imgObj)) {
-                         $log.error('TimelineSrv getImages: obj is not an object! imgObj:', imgObj);
-                     }
-                     return imgObj;
-                 }
-             };
+        this.setColors = function(obj) {
+            colorsObj = obj;
+        };
+
+        this.$get = ["$log", function($log) {
+            'ngInject';
+
+            var timelineSrvApi = {};
+
+            function _baseFn(obj, methodName) {
+                if (!angular.isObject(obj)) {
+                    $log.error('TimelineSrv ' + methodName + ': obj is not an object! obj:', obj);
+                }
+                return obj;
+            }
+
+            timelineSrvApi.getImages =  _baseFn.bind(null, imgObj, 'getImages');
+
+            timelineSrvApi.getColors =  _baseFn.bind(null, colorsObj, 'getColors');
+
+            return timelineSrvApi;
         }];
-    }]);
+    });
 })(angular);
 
 
