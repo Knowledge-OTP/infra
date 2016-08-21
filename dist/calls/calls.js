@@ -1126,6 +1126,18 @@
                 });
             }
 
+            function _isUserInActiveCall() {
+                return CallsDataGetterSrv.getCurrUserCallsData().then(function(callsDataMap){
+                    var isInActiveCall = false;
+                    var userCallData = callsDataMap[Object.keys(callsDataMap)[0]];
+                    if (userCallData && userCallData.status && (userCallData.status === CallsStatusEnum.PENDING_CALL.enum ||
+                        userCallData.status === CallsStatusEnum.ACTIVE_CALL.enum)) {
+                        isInActiveCall = true;
+                    }
+                    return isInActiveCall;
+                });
+            }
+
             // api
             this.acceptCall = function(callsData) {
                 return _handleCallerIdOrReceiverIdUndefined(callsData, 'acceptCall').then(function () {
@@ -1174,6 +1186,8 @@
                     return $q.reject(err);
                 });
             };
+
+            this.isUserInActiveCall = _isUserInActiveCall;
         }]
     );
 })(angular);

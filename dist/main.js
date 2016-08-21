@@ -90,12 +90,15 @@
                         screenShareIsViewer;
 
                     if (ENV.appContext.toLowerCase() === 'dashboard') {
-                        $log.debug('appContext === dashboard');
-                        // receiverId = StudentContextSrv.getCurrUid();
+                        // var onStudentContextChange = function(prevUid, uid) {
+                        //     debugger;
+                        // };
+                        //
+                        // StudentContextSrv.registerToStudentContextChange(onStudentContextChange);
+                        // var receiverUid = StudentContextSrv.getCurrUid();
                         isTeacher = true;
                     } else if (ENV.appContext.toLowerCase() === 'student') {
-                        $log.debug('appContext === student');
-                        // receiverId = TeacherContextSrv.getCurrUid();
+
                         isTeacher = false;
                     }
 
@@ -416,7 +419,6 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "            <div class=\"call-duration\">&nbsp;</div>\n" +
     "        </div>\n" +
     "        <div class=\"call-controls flex-col\">\n" +
-    "\n" +
     "            <div ng-click=\"d.viewOtherUserScreen()\"\n" +
     "                 ng-show=\"d.showShareScreenBtns\"\n" +
     "                 class=\"show-other-screen\">\n" +
@@ -2138,6 +2140,18 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 });
             }
 
+            function _isUserInActiveCall() {
+                return CallsDataGetterSrv.getCurrUserCallsData().then(function(callsDataMap){
+                    var isInActiveCall = false;
+                    var userCallData = callsDataMap[Object.keys(callsDataMap)[0]];
+                    if (userCallData && userCallData.status && (userCallData.status === CallsStatusEnum.PENDING_CALL.enum ||
+                        userCallData.status === CallsStatusEnum.ACTIVE_CALL.enum)) {
+                        isInActiveCall = true;
+                    }
+                    return isInActiveCall;
+                });
+            }
+
             // api
             this.acceptCall = function(callsData) {
                 return _handleCallerIdOrReceiverIdUndefined(callsData, 'acceptCall').then(function () {
@@ -2186,6 +2200,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     return $q.reject(err);
                 });
             };
+
+            this.isUserInActiveCall = _isUserInActiveCall;
         }]
     );
 })(angular);
@@ -8627,6 +8643,7 @@ angular.module('znk.infra.user').run(['$templateCache', function($templateCache)
 
             var _storageStudentUidKey = 'currentStudentUid';
             var _currentStudentUid = '';
+            var registeredCbsToStudentContextChangeEvent = [];
 
             StudentContextSrv.getCurrUid = function () {
                 if (_currentStudentUid.length === 0) {
@@ -8646,12 +8663,29 @@ angular.module('znk.infra.user').run(['$templateCache', function($templateCache)
             };
 
             StudentContextSrv.setCurrentUid = function (uid) {
+                var prevUid = _currentStudentUid;
                 _currentStudentUid = uid;
 
                 if ($window.sessionStorage) {
                     $window.sessionStorage.setItem(_storageStudentUidKey, uid);
                 }
+
+                _invokeCbs(registeredCbsToStudentContextChangeEvent, [prevUid, uid]);
             };
+
+            StudentContextSrv.registerToStudentContextChange = function(cb) {
+                if (!angular.isFunction(cb)) {
+                    $log.error('StudentContextSrv.registerToStudentContextChange: cb is not a function', cb);
+                    return;
+                }
+                registeredCbsToStudentContextChangeEvent.push(cb);
+            };
+
+            function _invokeCbs(cbArr, args){
+                cbArr.forEach(function(cb){
+                    cb.apply(null, args);
+                });
+            }
 
             return StudentContextSrv;
         }

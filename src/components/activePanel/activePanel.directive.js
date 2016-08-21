@@ -32,12 +32,15 @@
                         screenShareIsViewer;
 
                     if (ENV.appContext.toLowerCase() === 'dashboard') {
-                        $log.debug('appContext === dashboard');
-                        // receiverId = StudentContextSrv.getCurrUid();
+                        // var onStudentContextChange = function(prevUid, uid) {
+                        //     debugger;
+                        // };
+                        //
+                        // StudentContextSrv.registerToStudentContextChange(onStudentContextChange);
+                        // var receiverUid = StudentContextSrv.getCurrUid();
                         isTeacher = true;
                     } else if (ENV.appContext.toLowerCase() === 'student') {
-                        $log.debug('appContext === student');
-                        // receiverId = TeacherContextSrv.getCurrUid();
+
                         isTeacher = false;
                     }
 

@@ -41,12 +41,15 @@
                         screenShareIsViewer;
 
                     if (ENV.appContext.toLowerCase() === 'dashboard') {
-                        $log.debug('appContext === dashboard');
-                        // receiverId = StudentContextSrv.getCurrUid();
+                        // var onStudentContextChange = function(prevUid, uid) {
+                        //     debugger;
+                        // };
+                        //
+                        // StudentContextSrv.registerToStudentContextChange(onStudentContextChange);
+                        // var receiverUid = StudentContextSrv.getCurrUid();
                         isTeacher = true;
                     } else if (ENV.appContext.toLowerCase() === 'student') {
-                        $log.debug('appContext === student');
-                        // receiverId = TeacherContextSrv.getCurrUid();
+
                         isTeacher = false;
                     }
 
@@ -367,7 +370,6 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "            <div class=\"call-duration\">&nbsp;</div>\n" +
     "        </div>\n" +
     "        <div class=\"call-controls flex-col\">\n" +
-    "\n" +
     "            <div ng-click=\"d.viewOtherUserScreen()\"\n" +
     "                 ng-show=\"d.showShareScreenBtns\"\n" +
     "                 class=\"show-other-screen\">\n" +
