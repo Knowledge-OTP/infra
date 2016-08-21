@@ -14,7 +14,8 @@
                     var settings = angular.extend({
                         width: $window.innerWidth,
                         height: $window.innerHeight,
-                        images: TimelineSrv.getImages()
+                        images: TimelineSrv.getImages(),
+                        colors: TimelineSrv.getColors()
                     }, scope.timelineSettings || {});
 
                     var dataObj;
@@ -77,7 +78,8 @@
                             ctx.lineWidth = settings.lineWidth;
                         }
 
-                        if (angular.isDefined(timelineData.id) && settings.colors && angular.isArray(settings.colors)) {
+                        if (angular.isDefined(timelineData.id) && settings.colors &&
+                            angular.isObject(settings.colors) && !angular.isArray(settings.colors)) {
                             ctx.strokeStyle = settings.colors[timelineData.id];
                             ctx.fillStyle = settings.colors[timelineData.id];
                         }

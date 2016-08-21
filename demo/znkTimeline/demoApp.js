@@ -61,7 +61,6 @@
             };
 
             $scope.options = {
-                colors: ['#75cbe8', '#f9d41b', '#ff5895', '', '','#AF89D2', '#51CDBA'],
                 colorId: $scope.currentSubjectId,
                 isMobile: false,
                 height: optionsPerDevice.height,
