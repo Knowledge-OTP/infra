@@ -124,10 +124,11 @@
                             return 0;
                         }
 
-                        if (!scope.settings.toucheColorId) {
-                            $log.error('znkExerciseDrawTool: touche color was not set');
-                            return null;
+                        if (!scope.setting || angular.isUndefined(scope.settings.toucheColorId)) {
+                            $log.debug('znkExerciseDrawTool: touche color was not set');
+                            return 1;
                         }
+
                         return scope.settings.toucheColorId;
                     }
 

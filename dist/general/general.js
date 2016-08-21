@@ -373,7 +373,6 @@
 
                     scope.ngModelCtrl = ngModelCtrl;
 
-
                     function padNum(num) {
                         if (('' + Math.abs(+num)).length < 2) {
                             return (num < 0 ? '-' : '') + '0' + Math.abs(+num);
@@ -423,13 +422,14 @@
                     var INTERVAL_TIME = 1000;
 
                     scope.type = scope.typeGetter() || 1;
-                    scope.config = scope.configGetter() || {};
+
                     var configDefaults = {
                         format: 'mm:ss',
                         stopOnZero: true,
                         stroke: 2
                     };
-                    scope.config = angular.extend(configDefaults, scope.config);
+                    var config = (scope.configGetter && scope.configGetter()) || {};
+                    scope.config = angular.extend(configDefaults, config);
 
                     switch (scope.type) {
                         case timerTypes.ROUND_PROGRESSBAR:
@@ -734,16 +734,22 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
     "     y=\"0px\"\n" +
     "     viewBox=\"0 0 183 208.5\">\n" +
     "    <style>\n" +
+    "        .clock-icon-svg{\n" +
+    "            width: 15px;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon-svg g *{\n" +
+    "            stroke: #757A83;\n" +
+    "        }\n" +
+    "\n" +
     "        .clock-icon-svg .st0 {\n" +
     "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
     "            stroke-width: 10.5417;\n" +
     "            stroke-miterlimit: 10;\n" +
     "        }\n" +
     "\n" +
     "        .clock-icon-svg .st1 {\n" +
     "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
     "            stroke-width: 12.3467;\n" +
     "            stroke-linecap: round;\n" +
     "            stroke-miterlimit: 10;\n" +
@@ -751,7 +757,6 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
     "\n" +
     "        .clock-icon-svg .st2 {\n" +
     "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
     "            stroke-width: 11.8313;\n" +
     "            stroke-linecap: round;\n" +
     "            stroke-miterlimit: 10;\n" +
@@ -759,14 +764,12 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
     "\n" +
     "        .clock-icon-svg .st3 {\n" +
     "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
     "            stroke-width: 22.9416;\n" +
     "            stroke-miterlimit: 10;\n" +
     "        }\n" +
     "\n" +
     "        .clock-icon-svg .st4 {\n" +
     "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
     "            stroke-width: 14;\n" +
     "            stroke-linecap: round;\n" +
     "            stroke-miterlimit: 10;\n" +
@@ -774,7 +777,6 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
     "\n" +
     "        .clock-icon-svg .st5 {\n" +
     "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
     "            stroke-width: 18;\n" +
     "            stroke-linejoin: round;\n" +
     "            stroke-miterlimit: 10;\n" +

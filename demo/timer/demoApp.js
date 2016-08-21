@@ -9,7 +9,7 @@
                 .preferredLanguage('en');
         })
         .controller('ctrl',function($scope){
-            var countdownTime = 3 * 1000;
+            var countdownTime = 300 * 1000;
             $scope.d = {
                 timer: {
                     timeLeft: countdownTime,

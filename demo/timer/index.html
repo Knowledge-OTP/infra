@@ -13,7 +13,11 @@
     </style>
 
 </head>
-<body ng-app="demoApp" ng-controller="ctrl">
+<body ng-app="demoApp" ng-controller="ctrl" style="background: black">
+
+<div class="timer-wrapper">
+    <timer type="1" ng-model="d.timer.timeLeft" play="d.timer.play" config="d.timer.config"></timer>
+</div>
 
 <div class="timer-wrapper">
     <timer type="2" ng-model="d.timer.timeLeft" play="d.timer.play" config="d.timer.config"></timer>

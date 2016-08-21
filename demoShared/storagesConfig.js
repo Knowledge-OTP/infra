@@ -14,7 +14,9 @@
             authDbPath: 'https://znk-dev.firebaseio.com/',
             dataDbPath: 'https://sat-dev.firebaseio.com/',
             dataAuthToken: 'TykqAPXV4zlTTG0v6UuOt4OF3HssDykhJd90dAIc',
-            studentPath: '/sat_app'
+            studentPath: '/sat_app',
+            dataAuthSecret: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicmFjY29vbnMifQ.mqdcwRt0W5v5QqfzVUBfUcQarD0IojEFNisP-SNIFLM",
+            backendEndpoint: 'https://znk-web-backend-dev.azurewebsites.net/'
         };
 
         var keysObj = {
@@ -34,7 +36,7 @@
         });
 
         function storageGetter(path) {
-            return function(StorageFirebaseAdapter, StorageSrv, $q, ENV) {
+            return function(StorageFirebaseAdapter, StorageSrv, $q, ENV, $http) {
                 if(!authRef){
                     authRef = new Firebase(options.authDbPath, ENV.firebaseAppScopeName);
                     authProm = authRef.authWithPassword({
@@ -42,12 +44,29 @@
                         password: '' + options.password
                     }).then(function(res){
                         console.log('success', res);
-                        return res;
+
+                        var postUrl = options.backendEndpoint + 'firebase/token';
+                        var authData = authRef.getAuth();
+                        var postData = {
+                            email: authData.password ? authData.password.email : '',
+                            uid: authData.uid,
+                            fbDataEndPoint: options.dataDbPath,
+                            fbEndpoint: options.authDbPath,
+                            auth: options.dataAuthSecret,
+                            token: authData.token
+                        };
+
+                        return $http.post(postUrl, postData).then(function (token) {
+                            dataRef = new Firebase(options.dataDbPath, ENV.firebaseAppScopeName);
+                            return dataRef.authWithCustomToken(token.data, function (error, userAuthData) {
+                                console.log('authSrv::login(): uid=' + userAuthData.uid);
+                            });
+                        });
                     }).catch(function(err){
                         console.error(err);
                     });
-                    dataRef = new Firebase(options.dataDbPath, ENV.firebaseAppScopeName);
-                    dataAuthProm = dataRef.authWithCustomToken(options.dataAuthToken);
+                    // dataRef = new Firebase(options.dataDbPath, ENV.firebaseAppScopeName);
+                    // dataAuthProm = dataRef.authWithCustomToken(options.dataAuthToken);
                 }
 
                 return $q.all([authProm, dataAuthProm]).then(function(res){

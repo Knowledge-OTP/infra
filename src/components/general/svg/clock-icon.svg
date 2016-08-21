@@ -4,16 +4,22 @@
      y="0px"
      viewBox="0 0 183 208.5">
     <style>
+        .clock-icon-svg{
+            width: 15px;
+        }
+
+        .clock-icon-svg g *{
+            stroke: #757A83;
+        }
+
         .clock-icon-svg .st0 {
             fill: none;
-            stroke: #757A83;
             stroke-width: 10.5417;
             stroke-miterlimit: 10;
         }
 
         .clock-icon-svg .st1 {
             fill: none;
-            stroke: #757A83;
             stroke-width: 12.3467;
             stroke-linecap: round;
             stroke-miterlimit: 10;
@@ -21,7 +27,6 @@
 
         .clock-icon-svg .st2 {
             fill: none;
-            stroke: #757A83;
             stroke-width: 11.8313;
             stroke-linecap: round;
             stroke-miterlimit: 10;
@@ -29,14 +34,12 @@
 
         .clock-icon-svg .st3 {
             fill: none;
-            stroke: #757A83;
             stroke-width: 22.9416;
             stroke-miterlimit: 10;
         }
 
         .clock-icon-svg .st4 {
             fill: none;
-            stroke: #757A83;
             stroke-width: 14;
             stroke-linecap: round;
             stroke-miterlimit: 10;
@@ -44,7 +47,6 @@
 
         .clock-icon-svg .st5 {
             fill: none;
-            stroke: #757A83;
             stroke-width: 18;
             stroke-linejoin: round;
             stroke-miterlimit: 10;

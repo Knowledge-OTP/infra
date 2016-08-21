@@ -110,6 +110,8 @@ znk-exercise.desktop {
             right: 0;
             bottom: 0;
             left: 0;
+            background: $bgColor6;
+            z-index: 1;
 
             .znk-carousel {
                 @include absolute-full-cover;

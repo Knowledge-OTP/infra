@@ -290,10 +290,7 @@ $blueBG8: #75cbe8;
       font-family: Lato;
       font-weight: 400;
       display: inline-block;
-      margin-left: 10px;
-      vertical-align: top;
-      position: relative;
-      top: 2px; }
+      margin-left: 10px; }
   .timer-drv .timer-type2 {
     text-align: center;
     position: relative; }

@@ -4620,6 +4620,22 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.exerciseUtility').factory('ExerciseParentEnum', [
+        'EnumSrv',
+        function (EnumSrv) {
+            return new EnumSrv.BaseEnum([
+                ['WORKOUT', 1, 'workout'],
+                ['TUTORIAL', 2, 'tutorial'],
+                ['EXAM', 3, 'exam'],
+                ['MODULE', 4, 'module']
+            ]);
+        }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     var exerciseStatusEnum = {
         NEW: 0,
         ACTIVE: 1,
@@ -4818,25 +4834,43 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
 
 (function (angular) {
     'use strict';
-
+    /**
+     * params:
+     *  time - in milliseconds
+     *  expr -
+     *      hh - total hours in duration
+     *      mm - total minutes in duration
+     *      ss - total seconds in duration
+     *      rss - seconds modulo
+     */
     angular.module('znk.infra.filters').filter('formatTimeDuration', ['$log', function ($log) {
-            return function (time, exp) {
-                if (!angular.isNumber(time) || isNaN(time)) {
-                    $log.error('time is not a number:', time);
-                    return '';
-                }
-                var t = Math.round(parseInt(time));
-                var hours = parseInt(t / 3600000, 10);
-                var minutes = parseInt(t / 60000, 10);
-                var seconds = time / 1000;
-                var defaultFormat = 'mm';
+        return function (time, exp) {
+            if (!angular.isNumber(time) || isNaN(time)) {
+                $log.error('time is not a number:', time);
+                return '';
+            }
 
-                if (!exp) {
-                    exp = defaultFormat;
-                }
-                return exp.replace(/hh/g, hours).replace(/mm/g, minutes).replace(/ss/g, seconds);
-            };
-        }]);
+            time = Math.round(parseInt(time), 10);
+
+            var hours = parseInt(time / 3600000, 10);
+            var minutes = parseInt(time / 60000, 10);
+            var seconds = parseInt(time / 1000, 10);
+
+            var rss = seconds - (minutes * 60);
+
+            var defaultFormat = 'mm';
+
+            if (!exp) {
+                exp = defaultFormat;
+            }
+
+            return exp
+                .replace(/rss/g, rss)
+                .replace(/hh/g, hours)
+                .replace(/mm/g, minutes)
+                .replace(/ss/g, seconds);
+        };
+    }]);
 })(angular);
 
 angular.module('znk.infra.filters').run(['$templateCache', function($templateCache) {
@@ -5218,7 +5252,6 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
 
                     scope.ngModelCtrl = ngModelCtrl;
 
-
                     function padNum(num) {
                         if (('' + Math.abs(+num)).length < 2) {
                             return (num < 0 ? '-' : '') + '0' + Math.abs(+num);
@@ -5268,13 +5301,14 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
                     var INTERVAL_TIME = 1000;
 
                     scope.type = scope.typeGetter() || 1;
-                    scope.config = scope.configGetter() || {};
+
                     var configDefaults = {
                         format: 'mm:ss',
                         stopOnZero: true,
                         stroke: 2
                     };
-                    scope.config = angular.extend(configDefaults, scope.config);
+                    var config = (scope.configGetter && scope.configGetter()) || {};
+                    scope.config = angular.extend(configDefaults, config);
 
                     switch (scope.type) {
                         case timerTypes.ROUND_PROGRESSBAR:
@@ -5579,16 +5613,22 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
     "     y=\"0px\"\n" +
     "     viewBox=\"0 0 183 208.5\">\n" +
     "    <style>\n" +
+    "        .clock-icon-svg{\n" +
+    "            width: 15px;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon-svg g *{\n" +
+    "            stroke: #757A83;\n" +
+    "        }\n" +
+    "\n" +
     "        .clock-icon-svg .st0 {\n" +
     "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
     "            stroke-width: 10.5417;\n" +
     "            stroke-miterlimit: 10;\n" +
     "        }\n" +
     "\n" +
     "        .clock-icon-svg .st1 {\n" +
     "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
     "            stroke-width: 12.3467;\n" +
     "            stroke-linecap: round;\n" +
     "            stroke-miterlimit: 10;\n" +
@@ -5596,7 +5636,6 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
     "\n" +
     "        .clock-icon-svg .st2 {\n" +
     "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
     "            stroke-width: 11.8313;\n" +
     "            stroke-linecap: round;\n" +
     "            stroke-miterlimit: 10;\n" +
@@ -5604,14 +5643,12 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
     "\n" +
     "        .clock-icon-svg .st3 {\n" +
     "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
     "            stroke-width: 22.9416;\n" +
     "            stroke-miterlimit: 10;\n" +
     "        }\n" +
     "\n" +
     "        .clock-icon-svg .st4 {\n" +
     "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
     "            stroke-width: 14;\n" +
     "            stroke-linecap: round;\n" +
     "            stroke-miterlimit: 10;\n" +
@@ -5619,7 +5656,6 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
     "\n" +
     "        .clock-icon-svg .st5 {\n" +
     "            fill: none;\n" +
-    "            stroke: #757A83;\n" +
     "            stroke-width: 18;\n" +
     "            stroke-linejoin: round;\n" +
     "            stroke-miterlimit: 10;\n" +
@@ -10118,11 +10154,11 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             }
 
             function _getAllowedTimeForExercise() {
-                if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
+                if (exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
                     return exercise.time;
                 }
 
-                var allowedTimeForQuestion  = ZnkExerciseSrv.getAllowedTimeForQuestion(exerciseTypeId);
+                var allowedTimeForQuestion = ZnkExerciseSrv.getAllowedTimeForQuestion(exerciseTypeId);
                 return allowedTimeForQuestion * exercise.questions.length;
             }
 
@@ -10179,6 +10215,10 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 initSlideIndex = exerciseResult.questionResults.findIndex(function (question) {
                     return !question.userAnswer;
                 });
+
+                if (initSlideIndex === -1) {
+                    initSlideIndex = 0;
+                }
             }
 
             var defExerciseSettings = {
@@ -10241,7 +10281,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             };
 
             $scope.baseZnkExerciseCtrl.onFinishTime = function () {
-
                 var contentProm = $translate('ZNK_EXERCISE.TIME_UP_CONTENT');
                 var titleProm = $translate('ZNK_EXERCISE.TIME_UP_TITLE');
                 var buttonFinishProm = $translate('ZNK_EXERCISE.STOP');
@@ -12128,10 +12167,11 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                             return 0;
                         }
 
-                        if (!scope.settings.toucheColorId) {
-                            $log.error('znkExerciseDrawTool: touche color was not set');
-                            return null;
+                        if (!scope.setting || angular.isUndefined(scope.settings.toucheColorId)) {
+                            $log.debug('znkExerciseDrawTool: touche color was not set');
+                            return 1;
                         }
+
                         return scope.settings.toucheColorId;
                     }
 

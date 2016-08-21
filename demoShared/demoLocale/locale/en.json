@@ -1,0 +1,30 @@
+{
+    "SUBJECTS":{
+        "0": "math",
+        "7": "verbal",
+        "8": "essay"
+    },
+    "DIAGNOSTIC_INTRO": {
+        "DIAG_DESCRIPTION_MATH": "Math description",
+        "DIAG_SUBJECT_TEXT_MATH": "Math subject text",
+        "DIAG_SUBJECT_NAME_MATH": "Math subject name",
+        "DIAG_DESCRIPTION_VERBAL": "This quick test will determine your initial estimated score and your training roadmap.",
+        "DIAG_SUBJECT_TEXT_VERBAL": "Let’s do 4",
+        "DIAG_SUBJECT_NAME_VERBAL": "English",
+        "DIAG_INSTRUCTIONS_VERBAL": "Solve the following problems. The use of a calculator is NOT permitted.",
+        "DIAG_DESCRIPTION_NONE": "what???",
+        "DIAG_INSTRUCTIONS_ALL": "all for one and one for all",
+        "DIAG_INSTRUCTIONS_NONE": "none is the best"
+    },
+    "WORKOUTS_DIAGNOSTIC_SUMMARY": {
+        "COMPOSITE_SCORE": "TOTAL SCORE:",
+        "ENGLISH": "ENGLISH",
+        "SCIENCE": "SCIENCE",
+        "READING": "READING",
+        "MATH": "MATH",
+        "VERBAL": "VERBAL"
+    },
+    "WORKOUTS_ROADMAP_WORKOUT_INTRO_LOCK":{
+        "GET_ZINKERZ_PRO": "Get Zinkerz PRO to unlock all workouts and get<br>your speaking and writing questions evaluated"
+    }
+}
