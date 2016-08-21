@@ -374,6 +374,25 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templat
     "</g>\n" +
     "</svg>\n" +
     "");
+  $templateCache.put("components/znkTimeline/svg/icons/timeline-practice-icon.svg",
+    "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"0 0 255.2 169\" style=\"enable-background:new 0 0 255.2 169;\" xml:space=\"preserve\" class=\"practice-icon-svg\" width=\"15px\" height=\"15px\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.practice-icon-svg .st0{fill:none;stroke:#fff;stroke-width:12;stroke-linecap:round;stroke-linejoin:round;}\n" +
+    "	.practice-icon-svg .st1{fill:none;stroke:#fff;stroke-width:12;stroke-linecap:round;}\n" +
+    "	.practice-icon-svg .st2{fill:none;stroke:#fff;stroke-width:12;stroke-linecap:round;stroke-linejoin:round;}\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<polyline class=\"st0\" points=\"142,41 3,41 3,166 59,166 	\"/>\n" +
+    "	<line class=\"st1\" x1=\"35\" y1=\"75\" x2=\"93\" y2=\"75\"/>\n" +
+    "	<line class=\"st1\" x1=\"35\" y1=\"102\" x2=\"77\" y2=\"102\"/>\n" +
+    "	<line class=\"st1\" x1=\"35\" y1=\"129\" x2=\"79\" y2=\"129\"/>\n" +
+    "	<polygon class=\"st0\" points=\"216.8,3 111.2,106.8 93,161.8 146.8,146 252.2,41 	\"/>\n" +
+    "	<line class=\"st2\" x1=\"193.2\" y1=\"31.7\" x2=\"224\" y2=\"64.8\"/>\n" +
+    "	<polygon points=\"102.5,139.7 114.5,153.8 97.2,157.3 	\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
   $templateCache.put("components/znkTimeline/svg/icons/timeline-test-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
     "	 viewBox=\"-111 277 60 60\" style=\"enable-background:new -111 277 60 60;\" xml:space=\"preserve\" class=\"timeline-test-icon\" width=\"30px\" height=\"30px\">\n" +
