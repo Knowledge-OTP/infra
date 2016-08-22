@@ -32,28 +32,15 @@
         }]);
 })(angular);
 
-// (function (angular) {
-//     'use strict';
-//
-//     angular.module('znk.infra.calls')
-//         .config(function (WebcallSrvProvider, ENV) {
-//             'ngInject';
-//             WebcallSrvProvider.setCallCred({
-//                 username: ENV.plivoUsername,
-//                 password: ENV.plivoPassword
-//             });
-//         });
-// })(angular);
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.calls')
-        .config(["WebcallSrvProvider", function (WebcallSrvProvider) {
+        .config(["WebcallSrvProvider", "ENV", function (WebcallSrvProvider, ENV) {
             'ngInject';
-            // TODO: revert this file before pushing!
             WebcallSrvProvider.setCallCred({
-                username: 'devUsrZinkerz160726161534',
-                password: 'zinkerz$9999'
+                username: ENV.plivoUsername,
+                password: ENV.plivoPassword
             });
         }]);
 })(angular);
@@ -823,7 +810,6 @@
                 }
 
                 function _listenToCallsData(guid) {
-                    $log.debug('_listenToCallsData');
                     var callsStatusPath = 'calls/' + guid;
 
                     function _cb(callsData) {
@@ -859,19 +845,13 @@
                                     if (!isCurrentUserInitiatedCall(currUid)) {
                                         CallsUiSrv.closeModal();
                                         // show outgoing call modal WITH the ANSWERED TEXT, wait 2 seconds and close the modal, show the ActiveCallDRV
-                                        // ActivePanelSrv.showActivePanelDrv('calls');
-                                        // ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
                                     } else {
                                         // close the modal, show the ActiveCallDRV
                                         // CallsUiSrv.closeModal();
-                                        // ActivePanelSrv.showActivePanelDrv('calls');
-                                        // ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
                                     }
-                                    // ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.ACTIVE.enum);
                                     break;
                                 case CallsStatusEnum.ENDED_CALL.enum:
                                     $log.debug('call ended');
-                                    // ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.INACTIVE.enum);
                                     // disconnect other user from call
                                     getCallsSrv().disconnectCall();
                                     break;
@@ -931,8 +911,9 @@
                 CallsEventsSrv.updateScopeData = updateScopeData;
 
                 CallsEventsSrv.registerToCurrUserCallStateChanges = function (cb) {
-                    registeredCbToCurrUserCallStateChange.push(cb);
-                    cb(currUserCallState);
+                    if (angular.isFunction(cb)) {
+                        registeredCbToCurrUserCallStateChange.push(cb);
+                    }
                 };
 
                 return CallsEventsSrv;

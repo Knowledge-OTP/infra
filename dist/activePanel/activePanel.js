@@ -215,7 +215,7 @@
     'use strict';
 
     angular.module('znk.infra.activePanel').service('ActivePanelSrv',
-        ["$log", "$document", "$compile", "$rootScope", function ($log, $document, $compile, $rootScope) {
+        ["$document", "$compile", "$rootScope", function ($document, $compile, $rootScope) {
             'ngInject';
 
             var self = this;
