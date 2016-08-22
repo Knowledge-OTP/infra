@@ -61,7 +61,7 @@
 (function (angular) {
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "CallsEventsSrv", "CallsStatusEnum", "ScreenSharingSrv", "UserScreenSharingStateEnum", "UserProfileService", "PresenceService", "ENV", function ($q,
+        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "CallsEventsSrv", "CallsStatusEnum", "ScreenSharingSrv", "UserScreenSharingStateEnum", "UserProfileService", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", function ($q,
                                             $interval,
                                             $filter,
                                             $log,
@@ -72,13 +72,14 @@
                                             UserScreenSharingStateEnum,
                                             UserProfileService,
                                             PresenceService,
+                                            StudentContextSrv,
+                                            TeacherContextSrv,
                                             ENV) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
                 link: function(scope, element) {
                     var receiverId,
-                        // currentUserUID,
                         isOffline,
                         isTeacher,
                         callDuration = 0,
@@ -91,17 +92,19 @@
 
                     if (ENV.appContext.toLowerCase() === 'dashboard') {
                         isTeacher = true;
+                        receiverId = StudentContextSrv.getCurrUid();
                     } else if (ENV.appContext.toLowerCase() === 'student') {
                         isTeacher = false;
+                        receiverId = TeacherContextSrv.getCurrUid();
                     }
 
                     var promsArr = [
-                        // PresenceService.getCurrentUserStatus(receiverId),
+                        PresenceService.getCurrentUserStatus(receiverId),
                         CallsUiSrv.getCalleeName()
                     ];
 
                     $q.all([promsArr], function(res){
-                        // isOffline = res[0] !== PresenceService.userStatus.ONLINE;
+                        isOffline = res[0] !== PresenceService.userStatus.ONLINE;
                         calleeName = (res[0]) ? (res[0]) : '';
                     });
 
@@ -136,13 +139,6 @@
                             ScreenSharingSrv.shareMyScreen(userData);
                         }
                     };
-
-                    // scope.d.currStatus = scope.d.states.NONE;
-
-                    // UserProfileService.getCurrUserId().then(function (currUid) {
-                    //     currentUserUID = currUid;
-                    //     console.log(currUid);
-                    // });
 
                     var actions = {
                         hideUI: function () {
@@ -312,9 +308,9 @@
                     // Listen to status changes in Calls
                     var listenToCallsStatus = function (callsData) {
                         if (callsData) {
-                            if (!receiverId) {
-                                receiverId = callsData.receiverId;
-                            }
+                            // if (!receiverId) {
+                            //     receiverId = callsData.receiverId;
+                            // }
                             if (callsData.status === CallsStatusEnum.ACTIVE_CALL.enum) {
                                 callStatus = scope.d.states.CALL_ACTIVE;
                             } else {
@@ -330,11 +326,11 @@
                             if (screenSharingStatus !== UserScreenSharingStateEnum.NONE.enum) {
                                 screenShareStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
                                 screenShareIsViewer = (screenSharingStatus === UserScreenSharingStateEnum.VIEWER.enum);
-                                ScreenSharingSrv.getActiveScreenSharingData().then(function(activeScreenShareData){
-                                    if (!receiverId && activeScreenShareData) {
-                                        receiverId = (screenShareIsViewer) ? activeScreenShareData.viewerId : activeScreenShareData.sharerId;
-                                    }
-                                });
+                                // ScreenSharingSrv.getActiveScreenSharingData().then(function(activeScreenShareData){
+                                //     if (!receiverId && activeScreenShareData) {
+                                //         receiverId = (screenShareIsViewer) ? activeScreenShareData.viewerId : activeScreenShareData.sharerId;
+                                //     }
+                                // });
                             } else {
                                 screenShareStatus = 0;
                             }
