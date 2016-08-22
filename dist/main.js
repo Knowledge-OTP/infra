@@ -75,7 +75,8 @@
                         screenShareStatus = 0,
                         callStatus = 0,
                         screenShareIsViewer,
-                        timerSecondInterval = 1000;
+                        timerSecondInterval = 1000,
+                        currentUserPresenceStatus;
 
                     var listenToStudentOrTeacherContextChange = function (prevUid, uid) {
                         receiverId = uid;
@@ -84,7 +85,8 @@
                             CallsUiSrv.getCalleeName(receiverId, uid)
                         ];
                         $q.all(promsArr).then(function (res) {
-                            isOffline = res[0] === PresenceService.userStatus.OFFLINE;
+                            currentUserPresenceStatus = res[0];
+                            isOffline = currentUserPresenceStatus === PresenceService.userStatus.OFFLINE;
                             scope.d.calleeName = (res[1]) ? (res[1]) : '';
                             scope.d.callBtnModel = {
                                 isOffline: isOffline,
@@ -290,12 +292,12 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "<div class=\"active-panel ng-hide\" ng-show=\"d.currStatus !== d.states.NONE\">\n" +
     "    <div class=\"flex-container\">\n" +
     "        <div class=\"callee-status flex-col\">\n" +
-    "            <div class=\"online-indicator\">\n" +
-    "                 <!--ng-class=\"{-->\n" +
-    "                    <!--'offline': vm.student.presence==vm.userStatus.OFFLINE,-->\n" +
-    "                    <!--'online': vm.student.presence==vm.userStatus.ONLINE,-->\n" +
-    "                    <!--'idle': vm.student.presence==vm.userStatus.IDLE-->\n" +
-    "                 <!--}\">-->\n" +
+    "            <div class=\"online-indicator\"\n" +
+    "                 ng-class=\"{\n" +
+    "                    'offline': vm.student.presence == vm.userStatus.OFFLINE,\n" +
+    "                    'online': vm.student.presence == vm.userStatus.ONLINE,\n" +
+    "                    'idle': vm.student.presence== vm.userStatus.IDLE\n" +
+    "                 }\">\n" +
     "            </div>\n" +
     "        </div>\n" +
     "        <div class=\"callee-name flex-col\">\n" +
