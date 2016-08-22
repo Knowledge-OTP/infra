@@ -134,11 +134,13 @@
                                 $log.debug('states.NONE');
                                 actions.stopTimer();
                                 actions.screenShareMode(false);
+                                scope.d.shareScreenBtnsEnable = true;
                                 break;
                             case scope.d.states.CALL_ACTIVE :
                                 actions.startTimer();
                                 // call btn in hangup mode
                                 // callBtnMode('hangup');
+                                scope.d.shareScreenBtnsEnable = true;
                                 actions.screenShareMode(false);
                                 $log.debug('states.CALL_ACTIVE');
                                 break;

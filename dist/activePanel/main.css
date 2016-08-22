@@ -342,7 +342,9 @@ active-panel .active-panel {
     -ms-flex-preferred-size: 50%;
         flex-basis: 50%; }
     active-panel .active-panel .flex-col.call-controls .show-other-screen.disabled,
-    active-panel .active-panel .flex-col.call-controls svg-icon.share-my-screen.disabled {
+    active-panel .active-panel .flex-col.call-controls .show-other-screen.disabled svg-icon,
+    active-panel .active-panel .flex-col.call-controls svg-icon.share-my-screen.disabled,
+    active-panel .active-panel .flex-col.call-controls svg-icon.share-my-screen.disabled svg-icon {
       background: red; }
     active-panel .active-panel .flex-col.call-controls svg-icon.share-my-screen {
       float: left;

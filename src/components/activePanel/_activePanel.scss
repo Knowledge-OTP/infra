@@ -68,7 +68,8 @@ active-panel {
                 flex-basis: 50%;
                 .show-other-screen,
                 svg-icon.share-my-screen {
-                    &.disabled {
+                    &.disabled,
+                    &.disabled svg-icon {
                         background: red;
                     }
                 }
