@@ -8,7 +8,7 @@
             var self = this;
 
             self.init = function() {
-                var body = angular.element(document).find('body');
+                var body = angular.element($document).find('body');
 
                 var canvasContainerElement = angular.element(
                     '<active-panel></active-panel>'
