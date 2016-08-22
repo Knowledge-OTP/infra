@@ -7,8 +7,10 @@ active-panel {
     &.screen-share-mode {
         .active-panel {
             background-color: $bgColor26;
-            .callee-name {
-                color: $bgColor6;
+            .flex-col {
+                .callee-name {
+                    color: $bgColor6;
+                }
             }
         }
     }
