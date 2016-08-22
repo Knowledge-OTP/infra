@@ -290,7 +290,7 @@ active-panel.visible .active-panel {
 
 active-panel.screen-share-mode .active-panel {
   background-color: #464646; }
-  active-panel.screen-share-mode .active-panel .flex-col .callee-name {
+  active-panel.screen-share-mode .active-panel .flex-col.callee-name {
     color: #fff; }
 
 active-panel .active-panel {

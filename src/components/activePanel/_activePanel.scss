@@ -8,7 +8,7 @@ active-panel {
         .active-panel {
             background-color: $bgColor26;
             .flex-col {
-                .callee-name {
+                &.callee-name {
                     color: $bgColor6;
                 }
             }
