@@ -147,17 +147,13 @@
                                 break;
                             case scope.d.states.CALL_ACTIVE :
                                 actions.startTimer();
-                                // call btn in hangup mode
-                                // callBtnMode('hangup');
                                 scope.d.shareScreenBtnsEnable = true;
                                 actions.screenShareMode(false);
                                 $log.debug('states.CALL_ACTIVE');
                                 break;
                             case scope.d.states.SCREEN_SHARE_ACTIVE :
-                                // screenShare buttons are disabled
                                 actions.screenShareMode(true);
                                 scope.d.shareScreenBtnsEnable = false;
-                                //screenShareBtnsMode('disabled');
                                 $log.debug('states.SCREEN_SHARE_ACTIVE');
                                 break;
                             case scope.d.states.BOTH_ACTIVE :
