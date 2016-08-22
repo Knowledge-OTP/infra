@@ -1,12 +1,12 @@
 <div class="active-panel ng-hide" ng-show="d.currStatus !== d.states.NONE">
     <div class="flex-container">
         <div class="callee-status flex-col">
-            <div class="online-indicator">
-                 <!--ng-class="{-->
-                    <!--'offline': vm.student.presence==vm.userStatus.OFFLINE,-->
-                    <!--'online': vm.student.presence==vm.userStatus.ONLINE,-->
-                    <!--'idle': vm.student.presence==vm.userStatus.IDLE-->
-                 <!--}">-->
+            <div class="online-indicator"
+                 ng-class="{
+                    'offline': vm.student.presence == vm.userStatus.OFFLINE,
+                    'online': vm.student.presence == vm.userStatus.ONLINE,
+                    'idle': vm.student.presence== vm.userStatus.IDLE
+                 }">
             </div>
         </div>
         <div class="callee-name flex-col">

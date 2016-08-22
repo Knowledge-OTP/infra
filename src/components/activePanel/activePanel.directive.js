@@ -17,7 +17,8 @@
                         screenShareStatus = 0,
                         callStatus = 0,
                         screenShareIsViewer,
-                        timerSecondInterval = 1000;
+                        timerSecondInterval = 1000,
+                        currentUserPresenceStatus;
 
                     var listenToStudentOrTeacherContextChange = function (prevUid, uid) {
                         receiverId = uid;
@@ -26,7 +27,8 @@
                             CallsUiSrv.getCalleeName(receiverId, uid)
                         ];
                         $q.all(promsArr).then(function (res) {
-                            isOffline = res[0] === PresenceService.userStatus.OFFLINE;
+                            currentUserPresenceStatus = res[0];
+                            isOffline = currentUserPresenceStatus === PresenceService.userStatus.OFFLINE;
                             scope.d.calleeName = (res[1]) ? (res[1]) : '';
                             scope.d.callBtnModel = {
                                 isOffline: isOffline,
