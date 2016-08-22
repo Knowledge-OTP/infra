@@ -44,7 +44,7 @@
                         receiverId = uid;
                         var promsArr = [
                             PresenceService.getCurrentUserStatus(receiverId),
-                            CallsUiSrv.getCalleeName()
+                            CallsUiSrv.getCalleeName(receiverId, uid)
                         ];
                         $q.all(promsArr).then(function (res) {
                             isOffline = res[0] === PresenceService.userStatus.OFFLINE;
