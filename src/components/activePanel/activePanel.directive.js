@@ -3,20 +3,7 @@
 (function (angular) {
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', function ($q,
-                                            $interval,
-                                            $filter,
-                                            $log,
-                                            CallsUiSrv,
-                                            CallsEventsSrv,
-                                            CallsStatusEnum,
-                                            ScreenSharingSrv,
-                                            UserScreenSharingStateEnum,
-                                            UserProfileService,
-                                            PresenceService,
-                                            StudentContextSrv,
-                                            TeacherContextSrv,
-                                            ENV) {
+        .directive('activePanel', function ($q, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum, UserProfileService, PresenceService, StudentContextSrv, TeacherContextSrv, ENV) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
@@ -29,7 +16,8 @@
                         timerInterval,
                         screenShareStatus = 0,
                         callStatus = 0,
-                        screenShareIsViewer;
+                        screenShareIsViewer,
+                        timerSecondInterval = 1000;
 
                     var listenToStudentOrTeacherContextChange = function (prevUid, uid) {
                         receiverId = uid;
@@ -56,6 +44,8 @@
                     } else if (ENV.appContext.toLowerCase() === 'student') {
                         isTeacher = false;
                         TeacherContextSrv.registerToTeacherContextChange(listenToStudentOrTeacherContextChange);
+                    } else {
+                        $log.error('appContext is not compatible with this component: ', ENV.appContext);
                     }
 
                     scope.d = {
@@ -100,7 +90,7 @@
                                 return;
                             }
                             timerInterval = $interval(function () {
-                                callDuration += 1000;
+                                callDuration += timerSecondInterval;
                                 durationToDisplay = $filter('formatDuration')(callDuration / 1000, 'hh:MM:SS', true);
                                 angular.element(element[0].querySelector('.call-duration')).text(durationToDisplay);
                             }, 1000, 0, false);
@@ -116,12 +106,6 @@
                                 element.removeClass('screen-share-mode');
                                 $log.debug('screenShareMode remove');
                             }
-                        },
-                        callBtnMode: function () {
-                            $log.debug('callBtnMode');
-                        },
-                        screenShareBtnsMode: function () {
-                            $log.debug('screenShareBtnsMode');
                         }
                     };
 
