@@ -311,7 +311,7 @@
 
             var self = this;
 
-            function _init() {
+            self.init = function() {
                 var body = angular.element(document).find('body');
 
                 var canvasContainerElement = angular.element(
@@ -322,9 +322,7 @@
 
                 body.append(canvasContainerElement);
                 $compile(canvasContainerElement)(self.scope);
-            }
-
-            _init();
+            };
         }]);
 })(angular);
 
