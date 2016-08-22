@@ -18,8 +18,10 @@
                  class="show-other-screen"
                  disable-click-drv="d.shareScreenBtnsEnable"
                  ng-class="{disabled: !d.shareScreenBtnsEnable}">
-                <svg-icon ng-if="d.isTeacher" name="active-panel-track-student-icon"></svg-icon>
-                <svg-icon ng-if="!d.isTeacher" name="active-panel-track-teacher-icon"></svg-icon>
+                <ng-switch on="d.isTeacher">
+                    <svg-icon ng-switch-when="true" name="active-panel-track-student-icon"></svg-icon>
+                    <svg-icon ng-switch-default name="active-panel-track-teacher-icon"></svg-icon>
+                </ng-switch>
             </div>
 
             <svg-icon disable-click-drv="d.shareScreenBtnsEnable"

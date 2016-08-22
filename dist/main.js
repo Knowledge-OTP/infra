@@ -309,8 +309,10 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "                 class=\"show-other-screen\"\n" +
     "                 disable-click-drv=\"d.shareScreenBtnsEnable\"\n" +
     "                 ng-class=\"{disabled: !d.shareScreenBtnsEnable}\">\n" +
-    "                <svg-icon ng-if=\"d.isTeacher\" name=\"active-panel-track-student-icon\"></svg-icon>\n" +
-    "                <svg-icon ng-if=\"!d.isTeacher\" name=\"active-panel-track-teacher-icon\"></svg-icon>\n" +
+    "                <ng-switch on=\"d.isTeacher\">\n" +
+    "                    <svg-icon ng-switch-when=\"true\" name=\"active-panel-track-student-icon\"></svg-icon>\n" +
+    "                    <svg-icon ng-switch-default name=\"active-panel-track-teacher-icon\"></svg-icon>\n" +
+    "                </ng-switch>\n" +
     "            </div>\n" +
     "\n" +
     "            <svg-icon disable-click-drv=\"d.shareScreenBtnsEnable\"\n" +
