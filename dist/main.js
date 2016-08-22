@@ -323,12 +323,18 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "        <div class=\"call-controls flex-col\">\n" +
     "            <div ng-click=\"d.viewOtherUserScreen()\"\n" +
     "                 class=\"show-other-screen\"\n" +
-    "                 disable-click-drv=\"d.shareScreenBtnsEnable\">\n" +
+    "                 disable-click-drv=\"d.shareScreenBtnsEnable\"\n" +
+    "                 ng-class=\"{disabled: !d.shareScreenBtnsEnable}\">\n" +
     "                <svg-icon ng-if=\"d.isTeacher\" name=\"active-panel-track-student-icon\"></svg-icon>\n" +
     "                <svg-icon ng-if=\"!d.isTeacher\" name=\"active-panel-track-teacher-icon\"></svg-icon>\n" +
     "            </div>\n" +
     "\n" +
-    "            <svg-icon disable-click-drv=\"d.shareScreenBtnsEnable\" ng-click=\"d.shareMyScreen()\" name=\"active-panel-share-screen-icon\" class=\"share-my-screen\"></svg-icon>\n" +
+    "            <svg-icon disable-click-drv=\"d.shareScreenBtnsEnable\"\n" +
+    "                      ng-class=\"{disabled: !d.shareScreenBtnsEnable}\"\n" +
+    "                      ng-click=\"d.shareMyScreen()\"\n" +
+    "                      name=\"active-panel-share-screen-icon\"\n" +
+    "                      class=\"share-my-screen\">\n" +
+    "            </svg-icon>\n" +
     "\n" +
     "            <call-btn ng-model=\"d.callBtnModel\"></call-btn>\n" +
     "        </div>\n" +

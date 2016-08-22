@@ -66,6 +66,12 @@ active-panel {
             }
             &.call-controls {
                 flex-basis: 50%;
+                .show-other-screen,
+                svg-icon.share-my-screen {
+                    &.disabled {
+                        background: red;
+                    }
+                }
                 svg-icon.share-my-screen {
                     float:left;
                     cursor: pointer;
