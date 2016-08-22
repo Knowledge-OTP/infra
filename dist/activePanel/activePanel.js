@@ -43,6 +43,20 @@
 
                     var listenToStudentOrTeacherContextChange = function (prevUid, uid) {
                         receiverId = uid;
+                        var promsArr = [
+                            PresenceService.getCurrentUserStatus(receiverId),
+                            CallsUiSrv.getCalleeName()
+                        ];
+                        $q.all(promsArr).then(function (res) {
+                            isOffline = res[0] === PresenceService.userStatus.OFFLINE;
+                            calleeName = (res[1]) ? (res[1]) : '';
+                            scope.d.callBtnModel = {
+                                isOffline: isOffline,
+                                receiverId: uid
+                            };
+                        }).catch(function (err) {
+                            $log.debug('error caught at listenToStudentOrTeacherContextChange', err);
+                        });
                         $log.debug('student or teacher context changed: ', receiverId);
                     };
 
@@ -53,16 +67,6 @@
                         isTeacher = false;
                         TeacherContextSrv.registerToTeacherContextChange(listenToStudentOrTeacherContextChange);
                     }
-
-                    var promsArr = [
-                        PresenceService.getCurrentUserStatus(receiverId),
-                        CallsUiSrv.getCalleeName()
-                    ];
-
-                    $q.all([promsArr], function(res){
-                        isOffline = res[0] !== PresenceService.userStatus.ONLINE;
-                        calleeName = (res[0]) ? (res[0]) : '';
-                    });
 
                     scope.d = {
                         states: {
@@ -230,6 +234,7 @@
                                 actions.startTimer();
                                 // call btn in hangup mode
                                 // callBtnMode('hangup');
+                                actions.screenShareMode(false);
                                 $log.debug('states.CALL_ACTIVE');
                                 break;
                             case scope.d.states.SCREEN_SHARE_ACTIVE :
