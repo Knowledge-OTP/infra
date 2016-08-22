@@ -85,7 +85,6 @@
                         callDuration = 0,
                         durationToDisplay,
                         timerInterval,
-                        calleeName,
                         screenShareStatus = 0,
                         callStatus = 0,
                         screenShareIsViewer;
@@ -98,7 +97,7 @@
                         ];
                         $q.all(promsArr).then(function (res) {
                             isOffline = res[0] === PresenceService.userStatus.OFFLINE;
-                            calleeName = (res[1]) ? (res[1]) : '';
+                            scope.d.calleeName = (res[1]) ? (res[1]) : '';
                             scope.d.callBtnModel = {
                                 isOffline: isOffline,
                                 receiverId: uid
@@ -124,12 +123,7 @@
                             SCREEN_SHARE_ACTIVE: 10,
                             BOTH_ACTIVE: 11
                         },
-                        callBtnModel: {
-                            isOffline: isOffline,
-                            receiverId: receiverId
-                        },
                         showShareScreenBtns: true,
-                        calleeName: calleeName,
                         isTeacher: isTeacher,
                         viewOtherUserScreen: function () {
                             var userData = {
