@@ -15,13 +15,13 @@
         </div>
         <div class="call-controls flex-col">
             <div ng-click="d.viewOtherUserScreen()"
-                 ng-show="d.shareScreenBtnsEnable"
-                 class="show-other-screen">
+                 class="show-other-screen"
+                 disable-click-drv="d.shareScreenBtnsEnable">
                 <svg-icon ng-if="d.isTeacher" name="active-panel-track-student-icon"></svg-icon>
                 <svg-icon ng-if="!d.isTeacher" name="active-panel-track-teacher-icon"></svg-icon>
             </div>
 
-            <svg-icon disable-click-drv="false" ng-click="d.shareMyScreen()" name="active-panel-share-screen-icon" class="share-my-screen"></svg-icon>
+            <svg-icon disable-click-drv="d.shareScreenBtnsEnable" ng-click="d.shareMyScreen()" name="active-panel-share-screen-icon" class="share-my-screen"></svg-icon>
 
             <call-btn ng-model="d.callBtnModel"></call-btn>
         </div>
