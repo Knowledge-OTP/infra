@@ -70,7 +70,9 @@ active-panel {
                 svg-icon.share-my-screen {
                     &.disabled,
                     &.disabled svg-icon {
-                        background: red;
+                        opacity: 0.5;
+                        cursor: default;
+                        transition: 1.5s;
                     }
                 }
                 svg-icon.share-my-screen {

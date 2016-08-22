@@ -345,7 +345,9 @@ active-panel .active-panel {
     active-panel .active-panel .flex-col.call-controls .show-other-screen.disabled svg-icon,
     active-panel .active-panel .flex-col.call-controls svg-icon.share-my-screen.disabled,
     active-panel .active-panel .flex-col.call-controls svg-icon.share-my-screen.disabled svg-icon {
-      background: red; }
+      opacity: 0.5;
+      cursor: default;
+      transition: 1.5s; }
     active-panel .active-panel .flex-col.call-controls svg-icon.share-my-screen {
       float: left;
       cursor: pointer;
