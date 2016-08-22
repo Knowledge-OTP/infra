@@ -1128,10 +1128,15 @@
 
             function _isUserInActiveCall() {
                 return CallsDataGetterSrv.getCurrUserCallsData().then(function(callsDataMap){
+                    var activeCallsDataArr = [];
                     var isInActiveCall = false;
-                    var userCallData = callsDataMap[Object.keys(callsDataMap)[0]];
-                    if (userCallData && userCallData.status && (userCallData.status === CallsStatusEnum.PENDING_CALL.enum ||
-                        userCallData.status === CallsStatusEnum.ACTIVE_CALL.enum)) {
+                    angular.forEach(callsDataMap, function(callData) {
+                        if(callData.status && (callData.status === CallsStatusEnum.PENDING_CALL.enum ||
+                            callData.status === CallsStatusEnum.ACTIVE_CALL.enum)) {
+                            activeCallsDataArr.push(callData);
+                        }
+                    });
+                    if (activeCallsDataArr.length > 0) {
                         isInActiveCall = true;
                     }
                     return isInActiveCall;

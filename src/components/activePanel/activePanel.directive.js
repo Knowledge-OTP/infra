@@ -32,15 +32,8 @@
                         screenShareIsViewer;
 
                     if (ENV.appContext.toLowerCase() === 'dashboard') {
-                        // var onStudentContextChange = function(prevUid, uid) {
-                        //     debugger;
-                        // };
-                        //
-                        // StudentContextSrv.registerToStudentContextChange(onStudentContextChange);
-                        // var receiverUid = StudentContextSrv.getCurrUid();
                         isTeacher = true;
                     } else if (ENV.appContext.toLowerCase() === 'student') {
-
                         isTeacher = false;
                     }
 
