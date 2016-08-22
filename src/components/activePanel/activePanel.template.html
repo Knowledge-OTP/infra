@@ -15,7 +15,7 @@
         </div>
         <div class="call-controls flex-col">
             <div ng-click="d.viewOtherUserScreen()"
-                 ng-show="d.showShareScreenBtns"
+                 ng-show="d.shareScreenBtnsEnable"
                  class="show-other-screen">
                 <svg-icon ng-if="d.isTeacher" name="active-panel-track-student-icon"></svg-icon>
                 <svg-icon ng-if="!d.isTeacher" name="active-panel-track-teacher-icon"></svg-icon>
