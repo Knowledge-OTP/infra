@@ -41,12 +41,19 @@
                         callStatus = 0,
                         screenShareIsViewer;
 
+                    var listenToStudentOrTeacherContextChange = function (prevUid, uid) {
+                        receiverId = uid;
+                        $log.debug('student or teacher context changed: ', receiverId);
+                    };
+
                     if (ENV.appContext.toLowerCase() === 'dashboard') {
                         isTeacher = true;
-                        receiverId = StudentContextSrv.getCurrUid();
+                        // receiverId = StudentContextSrv.getCurrUid();
+                        StudentContextSrv.registerToStudentContextChange(listenToStudentOrTeacherContextChange);
                     } else if (ENV.appContext.toLowerCase() === 'student') {
                         isTeacher = false;
-                        receiverId = TeacherContextSrv.getCurrUid();
+                        // receiverId = TeacherContextSrv.getCurrUid();
+                        TeacherContextSrv.registerToTeacherContextChange(listenToStudentOrTeacherContextChange);
                     }
 
                     var promsArr = [

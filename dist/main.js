@@ -90,12 +90,19 @@
                         callStatus = 0,
                         screenShareIsViewer;
 
+                    var listenToStudentOrTeacherContextChange = function (prevUid, uid) {
+                        receiverId = uid;
+                        $log.debug('student or teacher context changed: ', receiverId);
+                    };
+
                     if (ENV.appContext.toLowerCase() === 'dashboard') {
                         isTeacher = true;
-                        receiverId = StudentContextSrv.getCurrUid();
+                        // receiverId = StudentContextSrv.getCurrUid();
+                        StudentContextSrv.registerToStudentContextChange(listenToStudentOrTeacherContextChange);
                     } else if (ENV.appContext.toLowerCase() === 'student') {
                         isTeacher = false;
-                        receiverId = TeacherContextSrv.getCurrUid();
+                        // receiverId = TeacherContextSrv.getCurrUid();
+                        TeacherContextSrv.registerToTeacherContextChange(listenToStudentOrTeacherContextChange);
                     }
 
                     var promsArr = [
@@ -8694,6 +8701,7 @@ angular.module('znk.infra.user').run(['$templateCache', function($templateCache)
 
             var _storageTeacherUidKey = 'currentTeacherUid';
             var _currentTeacherUid = '';
+            var registeredCbsToTeacherContextChangeEvent = [];
 
             TeacherContextSrv.getCurrUid = function () {
                 if (_currentTeacherUid.length === 0) {
@@ -8713,12 +8721,29 @@ angular.module('znk.infra.user').run(['$templateCache', function($templateCache)
             };
 
             TeacherContextSrv.setCurrentUid = function (uid) {
+                var prevUid = _currentTeacherUid;
                 _currentTeacherUid = uid;
 
                 if ($window.sessionStorage) {
                     $window.sessionStorage.setItem(_storageTeacherUidKey, uid);
                 }
+
+                _invokeCbs(registeredCbsToTeacherContextChangeEvent, [prevUid, uid]);
             };
+
+            TeacherContextSrv.registerToTeacherContextChange = function(cb) {
+                if (!angular.isFunction(cb)) {
+                    $log.error('TeacherContextSrv.registerToTeacherContextChange: cb is not a function', cb);
+                    return;
+                }
+                registeredCbsToTeacherContextChangeEvent.push(cb);
+            };
+
+            function _invokeCbs(cbArr, args){
+                cbArr.forEach(function(cb){
+                    cb.apply(null, args);
+                });
+            }
 
             return TeacherContextSrv;
         }
