@@ -39,11 +39,9 @@
 
                     if (ENV.appContext.toLowerCase() === 'dashboard') {
                         isTeacher = true;
-                        // receiverId = StudentContextSrv.getCurrUid();
                         StudentContextSrv.registerToStudentContextChange(listenToStudentOrTeacherContextChange);
                     } else if (ENV.appContext.toLowerCase() === 'student') {
                         isTeacher = false;
-                        // receiverId = TeacherContextSrv.getCurrUid();
                         TeacherContextSrv.registerToTeacherContextChange(listenToStudentOrTeacherContextChange);
                     }
 
@@ -110,7 +108,6 @@
                             }, 1000, 0, false);
                         },
                         stopTimer: function () {
-                            // $interval.cancel(timerInterval);
                             destroyTimer();
                         },
                         screenShareMode: function (isScreenShareMode) {
@@ -217,7 +214,6 @@
                         switch (scope.d.currStatus) {
                             case scope.d.states.NONE :
                                 $log.debug('states.NONE');
-                                receiverId = null;
                                 actions.stopTimer();
                                 actions.screenShareMode(false);
                                 break;
@@ -257,9 +253,6 @@
                     // Listen to status changes in Calls
                     var listenToCallsStatus = function (callsData) {
                         if (callsData) {
-                            // if (!receiverId) {
-                            //     receiverId = callsData.receiverId;
-                            // }
                             if (callsData.status === CallsStatusEnum.ACTIVE_CALL.enum) {
                                 callStatus = scope.d.states.CALL_ACTIVE;
                             } else {
@@ -275,11 +268,6 @@
                             if (screenSharingStatus !== UserScreenSharingStateEnum.NONE.enum) {
                                 screenShareStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
                                 screenShareIsViewer = (screenSharingStatus === UserScreenSharingStateEnum.VIEWER.enum);
-                                // ScreenSharingSrv.getActiveScreenSharingData().then(function(activeScreenShareData){
-                                //     if (!receiverId && activeScreenShareData) {
-                                //         receiverId = (screenShareIsViewer) ? activeScreenShareData.viewerId : activeScreenShareData.sharerId;
-                                //     }
-                                // });
                             } else {
                                 screenShareStatus = 0;
                             }
