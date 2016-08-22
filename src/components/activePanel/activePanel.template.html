@@ -3,9 +3,9 @@
         <div class="callee-status flex-col">
             <div class="online-indicator"
                  ng-class="{
-                    'offline': vm.student.presence == vm.userStatus.OFFLINE,
-                    'online': vm.student.presence == vm.userStatus.ONLINE,
-                    'idle': vm.student.presence== vm.userStatus.IDLE
+                    'offline': vm.student.presence == d.presenceStatusMap.OFFLINE,
+                    'online': vm.student.presence == d.presenceStatusMap.ONLINE,
+                    'idle': vm.student.presence== d.presenceStatusMap.IDLE
                  }">
             </div>
         </div>
