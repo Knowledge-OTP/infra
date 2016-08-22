@@ -294,9 +294,9 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "        <div class=\"callee-status flex-col\">\n" +
     "            <div class=\"online-indicator\"\n" +
     "                 ng-class=\"{\n" +
-    "                    'offline': vm.student.presence == d.presenceStatusMap.OFFLINE,\n" +
-    "                    'online': vm.student.presence == d.presenceStatusMap.ONLINE,\n" +
-    "                    'idle': vm.student.presence== d.presenceStatusMap.IDLE\n" +
+    "                    'offline': d.currentUserPresenceStatus === d.presenceStatusMap.OFFLINE,\n" +
+    "                    'online': d.currentUserPresenceStatus === d.presenceStatusMap.ONLINE,\n" +
+    "                    'idle': d.currentUserPresenceStatus === d.presenceStatusMap.IDLE\n" +
     "                 }\">\n" +
     "            </div>\n" +
     "        </div>\n" +
