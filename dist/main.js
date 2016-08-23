@@ -4109,10 +4109,10 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 return MODULE_RESULTS_PATH + '/' + guid;
             }
 
-            function _getInitExerciseResult(exerciseTypeId, exerciseId, guid){
+            function _getInitExerciseResult(exerciseTypeId, exerciseId, guid) {
 
                 var userProm = InfraConfigSrv.getUserData();
-                return userProm.then(function(user) {
+                return userProm.then(function (user) {
                     return {
                         exerciseId: exerciseId,
                         exerciseTypeId: exerciseTypeId,
@@ -4126,13 +4126,13 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
             function _getExerciseResultByGuid(guid) {
                 var exerciseResultPath = _getExerciseResultPath(guid);
-                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                     return StudentStorageSrv.get(exerciseResultPath);
                 });
             }
 
             function _getExerciseResultsGuids() {
-                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                     return StudentStorageSrv.get(USER_EXERCISE_RESULTS_PATH);
                 });
             }
@@ -4141,16 +4141,16 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 return EXAM_RESULTS_PATH + '/' + guid;
             }
 
-            function _getExamResultByGuid(guid,examId) {
-                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+            function _getExamResultByGuid(guid, examId) {
+                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                     var path = _getExamResultPath(guid);
-                    return StudentStorageSrv.get(path).then(function(examResult){
+                    return StudentStorageSrv.get(path).then(function (examResult) {
                         var initResultProm = _getInitExamResult(examId, guid);
-                        return initResultProm.then(function(initResult) {
-                            if(examResult.guid !== guid){
-                                angular.extend(examResult,initResult);
-                            }else{
-                                UtilitySrv.object.extendWithoutOverride(examResult,initResult);
+                        return initResultProm.then(function (initResult) {
+                            if (examResult.guid !== guid) {
+                                angular.extend(examResult, initResult);
+                            } else {
+                                UtilitySrv.object.extendWithoutOverride(examResult, initResult);
                             }
                             return examResult;
                         });
@@ -4158,30 +4158,30 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 });
             }
 
-            function _getInitExamResult(examId, guid){
+            function _getInitExamResult(examId, guid) {
                 var userProm = InfraConfigSrv.getUserData();
-                return userProm.then(function(user) {
+                return userProm.then(function (user) {
                     return {
                         isComplete: false,
                         startedTime: Date.now(),
                         examId: examId,
                         guid: guid,
                         uid: user.uid,
-                        sectionResults:{}
+                        sectionResults: {}
                     };
                 });
             }
 
-            function _getExamResultsGuids(){
-                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+            function _getExamResultsGuids() {
+                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                     return StudentStorageSrv.get(USER_EXAM_RESULTS_PATH);
                 });
             }
 
             function _calcExerciseResultFields(exerciseResultObj) {
 
-                function _getAvgTime(totalNum, totalTime){
-                    return Math.round(totalNum ? totalTime/totalNum : 0);
+                function _getAvgTime(totalNum, totalTime) {
+                    return Math.round(totalNum ? totalTime / totalNum : 0);
                 }
 
                 var countCorrect = 0,
@@ -4192,44 +4192,45 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                     skippedTotalTime = 0,
                     dataToSaveObj = {};
 
-                var totalTimeSpentOnQuestions = exerciseResultObj.questionResults.reduce(function(previousValue, currResult) {
-                    var timeSpentOnQuestion =  angular.isDefined(currResult.timeSpent) && !isNaN(currResult.timeSpent) ? currResult.timeSpent : 0;
-                    if (currResult.isAnsweredCorrectly) {
-                        countCorrect++;
-                        correctTotalTime += timeSpentOnQuestion;
-                    }else if (angular.isDefined(currResult.userAnswer)) {
-                        countWrong++;
-                        wrongTotalTime += timeSpentOnQuestion;
-                    } else {
-                        countSkipped++;
-                        skippedTotalTime += timeSpentOnQuestion;
-                    }
+                if (exerciseResultObj.questionResults) {
+                    var totalTimeSpentOnQuestions = exerciseResultObj.questionResults.reduce(function (previousValue, currResult) {
+                        var timeSpentOnQuestion = angular.isDefined(currResult.timeSpent) && !isNaN(currResult.timeSpent) ? currResult.timeSpent : 0;
+                        if (currResult.isAnsweredCorrectly) {
+                            countCorrect++;
+                            correctTotalTime += timeSpentOnQuestion;
+                        } else if (angular.isDefined(currResult.userAnswer)) {
+                            countWrong++;
+                            wrongTotalTime += timeSpentOnQuestion;
+                        } else {
+                            countSkipped++;
+                            skippedTotalTime += timeSpentOnQuestion;
+                        }
 
-                    return previousValue + (currResult.timeSpent || 0);
-                },0);
-                var questionsNum = exerciseResultObj.questionResults.length;
+                        return previousValue + (currResult.timeSpent || 0);
+                    }, 0);
+                    var questionsNum = exerciseResultObj.questionResults.length;
 
-                exerciseResultObj.totalQuestionNum = questionsNum;
-                exerciseResultObj.totalAnsweredNum = countWrong + countCorrect;
-                exerciseResultObj.correctAnswersNum = countCorrect;
-                exerciseResultObj.wrongAnswersNum = countWrong;
-                exerciseResultObj.skippedAnswersNum = countSkipped;
-                exerciseResultObj.duration = totalTimeSpentOnQuestions;
-                exerciseResultObj.correctAvgTime = _getAvgTime(countCorrect,correctTotalTime);
-                exerciseResultObj.wrongAvgTime = _getAvgTime(countWrong, wrongTotalTime);
-                exerciseResultObj.skippedAvgTime = _getAvgTime(countSkipped, skippedTotalTime);
-
-                if (exerciseResultObj.isComplete && angular.isUndefined(exerciseResultObj.endedTime)){
-                    exerciseResultObj.endedTime = Date.now();
+                    exerciseResultObj.totalQuestionNum = questionsNum;
+                    exerciseResultObj.totalAnsweredNum = countWrong + countCorrect;
+                    exerciseResultObj.correctAnswersNum = countCorrect;
+                    exerciseResultObj.wrongAnswersNum = countWrong;
+                    exerciseResultObj.skippedAnswersNum = countSkipped;
+                    exerciseResultObj.duration = totalTimeSpentOnQuestions;
+                    exerciseResultObj.correctAvgTime = _getAvgTime(countCorrect, correctTotalTime);
+                    exerciseResultObj.wrongAvgTime = _getAvgTime(countWrong, wrongTotalTime);
+                    exerciseResultObj.skippedAvgTime = _getAvgTime(countSkipped, skippedTotalTime);
+                    exerciseResultObj.avgTimePerQuestion = questionsNum ? Math.round(totalTimeSpentOnQuestions / questionsNum) : 0;
                 }
 
-                exerciseResultObj.avgTimePerQuestion = questionsNum ? Math.round(totalTimeSpentOnQuestions / questionsNum) : 0;
+                if (exerciseResultObj.isComplete && angular.isUndefined(exerciseResultObj.endedTime)) {
+                    exerciseResultObj.endedTime = Date.now();
+                }
 
                 var exerciseResultPath = _getExerciseResultPath(exerciseResultObj.guid);
                 dataToSaveObj[exerciseResultPath] = exerciseResultObj;
 
-                return _getExercisesStatusData().then(function(exercisesStatusData){
-                    if(!exercisesStatusData[exerciseResultObj.exerciseTypeId]){
+                return _getExercisesStatusData().then(function (exercisesStatusData) {
+                    if (!exercisesStatusData[exerciseResultObj.exerciseTypeId]) {
                         exercisesStatusData[exerciseResultObj.exerciseTypeId] = {};
                     }
 
@@ -4244,7 +4245,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 });
             }
 
-            function exerciseSaveFn(){
+            function exerciseSaveFn() {
                 /* jshint validthis: true */
                 return _calcExerciseResultFields(this).then(function (response) {
                     var exerciseResult = response.exerciseResult;
@@ -4252,13 +4253,13 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                     var exercisesStatusData = response.exercisesStatus;
 
                     var getSectionAggregatedDataProm = $q.when();
-                    if(exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
-                        getSectionAggregatedDataProm = ExerciseResultSrv.getExamResult(exerciseResult.examId).then(function(examResult) {
+                    if (exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
+                        getSectionAggregatedDataProm = ExerciseResultSrv.getExamResult(exerciseResult.examId).then(function (examResult) {
                             var sectionsAggregatedData = _getExamAggregatedSectionsData(examResult, exercisesStatusData);
 
                             examResult.duration = sectionsAggregatedData.sectionsDuration;
 
-                            if(sectionsAggregatedData.allSectionsCompleted){
+                            if (sectionsAggregatedData.allSectionsCompleted) {
                                 examResult.isComplete = true;
                                 examResult.endedTime = Date.now();
                                 var examResultPath = _getExamResultPath(examResult.guid);
@@ -4267,8 +4268,8 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                         });
                     }
 
-                    return getSectionAggregatedDataProm.then(function() {
-                        return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                    return getSectionAggregatedDataProm.then(function () {
+                        return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                             StudentStorageSrv.update(dataToSave);
                             return exerciseResult;
                         });
@@ -4287,12 +4288,12 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 var areAllExamSectionsHasResults = sectionResultsToArr.length === +examResult.examSectionsNum;
                 aggregatedData.allSectionsCompleted = areAllExamSectionsHasResults;
 
-                for(var i = 0, ii = sectionResultsToArr.length; i < ii; i++) {
+                for (var i = 0, ii = sectionResultsToArr.length; i < ii; i++) {
                     var sectionId = sectionResultsToArr[i];
-                    var sectionStatus =  sectionExercisesStatus[sectionId] || {};
+                    var sectionStatus = sectionExercisesStatus[sectionId] || {};
 
                     var isSectionComplete = sectionStatus.status === ExerciseStatusEnum.COMPLETED.enum;
-                    if(!isSectionComplete){
+                    if (!isSectionComplete) {
                         aggregatedData.allSectionsCompleted = false;
                     }
 
@@ -4302,20 +4303,20 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 return aggregatedData;
             }
 
-            function _getExercisesStatusData(){
-                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+            function _getExercisesStatusData() {
+                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                     return StudentStorageSrv.get(USER_EXERCISES_STATUS_PATH);
                 });
             }
 
-            function ExerciseStatus(status, duration){
+            function ExerciseStatus(status, duration) {
                 this.status = status;
                 this.duration = duration;
             }
 
             this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum, dontInitialize) {
 
-                if(!UtilitySrv.fn.isValidNumber(exerciseTypeId) || !UtilitySrv.fn.isValidNumber(exerciseId)){
+                if (!UtilitySrv.fn.isValidNumber(exerciseTypeId) || !UtilitySrv.fn.isValidNumber(exerciseId)) {
                     var errMSg = 'ExerciseResultSrv: exercise type id, exercise id should be number !!!';
                     $log.error(errMSg);
                     return $q.reject(errMSg);
@@ -4323,7 +4324,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 exerciseTypeId = +exerciseTypeId;
                 exerciseId = +exerciseId;
 
-                if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum && !UtilitySrv.fn.isValidNumber(examId)){
+                if (exerciseTypeId === ExerciseTypeEnum.SECTION.enum && !UtilitySrv.fn.isValidNumber(examId)) {
                     var examErrMSg = 'ExerciseResultSrv: exam id should be provided when asking for section result and should' +
                         ' be a number!!!';
                     $log.error(examErrMSg);
@@ -4332,21 +4333,21 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 examId = +examId;
 
                 var getExamResultProm;
-                if(exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
+                if (exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
                     getExamResultProm = ExerciseResultSrv.getExamResult(examId, dontInitialize);
                 }
                 return _getExerciseResultsGuids().then(function (exerciseResultsGuids) {
                     var resultGuid = exerciseResultsGuids[exerciseTypeId] && exerciseResultsGuids[exerciseTypeId][exerciseId];
                     if (!resultGuid) {
-                        if(dontInitialize){
+                        if (dontInitialize) {
                             return null;
                         }
 
-                        if(!exerciseResultsGuids[exerciseTypeId]){
+                        if (!exerciseResultsGuids[exerciseTypeId]) {
                             exerciseResultsGuids[exerciseTypeId] = {};
                         }
 
-                        return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                        return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                             var newGuid = UtilitySrv.general.createGuid();
 
                             var dataToSave = {};
@@ -4355,19 +4356,19 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                             dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
 
                             var exerciseResultPath = _getExerciseResultPath(newGuid);
-                            var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,newGuid);
-                            return initResultProm.then(function(initResult) {
+                            var initResultProm = _getInitExerciseResult(exerciseTypeId, exerciseId, newGuid);
+                            return initResultProm.then(function (initResult) {
                                 dataToSave[exerciseResultPath] = initResult;
 
                                 var setProm;
-                                if(getExamResultProm){
+                                if (getExamResultProm) {
                                     initResult.examId = examId;
-                                    setProm = getExamResultProm.then(function(examResult){
-                                        if(examSectionsNum && !examResult.examSectionsNum) {
+                                    setProm = getExamResultProm.then(function (examResult) {
+                                        if (examSectionsNum && !examResult.examSectionsNum) {
                                             examResult.examSectionsNum = examSectionsNum;
                                         }
 
-                                        if(!examResult.sectionResults){
+                                        if (!examResult.sectionResults) {
                                             examResult.sectionResults = {};
                                         }
                                         examResult.sectionResults[exerciseId] = newGuid;
@@ -4377,28 +4378,28 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                                     });
                                 }
 
-                                return $q.when(setProm).then(function(){
+                                return $q.when(setProm).then(function () {
                                     return StudentStorageSrv.update(dataToSave);
-                                }).then(function(res){
+                                }).then(function (res) {
                                     return res[exerciseResultPath];
                                 });
                             });
                         });
                     }
 
-                    return _getExerciseResultByGuid(resultGuid).then(function(result){
-                        var initResultProm = _getInitExerciseResult(exerciseTypeId,exerciseId,resultGuid);
-                        return initResultProm.then(function(initResult) {
-                            if(result.guid !== resultGuid){
-                                angular.extend(result,initResult);
-                            }else{
+                    return _getExerciseResultByGuid(resultGuid).then(function (result) {
+                        var initResultProm = _getInitExerciseResult(exerciseTypeId, exerciseId, resultGuid);
+                        return initResultProm.then(function (initResult) {
+                            if (result.guid !== resultGuid) {
+                                angular.extend(result, initResult);
+                            } else {
                                 UtilitySrv.object.extendWithoutOverride(result, initResult);
                             }
                             return result;
                         });
                     });
-                }).then(function(exerciseResult){
-                    if(angular.isObject(exerciseResult)){
+                }).then(function (exerciseResult) {
+                    if (angular.isObject(exerciseResult)) {
                         exerciseResult.$save = exerciseSaveFn;
                     }
                     return exerciseResult;
@@ -4406,18 +4407,18 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
             };
 
             this.getExamResult = function (examId, dontInitialize) {
-                if(!UtilitySrv.fn.isValidNumber(examId)){
+                if (!UtilitySrv.fn.isValidNumber(examId)) {
                     var errMsg = 'Exam id is not a number !!!';
                     $log.error(errMsg);
                     return $q.reject(errMsg);
                 }
                 examId = +examId;
 
-                return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                     return _getExamResultsGuids().then(function (examResultsGuids) {
                         var examResultGuid = examResultsGuids[examId];
                         if (!examResultGuid) {
-                            if(dontInitialize){
+                            if (dontInitialize) {
                                 return null;
                             }
 
@@ -4428,7 +4429,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
                             var examResultPath = _getExamResultPath(newExamResultGuid);
                             var initExamResultProm = _getInitExamResult(examId, newExamResultGuid);
-                            return initExamResultProm.then(function(initExamResult) {
+                            return initExamResultProm.then(function (initExamResult) {
                                 dataToSave[examResultPath] = initExamResult;
 
                                 return StudentStorageSrv.update(dataToSave).then(function (res) {
@@ -4442,16 +4443,16 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 });
             };
 
-            this.getExerciseStatus = function(exerciseType, exerciseId){
-                return _getExercisesStatusData().then(function(exercisesStatusData){
-                    if(!exercisesStatusData[exerciseType] || !exercisesStatusData[exerciseType][exerciseId]){
+            this.getExerciseStatus = function (exerciseType, exerciseId) {
+                return _getExercisesStatusData().then(function (exercisesStatusData) {
+                    if (!exercisesStatusData[exerciseType] || !exercisesStatusData[exerciseType][exerciseId]) {
                         return new ExerciseStatus(ExerciseStatusEnum.NEW.enum);
                     }
                     return exercisesStatusData[exerciseType][exerciseId];
                 });
             };
 
-            this.getExercisesStatusMap = function(){
+            this.getExercisesStatusMap = function () {
                 return _getExercisesStatusData();
             };
 
@@ -4460,12 +4461,12 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
                 return $q.all([
                     this.getExerciseResult(exerciseTypeId, exerciseId, null, null, true),
-                    _getInitExerciseResult(exerciseTypeId,exerciseId,UtilitySrv.general.createGuid())
+                    _getInitExerciseResult(exerciseTypeId, exerciseId, UtilitySrv.general.createGuid())
                 ]).then(function (results) {
                     var exerciseResult = results[0];
                     var initResults = results[1];
 
-                    if(!exerciseResult) {
+                    if (!exerciseResult) {
                         exerciseResult = initResults;
                         exerciseResult.$$path = EXERCISE_RESULTS_PATH + '/' + exerciseResult.guid;
                     }
@@ -4486,7 +4487,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                             if (!withDefaultResult) {
                                 return null;
                             } else {
-                                defaultResult =  ExerciseResultSrv.getDefaultModuleResult(moduleId, userId);
+                                defaultResult = ExerciseResultSrv.getDefaultModuleResult(moduleId, userId);
                                 moduleResultGuid = defaultResult.guid;
                             }
                         }
@@ -4496,12 +4497,12 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
                             var getExerciseResultsProm = $q.when();
 
-                            if(moduleResult.exerciseResults && withExerciseResults) {
+                            if (moduleResult.exerciseResults && withExerciseResults) {
                                 angular.forEach(moduleResult.exerciseResults, function (exerciseResult, exerciseTypeId) {
                                     angular.forEach(exerciseResult, function (exerciseResultGuid, exerciseId) {
-                                        getExerciseResultsProm = getExerciseResultsProm.then(function(){
-                                            return ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId).then(function(exerciseResults){
-                                                if(exerciseResults) {
+                                        getExerciseResultsProm = getExerciseResultsProm.then(function () {
+                                            return ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId).then(function (exerciseResults) {
+                                                if (exerciseResults) {
                                                     moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResults;
                                                 }
                                             });
@@ -4517,7 +4518,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 });
             };
 
-            this.getUserModuleResultsGuids = function (userId){
+            this.getUserModuleResultsGuids = function (userId) {
                 var userResultsPath = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
                 return InfraConfigSrv.getStudentStorage().then(function (storage) {
                     return storage.get(userResultsPath);
@@ -4540,7 +4541,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 return this.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
                     var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
                     if (userGuidLists[moduleId]) {
-                        return  ExerciseResultSrv.getModuleResult(newResult.uid, newResult.moduleId).then(function (moduleResult) {
+                        return ExerciseResultSrv.getModuleResult(newResult.uid, newResult.moduleId).then(function (moduleResult) {
                             angular.extend(moduleResult, newResult);
                             return InfraConfigSrv.getStudentStorage().then(function (storage) {
                                 return storage.set(moduleResultPath, moduleResult);
@@ -4552,7 +4553,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                     var dataToSave = {};
                     dataToSave[USER_MODULE_RESULTS_PATH] = userGuidLists;
                     dataToSave[moduleResultPath] = newResult;
-                    return InfraConfigSrv.getStudentStorage().then(function(storage){
+                    return InfraConfigSrv.getStudentStorage().then(function (storage) {
                         return storage.update(dataToSave).then(function (newResults) {
                             return newResults[moduleResultPath];
                         });
@@ -4560,14 +4561,14 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 });
             };
 
-            this.getExerciseResultByGuid = function(guid){
-                return _getExerciseResultByGuid(guid).then(function(exerciseResult){
+            this.getExerciseResultByGuid = function (guid) {
+                return _getExerciseResultByGuid(guid).then(function (exerciseResult) {
                     exerciseResult.$save = exerciseSaveFn;
                     return exerciseResult;
                 });
             };
 
-            function moduleExerciseSaveFn(){
+            function moduleExerciseSaveFn() {
 
                 /* jshint validthis: true */
                 return _calcExerciseResultFields(this).then(function (response) {
@@ -4587,24 +4588,24 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                         dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
 
                         return ExerciseResultSrv.getModuleResult(exerciseResult.uid, exerciseResult.moduleId).then(function (moduleResult) {
-                            if(!moduleResult.exerciseResults) {
+                            if (!moduleResult.exerciseResults) {
                                 moduleResult.exerciseResults = {};
                             }
-                            if(!moduleResult.exerciseResults[exerciseTypeId]) {
+                            if (!moduleResult.exerciseResults[exerciseTypeId]) {
                                 moduleResult.exerciseResults[exerciseTypeId] = {};
                             }
 
                             moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResult.guid;
 
-                            if(!moduleResult.exercisesStatus) {
+                            if (!moduleResult.exercisesStatus) {
                                 moduleResult.exercisesStatus = {};
                             }
 
-                            if(!moduleResult.exercisesStatus[exerciseTypeId]) {
+                            if (!moduleResult.exercisesStatus[exerciseTypeId]) {
                                 moduleResult.exercisesStatus[exerciseTypeId] = {};
                             }
 
-                            if(exerciseStatuses[exerciseTypeId] && exerciseStatuses[exerciseTypeId][exerciseId]) {
+                            if (exerciseStatuses[exerciseTypeId] && exerciseStatuses[exerciseTypeId][exerciseId]) {
                                 moduleResult.exercisesStatus[exerciseTypeId][exerciseId] = exerciseStatuses[exerciseTypeId][exerciseId].status;
                             }
 
@@ -4612,7 +4613,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                             var modulePath = _getModuleResultPath(moduleResult.guid);
                             dataToSave[modulePath] = moduleResult;
 
-                            return InfraConfigSrv.getStudentStorage().then(function(StudentStorageSrv){
+                            return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                                 return StudentStorageSrv.update(dataToSave);
                             });
                         });
