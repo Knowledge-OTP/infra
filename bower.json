@@ -11,6 +11,7 @@
         "angular-sanitize": "^1.5.8",
         "Swiper": "swiper#~3.2.7",
         "firebase": "^2.4.2",
+        "angularfire": "1.2.0",
         "ng-idle": "1.2.2",
         "angulartics": "1.0.3",
         "angular-translate": "^2.11.0",
