@@ -840,7 +840,7 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
     'use strict';
 
     angular.module('znk.infra.auth').factory('AuthService',
-        ["ENV", function (ENV) {
+        ["ENV", "$q", function (ENV, $q) {
             'ngInject';
 
             var refAuthDB = new Firebase(ENV.fbGlobalEndPoint, ENV.firebaseAppScopeName);
@@ -848,7 +848,7 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
 
             var authService = {};
 
-            authService.getAuth = function(){
+            authService.getAuth = function() {
                 return rootRef.getAuth();
             };
 
@@ -857,10 +857,18 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
                 rootRef.unauth();
             };
 
+            authService.changePassword = function (changePasswordData) {
+                var refAuthData = refAuthDB.getAuth();
+                if (refAuthData && refAuthData.password) {
+                    changePasswordData.email = refAuthData.password.email;
+                    return refAuthData.$changePassword(changePasswordData);
+                }
+                return $q.reject('AuthService changePassword: user auth has no password in firebase!');
+            };
+
             return authService;
         }]);
 })(angular);
-
 
 angular.module('znk.infra.auth').run(['$templateCache', function($templateCache) {
 

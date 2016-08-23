@@ -10,7 +10,7 @@
 
             var authService = {};
 
-            authService.getAuth = function(){
+            authService.getAuth = function() {
                 return rootRef.getAuth();
             };
 
