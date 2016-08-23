@@ -109,7 +109,7 @@
 
                         switch (scope.d.currStatus) {
                             case scope.d.states.NONE :
-                                $log.debug('states.NONE');
+                                $log.debug('ActivePanel State: NONE');
                                 actions.stopTimer();
                                 actions.screenShareMode(false);
                                 scope.d.shareScreenBtnsEnable = true;
@@ -118,16 +118,17 @@
                                 actions.startTimer();
                                 scope.d.shareScreenBtnsEnable = true;
                                 actions.screenShareMode(false);
-                                $log.debug('states.CALL_ACTIVE');
+                                $log.debug('ActivePanel State: CALL_ACTIVE');
                                 break;
                             case scope.d.states.SCREEN_SHARE_ACTIVE :
                                 actions.stopTimer();
                                 actions.screenShareMode(true);
                                 scope.d.shareScreenBtnsEnable = false;
-                                $log.debug('states.SCREEN_SHARE_ACTIVE');
+                                $log.debug('ActivePanel State: SCREEN_SHARE_ACTIVE');
                                 break;
                             case scope.d.states.BOTH_ACTIVE :
-                                $log.debug('states.BOTH_ACTIVE');
+                                $log.debug('ActivePanel State: BOTH_ACTIVE');
+                                actions.startTimer();
                                 scope.d.shareScreenBtnsEnable = false;
                                 actions.screenShareMode(true);
                                 break;
