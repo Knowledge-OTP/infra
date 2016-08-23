@@ -1,15 +1,23 @@
 active-panel {
-    z-index: 9999;
     &.visible {
         .active-panel {
             opacity: 1;
         }
     }
+    &.screen-share-mode {
+        .active-panel {
+            background-color: $bgColor26;
+            .flex-col {
+                &.callee-name {
+                    color: $bgColor6;
+                }
+            }
+        }
+    }
     .active-panel {
+        z-index: 9999;
         transition: 1.5s;
-        opacity: 0;
-        //width: 260px;
-        width: 210px;
+        width: 250px;
         height: 40px;
         background-color: $bgColor21;
         border: 1px solid $bcColor11;
@@ -40,6 +48,15 @@ active-panel {
                     width: 7px;
                     height: 7px;
                     border-radius: 6px;
+                    &.offline{
+                        background: $bgColor22;
+                    }
+                    &.online{
+                        background: $bgColor2;
+                    }
+                    &.idle{
+                        background: $bgColor27;
+                    }
                 }
             }
             &.callee-name {
@@ -51,17 +68,26 @@ active-panel {
             }
             &.call-controls {
                 flex-basis: 50%;
-                svg-icon.active-panel-share-screen-icon {
+                .show-other-screen,
+                svg-icon.share-my-screen {
+                    &.disabled,
+                    &.disabled svg-icon {
+                        opacity: 0.5;
+                        cursor: default;
+                        transition: 1.5s;
+                    }
+                }
+                svg-icon.share-my-screen {
                     float:left;
                     cursor: pointer;
                     width: 28px;
                     height: 28px;
                     border-radius: 50%;
-                    border: 1px solid $bgColor3;
+                    background-color: $bgColor19;
                     svg {
                         width: 44%;
                         path {
-                            fill: $bgColor3;
+                            fill: $bgColor6;
                         }
                     }
                 }
@@ -74,7 +100,7 @@ active-panel {
                     height: 28px;
                     border-radius: 50%;
                     background-color: $bgColor3;
-                    margin-left: 7px;
+                    margin-right: 7px;
                     svg {
                         width: 44%;
                         path {
@@ -98,14 +124,6 @@ active-panel {
         }
         .call-duration {
             @include text-style(12px, $fcColor13, Lato, $regularFontWeight);
-        }
-    }
-    &.screen-share-mode {
-        .active-panel {
-            background-color: $bgColor26;
-            .callee-name {
-                color: $bgColor6;
-            }
         }
     }
 }

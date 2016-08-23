@@ -8,6 +8,7 @@
 
             var _storageStudentUidKey = 'currentStudentUid';
             var _currentStudentUid = '';
+            var registeredCbsToStudentContextChangeEvent = [];
 
             StudentContextSrv.getCurrUid = function () {
                 if (_currentStudentUid.length === 0) {
@@ -27,12 +28,29 @@
             };
 
             StudentContextSrv.setCurrentUid = function (uid) {
+                var prevUid = _currentStudentUid;
                 _currentStudentUid = uid;
 
                 if ($window.sessionStorage) {
                     $window.sessionStorage.setItem(_storageStudentUidKey, uid);
                 }
+
+                _invokeCbs(registeredCbsToStudentContextChangeEvent, [prevUid, uid]);
             };
+
+            StudentContextSrv.registerToStudentContextChange = function(cb) {
+                if (!angular.isFunction(cb)) {
+                    $log.error('StudentContextSrv.registerToStudentContextChange: cb is not a function', cb);
+                    return;
+                }
+                registeredCbsToStudentContextChangeEvent.push(cb);
+            };
+
+            function _invokeCbs(cbArr, args){
+                cbArr.forEach(function(cb){
+                    cb.apply(null, args);
+                });
+            }
 
             return StudentContextSrv;
         }

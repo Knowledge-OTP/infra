@@ -2,6 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.activePanel', [
-        'znk.infra.enum'
+        'znk.infra.enum',
+        'znk.infra.screenSharing'
     ]);
 })(angular);
