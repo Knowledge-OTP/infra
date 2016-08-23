@@ -69,6 +69,16 @@ active-panel {
             }
             &.call-controls {
                 flex-basis: 50%;
+
+                .show-other-screen {
+                    &.disabled {
+                        svg-icon.active-panel-track-student-icon,
+                        svg-icon.active-panel-track-teacher-icon {
+                            background-color: $bgColor28;
+                        }
+                    }
+                }
+
                 .show-other-screen,
                 svg-icon.share-my-screen {
                     &.disabled,
@@ -85,6 +95,9 @@ active-panel {
                     height: 28px;
                     border-radius: 50%;
                     background-color: $bgColor19;
+                    &.disabled {
+                        background-color: $bgColor29;
+                    }
                     svg {
                         width: 44%;
                         path {
