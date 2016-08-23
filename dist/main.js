@@ -137,14 +137,6 @@
                     };
 
                     var actions = {
-                        hideUI: function () {
-                            $log.debug('hideUI');
-                            element.removeClass('visible');
-                        },
-                        showUI: function () {
-                            $log.debug('showUI');
-                            element.addClass('visible');
-                        },
                         startTimer: function () {
                             $log.debug('call timer started');
                             if (callDuration !== 0) {

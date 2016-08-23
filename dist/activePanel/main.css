@@ -285,9 +285,6 @@ $blueBG8: #75cbe8;
 /* Material+Icons */
 @import url(//fonts.googleapis.com/icon?family=Material+Icons);
 /* full background image with retina */
-active-panel.visible .active-panel {
-  opacity: 1; }
-
 active-panel.screen-share-mode .active-panel {
   background-color: #464646; }
   active-panel.screen-share-mode .active-panel .flex-col.callee-name {
@@ -296,7 +293,6 @@ active-panel.screen-share-mode .active-panel {
 active-panel .active-panel {
   z-index: 9999;
   transition: 1.5s;
-  opacity: 0;
   width: 250px;
   height: 40px;
   background-color: #f7f7f7;
