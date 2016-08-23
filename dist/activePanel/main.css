@@ -285,9 +285,6 @@ $blueBG8: #75cbe8;
 /* Material+Icons */
 @import url(//fonts.googleapis.com/icon?family=Material+Icons);
 /* full background image with retina */
-active-panel.visible .active-panel {
-  opacity: 1; }
-
 active-panel.screen-share-mode .active-panel {
   background-color: #464646; }
   active-panel.screen-share-mode .active-panel .flex-col.callee-name {
@@ -341,6 +338,9 @@ active-panel .active-panel {
   active-panel .active-panel .flex-col.call-controls {
     -ms-flex-preferred-size: 50%;
         flex-basis: 50%; }
+    active-panel .active-panel .flex-col.call-controls .show-other-screen.disabled svg-icon.active-panel-track-student-icon,
+    active-panel .active-panel .flex-col.call-controls .show-other-screen.disabled svg-icon.active-panel-track-teacher-icon {
+      background-color: #8abec4; }
     active-panel .active-panel .flex-col.call-controls .show-other-screen.disabled,
     active-panel .active-panel .flex-col.call-controls .show-other-screen.disabled svg-icon,
     active-panel .active-panel .flex-col.call-controls svg-icon.share-my-screen.disabled,
@@ -355,6 +355,8 @@ active-panel .active-panel {
       height: 28px;
       border-radius: 50%;
       background-color: #ff931e; }
+      active-panel .active-panel .flex-col.call-controls svg-icon.share-my-screen.disabled {
+        background-color: #e1b688; }
       active-panel .active-panel .flex-col.call-controls svg-icon.share-my-screen svg {
         width: 44%; }
         active-panel .active-panel .flex-col.call-controls svg-icon.share-my-screen svg path {
@@ -385,3 +387,9 @@ active-panel .active-panel {
     color: #979797;
     font-family: Lato;
     font-weight: 400; }
+
+active-panel.screen-share-mode .active-panel {
+  background-color: #464646;
+  border: 1px solid #4f4d4d; }
+  active-panel.screen-share-mode .active-panel .callee-name {
+    color: #fff; }

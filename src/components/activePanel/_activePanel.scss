@@ -1,9 +1,4 @@
 active-panel {
-    &.visible {
-        .active-panel {
-            opacity: 1;
-        }
-    }
     &.screen-share-mode {
         .active-panel {
             background-color: $bgColor26;
@@ -68,6 +63,16 @@ active-panel {
             }
             &.call-controls {
                 flex-basis: 50%;
+
+                .show-other-screen {
+                    &.disabled {
+                        svg-icon.active-panel-track-student-icon,
+                        svg-icon.active-panel-track-teacher-icon {
+                            background-color: $bgColor28;
+                        }
+                    }
+                }
+
                 .show-other-screen,
                 svg-icon.share-my-screen {
                     &.disabled,
@@ -84,6 +89,9 @@ active-panel {
                     height: 28px;
                     border-radius: 50%;
                     background-color: $bgColor19;
+                    &.disabled {
+                        background-color: $bgColor29;
+                    }
                     svg {
                         width: 44%;
                         path {
@@ -110,7 +118,6 @@ active-panel {
                 }
 
                 call-btn {
-                    //float: left;
                     float: right;
                     margin-left: 7px;
                     svg-icon {
@@ -124,6 +131,15 @@ active-panel {
         }
         .call-duration {
             @include text-style(12px, $fcColor13, Lato, $regularFontWeight);
+        }
+    }
+    &.screen-share-mode {
+        .active-panel {
+            background-color: $bgColor26;
+            border: 1px solid $bcColor13;
+            .callee-name {
+                color: $bgColor6;
+            }
         }
     }
 }
