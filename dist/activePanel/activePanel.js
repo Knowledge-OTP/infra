@@ -130,6 +130,7 @@
                                 $log.debug('states.CALL_ACTIVE');
                                 break;
                             case scope.d.states.SCREEN_SHARE_ACTIVE :
+                                actions.stopTimer();
                                 actions.screenShareMode(true);
                                 scope.d.shareScreenBtnsEnable = false;
                                 $log.debug('states.SCREEN_SHARE_ACTIVE');
