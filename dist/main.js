@@ -5878,7 +5878,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
         '$log', 'ENV', '$http', 'UserProfileService', '$q',
         function ($log, ENV, $http, UserProfileService, $q) {
             var mailSenderService = {};
-            var backendUrl = ENV.backendEndpoint + 'mail';
+            var backendUrl = ENV.backendEndpoint + '/share/mail';
             var httpConfig = {
                 headers: 'application/json'
             };
