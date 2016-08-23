@@ -482,6 +482,13 @@
                 });
             };
 
+            this.getExerciseResultByGuid = function(guid){
+                return _getExerciseResultByGuid(guid).then(function(exerciseResult){
+                    exerciseResult.$save = exerciseSaveFn;
+                    return exerciseResult;
+                });
+            };
+
             function moduleExerciseSaveFn(){
 
                 /* jshint validthis: true */

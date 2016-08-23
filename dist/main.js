@@ -4489,6 +4489,13 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 });
             };
 
+            this.getExerciseResultByGuid = function(guid){
+                return _getExerciseResultByGuid(guid).then(function(exerciseResult){
+                    exerciseResult.$save = exerciseSaveFn;
+                    return exerciseResult;
+                });
+            };
+
             function moduleExerciseSaveFn(){
 
                 /* jshint validthis: true */
@@ -5819,7 +5826,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
         '$log', 'ENV', '$http', 'UserProfileService', '$q',
         function ($log, ENV, $http, UserProfileService, $q) {
             var mailSenderService = {};
-            var backendUrl = ENV.backendEndpoint + 'mail';
+            var backendUrl = ENV.backendEndpoint + '/share/mail';
             var httpConfig = {
                 headers: 'application/json'
             };
