@@ -1,8 +1,14 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.eventManager', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.eventManager').service('EventManagerSrv',
-        function ($log) {
+        ["$log", function ($log) {
             'ngInject';
 
             function EventManagerSrv() {
@@ -54,6 +60,10 @@
             };
 
             return EventManagerSrv;
-        }
+        }]
     );
 })(angular);
+
+angular.module('znk.infra.eventManager').run(['$templateCache', function($templateCache) {
+
+}]);
