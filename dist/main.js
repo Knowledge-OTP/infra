@@ -833,7 +833,10 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.auth', ['znk.infra.config']);
+    angular.module('znk.infra.auth', [
+        'znk.infra.config',
+        'firebase'
+    ]);
 })(angular);
 
 (function (angular) {
