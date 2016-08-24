@@ -25,10 +25,10 @@
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }])
-        .run(function ($translatePartialLoader) {
+        .run(["$translatePartialLoader", function ($translatePartialLoader) {
             'ngInject';
             $translatePartialLoader.addPart('znkExercise');
-        });
+        }]);
 })(angular);
 
 /**
@@ -291,7 +291,7 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('BaseZnkExerciseController',
-        function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, ExerciseResultSrv, ZnkExerciseSrv,
+        ["$scope", "exerciseData", "exerciseSettings", "$state", "$q", "ExerciseTypeEnum", "$location", "ExerciseResultSrv", "ZnkExerciseSrv", "$filter", "PopUpSrv", "exerciseEventsConst", "$rootScope", "ZnkExerciseUtilitySrv", "ZnkExerciseViewModeEnum", "SubjectEnum", "znkAnalyticsSrv", "$translate", "$log", "StatsEventsHandlerSrv", function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, ExerciseResultSrv, ZnkExerciseSrv,
                   $filter, PopUpSrv, exerciseEventsConst, $rootScope, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum, SubjectEnum,
                   znkAnalyticsSrv, $translate, $log, StatsEventsHandlerSrv) {
             'ngInject';
@@ -463,7 +463,7 @@
             $scope.baseZnkExerciseCtrl.onChangeTime = function (passedTime) {
                 exerciseResult.duration = passedTime;
             };
-        });
+        }]);
 
 })(angular);
 
@@ -997,7 +997,7 @@
                 exerciseTypeToAllowedQuestionTimeMap = _exerciseTypeToAllowedQuestionTimeMap;
             };
 
-            this.$get = function (EnumSrv, $window, PlatformEnum, $log) {
+            this.$get = ["EnumSrv", "$window", "PlatformEnum", "$log", function (EnumSrv, $window, PlatformEnum, $log) {
                 'ngInject';//jshint ignore:line
 
                 var platform = !!$window.ionic ? PlatformEnum.MOBILE.enum : PlatformEnum.DESKTOP.enum;
@@ -1048,7 +1048,7 @@
                 };
 
                 return ZnkExerciseSrv;
-            };
+            }];
         }
     );
 })(angular);
@@ -1788,7 +1788,7 @@
                     settings: '<'
                 },
                 controllerAs: '$ctrl',
-                controller: function($element){
+                controller: ["$element", function($element){
                     'ngInject';// jshint ignore: line
 
                     this.getCurrentQuestion = function(){
@@ -1802,7 +1802,7 @@
                     this.isExerciseReady = function(){
                         return this.znkExerciseCtrl.isExerciseReady();
                     };
-                },
+                }],
                 bindToController: true,
                 link: {
                     pre: function(scope, element, attrs, znkExerciseCtrl){
@@ -2213,7 +2213,7 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseDrawTool',
-        function (ZnkExerciseEvents, InfraConfigSrv, $log, $q, $compile, $timeout, $window) {
+        ["ZnkExerciseEvents", "InfraConfigSrv", "$log", "$q", "$compile", "$timeout", "$window", function (ZnkExerciseEvents, InfraConfigSrv, $log, $q, $compile, $timeout, $window) {
             'ngInject';
 
             var TOUCHE_COLORS = {
@@ -2660,7 +2660,7 @@
                     _init();
                 }
             };
-        });
+        }]);
 })(angular);
 
 
