@@ -29,10 +29,11 @@
             };
 
             authService.changePassword = function (changePasswordData) {
-                var refAuthData = $firebaseAuth(refAuthDB);
+                var refAuthFbWrapper = $firebaseAuth(refAuthDB);
+                var refAuthData = refAuthFbWrapper.$getAuth();
                 if (refAuthData && refAuthData.password) {
                     changePasswordData.email = refAuthData.password.email;
-                    return refAuthData.$changePassword(changePasswordData);
+                    return refAuthFbWrapper.$changePassword(changePasswordData);
                 }
                 return $q.reject('AuthService changePassword: user auth has no password in firebase!');
             };
