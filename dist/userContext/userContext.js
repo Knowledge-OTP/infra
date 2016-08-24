@@ -14,6 +14,7 @@
 
             var _storageStudentUidKey = 'currentStudentUid';
             var _currentStudentUid = '';
+            var registeredCbsToStudentContextChangeEvent = [];
 
             StudentContextSrv.getCurrUid = function () {
                 if (_currentStudentUid.length === 0) {
@@ -33,12 +34,29 @@
             };
 
             StudentContextSrv.setCurrentUid = function (uid) {
+                var prevUid = _currentStudentUid;
                 _currentStudentUid = uid;
 
                 if ($window.sessionStorage) {
                     $window.sessionStorage.setItem(_storageStudentUidKey, uid);
                 }
+
+                _invokeCbs(registeredCbsToStudentContextChangeEvent, [prevUid, uid]);
             };
+
+            StudentContextSrv.registerToStudentContextChange = function(cb) {
+                if (!angular.isFunction(cb)) {
+                    $log.error('StudentContextSrv.registerToStudentContextChange: cb is not a function', cb);
+                    return;
+                }
+                registeredCbsToStudentContextChangeEvent.push(cb);
+            };
+
+            function _invokeCbs(cbArr, args){
+                cbArr.forEach(function(cb){
+                    cb.apply(null, args);
+                });
+            }
 
             return StudentContextSrv;
         }
@@ -55,6 +73,7 @@
 
             var _storageTeacherUidKey = 'currentTeacherUid';
             var _currentTeacherUid = '';
+            var registeredCbsToTeacherContextChangeEvent = [];
 
             TeacherContextSrv.getCurrUid = function () {
                 if (_currentTeacherUid.length === 0) {
@@ -74,12 +93,29 @@
             };
 
             TeacherContextSrv.setCurrentUid = function (uid) {
+                var prevUid = _currentTeacherUid;
                 _currentTeacherUid = uid;
 
                 if ($window.sessionStorage) {
                     $window.sessionStorage.setItem(_storageTeacherUidKey, uid);
                 }
+
+                _invokeCbs(registeredCbsToTeacherContextChangeEvent, [prevUid, uid]);
             };
+
+            TeacherContextSrv.registerToTeacherContextChange = function(cb) {
+                if (!angular.isFunction(cb)) {
+                    $log.error('TeacherContextSrv.registerToTeacherContextChange: cb is not a function', cb);
+                    return;
+                }
+                registeredCbsToTeacherContextChangeEvent.push(cb);
+            };
+
+            function _invokeCbs(cbArr, args){
+                cbArr.forEach(function(cb){
+                    cb.apply(null, args);
+                });
+            }
 
             return TeacherContextSrv;
         }

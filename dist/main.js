@@ -23,6 +23,7 @@
 "znk.infra.filters",
 "znk.infra.general",
 "znk.infra.hint",
+"znk.infra.mailSender",
 "znk.infra.personalization",
 "znk.infra.pngSequence",
 "znk.infra.popUp",
@@ -51,7 +52,8 @@
     'use strict';
 
     angular.module('znk.infra.activePanel', [
-        'znk.infra.enum'
+        'znk.infra.enum',
+        'znk.infra.screenSharing'
     ]);
 })(angular);
 
@@ -59,70 +61,141 @@
 
 (function (angular) {
 
-    angular.module('znk.infra.activePanel').directive('activePanel',
-        function ($interval, $filter, $log) {
+    angular.module('znk.infra.activePanel')
+        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "CallsEventsSrv", "CallsStatusEnum", "ScreenSharingSrv", "UserScreenSharingStateEnum", "UserProfileService", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", function ($q, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum, UserProfileService, PresenceService, StudentContextSrv, TeacherContextSrv, ENV) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
-                scope: {
-                    calleeName: '@',
-                    actions: '=',
-                    callBtnModel: '='
-                },
-                link:function(scope, element, attrs) {
-                    // scope.actions = scope.actions || {};
-                    if (!angular.isObject(scope.actions)) {
-                        scope.actions = {};
-                    }
-
-                    if (!angular.isObject(scope.callBtnModel)) {
-                        scope.callBtnModel = {};
-                    }
-
-                    var callDuration = 0,
+                scope: {},
+                link: function(scope, element) {
+                    var receiverId,
+                        isOffline,
+                        isTeacher,
+                        callDuration = 0,
                         durationToDisplay,
-                        timerInterval;
+                        timerInterval,
+                        screenShareStatus = 0,
+                        callStatus = 0,
+                        screenShareIsViewer,
+                        timerSecondInterval = 1000;
 
-                    scope.calleeName = attrs.calleeName;
-
-                    scope.actions.hideUI = function () {
-                        $log.debug('hideUI');
-                        element.removeClass('visible');
+                    var listenToStudentOrTeacherContextChange = function (prevUid, uid) {
+                        receiverId = uid;
+                        var promsArr = [
+                            PresenceService.getCurrentUserStatus(receiverId),
+                            CallsUiSrv.getCalleeName(receiverId, uid)
+                        ];
+                        $q.all(promsArr).then(function (res) {
+                            scope.d.currentUserPresenceStatus = res[0];
+                            isOffline = scope.d.currentUserPresenceStatus === scope.d.presenceStatusMap.OFFLINE;
+                            scope.d.calleeName = (res[1]) ? (res[1]) : '';
+                            scope.d.callBtnModel = {
+                                isOffline: isOffline,
+                                receiverId: uid
+                            };
+                        }).catch(function (err) {
+                            $log.debug('error caught at listenToStudentOrTeacherContextChange', err);
+                        });
+                        $log.debug('student or teacher context changed: ', receiverId);
                     };
 
-                    scope.actions.showUI = function () {
-                        $log.debug('showUI');
-                        element.addClass('visible');
-                    };
+                    if (ENV.appContext.toLowerCase() === 'dashboard') {
+                        isTeacher = true;
+                        StudentContextSrv.registerToStudentContextChange(listenToStudentOrTeacherContextChange);
+                    } else if (ENV.appContext.toLowerCase() === 'student') {
+                        isTeacher = false;
+                        TeacherContextSrv.registerToTeacherContextChange(listenToStudentOrTeacherContextChange);
+                    } else {
+                        $log.error('appContext is not compatible with this component: ', ENV.appContext);
+                    }
 
-                    scope.actions.startTimer = function () {
-                        $log.debug('call timer started');
-                        timerInterval = $interval(function () {
-                            callDuration += 1000;
-                            durationToDisplay = $filter('formatDuration')(callDuration / 1000, 'hh:MM:SS', true);
-                            angular.element(element[0].querySelector('.call-duration')).text(durationToDisplay);
-                        }, 1000, 0, false);
-                    };
-
-                    scope.actions.stopTimer = function () {
-                        $interval.cancel(timerInterval);
-                    };
-
-                    scope.actions.screenShareMode = function (isScreenShareMode) {
-                        $log.debug('screenShareMode');
-                        if (isScreenShareMode) {
-                            element.addClass('screen-share-mode');
-                        } else {
-                            element.removeClass('screen-share-mode');
+                    scope.d = {
+                        states: {
+                            NONE: 0,
+                            CALL_ACTIVE: 1,
+                            SCREEN_SHARE_ACTIVE: 10,
+                            BOTH_ACTIVE: 11
+                        },
+                        shareScreenBtnsEnable: true,
+                        isTeacher: isTeacher,
+                        presenceStatusMap: PresenceService.userStatus,
+                        viewOtherUserScreen: function () {
+                            var userData = {
+                                isTeacher: !scope.d.isTeacher,
+                                uid: receiverId
+                            };
+                            $log.debug('viewOtherUserScreen: ', userData);
+                            ScreenSharingSrv.viewOtherUserScreen(userData);
+                        },
+                        shareMyScreen: function () {
+                            var userData = {
+                                isTeacher: !scope.d.isTeacher,
+                                uid: receiverId
+                            };
+                            $log.debug('shareMyScreen: ', userData);
+                            ScreenSharingSrv.shareMyScreen(userData);
                         }
                     };
 
-                    scope.actions.callBtnMode = function () {
-                        $log.debug('callBtnMode');
+                    var actions = {
+                        startTimer: function () {
+                            $log.debug('call timer started');
+                            if (callDuration !== 0) {
+                                return;
+                            }
+                            timerInterval = $interval(function () {
+                                callDuration += timerSecondInterval;
+                                durationToDisplay = $filter('formatDuration')(callDuration / 1000, 'hh:MM:SS', true);
+                                angular.element(element[0].querySelector('.call-duration')).text(durationToDisplay);
+                            }, 1000, 0, false);
+                        },
+                        stopTimer: function () {
+                            destroyTimer();
+                        },
+                        screenShareMode: function (isScreenShareMode) {
+                            if (isScreenShareMode && screenShareIsViewer) {
+                                element.addClass('screen-share-mode');
+                                $log.debug('screenShareMode activate');
+                            } else {
+                                element.removeClass('screen-share-mode');
+                                $log.debug('screenShareMode remove');
+                            }
+                        }
                     };
 
-                    scope.actions.screenShareBtnsMode = function () {
-                        $log.debug('screenShareBtnsMode');
-                    };
+                    function updateStatus() {
+                        scope.d.currStatus = screenShareStatus + callStatus;
+                        $log.debug('ActivePanel d.currStatus: ', scope.d.currStatus);
+
+                        switch (scope.d.currStatus) {
+                            case scope.d.states.NONE :
+                                $log.debug('ActivePanel State: NONE');
+                                actions.stopTimer();
+                                actions.screenShareMode(false);
+                                scope.d.shareScreenBtnsEnable = true;
+                                break;
+                            case scope.d.states.CALL_ACTIVE :
+                                actions.startTimer();
+                                scope.d.shareScreenBtnsEnable = true;
+                                actions.screenShareMode(false);
+                                $log.debug('ActivePanel State: CALL_ACTIVE');
+                                break;
+                            case scope.d.states.SCREEN_SHARE_ACTIVE :
+                                actions.stopTimer();
+                                actions.screenShareMode(true);
+                                scope.d.shareScreenBtnsEnable = false;
+                                $log.debug('ActivePanel State: SCREEN_SHARE_ACTIVE');
+                                break;
+                            case scope.d.states.BOTH_ACTIVE :
+                                $log.debug('ActivePanel State: BOTH_ACTIVE');
+                                actions.startTimer();
+                                scope.d.shareScreenBtnsEnable = false;
+                                actions.screenShareMode(true);
+                                break;
+
+                            default :
+                                $log.error('currStatus is in an unknown state', scope.d.currStatus);
+                        }
+                    }
 
                     function destroyTimer() {
                         $interval.cancel(timerInterval);
@@ -134,135 +207,69 @@
                         destroyTimer();
                     });
 
-                    // scope.iama = 'student';
-                    scope.iama = 'teacher';
+                    // Listen to status changes in Calls
+                    var listenToCallsStatus = function (callsData) {
+                        if (callsData) {
+                            if (callsData.status === CallsStatusEnum.ACTIVE_CALL.enum) {
+                                callStatus = scope.d.states.CALL_ACTIVE;
+                            } else {
+                                callStatus = 0;
+                            }
+                            updateStatus();
+                        }
+                    };
+
+                    // Listen to status changes in ScreenSharing
+                    var listenToScreenShareStatus = function (screenSharingStatus) {
+                        if (screenSharingStatus) {
+                            if (screenSharingStatus !== UserScreenSharingStateEnum.NONE.enum) {
+                                screenShareStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
+                                screenShareIsViewer = (screenSharingStatus === UserScreenSharingStateEnum.VIEWER.enum);
+                            } else {
+                                screenShareStatus = 0;
+                            }
+                            updateStatus();
+                        }
+                    };
+
+                    ScreenSharingSrv.registerToCurrUserScreenSharingStateChanges(listenToScreenShareStatus);
+
+                    CallsEventsSrv.registerToCurrUserCallStateChanges(listenToCallsStatus);
+
                 }
             };
-        });
+        }]);
 })(angular);
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.activePanel').service('ActivePanelSrv',
-        function (ActivePanelStatusEnum, ActivePanelComponentEnum, $log) {
+        ["$document", "$compile", "$rootScope", function ($document, $compile, $rootScope) {
             'ngInject';
 
-            var actions = {};
+            var self = this;
 
-            this.getActions = function () {
-                return actions;
+            self.init = function() {
+                var body = angular.element($document).find('body');
+
+                var canvasContainerElement = angular.element(
+                    '<active-panel></active-panel>'
+                );
+
+                self.scope = $rootScope.$new(true);
+
+                body.append(canvasContainerElement);
+                $compile(canvasContainerElement)(self.scope);
             };
-
-            var currentStatus = {
-                calls: ActivePanelStatusEnum.INACTIVE.enum,
-                screenSharing: ActivePanelStatusEnum.INACTIVE.enum
-            };
-
-            this.updateStatus = function (component, status) {
-                if (!component || !status) {
-                    $log.error('must pass the component & status args to function');
-                    return;
-                }
-
-                function isScreenSharingActive() {
-                    return (currentStatus.screenSharing === ActivePanelStatusEnum.ACTIVE.enum);
-                }
-
-                function isCallActive() {
-                    return (currentStatus.calls === ActivePanelStatusEnum.ACTIVE.enum);
-                }
-
-                switch (true) {
-                    case component === ActivePanelComponentEnum.CALLS.enum && status === ActivePanelStatusEnum.ACTIVE.enum :
-                        // component = call, status = active
-                        // show true
-                        // start timer
-                        // call btn in hangup mode
-                        currentStatus.calls = ActivePanelStatusEnum.ACTIVE.enum;
-                        actions.showUI();
-                        actions.startTimer();
-                        //callBtnMode('hangup');
-                        break;
-
-                    case component === ActivePanelComponentEnum.CALLS.enum && status === ActivePanelStatusEnum.INACTIVE.enum :
-                        // component = call, status = inactive (hangup, disc')
-                        // actions.stopTimer
-                        // call btn is in call mode
-                        // if screenShare is inactive, hide drv
-                        currentStatus.calls = ActivePanelStatusEnum.INACTIVE.enum;
-                        actions.stopTimer();
-                        //callBtnMode('call');
-                        if (!isScreenSharingActive()) {
-                            actions.hideUI();
-                        }
-                        break;
-
-                    case component === ActivePanelComponentEnum.SCREEN_SHARE.enum && status === ActivePanelStatusEnum.ACTIVE.enum :
-                        // component = screenShare, status = active
-                        // show drv
-                        // screenShare buttons are disabled
-                        currentStatus.screenSharing = ActivePanelStatusEnum.ACTIVE.enum;
-                        actions.showUI();
-                        actions.screenShareMode(true);
-                        //screenShareBtnsMode('disabled');
-                        break;
-
-                    case component === ActivePanelComponentEnum.SCREEN_SHARE.enum && status === ActivePanelStatusEnum.INACTIVE.enum :
-                        // component = screenShare, status = inactive
-                        // check if call is active, if not hide drv
-                        // return shareScreen btns to enabled state
-                        currentStatus.screenSharing = ActivePanelStatusEnum.INACTIVE.enum;
-                        if (!isCallActive()) {
-                            //actions.hideUI(); // TODO: is this needed?
-                        }
-                        actions.screenShareMode(false);
-                        //screenShareBtnsMode('enabled');
-                        break;
-
-                    default:
-                        actions.hideUI();
-                        break;
-                }
-            };
-        });
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.activePanel').factory('ActivePanelComponentEnum',
-        function (EnumSrv) {
-            'ngInject';
-
-            return new EnumSrv.BaseEnum([
-                ['CALLS', 1, 'calls'],
-                ['SCREEN_SHARE', 2, 'screenShare']
-            ]);
-        }
-    );
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.activePanel').factory('ActivePanelStatusEnum',
-        function (EnumSrv) {
-            'ngInject';
-
-            return new EnumSrv.BaseEnum([
-                ['ACTIVE', 1, 'active'],
-                ['INACTIVE', 2, 'inactive']
-            ]);
-        }
-    );
+        }]);
 })(angular);
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.activePanel')
-        .config(function (SvgIconSrvProvider) {
+        .config(["SvgIconSrvProvider", function (SvgIconSrvProvider) {
             'ngInject';
 
             var svgMap = {
@@ -272,29 +279,45 @@
                 'active-panel-track-student-icon': 'components/activePanel/svg/track-student-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
-        });
+        }]);
 })(angular);
 
 angular.module('znk.infra.activePanel').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/activePanel/activePanel.template.html",
-    "<div class=\"active-panel\">\n" +
+    "<div class=\"active-panel ng-hide\" ng-show=\"d.currStatus !== d.states.NONE\">\n" +
     "    <div class=\"flex-container\">\n" +
     "        <div class=\"callee-status flex-col\">\n" +
-    "            <div class=\"online-indicator\"></div>\n" +
+    "            <div class=\"online-indicator\"\n" +
+    "                 ng-class=\"{\n" +
+    "                    'offline': d.currentUserPresenceStatus === d.presenceStatusMap.OFFLINE,\n" +
+    "                    'online': d.currentUserPresenceStatus === d.presenceStatusMap.ONLINE,\n" +
+    "                    'idle': d.currentUserPresenceStatus === d.presenceStatusMap.IDLE\n" +
+    "                 }\">\n" +
+    "            </div>\n" +
     "        </div>\n" +
-    "        <div class=\"callee-name flex-col\" title=\"{}\">\n" +
-    "            {{calleeName}}\n" +
+    "        <div class=\"callee-name flex-col\">\n" +
+    "            {{d.calleeName}}\n" +
     "            <div class=\"call-duration\">&nbsp;</div>\n" +
     "        </div>\n" +
     "        <div class=\"call-controls flex-col\">\n" +
-    "            <!--<svg-icon name=\"call-mute-icon\"></svg-icon>-->\n" +
-    "            <!--<div class=\"share-my-screen\"></div>-->\n" +
-    "            <svg-icon ng-hide=\"true\" name=\"active-panel-share-screen-icon\"></svg-icon>\n" +
-    "            <ng-switch ng-hide=\"true\" on=\"iama\" class=\"show-other-screen\">\n" +
-    "                <svg-icon ng-switch-when=\"teacher\" name=\"active-panel-track-student-icon\"></svg-icon>\n" +
-    "                <svg-icon ng-switch-when=\"student\" name=\"active-panel-track-teacher-icon\"></svg-icon>\n" +
-    "            </ng-switch>\n" +
-    "            <call-btn ng-model=\"callBtnModel\"></call-btn>\n" +
+    "            <div ng-click=\"d.viewOtherUserScreen()\"\n" +
+    "                 class=\"show-other-screen\"\n" +
+    "                 disable-click-drv=\"d.shareScreenBtnsEnable\"\n" +
+    "                 ng-class=\"{disabled: !d.shareScreenBtnsEnable}\">\n" +
+    "                <ng-switch on=\"d.isTeacher\">\n" +
+    "                    <svg-icon ng-switch-when=\"true\" name=\"active-panel-track-student-icon\"></svg-icon>\n" +
+    "                    <svg-icon ng-switch-default name=\"active-panel-track-teacher-icon\"></svg-icon>\n" +
+    "                </ng-switch>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <svg-icon disable-click-drv=\"d.shareScreenBtnsEnable\"\n" +
+    "                      ng-class=\"{disabled: !d.shareScreenBtnsEnable}\"\n" +
+    "                      ng-click=\"d.shareMyScreen()\"\n" +
+    "                      name=\"active-panel-share-screen-icon\"\n" +
+    "                      class=\"share-my-screen\">\n" +
+    "            </svg-icon>\n" +
+    "\n" +
+    "            <call-btn ng-model=\"d.callBtnModel\"></call-btn>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>\n" +
@@ -833,17 +856,14 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.auth', [
-        'znk.infra.config',
-        'firebase'
-    ]);
+    angular.module('znk.infra.auth', ['znk.infra.config']);
 })(angular);
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.auth').factory('AuthService',
-        function (ENV, $q, $firebaseAuth) {
+        ["ENV", function (ENV) {
             'ngInject';
 
             var refAuthDB = new Firebase(ENV.fbGlobalEndPoint, ENV.firebaseAppScopeName);
@@ -851,7 +871,7 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
 
             var authService = {};
 
-            authService.getAuth = function() {
+            authService.getAuth = function(){
                 return rootRef.getAuth();
             };
 
@@ -860,19 +880,10 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
                 rootRef.unauth();
             };
 
-            authService.changePassword = function (changePasswordData) {
-                var refAuthFbWrapper = $firebaseAuth(refAuthDB);
-                var refAuthData = refAuthFbWrapper.$getAuth();
-                if (refAuthData && refAuthData.password) {
-                    changePasswordData.email = refAuthData.password.email;
-                    return refAuthFbWrapper.$changePassword(changePasswordData);
-                }
-                return $q.reject('AuthService changePassword: user auth has no password in firebase!');
-            };
-
             return authService;
-        });
+        }]);
 })(angular);
+
 
 angular.module('znk.infra.auth').run(['$templateCache', function($templateCache) {
 
@@ -939,7 +950,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls')
-        .config(function (SvgIconSrvProvider) {
+        .config(["SvgIconSrvProvider", function (SvgIconSrvProvider) {
             'ngInject';
 
             var svgMap = {
@@ -949,20 +960,20 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 'calls-etutoring-phone-icon': 'components/calls/svg/etutoring-phone-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
-        });
+        }]);
 })(angular);
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.calls')
-        .config(function (WebcallSrvProvider, ENV) {
+        .config(["WebcallSrvProvider", "ENV", function (WebcallSrvProvider, ENV) {
             'ngInject';
             WebcallSrvProvider.setCallCred({
                 username: ENV.plivoUsername,
                 password: ENV.plivoPassword
             });
-        });
+        }]);
 })(angular);
 
 (function (angular) {
@@ -974,7 +985,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 parent: '?^ngModel'
             },
             controllerAs: 'vm',
-            controller: function (CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE) {
+            controller: ["CallsSrv", "CallsBtnSrv", "CallsErrorSrv", "CallsBtnStatusEnum", "$log", "$scope", "CALL_UPDATE", function (CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE) {
                 var vm = this;
                 var receiverId;
 
@@ -1024,7 +1035,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     if (ngModelCtrl) {
                         ngModelCtrl.$render = function() {
                             var modelValue = ngModelCtrl.$modelValue;
-                            if (angular.isDefined(modelValue.isOffline) && modelValue.receiverId) {
+                            if (modelValue && angular.isDefined(modelValue.isOffline) && modelValue.receiverId) {
                                 var curBtnStatus = modelValue.isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
                                 receiverId = modelValue.receiverId;
                                 _changeBtnState(curBtnStatus);
@@ -1048,7 +1059,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                         });
                     }
                 };
-            }
+            }]
         }
     );
 })(angular);
@@ -1058,7 +1069,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').factory('CallsActionStatusEnum',
-        function (EnumSrv) {
+        ["EnumSrv", function (EnumSrv) {
             'ngInject';
 
             return new EnumSrv.BaseEnum([
@@ -1066,7 +1077,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 ['CONNECT_ACTION', 2, 'connect'],
                 ['DISCONNECT_AND_CONNECT_ACTION', 3, 'disconnect and connect']
             ]);
-        }
+        }]
     );
 })(angular);
 
@@ -1075,7 +1086,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').factory('CallsBtnStatusEnum',
-        function (EnumSrv) {
+        ["EnumSrv", function (EnumSrv) {
             'ngInject';
 
             return new EnumSrv.BaseEnum([
@@ -1083,7 +1094,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 ['CALL_BTN', 2, 'call btn'],
                 ['CALLED_BTN', 3, 'called btn']
             ]);
-        }
+        }]
     );
 })(angular);
 
@@ -1092,7 +1103,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').factory('CallsStatusEnum',
-        function (EnumSrv) {
+        ["EnumSrv", function (EnumSrv) {
             'ngInject';
 
             return new EnumSrv.BaseEnum([
@@ -1101,7 +1112,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 ['ACTIVE_CALL', 3, 'active call'],
                 ['ENDED_CALL', 4, 'ended call']
             ]);
-        }
+        }]
     );
 })(angular);
 
@@ -1110,12 +1121,12 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').controller('ErrorModalCtrl',
-        function ($scope, CallsUiSrv) {
+        ["$scope", "CallsUiSrv", function ($scope, CallsUiSrv) {
             'ngInject';
             $scope.errorMessage = this.modalData.errorMessage;
             $scope.errorValues = this.modalData.errorValues;
             $scope.closeModal = CallsUiSrv.closeModal;
-        }
+        }]
     );
 })(angular);
 
@@ -1123,7 +1134,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').controller('IncomingCallModalCtrl',
-        function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log, CallsErrorSrv, $timeout, $window, ENV) {
+        ["$scope", "CallsSrv", "CallsUiSrv", "CallsStatusEnum", "$log", "CallsErrorSrv", "$timeout", "$window", "ENV", function ($scope, CallsSrv, CallsUiSrv, CallsStatusEnum, $log, CallsErrorSrv, $timeout, $window, ENV) {
             'ngInject';
 
             var self = this;
@@ -1243,7 +1254,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             this.acceptCall = _baseCall.bind(null, CallsSrv.acceptCall, 'acceptCall');
 
             this.closeModal = CallsUiSrv.closeModal;
-        }
+        }]
     );
 })(angular);
 
@@ -1251,7 +1262,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').controller('OutgoingCallModalCtrl',
-        function (CallsSrv, CallsUiSrv, $log, CallsStatusEnum, $scope, $timeout, CallsErrorSrv) {
+        ["CallsSrv", "CallsUiSrv", "$log", "CallsStatusEnum", "$scope", "$timeout", "CallsErrorSrv", function (CallsSrv, CallsUiSrv, $log, CallsStatusEnum, $scope, $timeout, CallsErrorSrv) {
             'ngInject';
 
             var self = this;
@@ -1307,7 +1318,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             this.declineCall = _baseCall.bind(null, CallsSrv.declineCall, 'declineCall');
 
             this.closeModalAndDisconnect = _baseCall.bind(null, CallsSrv.disconnectCall, 'disconnectCall');
-        }
+        }]
     );
 })(angular);
 
@@ -1315,11 +1326,11 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').run(
-        function(CallsEventsSrv){
+        ["CallsEventsSrv", function(CallsEventsSrv){
             'ngInject';
 
             CallsEventsSrv.activate();
-        }
+        }]
     );
 })();
 
@@ -1327,20 +1338,20 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls')
-        .run(function($timeout, $translatePartialLoader){
+        .run(["$timeout", "$translatePartialLoader", function($timeout, $translatePartialLoader){
             'ngInject';
             //must be wrapped in timeout because the parting adding cannot be made directly in a run block
             $timeout(function(){
                 $translatePartialLoader.addPart('calls');
             });
-        });
+        }]);
 })(angular);
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsBtnSrv',
-        function (CallsStatusEnum, CallsBtnStatusEnum, UserProfileService, $log, CallsDataGetterSrv) {
+        ["CallsStatusEnum", "CallsBtnStatusEnum", "UserProfileService", "$log", "CallsDataGetterSrv", function (CallsStatusEnum, CallsBtnStatusEnum, UserProfileService, $log, CallsDataGetterSrv) {
             'ngInject';
 
             var self = this;
@@ -1380,14 +1391,14 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     $log.error('Error in CallsBtnSrv updateBtnStatus in UserProfileService.getCurrUserId(): err: ' + err);
                 });
             };
-        });
+        }]);
 })(angular);
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsDataGetterSrv',
-        function (InfraConfigSrv, $q, ENV, UserProfileService, $log, CallsActionStatusEnum) {
+        ["InfraConfigSrv", "$q", "ENV", "UserProfileService", "$log", "CallsActionStatusEnum", function (InfraConfigSrv, $q, ENV, UserProfileService, $log, CallsActionStatusEnum) {
             'ngInject';
 
             var self = this;
@@ -1582,7 +1593,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             };
 
             this.isCallDataHasReceiverIdOrCallerId = _isCallDataHasReceiverIdOrCallerId;
-        }
+        }]
     );
 })(angular);
 
@@ -1590,7 +1601,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsDataSetterSrv',
-        function (InfraConfigSrv, $q, ENV, CallsStatusEnum, CallsDataGetterSrv) {
+        ["InfraConfigSrv", "$q", "ENV", "CallsStatusEnum", "CallsDataGetterSrv", function (InfraConfigSrv, $q, ENV, CallsStatusEnum, CallsDataGetterSrv) {
             'ngInject';
 
             function _getStorage() {
@@ -1673,7 +1684,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 });
             };
 
-        }
+        }]
     );
 })(angular);
 
@@ -1681,7 +1692,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsErrorSrv',
-        function (CallsUiSrv, $q) {
+        ["CallsUiSrv", "$q", function (CallsUiSrv, $q) {
             'ngInject';
 
             var errorCodesList = {
@@ -1731,7 +1742,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 return _showErrorModal(err);
             };
 
-        });
+        }]);
 })(angular);
 
 (function (angular) {
@@ -1740,14 +1751,18 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     angular.module('znk.infra.calls')
         .constant('CALL_UPDATE', 'CallsEventsSrv: call updated')
         .provider('CallsEventsSrv', function () {
+
             var isEnabled = true;
 
             this.enabled = function (_isEnabled) {
                 isEnabled = _isEnabled;
             };
 
-            this.$get = function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, $q, CALL_UPDATE) {
+            this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "$q", "CALL_UPDATE", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, $q, CALL_UPDATE) {
                 'ngInject';
+                var registeredCbToCurrUserCallStateChange = [];
+                var currUserCallState;
+
                 var CallsEventsSrv = {};
 
                 var scopesObj = {};
@@ -1781,6 +1796,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     function _cb(callsData) {
 
                         if (!callsData) {
+                            currUserCallState = callsData;
                             return;
                         }
 
@@ -1808,23 +1824,18 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                     if (!isCurrentUserInitiatedCall(currUid)) {
                                         CallsUiSrv.closeModal();
                                         // show outgoing call modal WITH the ANSWERED TEXT, wait 2 seconds and close the modal, show the ActiveCallDRV
-                                        // ActivePanelSrv.showActivePanelDrv('calls');
-                                        // ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
                                     } else {
                                         // close the modal, show the ActiveCallDRV
                                         // CallsUiSrv.closeModal();
-                                        // ActivePanelSrv.showActivePanelDrv('calls');
-                                        // ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
                                     }
-                                    // ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.ACTIVE.enum);
                                     break;
                                 case CallsStatusEnum.ENDED_CALL.enum:
                                     $log.debug('call ended');
-                                    // ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.INACTIVE.enum);
                                     // disconnect other user from call
                                     getCallsSrv().disconnectCall();
                                     break;
                             }
+                            _invokeCbs(registeredCbToCurrUserCallStateChange, [callsData]);
                         });
 
                         function isCurrentUserInitiatedCall(currUid) {
@@ -1862,6 +1873,12 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     });
                 }
 
+                function _invokeCbs(cbArr, args){
+                    cbArr.forEach(function(cb){
+                        cb.apply(null, args);
+                    });
+                }
+
                 CallsEventsSrv.activate = function () {
                     if (isEnabled) {
                         _startListening();
@@ -1872,8 +1889,14 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 
                 CallsEventsSrv.updateScopeData = updateScopeData;
 
+                CallsEventsSrv.registerToCurrUserCallStateChanges = function (cb) {
+                    if (angular.isFunction(cb)) {
+                        registeredCbToCurrUserCallStateChange.push(cb);
+                    }
+                };
+
                 return CallsEventsSrv;
-            };
+            }];
         });
 })(angular);
 
@@ -1894,7 +1917,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             baseTemplateUrl = templateUrl;
         };
 
-        this.$get = function($mdDialog, $rootScope) {
+        this.$get = ["$mdDialog", "$rootScope", function($mdDialog, $rootScope) {
             'ngInject';
             var CallsModalService = {};
 
@@ -1921,7 +1944,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             };
 
             return CallsModalService;
-        };
+        }];
     }
 
     angular.module('znk.infra.callsModals').provider('CallsModalService', CallsModalService);
@@ -1932,7 +1955,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsSrv',
-        function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv, CallsEventsSrv, CallsStatusEnum, CallsActionStatusEnum) {
+        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "CallsDataSetterSrv", "WebcallSrv", "CallsEventsSrv", "CallsStatusEnum", "CallsActionStatusEnum", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv, CallsEventsSrv, CallsStatusEnum, CallsActionStatusEnum) {
             'ngInject';
 
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
@@ -2069,6 +2092,23 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 });
             }
 
+            function _isUserInActiveCall() {
+                return CallsDataGetterSrv.getCurrUserCallsData().then(function(callsDataMap){
+                    var activeCallsDataArr = [];
+                    var isInActiveCall = false;
+                    angular.forEach(callsDataMap, function(callData) {
+                        if(callData.status && (callData.status === CallsStatusEnum.PENDING_CALL.enum ||
+                            callData.status === CallsStatusEnum.ACTIVE_CALL.enum)) {
+                            activeCallsDataArr.push(callData);
+                        }
+                    });
+                    if (activeCallsDataArr.length > 0) {
+                        isInActiveCall = true;
+                    }
+                    return isInActiveCall;
+                });
+            }
+
             // api
             this.acceptCall = function(callsData) {
                 return _handleCallerIdOrReceiverIdUndefined(callsData, 'acceptCall').then(function () {
@@ -2117,7 +2157,9 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     return $q.reject(err);
                 });
             };
-        }
+
+            this.isUserInActiveCall = _isUserInActiveCall;
+        }]
     );
 })(angular);
 
@@ -2133,7 +2175,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 calleeNameFn = func;
             };
 
-            this.$get = function ($mdDialog, CallsModalService, $injector) {
+            this.$get = ["$mdDialog", "CallsModalService", "$injector", function ($mdDialog, CallsModalService, $injector) {
 
                 var CallsUiSrv = {};
 
@@ -2190,7 +2232,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 };
 
                 return CallsUiSrv;
-            };
+            }];
         }
     );
 })(angular);
@@ -2786,7 +2828,7 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                 _specials = specialsObj;
             };
 
-            this.$get = function ($q, $parse, $injector, InfraConfigSrv, StorageSrv) {
+            this.$get = ["$q", "$parse", "$injector", "InfraConfigSrv", "StorageSrv", function ($q, $parse, $injector, InfraConfigSrv, StorageSrv) {
                 'ngInject';
 
                 var PURCHASED_ALL = 'all';
@@ -3008,7 +3050,7 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
                 };
                 // api
                 return ContentAvailSrvObj;
-            };
+            }];
         }
     ]);
 })(angular);
@@ -3031,7 +3073,7 @@ angular.module('znk.infra.contentAvail').run(['$templateCache', function($templa
     'use strict';
 
     angular.module('znk.infra.contentGetters').factory('BaseExerciseGetterSrv',
-        function (ContentSrv, $log, $q, ExerciseTypeEnum) {
+        ["ContentSrv", "$log", "$q", "ExerciseTypeEnum", function (ContentSrv, $log, $q, ExerciseTypeEnum) {
             'ngInject';
 
             function BaseExerciseGetterSrv(exerciseTypeName) {
@@ -3089,14 +3131,14 @@ angular.module('znk.infra.contentAvail').run(['$templateCache', function($templa
             BaseExerciseGetterSrv.prototype = BaseExerciseGetterSrvPrototype;
 
             return BaseExerciseGetterSrv;
-        }
+        }]
     );
 })(angular);
 
 'use strict';
 
 angular.module('znk.infra.contentGetters').service('CategoryService',
-    function (StorageRevSrv, $q, categoryEnum, $log) {
+    ["StorageRevSrv", "$q", "categoryEnum", "$log", function (StorageRevSrv, $q, categoryEnum, $log) {
         'ngInject';
 
         var self = this;
@@ -3243,7 +3285,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
                 return getAllLevel4CategoriessProm;
             };
         })();
-    });
+    }]);
 
 angular.module('znk.infra.contentGetters').run(['$templateCache', function($templateCache) {
 
@@ -3598,7 +3640,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
     'use strict';
 
     angular.module('znk.infra.estimatedScore').service('EstimatedScoreHelperSrv',
-        function (SubjectEnum, InfraConfigSrv, StorageSrv) {
+        ["SubjectEnum", "InfraConfigSrv", "StorageSrv", function (SubjectEnum, InfraConfigSrv, StorageSrv) {
             'ngInject';
 
             var EstimatedScoreHelperSrv = this;
@@ -3656,7 +3698,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                     return StudentStorageSrv.set(ESTIMATE_SCORE_PATH,newEstimateScoreData);
                 });
             };
-        }
+        }]
     );
 })(angular);
 
@@ -3898,7 +3940,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
             _evaluateStatusFn = evaluateStatusFn;
         };
 
-        this.$get = function ($q, $injector, $log) {
+        this.$get = ["$q", "$injector", "$log", function ($q, $injector, $log) {
             'ngInject';
 
             var znkEvaluatorSrvApi = {};
@@ -3932,7 +3974,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
             };
 
             return znkEvaluatorSrvApi;
-        };
+        }];
     });
 })(angular);
 
@@ -3947,7 +3989,7 @@ angular.module('znk.infra.evaluator').run(['$templateCache', function($templateC
 })(angular);
 
 "use strict";
-angular.module('znk.infra.exams').service('ExamSrv', function(StorageRevSrv, $q, ContentAvailSrv, $log) {
+angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "ContentAvailSrv", "$log", function(StorageRevSrv, $q, ContentAvailSrv, $log) {
         'ngInject';
 
         var self = this;
@@ -4010,7 +4052,7 @@ angular.module('znk.infra.exams').service('ExamSrv', function(StorageRevSrv, $q,
                 return $q.all(examsProms);
             });
         };
-});
+}]);
 
 angular.module('znk.infra.exams').run(['$templateCache', function($templateCache) {
 
@@ -5735,7 +5777,7 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
             _hintMap[hintName] = hintName;
         };
 
-        this.$get = function (InfraConfigSrv, $q, $log, $injector, StorageSrv) {
+        this.$get = ["InfraConfigSrv", "$q", "$log", "$injector", "StorageSrv", function (InfraConfigSrv, $q, $log, $injector, StorageSrv) {
             'ngInject';
 
             var HintSrv = {};
@@ -5811,11 +5853,53 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
             }
 
             return HintSrv;
-        };
+        }];
     });
 })(angular);
 
 angular.module('znk.infra.hint').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.mailSender', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.mailSender').service('MailSenderService', [
+        '$log', 'ENV', '$http', 'UserProfileService', '$q',
+        function ($log, ENV, $http, UserProfileService, $q) {
+            var mailSenderService = {};
+            var backendUrl = ENV.backendEndpoint + '/share/mail';
+            var httpConfig = {
+                headers: 'application/json'
+            };
+
+            mailSenderService.postMailRequest = function (mailObject) {
+                return UserProfileService.getCurrUserId().then(function (userId) {
+                    mailObject.uid = userId;
+                    return $http.post(backendUrl, mailObject, httpConfig).then(
+                        function (response) {
+                            return {
+                                data: response.data
+                            };
+                        }).catch(function (error) {
+                        return $q.reject({
+                            data: error.data
+                        });
+                    });
+                });
+            };
+
+            return mailSenderService;
+        }
+    ]);
+})(angular);
+
+
+angular.module('znk.infra.mailSender').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -5830,7 +5914,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
     
     angular.module('znk.infra.personalization')
         .service('PersonalizationSrv',
-            function (StorageRevSrv, $log, $q) {
+            ["StorageRevSrv", "$log", "$q", function (StorageRevSrv, $log, $q) {
                 'ngInject';
 
                 var self = this;
@@ -5853,7 +5937,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                         return personalizationData.examOrder;
                     });
                 };
-            }
+            }]
         );
 })(angular);
 
@@ -6507,7 +6591,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.screenSharing')
-        .config(function (SvgIconSrvProvider) {
+        .config(["SvgIconSrvProvider", function (SvgIconSrvProvider) {
             'ngInject';
 
             var svgMap = {
@@ -6515,7 +6599,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 'screen-sharing-close': 'components/screenSharing/svg/close-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
-        });
+        }]);
 })(angular);
 
 (function (angular) {
@@ -6527,7 +6611,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 userSharingState: '<',
                 onClose: '&'
             },
-            controller: function (UserScreenSharingStateEnum, $log, ScreenSharingUiSrv) {
+            controller: ["UserScreenSharingStateEnum", "$log", "ScreenSharingUiSrv", function (UserScreenSharingStateEnum, $log, ScreenSharingUiSrv) {
                 'ngInject';
 
                 var ctrl = this;
@@ -6550,7 +6634,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                             $log.error('screenSharingComponent: invalid state was provided');
                     }
                 };
-            }
+            }]
         }
     );
 })(angular);
@@ -6560,7 +6644,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.screenSharing').factory('ScreenSharingStatusEnum',
-        function (EnumSrv) {
+        ["EnumSrv", function (EnumSrv) {
             'ngInject';
 
             return new EnumSrv.BaseEnum([
@@ -6569,7 +6653,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 ['CONFIRMED', 3, 'confirmed'],
                 ['ENDED', 4, 'ended']
             ]);
-        }
+        }]
     );
 })(angular);
 
@@ -6578,7 +6662,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.screenSharing').factory('UserScreenSharingStateEnum',
-        function (EnumSrv) {
+        ["EnumSrv", function (EnumSrv) {
             'ngInject';
 
             return new EnumSrv.BaseEnum([
@@ -6586,7 +6670,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 ['VIEWER', 2, 'viewer'],
                 ['SHARER', 3, 'sharer']
             ]);
-        }
+        }]
     );
 })(angular);
 
@@ -6595,11 +6679,11 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
     'use strict';
     
     angular.module('znk.infra.screenSharing').run(
-        function(ScreenSharingEventsSrv){
+        ["ScreenSharingEventsSrv", function(ScreenSharingEventsSrv){
             'ngInject';
 
             ScreenSharingEventsSrv.activate();
-        }
+        }]
     );
 })();
 
@@ -6607,20 +6691,20 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.screenSharing')
-        .run(function($timeout, $translatePartialLoader){
+        .run(["$timeout", "$translatePartialLoader", function($timeout, $translatePartialLoader){
             'ngInject';
             //must be wrapped in timeout because the parting adding cannot be made directly in a run block
             $timeout(function(){
                 $translatePartialLoader.addPart('screenSharing');
             });
-        });
+        }]);
 })(angular);
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.screenSharing').service('ScreenSharingDataGetterSrv',
-        function (InfraConfigSrv, $q, ENV, UserProfileService) {
+        ["InfraConfigSrv", "$q", "ENV", "UserProfileService", function (InfraConfigSrv, $q, ENV, UserProfileService) {
             'ngInject';
 
             function _getStorage() {
@@ -6667,7 +6751,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                     return $q.all(screenSharingDataPromMap);
                 });
             };
-        }
+        }]
     );
 })(angular);
 
@@ -6681,7 +6765,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             isEnabled = _isEnabled;
         };
 
-        this.$get = function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, ScreenSharingStatusEnum, UserScreenSharingStateEnum, ScreenSharingSrv, $log, ScreenSharingUiSrv) {
+        this.$get = ["UserProfileService", "InfraConfigSrv", "$q", "StorageSrv", "ENV", "ScreenSharingStatusEnum", "UserScreenSharingStateEnum", "ScreenSharingSrv", "$log", "ScreenSharingUiSrv", function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, ScreenSharingStatusEnum, UserScreenSharingStateEnum, ScreenSharingSrv, $log, ScreenSharingUiSrv) {
             'ngInject';
 
             var ScreenSharingEventsSrv = {};
@@ -6772,7 +6856,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             };
 
             return ScreenSharingEventsSrv;
-        };
+        }];
     });
 })(angular);
 
@@ -6780,7 +6864,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.screenSharing').service('ScreenSharingSrv',
-        function (UserProfileService, InfraConfigSrv, $q, UtilitySrv, ScreenSharingDataGetterSrv, ScreenSharingStatusEnum, ENV, $log, UserScreenSharingStateEnum, ScreenSharingUiSrv) {
+        ["UserProfileService", "InfraConfigSrv", "$q", "UtilitySrv", "ScreenSharingDataGetterSrv", "ScreenSharingStatusEnum", "ENV", "$log", "UserScreenSharingStateEnum", "ScreenSharingUiSrv", function (UserProfileService, InfraConfigSrv, $q, UtilitySrv, ScreenSharingDataGetterSrv, ScreenSharingStatusEnum, ENV, $log, UserScreenSharingStateEnum, ScreenSharingUiSrv) {
             'ngInject';
 
             var _this = this;
@@ -7050,7 +7134,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 activeScreenSharingDataFromAdapter = newScreenSharingData;
                 _invokeCbs(registeredCbToActiveScreenSharingDataChanges, [activeScreenSharingDataFromAdapter]);
             };
-        }
+        }]
     );
 })(angular);
 
@@ -7063,7 +7147,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             screenSharingViewerTemplate = template;
         };
 
-        this.$get = function ($rootScope, $timeout, $compile, $animate, PopUpSrv, $translate, $q, $log) {
+        this.$get = ["$rootScope", "$timeout", "$compile", "$animate", "PopUpSrv", "$translate", "$q", "$log", function ($rootScope, $timeout, $compile, $animate, PopUpSrv, $translate, $q, $log) {
             'ngInject';
 
             var childScope, screenSharingPhElement, readyProm;
@@ -7168,7 +7252,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             });
 
             return ScreenSharingUiSrv;
-        };
+        }];
     });
 })(angular);
 
@@ -7640,7 +7724,7 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
     'use strict';
 
     angular.module('znk.infra.stats').service('StatsSrv',
-        function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv, CategoryService) {
+        ["InfraConfigSrv", "$q", "SubjectEnum", "$log", "$injector", "StorageSrv", "CategoryService", function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv, CategoryService) {
             'ngInject';
 
             var STATS_PATH = StorageSrv.variables.appUserSpacePath + '/stats';
@@ -7809,7 +7893,7 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
             };
 
             return StatsSrv;
-        });
+        }]);
 })(angular);
 
 angular.module('znk.infra.stats').run(['$templateCache', function($templateCache) {
@@ -7826,7 +7910,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
     'use strict';
 
     angular.module('znk.infra.storage').service('StorageFirebaseAdapter',
-        function ($log, $q, StorageSrv, ENV, $timeout) {
+        ["$log", "$q", "StorageSrv", "ENV", "$timeout", function ($log, $q, StorageSrv, ENV, $timeout) {
             'ngInject';
 
             function processValue(value) {
@@ -8005,7 +8089,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
             StorageFirebaseAdapter.prototype = storageFirebaseAdapterPrototype;
 
             return StorageFirebaseAdapter;
-        });
+        }]);
 })(angular);
 
 (function (angular) {
@@ -8450,7 +8534,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
-    function (InfraConfigSrv, StorageSrv) {
+    ["InfraConfigSrv", "StorageSrv", function (InfraConfigSrv, StorageSrv) {
         'ngInject';
         var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
 
@@ -8522,7 +8606,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                 return globalStorage.get(path);
             });
         };
-});
+}]);
 
 (function (angular) {
     'use strict';
@@ -8536,7 +8620,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                 isLastSessionRecordDisabled = !!isDisbaled;
             };
 
-            this.$get = function (InfraConfigSrv, ENV) {
+            this.$get = ["InfraConfigSrv", "ENV", function (InfraConfigSrv, ENV) {
                 'ngInject';// jshint ignore:line
 
                 var initProm,lastSessionData;
@@ -8569,7 +8653,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                 initProm = init();
 
                 return UserSessionSrv;
-            };
+            }];
         }
     );
 })(angular);
@@ -8594,6 +8678,7 @@ angular.module('znk.infra.user').run(['$templateCache', function($templateCache)
 
             var _storageStudentUidKey = 'currentStudentUid';
             var _currentStudentUid = '';
+            var registeredCbsToStudentContextChangeEvent = [];
 
             StudentContextSrv.getCurrUid = function () {
                 if (_currentStudentUid.length === 0) {
@@ -8613,12 +8698,29 @@ angular.module('znk.infra.user').run(['$templateCache', function($templateCache)
             };
 
             StudentContextSrv.setCurrentUid = function (uid) {
+                var prevUid = _currentStudentUid;
                 _currentStudentUid = uid;
 
                 if ($window.sessionStorage) {
                     $window.sessionStorage.setItem(_storageStudentUidKey, uid);
                 }
+
+                _invokeCbs(registeredCbsToStudentContextChangeEvent, [prevUid, uid]);
             };
+
+            StudentContextSrv.registerToStudentContextChange = function(cb) {
+                if (!angular.isFunction(cb)) {
+                    $log.error('StudentContextSrv.registerToStudentContextChange: cb is not a function', cb);
+                    return;
+                }
+                registeredCbsToStudentContextChangeEvent.push(cb);
+            };
+
+            function _invokeCbs(cbArr, args){
+                cbArr.forEach(function(cb){
+                    cb.apply(null, args);
+                });
+            }
 
             return StudentContextSrv;
         }
@@ -8635,6 +8737,7 @@ angular.module('znk.infra.user').run(['$templateCache', function($templateCache)
 
             var _storageTeacherUidKey = 'currentTeacherUid';
             var _currentTeacherUid = '';
+            var registeredCbsToTeacherContextChangeEvent = [];
 
             TeacherContextSrv.getCurrUid = function () {
                 if (_currentTeacherUid.length === 0) {
@@ -8654,12 +8757,29 @@ angular.module('znk.infra.user').run(['$templateCache', function($templateCache)
             };
 
             TeacherContextSrv.setCurrentUid = function (uid) {
+                var prevUid = _currentTeacherUid;
                 _currentTeacherUid = uid;
 
                 if ($window.sessionStorage) {
                     $window.sessionStorage.setItem(_storageTeacherUidKey, uid);
                 }
+
+                _invokeCbs(registeredCbsToTeacherContextChangeEvent, [prevUid, uid]);
             };
+
+            TeacherContextSrv.registerToTeacherContextChange = function(cb) {
+                if (!angular.isFunction(cb)) {
+                    $log.error('TeacherContextSrv.registerToTeacherContextChange: cb is not a function', cb);
+                    return;
+                }
+                registeredCbsToTeacherContextChangeEvent.push(cb);
+            };
+
+            function _invokeCbs(cbArr, args){
+                cbArr.forEach(function(cb){
+                    cb.apply(null, args);
+                });
+            }
 
             return TeacherContextSrv;
         }
@@ -8943,7 +9063,7 @@ angular.module('znk.infra.webcall').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.contentGetters').service('WorkoutsSrv',
-        function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
+        ["ExerciseStatusEnum", "ExerciseTypeEnum", "$log", "StorageSrv", "ExerciseResultSrv", "ContentAvailSrv", "$q", "InfraConfigSrv", function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
                   InfraConfigSrv) {
             'ngInject';
 
@@ -9018,7 +9138,7 @@ angular.module('znk.infra.webcall').run(['$templateCache', function($templateCac
             };
 
             this.getWorkoutKey = getWorkoutKey;
-        }
+        }]
     );
 })(angular);
 
@@ -9876,10 +9996,10 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }])
-        .run(function ($translatePartialLoader) {
+        .run(["$translatePartialLoader", function ($translatePartialLoader) {
             'ngInject';
             $translatePartialLoader.addPart('znkExercise');
-        });
+        }]);
 })(angular);
 
 /**
@@ -10142,7 +10262,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('BaseZnkExerciseController',
-        function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, ExerciseResultSrv, ZnkExerciseSrv,
+        ["$scope", "exerciseData", "exerciseSettings", "$state", "$q", "ExerciseTypeEnum", "$location", "ExerciseResultSrv", "ZnkExerciseSrv", "$filter", "PopUpSrv", "exerciseEventsConst", "$rootScope", "ZnkExerciseUtilitySrv", "ZnkExerciseViewModeEnum", "SubjectEnum", "znkAnalyticsSrv", "$translate", "$log", "StatsEventsHandlerSrv", function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, ExerciseResultSrv, ZnkExerciseSrv,
                   $filter, PopUpSrv, exerciseEventsConst, $rootScope, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum, SubjectEnum,
                   znkAnalyticsSrv, $translate, $log, StatsEventsHandlerSrv) {
             'ngInject';
@@ -10314,7 +10434,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             $scope.baseZnkExerciseCtrl.onChangeTime = function (passedTime) {
                 exerciseResult.duration = passedTime;
             };
-        });
+        }]);
 
 })(angular);
 
@@ -10540,7 +10660,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         }
 
                         function _isLastQuestion(index, questions) {
-                            return index && index === (questions.length - 1);
+                            return angular.isDefined(index) && index === (questions.length - 1);
                         }
 
                         function _determineDoneBtnDisplayStatus() {
@@ -10848,7 +10968,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 exerciseTypeToAllowedQuestionTimeMap = _exerciseTypeToAllowedQuestionTimeMap;
             };
 
-            this.$get = function (EnumSrv, $window, PlatformEnum, $log) {
+            this.$get = ["EnumSrv", "$window", "PlatformEnum", "$log", function (EnumSrv, $window, PlatformEnum, $log) {
                 'ngInject';//jshint ignore:line
 
                 var platform = !!$window.ionic ? PlatformEnum.MOBILE.enum : PlatformEnum.DESKTOP.enum;
@@ -10899,7 +11019,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 };
 
                 return ZnkExerciseSrv;
-            };
+            }];
         }
     );
 })(angular);
@@ -11639,7 +11759,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     settings: '<'
                 },
                 controllerAs: '$ctrl',
-                controller: function($element){
+                controller: ["$element", function($element){
                     'ngInject';// jshint ignore: line
 
                     this.getCurrentQuestion = function(){
@@ -11653,7 +11773,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     this.isExerciseReady = function(){
                         return this.znkExerciseCtrl.isExerciseReady();
                     };
-                },
+                }],
                 bindToController: true,
                 link: {
                     pre: function(scope, element, attrs, znkExerciseCtrl){
@@ -12064,7 +12184,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseDrawTool',
-        function (ZnkExerciseEvents, InfraConfigSrv, $log, $q, $compile, $timeout, $window) {
+        ["ZnkExerciseEvents", "InfraConfigSrv", "$log", "$q", "$compile", "$timeout", "$window", function (ZnkExerciseEvents, InfraConfigSrv, $log, $q, $compile, $timeout, $window) {
             'ngInject';
 
             var TOUCHE_COLORS = {
@@ -12179,7 +12299,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                             return 0;
                         }
 
-                        if (!scope.settings || angular.isUndefined(scope.settings.toucheColorId)) {
+                        if (!scope.setting || angular.isUndefined(scope.settings.toucheColorId)) {
                             $log.debug('znkExerciseDrawTool: touche color was not set');
                             return 1;
                         }
@@ -12312,7 +12432,13 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         var coords = coordStr.split(":");
 
                         $window.requestAnimationFrame(function () {
-                            canvasContext.clearRect(parseInt(coords[0]) - PIXEL_SIZE, parseInt(coords[1]) - PIXEL_SIZE, 2 * PIXEL_SIZE, 2 * PIXEL_SIZE);
+                            var xCoord = parseInt(coords[0]);
+                            var yCoord = parseInt(coords[1]);
+                            var width = 10 * PIXEL_SIZE;
+                            var height = 10 * PIXEL_SIZE;
+                            var xOffset = width/2;
+                            var yOffset = height/2;
+                            canvasContext.clearRect(xCoord - xOffset, yCoord - yOffset, width, height);
                         });
                     };
 
@@ -12505,7 +12631,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     _init();
                 }
             };
-        });
+        }]);
 })(angular);
 
 
@@ -13312,7 +13438,7 @@ angular.module('znk.infra.znkModule').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.znkProgressBar').directive('znkProgressBar',
-        function ($translatePartialLoader) {
+        ["$translatePartialLoader", function ($translatePartialLoader) {
         'ngInject';
             return {
                 templateUrl: 'components/znkProgressBar/znkProgressBar.template.html',
@@ -13326,7 +13452,7 @@ angular.module('znk.infra.znkModule').run(['$templateCache', function($templateC
                     $translatePartialLoader.addPart('znkProgressBar');
                 }
             };
-        }
+        }]
     );
 })(angular);
 
@@ -13623,7 +13749,7 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
             colorsObj = obj;
         };
 
-        this.$get = function($log) {
+        this.$get = ["$log", function($log) {
             'ngInject';
 
             var timelineSrvApi = {};
@@ -13640,7 +13766,7 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
             timelineSrvApi.getColors =  _baseFn.bind(null, colorsObj, 'getColors');
 
             return timelineSrvApi;
-        };
+        }];
     });
 })(angular);
 

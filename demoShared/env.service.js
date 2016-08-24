@@ -8,6 +8,7 @@
             this.studentAppName = 'sat_app';
             this.dashboardAppName = 'sat_dashboard';
             this.videosEndPoint = "//dfz02hjbsqn5e.cloudfront.net/sat_app/";
+            this.mediaEndPoint =  "//dfz02hjbsqn5e.cloudfront.net/";
         }
     );
 })(angular);

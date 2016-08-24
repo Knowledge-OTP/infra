@@ -689,7 +689,7 @@
                         }
 
                         function _isLastQuestion(index, questions) {
-                            return index && index === (questions.length - 1);
+                            return angular.isDefined(index) && index === (questions.length - 1);
                         }
 
                         function _determineDoneBtnDisplayStatus() {
@@ -2461,7 +2461,13 @@
                         var coords = coordStr.split(":");
 
                         $window.requestAnimationFrame(function () {
-                            canvasContext.clearRect(parseInt(coords[0]) - PIXEL_SIZE, parseInt(coords[1]) - PIXEL_SIZE, 2 * PIXEL_SIZE, 2 * PIXEL_SIZE);
+                            var xCoord = parseInt(coords[0]);
+                            var yCoord = parseInt(coords[1]);
+                            var width = 10 * PIXEL_SIZE;
+                            var height = 10 * PIXEL_SIZE;
+                            var xOffset = width/2;
+                            var yOffset = height/2;
+                            canvasContext.clearRect(xCoord - xOffset, yCoord - yOffset, width, height);
                         });
                     };
 

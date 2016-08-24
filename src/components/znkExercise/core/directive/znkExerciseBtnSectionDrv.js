@@ -52,7 +52,7 @@
                         }
 
                         function _isLastQuestion(index, questions) {
-                            return index && index === (questions.length - 1);
+                            return angular.isDefined(index) && index === (questions.length - 1);
                         }
 
                         function _determineDoneBtnDisplayStatus() {
