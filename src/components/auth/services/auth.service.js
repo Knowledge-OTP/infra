@@ -22,7 +22,7 @@
             authService.changePassword = function (changePasswordData) {
                 var refAuthData = refAuthDB.getAuth();
                 changePasswordData.email = (refAuthData.password && refAuthData.password.email) ? refAuthData.password.email : '';
-                return refAuthData.changePassword(changePasswordData);
+                return refAuthDB.changePassword(changePasswordData);
             };
 
             return authService;

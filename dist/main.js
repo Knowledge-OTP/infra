@@ -885,7 +885,7 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
             authService.changePassword = function (changePasswordData) {
                 var refAuthData = refAuthDB.getAuth();
                 changePasswordData.email = (refAuthData.password && refAuthData.password.email) ? refAuthData.password.email : '';
-                return refAuthData.changePassword(changePasswordData);
+                return refAuthDB.changePassword(changePasswordData);
             };
 
             return authService;
