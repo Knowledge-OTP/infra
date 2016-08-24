@@ -77,7 +77,6 @@ active-panel {
                 svg-icon.share-my-screen {
                     &.disabled,
                     &.disabled svg-icon {
-                        opacity: 0.5;
                         cursor: default;
                         transition: 1.5s;
                     }
