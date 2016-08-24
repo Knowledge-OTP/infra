@@ -1,5 +1,5 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.config', []);
+    angular.module('znk.infra.znkChat', []);
 })(angular);
