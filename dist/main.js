@@ -3982,11 +3982,6 @@ angular.module('znk.infra.evaluator').run(['$templateCache', function($templateC
 
             EventManagerSrv.prototype.updateValue = function (newVal) {
                 var oldVal = this.currVal;
-
-                if(newVal === oldVal){
-                    return;
-                }
-
                 this.currVal = newVal;
                 this.invokeAllCbs(oldVal);
             };
