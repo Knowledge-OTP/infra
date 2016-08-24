@@ -11,7 +11,7 @@
     'use strict';
 
     angular.module('znk.infra.auth').factory('AuthService',
-        ["ENV", "$q", function (ENV, $q) {
+        ["ENV", "$q", "$firebaseAuth", function (ENV, $q, $firebaseAuth) {
             'ngInject';
 
             var refAuthDB = new Firebase(ENV.fbGlobalEndPoint, ENV.firebaseAppScopeName);
@@ -29,7 +29,7 @@
             };
 
             authService.changePassword = function (changePasswordData) {
-                var refAuthData = refAuthDB.getAuth();
+                var refAuthData = $firebaseAuth(refAuthDB);
                 if (refAuthData && refAuthData.password) {
                     changePasswordData.email = refAuthData.password.email;
                     return refAuthData.$changePassword(changePasswordData);
