@@ -857,7 +857,9 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.auth', ['znk.infra.config']);
+    angular.module('znk.infra.auth', [
+        'znk.infra.config'
+    ]);
 })(angular);
 
 (function (angular) {
@@ -872,7 +874,7 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
 
             var authService = {};
 
-            authService.getAuth = function(){
+            authService.getAuth = function() {
                 return rootRef.getAuth();
             };
 
@@ -881,10 +883,15 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
                 rootRef.unauth();
             };
 
+            authService.changePassword = function (changePasswordData) {
+                var refAuthData = refAuthDB.getAuth();
+                changePasswordData.email = (refAuthData.password && refAuthData.password.email) ? refAuthData.password.email : '';
+                return refAuthDB.changePassword(changePasswordData);
+            };
+
             return authService;
         }]);
 })(angular);
-
 
 angular.module('znk.infra.auth').run(['$templateCache', function($templateCache) {
 
@@ -12300,7 +12307,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                             return 0;
                         }
 
-                        if (!scope.setting || angular.isUndefined(scope.settings.toucheColorId)) {
+                        if (!scope.settings || angular.isUndefined(scope.settings.toucheColorId)) {
                             $log.debug('znkExerciseDrawTool: touche color was not set');
                             return 1;
                         }
