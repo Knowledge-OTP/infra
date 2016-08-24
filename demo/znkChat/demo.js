@@ -2,9 +2,14 @@
     'use strict';
 
     angular.module('demo',[
-        'znk.infra.znkChat'
+        'znk.infra.config',
+        'znk.infra.storage'
     ])
-        .controller('ctrl',function($scope){
+        .controller('ctrl',function($scope,InfraConfigSrv){
+                 InfraConfigSrv.getGlobalStorage().then(function( x){
+                     debugger;
+                 })
+
         })
 
 })(angular);

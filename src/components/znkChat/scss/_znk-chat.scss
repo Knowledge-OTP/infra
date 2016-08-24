@@ -1,5 +1,6 @@
-znk-chat.znk-chat-wrapper{
-
+.znk-chat-wrapper{
+    .button-wrapper{
+        @include dimension(45px,45px);
         background-color: $bgColor17;
-    //}
+    }
 }
