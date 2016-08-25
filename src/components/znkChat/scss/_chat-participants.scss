@@ -1,0 +1,67 @@
+.chat-participants {
+    @include dimension(200px, 275px);
+    padding-top: 15px;
+    box-sizing: border-box;
+    border-radius: 15px 0 0 15px;
+    background-color: $bgColor21;
+    border-right: 3px solid $bcColor11;
+
+    .my-chat-title {
+        @include text-style(12px, $fcColor15, Quicksand, $regularFontWeight);
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    .online-indicator {
+        @include dimension(7px, 7px);
+        border: 2px solid $bcColor15;
+        border-radius: 6px;
+        margin-right: 13px;
+    }
+
+    .online {
+        .online-indicator {
+            background: $bgColor2
+        }
+    }
+
+    .chatter-repeater, .support-chat-wrapper {
+        @include dimension(175px, 30px);
+        display: flex;
+        align-items: center;
+        padding-left: 9px;
+        box-sizing: border-box;
+        cursor: pointer;
+    }
+
+    .chatter-repeater {
+        &.offline {
+            .chatter-name {
+                font-family: $fcColor6;
+            }
+        }
+
+        .chatter-name {
+            @include text-style(16px, $fcColor14, Lato, $regularFontWeight);
+            height: 23px;
+        }
+    }
+
+    .support-chat-wrapper {
+        @include text-style(16px, $fcColor14, Lato, $regularFontWeight);
+        .support {
+            position: relative;
+            height: 23px;
+
+        }
+        .support::before {
+            @include dimension(175px, 2px);
+            left: -22px;
+            top: -3px;
+            position: absolute;
+            content: '';
+            background-color: $bgColor30;
+            margin: 0 auto;
+        }
+    }
+}

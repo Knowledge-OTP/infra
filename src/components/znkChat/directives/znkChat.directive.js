@@ -6,18 +6,22 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkChat').directive('znkChat', [
-        function () {
+    angular.module('znk.infra.znkChat').directive('znkChat', ['$translatePartialLoader',
+        function ($translatePartialLoader, PresenceService) {
+            'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/znkChat.template.html',
                 scope: {},
-                link: function(scope){
-                    var statesView = {
-                        CHAT_VIEW: 1,
-                        CHAT_BUTTON_VIEW: 2
+                link: function (scope) {
+                    $translatePartialLoader.addPart('znkChat');
+
+
+
+                    scope.d.chatStateView = statesView.CHAT_VIEW;
+                    scope.d.openChat = function () {
+                        scope.chatStateView = statesView.CHAT_VIEW;
                     };
 
-                    scope.chatStateView = statesView.CHAT_VIEW;
                 }
             };
         }

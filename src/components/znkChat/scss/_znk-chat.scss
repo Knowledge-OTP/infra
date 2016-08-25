@@ -1,6 +1,28 @@
-.znk-chat-wrapper{
-    .button-wrapper{
-        @include dimension(45px,45px);
+.znk-chat-wrapper {
+    .button-wrapper {
+        @include dimension(45px, 45px);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 35px;
         background-color: $bgColor17;
+
+        svg {
+            @include dimension(25px, 25px);
+        }
+    }
+
+    .chat-container {
+        @include dimension(525px, 275px);
+        border-radius: 15px;
+        box-shadow: 0 0 4px 0.2px $bsColor1;
+
+
+        .chat-messages-board {
+            @include dimension(200px, 275px);
+            border-radius: 15px;
+            //background-color: ;
+        }
     }
 }

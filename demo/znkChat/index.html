@@ -2,13 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-
+    <!-- bower:css -->
+    <link rel="stylesheet" href="angular-material/angular-material.css" />
+    <!-- endbower -->
     <link rel="stylesheet" href="main.css"/>
 </head>
 <style>
-    body {
-        background: #f2f2f2;
-    }
+.chat-wrapper{
+    position:absolute;
+    right:100px;
+    bottom:100px;
+}
 
 </style>
 <body ng-app="demo" ng-controller="ctrl">
@@ -31,10 +35,14 @@
 <script src="angular-material/angular-material.js"></script>
 <script src="angular-ui-router/release/angular-ui-router.js"></script>
 <!-- endbower -->
+<script src="svgIcon/svgIcon.js"></script>
+<script src="presence/presence.js"></script>
 <script src="main.js "></script>
 
+<div class="chat-wrapper">
+    <znk-chat></znk-chat>
+</div>
 
-<znk-chat></znk-chat>
 <script src="demo.js"></script>
 <script src="env.service.js"></script>
 <script src="config/config.js"></script>

@@ -1,15 +1,26 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demo',[
+    angular.module('demo', [
+        'znk.infra.znkChat',
         'znk.infra.config',
-        'znk.infra.storage'
+        'znk.infra.storage',
+        'pascalprecht.translate'
     ])
-        .controller('ctrl',function($scope,InfraConfigSrv){
-                 InfraConfigSrv.getGlobalStorage().then(function( x){
-                     debugger;
-                 })
-
+        .config(function ($translateProvider) {
+            $translateProvider.useLoader('$translatePartialLoader', {
+                urlTemplate: '/znkChat/locale/{lang}.json'
+            })
+                .preferredLanguage('en');
         })
+        .controller('ctrl', function ($scope, InfraConfigSrv) {
+            InfraConfigSrv.getGlobalStorage().then(function (x) {
+            })
+        })
+        .run(function ($rootScope, $translate) {
+            $rootScope.$on('$translatePartialLoaderStructureChanged', function () {
+                $translate.refresh();
+            })
+        });
 
 })(angular);
