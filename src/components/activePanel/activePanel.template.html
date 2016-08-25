@@ -1,4 +1,6 @@
-<div class="active-panel ng-hide" ng-show="d.currStatus !== d.states.NONE">
+<div class="active-panel ng-hide"
+     ng-show="d.currStatus !== d.states.NONE"
+     translate-namespace="ACTIVE_PANEL">
     <div class="flex-container">
         <div class="callee-status flex-col">
             <div class="online-indicator"
@@ -16,14 +18,22 @@
         <div class="call-controls flex-col">
             <div ng-click="d.viewOtherUserScreen()"
                  class="show-other-screen"
-                 title="{{(d.isTeacher) ? 'Show Teacher Screen' : 'Show Student Screen'}}"
                  disable-click-drv="d.shareScreenBtnsEnable"
                  ng-class="{disabled: !d.shareScreenBtnsEnable}">
+                <!--title="{{(d.isTeacher) ? 'Show Teacher Screen' : 'Show Student Screen'}}"-->
                 <ng-switch on="d.isTeacher">
                     <svg-icon ng-switch-when="true"
-                              name="active-panel-track-student-icon"></svg-icon>
+                              name="active-panel-track-student-icon">
+                        <md-tooltip md-direction="top" class="tooltip-box md-whiteframe-2dp">
+                            <span>student</span>
+                        </md-tooltip>
+                    </svg-icon>
                     <svg-icon ng-switch-default
-                              name="active-panel-track-teacher-icon"></svg-icon>
+                              name="active-panel-track-teacher-icon">
+                        <md-tooltip md-direction="top" class="tooltip-box md-whiteframe-2dp">
+                            <span>teacher</span>
+                        </md-tooltip>
+                    </svg-icon>
                 </ng-switch>
             </div>
 

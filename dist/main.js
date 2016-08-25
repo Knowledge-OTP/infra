@@ -283,9 +283,24 @@
         }]);
 })(angular);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.activePanel')
+        .run(["$timeout", "$translatePartialLoader", function($timeout, $translatePartialLoader){
+            'ngInject';
+            //must be wrapped in timeout because the parting adding cannot be made directly in a run block
+            $timeout(function(){
+                $translatePartialLoader.addPart('activePanel');
+            });
+        }]);
+})(angular);
+
 angular.module('znk.infra.activePanel').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/activePanel/activePanel.template.html",
-    "<div class=\"active-panel ng-hide\" ng-show=\"d.currStatus !== d.states.NONE\">\n" +
+    "<div class=\"active-panel ng-hide\"\n" +
+    "     ng-show=\"d.currStatus !== d.states.NONE\"\n" +
+    "     translate-namespace=\"ACTIVE_PANEL\">\n" +
     "    <div class=\"flex-container\">\n" +
     "        <div class=\"callee-status flex-col\">\n" +
     "            <div class=\"online-indicator\"\n" +
@@ -303,14 +318,22 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "        <div class=\"call-controls flex-col\">\n" +
     "            <div ng-click=\"d.viewOtherUserScreen()\"\n" +
     "                 class=\"show-other-screen\"\n" +
-    "                 title=\"{{(d.isTeacher) ? 'Show Teacher Screen' : 'Show Student Screen'}}\"\n" +
     "                 disable-click-drv=\"d.shareScreenBtnsEnable\"\n" +
     "                 ng-class=\"{disabled: !d.shareScreenBtnsEnable}\">\n" +
+    "                <!--title=\"{{(d.isTeacher) ? 'Show Teacher Screen' : 'Show Student Screen'}}\"-->\n" +
     "                <ng-switch on=\"d.isTeacher\">\n" +
     "                    <svg-icon ng-switch-when=\"true\"\n" +
-    "                              name=\"active-panel-track-student-icon\"></svg-icon>\n" +
+    "                              name=\"active-panel-track-student-icon\">\n" +
+    "                        <md-tooltip md-direction=\"top\" class=\"tooltip-box md-whiteframe-2dp\">\n" +
+    "                            <span>student</span>\n" +
+    "                        </md-tooltip>\n" +
+    "                    </svg-icon>\n" +
     "                    <svg-icon ng-switch-default\n" +
-    "                              name=\"active-panel-track-teacher-icon\"></svg-icon>\n" +
+    "                              name=\"active-panel-track-teacher-icon\">\n" +
+    "                        <md-tooltip md-direction=\"top\" class=\"tooltip-box md-whiteframe-2dp\">\n" +
+    "                            <span>teacher</span>\n" +
+    "                        </md-tooltip>\n" +
+    "                    </svg-icon>\n" +
     "                </ng-switch>\n" +
     "            </div>\n" +
     "\n" +
