@@ -20,19 +20,14 @@
                  class="show-other-screen"
                  disable-click-drv="d.shareScreenBtnsEnable"
                  ng-class="{disabled: !d.shareScreenBtnsEnable}">
-                <!--title="{{(d.isTeacher) ? 'Show Teacher Screen' : 'Show Student Screen'}}"-->
                 <ng-switch on="d.isTeacher">
                     <svg-icon ng-switch-when="true"
-                              name="active-panel-track-student-icon">
-                        <md-tooltip md-direction="top" class="tooltip-box md-whiteframe-2dp">
-                            <span>student</span>
-                        </md-tooltip>
+                              name="active-panel-track-student-icon"
+                              title="{{'.SHOW_STUDENT_SCREEN' | translate}}">
                     </svg-icon>
                     <svg-icon ng-switch-default
-                              name="active-panel-track-teacher-icon">
-                        <md-tooltip md-direction="top" class="tooltip-box md-whiteframe-2dp">
-                            <span>teacher</span>
-                        </md-tooltip>
+                              name="active-panel-track-teacher-icon"
+                              title="{{'.SHOW_TEACHER_SCREEN' | translate}}">
                     </svg-icon>
                 </ng-switch>
             </div>
@@ -41,7 +36,8 @@
                       ng-class="{disabled: !d.shareScreenBtnsEnable}"
                       ng-click="d.shareMyScreen()"
                       name="active-panel-share-screen-icon"
-                      class="share-my-screen">
+                      class="share-my-screen"
+                      title="{{'.SHARE_MY_SCREEN' | translate}}">
             </svg-icon>
 
             <call-btn ng-model="d.callBtnModel"></call-btn>

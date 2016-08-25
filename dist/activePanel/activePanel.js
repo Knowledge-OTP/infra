@@ -270,19 +270,14 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "                 class=\"show-other-screen\"\n" +
     "                 disable-click-drv=\"d.shareScreenBtnsEnable\"\n" +
     "                 ng-class=\"{disabled: !d.shareScreenBtnsEnable}\">\n" +
-    "                <!--title=\"{{(d.isTeacher) ? 'Show Teacher Screen' : 'Show Student Screen'}}\"-->\n" +
     "                <ng-switch on=\"d.isTeacher\">\n" +
     "                    <svg-icon ng-switch-when=\"true\"\n" +
-    "                              name=\"active-panel-track-student-icon\">\n" +
-    "                        <md-tooltip md-direction=\"top\" class=\"tooltip-box md-whiteframe-2dp\">\n" +
-    "                            <span>student</span>\n" +
-    "                        </md-tooltip>\n" +
+    "                              name=\"active-panel-track-student-icon\"\n" +
+    "                              title=\"{{'.SHOW_STUDENT_SCREEN' | translate}}\">\n" +
     "                    </svg-icon>\n" +
     "                    <svg-icon ng-switch-default\n" +
-    "                              name=\"active-panel-track-teacher-icon\">\n" +
-    "                        <md-tooltip md-direction=\"top\" class=\"tooltip-box md-whiteframe-2dp\">\n" +
-    "                            <span>teacher</span>\n" +
-    "                        </md-tooltip>\n" +
+    "                              name=\"active-panel-track-teacher-icon\"\n" +
+    "                              title=\"{{'.SHOW_TEACHER_SCREEN' | translate}}\">\n" +
     "                    </svg-icon>\n" +
     "                </ng-switch>\n" +
     "            </div>\n" +
@@ -291,7 +286,8 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "                      ng-class=\"{disabled: !d.shareScreenBtnsEnable}\"\n" +
     "                      ng-click=\"d.shareMyScreen()\"\n" +
     "                      name=\"active-panel-share-screen-icon\"\n" +
-    "                      class=\"share-my-screen\">\n" +
+    "                      class=\"share-my-screen\"\n" +
+    "                      title=\"{{'.SHARE_MY_SCREEN' | translate}}\">\n" +
     "            </svg-icon>\n" +
     "\n" +
     "            <call-btn ng-model=\"d.callBtnModel\"></call-btn>\n" +
