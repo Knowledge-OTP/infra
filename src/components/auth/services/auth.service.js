@@ -10,13 +10,19 @@
 
             var authService = {};
 
-            authService.getAuth = function(){
+            authService.getAuth = function() {
                 return rootRef.getAuth();
             };
 
             authService.logout = function () {
                 refAuthDB.unauth();
                 rootRef.unauth();
+            };
+
+            authService.changePassword = function (changePasswordData) {
+                var refAuthData = refAuthDB.getAuth();
+                changePasswordData.email = (refAuthData.password && refAuthData.password.email) ? refAuthData.password.email : '';
+                return refAuthDB.changePassword(changePasswordData);
             };
 
             return authService;

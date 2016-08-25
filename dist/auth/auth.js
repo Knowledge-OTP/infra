@@ -1,7 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.auth', ['znk.infra.config']);
+    angular.module('znk.infra.auth', [
+        'znk.infra.config'
+    ]);
 })(angular);
 
 (function (angular) {
@@ -16,7 +18,7 @@
 
             var authService = {};
 
-            authService.getAuth = function(){
+            authService.getAuth = function() {
                 return rootRef.getAuth();
             };
 
@@ -25,10 +27,15 @@
                 rootRef.unauth();
             };
 
+            authService.changePassword = function (changePasswordData) {
+                var refAuthData = refAuthDB.getAuth();
+                changePasswordData.email = (refAuthData.password && refAuthData.password.email) ? refAuthData.password.email : '';
+                return refAuthDB.changePassword(changePasswordData);
+            };
+
             return authService;
         }]);
 })(angular);
-
 
 angular.module('znk.infra.auth').run(['$templateCache', function($templateCache) {
 

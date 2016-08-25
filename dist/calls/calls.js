@@ -104,7 +104,7 @@
                     if (ngModelCtrl) {
                         ngModelCtrl.$render = function() {
                             var modelValue = ngModelCtrl.$modelValue;
-                            if (angular.isDefined(modelValue.isOffline) && modelValue.receiverId) {
+                            if (modelValue && angular.isDefined(modelValue.isOffline) && modelValue.receiverId) {
                                 var curBtnStatus = modelValue.isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
                                 receiverId = modelValue.receiverId;
                                 _changeBtnState(curBtnStatus);
@@ -820,6 +820,7 @@
     angular.module('znk.infra.calls')
         .constant('CALL_UPDATE', 'CallsEventsSrv: call updated')
         .provider('CallsEventsSrv', function () {
+
             var isEnabled = true;
 
             this.enabled = function (_isEnabled) {
@@ -828,6 +829,9 @@
 
             this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "$q", "CALL_UPDATE", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, $q, CALL_UPDATE) {
                 'ngInject';
+                var registeredCbToCurrUserCallStateChange = [];
+                var currUserCallState;
+
                 var CallsEventsSrv = {};
 
                 var scopesObj = {};
@@ -861,6 +865,7 @@
                     function _cb(callsData) {
 
                         if (!callsData) {
+                            currUserCallState = callsData;
                             return;
                         }
 
@@ -888,23 +893,18 @@
                                     if (!isCurrentUserInitiatedCall(currUid)) {
                                         CallsUiSrv.closeModal();
                                         // show outgoing call modal WITH the ANSWERED TEXT, wait 2 seconds and close the modal, show the ActiveCallDRV
-                                        // ActivePanelSrv.showActivePanelDrv('calls');
-                                        // ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
                                     } else {
                                         // close the modal, show the ActiveCallDRV
                                         // CallsUiSrv.closeModal();
-                                        // ActivePanelSrv.showActivePanelDrv('calls');
-                                        // ActivePanelSrv.updateStatus('calls', ActivePanelStatusEnum.ACTIVE.enum);
                                     }
-                                    // ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.ACTIVE.enum);
                                     break;
                                 case CallsStatusEnum.ENDED_CALL.enum:
                                     $log.debug('call ended');
-                                    // ActivePanelSrv.updateStatus(ActivePanelComponentEnum.CALLS.enum, ActivePanelStatusEnum.INACTIVE.enum);
                                     // disconnect other user from call
                                     getCallsSrv().disconnectCall();
                                     break;
                             }
+                            _invokeCbs(registeredCbToCurrUserCallStateChange, [callsData]);
                         });
 
                         function isCurrentUserInitiatedCall(currUid) {
@@ -942,6 +942,12 @@
                     });
                 }
 
+                function _invokeCbs(cbArr, args){
+                    cbArr.forEach(function(cb){
+                        cb.apply(null, args);
+                    });
+                }
+
                 CallsEventsSrv.activate = function () {
                     if (isEnabled) {
                         _startListening();
@@ -951,6 +957,12 @@
                 CallsEventsSrv.openOutGoingCall = openOutGoingCall;
 
                 CallsEventsSrv.updateScopeData = updateScopeData;
+
+                CallsEventsSrv.registerToCurrUserCallStateChanges = function (cb) {
+                    if (angular.isFunction(cb)) {
+                        registeredCbToCurrUserCallStateChange.push(cb);
+                    }
+                };
 
                 return CallsEventsSrv;
             }];
@@ -1149,6 +1161,23 @@
                 });
             }
 
+            function _isUserInActiveCall() {
+                return CallsDataGetterSrv.getCurrUserCallsData().then(function(callsDataMap){
+                    var activeCallsDataArr = [];
+                    var isInActiveCall = false;
+                    angular.forEach(callsDataMap, function(callData) {
+                        if(callData.status && (callData.status === CallsStatusEnum.PENDING_CALL.enum ||
+                            callData.status === CallsStatusEnum.ACTIVE_CALL.enum)) {
+                            activeCallsDataArr.push(callData);
+                        }
+                    });
+                    if (activeCallsDataArr.length > 0) {
+                        isInActiveCall = true;
+                    }
+                    return isInActiveCall;
+                });
+            }
+
             // api
             this.acceptCall = function(callsData) {
                 return _handleCallerIdOrReceiverIdUndefined(callsData, 'acceptCall').then(function () {
@@ -1197,6 +1226,8 @@
                     return $q.reject(err);
                 });
             };
+
+            this.isUserInActiveCall = _isUserInActiveCall;
         }]
     );
 })(angular);
