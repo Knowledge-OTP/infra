@@ -16,11 +16,14 @@
         <div class="call-controls flex-col">
             <div ng-click="d.viewOtherUserScreen()"
                  class="show-other-screen"
+                 title="{{(d.isTeacher) ? 'Show Teacher Screen' : 'Show Student Screen'}}"
                  disable-click-drv="d.shareScreenBtnsEnable"
                  ng-class="{disabled: !d.shareScreenBtnsEnable}">
                 <ng-switch on="d.isTeacher">
-                    <svg-icon ng-switch-when="true" name="active-panel-track-student-icon"></svg-icon>
-                    <svg-icon ng-switch-default name="active-panel-track-teacher-icon"></svg-icon>
+                    <svg-icon ng-switch-when="true"
+                              name="active-panel-track-student-icon"></svg-icon>
+                    <svg-icon ng-switch-default
+                              name="active-panel-track-teacher-icon"></svg-icon>
                 </ng-switch>
             </div>
 

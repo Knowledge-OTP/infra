@@ -253,11 +253,14 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "        <div class=\"call-controls flex-col\">\n" +
     "            <div ng-click=\"d.viewOtherUserScreen()\"\n" +
     "                 class=\"show-other-screen\"\n" +
+    "                 title=\"{{(d.isTeacher) ? 'Show Teacher Screen' : 'Show Student Screen'}}\"\n" +
     "                 disable-click-drv=\"d.shareScreenBtnsEnable\"\n" +
     "                 ng-class=\"{disabled: !d.shareScreenBtnsEnable}\">\n" +
     "                <ng-switch on=\"d.isTeacher\">\n" +
-    "                    <svg-icon ng-switch-when=\"true\" name=\"active-panel-track-student-icon\"></svg-icon>\n" +
-    "                    <svg-icon ng-switch-default name=\"active-panel-track-teacher-icon\"></svg-icon>\n" +
+    "                    <svg-icon ng-switch-when=\"true\"\n" +
+    "                              name=\"active-panel-track-student-icon\"></svg-icon>\n" +
+    "                    <svg-icon ng-switch-default\n" +
+    "                              name=\"active-panel-track-teacher-icon\"></svg-icon>\n" +
     "                </ng-switch>\n" +
     "            </div>\n" +
     "\n" +
