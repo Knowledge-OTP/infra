@@ -11,36 +11,6 @@
             'znk.infra.analytics',
             'znk.infra.popUp'
         ])
-        .config(function (QuestionTypesSrvProvider, $sceProvider, ZnkExerciseSrvProvider, exerciseTypeConst, $translateProvider, $translatePartialLoaderProvider) {
-            $sceProvider.enabled(false);
-
-
-            var allowedTimeForQuestionByExercise = {};
-            allowedTimeForQuestionByExercise[exerciseTypeConst.TUTORIAL] = 1.5 * 60 * 1000;
-            allowedTimeForQuestionByExercise[exerciseTypeConst.DRILL] = 40 * 1000;
-            allowedTimeForQuestionByExercise[exerciseTypeConst.PRACTICE] = 40 * 1000;
-            ZnkExerciseSrvProvider.setAllowedTimeForQuestionMap(allowedTimeForQuestionByExercise);
-
-            var map = {
-                1: '<div>question Type 1</div><span>{{$parent.questionGetter().id}}</span>' +
-                   '<div ng-bind-html="$parent.questionGetter().content"></div>' +
-                   '<answer-builder></answer-builder>'
-            };
-            QuestionTypesSrvProvider.setQuestionTypesHtmlTemplate(map);
-
-            function questionTypeGetter() {
-                return '1';
-            }
-
-            QuestionTypesSrvProvider.setQuestionTypeGetter(questionTypeGetter);
-
-            $translateProvider.useLoader('$translatePartialLoader', {
-                urlTemplate: '/{part}/locale/{lang}.json'
-            });
-            $translateProvider.preferredLanguage('en');
-            $translatePartialLoaderProvider.addPart('znkExercise');
-        })
-
         .controller('Main', function ($scope, $timeout, ContentSrv, ZnkExerciseUtilitySrv, ExerciseResultSrv, $controller ) {
 
             var resultsData;
@@ -114,7 +84,6 @@
                 onDone: function () {
                     alert('On done was invoked');
                 },
-                initPagerDisplay: false,
                 initForceDoneBtnDisplay: true,
                 toolBox: {
                     drawing:{
@@ -146,18 +115,12 @@
                 currentQuestionAnswer.userAnswer = newAnswer;
             };
 
+            this.togglePagerDisplay = function(){
+                var newState = !$scope.d.actions.getPagerDisplayState();
+                $scope.d.actions.pagerDisplay(newState);
+            };
+
             setExercise('practice', '165');
-        })
-        .component('selectAnswer', {
-            template: '<div>{{$ctrl.ngModel.$viewValue}}</div>',
-            require: {
-                ngModel: '^ngModel'
-            },
-            controller: function(){
-                this.$onInit = function(){
-                    this.ngModel;
-                };
-            }
         })
         .run(function ($rootScope, $translate) {
             $rootScope.$on('$translatePartialLoaderStructureChanged', function () {
