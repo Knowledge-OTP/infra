@@ -273,11 +273,11 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "                <ng-switch on=\"d.isTeacher\">\n" +
     "                    <svg-icon ng-switch-when=\"true\"\n" +
     "                              name=\"active-panel-track-student-icon\"\n" +
-    "                              title=\"{{'.SHOW_STUDENT_SCREEN' | translate}}\">\n" +
+    "                              title=\"{{'ACTIVE_PANEL.SHOW_STUDENT_SCREEN' | translate}}\">\n" +
     "                    </svg-icon>\n" +
     "                    <svg-icon ng-switch-default\n" +
     "                              name=\"active-panel-track-teacher-icon\"\n" +
-    "                              title=\"{{'.SHOW_TEACHER_SCREEN' | translate}}\">\n" +
+    "                              title=\"{{'ACTIVE_PANEL.SHOW_TEACHER_SCREEN' | translate}}\">\n" +
     "                    </svg-icon>\n" +
     "                </ng-switch>\n" +
     "            </div>\n" +
@@ -287,7 +287,7 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "                      ng-click=\"d.shareMyScreen()\"\n" +
     "                      name=\"active-panel-share-screen-icon\"\n" +
     "                      class=\"share-my-screen\"\n" +
-    "                      title=\"{{'.SHARE_MY_SCREEN' | translate}}\">\n" +
+    "                      title=\"{{'ACTIVE_PANEL.SHARE_MY_SCREEN' | translate}}\">\n" +
     "            </svg-icon>\n" +
     "\n" +
     "            <call-btn ng-model=\"d.callBtnModel\"></call-btn>\n" +
