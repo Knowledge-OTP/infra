@@ -5,7 +5,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 35px;
+        border-radius: 35px ;
         background-color: $bgColor17;
 
         svg {
@@ -16,7 +16,7 @@
     .chat-container {
         @include dimension(525px, 275px);
         display: flex;
-        border-radius: 15px;
+        border-radius: 15px 15px 0 0 ;
         box-shadow: 0 0 4px 0.2px $bsColor1;
 
 

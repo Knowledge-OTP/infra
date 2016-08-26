@@ -14,6 +14,10 @@
                 .preferredLanguage('en');
         })
         .controller('ctrl', function ($scope, InfraConfigSrv) {
+            $scope.userChatObj = {
+                chatGuids: ['guid1','guid2','guid3', 'guid4'],
+                name: 'Abra Kadabra'
+            };
             InfraConfigSrv.getGlobalStorage().then(function (x) {
             })
         })

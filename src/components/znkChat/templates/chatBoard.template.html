@@ -1,6 +1,15 @@
 <div class="chat-board-wrapper">
-    <div class="chatter-wrapper">
+    <div class="chat-board-header">
+        <chatter chatter-obj="chatterObj"></chatter>
+    </div>
+    <div class="board-wrapper">
+        <div class="messages-wrapper">
+            <div ng-repeat="message in chatMessages">
+                <chat-message message="message"></chat-message>
+            </div>
+        </div>
 
+        <textarea></textarea>
     </div>
 
 </div>

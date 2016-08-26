@@ -1,12 +1,14 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkChat').directive('znkChat', ['$translatePartialLoader',
-        function ($translatePartialLoader) {
+    angular.module('znk.infra.znkChat').directive('znkChat', ['$translatePartialLoader', 'znkChatSrv',
+        function ($translatePartialLoader, znkChatSrv) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/znkChat.template.html',
-                scope: {},
+                scope: {
+                    userChatObj:'='
+                },
                 link: function (scope) {
                     $translatePartialLoader.addPart('znkChat');
 
@@ -22,8 +24,13 @@
                     };
 
                     scope.d.selectChatter = function (chatter) {
-
-                        scope.d.selectedChatter = chatter;
+                        var chatGuid1 = scope.userChatObj.chatGuids;
+                        var chatGuid2 = chatter.chatGuids;
+                        var chatGuid = znkChatSrv.getChatGuidByTwoGuidsArray(chatGuid1,chatGuid2);
+                        znkChatSrv.getChatMessages(chatGuid).then(function (chatMessages) {
+                            scope.d.selectedChatter = chatter;
+                            scope.d.chatMessages = chatMessages;
+                        })
                     }
                 }
             };

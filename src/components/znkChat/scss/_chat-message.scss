@@ -1,0 +1,6 @@
+chat-message{
+    .message-wrapper{
+        @include dimension(100%, 60px); // todo- temp size
+        text-align: center;
+    }
+}

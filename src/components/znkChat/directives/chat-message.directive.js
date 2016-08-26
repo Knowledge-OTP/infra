@@ -3,18 +3,19 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkChat').directive('chatBoard', [
+    angular.module('znk.infra.znkChat').directive('chatMessage', [
         function () {
             'ngInject';
             return {
-                templateUrl: 'components/znkChat/templates/chatBoard.template.html',
+                template: '<div class="message-wrapper">' +
+                            '<div>{{message.text}}</div>'+
+                            '</div>',
                 scope: {
-                    chatterObj: '=',
-                    chatMessages:'='
+                    message: '='
                 },
                 link: function (scope) {
                     scope.d = {};
-                    
+
                 }
             };
         }

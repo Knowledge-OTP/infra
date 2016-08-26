@@ -2,7 +2,7 @@
     @include dimension(200px, 275px);
     padding-top: 15px;
     box-sizing: border-box;
-    border-radius: 15px 0 0 15px;
+    border-radius: 15px 0 0 0;
     background-color: $bgColor21;
     border-right: 3px solid $bcColor11;
 
@@ -24,23 +24,23 @@
         }
     }
 
-    .online-indicator {
-        @include dimension(7px, 7px);
-        border: 2px solid $bcColor15;
-        border-radius: 6px;
-        margin-right: 13px;
-    }
-
-    .online {
-        .online-indicator {
-            background: $bgColor2
-        }
-    }
-
     .support-chat-wrapper {
         @include text-style(16px, $fcColor14, Lato, $regularFontWeight);
         display: flex;
         align-items: center;
+
+        .online-indicator {
+            @include dimension(7px, 7px);
+            border: 2px solid $bcColor15;
+            border-radius: 6px;
+            margin-right: 13px;
+        }
+
+        .online {
+            .online-indicator {
+                background: $bgColor2
+            }
+        }
 
         .support {
             position: relative;

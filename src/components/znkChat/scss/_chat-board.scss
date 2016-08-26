@@ -1,0 +1,30 @@
+chat-board {
+    width: 100%;
+
+    .chat-board-wrapper {
+        text-align: center;
+
+        .chat-board-header {
+            display: flex;
+            justify-content: center;
+            border-bottom: 1px solid gray; // todo - color------------------------------------
+            height: 30px;
+        }
+
+        .board-wrapper{
+            .messages-wrapper {
+                @include dimension(100%, 200px);
+                overflow-y: auto;
+            }
+
+            textarea{
+                @include dimension(100%, 44px);
+                border:none;
+                border-top: 1px solid lightgray; // todo - color --------------------------
+                box-sizing: border-box;
+                resize: none;
+                border-radius: 0 0 10px 0;
+            }
+        }
+    }
+}

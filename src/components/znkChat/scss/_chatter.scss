@@ -2,7 +2,6 @@
     display: flex;
     align-items: center;
 
-
     .online-indicator {
         @include dimension(7px, 7px);
         border: 2px solid gray;
@@ -10,7 +9,7 @@
         margin-right: 13px;
     }
 
-    .online {
+    &.online {
         .online-indicator {
             background: $bgColor2
         }
