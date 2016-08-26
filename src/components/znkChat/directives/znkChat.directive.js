@@ -32,6 +32,7 @@
                             scope.d.chatMessages = chatMessages;
                         })
                     }
+                    
                 }
             };
         }

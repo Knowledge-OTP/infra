@@ -5,7 +5,12 @@
 
     <div class="chat-container" ng-switch-when="2">
         <chat-participants select-chatter="d.selectChatter"></chat-participants>
-        <chat-board  chat-messages="d.chatMessages" chatter-obj="d.selectedChatter"></chat-board>
+        <chat-board
+            user-id="userChatObj.uid"
+            chat-messages="d.chatMessages"
+            chatter-obj="d.selectedChatter">
+
+        </chat-board>
     </div>
 
 

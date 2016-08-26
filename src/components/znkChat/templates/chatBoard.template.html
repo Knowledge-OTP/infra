@@ -4,12 +4,15 @@
     </div>
     <div class="board-wrapper">
         <div class="messages-wrapper">
-            <div ng-repeat="message in chatMessages">
+            <div ng-repeat="message in chatMessages track by $index">
                 <chat-message message="message"></chat-message>
             </div>
         </div>
 
-        <textarea></textarea>
+            <textarea
+                ng-keyup="$event.keyCode == 13 && d.sendMessage()"
+                ng-model="d.newMessage">
+            </textarea>
     </div>
 
 </div>

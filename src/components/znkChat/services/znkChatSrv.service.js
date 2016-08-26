@@ -30,6 +30,10 @@
                 }
             };
 
+            this.updateMessages  = function(chatMessages){
+
+            };
+
 
             // mock
             var chatParticipantsArr = [{name: 'name1', presence: 0, chatGuids: ['guid1']},
@@ -39,10 +43,7 @@
 
             var messages = {};
             messages.guid1 = [{uid: 1, text: 'aaaaaaaaaaaaaaaaaa'},
-                {uid: 2, text: 'aaaaaaaaaaaaaaa'},
-                {uid: 3, text: 'bbbbbbbbbbbbbbbbbb'},
-                {uid: 1, text: 'ccccccccccccc'},
-                {uid: 1, text: 'd'}];
+                {uid: 2, text: 'bbbbbbbb'}];
 
             messages.guid2 = [{uid: 1, text: 'fffffffffffff'},
                 {uid: 2, text: 'ffffffffffffffff'},

@@ -16,7 +16,8 @@
         .controller('ctrl', function ($scope, InfraConfigSrv) {
             $scope.userChatObj = {
                 chatGuids: ['guid1','guid2','guid3', 'guid4'],
-                name: 'Abra Kadabra'
+                name: 'Abra Kadabra',
+                uid: '1234'
             };
             InfraConfigSrv.getGlobalStorage().then(function (x) {
             })
