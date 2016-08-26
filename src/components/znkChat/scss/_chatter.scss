@@ -1,0 +1,29 @@
+.chatter-wrapper {
+    display: flex;
+    align-items: center;
+
+
+    .online-indicator {
+        @include dimension(7px, 7px);
+        border: 2px solid gray;
+        border-radius: 6px;
+        margin-right: 13px;
+    }
+
+    .online {
+        .online-indicator {
+            background: $bgColor2
+        }
+    }
+
+    &.offline {
+        .chatter-name {
+            font-family: $fcColor6;
+        }
+    }
+
+    .chatter-name {
+        @include text-style(16px, $fcColor14, Lato, $regularFontWeight);
+        height: 23px;
+    }
+}

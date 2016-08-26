@@ -1,12 +1,10 @@
 <div class="chat-participants">
     <div class="my-chat-title" translate=".MY_CHAT"></div>
 
-    <div class="chatter-repeater " ng-repeat="chatter in d.chattersArr"
-         ng-class="{'offline': chatter.presence === d.userStatus.OFFLINE,
-                                'online': chatter.presence === d.userStatus.ONLINE,
-                                'idle': chatter.presence === d.userStatus.IDLE}">
-        <div class="online-indicator"></div>
-        <div class="chatter-name">{{::chatter.name}}</div>
+    <div class="chatter-repeater " ng-repeat="chatter in d.chattersArr track by $index">
+        <div ng-click="selectChatter()(chatter)">
+            <chatter  chatter-obj="chatter"></chatter>
+        </div>
     </div>
 
     <div class="support-chat-wrapper">

@@ -12,6 +12,18 @@
         margin-bottom: 15px;
     }
 
+
+    .chatter-repeater, .support-chat-wrapper {
+        @include dimension(175px, 30px);
+        padding-left: 9px;
+        box-sizing: border-box;
+        cursor: pointer;
+
+        &:hover{
+            background-color: #BDBDBD; // todo- check angular material button
+        }
+    }
+
     .online-indicator {
         @include dimension(7px, 7px);
         border: 2px solid $bcColor15;
@@ -25,30 +37,11 @@
         }
     }
 
-    .chatter-repeater, .support-chat-wrapper {
-        @include dimension(175px, 30px);
-        display: flex;
-        align-items: center;
-        padding-left: 9px;
-        box-sizing: border-box;
-        cursor: pointer;
-    }
-
-    .chatter-repeater {
-        &.offline {
-            .chatter-name {
-                font-family: $fcColor6;
-            }
-        }
-
-        .chatter-name {
-            @include text-style(16px, $fcColor14, Lato, $regularFontWeight);
-            height: 23px;
-        }
-    }
-
     .support-chat-wrapper {
         @include text-style(16px, $fcColor14, Lato, $regularFontWeight);
+        display: flex;
+        align-items: center;
+
         .support {
             position: relative;
             height: 23px;

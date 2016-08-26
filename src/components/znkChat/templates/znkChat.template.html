@@ -4,8 +4,9 @@
     </div>
 
     <div class="chat-container" ng-switch-when="2">
-        <chat-participants></chat-participants>
-
-        <div class="chat-messages-board"></div>
+        <chat-participants select-chatter="d.selectChatter"></chat-participants>
+        <chat-board ng-model="d.selectedChatter"></chat-board>
     </div>
+
+
 </div>
