@@ -5,7 +5,7 @@
     <div class="board-wrapper">
         <div class="messages-wrapper">
             <div ng-repeat="message in chatMessages track by $index">
-                <chat-message message="message"></chat-message>
+                <chat-message local-user-id="userId" message="message"></chat-message>
             </div>
         </div>
 

@@ -29,7 +29,7 @@
         };
 
         angular.forEach(keysObj, function(keyValue, keyName) {
-            var localData = localStorage.getItem(keyValue);
+            var localData = localStorage.getItem(keyName);
             if (localData) {
                 options[keyName] = localData;
             }

@@ -5,7 +5,8 @@
         'znk.infra.znkChat',
         'znk.infra.config',
         'znk.infra.storage',
-        'pascalprecht.translate'
+        'pascalprecht.translate',
+        'znk.infra.user'
     ])
         .config(function ($translateProvider) {
             $translateProvider.useLoader('$translatePartialLoader', {

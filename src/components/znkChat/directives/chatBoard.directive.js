@@ -13,13 +13,13 @@
                 },
                 link: function (scope) {
                     scope.d = {};
-                    var userId = scope.getUserId();
+                    scope.userId = scope.getUserId();
 
                     scope.d.sendMessage = function () {
                         if(scope.d.newMessage.length > 0){
                             var newMessageObj = {
                                 time: new Date().getTime(),
-                                uid: userId,
+                                uid: scope.userId,
                                 text: scope.d.newMessage
                             };
                             scope.chatMessages.push(newMessageObj);

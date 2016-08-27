@@ -8,13 +8,25 @@
             'ngInject';
             return {
                 template: '<div class="message-wrapper">' +
-                            '<div>{{message.text}}</div>'+
+                            '<div class="message">{{message.text}}</div>'+
                             '</div>',
                 scope: {
-                    message: '='
+                    message: '=',
+                    getLocalUserId: '&localUserId'
                 },
-                link: function (scope) {
-                    scope.d = {};
+                link: function (scope, element) {
+                    var element = angular.element(element[0]);
+                    var classToAdd;
+                    var localUserId = scope.getLocalUserId();
+
+                    if(+localUserId === +scope.message.uid) {
+                        classToAdd = 'myMessage';
+                    } else {
+                        classToAdd = 'otherMessage';
+                    }
+
+                    element.addClass(classToAdd);
+
 
                 }
             };

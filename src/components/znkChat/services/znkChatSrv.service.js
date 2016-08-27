@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').service('znkChatSrv',
-        function (InfraConfigSrv, $q) {
+        function (InfraConfigSrv, $q, UserProfileService) {
             'ngInject';
 
 
@@ -43,20 +43,20 @@
 
             var messages = {};
             messages.guid1 = [{uid: 1, text: 'aaaaaaaaaaaaaaaaaa'},
-                {uid: 2, text: 'bbbbbbbb'}];
+                {uid: 1234, text: 'bbbbbbbb'}];
 
             messages.guid2 = [{uid: 1, text: 'fffffffffffff'},
-                {uid: 2, text: 'ffffffffffffffff'},
+                {uid: 1234, text: 'ffffffffffffffff'},
                 {uid: 3, text: 'ggggggggggggggggg'},
-                {uid: 1, text: 'hhhhhhhhhhhhhhhh'},
+                {uid: 1234, text: 'hhhhhhhhhhhhhhhh'},
                 {uid: 1, text: 'iiiiiiiiiiiiiiii'}];
 
             messages.guid3 = [{uid: 1, text: 'erwrwerwerwerwer'},
-                {uid: 2, text: 'jjjjjjjjjjjjjj'},
+                {uid: 1234, text: 'jjjjjjjjjjjjjj'},
                 {uid: 3, text: 'kkkkkkkkkkkkk'}];
             messages.guid4 = [{uid: 1, text: 'dsfkoosdfsdfksodfko'},
                 {uid: 2, text: 'lllkodsfsdfsokddosfkl'},
-                {uid: 3, text: 'mmmmmmmmmmmmmmmmmm'}];
+                {uid: 1234, text: 'mmmmmmmmmmmmmmmmmm'}];
             // mock
         }
     );

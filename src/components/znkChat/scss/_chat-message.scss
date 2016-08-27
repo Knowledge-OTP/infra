@@ -2,5 +2,30 @@ chat-message{
     .message-wrapper{
         @include dimension(100%, 60px); // todo- temp size
         text-align: center;
+        padding: 10px;
+        box-sizing: border-box;
+
+        .message{
+            @include dimension(auto,auto);
+            max-width: 200px;
+            padding: 20px 10px;
+            border-radius: 15px;
+            word-wrap: break-word;
+        }
+    }
+
+    &.myMessage {
+        .message-wrapper .message{
+            background-color: #09AB02; // todo --------------------------------
+            float: right;
+        }
+    }
+
+    &.otherMessage {
+        .message-wrapper .message{
+            background-color: lightgray; // todo --------------------------------
+            float:left;
+
+        }
     }
 }
