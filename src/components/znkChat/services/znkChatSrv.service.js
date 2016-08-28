@@ -76,8 +76,8 @@
                         var chatsObj = {};
                         chatGuid = chatsRef.push(newChatObj).key();
                         chatsObj[chatGuid] = 1;
-                        // localUserRef.update(chatsObj);
-                        // chatterRef.update(chatsObj);
+                        localUserRef.update(chatsObj);
+                        chatterRef.update(chatsObj);
                         deferred.resolve(chatGuid);  // TODO - should returned in complete transaction function
                     }
 
