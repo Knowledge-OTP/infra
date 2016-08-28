@@ -98,6 +98,12 @@
                         $log.debug('student or teacher context changed: ', receiverId);
                     };
 
+
+                    var initialUid = StudentContextSrv.getCurrUid();
+                    if (initialUid) {
+                        listenToStudentOrTeacherContextChange(null, initialUid);
+                    }
+
                     if (ENV.appContext.toLowerCase() === 'dashboard') {
                         isTeacher = true;
                         StudentContextSrv.registerToStudentContextChange(listenToStudentOrTeacherContextChange);
