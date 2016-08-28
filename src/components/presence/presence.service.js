@@ -10,8 +10,8 @@
         };
 
         this.$get = [
-            '$log', '$injector', 'ENV', '$rootScope', 'StorageFirebaseAdapter',
-            function ($log, $injector, ENV, $rootScope, StorageFirebaseAdapter) {
+            '$log', '$injector', 'ENV', '$rootScope', 'StorageFirebaseAdapter', 'AuthService',
+            function ($log, $injector, ENV, $rootScope, StorageFirebaseAdapter, AuthService) {
                 var PresenceService = {};
                 var rootRef = new StorageFirebaseAdapter(ENV.fbDataEndPoint);
                 var PRESENCE_PATH = 'presence/';

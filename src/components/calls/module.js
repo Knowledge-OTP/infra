@@ -2,15 +2,11 @@
     'use strict';
 
     angular.module('znk.infra.calls', [
-        'znk.infra.user',
-        'znk.infra.utility',
-        'znk.infra.config',
-        'znk.infra.enum',
-        'znk.infra.svgIcon',
-        'pascalprecht.translate',
         'znk.infra.webcall',
-        'znk.infra.callsModals',
-        'znk.infra.general',
-        'znk.infra.activePanel'
+        'znk.infra.config',
+        'znk.infra.user',
+        'znk.infra.enum',
+        'ngMaterial',
+        'znk.infra.callsModals'
     ]);
 })(angular);
