@@ -7,6 +7,7 @@
 
             var self = this;
             var GLOBAL_PATH = 'users/simplelogin:12333'; // TODO -temp path
+            var znkChatPaths = znkChatDataSrv.getChatPaths();
 
             function _getStorage() {
                 return InfraConfigSrv.getGlobalStorage();
@@ -23,9 +24,9 @@
 
             self.getChatParticipants = function () { // e.g teacher --> connected students
                 return _getStudentStorage().then(function (studentStorage) {  // todo- 1. make a dedicated service for getting teachers
-                    //  todo-2. should be generic
+                                                                                //  todo-2. should be generic
                     var znkChatPaths = znkChatDataSrv.getChatPaths();
-                    return $q.when(studentStorage.get(znkChatPaths.participantsPath));
+                    return studentStorage.get(znkChatPaths.participantsPath);
 
                 });
             };
@@ -37,6 +38,10 @@
 
                     })
                 })
+            };
+
+            self.updateMessages = function(){
+
             };
 
             self.getChatGuidByTwoGuidsArray = function (chatGuidArr1, chatGuidArr2) {
@@ -53,28 +58,32 @@
 
             self.createNewChat = function (localUid, chatterId) {
                 return _getStorage().then(function (globalStorage) {
-                    var adapterRef = globalStorage.adapter.getRef(GLOBAL_PATH); // todo - get global path ?
-                    var chatsRef = adapterRef.child('/chats');
-                    var chatterRef = adapterRef.child('/users/' + chatterId + '/chats');
-                    var localUserRef = adapterRef.child('/users/' + localUid + '/chats');
+                    var localUserPath = znkChatPaths.localUserPath.replace('$$uid',localUid);
+                    var chatterPath = znkChatPaths.chatterPath.replace('$$uid',chatterId);
+                    var chatPath = znkChatPaths.chatPath;
+
+                    var adapterRef = globalStorage.adapter.getRef(); // todo - get global path ?
+                    var chatsRef = adapterRef.child(chatPath);
+                    var localUserRef = adapterRef.child(localUserPath);
+                    var chatterRef = adapterRef.child(chatterPath);
 
                     var chatGuid;
                     var deferred = $q.defer();
                     adapterRef.transaction(_transactionFn, _completeTransactionFn);
 
-                    function _transactionFn() {
+                    function _transactionFn() {  // todo - good way?
                         var newChatObj = _createNewChatObj(localUid, chatterId);
                         var chatsObj = {};
                         chatGuid = chatsRef.push(newChatObj).key();
                         chatsObj[chatGuid] = 1;
-                        localUserRef.update(chatsObj);
-                        chatterRef.update(chatsObj);
-                        deferred.resolve(chatGuid);  // todo - sould returned in complete transacrion function
+                        // localUserRef.update(chatsObj);
+                        // chatterRef.update(chatsObj);
+                        deferred.resolve(chatGuid);  // TODO - should returned in complete transaction function
                     }
 
                     function _completeTransactionFn(error) {
                         if (error) {
-                            $log.error(x)
+                            $log.error(error)
                         }
                     }
 

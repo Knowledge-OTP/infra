@@ -15,12 +15,14 @@
             })
                 .preferredLanguage('en');
 
-            var CHAT_PATH = "chats";
-            var GET_PARTICIPANTS_PATH = "users/$$uid/invitations/approved";
-            var PARTICIPANT_PATH = "users/sat_dashboard/users/$$uid/";
-            znkChatDataSrvProvider.setChatPath(CHAT_PATH);
-            znkChatDataSrvProvider.setParticipantsGetterPath(PARTICIPANTS_PATH);
+            var CHATS_PATH = "chats";
+            var PARTICIPANTS_PATH = "users/$$uid/invitations/approved";
+            var CHATTER_PATH = "sat_dashboard/users/$$uid";
+            var LOCAL_USER_PATH = "sat_app/users/$$uid";
+            znkChatDataSrvProvider.setChatPath(CHATS_PATH);
             znkChatDataSrvProvider.setParticipantsPath(PARTICIPANTS_PATH);
+            znkChatDataSrvProvider.setChatterPath(CHATTER_PATH);
+            znkChatDataSrvProvider.setLocalUserPath(LOCAL_USER_PATH);
         })
         .controller('ctrl', function ($scope, InfraConfigSrv) {
             $scope.userChatObj = {

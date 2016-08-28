@@ -24,6 +24,7 @@
                     };
 
                     scope.d.selectChatter = function (chatter) {
+                        debugger;
                         var chatGuid1 = scope.userChatObj.chatGuids;
                         var chatGuid2 = chatter.chatGuids;
                         var chatGuidProm;

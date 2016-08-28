@@ -15,6 +15,14 @@
                 pathsObj.participantsPath = path;
             };
 
+            this.setChatterPath = function (path) {
+                pathsObj.chatterPath = path;
+            };
+
+            this.setLocalUserPath = function(path){
+                pathsObj.localUserPath = path;
+            };
+
             this.$get = function () {
                 var znkChat = {};
 
