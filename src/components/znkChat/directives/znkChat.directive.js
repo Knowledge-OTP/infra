@@ -1,13 +1,13 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkChat').directive('znkChat', ['$translatePartialLoader', 'znkChatSrv',
-        function ($translatePartialLoader, znkChatSrv) {
+    angular.module('znk.infra.znkChat').directive('znkChat', ['$translatePartialLoader', 'znkChatSrv', '$q',
+        function ($translatePartialLoader, znkChatSrv, $q) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/znkChat.template.html',
                 scope: {
-                    userChatObj:'='
+                    userChatObj: '='
                 },
                 link: function (scope) {
                     $translatePartialLoader.addPart('znkChat');
@@ -26,13 +26,23 @@
                     scope.d.selectChatter = function (chatter) {
                         var chatGuid1 = scope.userChatObj.chatGuids;
                         var chatGuid2 = chatter.chatGuids;
-                        var chatGuid = znkChatSrv.getChatGuidByTwoGuidsArray(chatGuid1,chatGuid2);
-                        znkChatSrv.getChatMessages(chatGuid).then(function (chatMessages) {
-                            scope.d.selectedChatter = chatter;
-                            scope.d.chatMessages = chatMessages;
+                        var chatGuidProm;
+                        if (angular.isDefined(chatGuid1) && angular.isDefined(chatGuid2)) {
+                            chatGuidProm = znkChatSrv.getChatGuidByTwoGuidsArray(chatGuid1, chatGuid2);
+                        } else {
+                            var localUid = scope.userChatObj.uid;
+                            var chatterUid = chatter.senderUid;
+                            chatGuidProm = znkChatSrv.createNewChat(localUid, chatterUid);
+                        }
+                        $q.when(chatGuidProm).then(function(chatGuid){
+                            znkChatSrv.getChatMessages(chatGuid).then(function (chatMessages) {
+                                scope.d.selectedChatter = chatter;
+                                scope.d.chatMessages = chatMessages;
+                            });
                         })
+
                     }
-                    
+
                 }
             };
         }

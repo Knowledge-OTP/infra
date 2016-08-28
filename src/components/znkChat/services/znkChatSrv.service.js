@@ -2,37 +2,100 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').service('znkChatSrv',
-        function (InfraConfigSrv, $q, UserProfileService) {
+        function (InfraConfigSrv, $q, UserProfileService, znkChatDataSrv, $log) {
             'ngInject';
 
+            var self = this;
+            var GLOBAL_PATH = 'users/simplelogin:12333'; // TODO -temp path
 
             function _getStorage() {
                 return InfraConfigSrv.getGlobalStorage();
             }
 
-            this.getChatParticipants = function () { // e.g teacher --> connected students
-                return $q.when(chatParticipantsArr);
+            function _getStudentStorage() {
+                return InfraConfigSrv.getStudentStorage();
+            }
+
+            function _getTeacherStorage() {
+                return InfraConfigSrv.getTeacherStorage();
+            }
+
+
+            self.getChatParticipants = function () { // e.g teacher --> connected students
+                return _getStudentStorage().then(function (studentStorage) {  // todo- 1. make a dedicated service for getting teachers
+                    //  todo-2. should be generic
+                    var znkChatPaths = znkChatDataSrv.getChatPaths();
+                    return $q.when(studentStorage.get(znkChatPaths.participantsPath));
+
+                });
             };
 
-            this.getChatMessages = function (chatGuid) {
-                return $q.when(messages[chatGuid]);
+            self.getChatMessages = function (chatGuid) {
+                return InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
+                   return globalStorage.get(GLOBAL_PATH + '/chats').then(function (chatObj) {
+                       return chatObj[chatGuid];
+
+                    })
+                })
             };
 
-            this.getChatGuidByTwoGuidsArray = function (chatGuidArr1, chatGuidArr2) {
-                if(chatGuidArr1.length === 0 || chatGuidArr2.length === 0) {
+            self.getChatGuidByTwoGuidsArray = function (chatGuidArr1, chatGuidArr2) {
+                if (chatGuidArr1.length === 0 || chatGuidArr2.length === 0) {
                     return;
                 }
 
-                for(var i = 0; i < chatGuidArr1.length; i++){
-                    if(chatGuidArr2.indexOf(chatGuidArr2[i]) !== 1){
+                for (var i = 0; i < chatGuidArr1.length; i++) {
+                    if (chatGuidArr2.indexOf(chatGuidArr2[i]) !== 1) {
                         return chatGuidArr2[i];
                     }
                 }
             };
 
-            this.updateMessages  = function(chatMessages){
+            self.createNewChat = function (localUid, chatterId) {
+                return _getStorage().then(function (globalStorage) {
+                    var adapterRef = globalStorage.adapter.getRef(GLOBAL_PATH); // todo - get global path ?
+                    var chatsRef = adapterRef.child('/chats');
+                    var chatterRef = adapterRef.child('/users/' + chatterId + '/chats');
+                    var localUserRef = adapterRef.child('/users/' + localUid + '/chats');
 
+                    var chatGuid;
+                    var deferred = $q.defer();
+                    adapterRef.transaction(_transactionFn, _completeTransactionFn);
+
+                    function _transactionFn() {
+                        var newChatObj = _createNewChatObj(localUid, chatterId);
+                        var chatsObj = {};
+                        chatGuid = chatsRef.push(newChatObj).key();
+                        chatsObj[chatGuid] = 1;
+                        localUserRef.update(chatsObj);
+                        chatterRef.update(chatsObj);
+                        deferred.resolve(chatGuid);  // todo - sould returned in complete transacrion function
+                    }
+
+                    function _completeTransactionFn(error) {
+                        if (error) {
+                            $log.error(x)
+                        }
+                    }
+
+                    return deferred.promise;
+                });
             };
+
+            function _createNewChatObj(localUid, chatterId) {
+                var newChatObj = {};
+                newChatObj.uids = {};
+                newChatObj.uids[localUid] = {
+                    isTeacher: false,         // todo - hardcoded
+                    messagesNotSeen: 0
+                };
+                newChatObj.uids[chatterId] = {
+                    isTeacher: false,         // todo - hardcoded
+                    messagesNotSeen: 0
+                };
+                newChatObj.uids.createdTime = new Date().getTime();
+                return newChatObj;
+            }
 
 
             // mock

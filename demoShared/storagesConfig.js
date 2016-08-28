@@ -15,6 +15,7 @@
             dataDbPath: 'https://sat-dev.firebaseio.com/',
             dataAuthToken: 'TykqAPXV4zlTTG0v6UuOt4OF3HssDykhJd90dAIc',
             studentPath: '/sat_app',
+            teacherPath: '/sat_dashboard',
             dataAuthSecret: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoicmFjY29vbnMifQ.mqdcwRt0W5v5QqfzVUBfUcQarD0IojEFNisP-SNIFLM",
             backendEndpoint: 'https://znk-web-backend-dev.azurewebsites.net/'
         };
@@ -85,6 +86,7 @@
             };
         }
 
-        InfraConfigSrvProvider.setStorages(storageGetter(options.dataDbPath), storageGetter(options.dataDbPath + options.studentPath));
+        // todo - added teacher storage
+        InfraConfigSrvProvider.setStorages(storageGetter(options.dataDbPath), storageGetter(options.dataDbPath + options.studentPath), storageGetter(options.dataDbPath + options.teacherPath));
     });
 })(angular);
