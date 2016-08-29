@@ -65,7 +65,7 @@
 (function (angular) {
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "CallsEventsSrv", "CallsStatusEnum", "ScreenSharingSrv", "UserScreenSharingStateEnum", "UserProfileService", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", function ($q, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum, UserProfileService, PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document) {
+        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "CallsEventsSrv", "CallsStatusEnum", "ScreenSharingSrv", "UserScreenSharingStateEnum", "UserProfileService", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", "$translate", function ($q, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum, UserProfileService, PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document, $translate) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
@@ -83,6 +83,19 @@
                         activePanelVisibleClassName = 'activePanel-visible';
 
                     var bodyDomElem = angular.element($document).find('body');
+
+                    var translateNamespace = 'ACTIVE_PANEL';
+                    $translate([
+                        translateNamespace + '.' + 'SHOW_STUDENT_SCREEN',
+                        translateNamespace + '.' + 'SHOW_TEACHER_SCREEN'
+                    ]).then(function (translation) {
+                        scope.d.translatedStrings = {
+                            SHOW_STUDENT_SCREEN: translation[translateNamespace + '.' + 'SHOW_STUDENT_SCREEN'],
+                            SHOW_TEACHER_SCREEN: translation[translateNamespace + '.' + 'SHOW_TEACHER_SCREEN']
+                        };
+                    }).catch(function (err) {
+                        $log.debug('Could not fetch translation', err);
+                    });
 
                     var listenToStudentOrTeacherContextChange = function (prevUid, uid) {
                         receiverId = uid;
@@ -331,11 +344,11 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "                <ng-switch on=\"d.isTeacher\">\n" +
     "                    <svg-icon ng-switch-when=\"true\"\n" +
     "                              name=\"active-panel-track-student-icon\"\n" +
-    "                              title=\"{{'SHOW_STUDENT_SCREEN' | translate}}\">\n" +
+    "                              title=\"{{d.translatedStrings.SHOW_STUDENT_SCREEN}}\">\n" +
     "                    </svg-icon>\n" +
     "                    <svg-icon ng-switch-default\n" +
     "                              name=\"active-panel-track-teacher-icon\"\n" +
-    "                              title=\"{{'SHOW_TEACHER_SCREEN' | translate}}\">\n" +
+    "                              title=\"{{d.translatedStrings.SHOW_TEACHER_SCREEN}}\">\n" +
     "                    </svg-icon>\n" +
     "                </ng-switch>\n" +
     "            </div>\n" +
