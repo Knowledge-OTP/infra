@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- bower:css -->
+    <link rel="stylesheet" href="Swiper/dist/css/swiper.css"/>
+    <link rel="stylesheet" href="angular-material/angular-material.css"/>
+    <!-- endbower -->
+    <link rel="stylesheet" href="main.css"/>
+</head>
+<style>
+    body {
+    padding: 150px;
+    }
+
+</style>
+<div ng-app="demo" ng-controller="ctrl">
+
+    <!-- bower:js -->
+    <script src="angular/angular.js"></script>
+    <script src="angular-animate/angular-animate.js"></script>
+    <script src="angular-aria/angular-aria.js"></script>
+    <script src="angular-sanitize/angular-sanitize.js"></script>
+    <script src="Swiper/dist/js/swiper.js"></script>
+    <script src="firebase/firebase.js"></script>
+    <script src="ng-idle/angular-idle.js"></script>
+    <script src="SHA-1/sha1.js"></script>
+    <script src="angulartics/src/angulartics.js"></script>
+    <script src="angular-translate/angular-translate.js"></script>
+    <script src="angular-translate-loader-partial/angular-translate-loader-partial.js"></script>
+    <script src="angular-svg-round-progressbar/build/roundProgress.min.js"></script>
+    <script src="plivo/dist/plivo.min.js"></script>
+    <script src="angular-messages/angular-messages.js"></script>
+    <script src="angular-material/angular-material.js"></script>
+    <script src="angular-ui-router/release/angular-ui-router.js"></script>
+    <!-- endbower -->
+    <script src="main.js "></script>
+    {{ctrl.teachers}}
+    <div> my teachers:</div>
+    <div ng-repeat="(id, teacher) in teachers">
+        <div style="border:1px solid blue; width:400px;  height:50px; padding:15px;">
+            <div>name: {{teacher.name}}</div>
+            <div>id: {{id}}</div>
+        </div>
+    </div>
+    <script src="demo.js"></script>
+    <script src="env.service.js"></script>
+    <script src="config/config.js"></script>
+    <script src="storagesConfig.js"></script>
+
+    </body>
+</html>

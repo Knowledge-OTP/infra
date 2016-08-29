@@ -16,7 +16,6 @@
                 .preferredLanguage('en');
 
             var CHATS_PATH = "chats";
-            var PARTICIPANTS_PATH = "users/$$uid/invitations/approved";
             var CHATTER_PATH = "sat_dashboard/users/$$uid";
             var LOCAL_USER_PATH = "sat_app/users/$$uid";
             znkChatDataSrvProvider.setChatPath(CHATS_PATH);
