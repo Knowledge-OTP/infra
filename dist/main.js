@@ -52,8 +52,11 @@
     'use strict';
 
     angular.module('znk.infra.activePanel', [
-        'znk.infra.enum',
-        'znk.infra.screenSharing'
+        'znk.infra.svgIcon',
+        'znk.infra.calls',
+        'pascalprecht.translate',
+        'znk.infra.screenSharing',
+        'znk.infra.presence'
     ]);
 })(angular);
 
@@ -62,7 +65,7 @@
 (function (angular) {
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "CallsEventsSrv", "CallsStatusEnum", "ScreenSharingSrv", "UserScreenSharingStateEnum", "UserProfileService", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", function ($q, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum, UserProfileService, PresenceService, StudentContextSrv, TeacherContextSrv, ENV) {
+        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "CallsEventsSrv", "CallsStatusEnum", "ScreenSharingSrv", "UserScreenSharingStateEnum", "UserProfileService", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", function ($q, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum, UserProfileService, PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
@@ -77,6 +80,8 @@
                         callStatus = 0,
                         screenShareIsViewer,
                         timerSecondInterval = 1000;
+
+                    var bodyDomElem = angular.element($document).find('body');
 
                     var listenToStudentOrTeacherContextChange = function (prevUid, uid) {
                         receiverId = uid;
@@ -169,23 +174,27 @@
                         switch (scope.d.currStatus) {
                             case scope.d.states.NONE :
                                 $log.debug('ActivePanel State: NONE');
+                                bodyDomElem.removeClass('activePanel-visible');
                                 actions.stopTimer();
                                 actions.screenShareMode(false);
                                 scope.d.shareScreenBtnsEnable = true;
                                 break;
                             case scope.d.states.CALL_ACTIVE :
+                                bodyDomElem.addClass('activePanel-visible');
                                 actions.startTimer();
                                 scope.d.shareScreenBtnsEnable = true;
                                 actions.screenShareMode(false);
                                 $log.debug('ActivePanel State: CALL_ACTIVE');
                                 break;
                             case scope.d.states.SCREEN_SHARE_ACTIVE :
+                                bodyDomElem.addClass('activePanel-visible');
                                 actions.stopTimer();
                                 actions.screenShareMode(true);
                                 scope.d.shareScreenBtnsEnable = false;
                                 $log.debug('ActivePanel State: SCREEN_SHARE_ACTIVE');
                                 break;
                             case scope.d.states.BOTH_ACTIVE :
+                                bodyDomElem.addClass('activePanel-visible');
                                 $log.debug('ActivePanel State: BOTH_ACTIVE');
                                 actions.startTimer();
                                 scope.d.shareScreenBtnsEnable = false;
@@ -323,11 +332,11 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "                <ng-switch on=\"d.isTeacher\">\n" +
     "                    <svg-icon ng-switch-when=\"true\"\n" +
     "                              name=\"active-panel-track-student-icon\"\n" +
-    "                              title=\"{{'ACTIVE_PANEL.SHOW_STUDENT_SCREEN' | translate}}\">\n" +
+    "                              title=\"{{'SHOW_STUDENT_SCREEN' | translate}}\">\n" +
     "                    </svg-icon>\n" +
     "                    <svg-icon ng-switch-default\n" +
     "                              name=\"active-panel-track-teacher-icon\"\n" +
-    "                              title=\"{{'ACTIVE_PANEL.SHOW_TEACHER_SCREEN' | translate}}\">\n" +
+    "                              title=\"{{'SHOW_TEACHER_SCREEN' | translate}}\">\n" +
     "                    </svg-icon>\n" +
     "                </ng-switch>\n" +
     "            </div>\n" +
@@ -337,7 +346,7 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "                      ng-click=\"d.shareMyScreen()\"\n" +
     "                      name=\"active-panel-share-screen-icon\"\n" +
     "                      class=\"share-my-screen\"\n" +
-    "                      title=\"{{'ACTIVE_PANEL.SHARE_MY_SCREEN' | translate}}\">\n" +
+    "                      title=\"{{'SHARE_MY_SCREEN' | translate}}\">\n" +
     "            </svg-icon>\n" +
     "\n" +
     "            <call-btn ng-model=\"d.callBtnModel\"></call-btn>\n" +
@@ -963,16 +972,12 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls', [
-        'znk.infra.user',
-        'znk.infra.utility',
-        'znk.infra.config',
-        'znk.infra.enum',
-        'znk.infra.svgIcon',
-        'pascalprecht.translate',
         'znk.infra.webcall',
-        'znk.infra.callsModals',
-        'znk.infra.general',
-        'znk.infra.activePanel'
+        'znk.infra.config',
+        'znk.infra.user',
+        'znk.infra.enum',
+        'ngMaterial',
+        'znk.infra.callsModals'
     ]);
 })(angular);
 
@@ -6339,25 +6344,24 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.presence', ['ngIdle'])
-        .config([
-            'IdleProvider', 'KeepaliveProvider', 'ENV',
-            function (IdleProvider, KeepaliveProvider, ENV) {
-                // userIdleTime: how many sec until user is 'IDLE'
-                // idleTimeout: how many sec after idle to stop track the user, 0: keep track
-                // idleKeepalive: keepalive interval in sec
+    angular.module('znk.infra.presence', [
+        'ngIdle',
+        'znk.infra.auth'
+    ])
+        .config(["IdleProvider", "KeepaliveProvider", "ENV", function (IdleProvider, KeepaliveProvider, ENV) {
+            // userIdleTime: how many sec until user is 'IDLE'
+            // idleTimeout: how many sec after idle to stop track the user, 0: keep track
+            // idleKeepalive: keepalive interval in sec
 
-                IdleProvider.idle(ENV.userIdleTime || 30);
-                IdleProvider.timeout(ENV.idleTimeout || 0);
-                KeepaliveProvider.interval(ENV.idleKeepalive || 2);
-            }])
-        .run([
-            'PresenceService', 'Idle',
-            function (PresenceService, Idle) {
+            IdleProvider.idle(ENV.userIdleTime || 30);
+            IdleProvider.timeout(ENV.idleTimeout || 0);
+            KeepaliveProvider.interval(ENV.idleKeepalive || 2);
+        }])
+        .run(["PresenceService", "Idle", function (PresenceService, Idle) {
                 PresenceService.addCurrentUserListeners();
                 Idle.watch();
-            }
-        ]);
+            }]
+        );
 })(angular);
 
 'use strict';
