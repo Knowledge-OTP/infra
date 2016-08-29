@@ -7,15 +7,11 @@
             return {
                 templateUrl: 'components/znkChat/templates/chatParticipants.template.html',
                 scope: {
-                    selectChatter: '&'
+                    selectChatter: '&',
+                    chatParticipants: '=participants'
                 },
                 link: function (scope) {
                     scope.d = {};
-                    znkChatSrv.getChatParticipants().then(function (chatParticipantsArr) {
-                        scope.d.chatParticipantsArr = UtilitySrv.object.convertToArray(chatParticipantsArr);
-                        scope.selectChatter()(scope.d.chatParticipantsArr[0]);
-
-                    });
                 }
             };
         }

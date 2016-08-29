@@ -99,7 +99,9 @@
                 newChatObj.uids[chatterId] = {
                     isTeacher: false         // todo - hardcoded
                 };
-                newChatObj.messages = {};
+                newChatObj.messagesNotSeen = {};
+                newChatObj.messagesNotSeen[localUid] = 0;
+                newChatObj.messagesNotSeen[chatterId] = 0;
                 return newChatObj;
             }
         }
