@@ -41,7 +41,8 @@
                     ]).then(function (translation) {
                         scope.d.translatedStrings = {
                             SHOW_STUDENT_SCREEN: translation[translateNamespace + '.' + 'SHOW_STUDENT_SCREEN'],
-                            SHOW_TEACHER_SCREEN: translation[translateNamespace + '.' + 'SHOW_TEACHER_SCREEN']
+                            SHOW_TEACHER_SCREEN: translation[translateNamespace + '.' + 'SHOW_TEACHER_SCREEN'],
+                            SHARE_MY_SCREEN: translation[translateNamespace + '.' + 'SHARE_MY_SCREEN']
                         };
                     }).catch(function (err) {
                         $log.debug('Could not fetch translation', err);
@@ -308,7 +309,7 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "                      ng-click=\"d.shareMyScreen()\"\n" +
     "                      name=\"active-panel-share-screen-icon\"\n" +
     "                      class=\"share-my-screen\"\n" +
-    "                      title=\"{{'SHARE_MY_SCREEN' | translate}}\">\n" +
+    "                      title=\"{{d.translatedStrings.SHARE_MY_SCREEN}}\">\n" +
     "            </svg-icon>\n" +
     "\n" +
     "            <call-btn ng-model=\"d.callBtnModel\"></call-btn>\n" +
