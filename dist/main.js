@@ -87,7 +87,8 @@
                     var translateNamespace = 'ACTIVE_PANEL';
                     $translate([
                         translateNamespace + '.' + 'SHOW_STUDENT_SCREEN',
-                        translateNamespace + '.' + 'SHOW_TEACHER_SCREEN'
+                        translateNamespace + '.' + 'SHOW_TEACHER_SCREEN',
+                        translateNamespace + '.' + 'SHARE_MY_SCREEN'
                     ]).then(function (translation) {
                         scope.d.translatedStrings = {
                             SHOW_STUDENT_SCREEN: translation[translateNamespace + '.' + 'SHOW_STUDENT_SCREEN'],
