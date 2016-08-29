@@ -15,7 +15,6 @@
                         scope.d.chatParticipantsArr = UtilitySrv.object.convertToArray(chatParticipantsArr);
                          _tempFn(scope.d.chatParticipantsArr);  // todo -until will get correct array
                         scope.selectChatter()(scope.d.chatParticipantsArr[0]);
-                        debugger;
 
                         function _tempFn(teacherArr) {
                             for(var i = 0 ; i < teacherArr.length; i++){

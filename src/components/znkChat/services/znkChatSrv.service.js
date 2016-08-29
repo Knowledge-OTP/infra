@@ -17,11 +17,6 @@
                 return InfraConfigSrv.getStudentStorage();
             }
 
-            function _getTeacherStorage() {
-                return InfraConfigSrv.getTeacherStorage();
-            }
-
-
             self.getChatParticipants = function () { // e.g teacher --> connected students
                 return _getStudentStorage().then(function (studentStorage) {  // todo- 1. make a dedicated service for getting teachers
                                                                                 //  todo-2. should be generic
@@ -48,7 +43,6 @@
                 if (chatGuidArr1.length === 0 || chatGuidArr2.length === 0) {
                     return;
                 }
-
                 for (var i = 0; i < chatGuidArr1.length; i++) {
                     if (chatGuidArr2.indexOf(chatGuidArr2[i]) !== 1) {
                         return chatGuidArr2[i];
@@ -58,27 +52,27 @@
 
             self.createNewChat = function (localUid, chatterId) {
                 return _getStorage().then(function (globalStorage) {
+                    var deferred = $q.defer();
                     var localUserPath = znkChatPaths.localUserPath.replace('$$uid',localUid);
                     var chatterPath = znkChatPaths.chatterPath.replace('$$uid',chatterId);
                     var chatPath = znkChatPaths.chatPath;
 
-                    var adapterRef = globalStorage.adapter.getRef(); // todo - get global path ?
+                    var adapterRef = globalStorage.adapter.getRef(GLOBAL_PATH); // todo - get global path ?
                     var chatsRef = adapterRef.child(chatPath);
                     var localUserRef = adapterRef.child(localUserPath);
                     var chatterRef = adapterRef.child(chatterPath);
 
                     var chatGuid;
-                    var deferred = $q.defer();
                     adapterRef.transaction(_transactionFn, _completeTransactionFn);
 
-                    function _transactionFn() {  // todo - good way?
+                    function _transactionFn() {  // todo - implemented bad!!!
                         var newChatObj = _createNewChatObj(localUid, chatterId);
                         var chatsObj = {};
                         chatGuid = chatsRef.push(newChatObj).key();
-                        chatsObj[chatGuid] = 1;
-                        localUserRef.update(chatsObj);
-                        chatterRef.update(chatsObj);
-                        deferred.resolve(chatGuid);  // TODO - should returned in complete transaction function
+                        chatsObj[chatGuid] = newChatObj;
+                        $q.all([localUserRef.update(chatsObj), chatterRef.update(chatsObj)]).then(function(res){
+                            deferred.resolve(chatGuid); 
+                        })
                     }
 
                     function _completeTransactionFn(error) {
@@ -86,7 +80,6 @@
                             $log.error(error)
                         }
                     }
-
                     return deferred.promise;
                 });
             };
@@ -95,14 +88,12 @@
                 var newChatObj = {};
                 newChatObj.uids = {};
                 newChatObj.uids[localUid] = {
-                    isTeacher: false,         // todo - hardcoded
-                    messagesNotSeen: 0
+                    isTeacher: false         // todo - hardcoded
                 };
                 newChatObj.uids[chatterId] = {
-                    isTeacher: false,         // todo - hardcoded
-                    messagesNotSeen: 0
+                    isTeacher: false         // todo - hardcoded
                 };
-                newChatObj.uids.createdTime = new Date().getTime();
+                newChatObj.messages = {};
                 return newChatObj;
             }
 
