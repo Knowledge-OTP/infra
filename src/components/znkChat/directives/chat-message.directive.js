@@ -19,15 +19,13 @@
                     var classToAdd;
                     var localUserId = scope.getLocalUserId();
 
-                    if(+localUserId === +scope.message.uid) {
+                    if(String(localUserId) === String(scope.message.uid)) {
                         classToAdd = 'myMessage';
                     } else {
                         classToAdd = 'otherMessage';
                     }
 
                     element.addClass(classToAdd);
-
-
                 }
             };
         }

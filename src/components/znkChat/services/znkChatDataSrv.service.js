@@ -2,32 +2,29 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').provider('znkChatDataSrv',
-        function () {
+        function ($injector) {
             'ngInject';
 
-            var pathsObj = {};
+            var znkChatPathsObj = {};
+            var chatParticipantsGetter;
 
-            this.setChatPath = function (path) {
-                pathsObj.chatPath = path;
+            this.setChatPaths = function (chatPathsObj) {
+                znkChatPathsObj = chatPathsObj;
             };
 
-            this.setParticipantsPath = function (path) {
-                pathsObj.participantsPath = path;
+            this.setParticipantsGetterFn = function (participantsGetterFn) {
+                chatParticipantsGetter = participantsGetterFn;
             };
 
-            this.setChatterPath = function (path) {
-                pathsObj.chatterPath = path;
-            };
-
-            this.setLocalUserPath = function(path){
-                pathsObj.localUserPath = path;
-            };
-
-            this.$get = function () {
+            this.$get = function ($injector) {
                 var znkChat = {};
 
                 znkChat.getChatPaths = function () {
-                    return pathsObj;
+                    return znkChatPathsObj;
+                };
+
+                znkChat.getChatParticipants = function () {
+                    return $injector.invoke(chatParticipantsGetter);
                 };
 
                 return znkChat;

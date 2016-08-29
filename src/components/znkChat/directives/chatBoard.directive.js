@@ -9,7 +9,8 @@
                 scope: {
                     chatterObj: '=',
                     chatMessages: '=',
-                    getUserId: '&userId'
+                    getUserId: '&userId',
+                    chatGuid: '@'
                 },
                 link: function (scope) {
                     scope.d = {};
@@ -18,12 +19,11 @@
                     scope.d.sendMessage = function () {
                         if(scope.d.newMessage.length > 0){
                             var newMessageObj = {
-                                time: new Date().getTime(),
+                                time: new Date().getTime(),  // todo - get firebase timestamp
                                 uid: scope.userId,
                                 text: scope.d.newMessage
                             };
-                            scope.chatMessages.push(newMessageObj);
-                            znkChatSrv.updateMessages(scope.chatMessages);
+                            znkChatSrv.updateMessages(scope.chatGuid, newMessageObj);
                             scope.d.newMessage = '';
                         }
                     }

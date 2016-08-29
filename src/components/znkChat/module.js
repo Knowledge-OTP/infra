@@ -3,7 +3,8 @@
 
     angular.module('znk.infra.znkChat',
         [
-            'znk.infra.svgIcon'
+            'znk.infra.svgIcon',
+            'znk.infra.teachers'
         ])
         .config([
             'SvgIconSrvProvider',

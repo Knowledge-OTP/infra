@@ -14,18 +14,22 @@
                 urlTemplate: '/znkChat/locale/{lang}.json'
             })
                 .preferredLanguage('en');
+            var chatPaths = {
+                chatPath: 'chats',
+                chatsUsersGuids: 'users/$$uid/chats'
+            };
 
-            var CHATS_PATH = "chats";
-            var CHATTER_PATH = "sat_dashboard/users/$$uid";
-            var LOCAL_USER_PATH = "sat_app/users/$$uid";
-            znkChatDataSrvProvider.setChatPath(CHATS_PATH);
-            znkChatDataSrvProvider.setParticipantsPath(PARTICIPANTS_PATH);
-            znkChatDataSrvProvider.setChatterPath(CHATTER_PATH);
-            znkChatDataSrvProvider.setLocalUserPath(LOCAL_USER_PATH);
+            function participantsGetterFn(teachersSrv) {
+                return teachersSrv.getAllTeachers();
+            }
+
+            znkChatDataSrvProvider.setChatPaths(chatPaths);
+            znkChatDataSrvProvider.setParticipantsGetterFn(participantsGetterFn);
+
         })
         .controller('ctrl', function ($scope, InfraConfigSrv) {
             $scope.userChatObj = {
-                chatGuids: ['guid1','guid2','guid3', 'guid4'],
+                chatGuids: ['guid1', 'guid2', 'guid3', 'guid4'],
                 name: 'Abra Kadabra',
                 uid: 'simplelogin:12333'
             };

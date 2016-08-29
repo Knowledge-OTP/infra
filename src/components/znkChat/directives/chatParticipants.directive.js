@@ -13,14 +13,8 @@
                     scope.d = {};
                     znkChatSrv.getChatParticipants().then(function (chatParticipantsArr) {
                         scope.d.chatParticipantsArr = UtilitySrv.object.convertToArray(chatParticipantsArr);
-                         _tempFn(scope.d.chatParticipantsArr);  // todo -until will get correct array
                         scope.selectChatter()(scope.d.chatParticipantsArr[0]);
 
-                        function _tempFn(teacherArr) {
-                            for(var i = 0 ; i < teacherArr.length; i++){
-                                teacherArr[i].name = teacherArr[i].senderName;
-                            }
-                        }
                     });
                 }
             };

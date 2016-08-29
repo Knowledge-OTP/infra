@@ -38,6 +38,7 @@
                     var teacherUid = oldTeachersObj[value].senderUid;
                     newTeacherObj[teacherUid] = {};
                     newTeacherObj[teacherUid].name = oldTeachersObj[value].senderName;
+                    newTeacherObj[teacherUid].uid = oldTeachersObj[value].senderUid;
                 });
                 return newTeacherObj;
             }

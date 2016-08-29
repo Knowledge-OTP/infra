@@ -1,8 +1,8 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkChat').directive('znkChat', ['$translatePartialLoader', 'znkChatSrv', '$q',
-        function ($translatePartialLoader, znkChatSrv, $q) {
+    angular.module('znk.infra.znkChat').directive('znkChat',
+        function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, znkChatEventSrv) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/znkChat.template.html',
@@ -24,28 +24,39 @@
                     };
 
                     scope.d.selectChatter = function (chatter) {
-                        var chatGuid1 = scope.userChatObj.chatGuids;
-                        var chatGuid2 = chatter.chatGuids;
+                        var localUid = scope.userChatObj.uid;
+                        var chatterUid = chatter.uid;
+
+                        var localUserChatsGuidsProm = znkChatSrv.getChatGuidsByUid(localUid);
+                        var chatterChatsGuidProm =  znkChatSrv.getChatGuidsByUid(chatterUid);
                         var chatGuidProm;
-                        if (angular.isDefined(chatGuid1) && angular.isDefined(chatGuid2)) {
-                            chatGuidProm = znkChatSrv.getChatGuidByTwoGuidsArray(chatGuid1, chatGuid2);
-                        } else {
-                            var localUid = scope.userChatObj.uid;
-                            var chatterUid = chatter.senderUid;
-                            chatGuidProm = znkChatSrv.createNewChat(localUid, chatterUid);
-                        }
-                        $q.when(chatGuidProm).then(function(chatGuid){
-                            znkChatSrv.getChatMessages(chatGuid).then(function (chatMessages) {
-                                scope.d.selectedChatter = chatter;
-                                scope.d.chatMessages = chatMessages;
-                            });
+
+                        $q.all([localUserChatsGuidsProm,chatterChatsGuidProm]).then(function(results){
+                            var localUserChatGuidsArr = results[0];
+                            var chatterChatGuidsArr = results[1];
+                            if (angular.isArray(localUserChatGuidsArr) && angular.isArray(chatterChatGuidsArr) && localUserChatGuidsArr.length > 0 && chatterChatGuidsArr.length > 0) {
+                                chatGuidProm = znkChatSrv.getChatGuidByTwoGuidsArray(localUserChatGuidsArr, chatterChatGuidsArr);
+                            } else {
+                                chatGuidProm = znkChatSrv.createNewChat(localUid, chatterUid);
+                            }
+                            $q.when(chatGuidProm).then(function(chatGuid){
+                                znkChatSrv.getChatMessages(chatGuid).then(function (chatMessages) {
+                                    scope.d.chatMessages = UtilitySrv.object.convertToArray(chatMessages);
+                                    scope.d.chatGuid = chatGuid;
+                                    scope.d.selectedChatter = chatter;
+                                });
+                            })
                         })
+                    };
+                    var path = 'users/simplelogin:12333/chats/-KQLavqgdLSbTuF5ApBI/'; // todo - make for all chats
+                    znkChatEventSrv.registerEvent('value',path , callback);
 
+                    function callback(newData){
+                        scope.d.chatMessages = newData.messages;
                     }
-
                 }
             };
         }
-    ]);
+    );
 })(angular);
 

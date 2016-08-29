@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').service('znkChatSrv',
-        function (InfraConfigSrv, $q, UserProfileService, znkChatDataSrv, $log) {
+        function (InfraConfigSrv, $q, UserProfileService, znkChatDataSrv, $log, UtilitySrv) {
             'ngInject';
 
             var self = this;
@@ -13,30 +13,34 @@
                 return InfraConfigSrv.getGlobalStorage();
             }
 
-            function _getStudentStorage() {
-                return InfraConfigSrv.getStudentStorage();
-            }
-
             self.getChatParticipants = function () { // e.g teacher --> connected students
-                return _getStudentStorage().then(function (studentStorage) {  // todo- 1. make a dedicated service for getting teachers
-                                                                                //  todo-2. should be generic
-                    var znkChatPaths = znkChatDataSrv.getChatPaths();
-                    return studentStorage.get(znkChatPaths.participantsPath);
+                return $q.when(znkChatDataSrv.getChatParticipants());
+            };
 
-                });
+            self.getChatGuidsByUid = function (uid) {
+                return _getStorage().then(function (globalStorage) {
+                    var chatsGuidsPath = znkChatPaths.chatsUsersGuids.replace('$$uid', uid);
+                    return globalStorage.get(GLOBAL_PATH + '/' + chatsGuidsPath).then(function (chatsGuids) { //todo - remove GLOBAL_PATH
+                        return UtilitySrv.object.convertToArray(chatsGuids);
+                    })
+                })
+
             };
 
             self.getChatMessages = function (chatGuid) {
-                return InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
-                   return globalStorage.get(GLOBAL_PATH + '/chats').then(function (chatObj) {
-                       return chatObj[chatGuid];
-
+                return _getStorage().then(function (globalStorage) {
+                    return globalStorage.get(GLOBAL_PATH + '/' + znkChatPaths.chatPath).then(function (chatObj) {
+                        return chatObj[chatGuid].messages;
                     })
                 })
             };
 
-            self.updateMessages = function(){
-
+            self.updateMessages = function (chatGuid, newMessage) {
+                return _getStorage().then(function (globalStorage) {
+                    var messagesPath = GLOBAL_PATH + '/' + znkChatPaths.chatPath + '/' + chatGuid + '/messages';  // todo - why there is no update function within storageSrv
+                    var adapterRef = globalStorage.adapter.getRef(messagesPath); // todo - get global path ?
+                    adapterRef.push(newMessage)
+                });
             };
 
             self.getChatGuidByTwoGuidsArray = function (chatGuidArr1, chatGuidArr2) {
@@ -53,12 +57,13 @@
             self.createNewChat = function (localUid, chatterId) {
                 return _getStorage().then(function (globalStorage) {
                     var deferred = $q.defer();
-                    var localUserPath = znkChatPaths.localUserPath.replace('$$uid',localUid);
-                    var chatterPath = znkChatPaths.chatterPath.replace('$$uid',chatterId);
                     var chatPath = znkChatPaths.chatPath;
 
                     var adapterRef = globalStorage.adapter.getRef(GLOBAL_PATH); // todo - get global path ?
                     var chatsRef = adapterRef.child(chatPath);
+                    var localUserPath = znkChatPaths.chatsUsersGuids.replace('$$uid', localUid); // todo - make function that returns this path
+                    var chatterPath = znkChatPaths.chatsUsersGuids.replace('$$uid', chatterId); // todo - make function that returns this path
+
                     var localUserRef = adapterRef.child(localUserPath);
                     var chatterRef = adapterRef.child(chatterPath);
 
@@ -67,11 +72,11 @@
 
                     function _transactionFn() {  // todo - implemented bad!!!
                         var newChatObj = _createNewChatObj(localUid, chatterId);
-                        var chatsObj = {};
+                        var userNewChatGuid = {};
                         chatGuid = chatsRef.push(newChatObj).key();
-                        chatsObj[chatGuid] = newChatObj;
-                        $q.all([localUserRef.update(chatsObj), chatterRef.update(chatsObj)]).then(function(res){
-                            deferred.resolve(chatGuid); 
+                        userNewChatGuid[chatGuid] = chatGuid;
+                        $q.all([localUserRef.update(userNewChatGuid), chatterRef.update(userNewChatGuid)]).then(function (res) {
+                            deferred.resolve(chatGuid);
                         })
                     }
 
@@ -80,6 +85,7 @@
                             $log.error(error)
                         }
                     }
+
                     return deferred.promise;
                 });
             };
@@ -96,31 +102,6 @@
                 newChatObj.messages = {};
                 return newChatObj;
             }
-
-
-            // mock
-            var chatParticipantsArr = [{name: 'name1', presence: 0, chatGuids: ['guid1']},
-                {name: 'name2', presence: 1, chatGuids: ['guid2']},
-                {name: 'name3', presence: 1, chatGuids: ['guid3']},
-                {name: 'name4', presence: 2, chatGuids: ['guid4']}];
-
-            var messages = {};
-            messages.guid1 = [{uid: 1, text: 'aaaaaaaaaaaaaaaaaa'},
-                {uid: 1234, text: 'bbbbbbbb'}];
-
-            messages.guid2 = [{uid: 1, text: 'fffffffffffff'},
-                {uid: 1234, text: 'ffffffffffffffff'},
-                {uid: 3, text: 'ggggggggggggggggg'},
-                {uid: 1234, text: 'hhhhhhhhhhhhhhhh'},
-                {uid: 1, text: 'iiiiiiiiiiiiiiii'}];
-
-            messages.guid3 = [{uid: 1, text: 'erwrwerwerwerwer'},
-                {uid: 1234, text: 'jjjjjjjjjjjjjj'},
-                {uid: 3, text: 'kkkkkkkkkkkkk'}];
-            messages.guid4 = [{uid: 1, text: 'dsfkoosdfsdfksodfko'},
-                {uid: 2, text: 'lllkodsfsdfsokddosfkl'},
-                {uid: 1234, text: 'mmmmmmmmmmmmmmmmmm'}];
-            // mock
         }
     );
 })(angular);
