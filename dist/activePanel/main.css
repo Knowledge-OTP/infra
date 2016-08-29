@@ -292,7 +292,6 @@ active-panel.screen-share-mode .active-panel {
 
 active-panel .active-panel {
   z-index: 9999;
-  transition: 1.5s;
   width: 250px;
   height: 40px;
   background-color: #f7f7f7;

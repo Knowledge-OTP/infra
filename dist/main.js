@@ -79,7 +79,8 @@
                         screenShareStatus = 0,
                         callStatus = 0,
                         screenShareIsViewer,
-                        timerSecondInterval = 1000;
+                        timerSecondInterval = 1000,
+                        activePanelVisibleClassName = 'activePanel-visible';
 
                     var bodyDomElem = angular.element($document).find('body');
 
@@ -174,27 +175,27 @@
                         switch (scope.d.currStatus) {
                             case scope.d.states.NONE :
                                 $log.debug('ActivePanel State: NONE');
-                                bodyDomElem.removeClass('activePanel-visible');
+                                bodyDomElem.removeClass(activePanelVisibleClassName);
                                 actions.stopTimer();
                                 actions.screenShareMode(false);
                                 scope.d.shareScreenBtnsEnable = true;
                                 break;
                             case scope.d.states.CALL_ACTIVE :
-                                bodyDomElem.addClass('activePanel-visible');
+                                bodyDomElem.addClass(activePanelVisibleClassName);
                                 actions.startTimer();
                                 scope.d.shareScreenBtnsEnable = true;
                                 actions.screenShareMode(false);
                                 $log.debug('ActivePanel State: CALL_ACTIVE');
                                 break;
                             case scope.d.states.SCREEN_SHARE_ACTIVE :
-                                bodyDomElem.addClass('activePanel-visible');
+                                bodyDomElem.addClass(activePanelVisibleClassName);
                                 actions.stopTimer();
                                 actions.screenShareMode(true);
                                 scope.d.shareScreenBtnsEnable = false;
                                 $log.debug('ActivePanel State: SCREEN_SHARE_ACTIVE');
                                 break;
                             case scope.d.states.BOTH_ACTIVE :
-                                bodyDomElem.addClass('activePanel-visible');
+                                bodyDomElem.addClass(activePanelVisibleClassName);
                                 $log.debug('ActivePanel State: BOTH_ACTIVE');
                                 actions.startTimer();
                                 scope.d.shareScreenBtnsEnable = false;
