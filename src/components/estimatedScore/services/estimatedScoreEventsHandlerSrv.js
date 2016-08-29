@@ -136,17 +136,8 @@
                     return $q.when(shouldEventBeProcessed);
                 }
 
-                function _baseExerciseFinishHandler(exerciseType, evt, exercise, exerciseResult) {
-                    _shouldEventBeProcessed(exerciseType, exercise, exerciseResult).then(function(shouldBeProcessed){
-                        if(shouldBeProcessed){
-                            var rawScore = _calculateRawScore(exerciseType, exerciseResult);
-                            EstimatedScoreSrv.addRawScore(rawScore, exerciseType, exercise.subjectId, exercise.id);
-                        }
-                    });
-                }
-
-                function _sectionExerciseFinishHandler(evt, section, sectionResult, exam) {
-                    return _shouldEventBeProcessed(exerciseEventsConst.section.FINISH, section, sectionResult)
+                childScope.$on(exerciseEventsConst.section.FINISH, function (evt, section, sectionResult, exam) {
+                    _shouldEventBeProcessed(exerciseEventsConst.section.FINISH, section, sectionResult)
                         .then(function(shouldBeProcessed){
                             if(shouldBeProcessed){
                                 var isDiagnostic = exam.typeId === ExamTypeEnum.DIAGNOSTIC.enum;
@@ -157,9 +148,16 @@
                                 EstimatedScoreSrv.addRawScore(rawScore, ExerciseTypeEnum.SECTION.enum, section.subjectId, section.id, isDiagnostic);
                             }
                         });
-                }
+                });
 
-                childScope.$on(exerciseEventsConst.section.FINISH, _sectionExerciseFinishHandler);
+                function _baseExerciseFinishHandler(exerciseType, evt, exercise, exerciseResult) {
+                    _shouldEventBeProcessed(exerciseType, exercise, exerciseResult).then(function(shouldBeProcessed){
+                        if(shouldBeProcessed){
+                            var rawScore = _calculateRawScore(exerciseType, exerciseResult);
+                            EstimatedScoreSrv.addRawScore(rawScore, exerciseType, exercise.subjectId, exercise.id);
+                }
+                    });
+                }
 
                 angular.forEach(ExerciseTypeEnum, function(enumObj, enumName){
                     if(enumName !== 'SECTION' && enumName !== 'LECTURE'){
@@ -168,16 +166,6 @@
                         childScope.$on(evtName, _baseExerciseFinishHandler.bind(EstimatedScoreEventsHandlerSrv, enumObj.enum));
                     }
                 });
-
-                EstimatedScoreEventsHandlerSrv.addExerciseResult = function(exerciseType, evt, exercise, exerciseResult){
-                    var isSection = exerciseType === ExerciseTypeEnum.SECTION.enum;
-
-                    if(isSection){
-
-                    }else{
-
-                    }
-                };
 
                 EstimatedScoreEventsHandlerSrv.init = angular.noop;
 
