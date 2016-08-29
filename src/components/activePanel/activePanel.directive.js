@@ -3,7 +3,7 @@
 (function (angular) {
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', function ($q, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum, UserProfileService, PresenceService, StudentContextSrv, TeacherContextSrv, ENV) {
+        .directive('activePanel', function ($q, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum, UserProfileService, PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document, $translate) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
@@ -17,7 +17,25 @@
                         screenShareStatus = 0,
                         callStatus = 0,
                         screenShareIsViewer,
-                        timerSecondInterval = 1000;
+                        timerSecondInterval = 1000,
+                        activePanelVisibleClassName = 'activePanel-visible';
+
+                    var bodyDomElem = angular.element($document).find('body');
+
+                    var translateNamespace = 'ACTIVE_PANEL';
+                    $translate([
+                        translateNamespace + '.' + 'SHOW_STUDENT_SCREEN',
+                        translateNamespace + '.' + 'SHOW_TEACHER_SCREEN',
+                        translateNamespace + '.' + 'SHARE_MY_SCREEN'
+                    ]).then(function (translation) {
+                        scope.d.translatedStrings = {
+                            SHOW_STUDENT_SCREEN: translation[translateNamespace + '.' + 'SHOW_STUDENT_SCREEN'],
+                            SHOW_TEACHER_SCREEN: translation[translateNamespace + '.' + 'SHOW_TEACHER_SCREEN'],
+                            SHARE_MY_SCREEN: translation[translateNamespace + '.' + 'SHARE_MY_SCREEN']
+                        };
+                    }).catch(function (err) {
+                        $log.debug('Could not fetch translation', err);
+                    });
 
                     var listenToStudentOrTeacherContextChange = function (prevUid, uid) {
                         receiverId = uid;
@@ -116,23 +134,27 @@
                         switch (scope.d.currStatus) {
                             case scope.d.states.NONE :
                                 $log.debug('ActivePanel State: NONE');
+                                bodyDomElem.removeClass(activePanelVisibleClassName);
                                 actions.stopTimer();
                                 actions.screenShareMode(false);
                                 scope.d.shareScreenBtnsEnable = true;
                                 break;
                             case scope.d.states.CALL_ACTIVE :
+                                bodyDomElem.addClass(activePanelVisibleClassName);
                                 actions.startTimer();
                                 scope.d.shareScreenBtnsEnable = true;
                                 actions.screenShareMode(false);
                                 $log.debug('ActivePanel State: CALL_ACTIVE');
                                 break;
                             case scope.d.states.SCREEN_SHARE_ACTIVE :
+                                bodyDomElem.addClass(activePanelVisibleClassName);
                                 actions.stopTimer();
                                 actions.screenShareMode(true);
                                 scope.d.shareScreenBtnsEnable = false;
                                 $log.debug('ActivePanel State: SCREEN_SHARE_ACTIVE');
                                 break;
                             case scope.d.states.BOTH_ACTIVE :
+                                bodyDomElem.addClass(activePanelVisibleClassName);
                                 $log.debug('ActivePanel State: BOTH_ACTIVE');
                                 actions.startTimer();
                                 scope.d.shareScreenBtnsEnable = false;

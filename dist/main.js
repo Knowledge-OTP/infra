@@ -53,8 +53,11 @@
     'use strict';
 
     angular.module('znk.infra.activePanel', [
-        'znk.infra.enum',
-        'znk.infra.screenSharing'
+        'znk.infra.svgIcon',
+        'znk.infra.calls',
+        'pascalprecht.translate',
+        'znk.infra.screenSharing',
+        'znk.infra.presence'
     ]);
 })(angular);
 
@@ -63,7 +66,7 @@
 (function (angular) {
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "CallsEventsSrv", "CallsStatusEnum", "ScreenSharingSrv", "UserScreenSharingStateEnum", "UserProfileService", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", function ($q, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum, UserProfileService, PresenceService, StudentContextSrv, TeacherContextSrv, ENV) {
+        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "CallsEventsSrv", "CallsStatusEnum", "ScreenSharingSrv", "UserScreenSharingStateEnum", "UserProfileService", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", "$translate", function ($q, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum, UserProfileService, PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document, $translate) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
@@ -77,7 +80,25 @@
                         screenShareStatus = 0,
                         callStatus = 0,
                         screenShareIsViewer,
-                        timerSecondInterval = 1000;
+                        timerSecondInterval = 1000,
+                        activePanelVisibleClassName = 'activePanel-visible';
+
+                    var bodyDomElem = angular.element($document).find('body');
+
+                    var translateNamespace = 'ACTIVE_PANEL';
+                    $translate([
+                        translateNamespace + '.' + 'SHOW_STUDENT_SCREEN',
+                        translateNamespace + '.' + 'SHOW_TEACHER_SCREEN',
+                        translateNamespace + '.' + 'SHARE_MY_SCREEN'
+                    ]).then(function (translation) {
+                        scope.d.translatedStrings = {
+                            SHOW_STUDENT_SCREEN: translation[translateNamespace + '.' + 'SHOW_STUDENT_SCREEN'],
+                            SHOW_TEACHER_SCREEN: translation[translateNamespace + '.' + 'SHOW_TEACHER_SCREEN'],
+                            SHARE_MY_SCREEN: translation[translateNamespace + '.' + 'SHARE_MY_SCREEN']
+                        };
+                    }).catch(function (err) {
+                        $log.debug('Could not fetch translation', err);
+                    });
 
                     var listenToStudentOrTeacherContextChange = function (prevUid, uid) {
                         receiverId = uid;
@@ -176,23 +197,27 @@
                         switch (scope.d.currStatus) {
                             case scope.d.states.NONE :
                                 $log.debug('ActivePanel State: NONE');
+                                bodyDomElem.removeClass(activePanelVisibleClassName);
                                 actions.stopTimer();
                                 actions.screenShareMode(false);
                                 scope.d.shareScreenBtnsEnable = true;
                                 break;
                             case scope.d.states.CALL_ACTIVE :
+                                bodyDomElem.addClass(activePanelVisibleClassName);
                                 actions.startTimer();
                                 scope.d.shareScreenBtnsEnable = true;
                                 actions.screenShareMode(false);
                                 $log.debug('ActivePanel State: CALL_ACTIVE');
                                 break;
                             case scope.d.states.SCREEN_SHARE_ACTIVE :
+                                bodyDomElem.addClass(activePanelVisibleClassName);
                                 actions.stopTimer();
                                 actions.screenShareMode(true);
                                 scope.d.shareScreenBtnsEnable = false;
                                 $log.debug('ActivePanel State: SCREEN_SHARE_ACTIVE');
                                 break;
                             case scope.d.states.BOTH_ACTIVE :
+                                bodyDomElem.addClass(activePanelVisibleClassName);
                                 $log.debug('ActivePanel State: BOTH_ACTIVE');
                                 actions.startTimer();
                                 scope.d.shareScreenBtnsEnable = false;
@@ -288,9 +313,24 @@
         }]);
 })(angular);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.activePanel')
+        .run(["$timeout", "$translatePartialLoader", function($timeout, $translatePartialLoader){
+            'ngInject';
+            //must be wrapped in timeout because the parting adding cannot be made directly in a run block
+            $timeout(function(){
+                $translatePartialLoader.addPart('activePanel');
+            });
+        }]);
+})(angular);
+
 angular.module('znk.infra.activePanel').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/activePanel/activePanel.template.html",
-    "<div class=\"active-panel ng-hide\" ng-show=\"d.currStatus !== d.states.NONE\">\n" +
+    "<div class=\"active-panel ng-hide\"\n" +
+    "     ng-show=\"d.currStatus !== d.states.NONE\"\n" +
+    "     translate-namespace=\"ACTIVE_PANEL\">\n" +
     "    <div class=\"flex-container\">\n" +
     "        <div class=\"callee-status flex-col\">\n" +
     "            <div class=\"online-indicator\"\n" +
@@ -311,8 +351,14 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "                 disable-click-drv=\"d.shareScreenBtnsEnable\"\n" +
     "                 ng-class=\"{disabled: !d.shareScreenBtnsEnable}\">\n" +
     "                <ng-switch on=\"d.isTeacher\">\n" +
-    "                    <svg-icon ng-switch-when=\"true\" name=\"active-panel-track-student-icon\"></svg-icon>\n" +
-    "                    <svg-icon ng-switch-default name=\"active-panel-track-teacher-icon\"></svg-icon>\n" +
+    "                    <svg-icon ng-switch-when=\"true\"\n" +
+    "                              name=\"active-panel-track-student-icon\"\n" +
+    "                              title=\"{{d.translatedStrings.SHOW_STUDENT_SCREEN}}\">\n" +
+    "                    </svg-icon>\n" +
+    "                    <svg-icon ng-switch-default\n" +
+    "                              name=\"active-panel-track-teacher-icon\"\n" +
+    "                              title=\"{{d.translatedStrings.SHOW_TEACHER_SCREEN}}\">\n" +
+    "                    </svg-icon>\n" +
     "                </ng-switch>\n" +
     "            </div>\n" +
     "\n" +
@@ -320,7 +366,8 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "                      ng-class=\"{disabled: !d.shareScreenBtnsEnable}\"\n" +
     "                      ng-click=\"d.shareMyScreen()\"\n" +
     "                      name=\"active-panel-share-screen-icon\"\n" +
-    "                      class=\"share-my-screen\">\n" +
+    "                      class=\"share-my-screen\"\n" +
+    "                      title=\"{{d.translatedStrings.SHARE_MY_SCREEN}}\">\n" +
     "            </svg-icon>\n" +
     "\n" +
     "            <call-btn ng-model=\"d.callBtnModel\"></call-btn>\n" +
@@ -946,16 +993,12 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls', [
-        'znk.infra.user',
-        'znk.infra.utility',
-        'znk.infra.config',
-        'znk.infra.enum',
-        'znk.infra.svgIcon',
-        'pascalprecht.translate',
         'znk.infra.webcall',
-        'znk.infra.callsModals',
-        'znk.infra.general',
-        'znk.infra.activePanel'
+        'znk.infra.config',
+        'znk.infra.user',
+        'znk.infra.enum',
+        'ngMaterial',
+        'znk.infra.callsModals'
     ]);
 })(angular);
 
@@ -6395,25 +6438,24 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.presence', ['ngIdle'])
-        .config([
-            'IdleProvider', 'KeepaliveProvider', 'ENV',
-            function (IdleProvider, KeepaliveProvider, ENV) {
-                // userIdleTime: how many sec until user is 'IDLE'
-                // idleTimeout: how many sec after idle to stop track the user, 0: keep track
-                // idleKeepalive: keepalive interval in sec
+    angular.module('znk.infra.presence', [
+        'ngIdle',
+        'znk.infra.auth'
+    ])
+        .config(["IdleProvider", "KeepaliveProvider", "ENV", function (IdleProvider, KeepaliveProvider, ENV) {
+            // userIdleTime: how many sec until user is 'IDLE'
+            // idleTimeout: how many sec after idle to stop track the user, 0: keep track
+            // idleKeepalive: keepalive interval in sec
 
-                IdleProvider.idle(ENV.userIdleTime || 30);
-                IdleProvider.timeout(ENV.idleTimeout || 0);
-                KeepaliveProvider.interval(ENV.idleKeepalive || 2);
-            }])
-        .run([
-            'PresenceService', 'Idle',
-            function (PresenceService, Idle) {
+            IdleProvider.idle(ENV.userIdleTime || 30);
+            IdleProvider.timeout(ENV.idleTimeout || 0);
+            KeepaliveProvider.interval(ENV.idleKeepalive || 2);
+        }])
+        .run(["PresenceService", "Idle", function (PresenceService, Idle) {
                 PresenceService.addCurrentUserListeners();
                 Idle.watch();
-            }
-        ]);
+            }]
+        );
 })(angular);
 
 'use strict';

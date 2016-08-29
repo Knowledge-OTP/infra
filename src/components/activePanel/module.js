@@ -2,7 +2,10 @@
     'use strict';
 
     angular.module('znk.infra.activePanel', [
-        'znk.infra.enum',
-        'znk.infra.screenSharing'
+        'znk.infra.svgIcon',
+        'znk.infra.calls',
+        'pascalprecht.translate',
+        'znk.infra.screenSharing',
+        'znk.infra.presence'
     ]);
 })(angular);
