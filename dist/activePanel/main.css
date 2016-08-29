@@ -297,6 +297,11 @@ active-panel .active-panel {
   background-color: #f7f7f7;
   border: 1px solid #ebebeb;
   border-radius: 20px; }
+  active-panel .active-panel.ng-animate {
+    transition: 0s none;
+    -webkit-transition: 0s none;
+    animation: 0s none;
+    -webkit-animation: 0s none; }
   active-panel .active-panel svg-icon:focus {
     outline: none; }
   active-panel .active-panel .flex-container {
