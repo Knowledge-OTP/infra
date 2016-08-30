@@ -13,12 +13,15 @@
                     $translatePartialLoader.addPart('znkChat');
 
                     var listenerActive = false;
+                    var callbacksToRemove = {};
+                    var localUid = scope.userChatObj.uid;
 
                     var statesView = {
                         CHAT_BUTTON_VIEW: 1,
                         CHAT_VIEW: 2
 
                     };
+
                     scope.d = {};
                     scope.d.chatStateView = statesView.CHAT_VIEW;
                     scope.d.openChat = function () {
@@ -26,7 +29,6 @@
                     };
 
                     scope.d.selectChatter = function (chatter) {
-                        var localUid = scope.userChatObj.uid;
                         var chatterUid = chatter.uid;
 
                         var localUserChatsGuidsProm = znkChatSrv.getChatGuidsByUid(localUid);
@@ -46,8 +48,8 @@
                                     scope.d.chatGuid = chatGuid;
                                     scope.d.selectedChatter = chatter;
 
-                                    if(!listenerActive) {
-                                        _startListen();
+                                    if (!listenerActive) {
+                                        _startListen(localUserChatGuidsArr, chatGuid);
                                     }
                                 });
                             })
@@ -59,15 +61,28 @@
                         scope.d.selectChatter(scope.d.chatParticipantsArr[0]);
                     });
 
-                    function _startListen(){
-                        var path = 'users/simplelogin:12333/chats'; // todo - make for all chats
-                        znkChatEventSrv.registerEvent('value', path, callback);
-                        //
-                        function callback(newData) {
-                            if (newData) {
+                    function _startListen(localUserChatGuidsArr) {
+                        for (var i = 0; i < localUserChatGuidsArr.length; i++) {
+                            var path = 'users/simplelogin:12333/chats/' + localUserChatGuidsArr[i]; // todo - make function that return this path
+                            znkChatEventSrv.registerEvent('value', path, callbackWrapper(localUserChatGuidsArr[i]));
+                        }
+
+                        function callbackWrapper(key) {
+                            function callback(newData) {
                                 var currentChatGuid = scope.d.chatGuid; // todo - check if it's correct guid
-                                scope.d.chatMessages = newData[currentChatGuid].messages;
+                                if (newData && key === currentChatGuid) {
+                                    scope.d.chatMessages = newData.messages;
+                                    var lastSeenMessage = 0; // todo - get last seen message
+                                    znkChatSrv.updateLasSeenMessage(currentChatGuid, localUid,lastSeenMessage )
+                                } else {
+                                    if(newData.messages) {
+                                        var numOfUnseenMessages = znkChatEventSrv.handleNotActiveChat(newData, localUid);
+                                    }
+                                }
                             }
+
+                            callbacksToRemove[key] = callback;
+                            return callback;
                         }
                     }
                 }

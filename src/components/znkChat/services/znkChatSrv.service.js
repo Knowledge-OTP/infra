@@ -24,7 +24,6 @@
                         return UtilitySrv.object.convertToArray(chatsGuids);
                     })
                 })
-
             };
 
             self.getChatMessages = function (chatGuid) {
@@ -35,11 +34,19 @@
                 })
             };
 
-            self.updateMessages = function (chatGuid, newMessage) {
+            self.updateChat = function (chatGuid, newMessage, userId) {
                 return _getStorage().then(function (globalStorage) {
-                    var messagesPath = GLOBAL_PATH + '/' + znkChatPaths.chatPath + '/' + chatGuid + '/messages';  // todo - why there is no update function within storageSrv
-                    var adapterRef = globalStorage.adapter.getRef(messagesPath); // todo - get global path ?
-                    adapterRef.push(newMessage)
+                    var messagesPath = GLOBAL_PATH + '/' + znkChatPaths.chatPath + '/' + chatGuid + '/messages'; // todo -remove global path
+                    var adapterRef = globalStorage.adapter.getRef(messagesPath);// todo - why there is no update function within storageSrv?
+                    adapterRef.push(newMessage);
+
+                });
+            };
+
+            self.updateLasSeenMessage = function (chatGuid, userId, lastSeenMessage) {
+                return _getStorage().then(function (globalStorage) {
+                    var notSeenMessagesPath = GLOBAL_PATH + '/' + znkChatPaths.chatPath + '/' + chatGuid + '/usersLastSeenMessage/' + userId; // todo -remove global path
+                    globalStorage.update(notSeenMessagesPath, lastSeenMessage)
                 });
             };
 
@@ -99,9 +106,9 @@
                 newChatObj.uids[chatterId] = {
                     isTeacher: false         // todo - hardcoded
                 };
-                newChatObj.messagesNotSeen = {};
-                newChatObj.messagesNotSeen[localUid] = 0;
-                newChatObj.messagesNotSeen[chatterId] = 0;
+                newChatObj.usersLastSeenMessage = {};
+                newChatObj.usersLastSeenMessage[localUid] = 0;
+                newChatObj.usersLastSeenMessage[chatterId] = 0;
                 return newChatObj;
             }
         }

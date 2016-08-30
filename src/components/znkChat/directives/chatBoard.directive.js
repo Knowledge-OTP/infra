@@ -19,11 +19,11 @@
                     scope.d.sendMessage = function () {
                         if(scope.d.newMessage.length > 0){
                             var newMessageObj = {
-                                time: new Date().getTime(),  // todo - get firebase timestamp
+                                time: Firebase.ServerValue.TIMESTAMP,  // todo - figure how change to general adapter
                                 uid: scope.userId,
                                 text: scope.d.newMessage
                             };
-                            znkChatSrv.updateMessages(scope.chatGuid, newMessageObj);
+                            znkChatSrv.updateChat(scope.chatGuid, newMessageObj, scope.userId);
                             scope.d.newMessage = '';
                         }
                     }
