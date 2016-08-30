@@ -17,6 +17,40 @@
                 return $q.when(znkChatDataSrv.getChatParticipants());
             };
 
+            self.getChatByGuid = function (chatGuid) {
+                return _getStorage().then(function (globalStorage) {
+                    var chatPath = GLOBAL_PATH + '/' + znkChatPaths.chatPath + '/' + chatGuid; // todo -remove global path
+                    return globalStorage.get(chatPath).then(function (chatObj) {
+                        return chatObj;
+                    })
+                })
+            };
+
+            self.setToParticipantsChatData = function (localUserChatGuidsArr, chatParticipantsArr, localUid) {
+                var promArrays = [];
+                for (var i = 0; i < chatParticipantsArr.length; i++) {
+                    debugger;
+                    var prom = self.setOneParticipantschatData(localUserChatGuidsArr, chatParticipantsArr, i);
+                    promArrays.push(prom);
+                }
+                return $q.all(promArrays).then(function () {
+                    return chatParticipantsArr;
+                })
+            };
+
+            self.setOneParticipantschatData = function (localUserChatGuidsArr, chatParticipantsArr, index, localUid) {
+                return self.getChatGuidsByUid(chatParticipantsArr[index].uid).then(function (chatterChatGuidsArray) { // get the correct chat
+                    var cahtGuid = self.getChatGuidByTwoGuidsArray(localUserChatGuidsArr, chatterChatGuidsArray);
+                    return self.getChatByGuid(cahtGuid).then(function (chat) {
+                        if(chat) {
+                            chatParticipantsArr[index].chatGuid = cahtGuid;
+                            chatParticipantsArr[index].lastSawMessage = angular.isDefined(chat.usersLastSeenMessage) ? chat.usersLastSeenMessage[localUid] : 0; // first connection
+                            chatParticipantsArr[index].numOfNotSeenMessages = 0;
+                        }
+                    })
+                });
+            };
+
             self.getChatGuidsByUid = function (uid) {
                 return _getStorage().then(function (globalStorage) {
                     var chatsGuidsPath = znkChatPaths.chatsUsersGuids.replace('$$uid', uid);
@@ -29,12 +63,12 @@
             self.getChatMessages = function (chatGuid) {
                 return _getStorage().then(function (globalStorage) {
                     return globalStorage.get(GLOBAL_PATH + '/' + znkChatPaths.chatPath).then(function (chatObj) {
-                        return chatObj[chatGuid].messages;
+                        return UtilitySrv.object.convertToArray(chatObj[chatGuid].messages);
                     })
                 })
             };
 
-            self.updateChat = function (chatGuid, newMessage, userId) {
+            self.updateChat = function (chatGuid, newMessage) {
                 return _getStorage().then(function (globalStorage) {
                     var messagesPath = GLOBAL_PATH + '/' + znkChatPaths.chatPath + '/' + chatGuid + '/messages'; // todo -remove global path
                     var adapterRef = globalStorage.adapter.getRef(messagesPath);// todo - why there is no update function within storageSrv?
@@ -60,6 +94,7 @@
                     }
                 }
             };
+
 
             self.createNewChat = function (localUid, chatterId) {
                 return _getStorage().then(function (globalStorage) {

@@ -2,10 +2,11 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').service('znkChatEventSrv',
-        function ($q, InfraConfigSrv) {
+        function ($q, InfraConfigSrv, znkChatSrv) {
             'ngInject';
 
             var self = this;
+            var GLOBAL_PATH = 'users/simplelogin:12333'; // TODO -temp path
 
             function _getStorage() {
                 return InfraConfigSrv.getGlobalStorage();
@@ -13,15 +14,13 @@
 
             self.registerEvent = function (type, path, callback) {
                 return _getStorage().then(function (globalStorage) {
-                    globalStorage.onEvent(type, path, callback);
+                    var adapterRef = globalStorage.adapter.getRef(path);
+                    adapterRef.orderByChild('time').on(type, callback);
                 });
             };
 
-            self.handleNotActiveChat = function (chatObj, localUid) {
-                var messages = chatObj.messages;
-                var lastSeenMessage = chatObj.usersLastSeenMessage[localUid];
-                var numOfNotSeenMessages = _calcNotSeenMessages(messages, lastSeenMessage);
-                return numOfNotSeenMessages;
+            self.handleNotActiveChat = function (messageObj, lastSeenMessage) {
+                _calcNotSeenMessages(messages, lastSeenMessage);
             };
 
             function _calcNotSeenMessages(messages, lastSeenMessage) {
