@@ -18,11 +18,11 @@
 
         EstimatedScoreSrvProvider.setMinMaxDiagnosticScore(-Infinity, Infinity);
 
-        function rawScoreToScoreFnGetter(ScoringService) {
+        function rawScoreToScoreFnGetter() {
             'ngInject';
 
             return function (subjectId, rawScore) {
-                return ScoringService.rawScoreToScore(subjectId, rawScore);
+                return parseInt( rawScore * 100);
             };
         }
 
