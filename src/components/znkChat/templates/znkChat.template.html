@@ -1,16 +1,18 @@
 <div class="znk-chat-wrapper" ng-switch="d.chatStateView" translate-namespace="ZNK_CHAT">
-    <div class="button-wrapper" ng-switch-when="1" ng-click="d.openChat()">
-        <svg-icon name="chat-icon"></svg-icon>
+    <div class="button-wrapper" ng-show="d.chatStateView === statesView.CHAT_BUTTON_VIEW" ng-click="d.openChat()">
+        <svg-icon name="znk-chat-chat-icon"></svg-icon>
     </div>
 
-    <div class="chat-container" ng-switch-when="2" ng-if="d.chatData">
-        <chat-participants ng-if="d.chatData"
+    <div class="chat-container" ng-show="d.chatStateView === statesView.CHAT_VIEW" >
+        <chat-participants
+            ng-if="::d.chatData.localUserChatsGuidsArr"
             chat-data="d.chatData"
             select-chatter="d.selectChatter">
         </chat-participants>
 
         <chat-board
-            user-id="userChatObj.uid"
+            user-id="localUser.uid"
+            close-chat="d.closeChat"
             chatter-obj="d.selectedChatter">
         </chat-board>
     </div>

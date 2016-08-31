@@ -12,6 +12,16 @@ chat-board {
             align-items: center;
             border-bottom: 1px solid gray; // todo - color------------------------------------
             height: 30px;
+
+            .znk-chat-close-icon{
+                position: absolute;
+                right:5px;
+                cursor: pointer;
+                svg line{
+                    stroke:black;// todo
+                    stroke-width: 3px;
+                }
+            }
         }
 
         .board-wrapper{
@@ -40,7 +50,7 @@ chat-board {
             }
 
             textarea{
-                @include dimension(100%, 44px);
+                @include dimension(100%, 43px);
                 border:none;
                 border-top: 1px solid lightgray; // todo - color --------------------------
                 box-sizing: border-box;

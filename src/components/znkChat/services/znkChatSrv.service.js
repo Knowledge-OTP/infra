@@ -80,21 +80,20 @@
             };
 
 
-            self.createNewChat = function (localUid, chatterId) {
+            self.createNewChat = function (localUser, secondUser) {
                 return _getStorage().then(function (globalStorage) {
                     var deferred = $q.defer();
                     var chatPath = znkChatPaths.chatPath;
 
                     var adapterRef = globalStorage.adapter.getRef(GLOBAL_PATH); // todo - get global path ?
                     var chatsRef = adapterRef.child(chatPath);
-                    var localUserPath = znkChatPaths.chatsUsersGuids.replace('$$uid', localUid); // todo - make function that returns this path
-                    var chatterPath = znkChatPaths.chatsUsersGuids.replace('$$uid', chatterId); // todo - make function that returns this path
+                    var localUserPath = znkChatPaths.chatsUsersGuids.replace('$$uid', localUser.uid); // todo - make function that returns this path
+                    var chatterPath = znkChatPaths.chatsUsersGuids.replace('$$uid', secondUser.uid); // todo - make function that returns this path
 
                     var localUserRef = adapterRef.child(localUserPath);
                     var chatterRef = adapterRef.child(chatterPath);
 
                     var chatGuid;
-
 
                     function _completeTransactionFn(error) {
                         if (error) {
@@ -103,7 +102,7 @@
                     }
 
                     function _transactionFn() {  // todo - implemented bad!!!
-                        var newChatObj = _createNewChatObj(localUid, chatterId);
+                        var newChatObj = _createNewChatObj(localUser, secondUser);
                         var userNewChatGuid = {};
                         chatGuid = chatsRef.push(newChatObj).key();
                         userNewChatGuid[chatGuid] = chatGuid;
@@ -118,18 +117,18 @@
                 });
             };
 
-            function _createNewChatObj(localUid, chatterId) {
+            function _createNewChatObj(firstUser, secondCUser) {
                 var newChatObj = {};
                 newChatObj.uids = {};
-                newChatObj.uids[localUid] = {
-                    isTeacher: false         // todo - hardcoded
+                newChatObj.uids[firstUser.uid] = {
+                    isTeacher: firstUser.isTeacher
                 };
-                newChatObj.uids[chatterId] = {
-                    isTeacher: false         // todo - hardcoded
+                newChatObj.uids[secondCUser.uid] = {
+                    isTeacher: secondCUser.isTeacher
                 };
                 newChatObj.usersLastSeenMessage = {};
-                newChatObj.usersLastSeenMessage[localUid] = 0;
-                newChatObj.usersLastSeenMessage[chatterId] = 0;
+                newChatObj.usersLastSeenMessage[firstUser.uid] = 0;
+                newChatObj.usersLastSeenMessage[secondCUser.uid] = 0;
                 return newChatObj;
             }
         }

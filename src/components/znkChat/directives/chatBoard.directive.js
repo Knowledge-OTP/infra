@@ -8,12 +8,13 @@
                 templateUrl: 'components/znkChat/templates/chatBoard.template.html',
                 scope: {
                     chatterObj: '=',
-                    getUserId: '&userId'
+                    getUserId: '&userId',
+                    closeChat: '&'
                 },
                 link: function (scope) {
                     scope.d = {};
                     scope.userId = scope.getUserId();
-
+                    scope.d.closeChat = scope.closeChat();
                     scope.d.sendMessage = function () {
                         if(scope.d.newMessage.length > 0){
                             var newMessageObj = {

@@ -10,7 +10,8 @@
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    'chat-icon': 'components/znkChat/svg/chat-icon.svg'
+                    'znk-chat-chat-icon': 'components/znkChat/svg/znk-chat-chat-icon.svg',
+                    'znk-chat-close-icon': 'components/znkChat/svg/znk-chat-close-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }]);

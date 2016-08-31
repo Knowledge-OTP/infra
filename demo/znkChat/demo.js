@@ -21,21 +21,24 @@
             };
 
             function participantsGetterFn(teachersSrv) {
-                return teachersSrv.getAllTeachers();
+                 return teachersSrv.getAllTeachers().then(function(teachers){
+                     var teachersKeys = Object.keys(teachers);
+                     angular.forEach(teachersKeys, function (key) {
+                         teachers[key].isTeacher = true;
+                     });
+                     return teachers;
+                })
             }
 
             znkChatDataSrvProvider.setChatPaths(chatPaths);
             znkChatDataSrvProvider.setParticipantsGetterFn(participantsGetterFn);
 
         })
-        .controller('ctrl', function ($scope, InfraConfigSrv) {
-            $scope.userChatObj = {
-                chatGuids: ['guid1', 'guid2', 'guid3', 'guid4'],
-                name: 'Abra Kadabra',
-                uid: 'simplelogin:12333'
+        .controller('ctrl', function ($scope) {
+            $scope.localUser = {
+                uid: 'simplelogin:12333',
+                isTeacher: false
             };
-            InfraConfigSrv.getGlobalStorage().then(function (x) {
-            })
         })
         .run(function ($rootScope, $translate) {
             $rootScope.$on('$translatePartialLoaderStructureChanged', function () {

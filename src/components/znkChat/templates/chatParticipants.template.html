@@ -6,6 +6,8 @@
             <chatter
                 set-first-chatter="$index === 0 ? d.selectChatter()(chatter) : angular.noop"
                 chat-data="d.chatData"
+                local-user="d.chatData.localUser"
+                local-user-chats-guids-arr="d.chatData.localUserChatsGuidsArr"
                 chatter-obj="chatter">
             </chatter>
         </div>
