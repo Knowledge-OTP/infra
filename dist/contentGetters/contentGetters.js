@@ -4,7 +4,8 @@
     angular.module('znk.infra.contentGetters', [
         'znk.infra.config',
         'znk.infra.content',
-        'znk.infra.exerciseUtility'
+        'znk.infra.exerciseUtility',
+        'znk.infra.enum'
     ]);
 })(angular);
 
@@ -77,18 +78,31 @@
 'use strict';
 
 angular.module('znk.infra.contentGetters').service('CategoryService',
-    ["StorageRevSrv", "$q", "categoryEnum", "$log", function (StorageRevSrv, $q, categoryEnum, $log) {
+    ["StorageRevSrv", "$q", "categoryEnum", "$log", "EnumSrv", function (StorageRevSrv, $q, categoryEnum, $log, EnumSrv) {
         'ngInject';
 
+        var categoryMapObj;
         var self = this;
-        this.get = function () {
+        var categoryTypeEnum = new EnumSrv.BaseEnum([
+            ['TUTORIAL', 1, 'tutorial'],
+            ['EXERCISE', 2, 'exercise'],
+            ['MINI_CHALLENGE', 3, 'miniChallenge'],
+            ['SECTION', 4, 'section'],
+            ['DRILL', 5, 'drill'],
+            ['GENERAL', 6, 'general'],
+            ['SPECIFIC', 7, 'specific'],
+            ['STRATEGY', 8, 'strategy'],
+            ['SUBJECT', 9, 'subject'],
+            ['SUB_SCORE', 10, 'subScore'],
+            ['TEST_SCORE', 11, 'testScore']
+        ]);
+        self.get = function () {
             return StorageRevSrv.getContent({
                 exerciseType: 'category'
             });
         };
 
-        var categoryMapObj;
-        this.getCategoryMap = function () {
+        self.getCategoryMap = function () {
             if (categoryMapObj) {
                 return $q.when(categoryMapObj);
             }
@@ -250,7 +264,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         })();
         //(igor) sat patch should be removed
         self.getSubjectIdByCategory = function (category) {
-            if (category.typeId === categoryEnum.categoryTypeEnum.SUBJECT.enum) {
+            if (category.typeId === categoryTypeEnum.SUBJECT.enum) {
                 return $q.when(category.id);
             }
             return self.getParentCategory(category.id).then(function (parentCategory) {

@@ -4,6 +4,7 @@
     angular.module('znk.infra.contentGetters', [
         'znk.infra.config',
         'znk.infra.content',
-        'znk.infra.exerciseUtility'
+        'znk.infra.exerciseUtility',
+        'znk.infra.enum'
     ]);
 })(angular);
