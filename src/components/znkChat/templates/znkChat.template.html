@@ -3,8 +3,8 @@
         <svg-icon name="chat-icon"></svg-icon>
     </div>
 
-    <div class="chat-container" ng-switch-when="2">
-        <chat-participants
+    <div class="chat-container" ng-switch-when="2" ng-if="d.chatData">
+        <chat-participants ng-if="d.chatData"
             chat-data="d.chatData"
             select-chatter="d.selectChatter">
         </chat-participants>

@@ -120,18 +120,20 @@
                     chatterObj: '=',
                     localUserChatsGuidsArr: '=',
                     localUserId: '&',
+                    chatData:"=",
                     setFirstChatter: '&?'
                 },
                 link: function (scope) {
                     scope.d = {};
                     var chatGuidProm;
                     // var callbacksToRemove;
-                    var localUseId = scope.localUserId();
 
-                    if (scope.localUserChatsGuidsArr) {
+                    if (scope.chatData) {
+                        var localUseId = scope.chatData.localUserId;
+                        var localUserChatsGuidsArr = scope.chatData.localUserChatsGuidsArr;
                         znkChatSrv.getChatGuidsByUid(scope.chatterObj.uid).then(function (chatterChatGuidsArr) {
-                            if (angular.isArray(chatterChatGuidsArr) && angular.isArray(scope.localUserChatsGuidsArr) && chatterChatGuidsArr.length > 0 && chatterChatGuidsArr.length > 0) {
-                                chatGuidProm = znkChatSrv.getChatGuidByTwoGuidsArray(scope.localUserChatsGuidsArr, chatterChatGuidsArr);
+                            if (angular.isArray(chatterChatGuidsArr) && angular.isArray(localUserChatsGuidsArr) && chatterChatGuidsArr.length > 0 && chatterChatGuidsArr.length > 0) {
+                                chatGuidProm = znkChatSrv.getChatGuidByTwoGuidsArray(localUserChatsGuidsArr, chatterChatGuidsArr);
                             } else {
                                 chatGuidProm = znkChatSrv.createNewChat(localUseId, scope.chatterObj.uid);
                             }
@@ -191,9 +193,10 @@
                         CHAT_VIEW: 2
                     };
 
+
                     scope.d = {};
-                    scope.d.chatData = {};
                     scope.d.selectedChatter = {};
+                    scope.d.chatData = {};
 
                     scope.d.chatStateView = statesView.CHAT_VIEW;
                     scope.d.openChat = function () {
@@ -202,7 +205,7 @@
 
                     $q.all([znkChatSrv.getChatParticipants(), znkChatSrv.getChatGuidsByUid(localUid)]).then(function (res) {
                         scope.d.chatData.chatParticipantsArr = UtilitySrv.object.convertToArray(res[0]);
-                        scope.d.chatData.localUserChatGuidsArr = UtilitySrv.object.convertToArray(res[1]);
+                        scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(res[1]);
                         scope.d.chatData.localUserId = localUid;
                     });
 
@@ -357,8 +360,10 @@
                     return;
                 }
                 for (var i = 0; i < chatGuidArr1.length; i++) {
-                    if (chatGuidArr2.indexOf(chatGuidArr2[i]) !== 1) {
-                        return chatGuidArr2[i];
+                    for(var j = 0; j < chatGuidArr2.length; j++) {
+                        if (chatGuidArr1[i].indexOf(chatGuidArr2[j]) !== -1) {
+                            return chatGuidArr2[j];
+                        }
                     }
                 }
             };
@@ -497,8 +502,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "        <div ng-click=\"d.selectChatter()(chatter)\">\n" +
     "            <chatter\n" +
     "                set-first-chatter=\"$index === 0 ? d.selectChatter()(chatter) : angular.noop\"\n" +
-    "                local-user-id=\"d.chatData.localUserId\"\n" +
-    "                local-user-chats-guids-arr=\"d.chatData.localUserChatGuidsArr\"\n" +
+    "                chat-data=\"d.chatData\"\n" +
     "                chatter-obj=\"chatter\">\n" +
     "            </chatter>\n" +
     "        </div>\n" +
@@ -525,8 +529,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "        <svg-icon name=\"chat-icon\"></svg-icon>\n" +
     "    </div>\n" +
     "\n" +
-    "    <div class=\"chat-container\" ng-switch-when=\"2\">\n" +
-    "        <chat-participants\n" +
+    "    <div class=\"chat-container\" ng-switch-when=\"2\" ng-if=\"d.chatData\">\n" +
+    "        <chat-participants ng-if=\"d.chatData\"\n" +
     "            chat-data=\"d.chatData\"\n" +
     "            select-chatter=\"d.selectChatter\">\n" +
     "        </chat-participants>\n" +

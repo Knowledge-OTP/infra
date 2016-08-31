@@ -71,8 +71,10 @@
                     return;
                 }
                 for (var i = 0; i < chatGuidArr1.length; i++) {
-                    if (chatGuidArr2.indexOf(chatGuidArr2[i]) !== 1) {
-                        return chatGuidArr2[i];
+                    for(var j = 0; j < chatGuidArr2.length; j++) {
+                        if (chatGuidArr1[i].indexOf(chatGuidArr2[j]) !== -1) {
+                            return chatGuidArr2[j];
+                        }
                     }
                 }
             };

@@ -19,9 +19,10 @@
                         CHAT_VIEW: 2
                     };
 
+
                     scope.d = {};
-                    scope.d.chatData = {};
                     scope.d.selectedChatter = {};
+                    scope.d.chatData = {};
 
                     scope.d.chatStateView = statesView.CHAT_VIEW;
                     scope.d.openChat = function () {
@@ -30,7 +31,7 @@
 
                     $q.all([znkChatSrv.getChatParticipants(), znkChatSrv.getChatGuidsByUid(localUid)]).then(function (res) {
                         scope.d.chatData.chatParticipantsArr = UtilitySrv.object.convertToArray(res[0]);
-                        scope.d.chatData.localUserChatGuidsArr = UtilitySrv.object.convertToArray(res[1]);
+                        scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(res[1]);
                         scope.d.chatData.localUserId = localUid;
                     });
 

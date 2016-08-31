@@ -5,8 +5,7 @@
         <div ng-click="d.selectChatter()(chatter)">
             <chatter
                 set-first-chatter="$index === 0 ? d.selectChatter()(chatter) : angular.noop"
-                local-user-id="d.chatData.localUserId"
-                local-user-chats-guids-arr="d.chatData.localUserChatGuidsArr"
+                chat-data="d.chatData"
                 chatter-obj="chatter">
             </chatter>
         </div>

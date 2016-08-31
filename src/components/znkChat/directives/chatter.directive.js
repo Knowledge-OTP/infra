@@ -10,18 +10,20 @@
                     chatterObj: '=',
                     localUserChatsGuidsArr: '=',
                     localUserId: '&',
+                    chatData:"=",
                     setFirstChatter: '&?'
                 },
                 link: function (scope) {
                     scope.d = {};
                     var chatGuidProm;
                     // var callbacksToRemove;
-                    var localUseId = scope.localUserId();
 
-                    if (scope.localUserChatsGuidsArr) {
+                    if (scope.chatData) {
+                        var localUseId = scope.chatData.localUserId;
+                        var localUserChatsGuidsArr = scope.chatData.localUserChatsGuidsArr;
                         znkChatSrv.getChatGuidsByUid(scope.chatterObj.uid).then(function (chatterChatGuidsArr) {
-                            if (angular.isArray(chatterChatGuidsArr) && angular.isArray(scope.localUserChatsGuidsArr) && chatterChatGuidsArr.length > 0 && chatterChatGuidsArr.length > 0) {
-                                chatGuidProm = znkChatSrv.getChatGuidByTwoGuidsArray(scope.localUserChatsGuidsArr, chatterChatGuidsArr);
+                            if (angular.isArray(chatterChatGuidsArr) && angular.isArray(localUserChatsGuidsArr) && chatterChatGuidsArr.length > 0 && chatterChatGuidsArr.length > 0) {
+                                chatGuidProm = znkChatSrv.getChatGuidByTwoGuidsArray(localUserChatsGuidsArr, chatterChatGuidsArr);
                             } else {
                                 chatGuidProm = znkChatSrv.createNewChat(localUseId, scope.chatterObj.uid);
                             }
