@@ -148,4 +148,28 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
                 return getAllLevel4CategoriessProm;
             };
         })();
+        //(igor) sat patch should be removed
+        self.getAllGeneralCategoriesBySubjectId = (function () {
+            var getAllGeneralCategoriesBySubjectIdProm;
+            return function (subjectId) {
+                if (!getAllGeneralCategoriesBySubjectIdProm) {
+                    getAllGeneralCategoriesBySubjectIdProm = self.getAllGeneralCategories().then(function (categories) {
+                        var generalCategories = {};
+                        var promArray = [];
+                        angular.forEach(categories, function (generalCategory) {
+                            var prom = self.getSubjectIdByCategory(generalCategory).then(function (currentCategorySubjectId) {
+                                if (currentCategorySubjectId === subjectId) {
+                                    generalCategories[generalCategory.id] = generalCategory;
+                                }
+                            });
+                            promArray.push(prom);
+                        });
+                        return $q.all(promArray).then(function () {
+                            return generalCategories;
+                        });
+                    });
+                }
+                return getAllGeneralCategoriesBySubjectIdProm;
+            };
+        })();
     });
