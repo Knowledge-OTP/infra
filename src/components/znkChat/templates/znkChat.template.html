@@ -4,11 +4,13 @@
     </div>
 
     <div class="chat-container" ng-switch-when="2">
-        <chat-participants participants="d.chatParticipantsArr" select-chatter="d.selectChatter"></chat-participants>
+        <chat-participants
+            chat-data="d.chatData"
+            select-chatter="d.selectChatter">
+        </chat-participants>
+
         <chat-board
             user-id="userChatObj.uid"
-            chat-messages="d.chatMessages"
-            chat-guid="{{d.chatGuid}}"
             chatter-obj="d.selectedChatter">
         </chat-board>
     </div>

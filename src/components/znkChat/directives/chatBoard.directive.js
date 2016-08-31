@@ -8,9 +8,7 @@
                 templateUrl: 'components/znkChat/templates/chatBoard.template.html',
                 scope: {
                     chatterObj: '=',
-                    chatMessages: '=',
-                    getUserId: '&userId',
-                    chatGuid: '@'
+                    getUserId: '&userId'
                 },
                 link: function (scope) {
                     scope.d = {};
@@ -23,7 +21,7 @@
                                 uid: scope.userId,
                                 text: scope.d.newMessage
                             };
-                            znkChatSrv.updateChat(scope.chatGuid, newMessageObj, scope.userId);
+                            znkChatSrv.updateChat(scope.chatterObj.chatGuid, newMessageObj, scope.userId);
                             scope.d.newMessage = '';
                         }
                     }

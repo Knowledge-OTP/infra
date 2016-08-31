@@ -8,10 +8,12 @@
                 templateUrl: 'components/znkChat/templates/chatParticipants.template.html',
                 scope: {
                     selectChatter: '&',
-                    chatParticipants: '=participants'
+                    chatData: '='
                 },
                 link: function (scope) {
                     scope.d = {};
+                    scope.d.chatData = scope.chatData;
+                    scope.d.selectChatter = scope.selectChatter;
                 }
             };
         }
