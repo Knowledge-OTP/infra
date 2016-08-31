@@ -5,6 +5,8 @@ chat-board {
         text-align: center;
 
         .chat-board-header {
+            background-color: white; // todo
+            border-radius: 0 15px 0 0;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -14,6 +16,7 @@ chat-board {
 
         .board-wrapper{
             padding-right: 5px;
+            background-color: white; // todo
             .messages-wrapper {
                 @include dimension(100%, 200px);
                 overflow-y: auto;
