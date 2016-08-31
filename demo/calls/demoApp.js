@@ -78,7 +78,6 @@
                 this.studentAppName = 'act_app';
                 this.dashboardAppName = 'act_dashboard';
             }
-
         })
         .config(function(CallsUiSrvProvider){
             var fn = function($q) {

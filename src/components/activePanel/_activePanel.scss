@@ -11,12 +11,18 @@ active-panel {
     }
     .active-panel {
         z-index: 9999;
-        transition: 1.5s;
         width: 250px;
         height: 40px;
         background-color: $bgColor21;
         border: 1px solid $bcColor11;
         border-radius: 20px;
+        // override transition delay when showing / hiding the widget
+        &.ng-animate {
+            transition:0s none;
+            -webkit-transition:0s none;
+            animation: 0s none;
+            -webkit-animation: 0s none;
+        }
         svg-icon {
             &:focus {
                 outline: none;
