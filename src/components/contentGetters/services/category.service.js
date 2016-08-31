@@ -172,4 +172,13 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
                 return getAllGeneralCategoriesBySubjectIdProm;
             };
         })();
+        //(igor) sat patch should be removed
+        self.getSubjectIdByCategory = function (category) {
+            if (category.typeId === categoryEnum.categoryTypeEnum.SUBJECT.enum) {
+                return $q.when(category.id);
+            }
+            return self.getParentCategory(category.id).then(function (parentCategory) {
+                return self.getSubjectIdByCategory(parentCategory);
+            });
+        };
     });
