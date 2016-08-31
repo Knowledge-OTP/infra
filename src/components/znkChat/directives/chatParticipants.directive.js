@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('chatParticipants',
-        function (znkChatSrv, UtilitySrv) {
+        function () {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/chatParticipants.template.html',

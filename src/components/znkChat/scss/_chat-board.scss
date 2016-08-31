@@ -7,15 +7,33 @@ chat-board {
         .chat-board-header {
             display: flex;
             justify-content: center;
+            align-items: center;
             border-bottom: 1px solid gray; // todo - color------------------------------------
             height: 30px;
         }
 
         .board-wrapper{
+            padding-right: 5px;
             .messages-wrapper {
                 @include dimension(100%, 200px);
                 overflow-y: auto;
                 clear: both;
+            }
+
+            .znk-scrollbar {
+                ::-webkit-scrollbar,
+                &::-webkit-scrollbar {
+                    height: 20px;
+                    width: 6px;
+                    background-color: #f9f9f9;
+                    border-radius: 100px;
+                    margin: 20px 0;
+                }
+                ::-webkit-scrollbar-thumb,
+                &::-webkit-scrollbar-thumb {
+                    background-color: #E1E1E1;
+                    -webkit-border-radius: 1ex;
+                }
             }
 
             textarea{

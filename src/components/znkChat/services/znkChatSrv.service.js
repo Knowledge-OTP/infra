@@ -22,32 +22,7 @@
                     var chatPath = GLOBAL_PATH + '/' + znkChatPaths.chatPath + '/' + chatGuid; // todo -remove global path
                     return globalStorage.get(chatPath).then(function (chatObj) {
                         return chatObj;
-                    })
-                })
-            };
-
-            self.setToParticipantsChatData = function (localUserChatGuidsArr, chatParticipantsArr, localUid) {
-                var promArrays = [];
-                for (var i = 0; i < chatParticipantsArr.length; i++) {
-                    debugger;
-                    var prom = self.setOneParticipantschatData(localUserChatGuidsArr, chatParticipantsArr, i);
-                    promArrays.push(prom);
-                }
-                return $q.all(promArrays).then(function () {
-                    return chatParticipantsArr;
-                })
-            };
-
-            self.setOneParticipantschatData = function (localUserChatGuidsArr, chatParticipantsArr, index, localUid) {
-                return self.getChatGuidsByUid(chatParticipantsArr[index].uid).then(function (chatterChatGuidsArray) { // get the correct chat
-                    var cahtGuid = self.getChatGuidByTwoGuidsArray(localUserChatGuidsArr, chatterChatGuidsArray);
-                    return self.getChatByGuid(cahtGuid).then(function (chat) {
-                        if(chat) {
-                            chatParticipantsArr[index].chatGuid = cahtGuid;
-                            chatParticipantsArr[index].lastSawMessage = angular.isDefined(chat.usersLastSeenMessage) ? chat.usersLastSeenMessage[localUid] : 0; // first connection
-                            chatParticipantsArr[index].numOfNotSeenMessages = 0;
-                        }
-                    })
+                    });
                 });
             };
 
@@ -56,16 +31,16 @@
                     var chatsGuidsPath = znkChatPaths.chatsUsersGuids.replace('$$uid', uid);
                     return globalStorage.get(GLOBAL_PATH + '/' + chatsGuidsPath).then(function (chatsGuids) { //todo - remove GLOBAL_PATH
                         return UtilitySrv.object.convertToArray(chatsGuids);
-                    })
-                })
+                    });
+                });
             };
 
             self.getChatMessages = function (chatGuid) {
                 return _getStorage().then(function (globalStorage) {
                     return globalStorage.get(GLOBAL_PATH + '/' + znkChatPaths.chatPath).then(function (chatObj) {
                         return UtilitySrv.object.convertToArray(chatObj[chatGuid].messages);
-                    })
-                })
+                    });
+                });
             };
 
             self.updateChat = function (chatGuid, newMessage) {
@@ -80,7 +55,14 @@
             self.updateLasSeenMessage = function (chatGuid, userId, lastSeenMessage) {
                 return _getStorage().then(function (globalStorage) {
                     var notSeenMessagesPath = GLOBAL_PATH + '/' + znkChatPaths.chatPath + '/' + chatGuid + '/usersLastSeenMessage/' + userId; // todo -remove global path
-                    globalStorage.update(notSeenMessagesPath, lastSeenMessage)
+                    globalStorage.update(notSeenMessagesPath, lastSeenMessage);
+                });
+            };
+
+            self.getLasSeenMessage = function (chatGuid, userId) {
+                return _getStorage().then(function (globalStorage) {
+                    var notSeenMessagesPath = GLOBAL_PATH + '/' + znkChatPaths.chatPath + '/' + chatGuid + '/usersLastSeenMessage/' + userId; // todo -remove global path
+                    return globalStorage.get(notSeenMessagesPath);
                 });
             };
 
@@ -110,23 +92,25 @@
                     var chatterRef = adapterRef.child(chatterPath);
 
                     var chatGuid;
-                    adapterRef.transaction(_transactionFn, _completeTransactionFn);
+
+
+                    function _completeTransactionFn(error) {
+                        if (error) {
+                            $log.error(error);
+                        }
+                    }
 
                     function _transactionFn() {  // todo - implemented bad!!!
                         var newChatObj = _createNewChatObj(localUid, chatterId);
                         var userNewChatGuid = {};
                         chatGuid = chatsRef.push(newChatObj).key();
                         userNewChatGuid[chatGuid] = chatGuid;
-                        $q.all([localUserRef.update(userNewChatGuid), chatterRef.update(userNewChatGuid)]).then(function (res) {
+                        $q.all([localUserRef.update(userNewChatGuid), chatterRef.update(userNewChatGuid)]).then(function () {
                             deferred.resolve(chatGuid);
-                        })
+                        });
                     }
 
-                    function _completeTransactionFn(error) {
-                        if (error) {
-                            $log.error(error)
-                        }
-                    }
+                    adapterRef.transaction(_transactionFn, _completeTransactionFn);
 
                     return deferred.promise;
                 });

@@ -25,4 +25,25 @@
         @include text-style(16px, $fcColor14, Lato, $regularFontWeight);
         height: 23px;
     }
+
+    .messages-not-seen{
+        @include dimension(15px,15px);
+        @include text-style(10px, $fcColor14, Lato, $regularFontWeight); // todo
+        transition: 0.2s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color:white;
+        border-radius: 50px;
+        background-color: #FF5456; // todo
+    }
+    .messages-not-seen.ng-enter,
+    .messages-not-seen.ng-leave.ng-leave-active {
+        opacity:0;
+    }
+
+    .messages-not-seen.ng-leave,
+    .messages-not-seen.ng-enter.ng-enter-active {
+        opacity:1;
+    }
 }

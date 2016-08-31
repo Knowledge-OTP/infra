@@ -15,7 +15,7 @@
                     getLocalUserId: '&localUserId'
                 },
                 link: function (scope, element) {
-                    var element = angular.element(element[0]);
+                    element = angular.element(element[0]);
                     var classToAdd;
                     var localUserId = scope.getLocalUserId();
 

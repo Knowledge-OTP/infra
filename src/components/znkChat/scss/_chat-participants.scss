@@ -14,13 +14,21 @@
 
 
     .chatter-repeater, .support-chat-wrapper {
-        @include dimension(175px, 30px);
+        @include dimension(190px, 30px);
         padding-left: 9px;
         box-sizing: border-box;
         cursor: pointer;
 
         &:hover{
             background-color: #BDBDBD; // todo- check angular material button
+        }
+    }
+
+    .chatter-repeater{
+        chatter {
+            .chatter-wrapper .chatter-name {
+                width:137px;
+            }
         }
     }
 

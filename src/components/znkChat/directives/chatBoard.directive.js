@@ -24,8 +24,7 @@
                             znkChatSrv.updateChat(scope.chatterObj.chatGuid, newMessageObj, scope.userId);
                             scope.d.newMessage = '';
                         }
-                    }
-
+                    };
                 }
             };
         }

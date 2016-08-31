@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').provider('znkChatDataSrv',
-        function ($injector) {
+        function () {
             'ngInject';
 
             var znkChatPathsObj = {};
@@ -28,7 +28,7 @@
                 };
 
                 return znkChat;
-            }
+            };
 
         }
     );

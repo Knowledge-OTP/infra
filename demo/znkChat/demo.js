@@ -7,7 +7,8 @@
         'znk.infra.storage',
         'pascalprecht.translate',
         'znk.infra.user',
-        'znk.infra.utility'
+        'znk.infra.utility',
+        'ngAnimate'
     ])
         .config(function ($translateProvider, znkChatDataSrvProvider) {
             $translateProvider.useLoader('$translatePartialLoader', {

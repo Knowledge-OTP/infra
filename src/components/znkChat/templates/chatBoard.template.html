@@ -3,7 +3,7 @@
         <chatter chatter-obj="chatterObj"></chatter>
     </div>
     <div class="board-wrapper">
-        <div class="messages-wrapper">
+        <div class="messages-wrapper znk-scrollbar">
             <div ng-repeat="message in chatterObj.chatMessages | orderBy:'time'">
                 <chat-message local-user-id="userId" message="message"></chat-message>
             </div>

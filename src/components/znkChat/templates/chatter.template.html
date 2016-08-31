@@ -3,4 +3,5 @@
                                 'idle': chatterObj.presence === d.userStatus.IDLE}">
     <div class="online-indicator"></div>
     <div class="chatter-name">{{chatterObj.name}}</div>
+    <div class="messages-not-seen" ng-if="chatterObj.messagesNotSeen > 0">{{chatterObj.messagesNotSeen}}</div>
 </div>

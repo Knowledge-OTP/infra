@@ -15,7 +15,7 @@
                 link: function (scope) {
                     scope.d = {};
                     var chatGuidProm;
-                    var callbacksToRemove;
+                    // var callbacksToRemove;
                     var localUseId = scope.localUserId();
 
                     if (scope.localUserChatsGuidsArr) {
@@ -28,10 +28,11 @@
                             $q.when(chatGuidProm).then(function (chatGuid) {
                                 scope.chatterObj.chatMessages = [];
                                 scope.chatterObj.chatGuid = chatGuid;
+                                scope.chatterObj.messagesNotSeen = 0;
                                 scope.setFirstChatter(scope.chatterObj);
                                 _startListen(chatGuid);
-                            })
-                        })
+                            });
+                        });
                     }
 
                     function _startListen(chatGuid) {
@@ -40,13 +41,18 @@
                     }
 
                     function callback(snapShot) {
-                        var newData = snapShot.val();
-                        $timeout(function(){
-                            scope.chatterObj.chatMessages.push(newData);
+                        znkChatSrv.getLasSeenMessage(scope.chatterObj.chatGuid, localUseId).then(function (lastSeenMessage) {
+                            var newData = snapShot.val();
+                            if(!scope.chatterObj.isActive && newData.time > lastSeenMessage) { // check if there is messages the local user didn't see
+                                scope.chatterObj.messagesNotSeen ++;
+                            }
+                            $timeout(function () {
+                                scope.chatterObj.chatMessages.push(newData);
+                            });
                         });
                     }
-                    callbacksToRemove = callback;
-                    return callback;
+
+                    // callbacksToRemove = callback; todo - dont forget unregister
                 }
             };
         }

@@ -1,6 +1,14 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.teachers', [
+        
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     /**
      api:
      getAllTeachers: returns all teachers of current user as objects
@@ -9,7 +17,7 @@
      * */
 
     angular.module('znk.infra.teachers').service('teachersSrv',
-        function (InfraConfigSrv) {
+        ["InfraConfigSrv", function (InfraConfigSrv) {
             'ngInject';
 
             var self = this;
@@ -43,6 +51,10 @@
                 return newTeacherObj;
             }
 
-        }
+        }]
     );
 })(angular);
+
+angular.module('znk.infra.teachers').run(['$templateCache', function($templateCache) {
+
+}]);
