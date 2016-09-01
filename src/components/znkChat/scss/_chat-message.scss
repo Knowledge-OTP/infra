@@ -1,30 +1,40 @@
-chat-message{
-    .message-wrapper{
-        @include dimension(100%, 60px); // todo- temp size
+chat-message {
+    .message-wrapper {
+        @include dimension(100%, 30px); // todo- temp size
         text-align: center;
-        padding: 10px;
         box-sizing: border-box;
 
-        .message{
-            @include dimension(auto,auto);
+        .message {
+            @include dimension(auto, auto);
             max-width: 200px;
-            padding: 20px 10px;
+            padding: 10px 10px;
             border-radius: 15px;
             word-wrap: break-word;
+            position: relative;
+            &::after {
+                content: '';
+                width: 0;
+                height: 0;
+                border-left: 20px solid transparent;
+                border-right: 20px solid transparent;
+                border-top: 20px solid #f00;
+            }
         }
     }
 
     &.myMessage {
-        .message-wrapper .message{
-            background-color: #09AB02; // todo --------------------------------
+        .message-wrapper .message {
+            @include text-style(14px, $fcColor2, Lato, $regularFontWeight);
+            background-color: #87ca4d; // todo --------------------------------
             float: right;
         }
     }
 
     &.otherMessage {
-        .message-wrapper .message{
+        .message-wrapper .message {
+            @include text-style(14px, $fcColor6, Lato, $regularFontWeight);
             background-color: lightgray; // todo --------------------------------
-            float:left;
+            float: left;
 
         }
     }

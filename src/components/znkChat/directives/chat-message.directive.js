@@ -1,5 +1,3 @@
-
-
 (function (angular) {
     'use strict';
 
@@ -8,24 +6,25 @@
             'ngInject';
             return {
                 template: '<div class="message-wrapper">' +
-                            '<div class="message">{{message.text}}</div>'+
-                            '</div>',
+                '<div class="message">{{message.text}}</div>' +
+                '</div>',
                 scope: {
                     message: '=',
-                    getLocalUserId: '&localUserId'
+                    getLocalUserId: '&localUserId',
+                    lastMessage: '&',
+                    scrollToLastMessage: '&'
                 },
                 link: function (scope, element) {
-                    element = angular.element(element[0]);
                     var classToAdd;
                     var localUserId = scope.getLocalUserId();
 
-                    if(String(localUserId) === String(scope.message.uid)) {
+                    if (String(localUserId) === String(scope.message.uid)) {
                         classToAdd = 'myMessage';
                     } else {
                         classToAdd = 'otherMessage';
                     }
-
                     element.addClass(classToAdd);
+                    scope.scrollToLastMessage()();
                 }
             };
         }

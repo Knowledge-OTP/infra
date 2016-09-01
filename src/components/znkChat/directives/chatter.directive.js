@@ -14,7 +14,7 @@
                 },
                 link: function (scope) {
                     var chatGuidProm;
-                    // var callbacksToRemove;
+                    var offEvent = {};
 
                     if (scope.localUserChatsGuidsArr) {  // this directive also placed in chat board - no need for this guids array
                         var localUserChatsGuidsArr = scope.localUserChatsGuidsArr;
@@ -37,22 +37,33 @@
 
                     function _startListen(chatGuid) {
                         var path = 'users/simplelogin:12333/chats/' + chatGuid + '/messages'; // todo - make function that return this path
-                        znkChatEventSrv.registerEvent('child_added', path, eventHandler);
+                        var eventType = 'child_added';
+                        znkChatEventSrv.registerEvent(eventType, path, eventHandler);
+                        offEvent.path = path;
+                        offEvent.eventType = eventType;
+                        offEvent.callback = eventHandler;
                     }
 
                     function eventHandler(snapShot) {
                         znkChatSrv.getLasSeenMessage(scope.chatterObj.chatGuid, scope.localUser.uid).then(function (lastSeenMessage) {
                             var newData = snapShot.val();
-                            if(!scope.chatterObj.isActive && newData.time > lastSeenMessage) { // check if there is messages the local user didn't see
-                                scope.chatterObj.messagesNotSeen++;
+                            if(newData.time > lastSeenMessage) { // check if there is messages the local user didn't see
+                                if(scope.chatterObj.isActive){
+                                    znkChatSrv.updateLasSeenMessage(scope.chatterObj.chatGuid, scope.localUser.uid, newData.time + 1000); // todo (patch)- saving firebase time because the message time saved
+                                } else {                                                                                                  // by firebase server time and firebase return local time
+                                    scope.chatterObj.messagesNotSeen++;                                                                  // 1: figure why offset of 1 sec solves the problem
+                                }                                                                                                        // 2: use firebase time stamp (or local current time)
                             }
+
                             $timeout(function () {
                                 scope.chatterObj.chatMessages.push(newData);
                             });
                         });
                     }
 
-                    // callbacksToRemove = callback; todo - dont forget unregister
+                    scope.$on('$destroy', function() {
+                        znkChatSrv.offEvent(offEvent.eventType,offEvent.path, offEvent.callback);
+                    });
                 }
             };
         }

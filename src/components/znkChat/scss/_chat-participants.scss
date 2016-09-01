@@ -15,12 +15,14 @@
 
     .chatter-repeater, .support-chat-wrapper {
         @include dimension(190px, 30px);
+        display: flex;
+        align-items: center;
         padding-left: 9px;
         box-sizing: border-box;
         cursor: pointer;
 
         &:hover{
-            background-color: #BDBDBD; // todo- check angular material button
+            background-color: $bgColor30; // todo- check angular material button
         }
     }
 

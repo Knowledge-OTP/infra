@@ -43,11 +43,20 @@
                 });
             };
 
+            self.getMessage = function (chatGuid, messageGuid) {
+                return _getStorage().then(function (globalStorage) {
+                    return globalStorage.get(GLOBAL_PATH + '/' + znkChatPaths.chatPath + '/' + chatGuid + '/' + messageGuid).then(function (messageObj) {
+                        return messageObj;
+                    });
+                });
+            };
+
             self.updateChat = function (chatGuid, newMessage) {
                 return _getStorage().then(function (globalStorage) {
                     var messagesPath = GLOBAL_PATH + '/' + znkChatPaths.chatPath + '/' + chatGuid + '/messages'; // todo -remove global path
                     var adapterRef = globalStorage.adapter.getRef(messagesPath);// todo - why there is no update function within storageSrv?
-                    adapterRef.push(newMessage);
+                    var messageGuid = adapterRef.push(newMessage).key();
+                    return messageGuid;
 
                 });
             };
@@ -62,7 +71,10 @@
             self.getLasSeenMessage = function (chatGuid, userId) {
                 return _getStorage().then(function (globalStorage) {
                     var notSeenMessagesPath = GLOBAL_PATH + '/' + znkChatPaths.chatPath + '/' + chatGuid + '/usersLastSeenMessage/' + userId; // todo -remove global path
-                    return globalStorage.get(notSeenMessagesPath);
+                    return globalStorage.get(notSeenMessagesPath).then(function (lastSeenMessage) {
+
+                        return lastSeenMessage;
+                    });
                 });
             };
 
@@ -71,7 +83,7 @@
                     return;
                 }
                 for (var i = 0; i < chatGuidArr1.length; i++) {
-                    for(var j = 0; j < chatGuidArr2.length; j++) {
+                    for (var j = 0; j < chatGuidArr2.length; j++) {
                         if (chatGuidArr1[i].indexOf(chatGuidArr2[j]) !== -1) {
                             return chatGuidArr2[j];
                         }

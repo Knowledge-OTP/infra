@@ -11,8 +11,12 @@
                     getUserId: '&userId',
                     closeChat: '&'
                 },
-                link: function (scope) {
+                link: function (scope, element) {
+                    var chatboardScrollElement = element[0].querySelector('.messages-wrapper');
                     scope.d = {};
+                    scope.d.scrollToLastMessage = function(){
+                        chatboardScrollElement.scrollTop = chatboardScrollElement.scrollHeight ;
+                    };
                     scope.userId = scope.getUserId();
                     scope.d.closeChat = scope.closeChat();
                     scope.d.sendMessage = function () {

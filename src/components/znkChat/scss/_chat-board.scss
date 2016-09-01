@@ -25,32 +25,48 @@ chat-board {
         }
 
         .board-wrapper{
-            padding-right: 5px;
             background-color: white; // todo
-            .messages-wrapper {
-                @include dimension(100%, 200px);
-                overflow-y: auto;
-                clear: both;
-            }
+            .messages-container {
+                padding-right: 5px;
+                .messages-wrapper {
+                    @include dimension(100%, 200px);
+                    overflow-y: auto;
+                    clear: both;
 
-            .znk-scrollbar {
-                ::-webkit-scrollbar,
-                &::-webkit-scrollbar {
-                    height: 20px;
-                    width: 6px;
-                    background-color: #f9f9f9;
-                    border-radius: 100px;
-                    margin: 20px 0;
-                }
-                ::-webkit-scrollbar-thumb,
-                &::-webkit-scrollbar-thumb {
-                    background-color: #E1E1E1;
-                    -webkit-border-radius: 1ex;
+                        .message-repeater {
+                            margin: 15px 9px;
+                            opacity: 1;
+                            overflow:auto;
+                            height: auto;
+                        }
+                       .message-repeater.ng-enter {
+                            transition: 1s;
+                            opacity: 0;
+                        }
+                        .message-repeater.ng-enter-active {
+                            opacity: 1;
+                        }
+                    }
+
+                .znk-scrollbar {
+                    ::-webkit-scrollbar,
+                    &::-webkit-scrollbar {
+                        height: 20px;
+                        width: 6px;
+                        background-color: #f9f9f9;
+                        border-radius: 100px;
+                        //margin: 20px 0;
+                    }
+                    ::-webkit-scrollbar-thumb,
+                    &::-webkit-scrollbar-thumb {
+                        background-color: #E1E1E1;
+                        -webkit-border-radius: 1ex;
+                    }
                 }
             }
 
             textarea{
-                @include dimension(100%, 43px);
+                @include dimension(100%, 44px);
                 border:none;
                 border-top: 1px solid lightgray; // todo - color --------------------------
                 box-sizing: border-box;

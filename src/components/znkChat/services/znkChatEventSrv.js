@@ -14,7 +14,13 @@
             self.registerEvent = function (type, path, callback) {
                 return _getStorage().then(function (globalStorage) {
                     var adapterRef = globalStorage.adapter.getRef(path);
-                    adapterRef.orderByChild('time').on(type, callback);
+                    adapterRef.orderByChild('time').limitToLast(10).on(type, callback);
+                });
+            };
+
+            self.offEvent = function(type, path, callback){
+                return _getStorage().then(function (globalStorage) {
+                    globalStorage.offEvent(type,path, callback);
                 });
             };
         }

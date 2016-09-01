@@ -11,7 +11,6 @@
                 },
                 link: function (scope) {
                     $translatePartialLoader.addPart('znkChat');
-
                     scope.statesView = {
                         CHAT_BUTTON_VIEW: 1,
                         CHAT_VIEW: 2
@@ -24,7 +23,7 @@
                     scope.d.chatData = {};
                     scope.d.chatData.localUser = scope.localUser;
 
-                    scope.d.chatStateView = scope.statesView.CHAT_BUTTON_VIEW;
+                    scope.d.chatStateView = scope.statesView.CHAT_VIEW;
                     scope.d.openChat = function () {
                         scope.d.chatStateView = scope.statesView.CHAT_VIEW;
                     };
@@ -45,8 +44,7 @@
                         scope.d.selectedChatter.isActive = true;
                         scope.d.selectedChatter.messagesNotSeen = 0;
                         if (chatter.chatMessages.length > 0) {
-                            var lastMessage = chatter.chatMessages[chatter.chatMessages.length - 1];
-                            znkChatSrv.updateLasSeenMessage(chatter.chatGuid, localUid, lastMessage.time);
+                            znkChatSrv.updateLasSeenMessage(chatter.chatGuid, localUid, new Date().getTime());
                         }
                     };
                 }
