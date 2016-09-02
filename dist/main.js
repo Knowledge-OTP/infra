@@ -10059,7 +10059,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             'ngInject';
             return {
                 template: '<div class="message-wrapper">' +
-                '<div class="message">{{message.text}}</div>' +
+                '<div class="message">{{message.text}} <div class="bottom-triangle"></div></div>' +
                 '</div>',
                 scope: {
                     message: '=',
@@ -10088,8 +10088,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkChat').directive('chatBoard', ['znkChatSrv',
-        function (znkChatSrv) {
+    angular.module('znk.infra.znkChat').directive('chatBoard',
+        ["znkChatSrv", "$timeout", function (znkChatSrv, $timeout) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/chatBoard.template.html',
@@ -10101,13 +10101,17 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 link: function (scope, element) {
                     var chatboardScrollElement = element[0].querySelector('.messages-wrapper');
                     scope.d = {};
-                    scope.d.scrollToLastMessage = function(){
-                        chatboardScrollElement.scrollTop = chatboardScrollElement.scrollHeight ;
+
+                    scope.d.scrollToLastMessage = function () { // message need rendered first
+                        $timeout(function () {
+                            chatboardScrollElement.scrollTop = chatboardScrollElement.scrollHeight;
+                        });
                     };
+
                     scope.userId = scope.getUserId();
                     scope.d.closeChat = scope.closeChat();
                     scope.d.sendMessage = function () {
-                        if(scope.d.newMessage.length > 0){
+                        if (scope.d.newMessage.length > 0) {
                             var newMessageObj = {
                                 time: Firebase.ServerValue.TIMESTAMP,  // todo - figure how change to general adapter
                                 uid: scope.userId,
@@ -10119,8 +10123,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     };
                 }
             };
-        }
-    ]);
+        }]
+    );
 })(angular);
 
 
@@ -10614,7 +10618,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "                                'idle': chatterObj.presence === d.userStatus.IDLE}\">\n" +
     "    <div class=\"online-indicator\"></div>\n" +
     "    <div class=\"chatter-name\">{{chatterObj.name}}</div>\n" +
-    "    <div class=\"messages-not-seen\" ng-if=\"chatterObj.messagesNotSeen > 0\">{{chatterObj.messagesNotSeen}}</div>\n" +
+    "    <div class=\"message-not-seen\" ng-if=\"chatterObj.messagesNotSeen > 0\">{{chatterObj.messagesNotSeen}}</div>\n" +
     "</div>\n" +
     "");
   $templateCache.put("components/znkChat/templates/znkChat.template.html",

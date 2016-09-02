@@ -6,7 +6,7 @@
             'ngInject';
             return {
                 template: '<div class="message-wrapper">' +
-                '<div class="message">{{message.text}}</div>' +
+                '<div class="message">{{message.text}} <div class="bottom-triangle"></div></div>' +
                 '</div>',
                 scope: {
                     message: '=',

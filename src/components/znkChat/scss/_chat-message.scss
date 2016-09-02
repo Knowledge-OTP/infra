@@ -1,23 +1,19 @@
 chat-message {
     .message-wrapper {
-        @include dimension(100%, 30px); // todo- temp size
         text-align: center;
         box-sizing: border-box;
 
         .message {
-            @include dimension(auto, auto);
             max-width: 200px;
             padding: 10px 10px;
             border-radius: 15px;
             word-wrap: break-word;
             position: relative;
-            &::after {
-                content: '';
-                width: 0;
-                height: 0;
-                border-left: 20px solid transparent;
-                border-right: 20px solid transparent;
-                border-top: 20px solid #f00;
+            display: inline-block;
+            .bottom-triangle{
+                @include dimension(0,0);
+                position: absolute;
+                bottom: -7px;
             }
         }
     }
@@ -25,8 +21,16 @@ chat-message {
     &.myMessage {
         .message-wrapper .message {
             @include text-style(14px, $fcColor2, Lato, $regularFontWeight);
-            background-color: #87ca4d; // todo --------------------------------
+            background-color: $bgColor2; // todo --------------------------------
             float: right;
+
+            .bottom-triangle{
+                border-top: 12px solid $bcColor1;
+                transform: rotate(-25deg);
+                right: 8px;
+                border-left: 8px solid transparent;
+                border-right: 3px solid transparent;
+            }
         }
     }
 
@@ -36,6 +40,13 @@ chat-message {
             background-color: lightgray; // todo --------------------------------
             float: left;
 
+            .bottom-triangle{
+                border-top: 12px solid lightgray; // todo --------------------------------
+                left: 8px;
+                transform: rotate(25deg);
+                border-left: 3px solid transparent;
+                border-right: 8px solid transparent;
+            }
         }
     }
 }

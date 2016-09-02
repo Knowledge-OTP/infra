@@ -1,8 +1,8 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkChat').directive('chatBoard', ['znkChatSrv',
-        function (znkChatSrv) {
+    angular.module('znk.infra.znkChat').directive('chatBoard',
+        function (znkChatSrv, $timeout) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/chatBoard.template.html',
@@ -14,13 +14,17 @@
                 link: function (scope, element) {
                     var chatboardScrollElement = element[0].querySelector('.messages-wrapper');
                     scope.d = {};
-                    scope.d.scrollToLastMessage = function(){
-                        chatboardScrollElement.scrollTop = chatboardScrollElement.scrollHeight ;
+
+                    scope.d.scrollToLastMessage = function () { // message need rendered first
+                        $timeout(function () {
+                            chatboardScrollElement.scrollTop = chatboardScrollElement.scrollHeight;
+                        });
                     };
+
                     scope.userId = scope.getUserId();
                     scope.d.closeChat = scope.closeChat();
                     scope.d.sendMessage = function () {
-                        if(scope.d.newMessage.length > 0){
+                        if (scope.d.newMessage.length > 0) {
                             var newMessageObj = {
                                 time: Firebase.ServerValue.TIMESTAMP,  // todo - figure how change to general adapter
                                 uid: scope.userId,
@@ -33,6 +37,6 @@
                 }
             };
         }
-    ]);
+    );
 })(angular);
 
