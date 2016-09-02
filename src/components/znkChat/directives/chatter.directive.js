@@ -26,11 +26,14 @@
                                 chatGuidProm = znkChatSrv.createNewChat(scope.localUser, scope.chatterObj);
                             }
                             $q.when(chatGuidProm).then(function (chatGuid) {
-                                scope.chatterObj.chatMessages = [];
-                                scope.chatterObj.chatGuid = chatGuid;
-                                scope.chatterObj.messagesNotSeen = 0;
-                                scope.setFirstChatter(scope.chatterObj);
-                                _startListen(chatGuid);
+                                znkChatSrv.getLasSeenMessage(chatGuid, scope.localUser.uid).then(function (lastSeenMessage) {
+                                    scope.chatterObj.chatMessages = [];
+                                    scope.chatterObj.chatGuid = chatGuid;
+                                    scope.chatterObj.messagesNotSeen = 0;
+                                    scope.chatterObj.lastSeenMessage = lastSeenMessage;
+                                    scope.setFirstChatter(scope.chatterObj);
+                                    _startListen(chatGuid);
+                                });
                             });
                         });
                     }
@@ -45,20 +48,24 @@
                     }
 
                     function eventHandler(snapShot) {
-                        znkChatSrv.getLasSeenMessage(scope.chatterObj.chatGuid, scope.localUser.uid).then(function (lastSeenMessage) {
                             var newData = snapShot.val();
-                            if(newData.time > lastSeenMessage) { // check if there is messages the local user didn't see
+                            var messageId = snapShot.key();
+                            if(newData.time > scope.chatterObj.lastSeenMessage.time) { // check if there is messages the local user didn't see
                                 if(scope.chatterObj.isActive){
-                                    znkChatSrv.updateLasSeenMessage(scope.chatterObj.chatGuid, scope.localUser.uid, newData.time + 1000); // todo (patch)- saving firebase time because the message time saved
-                                } else {                                                                                                  // by firebase server time and firebase return local time
-                                    scope.chatterObj.messagesNotSeen++;                                                                  // 1: figure why offset of 1 sec solves the problem
-                                }                                                                                                        // 2: use firebase time stamp (or local current time)
+                                    var lastSeenMessage = {};
+                                    lastSeenMessage.id = messageId;
+                                    lastSeenMessage.time = newData.time;
+                                    scope.chatterObj.lastSeenMessage = lastSeenMessage;
+                                    znkChatSrv.updateLasSeenMessage(scope.chatterObj.chatGuid, scope.localUser.uid, lastSeenMessage); 
+                                } else {                                                                                                  
+                                    scope.chatterObj.messagesNotSeen++;                                                                  
+                                }                                                                                                        
                             }
 
                             $timeout(function () {
+                                newData.id = messageId;
                                 scope.chatterObj.chatMessages.push(newData);
                             });
-                        });
                     }
 
                     scope.$on('$destroy', function() {

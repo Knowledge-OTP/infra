@@ -44,7 +44,12 @@
                         scope.d.selectedChatter.isActive = true;
                         scope.d.selectedChatter.messagesNotSeen = 0;
                         if (chatter.chatMessages.length > 0) {
-                            znkChatSrv.updateLasSeenMessage(chatter.chatGuid, localUid, new Date().getTime());
+                            var message = chatter.chatMessages[chatter.chatMessages.length - 1];
+                            var lastMessageTime = {};
+                            lastMessageTime.time = message.time;
+                            lastMessageTime.id = message.id;
+                            scope.d.selectedChatter.lastMessageTime = lastMessageTime;
+                            znkChatSrv.updateLasSeenMessage(chatter.chatGuid, localUid, lastMessageTime);
                         }
                     };
                 }

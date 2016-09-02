@@ -139,8 +139,12 @@
                     isTeacher: secondCUser.isTeacher
                 };
                 newChatObj.usersLastSeenMessage = {};
-                newChatObj.usersLastSeenMessage[firstUser.uid] = 0;
-                newChatObj.usersLastSeenMessage[secondCUser.uid] = 0;
+                newChatObj.usersLastSeenMessage[firstUser.uid] = {
+                    time:0
+                };
+                newChatObj.usersLastSeenMessage[secondCUser.uid] = {
+                    time:0
+                };
                 return newChatObj;
             }
         }

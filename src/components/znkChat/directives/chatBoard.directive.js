@@ -26,7 +26,7 @@
                     scope.d.sendMessage = function () {
                         if (scope.d.newMessage.length > 0) {
                             var newMessageObj = {
-                                time: Firebase.ServerValue.TIMESTAMP,  // todo - figure how change to general adapter
+                                time: _getUtcTime(),
                                 uid: scope.userId,
                                 text: scope.d.newMessage
                             };
@@ -34,6 +34,12 @@
                             scope.d.newMessage = '';
                         }
                     };
+
+                    function _getUtcTime(){
+                        var now = new Date();
+                        var utc_now = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),  now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
+                        return utc_now.getTime();
+                    }
                 }
             };
         }

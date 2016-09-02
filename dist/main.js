@@ -10113,7 +10113,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     scope.d.sendMessage = function () {
                         if (scope.d.newMessage.length > 0) {
                             var newMessageObj = {
-                                time: Firebase.ServerValue.TIMESTAMP,  // todo - figure how change to general adapter
+                                time: _getUtcTime(),
                                 uid: scope.userId,
                                 text: scope.d.newMessage
                             };
@@ -10121,6 +10121,12 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                             scope.d.newMessage = '';
                         }
                     };
+
+                    function _getUtcTime(){
+                        var now = new Date();
+                        var utc_now = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),  now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
+                        return utc_now.getTime();
+                    }
                 }
             };
         }]
@@ -10179,11 +10185,14 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                                 chatGuidProm = znkChatSrv.createNewChat(scope.localUser, scope.chatterObj);
                             }
                             $q.when(chatGuidProm).then(function (chatGuid) {
-                                scope.chatterObj.chatMessages = [];
-                                scope.chatterObj.chatGuid = chatGuid;
-                                scope.chatterObj.messagesNotSeen = 0;
-                                scope.setFirstChatter(scope.chatterObj);
-                                _startListen(chatGuid);
+                                znkChatSrv.getLasSeenMessage(chatGuid, scope.localUser.uid).then(function (lastSeenMessage) {
+                                    scope.chatterObj.chatMessages = [];
+                                    scope.chatterObj.chatGuid = chatGuid;
+                                    scope.chatterObj.messagesNotSeen = 0;
+                                    scope.chatterObj.lastSeenMessage = lastSeenMessage;
+                                    scope.setFirstChatter(scope.chatterObj);
+                                    _startListen(chatGuid);
+                                });
                             });
                         });
                     }
@@ -10198,20 +10207,24 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     }
 
                     function eventHandler(snapShot) {
-                        znkChatSrv.getLasSeenMessage(scope.chatterObj.chatGuid, scope.localUser.uid).then(function (lastSeenMessage) {
                             var newData = snapShot.val();
-                            if(newData.time > lastSeenMessage) { // check if there is messages the local user didn't see
+                            var messageId = snapShot.key();
+                            if(newData.time > scope.chatterObj.lastSeenMessage.time) { // check if there is messages the local user didn't see
                                 if(scope.chatterObj.isActive){
-                                    znkChatSrv.updateLasSeenMessage(scope.chatterObj.chatGuid, scope.localUser.uid, newData.time + 1000); // todo (patch)- saving firebase time because the message time saved
+                                    var lastSeenMessage = {};
+                                    lastSeenMessage.id = messageId;
+                                    lastSeenMessage.time = newData.time;
+                                    scope.chatterObj.lastSeenMessage = lastSeenMessage;
+                                    znkChatSrv.updateLasSeenMessage(scope.chatterObj.chatGuid, scope.localUser.uid, lastSeenMessage); // todo (patch)- saving firebase time because the message time saved
                                 } else {                                                                                                  // by firebase server time and firebase return local time
                                     scope.chatterObj.messagesNotSeen++;                                                                  // 1: figure why offset of 1 sec solves the problem
                                 }                                                                                                        // 2: use firebase time stamp (or local current time)
                             }
 
                             $timeout(function () {
+                                newData.id = messageId;
                                 scope.chatterObj.chatMessages.push(newData);
                             });
-                        });
                     }
 
                     scope.$on('$destroy', function() {
@@ -10270,7 +10283,12 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         scope.d.selectedChatter.isActive = true;
                         scope.d.selectedChatter.messagesNotSeen = 0;
                         if (chatter.chatMessages.length > 0) {
-                            znkChatSrv.updateLasSeenMessage(chatter.chatGuid, localUid, new Date().getTime());
+                            var message = chatter.chatMessages[chatter.chatMessages.length - 1];
+                            var lastMessageTime = {};
+                            lastMessageTime.time = message.time;
+                            lastMessageTime.id = message.id;
+                            scope.d.selectedChatter.lastMessageTime = lastMessageTime;
+                            znkChatSrv.updateLasSeenMessage(chatter.chatGuid, localUid, lastMessageTime);
                         }
                     };
                 }
@@ -10486,8 +10504,12 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     isTeacher: secondCUser.isTeacher
                 };
                 newChatObj.usersLastSeenMessage = {};
-                newChatObj.usersLastSeenMessage[firstUser.uid] = 0;
-                newChatObj.usersLastSeenMessage[secondCUser.uid] = 0;
+                newChatObj.usersLastSeenMessage[firstUser.uid] = {
+                    time:0
+                };
+                newChatObj.usersLastSeenMessage[secondCUser.uid] = {
+                    time:0
+                };
                 return newChatObj;
             }
         }]
