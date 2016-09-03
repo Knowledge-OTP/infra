@@ -84,8 +84,8 @@
                 }
                 for (var i = 0; i < chatGuidArr1.length; i++) {
                     for (var j = 0; j < chatGuidArr2.length; j++) {
-                        if (chatGuidArr1[i].indexOf(chatGuidArr2[j]) !== -1) {
-                            return chatGuidArr2[j];
+                        if (chatGuidArr1[i].chatGuid === chatGuidArr2[j].chatGuid) {
+                            return chatGuidArr2[j].chatGuid;
                         }
                     }
                 }
@@ -108,11 +108,20 @@
                     var localUserRef = adapterRef.child(localUserPath);
                     var chatterRef = adapterRef.child(secondUserPath);
 
-                    var userNewChatGuidObj = {};
-                    userNewChatGuidObj[chatGuid] = chatGuid;
+                    var localUserChatObj = {};
+                    localUserChatObj[chatGuid] = {
+                        uids: secondUser.uid,         // todo - how to call this property?
+                        chatGuid: chatGuid
+                    };
 
-                    var localUserWriteChatGuidsProm = localUserRef.update(userNewChatGuidObj); // todo -remove GLOBAL
-                    var secondUserWriteChatGuidsProm = chatterRef.update(userNewChatGuidObj); // todo -remove GLOBAL
+                    var secondUserChatObj = {};
+                    secondUserChatObj[chatGuid] = {
+                        uids: localUser.uid,         // todo - how to call this property?
+                        chatGuid: chatGuid
+                    };
+
+                    var localUserWriteChatGuidsProm = localUserRef.update(localUserChatObj); // todo -remove GLOBAL
+                    var secondUserWriteChatGuidsProm = chatterRef.update(secondUserChatObj); // todo -remove GLOBAL
                     return $q.all([localUserWriteChatGuidsProm, secondUserWriteChatGuidsProm]).then(function () {
                         return chatGuid;
                     });

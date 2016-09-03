@@ -22,47 +22,51 @@
 
                     function trackUserPresenceCB(newStatus, userId) {
                         $timeout(function () {
-                            if(scope.chatterObj.uid === userId) {
+                            if (scope.chatterObj.uid === userId) {
                                 scope.chatterObj.presence = newStatus;
                             }
                         });
                     }
-                    if(!presenceActiveLiseners[scope.chatterObj.uid]) {
+
+                    if (!presenceActiveLiseners[scope.chatterObj.uid]) {
                         PresenceService.startTrackUserPresence(scope.chatterObj.uid, trackUserPresenceCB);
                         presenceActiveLiseners[scope.chatterObj.uid] = true;
                     }
+
                     if (scope.localUserChatsGuidsArr) {  // this directive also placed in chat board - no need for this guids array
-                        var localUserChatsGuidsArr = scope.localUserChatsGuidsArr;
+                        scope.chatterObj.chatMessages = [];
+                        scope.chatterObj.messagesNotSeen = 0;
 
                         znkChatSrv.getChatGuidsByUid(scope.chatterObj.uid).then(function (chatterChatGuidsArr) {
-                            if (angular.isArray(chatterChatGuidsArr) && angular.isArray(localUserChatsGuidsArr) && chatterChatGuidsArr.length > 0 && chatterChatGuidsArr.length > 0) {
-                                chatGuidProm = znkChatSrv.getChatGuidByTwoGuidsArray(localUserChatsGuidsArr, chatterChatGuidsArr);
+                            if (angular.isArray(chatterChatGuidsArr) && angular.isArray(scope.localUserChatsGuidsArr) && scope.localUserChatsGuidsArr.length > 0 && chatterChatGuidsArr.length > 0) {
+                                chatGuidProm = znkChatSrv.getChatGuidByTwoGuidsArray(scope.localUserChatsGuidsArr, chatterChatGuidsArr);
                             } else {
-                                chatGuidProm = znkChatSrv.createNewChat(scope.localUser, scope.chatterObj);
+                                scope.setFirstChatter(scope.chatterObj); // first chatter with no existing chat
+                                chatGuidProm = _listenToNewChat();
                             }
+
                             $q.when(chatGuidProm).then(function (chatGuid) {
                                 znkChatSrv.getLasSeenMessage(chatGuid, scope.localUser.uid).then(function (lastSeenMessage) {
-                                    scope.chatterObj.chatMessages = [];
                                     scope.chatterObj.chatGuid = chatGuid;
-                                    scope.chatterObj.messagesNotSeen = 0;
                                     scope.chatterObj.lastSeenMessage = lastSeenMessage;
                                     scope.setFirstChatter(scope.chatterObj);
-                                    _startListen(chatGuid);
+                                    _startListenToMessages(chatGuid);
                                 });
                             });
                         });
                     }
 
-                    function _startListen(chatGuid) {
+                    function _startListenToMessages(chatGuid) {
                         var path = 'users/simplelogin:12333/chats/' + chatGuid + '/messages'; // todo - make function that return this path
                         var eventType = 'child_added';
-                        znkChatEventSrv.registerEvent(eventType, path, eventHandler);
-                        offEvent.path = path;
-                        offEvent.eventType = eventType;
-                        offEvent.callback = eventHandler;
+                        znkChatEventSrv.registerMessagesEvent(eventType, path, newMessageHandler);
+                        offEvent.messageEvent = {};
+                        offEvent.messageEvent.path = path;
+                        offEvent.messageEvent.eventType = eventType;
+                        offEvent.messageEvent.callback = newMessageHandler;
                     }
 
-                    function eventHandler(snapShot) {
+                    function newMessageHandler(snapShot) {
                         var newData = snapShot.val();
                         var messageId = snapShot.key();
                         if (newData.time > scope.chatterObj.lastSeenMessage.time) { // check if there is messages the local user didn't see
@@ -83,8 +87,36 @@
                         });
                     }
 
+                    function _listenToNewChat() {
+                        var deferred = $q.defer();
+                        var path = 'users/simplelogin:12333/users/' + scope.chatterObj.uid + '/chats';
+                        var evenType = 'value';
+
+                        function _newCahtHandler(snapshot) {
+                            var newChatObj = snapshot.val();
+                            if(newChatObj) {
+                                var newChatGuid = Object.keys(newChatObj)[0];
+                                if (angular.isDefined(newChatGuid) && newChatObj[newChatGuid].uids === scope.localUser.uid) {
+                                    znkChatEventSrv.offEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
+                                    deferred.resolve(newChatGuid);
+                                }
+                            }
+                        }
+
+                        offEvent.chatConnectionEvent = {};
+                        offEvent.chatConnectionEvent.path = path;
+                        offEvent.chatConnectionEvent.eventType = evenType;
+                        offEvent.chatConnectionEvent.callback = _newCahtHandler;
+
+                        znkChatEventSrv.registerNewChatEvent(evenType, path, _newCahtHandler);
+
+                        return deferred.promise;
+                    }
+
+
                     scope.$on('$destroy', function () {
-                        znkChatSrv.offEvent(offEvent.eventType, offEvent.path, offEvent.callback);
+                        znkChatEventSrv.offEvent(offEvent.messageEvent.eventType, offEvent.messageEvent.path, offEvent.messageEvent.callback);
+                        znkChatEventSrv.offEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
                         PresenceService.stopTrackUserPresence(scope.chatterObj.uid);
                     });
                 }

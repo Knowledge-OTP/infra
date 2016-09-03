@@ -6313,15 +6313,15 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
 
     angular.module('znk.infra.presence', ['ngIdle'])
         .config([
-            'IdleProvider', 'KeepaliveProvider', 'ENV',
-            function (IdleProvider, KeepaliveProvider, ENV) {
+            'IdleProvider', 'KeepaliveProvider',
+            function (IdleProvider, KeepaliveProvider) {
                 // userIdleTime: how many sec until user is 'IDLE'
                 // idleTimeout: how many sec after idle to stop track the user, 0: keep track
                 // idleKeepalive: keepalive interval in sec
 
-                IdleProvider.idle(ENV.userIdleTime || 30);
-                IdleProvider.timeout(ENV.idleTimeout || 0);
-                KeepaliveProvider.interval(ENV.idleKeepalive || 2);
+                IdleProvider.idle( 30);
+                IdleProvider.timeout( 0);
+                KeepaliveProvider.interval(2);
             }])
         .run([
             'PresenceService', 'Idle',
@@ -10059,17 +10059,24 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             'ngInject';
             return {
                 template: '<div class="message-wrapper">' +
-                '<div class="message">{{message.text}} <div class="bottom-triangle"></div></div>' +
+                '<div class="message-date" ng-if="d.date">{{d.date}}</div>'+
+                '<div class="message">' +
+                '{{message.text}}' +
+                ' <div class="bottom-triangle"></div>' +
+                '</div>' +
                 '</div>',
                 scope: {
                     message: '=',
                     getLocalUserId: '&localUserId',
                     lastMessage: '&',
-                    scrollToLastMessage: '&'
+                    scrollToLastMessage: '&',
+                    dateGetter:'&showDate'
                 },
                 link: function (scope, element) {
                     var classToAdd;
                     var localUserId = scope.getLocalUserId();
+                    scope.d = {};
+                    scope.d.date = scope.dateGetter()(scope.message.time);
 
                     if (String(localUserId) === String(scope.message.uid)) {
                         classToAdd = 'myMessage';
@@ -10089,7 +10096,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('chatBoard',
-        ["znkChatSrv", "$timeout", function (znkChatSrv, $timeout) {
+        ["znkChatSrv", "$timeout", "$filter", function (znkChatSrv, $timeout, $filter) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/chatBoard.template.html',
@@ -10099,17 +10106,29 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     closeChat: '&'
                 },
                 link: function (scope, element) {
-                    var chatboardScrollElement = element[0].querySelector('.messages-wrapper');
+                    var chatBoardScrollElement = element[0].querySelector('.messages-wrapper');
                     scope.d = {};
 
-                    scope.d.scrollToLastMessage = function () { // message need rendered first
-                        $timeout(function () {
-                            chatboardScrollElement.scrollTop = chatboardScrollElement.scrollHeight;
+                    scope.d.scrollToLastMessage = function () {
+                        $timeout(function () {                // message need rendered first
+                            chatBoardScrollElement.scrollTop = chatBoardScrollElement.scrollHeight;
                         });
                     };
 
                     scope.userId = scope.getUserId();
+
                     scope.d.closeChat = scope.closeChat();
+
+                    scope.d.dateMap = {};
+                    scope.d.showDate = function (timeStamp) {
+                        var date = $filter('date')(timeStamp, 'EEE, MMM d', 'UTC'); // all time messages saved in UTC time zone.
+                        if (angular.isUndefined(scope.d.dateMap[date])) {  // show message date only once per day.
+                            scope.d.dateMap[date] = date;
+                            return date;
+                        }
+                    };
+
+
                     scope.d.sendMessage = function () {
                         if (scope.d.newMessage.length > 0) {
                             var newMessageObj = {
@@ -10122,9 +10141,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         }
                     };
 
-                    function _getUtcTime(){
+                    function _getUtcTime() { // todo - move to service
                         var now = new Date();
-                        var utc_now = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),  now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
+                        var utc_now = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
                         return utc_now.getTime();
                     }
                 }
@@ -10161,8 +10180,10 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('chatter',
-        ["znkChatSrv", "$q", "znkChatEventSrv", "$timeout", function (znkChatSrv, $q, znkChatEventSrv, $timeout) {
+        ["znkChatSrv", "$q", "znkChatEventSrv", "$timeout", "PresenceService", function (znkChatSrv, $q, znkChatEventSrv, $timeout, PresenceService) {
             'ngInject';
+            var presenceActiveLiseners = {};
+
             return {
                 templateUrl: 'components/znkChat/templates/chatter.template.html',
                 scope: {
@@ -10174,61 +10195,107 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 link: function (scope) {
                     var chatGuidProm;
                     var offEvent = {};
+                    scope.d = {};
+                    scope.d.userStatus = PresenceService.userStatus;
+
+                    function trackUserPresenceCB(newStatus, userId) {
+                        $timeout(function () {
+                            if (scope.chatterObj.uid === userId) {
+                                scope.chatterObj.presence = newStatus;
+                            }
+                        });
+                    }
+
+                    if (!presenceActiveLiseners[scope.chatterObj.uid]) {
+                        PresenceService.startTrackUserPresence(scope.chatterObj.uid, trackUserPresenceCB);
+                        presenceActiveLiseners[scope.chatterObj.uid] = true;
+                    }
 
                     if (scope.localUserChatsGuidsArr) {  // this directive also placed in chat board - no need for this guids array
-                        var localUserChatsGuidsArr = scope.localUserChatsGuidsArr;
+                        scope.chatterObj.chatMessages = [];
+                        scope.chatterObj.messagesNotSeen = 0;
 
                         znkChatSrv.getChatGuidsByUid(scope.chatterObj.uid).then(function (chatterChatGuidsArr) {
-                            if (angular.isArray(chatterChatGuidsArr) && angular.isArray(localUserChatsGuidsArr) && chatterChatGuidsArr.length > 0 && chatterChatGuidsArr.length > 0) {
-                                chatGuidProm = znkChatSrv.getChatGuidByTwoGuidsArray(localUserChatsGuidsArr, chatterChatGuidsArr);
+                            if (angular.isArray(chatterChatGuidsArr) && angular.isArray(scope.localUserChatsGuidsArr) && scope.localUserChatsGuidsArr.length > 0 && chatterChatGuidsArr.length > 0) {
+                                chatGuidProm = znkChatSrv.getChatGuidByTwoGuidsArray(scope.localUserChatsGuidsArr, chatterChatGuidsArr);
                             } else {
-                                chatGuidProm = znkChatSrv.createNewChat(scope.localUser, scope.chatterObj);
+                                scope.setFirstChatter(scope.chatterObj); // first chatter with no existing chat
+                                chatGuidProm = _listenToNewChat();
                             }
+
                             $q.when(chatGuidProm).then(function (chatGuid) {
                                 znkChatSrv.getLasSeenMessage(chatGuid, scope.localUser.uid).then(function (lastSeenMessage) {
-                                    scope.chatterObj.chatMessages = [];
                                     scope.chatterObj.chatGuid = chatGuid;
-                                    scope.chatterObj.messagesNotSeen = 0;
                                     scope.chatterObj.lastSeenMessage = lastSeenMessage;
                                     scope.setFirstChatter(scope.chatterObj);
-                                    _startListen(chatGuid);
+                                    _startListenToMessages(chatGuid);
                                 });
                             });
                         });
                     }
 
-                    function _startListen(chatGuid) {
+                    function _startListenToMessages(chatGuid) {
                         var path = 'users/simplelogin:12333/chats/' + chatGuid + '/messages'; // todo - make function that return this path
                         var eventType = 'child_added';
-                        znkChatEventSrv.registerEvent(eventType, path, eventHandler);
-                        offEvent.path = path;
-                        offEvent.eventType = eventType;
-                        offEvent.callback = eventHandler;
+                        znkChatEventSrv.registerMessagesEvent(eventType, path, newMessageHandler);
+                        offEvent.messageEvent = {};
+                        offEvent.messageEvent.path = path;
+                        offEvent.messageEvent.eventType = eventType;
+                        offEvent.messageEvent.callback = newMessageHandler;
                     }
 
-                    function eventHandler(snapShot) {
-                            var newData = snapShot.val();
-                            var messageId = snapShot.key();
-                            if(newData.time > scope.chatterObj.lastSeenMessage.time) { // check if there is messages the local user didn't see
-                                if(scope.chatterObj.isActive){
-                                    var lastSeenMessage = {};
-                                    lastSeenMessage.id = messageId;
-                                    lastSeenMessage.time = newData.time;
-                                    scope.chatterObj.lastSeenMessage = lastSeenMessage;
-                                    znkChatSrv.updateLasSeenMessage(scope.chatterObj.chatGuid, scope.localUser.uid, lastSeenMessage); // todo (patch)- saving firebase time because the message time saved
-                                } else {                                                                                                  // by firebase server time and firebase return local time
-                                    scope.chatterObj.messagesNotSeen++;                                                                  // 1: figure why offset of 1 sec solves the problem
-                                }                                                                                                        // 2: use firebase time stamp (or local current time)
+                    function newMessageHandler(snapShot) {
+                        var newData = snapShot.val();
+                        var messageId = snapShot.key();
+                        if (newData.time > scope.chatterObj.lastSeenMessage.time) { // check if there is messages the local user didn't see
+                            if (scope.chatterObj.isActive) {
+                                var lastSeenMessage = {};
+                                lastSeenMessage.id = messageId;
+                                lastSeenMessage.time = newData.time;
+                                scope.chatterObj.lastSeenMessage = lastSeenMessage;
+                                znkChatSrv.updateLasSeenMessage(scope.chatterObj.chatGuid, scope.localUser.uid, lastSeenMessage);
+                            } else {
+                                scope.chatterObj.messagesNotSeen++;
                             }
+                        }
 
-                            $timeout(function () {
-                                newData.id = messageId;
-                                scope.chatterObj.chatMessages.push(newData);
-                            });
+                        $timeout(function () {
+                            newData.id = messageId;
+                            scope.chatterObj.chatMessages.push(newData);
+                        });
                     }
 
-                    scope.$on('$destroy', function() {
-                        znkChatSrv.offEvent(offEvent.eventType,offEvent.path, offEvent.callback);
+                    function _listenToNewChat() {
+                        var deferred = $q.defer();
+                        var path = 'users/simplelogin:12333/users/' + scope.chatterObj.uid + '/chats';
+                        var evenType = 'value';
+
+                        function _newCahtHandler(snapshot) {
+                            var newChatObj = snapshot.val();
+                            if(newChatObj) {
+                                var newChatGuid = Object.keys(newChatObj)[0];
+                                if (angular.isDefined(newChatGuid) && newChatObj[newChatGuid].uids === scope.localUser.uid) {
+                                    znkChatEventSrv.offEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
+                                    deferred.resolve(newChatGuid);
+                                }
+                            }
+                        }
+
+                        offEvent.chatConnectionEvent = {};
+                        offEvent.chatConnectionEvent.path = path;
+                        offEvent.chatConnectionEvent.eventType = evenType;
+                        offEvent.chatConnectionEvent.callback = _newCahtHandler;
+
+                        znkChatEventSrv.registerNewChatEvent(evenType, path, _newCahtHandler);
+
+                        return deferred.promise;
+                    }
+
+
+                    scope.$on('$destroy', function () {
+                        znkChatEventSrv.offEvent(offEvent.messageEvent.eventType, offEvent.messageEvent.path, offEvent.messageEvent.callback);
+                        znkChatEventSrv.offEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
+                        PresenceService.stopTrackUserPresence(scope.chatterObj.uid);
                     });
                 }
             };
@@ -10276,6 +10343,17 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     });
 
                     scope.d.selectChatter = function (chatter) {
+                        if (angular.isUndefined(chatter.chatGuid)) {
+                            znkChatSrv.createNewChat(scope.localUser, chatter).then(function (chatGuid) {
+                                chatter.chatGuid = chatGuid;
+                                chatterSelected(chatter);
+                            });
+                        }else{
+                            chatterSelected(chatter);
+                        }
+                    };
+
+                    function chatterSelected(chatter) {
                         if (scope.d.selectedChatter.isActive) {
                             scope.d.selectedChatter.isActive = false;
                         }
@@ -10290,7 +10368,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                             scope.d.selectedChatter.lastMessageTime = lastMessageTime;
                             znkChatSrv.updateLasSeenMessage(chatter.chatGuid, localUid, lastMessageTime);
                         }
-                    };
+                    }
                 }
             };
         }]
@@ -10347,10 +10425,17 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 return InfraConfigSrv.getGlobalStorage();
             }
 
-            self.registerEvent = function (type, path, callback) {
+            self.registerMessagesEvent = function (type, path, callback) {
                 return _getStorage().then(function (globalStorage) {
                     var adapterRef = globalStorage.adapter.getRef(path);
                     adapterRef.orderByChild('time').limitToLast(10).on(type, callback);
+                });
+            };
+
+            self.registerNewChatEvent = function (type, path, callback) {
+                return _getStorage().then(function (globalStorage) {
+                    var adapterRef = globalStorage.adapter.getRef(path);
+                    adapterRef.orderByKey().limitToLast(1).on(type, callback);
                 });
             };
 
@@ -10449,8 +10534,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 }
                 for (var i = 0; i < chatGuidArr1.length; i++) {
                     for (var j = 0; j < chatGuidArr2.length; j++) {
-                        if (chatGuidArr1[i].indexOf(chatGuidArr2[j]) !== -1) {
-                            return chatGuidArr2[j];
+                        if (chatGuidArr1[i].chatGuid === chatGuidArr2[j].chatGuid) {
+                            return chatGuidArr2[j].chatGuid;
                         }
                     }
                 }
@@ -10459,38 +10544,37 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
             self.createNewChat = function (localUser, secondUser) {
                 return _getStorage().then(function (globalStorage) {
-                    var deferred = $q.defer();
                     var chatPath = znkChatPaths.chatPath;
-
-                    var adapterRef = globalStorage.adapter.getRef(GLOBAL_PATH); // todo - get global path ?
-                    var chatsRef = adapterRef.child(chatPath);
-                    var localUserPath = znkChatPaths.chatsUsersGuids.replace('$$uid', localUser.uid); // todo - make function that returns this path
-                    var chatterPath = znkChatPaths.chatsUsersGuids.replace('$$uid', secondUser.uid); // todo - make function that returns this path
-
-                    var localUserRef = adapterRef.child(localUserPath);
-                    var chatterRef = adapterRef.child(chatterPath);
-
                     var chatGuid;
 
-                    function _completeTransactionFn(error) {
-                        if (error) {
-                            $log.error(error);
-                        }
-                    }
+                    var adapterRef = globalStorage.adapter.getRef(GLOBAL_PATH); // todo -remove GLOBAL
+                    var chatsRef = adapterRef.child(chatPath);
+                    var newChatObj = _createNewChatObj(localUser, secondUser);
+                    chatGuid = chatsRef.push(newChatObj).key();
 
-                    function _transactionFn() {  // todo - implemented bad!!!
-                        var newChatObj = _createNewChatObj(localUser, secondUser);
-                        var userNewChatGuid = {};
-                        chatGuid = chatsRef.push(newChatObj).key();
-                        userNewChatGuid[chatGuid] = chatGuid;
-                        $q.all([localUserRef.update(userNewChatGuid), chatterRef.update(userNewChatGuid)]).then(function () {
-                            deferred.resolve(chatGuid);
-                        });
-                    }
+                    var localUserPath = znkChatPaths.chatsUsersGuids.replace('$$uid', localUser.uid); // todo - make function that returns this path
+                    var secondUserPath = znkChatPaths.chatsUsersGuids.replace('$$uid', secondUser.uid); // todo - make function that returns this path
 
-                    adapterRef.transaction(_transactionFn, _completeTransactionFn);
+                    var localUserRef = adapterRef.child(localUserPath);
+                    var chatterRef = adapterRef.child(secondUserPath);
 
-                    return deferred.promise;
+                    var localUserChatObj = {};
+                    localUserChatObj[chatGuid] = {
+                        uids: secondUser.uid,         // todo - how to call this property?
+                        chatGuid: chatGuid
+                    };
+
+                    var secondUserChatObj = {};
+                    secondUserChatObj[chatGuid] = {
+                        uids: localUser.uid,         // todo - how to call this property?
+                        chatGuid: chatGuid
+                    };
+
+                    var localUserWriteChatGuidsProm = localUserRef.update(localUserChatObj); // todo -remove GLOBAL
+                    var secondUserWriteChatGuidsProm = chatterRef.update(secondUserChatObj); // todo -remove GLOBAL
+                    return $q.all([localUserWriteChatGuidsProm, secondUserWriteChatGuidsProm]).then(function () {
+                        return chatGuid;
+                    });
                 });
             };
 
@@ -10505,10 +10589,10 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 };
                 newChatObj.usersLastSeenMessage = {};
                 newChatObj.usersLastSeenMessage[firstUser.uid] = {
-                    time:0
+                    time: 0
                 };
                 newChatObj.usersLastSeenMessage[secondCUser.uid] = {
-                    time:0
+                    time: 0
                 };
                 return newChatObj;
             }
@@ -10587,7 +10671,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
   $templateCache.put("components/znkChat/templates/chatBoard.template.html",
     "<div class=\"chat-board-wrapper\">\n" +
     "    <div class=\"chat-board-header\">\n" +
-    "        <chatter chatter-obj=\"chatterObj\"></chatter>\n" +
+    "        <chatter ng-if=\"chatterObj.uid\" chatter-obj=\"chatterObj\"></chatter>\n" +
     "        <svg-icon name=\"znk-chat-close-icon\" ng-click=\"d.closeChat()()\"></svg-icon>\n" +
     "    </div>\n" +
     "    <div class=\"board-wrapper\">\n" +
@@ -10595,6 +10679,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "            <div class=\"messages-wrapper znk-scrollbar\">\n" +
     "                <div class=\"message-repeater\" ng-repeat=\"message in chatterObj.chatMessages | orderBy:'time'\">\n" +
     "                    <chat-message\n" +
+    "                        show-date=\"d.showDate\"\n" +
     "                        last-message=\"$index === chatterObj.chatMessages.length-1\"\n" +
     "                        scroll-to-last-message=\"d.scrollToLastMessage\"\n" +
     "                        local-user-id=\"userId\"\n" +
@@ -10635,9 +10720,10 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "</div>\n" +
     "");
   $templateCache.put("components/znkChat/templates/chatter.template.html",
-    "<div class=\"chatter-wrapper\"  ng-class=\"{'offline': chatterObj.presence === d.userStatus.OFFLINE,\n" +
-    "                                'online': chatterObj.presence === d.userStatus.ONLINE,\n" +
-    "                                'idle': chatterObj.presence === d.userStatus.IDLE}\">\n" +
+    "<div class=\"chatter-wrapper\"\n" +
+    "     ng-class=\"{'offline': chatterObj.presence === d.userStatus.OFFLINE,\n" +
+    "     'online': chatterObj.presence === d.userStatus.ONLINE,\n" +
+    "     'idle': chatterObj.presence === vm.userStatus.IDLE}\">\n" +
     "    <div class=\"online-indicator\"></div>\n" +
     "    <div class=\"chatter-name\">{{chatterObj.name}}</div>\n" +
     "    <div class=\"message-not-seen\" ng-if=\"chatterObj.messagesNotSeen > 0\">{{chatterObj.messagesNotSeen}}</div>\n" +

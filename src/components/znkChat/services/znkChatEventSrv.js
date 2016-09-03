@@ -11,10 +11,17 @@
                 return InfraConfigSrv.getGlobalStorage();
             }
 
-            self.registerEvent = function (type, path, callback) {
+            self.registerMessagesEvent = function (type, path, callback) {
                 return _getStorage().then(function (globalStorage) {
                     var adapterRef = globalStorage.adapter.getRef(path);
                     adapterRef.orderByChild('time').limitToLast(10).on(type, callback);
+                });
+            };
+
+            self.registerNewChatEvent = function (type, path, callback) {
+                return _getStorage().then(function (globalStorage) {
+                    var adapterRef = globalStorage.adapter.getRef(path);
+                    adapterRef.orderByKey().limitToLast(1).on(type, callback);
                 });
             };
 

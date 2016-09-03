@@ -37,6 +37,17 @@
                     });
 
                     scope.d.selectChatter = function (chatter) {
+                        if (angular.isUndefined(chatter.chatGuid)) {
+                            znkChatSrv.createNewChat(scope.localUser, chatter).then(function (chatGuid) {
+                                chatter.chatGuid = chatGuid;
+                                chatterSelected(chatter);
+                            });
+                        }else{
+                            chatterSelected(chatter);
+                        }
+                    };
+
+                    function chatterSelected(chatter) {
                         if (scope.d.selectedChatter.isActive) {
                             scope.d.selectedChatter.isActive = false;
                         }
@@ -51,7 +62,7 @@
                             scope.d.selectedChatter.lastMessageTime = lastMessageTime;
                             znkChatSrv.updateLasSeenMessage(chatter.chatGuid, localUid, lastMessageTime);
                         }
-                    };
+                    }
                 }
             };
         }
