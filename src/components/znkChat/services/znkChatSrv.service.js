@@ -94,38 +94,28 @@
 
             self.createNewChat = function (localUser, secondUser) {
                 return _getStorage().then(function (globalStorage) {
-                    var deferred = $q.defer();
                     var chatPath = znkChatPaths.chatPath;
-
-                    var adapterRef = globalStorage.adapter.getRef(GLOBAL_PATH); // todo - get global path ?
-                    var chatsRef = adapterRef.child(chatPath);
-                    var localUserPath = znkChatPaths.chatsUsersGuids.replace('$$uid', localUser.uid); // todo - make function that returns this path
-                    var chatterPath = znkChatPaths.chatsUsersGuids.replace('$$uid', secondUser.uid); // todo - make function that returns this path
-
-                    var localUserRef = adapterRef.child(localUserPath);
-                    var chatterRef = adapterRef.child(chatterPath);
-
                     var chatGuid;
 
-                    function _completeTransactionFn(error) {
-                        if (error) {
-                            $log.error(error);
-                        }
-                    }
+                    var adapterRef = globalStorage.adapter.getRef(GLOBAL_PATH); // todo -remove GLOBAL
+                    var chatsRef = adapterRef.child(chatPath);
+                    var newChatObj = _createNewChatObj(localUser, secondUser);
+                    chatGuid = chatsRef.push(newChatObj).key();
 
-                    function _transactionFn() {  // todo - implemented bad!!!
-                        var newChatObj = _createNewChatObj(localUser, secondUser);
-                        var userNewChatGuid = {};
-                        chatGuid = chatsRef.push(newChatObj).key();
-                        userNewChatGuid[chatGuid] = chatGuid;
-                        $q.all([localUserRef.update(userNewChatGuid), chatterRef.update(userNewChatGuid)]).then(function () {
-                            deferred.resolve(chatGuid);
-                        });
-                    }
+                    var localUserPath = znkChatPaths.chatsUsersGuids.replace('$$uid', localUser.uid); // todo - make function that returns this path
+                    var secondUserPath = znkChatPaths.chatsUsersGuids.replace('$$uid', secondUser.uid); // todo - make function that returns this path
 
-                    adapterRef.transaction(_transactionFn, _completeTransactionFn);
+                    var localUserRef = adapterRef.child(localUserPath);
+                    var chatterRef = adapterRef.child(secondUserPath);
 
-                    return deferred.promise;
+                    var userNewChatGuidObj = {};
+                    userNewChatGuidObj[chatGuid] = chatGuid;
+
+                    var localUserWriteChatGuidsProm = localUserRef.update(userNewChatGuidObj); // todo -remove GLOBAL
+                    var secondUserWriteChatGuidsProm = chatterRef.update(userNewChatGuidObj); // todo -remove GLOBAL
+                    return $q.all([localUserWriteChatGuidsProm, secondUserWriteChatGuidsProm]).then(function () {
+                        return chatGuid;
+                    });
                 });
             };
 
@@ -140,10 +130,10 @@
                 };
                 newChatObj.usersLastSeenMessage = {};
                 newChatObj.usersLastSeenMessage[firstUser.uid] = {
-                    time:0
+                    time: 0
                 };
                 newChatObj.usersLastSeenMessage[secondCUser.uid] = {
-                    time:0
+                    time: 0
                 };
                 return newChatObj;
             }

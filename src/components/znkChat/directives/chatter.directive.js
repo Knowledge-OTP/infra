@@ -2,8 +2,10 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('chatter',
-        function (znkChatSrv, $q, znkChatEventSrv, $timeout) {
+        function (znkChatSrv, $q, znkChatEventSrv, $timeout, PresenceService) {
             'ngInject';
+            var presenceActiveLiseners = {};
+
             return {
                 templateUrl: 'components/znkChat/templates/chatter.template.html',
                 scope: {
@@ -15,7 +17,20 @@
                 link: function (scope) {
                     var chatGuidProm;
                     var offEvent = {};
+                    scope.d = {};
+                    scope.d.userStatus = PresenceService.userStatus;
 
+                    function trackUserPresenceCB(newStatus, userId) {
+                        $timeout(function () {
+                            if(scope.chatterObj.uid === userId) {
+                                scope.chatterObj.presence = newStatus;
+                            }
+                        });
+                    }
+                    if(!presenceActiveLiseners[scope.chatterObj.uid]) {
+                        PresenceService.startTrackUserPresence(scope.chatterObj.uid, trackUserPresenceCB);
+                        presenceActiveLiseners[scope.chatterObj.uid] = true;
+                    }
                     if (scope.localUserChatsGuidsArr) {  // this directive also placed in chat board - no need for this guids array
                         var localUserChatsGuidsArr = scope.localUserChatsGuidsArr;
 
@@ -48,28 +63,29 @@
                     }
 
                     function eventHandler(snapShot) {
-                            var newData = snapShot.val();
-                            var messageId = snapShot.key();
-                            if(newData.time > scope.chatterObj.lastSeenMessage.time) { // check if there is messages the local user didn't see
-                                if(scope.chatterObj.isActive){
-                                    var lastSeenMessage = {};
-                                    lastSeenMessage.id = messageId;
-                                    lastSeenMessage.time = newData.time;
-                                    scope.chatterObj.lastSeenMessage = lastSeenMessage;
-                                    znkChatSrv.updateLasSeenMessage(scope.chatterObj.chatGuid, scope.localUser.uid, lastSeenMessage); 
-                                } else {                                                                                                  
-                                    scope.chatterObj.messagesNotSeen++;                                                                  
-                                }                                                                                                        
+                        var newData = snapShot.val();
+                        var messageId = snapShot.key();
+                        if (newData.time > scope.chatterObj.lastSeenMessage.time) { // check if there is messages the local user didn't see
+                            if (scope.chatterObj.isActive) {
+                                var lastSeenMessage = {};
+                                lastSeenMessage.id = messageId;
+                                lastSeenMessage.time = newData.time;
+                                scope.chatterObj.lastSeenMessage = lastSeenMessage;
+                                znkChatSrv.updateLasSeenMessage(scope.chatterObj.chatGuid, scope.localUser.uid, lastSeenMessage);
+                            } else {
+                                scope.chatterObj.messagesNotSeen++;
                             }
+                        }
 
-                            $timeout(function () {
-                                newData.id = messageId;
-                                scope.chatterObj.chatMessages.push(newData);
-                            });
+                        $timeout(function () {
+                            newData.id = messageId;
+                            scope.chatterObj.chatMessages.push(newData);
+                        });
                     }
 
-                    scope.$on('$destroy', function() {
-                        znkChatSrv.offEvent(offEvent.eventType,offEvent.path, offEvent.callback);
+                    scope.$on('$destroy', function () {
+                        znkChatSrv.offEvent(offEvent.eventType, offEvent.path, offEvent.callback);
+                        PresenceService.stopTrackUserPresence(scope.chatterObj.uid);
                     });
                 }
             };

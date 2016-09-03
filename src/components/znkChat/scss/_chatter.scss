@@ -21,6 +21,10 @@
         }
     }
 
+    &.idle{
+        background: $bgColor27;
+    }
+
     .chatter-name {
         @include text-style(16px, $fcColor6, Lato, $regularFontWeight);
         height: 23px;
