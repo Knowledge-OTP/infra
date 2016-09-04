@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('chatBoard',
-        function (znkChatSrv, $timeout, $filter) {
+        function (znkChatSrv, $timeout, $filter, $translate) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/chatBoard.template.html',
@@ -33,7 +33,6 @@
                             return date;
                         }
                     };
-
 
                     scope.d.sendMessage = function () {
                         if (scope.d.newMessage.length > 0) {
