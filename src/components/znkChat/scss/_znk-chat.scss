@@ -1,12 +1,37 @@
 .znk-chat-wrapper {
     .button-wrapper {
         @include dimension(45px, 45px);
+        position: relative;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         border-radius: 35px ;
         background-color: $bgColor17;
+
+        .not-seen-messages{
+            @include dimension(15px, 15px);
+            @include text-style(12px, $fcColor2, Lato, $regularFontWeight);
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50px;
+            position: absolute;
+            top:0;
+            right:1px;
+            background-color: $bgColor1;
+        }
+
+        .not-seen-messages.ng-enter,
+        .not-seen-messages.ng-leave.ng-leave-active {
+            opacity: 0;
+        }
+
+        .not-seen-messages.ng-leave,
+        .not-seen-messages.ng-enter.ng-enter-active {
+            opacity: 1;
+        }
 
         svg {
             @include dimension(25px, 25px);

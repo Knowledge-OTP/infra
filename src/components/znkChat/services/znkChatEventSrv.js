@@ -9,9 +9,9 @@
 
             function _getUserStorage(){
                 if(ENV.appContext === 'student'){
-                    return InfraConfigSrv.getStudentStorage();
-                } else{
                     return InfraConfigSrv.getTeacherStorage();
+                } else{
+                    return InfraConfigSrv.getStudentStorage();
                 }
             }
 

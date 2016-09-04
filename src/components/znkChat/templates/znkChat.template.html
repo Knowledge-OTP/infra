@@ -1,9 +1,10 @@
 <div class="znk-chat-wrapper" ng-switch="d.chatStateView" translate-namespace="ZNK_CHAT">
     <div class="button-wrapper" ng-show="d.chatStateView === statesView.CHAT_BUTTON_VIEW" ng-click="d.openChat()">
+        <div class="not-seen-messages" ng-if="d.numOfNotSeenMessages > 0">{{d.numOfNotSeenMessages}}</div>
         <svg-icon name="znk-chat-chat-icon"></svg-icon>
     </div>
 
-    <div class="chat-container" ng-show="d.chatStateView === statesView.CHAT_VIEW" >
+    <div class="chat-container" ng-show="d.chatStateView === statesView.CHAT_VIEW">
         <chat-participants
             ng-if="::d.chatData.localUserChatsGuidsArr"
             chat-data="d.chatData"

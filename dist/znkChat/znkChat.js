@@ -390,9 +390,9 @@
 
             function _getUserStorage(){
                 if(ENV.appContext === 'student'){
-                    return InfraConfigSrv.getStudentStorage();
-                } else{
                     return InfraConfigSrv.getTeacherStorage();
+                } else{
+                    return InfraConfigSrv.getStudentStorage();
                 }
             }
 
@@ -436,9 +436,9 @@
 
             function _getUserStorage(isTeacher){
                 if(isTeacher){
-                    return InfraConfigSrv.getStudentStorage();
-                } else{
                     return InfraConfigSrv.getTeacherStorage();
+                } else{
+                    return InfraConfigSrv.getStudentStorage();
                 }
             }
 
@@ -534,9 +534,8 @@
                     var newChatObj = _createNewChatObj(localUser, secondUser);
                     chatGuid = chatsRef.push(newChatObj).key();
 
-
                     var localUserPath = localUser.isTeacher ? 'sat_dashboard/' : 'sat_app/';
-                    var secondUserPath = localUser.isTeacher ? 'sat_dashboard/' : 'sat_app/';
+                    var secondUserPath = secondUser.isTeacher ? 'sat_dashboard/' : 'sat_app/';
                      localUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', localUser.uid); // todo - make function that returns this path
                      secondUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', secondUser.uid); // todo - make function that returns this path
 
