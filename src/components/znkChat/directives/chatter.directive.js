@@ -28,6 +28,7 @@
                         });
                     }
 
+
                     if (!presenceActiveLiseners[scope.chatterObj.uid]) {
                         PresenceService.startTrackUserPresence(scope.chatterObj.uid, trackUserPresenceCB);
                         presenceActiveLiseners[scope.chatterObj.uid] = true;
@@ -37,7 +38,7 @@
                         scope.chatterObj.chatMessages = [];
                         scope.chatterObj.messagesNotSeen = 0;
 
-                        znkChatSrv.getChatGuidsByUid(scope.chatterObj.uid).then(function (chatterChatGuidsArr) {
+                        znkChatSrv.getChatGuidsByUid(scope.chatterObj).then(function (chatterChatGuidsArr) {
                             if (angular.isArray(chatterChatGuidsArr) && angular.isArray(scope.localUserChatsGuidsArr) && scope.localUserChatsGuidsArr.length > 0 && chatterChatGuidsArr.length > 0) {
                                 chatGuidProm = znkChatSrv.getChatGuidByTwoGuidsArray(scope.localUserChatsGuidsArr, chatterChatGuidsArr);
                             } else {
@@ -46,7 +47,7 @@
                             }
 
                             $q.when(chatGuidProm).then(function (chatGuid) {
-                                znkChatSrv.getLasSeenMessage(chatGuid, scope.localUser.uid).then(function (lastSeenMessage) {
+                                znkChatSrv.getLastSeenMessage(chatGuid, scope.localUser.uid).then(function (lastSeenMessage) {
                                     scope.chatterObj.chatGuid = chatGuid;
                                     scope.chatterObj.lastSeenMessage = lastSeenMessage;
                                     scope.setFirstChatter(scope.chatterObj);
@@ -57,7 +58,7 @@
                     }
 
                     function _startListenToMessages(chatGuid) {
-                        var path = 'users/simplelogin:12333/chats/' + chatGuid + '/messages'; // todo - make function that return this path
+                        var path = 'chats/' + chatGuid + '/messages';
                         var eventType = 'child_added';
                         znkChatEventSrv.registerMessagesEvent(eventType, path, newMessageHandler);
                         offEvent.messageEvent = {};
@@ -89,7 +90,7 @@
 
                     function _listenToNewChat() {
                         var deferred = $q.defer();
-                        var path = 'users/simplelogin:12333/users/' + scope.chatterObj.uid + '/chats';
+                        var path = 'users/' + scope.chatterObj.uid + '/chats';
                         var evenType = 'value';
 
                         function _newCahtHandler(snapshot) {

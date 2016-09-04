@@ -31,7 +31,7 @@
                         scope.d.chatStateView = scope.statesView.CHAT_BUTTON_VIEW;
                     };
 
-                    $q.all([znkChatSrv.getChatParticipants(), znkChatSrv.getChatGuidsByUid(localUid)]).then(function (res) {
+                    $q.all([znkChatSrv.getChatParticipants(), znkChatSrv.getChatGuidsByUid(scope.localUser)]).then(function (res) {
                         scope.d.chatData.chatParticipantsArr = UtilitySrv.object.convertToArray(res[0]);
                         scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(res[1]);
                     });

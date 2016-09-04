@@ -2,25 +2,34 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').service('znkChatEventSrv',
-        function ($q, InfraConfigSrv) {
+        function ($q, InfraConfigSrv, ENV) {
             'ngInject';
 
             var self = this;
+
+            function _getUserStorage(){
+                if(ENV.appContext === 'student'){
+                    return InfraConfigSrv.getStudentStorage();
+                } else{
+                    return InfraConfigSrv.getTeacherStorage();
+                }
+            }
 
             function _getStorage() {
                 return InfraConfigSrv.getGlobalStorage();
             }
 
+
             self.registerMessagesEvent = function (type, path, callback) {
-                return _getStorage().then(function (globalStorage) {
-                    var adapterRef = globalStorage.adapter.getRef(path);
+                return _getStorage().then(function (userStorage) {
+                    var adapterRef = userStorage.adapter.getRef(path);
                     adapterRef.orderByChild('time').limitToLast(10).on(type, callback);
                 });
             };
 
             self.registerNewChatEvent = function (type, path, callback) {
-                return _getStorage().then(function (globalStorage) {
-                    var adapterRef = globalStorage.adapter.getRef(path);
+                return _getUserStorage().then(function (userStorage) {
+                    var adapterRef = userStorage.adapter.getRef(path);
                     adapterRef.orderByKey().limitToLast(1).on(type, callback);
                 });
             };
