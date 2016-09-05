@@ -32,7 +32,7 @@
                             dateMap = {};
                         }
                     });
-
+                    
                     scope.d.showDate = function (timeStamp) {
                         return $timeout(function () {         // wait for chatterObj watch checked first
                             var date = $filter('date')(timeStamp, 'EEE, MMM d', 'UTC'); // all time messages saved in UTC time zone.
