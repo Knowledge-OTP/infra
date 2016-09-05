@@ -110,7 +110,7 @@
                     scope.d.sendMessage = function () {
                         if (scope.d.newMessage.length > 0) {
                             var newMessageObj = {
-                                time: _getUtcTime(),
+                                time: znkChatSrv.getUtcTime(),
                                 uid: scope.userId,
                                 text: scope.d.newMessage
                             };
@@ -118,12 +118,6 @@
                             scope.d.newMessage = '';
                         }
                     };
-
-                    function _getUtcTime() { // todo - move to service
-                        var now = new Date();
-                        var utc_now = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
-                        return utc_now.getTime();
-                    }
                 }
             };
         }]
@@ -300,23 +294,21 @@
                 },
                 link: function (scope) {
                     $translatePartialLoader.addPart('znkChat');
+
                     scope.statesView = {
                         CHAT_BUTTON_VIEW: 1,
                         CHAT_VIEW: 2
                     };
+                    var destroyClosedChatWatcher = angular.noop;
+                    var isChatClosed = true;
+                    var WATCH_ON = true, WATCH_OFF = false;
 
                     scope.d = {};
                     scope.d.selectedChatter = {};
                     scope.d.chatData = {};
                     scope.d.chatData.localUser = scope.localUser;
+                    scope.d.chatStateView = scope.statesView.CHAT_BUTTON_VIEW;
 
-                    scope.d.chatStateView = scope.statesView.CHAT_VIEW;
-                    scope.d.openChat = function () {
-                        scope.d.chatStateView = scope.statesView.CHAT_VIEW;
-                    };
-                    scope.d.closeChat = function () {
-                        scope.d.chatStateView = scope.statesView.CHAT_BUTTON_VIEW;
-                    };
 
                     $q.all([znkChatSrv.getChatParticipants(), znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher)]).then(function (res) {
                         scope.d.chatData.chatParticipantsArr = UtilitySrv.object.convertToArray(res[0]);
@@ -327,18 +319,20 @@
                         if (angular.isUndefined(chatter.chatGuid)) {
                             znkChatSrv.createNewChat(scope.localUser, chatter).then(function (chatGuid) {
                                 chatter.chatGuid = chatGuid;
-                                chatterSelected(chatter);
+                                _chatterSelected(chatter);
                             });
-                        }else{
-                            chatterSelected(chatter);
+                        } else {
+                            _chatterSelected(chatter);
                         }
                     };
 
-                    function chatterSelected(chatter) {
-                        if (scope.d.selectedChatter.isActive) {
-                            scope.d.selectedChatter.isActive = false;
-                        }
+                    function _chatterSelected(chatter) {
+                        scope.d.selectedChatter.isActive = false;
                         scope.d.selectedChatter = chatter;
+                        if (isChatClosed) {
+                            return;
+                        }
+
                         scope.d.selectedChatter.isActive = true;
                         scope.d.selectedChatter.messagesNotSeen = 0;
                         if (chatter.chatMessages.length > 0) {
@@ -347,9 +341,44 @@
                             lastMessageTime.time = message.time;
                             lastMessageTime.id = message.id;
                             scope.d.selectedChatter.lastMessageTime = lastMessageTime;
-                            znkChatSrv.updateLasSeenMessage(chatter.chatGuid,  scope.localUser.uid, lastMessageTime);
+                            znkChatSrv.updateLasSeenMessage(chatter.chatGuid, scope.localUser.uid, lastMessageTime);
                         }
                     }
+
+                    function _closedChatHandler(watch) {
+                        if (watch) {
+                            destroyClosedChatWatcher = scope.$watch('d.chatData.chatParticipantsArr', function (chatParticipantsArr) {
+                                if (angular.isArray(chatParticipantsArr)) {
+                                    scope.d.numOfNotSeenMessages = 0;
+                                    for (var i = 0; i < chatParticipantsArr.length; i++) {
+                                        if (chatParticipantsArr[i].messagesNotSeen > 0) {
+                                            scope.d.numOfNotSeenMessages += chatParticipantsArr[i].messagesNotSeen;
+                                        }
+                                    }
+                                }
+                            }, true);
+                        } else {
+                            destroyClosedChatWatcher();
+                        }
+                    }
+
+                    _closedChatHandler(WATCH_ON);              // indication to new messages when the chat is closed
+
+                    scope.d.openChat = function () {
+                        scope.d.chatStateView = scope.statesView.CHAT_VIEW;
+                        isChatClosed = false;
+                        if(angular.isDefined(scope.d.selectedChatter.uid)) {
+                            scope.d.selectChatter(scope.d.selectedChatter);
+                        }
+                        _closedChatHandler(WATCH_OFF);
+                    };
+
+                    scope.d.closeChat = function () {
+                        scope.d.chatStateView = scope.statesView.CHAT_BUTTON_VIEW;
+                        isChatClosed = true;
+                        scope.d.selectedChatter.isActive = false;
+                        _closedChatHandler(WATCH_ON);
+                    };
                 }
             };
         }]
@@ -448,10 +477,10 @@
             var self = this;
             var znkChatPaths = znkChatDataSrv.getChatPaths();
 
-            function _getUserStorage(isTeacher){
-                if(isTeacher){
+            function _getUserStorage(isTeacher) {
+                if (isTeacher) {
                     return InfraConfigSrv.getTeacherStorage();
-                } else{
+                } else {
                     return InfraConfigSrv.getStudentStorage();
                 }
             }
@@ -459,6 +488,12 @@
             function _getStorage() {
                 return InfraConfigSrv.getGlobalStorage();
             }
+
+            self.getUtcTime = function () { // todo - move to service
+                var now = new Date();
+                var utc_now = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
+                return utc_now.getTime();
+            };
 
             self.getChatParticipants = function () { // e.g teacher --> connected students
                 return $q.when(znkChatDataSrv.getChatParticipants());
@@ -475,7 +510,7 @@
 
             self.getChatGuidsByUid = function (uid, isTeacher) {
                 return _getUserStorage(isTeacher).then(function (userStorage) {                     // todo - check if student or teacher
-                    var chatsGuidsPath = znkChatPaths.chatsUsersGuids.replace('$$uid',uid);  // todo - can remove the replace
+                    var chatsGuidsPath = znkChatPaths.chatsUsersGuids.replace('$$uid', uid);  // todo - can remove the replace
                     return userStorage.get(chatsGuidsPath).then(function (chatsGuids) {
                         return UtilitySrv.object.convertToArray(chatsGuids);
                     });
@@ -517,7 +552,7 @@
 
             self.getLastSeenMessage = function (chatGuid, userId) {
                 return _getStorage().then(function (globalStorage) {
-                    var notSeenMessagesPath =  znkChatPaths.chatPath + '/' + chatGuid + '/usersLastSeenMessage/' + userId; // todo -remove global path
+                    var notSeenMessagesPath = znkChatPaths.chatPath + '/' + chatGuid + '/usersLastSeenMessage/' + userId; // todo -remove global path
                     return globalStorage.get(notSeenMessagesPath).then(function (lastSeenMessage) {
                         return lastSeenMessage;
                     });
@@ -550,8 +585,8 @@
 
                     var localUserPath = localUser.isTeacher ? 'sat_dashboard/' : 'sat_app/';
                     var secondUserPath = secondUser.isTeacher ? 'sat_dashboard/' : 'sat_app/';
-                     localUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', localUser.uid); // todo - make function that returns this path
-                     secondUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', secondUser.uid); // todo - make function that returns this path
+                    localUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', localUser.uid); // todo - make function that returns this path
+                    secondUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', secondUser.uid); // todo - make function that returns this path
 
                     var localUserRef = adapterRef.child(localUserPath);
                     var chatterRef = adapterRef.child(secondUserPath);

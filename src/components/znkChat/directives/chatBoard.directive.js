@@ -32,7 +32,7 @@
                             dateMap = {};
                         }
                     });
-                    
+
                     scope.d.showDate = function (timeStamp) {
                         return $timeout(function () {         // wait for chatterObj watch checked first
                             var date = $filter('date')(timeStamp, 'EEE, MMM d', 'UTC'); // all time messages saved in UTC time zone.
@@ -46,7 +46,7 @@
                     scope.d.sendMessage = function () {
                         if (scope.d.newMessage.length > 0) {
                             var newMessageObj = {
-                                time: _getUtcTime(),
+                                time: znkChatSrv.getUtcTime(),
                                 uid: scope.userId,
                                 text: scope.d.newMessage
                             };
@@ -54,12 +54,6 @@
                             scope.d.newMessage = '';
                         }
                     };
-
-                    function _getUtcTime() { // todo - move to service
-                        var now = new Date();
-                        var utc_now = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
-                        return utc_now.getTime();
-                    }
                 }
             };
         }

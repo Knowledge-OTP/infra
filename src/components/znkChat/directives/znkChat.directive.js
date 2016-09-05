@@ -11,6 +11,7 @@
                 },
                 link: function (scope) {
                     $translatePartialLoader.addPart('znkChat');
+
                     scope.statesView = {
                         CHAT_BUTTON_VIEW: 1,
                         CHAT_VIEW: 2
@@ -23,25 +24,10 @@
                     scope.d.selectedChatter = {};
                     scope.d.chatData = {};
                     scope.d.chatData.localUser = scope.localUser;
-
                     scope.d.chatStateView = scope.statesView.CHAT_BUTTON_VIEW;
-                    _closedChatHandler(WATCH_ON); // indication to new messages when the chat is closed
-
-                    scope.d.openChat = function () {
-                        scope.d.chatStateView = scope.statesView.CHAT_VIEW;
-                        isChatClosed = false;
-                        _chatterSelected(scope.d.selectedChatter);
-                        _closedChatHandler(WATCH_OFF);
-                    };
-
-                    scope.d.closeChat = function () {
-                        scope.d.chatStateView = scope.statesView.CHAT_BUTTON_VIEW;
-                        isChatClosed = true;
-                        _closedChatHandler(WATCH_ON);
-                    };
 
 
-                    $q.all([znkChatSrv.getChatParticipants(), znkChatSrv.getChatGuidsByUid(scope.localUser.uid)]).then(function (res) {
+                    $q.all([znkChatSrv.getChatParticipants(), znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher)]).then(function (res) {
                         scope.d.chatData.chatParticipantsArr = UtilitySrv.object.convertToArray(res[0]);
                         scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(res[1]);
                     });
@@ -58,11 +44,8 @@
                     };
 
                     function _chatterSelected(chatter) {
-                        if (scope.d.selectedChatter.isActive) {
-                            scope.d.selectedChatter.isActive = false;
-                        }
+                        scope.d.selectedChatter.isActive = false;
                         scope.d.selectedChatter = chatter;
-
                         if (isChatClosed) {
                             return;
                         }
@@ -85,17 +68,34 @@
                                 if (angular.isArray(chatParticipantsArr)) {
                                     scope.d.numOfNotSeenMessages = 0;
                                     for (var i = 0; i < chatParticipantsArr.length; i++) {
-                                        chatParticipantsArr[i].isActive = false;
                                         if (chatParticipantsArr[i].messagesNotSeen > 0) {
                                             scope.d.numOfNotSeenMessages += chatParticipantsArr[i].messagesNotSeen;
                                         }
                                     }
                                 }
-                            }, true)
+                            }, true);
                         } else {
                             destroyClosedChatWatcher();
                         }
                     }
+
+                    _closedChatHandler(WATCH_ON);              // indication to new messages when the chat is closed
+
+                    scope.d.openChat = function () {
+                        scope.d.chatStateView = scope.statesView.CHAT_VIEW;
+                        isChatClosed = false;
+                        if(angular.isDefined(scope.d.selectedChatter.uid)) {
+                            scope.d.selectChatter(scope.d.selectedChatter);
+                        }
+                        _closedChatHandler(WATCH_OFF);
+                    };
+
+                    scope.d.closeChat = function () {
+                        scope.d.chatStateView = scope.statesView.CHAT_BUTTON_VIEW;
+                        isChatClosed = true;
+                        scope.d.selectedChatter.isActive = false;
+                        _closedChatHandler(WATCH_ON);
+                    };
                 }
             };
         }
