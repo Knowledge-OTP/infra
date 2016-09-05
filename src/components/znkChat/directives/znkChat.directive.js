@@ -15,7 +15,6 @@
                         CHAT_BUTTON_VIEW: 1,
                         CHAT_VIEW: 2
                     };
-                    var localUid = scope.localUser.uid;
                     var destroyClosedChatWatcher = angular.noop;
                     var isChatClosed = true;
                     var WATCH_ON = true, WATCH_OFF = false;
@@ -42,7 +41,7 @@
                     };
 
 
-                    $q.all([znkChatSrv.getChatParticipants(), znkChatSrv.getChatGuidsByUid(localUid)]).then(function (res) {
+                    $q.all([znkChatSrv.getChatParticipants(), znkChatSrv.getChatGuidsByUid(scope.localUser.uid)]).then(function (res) {
                         scope.d.chatData.chatParticipantsArr = UtilitySrv.object.convertToArray(res[0]);
                         scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(res[1]);
                     });
@@ -76,7 +75,7 @@
                             lastMessageTime.time = message.time;
                             lastMessageTime.id = message.id;
                             scope.d.selectedChatter.lastMessageTime = lastMessageTime;
-                            znkChatSrv.updateLasSeenMessage(chatter.chatGuid, localUid, lastMessageTime);
+                            znkChatSrv.updateLasSeenMessage(chatter.chatGuid, scope.localUser.uid, lastMessageTime);
                         }
                     }
 
