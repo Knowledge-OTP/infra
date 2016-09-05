@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('chatBoard',
-        function (znkChatSrv, $timeout, $filter, $translate) {
+        function (znkChatSrv, $timeout, $filter) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/chatBoard.template.html',
@@ -13,6 +13,8 @@
                 },
                 link: function (scope, element) {
                     var chatBoardScrollElement = element[0].querySelector('.messages-wrapper');
+                    var dateMap = {};
+
                     scope.d = {};
 
                     scope.d.scrollToLastMessage = function () {
@@ -25,13 +27,20 @@
 
                     scope.d.closeChat = scope.closeChat();
 
-                    scope.d.dateMap = {};
-                    scope.d.showDate = function (timeStamp) {
-                        var date = $filter('date')(timeStamp, 'EEE, MMM d', 'UTC'); // all time messages saved in UTC time zone.
-                        if (angular.isUndefined(scope.d.dateMap[date])) {  // show message date only once per day.
-                            scope.d.dateMap[date] = date;
-                            return date;
+                    scope.$watch('chatterObj', function (newVal, oldVal) {
+                        if (newVal !== oldVal) {
+                            dateMap = {};
                         }
+                    });
+
+                    scope.d.showDate = function (timeStamp) {
+                        return $timeout(function () {         // wait for chatterObj watch checked first
+                            var date = $filter('date')(timeStamp, 'EEE, MMM d', 'UTC'); // all time messages saved in UTC time zone.
+                            if (angular.isUndefined(dateMap[date])) {  // show message date only once per day.
+                                dateMap[date] = date;
+                                return date;
+                            }
+                        });
                     };
 
                     scope.d.sendMessage = function () {

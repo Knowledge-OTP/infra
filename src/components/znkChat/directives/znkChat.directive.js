@@ -15,8 +15,6 @@
                         CHAT_BUTTON_VIEW: 1,
                         CHAT_VIEW: 2
                     };
-                    var localUid = scope.localUser.uid;
-
 
                     scope.d = {};
                     scope.d.selectedChatter = {};
@@ -31,7 +29,7 @@
                         scope.d.chatStateView = scope.statesView.CHAT_BUTTON_VIEW;
                     };
 
-                    $q.all([znkChatSrv.getChatParticipants(), znkChatSrv.getChatGuidsByUid(scope.localUser)]).then(function (res) {
+                    $q.all([znkChatSrv.getChatParticipants(), znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher)]).then(function (res) {
                         scope.d.chatData.chatParticipantsArr = UtilitySrv.object.convertToArray(res[0]);
                         scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(res[1]);
                     });
@@ -60,7 +58,7 @@
                             lastMessageTime.time = message.time;
                             lastMessageTime.id = message.id;
                             scope.d.selectedChatter.lastMessageTime = lastMessageTime;
-                            znkChatSrv.updateLasSeenMessage(chatter.chatGuid, localUid, lastMessageTime);
+                            znkChatSrv.updateLasSeenMessage(chatter.chatGuid,  scope.localUser.uid, lastMessageTime);
                         }
                     }
                 }

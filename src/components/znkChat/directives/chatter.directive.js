@@ -38,7 +38,7 @@
                         scope.chatterObj.chatMessages = [];
                         scope.chatterObj.messagesNotSeen = 0;
 
-                        znkChatSrv.getChatGuidsByUid(scope.chatterObj).then(function (chatterChatGuidsArr) {
+                        znkChatSrv.getChatGuidsByUid(scope.chatterObj.uid, scope.chatterObj.isTeacher).then(function (chatterChatGuidsArr) {
                             if (angular.isArray(chatterChatGuidsArr) && angular.isArray(scope.localUserChatsGuidsArr) && scope.localUserChatsGuidsArr.length > 0 && chatterChatGuidsArr.length > 0) {
                                 chatGuidProm = znkChatSrv.getChatGuidByTwoGuidsArray(scope.localUserChatsGuidsArr, chatterChatGuidsArr);
                             } else {
@@ -93,23 +93,27 @@
                         var path = 'users/' + scope.chatterObj.uid + '/chats';
                         var evenType = 'value';
 
-                        function _newCahtHandler(snapshot) {
+                        function _newChatHandler(snapshot) {
                             var newChatObj = snapshot.val();
-                            if(newChatObj) {
-                                var newChatGuid = Object.keys(newChatObj)[0];
-                                if (angular.isDefined(newChatGuid) && newChatObj[newChatGuid].uids === scope.localUser.uid) {
-                                    znkChatEventSrv.offEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
-                                    deferred.resolve(newChatGuid);
-                                }
+                            if (newChatObj) {
+                                znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher).then(function (localUserChatGuidsArr) {
+                                        var newChatGuid = Object.keys(newChatObj)[0];
+                                        var chatGuid = znkChatSrv.getChatGuidByTwoGuidsArray(localUserChatGuidsArr, [newChatGuid]);
+                                        if (angular.isDefined(chatGuid) && chatGuid === newChatGuid) {
+                                            znkChatEventSrv.offEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
+                                            deferred.resolve(newChatGuid);
+                                        }
+                                    }
+                                );
                             }
                         }
 
                         offEvent.chatConnectionEvent = {};
                         offEvent.chatConnectionEvent.path = path;
                         offEvent.chatConnectionEvent.eventType = evenType;
-                        offEvent.chatConnectionEvent.callback = _newCahtHandler;
+                        offEvent.chatConnectionEvent.callback = _newChatHandler;
 
-                        znkChatEventSrv.registerNewChatEvent(evenType, path, _newCahtHandler);
+                        znkChatEventSrv.registerNewChatEvent(evenType, path, _newChatHandler);
 
                         return deferred.promise;
                     }

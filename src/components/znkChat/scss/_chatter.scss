@@ -15,14 +15,16 @@
         }
     }
 
+    &.idle{
+        .online-indicator {
+            background: $bgColor27;
+        }
+    }
+
     &.offline {
         .chatter-name {
             font-family: $fcColor6;
         }
-    }
-
-    &.idle{
-        background: $bgColor27;
     }
 
     .chatter-name {

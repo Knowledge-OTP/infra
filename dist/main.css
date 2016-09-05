@@ -4111,6 +4111,15 @@ chat-board {
       chat-board .chat-board-wrapper .board-wrapper textarea {
         width: 100%;
         height: 44px;
+        font-size: 14px;
+        color: #c2c2c2;
+        font-family: Lato;
+        font-weight: 400;
+        font-size: 14px;
+        color: #4f4d4d;
+        font-family: Lato;
+        font-weight: 400;
+        padding: 5px;
         border: none;
         border-top: 1px solid lightgray;
         box-sizing: border-box;
@@ -4130,10 +4139,10 @@ chat-board {
     margin-right: 13px; }
   .chatter-wrapper.online .online-indicator {
     background: #87ca4d; }
+  .chatter-wrapper.idle .online-indicator {
+    background: #dbb910; }
   .chatter-wrapper.offline .chatter-name {
     font-family: #4f4d4d; }
-  .chatter-wrapper.idle {
-    background: #dbb910; }
   .chatter-wrapper .chatter-name {
     font-size: 16px;
     color: #4f4d4d;
@@ -4216,6 +4225,7 @@ chat-message.otherMessage .message-wrapper .message {
 .znk-chat-wrapper .button-wrapper {
   width: 45px;
   height: 45px;
+  position: relative;
   cursor: pointer;
   display: -ms-flexbox;
   display: flex;
@@ -4225,6 +4235,31 @@ chat-message.otherMessage .message-wrapper .message {
       justify-content: center;
   border-radius: 35px;
   background-color: #ebebeb; }
+  .znk-chat-wrapper .button-wrapper .not-seen-messages {
+    width: 15px;
+    height: 15px;
+    font-size: 12px;
+    color: #fff;
+    font-family: Lato;
+    font-weight: 400;
+    transition: 0.3s;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+        align-items: center;
+    -ms-flex-pack: center;
+        justify-content: center;
+    border-radius: 50px;
+    position: absolute;
+    top: 0;
+    right: 1px;
+    background-color: #ff6766; }
+  .znk-chat-wrapper .button-wrapper .not-seen-messages.ng-enter,
+  .znk-chat-wrapper .button-wrapper .not-seen-messages.ng-leave.ng-leave-active {
+    opacity: 0; }
+  .znk-chat-wrapper .button-wrapper .not-seen-messages.ng-leave,
+  .znk-chat-wrapper .button-wrapper .not-seen-messages.ng-enter.ng-enter-active {
+    opacity: 1; }
   .znk-chat-wrapper .button-wrapper svg {
     width: 25px;
     height: 25px; }

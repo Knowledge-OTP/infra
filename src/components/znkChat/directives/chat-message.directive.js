@@ -6,7 +6,7 @@
             'ngInject';
             return {
                 template: '<div class="message-wrapper">' +
-                '<div class="message-date" ng-if="d.date">{{d.date}}</div>'+
+                '<div class="message-date" ng-if="d.date">{{d.date}}</div>' +
                 '<div class="message">' +
                 '{{message.text}}' +
                 ' <div class="bottom-triangle"></div>' +
@@ -17,13 +17,17 @@
                     getLocalUserId: '&localUserId',
                     lastMessage: '&',
                     scrollToLastMessage: '&',
-                    dateGetter:'&showDate'
+                    dateGetter: '&showDate'
                 },
                 link: function (scope, element) {
                     var classToAdd;
                     var localUserId = scope.getLocalUserId();
                     scope.d = {};
-                    scope.d.date = scope.dateGetter()(scope.message.time);
+                    var dateProm = scope.dateGetter()(scope.message.time);
+
+                    dateProm.then(function (date) {
+                        scope.d.date = date;
+                    });
 
                     if (String(localUserId) === String(scope.message.uid)) {
                         classToAdd = 'myMessage';

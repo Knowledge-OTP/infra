@@ -33,9 +33,9 @@
                 });
             };
 
-            self.getChatGuidsByUid = function (userObj) {
-                return _getUserStorage(userObj.isTeacher).then(function (userStorage) {                     // todo - check if student or teacher
-                    var chatsGuidsPath = znkChatPaths.chatsUsersGuids.replace('$$uid', userObj.uid);  // todo - can remove the replace
+            self.getChatGuidsByUid = function (uid, isTeacher) {
+                return _getUserStorage(isTeacher).then(function (userStorage) {                     // todo - check if student or teacher
+                    var chatsGuidsPath = znkChatPaths.chatsUsersGuids.replace('$$uid',uid);  // todo - can remove the replace
                     return userStorage.get(chatsGuidsPath).then(function (chatsGuids) {
                         return UtilitySrv.object.convertToArray(chatsGuids);
                     });
@@ -90,8 +90,8 @@
                 }
                 for (var i = 0; i < chatGuidArr1.length; i++) {
                     for (var j = 0; j < chatGuidArr2.length; j++) {
-                        if (chatGuidArr1[i].chatGuid === chatGuidArr2[j].chatGuid) {
-                            return chatGuidArr2[j].chatGuid;
+                        if (chatGuidArr1[i] === chatGuidArr2[j]) {
+                            return chatGuidArr2[j];
                         }
                     }
                 }
@@ -116,20 +116,11 @@
                     var localUserRef = adapterRef.child(localUserPath);
                     var chatterRef = adapterRef.child(secondUserPath);
 
-                    var localUserChatObj = {};
-                    localUserChatObj[chatGuid] = {
-                        uids: secondUser.uid,         // todo - how to call this property?
-                        chatGuid: chatGuid
-                    };
+                    var userNewChatGuid = {};
+                    userNewChatGuid[chatGuid] = chatGuid;
 
-                    var secondUserChatObj = {};
-                    secondUserChatObj[chatGuid] = {
-                        uids: localUser.uid,         // todo - how to call this property?
-                        chatGuid: chatGuid
-                    };
-
-                    var localUserWriteChatGuidsProm = localUserRef.update(localUserChatObj);
-                    var secondUserWriteChatGuidsProm = chatterRef.update(secondUserChatObj);
+                    var localUserWriteChatGuidsProm = localUserRef.update(userNewChatGuid);
+                    var secondUserWriteChatGuidsProm = chatterRef.update(userNewChatGuid);
                     return $q.all([localUserWriteChatGuidsProm, secondUserWriteChatGuidsProm]).then(function () {
                         return chatGuid;
                     });
