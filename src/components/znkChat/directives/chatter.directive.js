@@ -70,15 +70,16 @@
                     function newMessageHandler(snapShot) {
                         var newData = snapShot.val();
                         var messageId = snapShot.key();
-                        if (newData.time > scope.chatterObj.lastSeenMessage.time) { // check if there is messages the local user didn't see
+                        if (angular.isUndefined(scope.chatterObj.lastSeenMessage.messageId) ||messageId > scope.chatterObj.lastSeenMessage.messageId) { // check if there is messages the local user didn't see
                             if (scope.chatterObj.isActive) {
                                 var lastSeenMessage = {};
-                                lastSeenMessage.id = messageId;
+                                lastSeenMessage.messageId = messageId;
                                 lastSeenMessage.time = newData.time;
                                 scope.chatterObj.lastSeenMessage = lastSeenMessage;
                                 znkChatSrv.updateLasSeenMessage(scope.chatterObj.chatGuid, scope.localUser.uid, lastSeenMessage);
                             } else {
                                 scope.chatterObj.messagesNotSeen++;
+                                scope.chatterObj.messagesNotSeen = scope.chatterObj.messagesNotSeen < 10 ? scope.chatterObj.messagesNotSeen : 10;
                             }
                         }
 

@@ -5,31 +5,41 @@ chat-board {
         text-align: center;
 
         .chat-board-header {
-            background-color: white; // todo
+            background-color: $bgColor6;
             border-radius: 0 15px 0 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            border-bottom: 1px solid gray; // todo - color------------------------------------
-            height: 30px;
+            border-bottom: 1px solid $bcColor11;
+            height: 45px;
 
             .znk-chat-close-icon{
                 position: absolute;
+                top:5px;
                 right:5px;
                 cursor: pointer;
                 svg line{
-                    stroke:black;// todo
-                    stroke-width: 3px;
+                    stroke: $bgColor31;
+                    stroke-width: 6px;
+
                 }
+            }
+
+            chatter .chatter-wrapper{
+                .chatter-name{
+                    @include text-style(18px, $fcColor6, Quicksand, $boldFontWeight);
+                    height: 26px;
+                }
+
             }
         }
 
         .board-wrapper{
-            background-color: white; // todo
+            background-color: $bgColor6;
             .messages-container {
                 padding-right: 5px;
                 .messages-wrapper {
-                    @include dimension(100%, 200px);
+                    @include dimension(100%, 276px);
                     display: flex;
                     flex-direction: column;
                     overflow-y: auto;
@@ -40,38 +50,21 @@ chat-board {
                             height: auto;
                         }
                        .message-repeater.ng-enter {
-                            transition: 1s;
+                            transition: 0.5s;
                             opacity: 0;
                         }
                         .message-repeater.ng-enter-active {
                             opacity: 1;
                         }
                     }
-
-                .znk-scrollbar {
-                    ::-webkit-scrollbar,
-                    &::-webkit-scrollbar {
-                        height: 20px;
-                        width: 6px;
-                        background-color: #f9f9f9;
-                        border-radius: 100px;
-                        //margin: 20px 0;
-                    }
-                    ::-webkit-scrollbar-thumb,
-                    &::-webkit-scrollbar-thumb {
-                        background-color: #E1E1E1;
-                        -webkit-border-radius: 1ex;
-                    }
-                }
             }
 
             textarea{
-                @include dimension(100%, 44px);
+                @include dimension(100%, 50px);
                 @include text-style(14px, $fcColor16, Lato, $regularFontWeight);
-                @include text-style(14px, $fcColor6, Lato, $regularFontWeight);
                 padding: 5px;
                 border:none;
-                border-top: 1px solid lightgray; // todo - color --------------------------
+                border-top: 1px solid $bcColor11;
                 box-sizing: border-box;
                 resize: none;
                 border-radius: 0 0 10px 0;

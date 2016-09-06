@@ -46,7 +46,7 @@
                     scope.d.sendMessage = function () {
                         if (scope.d.newMessage.length > 0) {
                             var newMessageObj = {
-                                time: znkChatSrv.getUtcTime(),
+                                time: Firebase.ServerValue.TIMESTAMP,
                                 uid: scope.userId,
                                 text: scope.d.newMessage
                             };

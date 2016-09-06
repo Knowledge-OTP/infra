@@ -20,7 +20,7 @@
                 return InfraConfigSrv.getGlobalStorage();
             }
 
-            self.getUtcTime = function () { // todo - move to service
+            self.getUtcTime = function () {
                 var now = new Date();
                 var utc_now = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
                 return utc_now.getTime();
@@ -32,7 +32,7 @@
 
             self.getChatByGuid = function (chatGuid) {
                 return _getStorage().then(function (globalStorage) {
-                    var chatPath = znkChatPaths.chatPath + '/' + chatGuid; // todo -remove global path
+                    var chatPath = znkChatPaths.chatPath + '/' + chatGuid;
                     return globalStorage.get(chatPath).then(function (chatObj) {
                         return chatObj;
                     });
@@ -40,8 +40,8 @@
             };
 
             self.getChatGuidsByUid = function (uid, isTeacher) {
-                return _getUserStorage(isTeacher).then(function (userStorage) {                     // todo - check if student or teacher
-                    var chatsGuidsPath = znkChatPaths.chatsUsersGuids.replace('$$uid', uid);  // todo - can remove the replace
+                return _getUserStorage(isTeacher).then(function (userStorage) {
+                    var chatsGuidsPath = znkChatPaths.chatsUsersGuids.replace('$$uid', uid);
                     return userStorage.get(chatsGuidsPath).then(function (chatsGuids) {
                         return UtilitySrv.object.convertToArray(chatsGuids);
                     });
@@ -67,7 +67,7 @@
             self.updateChat = function (chatGuid, newMessage) {
                 return _getStorage().then(function (globalStorage) {
                     var messagesPath = znkChatPaths.chatPath + '/' + chatGuid + '/messages';
-                    var adapterRef = globalStorage.adapter.getRef(messagesPath);// todo - why there is no update function within storageSrv?
+                    var adapterRef = globalStorage.adapter.getRef(messagesPath);
                     var messageGuid = adapterRef.push(newMessage).key();
                     return messageGuid;
 
@@ -76,14 +76,14 @@
 
             self.updateLasSeenMessage = function (chatGuid, userId, lastSeenMessage) {
                 return _getStorage().then(function (globalStorage) {
-                    var notSeenMessagesPath = znkChatPaths.chatPath + '/' + chatGuid + '/usersLastSeenMessage/' + userId; // todo -remove global path
+                    var notSeenMessagesPath = znkChatPaths.chatPath + '/' + chatGuid + '/usersLastSeenMessage/' + userId;
                     globalStorage.update(notSeenMessagesPath, lastSeenMessage);
                 });
             };
 
             self.getLastSeenMessage = function (chatGuid, userId) {
                 return _getStorage().then(function (globalStorage) {
-                    var notSeenMessagesPath = znkChatPaths.chatPath + '/' + chatGuid + '/usersLastSeenMessage/' + userId; // todo -remove global path
+                    var notSeenMessagesPath = znkChatPaths.chatPath + '/' + chatGuid + '/usersLastSeenMessage/' + userId;
                     return globalStorage.get(notSeenMessagesPath).then(function (lastSeenMessage) {
                         return lastSeenMessage;
                     });
@@ -116,8 +116,9 @@
 
                     var localUserPath = localUser.isTeacher ? 'sat_dashboard/' : 'sat_app/';
                     var secondUserPath = secondUser.isTeacher ? 'sat_dashboard/' : 'sat_app/';
-                    localUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', localUser.uid); // todo - make function that returns this path
-                    secondUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', secondUser.uid); // todo - make function that returns this path
+
+                    localUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', localUser.uid);
+                    secondUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', secondUser.uid);
 
                     var localUserRef = adapterRef.child(localUserPath);
                     var chatterRef = adapterRef.child(secondUserPath);
@@ -147,7 +148,7 @@
                     time: 0
                 };
                 newChatObj.usersLastSeenMessage[secondCUser.uid] = {
-                    time: 0
+                    time: 0,
                 };
                 return newChatObj;
             }

@@ -56,7 +56,7 @@
                             var message = chatter.chatMessages[chatter.chatMessages.length - 1];
                             var lastMessageTime = {};
                             lastMessageTime.time = message.time;
-                            lastMessageTime.id = message.id;
+                            lastMessageTime.messageId = message.id;
                             scope.d.selectedChatter.lastMessageTime = lastMessageTime;
                             znkChatSrv.updateLasSeenMessage(chatter.chatGuid, scope.localUser.uid, lastMessageTime);
                         }
@@ -70,6 +70,7 @@
                                     for (var i = 0; i < chatParticipantsArr.length; i++) {
                                         if (chatParticipantsArr[i].messagesNotSeen > 0) {
                                             scope.d.numOfNotSeenMessages += chatParticipantsArr[i].messagesNotSeen;
+                                            scope.d.numOfNotSeenMessages = (scope.d.numOfNotSeenMessages < 10) ? scope.d.numOfNotSeenMessages : 10;
                                         }
                                     }
                                 }

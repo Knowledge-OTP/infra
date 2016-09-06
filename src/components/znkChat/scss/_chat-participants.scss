@@ -1,5 +1,5 @@
 .chat-participants {
-    @include dimension(200px, 275px);
+    @include dimension(200px, 372px);
     padding-top: 15px;
     box-sizing: border-box;
     border-radius: 15px 0 0 0;
@@ -15,21 +15,37 @@
 
     .chatter-repeater, .support-chat-wrapper {
         @include dimension(190px, 30px);
-        display: flex;
-        align-items: center;
-        padding-left: 9px;
         box-sizing: border-box;
         cursor: pointer;
-
-        &:hover{
-            background-color: $bgColor30; // todo- check angular material button
-        }
     }
 
-    .chatter-repeater{
-        chatter {
-            .chatter-wrapper .chatter-name {
-                width:137px;
+    .chatter-repeater-wrapper {
+        overflow-y: auto;
+        overflow-x: hidden;
+        height: 310px;
+        .chatter-repeater {
+            .chatter-drv-wrapper {
+                @include dimension(190px, 30px);
+                display: flex;
+                align-items: center;
+                background-color: transparent;
+                transition: 0.5s;
+                padding-left: 9px;
+
+                chatter {
+                    .chatter-wrapper .chatter-name {
+                        width: 137px;
+                    }
+                }
+
+                &.selected-chatter{
+                    background-color: $bgColor30;
+                    .chatter-wrapper {
+                        .chatter-name {
+                            @include text-style(16px, $fcColor14, Lato, $regularFontWeight);
+                        }
+                    }
+                }
             }
         }
     }
@@ -38,11 +54,13 @@
         @include text-style(16px, $fcColor14, Lato, $regularFontWeight);
         display: flex;
         align-items: center;
+        padding-left: 9px;
 
         .online-indicator {
             @include dimension(7px, 7px);
-            border: 2px solid $bcColor15;
+            border: 1px solid $bcColor5;
             border-radius: 6px;
+            box-sizing: border-box;
             margin-right: 13px;
         }
 
@@ -53,6 +71,7 @@
         }
 
         .support {
+            @include text-style(16px, $fcColor6, Lato, $regularFontWeight);
             position: relative;
             height: 23px;
 

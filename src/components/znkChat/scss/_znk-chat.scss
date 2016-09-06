@@ -9,9 +9,12 @@
         border-radius: 35px ;
         background-color: $bgColor17;
 
-        .not-seen-messages{
-            @include dimension(15px, 15px);
+        .unseen-messages{
+            @include dimension(auto, 15px);
             @include text-style(12px, $fcColor2, Lato, $regularFontWeight);
+            min-width: 15px;
+            padding: 5px;
+            box-sizing: border-box;
             transition: 0.3s;
             display: flex;
             align-items: center;
@@ -23,13 +26,21 @@
             background-color: $bgColor1;
         }
 
-        .not-seen-messages.ng-enter,
-        .not-seen-messages.ng-leave.ng-leave-active {
+        .unseen-messages.ten-or-more-unseen-messages::after {
+            content: ' +';
+        }
+
+        .ten-or-more-unseen-messages{
+          right:-10px;
+        }
+
+        .unseen-messagesmessages.ng-enter,
+        .unseen-messages.ng-leave.ng-leave-active {
             opacity: 0;
         }
 
-        .not-seen-messages.ng-leave,
-        .not-seen-messages.ng-enter.ng-enter-active {
+        .unseen-messages.ng-leave,
+        .unseen-messages.ng-enter.ng-enter-active {
             opacity: 1;
         }
 
@@ -39,10 +50,10 @@
     }
 
     .chat-container {
-        @include dimension(525px, 275px);
+        @include dimension(525px, 372px);
         display: flex;
         border-radius: 15px 15px 0 0 ;
-        box-shadow: 0 0 4px 0.2px $bsColor1;
+        box-shadow:  0 -2px 3px 0 $bsColor2;
 
 
         .chat-messages-board {

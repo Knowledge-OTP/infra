@@ -10144,7 +10144,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     scope.d.sendMessage = function () {
                         if (scope.d.newMessage.length > 0) {
                             var newMessageObj = {
-                                time: znkChatSrv.getUtcTime(),
+                                time: Firebase.ServerValue.TIMESTAMP,
                                 uid: scope.userId,
                                 text: scope.d.newMessage
                             };
@@ -10254,15 +10254,16 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     function newMessageHandler(snapShot) {
                         var newData = snapShot.val();
                         var messageId = snapShot.key();
-                        if (newData.time > scope.chatterObj.lastSeenMessage.time) { // check if there is messages the local user didn't see
+                        if (angular.isUndefined(scope.chatterObj.lastSeenMessage.messageId) ||messageId > scope.chatterObj.lastSeenMessage.messageId) { // check if there is messages the local user didn't see
                             if (scope.chatterObj.isActive) {
                                 var lastSeenMessage = {};
-                                lastSeenMessage.id = messageId;
+                                lastSeenMessage.messageId = messageId;
                                 lastSeenMessage.time = newData.time;
                                 scope.chatterObj.lastSeenMessage = lastSeenMessage;
                                 znkChatSrv.updateLasSeenMessage(scope.chatterObj.chatGuid, scope.localUser.uid, lastSeenMessage);
                             } else {
                                 scope.chatterObj.messagesNotSeen++;
+                                scope.chatterObj.messagesNotSeen = scope.chatterObj.messagesNotSeen < 10 ? scope.chatterObj.messagesNotSeen : 10;
                             }
                         }
 
@@ -10373,7 +10374,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                             var message = chatter.chatMessages[chatter.chatMessages.length - 1];
                             var lastMessageTime = {};
                             lastMessageTime.time = message.time;
-                            lastMessageTime.id = message.id;
+                            lastMessageTime.messageId = message.id;
                             scope.d.selectedChatter.lastMessageTime = lastMessageTime;
                             znkChatSrv.updateLasSeenMessage(chatter.chatGuid, scope.localUser.uid, lastMessageTime);
                         }
@@ -10387,6 +10388,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                                     for (var i = 0; i < chatParticipantsArr.length; i++) {
                                         if (chatParticipantsArr[i].messagesNotSeen > 0) {
                                             scope.d.numOfNotSeenMessages += chatParticipantsArr[i].messagesNotSeen;
+                                            scope.d.numOfNotSeenMessages = (scope.d.numOfNotSeenMessages < 10) ? scope.d.numOfNotSeenMessages : 10;
                                         }
                                     }
                                 }
@@ -10523,7 +10525,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 return InfraConfigSrv.getGlobalStorage();
             }
 
-            self.getUtcTime = function () { // todo - move to service
+            self.getUtcTime = function () {
                 var now = new Date();
                 var utc_now = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
                 return utc_now.getTime();
@@ -10535,7 +10537,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
             self.getChatByGuid = function (chatGuid) {
                 return _getStorage().then(function (globalStorage) {
-                    var chatPath = znkChatPaths.chatPath + '/' + chatGuid; // todo -remove global path
+                    var chatPath = znkChatPaths.chatPath + '/' + chatGuid;
                     return globalStorage.get(chatPath).then(function (chatObj) {
                         return chatObj;
                     });
@@ -10543,8 +10545,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             };
 
             self.getChatGuidsByUid = function (uid, isTeacher) {
-                return _getUserStorage(isTeacher).then(function (userStorage) {                     // todo - check if student or teacher
-                    var chatsGuidsPath = znkChatPaths.chatsUsersGuids.replace('$$uid', uid);  // todo - can remove the replace
+                return _getUserStorage(isTeacher).then(function (userStorage) {
+                    var chatsGuidsPath = znkChatPaths.chatsUsersGuids.replace('$$uid', uid);
                     return userStorage.get(chatsGuidsPath).then(function (chatsGuids) {
                         return UtilitySrv.object.convertToArray(chatsGuids);
                     });
@@ -10570,7 +10572,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             self.updateChat = function (chatGuid, newMessage) {
                 return _getStorage().then(function (globalStorage) {
                     var messagesPath = znkChatPaths.chatPath + '/' + chatGuid + '/messages';
-                    var adapterRef = globalStorage.adapter.getRef(messagesPath);// todo - why there is no update function within storageSrv?
+                    var adapterRef = globalStorage.adapter.getRef(messagesPath);
                     var messageGuid = adapterRef.push(newMessage).key();
                     return messageGuid;
 
@@ -10579,14 +10581,14 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
             self.updateLasSeenMessage = function (chatGuid, userId, lastSeenMessage) {
                 return _getStorage().then(function (globalStorage) {
-                    var notSeenMessagesPath = znkChatPaths.chatPath + '/' + chatGuid + '/usersLastSeenMessage/' + userId; // todo -remove global path
+                    var notSeenMessagesPath = znkChatPaths.chatPath + '/' + chatGuid + '/usersLastSeenMessage/' + userId;
                     globalStorage.update(notSeenMessagesPath, lastSeenMessage);
                 });
             };
 
             self.getLastSeenMessage = function (chatGuid, userId) {
                 return _getStorage().then(function (globalStorage) {
-                    var notSeenMessagesPath = znkChatPaths.chatPath + '/' + chatGuid + '/usersLastSeenMessage/' + userId; // todo -remove global path
+                    var notSeenMessagesPath = znkChatPaths.chatPath + '/' + chatGuid + '/usersLastSeenMessage/' + userId;
                     return globalStorage.get(notSeenMessagesPath).then(function (lastSeenMessage) {
                         return lastSeenMessage;
                     });
@@ -10619,8 +10621,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                     var localUserPath = localUser.isTeacher ? 'sat_dashboard/' : 'sat_app/';
                     var secondUserPath = secondUser.isTeacher ? 'sat_dashboard/' : 'sat_app/';
-                    localUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', localUser.uid); // todo - make function that returns this path
-                    secondUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', secondUser.uid); // todo - make function that returns this path
+
+                    localUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', localUser.uid);
+                    secondUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', secondUser.uid);
 
                     var localUserRef = adapterRef.child(localUserPath);
                     var chatterRef = adapterRef.child(secondUserPath);
@@ -10650,7 +10653,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     time: 0
                 };
                 newChatObj.usersLastSeenMessage[secondCUser.uid] = {
-                    time: 0
+                    time: 0,
                 };
                 return newChatObj;
             }
@@ -10715,8 +10718,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "    viewBox=\"-596.6 492.3 133.2 133.5\">\n" +
     "    <style>\n" +
     "        .znk-chat-close-icon {\n" +
-    "        width:13px;\n" +
-    "        height:13px;\n" +
+    "        width:12px;\n" +
+    "        height:12px;\n" +
     "        }\n" +
     "    </style>\n" +
     "    <path class=\"st0\"/>\n" +
@@ -10760,21 +10763,25 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "<div class=\"chat-participants\">\n" +
     "    <div class=\"my-chat-title\" translate=\".MY_CHAT\"></div>\n" +
     "\n" +
-    "    <div class=\"chatter-repeater\" ng-repeat=\"chatter in d.chatData.chatParticipantsArr \">\n" +
-    "        <div ng-click=\"d.selectChatter()(chatter)\">\n" +
-    "            <chatter\n" +
-    "                set-first-chatter=\"$index === 0 ? d.selectChatter()(chatter) : angular.noop\"\n" +
-    "                chat-data=\"d.chatData\"\n" +
-    "                local-user=\"d.chatData.localUser\"\n" +
-    "                local-user-chats-guids-arr=\"d.chatData.localUserChatsGuidsArr\"\n" +
-    "                chatter-obj=\"chatter\">\n" +
-    "            </chatter>\n" +
+    "    <div class=\"chatter-repeater-wrapper znk-scrollbar\">\n" +
+    "        <div class=\"chatter-repeater\" ng-repeat=\"chatter in d.chatData.chatParticipantsArr \">\n" +
+    "            <div class=\"chatter-drv-wrapper\"\n" +
+    "                 ng-click=\"d.selectChatter()(chatter); d.selctedChatter = $index;\"\n" +
+    "                 ng-class=\"{'selected-chatter': d.selctedChatter === $index}\">\n" +
+    "                <chatter\n" +
+    "                    set-first-chatter=\"$index === 0 ? d.selectChatter()(chatter) : angular.noop\"\n" +
+    "                    chat-data=\"d.chatData\"\n" +
+    "                    local-user=\"d.chatData.localUser\"\n" +
+    "                    local-user-chats-guids-arr=\"d.chatData.localUserChatsGuidsArr\"\n" +
+    "                    chatter-obj=\"chatter\">\n" +
+    "                </chatter>\n" +
+    "            </div>\n" +
     "        </div>\n" +
-    "    </div>\n" +
     "\n" +
-    "    <div class=\"support-chat-wrapper\">\n" +
-    "        <div class=\"online-indicator online\"></div>\n" +
-    "        <div class=\"support\" translate=\".SUPPORT\"></div>\n" +
+    "        <div class=\"support-chat-wrapper\">\n" +
+    "            <div class=\"online-indicator online\"></div>\n" +
+    "            <div class=\"support\" translate=\".SUPPORT\"></div>\n" +
+    "        </div>\n" +
     "    </div>\n" +
     "</div>\n" +
     "");
@@ -10785,13 +10792,21 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "     'idle': chatterObj.presence === vm.userStatus.IDLE}\">\n" +
     "    <div class=\"online-indicator\"></div>\n" +
     "    <div class=\"chatter-name\">{{chatterObj.name}}</div>\n" +
-    "    <div class=\"message-not-seen\" ng-if=\"chatterObj.messagesNotSeen > 0\">{{chatterObj.messagesNotSeen}}</div>\n" +
+    "    <div class=\"message-not-seen\"\n" +
+    "         ng-class=\"{'ten-or-more-unseen-messages': chatterObj.messagesNotSeen > 9}\"\n" +
+    "         ng-if=\"chatterObj.messagesNotSeen > 0 > 0\">\n" +
+    "        {{chatterObj.messagesNotSeen}}\n" +
+    "    </div>\n" +
     "</div>\n" +
     "");
   $templateCache.put("components/znkChat/templates/znkChat.template.html",
     "<div class=\"znk-chat-wrapper\" ng-switch=\"d.chatStateView\" translate-namespace=\"ZNK_CHAT\">\n" +
     "    <div class=\"button-wrapper\" ng-show=\"d.chatStateView === statesView.CHAT_BUTTON_VIEW\" ng-click=\"d.openChat()\">\n" +
-    "        <div class=\"not-seen-messages\" ng-if=\"d.numOfNotSeenMessages > 0\">{{d.numOfNotSeenMessages}}</div>\n" +
+    "        <div class=\"unseen-messages\"\n" +
+    "             ng-class=\"{'ten-or-more-unseen-messages': d.numOfNotSeenMessages > 9}\"\n" +
+    "             ng-if=\"d.numOfNotSeenMessages > 0\">\n" +
+    "            {{d.numOfNotSeenMessages}}\n" +
+    "        </div>\n" +
     "        <svg-icon name=\"znk-chat-chat-icon\"></svg-icon>\n" +
     "    </div>\n" +
     "\n" +
