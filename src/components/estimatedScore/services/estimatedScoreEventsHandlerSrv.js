@@ -155,7 +155,7 @@
                         if(shouldBeProcessed){
                             var rawScore = _calculateRawScore(exerciseType, exerciseResult);
                             EstimatedScoreSrv.addRawScore(rawScore, exerciseType, exercise.subjectId, exercise.id);
-                        }
+                }
                     });
                 }
 

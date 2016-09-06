@@ -31,6 +31,7 @@
  *      setSlideDirection
  *      forceDoneBtnDisplay
  *      pagerDisplay: function, if true provided than pager will be displayed other it will be hidden.
+ *      getPagerDisplayState
  *      bindExerciseViewTo: receive as parameter the view state
  *          viewState properties:
  *              currSlideIndex:
@@ -178,6 +179,10 @@
                                     }
                                     scope.vm.showPager = !!display;
                                 });
+                            };
+
+                            scope.actions.getPagerDisplayState = function(){
+                                return !!scope.vm.showPager;
                             };
 
                             var killExerciseViewListener;

@@ -13,6 +13,9 @@
             var map = {
                 1: '<div>question Type 1</div><span>{{$parent.questionGetter().id}}</span>' +
                 '<div compile="$parent.questionGetter().content"></div>' +
+                '<div ng-if="$parent.questionGetter().exerciseTypeId===13">' +
+                '<img ng-src="{{$parent.$parent.questionGetter().fileUrl}}" style="max-width: 100%;height: auto;">' +
+                '</div>' +
                 '<answer-builder></answer-builder>'
             };
             QuestionTypesSrvProvider.setQuestionTypesHtmlTemplate(map);
@@ -22,5 +25,11 @@
             }
 
             QuestionTypesSrvProvider.setQuestionTypeGetter(questionTypeGetter);
+        })
+        .component('selectAnswer', {
+            template: '<div>{{$ctrl.ngModel.$viewValue || "empty"}}</div><div ng-click="$ctrl.ngModel.$setViewValue(1)">Set</div>',
+            require: {
+                ngModel: '^ngModel'
+            }
         });
 })(angular);

@@ -41,6 +41,9 @@
     <div class="btn-container">
         <button ng-click="$ctrl.results.$save()">save result</button>
     </div>
+    <div class="btn-container">
+        <button ng-click="$ctrl.togglePagerDisplay()">Toggle pager display</button>
+    </div>
     <div ng-if="$ctrl.showExercise">
         <znk-exercise ng-model="results"
                       questions="questions"
@@ -76,6 +79,7 @@
     <script src="env.service.js"></script>
     <script src="infraSrvUserDataConfig.js"></script>
     <script src="analyticsConfig.js"></script>
+    <script src="znkExerciseConfig.js"></script>
 
 
 </body>

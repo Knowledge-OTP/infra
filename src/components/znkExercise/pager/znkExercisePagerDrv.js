@@ -13,7 +13,9 @@
                 templateUrl: 'components/znkExercise/core/template/znkExercisePagerDrv.html',
                 restrict: 'E',
                 require: ['ngModel', '^znkExercise'],
-                scope: {},
+                scope: {
+                    questions: '<'
+                },
                 link: {
                     pre: function (scope, element, attrs, ctrls) {
                         var ngModelCtrl = ctrls[0];
@@ -29,79 +31,88 @@
                             znkExerciseCtrl.setCurrentIndex(newIndex);
                         };
 
-                        function setPagerItemBookmarkStatus(index,status){
+                        function setPagerItemBookmarkStatus(index, status) {
                             var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
-                            if(status){
+                            if (status) {
                                 pagerItemElement.addClass('bookmark');
-                            }else{
+                            } else {
                                 pagerItemElement.removeClass('bookmark');
                             }
                         }
 
-                        function setPagerItemAnswerClass(index,question){
+                        function setPagerItemAnswerClass(index, question) {
                             var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
 
-                            if(angular.isUndefined(question.__questionStatus.userAnswer)){
+                            if (angular.isUndefined(question.__questionStatus.userAnswer)) {
                                 pagerItemElement.removeClass('neutral correct wrong');
                                 return;
                             }
 
-                            if(currViewMode === ZnkExerciseViewModeEnum.ONLY_ANSWER.enum){
+                            if (currViewMode === ZnkExerciseViewModeEnum.ONLY_ANSWER.enum) {
                                 pagerItemElement.addClass('neutral');
                                 return;
                             }
 
-                            if(question.__questionStatus.isAnsweredCorrectly){
+                            if (question.__questionStatus.isAnsweredCorrectly) {
                                 pagerItemElement.addClass('correct');
-                            }else{
+                            } else {
                                 pagerItemElement.addClass('wrong');
                             }
                         }
 
-                        scope.$on(ZnkExerciseEvents.BOOKMARK,function(evt,question){
-                            setPagerItemBookmarkStatus(question.__questionStatus.index,question.__questionStatus.bookmark);
+                        ngModelCtrl.$render = function () {
+                            var currentSlide = +ngModelCtrl.$viewValue;
+                            if (isNaN(currentSlide)) {
+                                return;
+                            }
+                            //added in order to prevent the swipe lag
+                            $timeout(function () {
+                                var i;
+                                var $pagerItemWithCurrentClass = angular.element(domElement.querySelectorAll('.pager-item.current'));
+                                for (i in $pagerItemWithCurrentClass) {
+                                    $pagerItemWithCurrentClass.eq(i).removeClass('current');
+                                }
+                                var pagerItemsDomElement = domElement.querySelectorAll('.pager-item');
+                                var currentSlideDom = angular.element(pagerItemsDomElement[currentSlide]);
+                                currentSlideDom.addClass('current');
+
+                                for (i in scope.questions) {
+                                    var question = scope.questions[i];
+                                    setPagerItemBookmarkStatus(i, question.__questionStatus.bookmark);
+                                    setPagerItemAnswerClass(i, question);
+                                }
+                            });
+                        };
+
+                        scope.$on(ZnkExerciseEvents.BOOKMARK, function (evt, question) {
+                            setPagerItemBookmarkStatus(question.__questionStatus.index, question.__questionStatus.bookmark);
                         });
 
-                        scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED,function(evt,question){
-                            setPagerItemAnswerClass(question.__questionStatus.index,question);
+                        scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function (evt, question) {
+                            setPagerItemAnswerClass(question.__questionStatus.index, question);
                         });
 
-                        var isInitialized;
-                        function init(){
-                            isInitialized = true;
+                        function init() {
                             //wait for the pager items to be rendered
                             $timeout(function () {
-                                ngModelCtrl.$render = function () {
-                                    var currentSlide = +ngModelCtrl.$viewValue;
-                                    if (isNaN(currentSlide)) {
-                                        return;
-                                    }
-                                    //added in order to prevent the swipe lag
-                                    $timeout(function () {
-                                        var i;
-                                        var $pagerItemWithCurrentClass = angular.element(domElement.querySelectorAll('.pager-item.current'));
-                                        for (i in $pagerItemWithCurrentClass) {
-                                            $pagerItemWithCurrentClass.eq(i).removeClass('current');
-                                        }
-                                        var pagerItemsDomElement = domElement.querySelectorAll('.pager-item');
-                                        var currentSlideDom = angular.element(pagerItemsDomElement[currentSlide]);
-                                        currentSlideDom.addClass('current');
-
-                                        for(i in scope.questions){
-                                            var question = scope.questions[i];
-                                            setPagerItemBookmarkStatus(i,question .__questionStatus.bookmark);
-                                            setPagerItemAnswerClass(i,question);
-                                        }
-                                    });
-                                };
-                                //render is not invoked for the first time
                                 ngModelCtrl.$render();
-                            },false);
+                            }, false);
                         }
 
-                        scope.$parent.$watch(attrs.questions, function pagerQuestionsArrWatcher(questionsArr) {
-                            if (questionsArr) {
-                                scope.questions = questionsArr;
+                        scope.$watch(function () {
+                            var questions = scope.questions;
+
+                            if (!questions) {
+                                questions = [];
+                            }
+
+                            var watchExpr = '';
+                            questions.forEach(function (question) {
+                                watchExpr += +(!!(question.__questionStatus && question.__questionStatus.userAnswer));
+                            });
+                            return watchExpr;
+                        }, function (newVal, oldVal) {
+                            if (!angular.equals(newVal, oldVal)) {
                                 init();
                             }
                         });
