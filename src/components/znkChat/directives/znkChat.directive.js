@@ -54,11 +54,11 @@
                         scope.d.selectedChatter.messagesNotSeen = 0;
                         if (chatter.chatMessages.length > 0) {
                             var message = chatter.chatMessages[chatter.chatMessages.length - 1];
-                            var lastMessageTime = {};
-                            lastMessageTime.time = message.time;
-                            lastMessageTime.messageId = message.id;
-                            scope.d.selectedChatter.lastMessageTime = lastMessageTime;
-                            znkChatSrv.updateLasSeenMessage(chatter.chatGuid, scope.localUser.uid, lastMessageTime);
+                            var lastSeenMessage = {};
+                            lastSeenMessage.time = message.time;
+                            lastSeenMessage.messageId = message.id;
+                            scope.d.selectedChatter.lastSeenMessage = lastSeenMessage;
+                            znkChatSrv.updateLasSeenMessage(chatter.chatGuid, scope.localUser.uid, lastSeenMessage);
                         }
                     }
 
