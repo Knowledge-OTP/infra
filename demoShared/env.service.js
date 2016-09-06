@@ -9,7 +9,6 @@
         dashboardAppName: 'sat_dashboard',
         videosEndPoint: "//dfz02hjbsqn5e.cloudfront.net/sat_app/",
         mediaEndPoint: "//dfz02hjbsqn5e.cloudfront.net/",
-        fbDataEndPoint: 'https://sat-dev.firebaseio.com/',
         fbGlobalEndPoint: 'https://znk-dev.firebaseio.com/'
     });
 })(angular);

@@ -49,21 +49,14 @@
             })
         });
 
-    angular.module('znk.infra.presence')
-        .provider('ENV', function () {
-            this.$get = function () {
-                return {
-                    fbDataEndPoint: "https://sat-dev.firebaseio.com/",
-                    firebaseAppScopeName: "sat_app",
-                    appContext: 'student',
-                    studentAppName: 'sat_app',
-                    dashboardAppName: 'sat_dashboard',
-                    videosEndPoint: "//dfz02hjbsqn5e.cloudfront.net/sat_app/",
-                    mediaEndPoint: "//dfz02hjbsqn5e.cloudfront.net/",
-                    fbGlobalEndPoint: "https://znk-dev.firebaseio.com/"
-
-                }
-            }
-        });
-
+    angular.module('znk.infra.presence').constant('ENV', {
+        firebaseAppScopeName: "sat_app",
+        fbDataEndPoint: "https://sat-dev.firebaseio.com/",
+        appContext: 'student',
+        studentAppName: 'sat_app',
+        dashboardAppName: 'sat_dashboard',
+        videosEndPoint: "//dfz02hjbsqn5e.cloudfront.net/sat_app/",
+        mediaEndPoint: "//dfz02hjbsqn5e.cloudfront.net/",
+        fbGlobalEndPoint: 'https://znk-dev.firebaseio.com/'
+    })
 })(angular);
