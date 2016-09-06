@@ -20,12 +20,6 @@
                 return InfraConfigSrv.getGlobalStorage();
             }
 
-            self.getUtcTime = function () {
-                var now = new Date();
-                var utc_now = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
-                return utc_now.getTime();
-            };
-
             self.getChatParticipants = function () { // e.g teacher --> connected students
                 return $q.when(znkChatDataSrv.getChatParticipants());
             };
