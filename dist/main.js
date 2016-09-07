@@ -10308,7 +10308,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                     scope.d.showDate = function (timeStamp) {
                         return $timeout(function () {         // wait for chatterObj watch checked first
-                            var date = $filter('date')(timeStamp, 'EEE, MMM d', 'UTC'); // all time messages saved in UTC time zone.
+                            var date = $filter('date')(timeStamp, 'EEE, MMM d'); // all time messages saved in UTC time zone.
                             if (angular.isUndefined(dateMap[date])) {  // show message date only once per day.
                                 dateMap[date] = date;
                                 return date;
@@ -10429,7 +10429,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     function newMessageHandler(snapShot) {
                         var newData = snapShot.val();
                         var messageId = snapShot.key();
-                        if (angular.isUndefined(scope.chatterObj.lastSeenMessage.messageId) ||messageId > scope.chatterObj.lastSeenMessage.messageId) { // check if there is messages the local user didn't see
+                        if (angular.isUndefined(scope.chatterObj.lastSeenMessage.messageId) || messageId > scope.chatterObj.lastSeenMessage.messageId) { // check if there is messages the local user didn't saw
                             if (scope.chatterObj.isActive) {
                                 var lastSeenMessage = {};
                                 lastSeenMessage.messageId = messageId;
@@ -10547,11 +10547,11 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         scope.d.selectedChatter.messagesNotSeen = 0;
                         if (chatter.chatMessages.length > 0) {
                             var message = chatter.chatMessages[chatter.chatMessages.length - 1];
-                            var lastMessageTime = {};
-                            lastMessageTime.time = message.time;
-                            lastMessageTime.messageId = message.id;
-                            scope.d.selectedChatter.lastMessageTime = lastMessageTime;
-                            znkChatSrv.updateLasSeenMessage(chatter.chatGuid, scope.localUser.uid, lastMessageTime);
+                            var lastSeenMessage = {};
+                            lastSeenMessage.time = message.time;
+                            lastSeenMessage.messageId = message.id;
+                            scope.d.selectedChatter.lastSeenMessage = lastSeenMessage;
+                            znkChatSrv.updateLasSeenMessage(chatter.chatGuid, scope.localUser.uid, lastSeenMessage);
                         }
                     }
 
@@ -10699,12 +10699,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             function _getStorage() {
                 return InfraConfigSrv.getGlobalStorage();
             }
-
-            self.getUtcTime = function () {
-                var now = new Date();
-                var utc_now = new Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
-                return utc_now.getTime();
-            };
 
             self.getChatParticipants = function () { // e.g teacher --> connected students
                 return $q.when(znkChatDataSrv.getChatParticipants());
@@ -10969,7 +10963,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "    <div class=\"chatter-name\">{{chatterObj.name}}</div>\n" +
     "    <div class=\"message-not-seen\"\n" +
     "         ng-class=\"{'ten-or-more-unseen-messages': chatterObj.messagesNotSeen > 9}\"\n" +
-    "         ng-if=\"chatterObj.messagesNotSeen > 0 > 0\">\n" +
+    "         ng-if=\"chatterObj.messagesNotSeen > 0\">\n" +
     "        {{chatterObj.messagesNotSeen}}\n" +
     "    </div>\n" +
     "</div>\n" +
