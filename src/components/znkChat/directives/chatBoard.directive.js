@@ -35,7 +35,7 @@
 
                     scope.d.showDate = function (timeStamp) {
                         return $timeout(function () {         // wait for chatterObj watch checked first
-                            var date = $filter('date')(timeStamp, 'EEE, MMM d'); // all time messages saved in UTC time zone.
+                            var date = $filter('date')(timeStamp, 'EEE, MMM d');
                             if (angular.isUndefined(dateMap[date])) {  // show message date only once per day.
                                 dateMap[date] = date;
                                 return date;
