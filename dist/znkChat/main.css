@@ -574,16 +574,23 @@ $blueBG8: #75cbe8;
     font-family: Quicksand;
     font-weight: 400;
     text-align: center;
-    margin-bottom: 15px; }
+    margin-bottom: 25px; }
   .chat-participants .chatter-repeater, .chat-participants .support-chat-wrapper {
     width: 190px;
     height: 30px;
     box-sizing: border-box;
     cursor: pointer; }
+  .chat-participants .support-chat-wrapper.selected-chatter {
+    background-color: #e1e1e1; }
+    .chat-participants .support-chat-wrapper.selected-chatter .chatter-wrapper .chatter-name {
+      font-size: 16px;
+      color: #161616;
+      font-family: Lato;
+      font-weight: 400; }
   .chat-participants .chatter-repeater-wrapper {
     overflow-y: auto;
     overflow-x: hidden;
-    height: 310px; }
+    height: 265px; }
     .chat-participants .chatter-repeater-wrapper .chatter-repeater .chatter-drv-wrapper {
       width: 190px;
       height: 30px;
@@ -604,36 +611,24 @@ $blueBG8: #75cbe8;
           font-family: Lato;
           font-weight: 400; }
   .chat-participants .support-chat-wrapper {
-    font-size: 16px;
-    color: #161616;
-    font-family: Lato;
-    font-weight: 400;
+    width: 190px;
+    height: 30px;
     display: -ms-flexbox;
     display: flex;
     -ms-flex-align: center;
         align-items: center;
-    padding-left: 9px; }
-    .chat-participants .support-chat-wrapper .online-indicator {
-      width: 7px;
-      height: 7px;
-      border: 1px solid #757a83;
-      border-radius: 6px;
-      box-sizing: border-box;
-      margin-right: 13px; }
-    .chat-participants .support-chat-wrapper .online .online-indicator {
-      background: #87ca4d; }
-    .chat-participants .support-chat-wrapper .support {
-      font-size: 16px;
-      color: #4f4d4d;
-      font-family: Lato;
-      font-weight: 400;
-      position: relative;
-      height: 23px; }
-    .chat-participants .support-chat-wrapper .support::after {
+    background-color: transparent;
+    transition: 0.5s;
+    padding-left: 9px;
+    position: relative;
+    margin-bottom: 7px; }
+    .chat-participants .support-chat-wrapper .chatter-wrapper .chatter-name {
+      width: 137px; }
+    .chat-participants .support-chat-wrapper::after {
       width: 175px;
       height: 2px;
-      left: -22px;
-      top: 26px;
+      left: 10px;
+      top: 33px;
       position: absolute;
       content: '';
       background-color: #e1e1e1;

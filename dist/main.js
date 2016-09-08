@@ -8713,7 +8713,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
     /**
      api:
      getAllTeachers: returns all teachers of current user as objects
-     with the properties: teachers uid, teacher name.
+     with the properties: teachers uid, teacher name and teacher email.
      getTeacher: returns specific teacher by teacher uid.
      * */
 
@@ -8748,6 +8748,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
                     newTeacherObj[teacherUid] = {};
                     newTeacherObj[teacherUid].name = oldTeachersObj[value].senderName;
                     newTeacherObj[teacherUid].uid = oldTeachersObj[value].senderUid;
+                    newTeacherObj[teacherUid].email = oldTeachersObj[value].senderEmail;
                 });
                 return newTeacherObj;
             }
@@ -10520,7 +10521,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
 
                     $q.all([znkChatSrv.getChatParticipants(), znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher)]).then(function (res) {
-                        scope.d.chatData.chatParticipantsArr = UtilitySrv.object.convertToArray(res[0]);
+                        var allChatParticipants = res[0];
+                        scope.d.chatData.chatParticipantsArr = UtilitySrv.object.convertToArray(allChatParticipants.participants);
+                        scope.d.chatData.support = allChatParticipants.support;
                         scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(res[1]);
                     });
 
@@ -10600,7 +10603,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkChat').constant('ZNK_CHAT', {
-        MAX_NUM_UNSEEN_MESSAGES: 10
+        MAX_NUM_UNSEEN_MESSAGES: 10,
+        SUPPORT_EMAIL: 'support@zinkerz.com'
     });
 })(angular);
 
@@ -10689,7 +10693,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkChat').service('znkChatSrv',
-        ["InfraConfigSrv", "$q", "UserProfileService", "znkChatDataSrv", "$log", "UtilitySrv", function (InfraConfigSrv, $q, UserProfileService, znkChatDataSrv, $log, UtilitySrv) {
+        ["InfraConfigSrv", "$q", "UserProfileService", "znkChatDataSrv", "$log", "UtilitySrv", "ZNK_CHAT", function (InfraConfigSrv, $q, UserProfileService, znkChatDataSrv, $log, UtilitySrv, ZNK_CHAT) {
             'ngInject';
 
             var self = this;
@@ -10707,8 +10711,23 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 return InfraConfigSrv.getGlobalStorage();
             }
 
-            self.getChatParticipants = function () { // e.g teacher --> connected students
-                return $q.when(znkChatDataSrv.getChatParticipants());
+            self.getChatParticipants = function () {          // e.g teacher --> connected students
+                return znkChatDataSrv.getChatParticipants().then(function (participants) {
+                    var chatParticipantsObj = {};
+                    var supportObj = {};
+                    var participantsKeys = Object.keys(participants);
+
+                    angular.forEach(participantsKeys, function (key) {
+                        if (participants[key].email === ZNK_CHAT.SUPPORT_EMAIL) {
+                            supportObj = participants[key];
+                            delete participants[key];
+                        }
+                    });
+
+                    chatParticipantsObj.support = supportObj;
+                    chatParticipantsObj.participants = participants;
+                    return chatParticipantsObj;
+                });
             };
 
             self.getChatByGuid = function (chatGuid) {
@@ -10925,19 +10944,26 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "<div class=\"chat-participants\">\n" +
     "    <div class=\"my-chat-title\" translate=\".MY_CHAT\"></div>\n" +
     "\n" +
+    "    <div class=\"chatter-drv-wrapper support-chat-wrapper\"\n" +
+    "         ng-click=\"d.selectChatter()(d.chatData.support); d.selctedChatter = -1;\"\n" +
+    "         ng-if=\"d.chatData.support && d.chatData.support.uid\"\n" +
+    "         ng-class=\"{'selected-chatter': d.selctedChatter === -1}\">\n" +
+    "        <chatter\n" +
+    "            set-first-chatter=\"d.selectChatter()(d.chatData.support)\"\n" +
+    "            chat-data=\"d.chatData\"\n" +
+    "            local-user=\"d.chatData.localUser\"\n" +
+    "            local-user-chats-guids-arr=\"d.chatData.localUserChatsGuidsArr\"\n" +
+    "            chatter-obj=\"d.chatData.support\">\n" +
+    "        </chatter>\n" +
+    "    </div>\n" +
+    "\n" +
     "    <div class=\"chatter-repeater-wrapper znk-scrollbar\">\n" +
-    "\n" +
-    "        <div class=\"support-chat-wrapper\">\n" +
-    "            <div class=\"online-indicator online\"></div>\n" +
-    "            <div class=\"support\" translate=\".SUPPORT\"></div>\n" +
-    "        </div>\n" +
-    "\n" +
     "        <div class=\"chatter-repeater\" ng-repeat=\"chatter in d.chatData.chatParticipantsArr | orderBy:'name' | orderBy:'-messagesNotSeen'\">\n" +
     "            <div class=\"chatter-drv-wrapper\"\n" +
     "                 ng-click=\"d.selectChatter()(chatter); d.selctedChatter = $index;\"\n" +
     "                 ng-class=\"{'selected-chatter': d.selctedChatter === $index}\">\n" +
     "                <chatter\n" +
-    "                    set-first-chatter=\"$index === 0 ? d.selectChatter()(chatter) : angular.noop\"\n" +
+    "                    set-first-chatter=\"angular.noop\"\n" +
     "                    chat-data=\"d.chatData\"\n" +
     "                    local-user=\"d.chatData.localUser\"\n" +
     "                    local-user-chats-guids-arr=\"d.chatData.localUserChatsGuidsArr\"\n" +
@@ -10945,7 +10971,6 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "                </chatter>\n" +
     "            </div>\n" +
     "        </div>\n" +
-    "\n" +
     "    </div>\n" +
     "</div>\n" +
     "");

@@ -12,7 +12,7 @@
     /**
      api:
      getAllTeachers: returns all teachers of current user as objects
-     with the properties: teachers uid, teacher name.
+     with the properties: teachers uid, teacher name and teacher email.
      getTeacher: returns specific teacher by teacher uid.
      * */
 
@@ -47,6 +47,7 @@
                     newTeacherObj[teacherUid] = {};
                     newTeacherObj[teacherUid].name = oldTeachersObj[value].senderName;
                     newTeacherObj[teacherUid].uid = oldTeachersObj[value].senderUid;
+                    newTeacherObj[teacherUid].email = oldTeachersObj[value].senderEmail;
                 });
                 return newTeacherObj;
             }
