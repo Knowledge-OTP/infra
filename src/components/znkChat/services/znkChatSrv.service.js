@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').service('znkChatSrv',
-        function (InfraConfigSrv, $q, UserProfileService, znkChatDataSrv, $log, UtilitySrv) {
+        function (InfraConfigSrv, $q, UserProfileService, znkChatDataSrv, $log, UtilitySrv, ZNK_CHAT) {
             'ngInject';
 
             var self = this;
@@ -27,7 +27,7 @@
                     var participantsKeys = Object.keys(participants);
 
                     angular.forEach(participantsKeys, function (key) {
-                        if (participants[key].email === 'kostasupport@zinkerz.com') {
+                        if (participants[key].email === ZNK_CHAT.SUPPORT_EMAIL) {
                             supportObj = participants[key];
                             delete participants[key];
                         }
