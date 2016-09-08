@@ -5,7 +5,7 @@
     <div class="online-indicator"></div>
     <div class="chatter-name">{{chatterObj.name}}</div>
     <div class="message-not-seen"
-         ng-class="{'ten-or-more-unseen-messages': chatterObj.messagesNotSeen > 9}"
+         ng-class="{'ten-or-more-unseen-messages': chatterObj.messagesNotSeen >= d.maxNumUnseenMessages}"
          ng-if="chatterObj.messagesNotSeen > 0">
         {{chatterObj.messagesNotSeen}}
     </div>

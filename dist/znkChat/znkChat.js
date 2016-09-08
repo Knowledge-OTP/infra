@@ -99,7 +99,7 @@
 
                     scope.d.showDate = function (timeStamp) {
                         return $timeout(function () {         // wait for chatterObj watch checked first
-                            var date = $filter('date')(timeStamp, 'EEE, MMM d'); // all time messages saved in UTC time zone.
+                            var date = $filter('date')(timeStamp, 'EEE, MMM d');
                             if (angular.isUndefined(dateMap[date])) {  // show message date only once per day.
                                 dateMap[date] = date;
                                 return date;
@@ -152,7 +152,7 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('chatter',
-        ["znkChatSrv", "$q", "znkChatEventSrv", "$timeout", "PresenceService", function (znkChatSrv, $q, znkChatEventSrv, $timeout, PresenceService) {
+        ["znkChatSrv", "$q", "znkChatEventSrv", "$timeout", "PresenceService", "ZNK_CHAT", function (znkChatSrv, $q, znkChatEventSrv, $timeout, PresenceService, ZNK_CHAT) {
             'ngInject';
             var presenceActiveLiseners = {};
 
@@ -169,6 +169,8 @@
                     var offEvent = {};
                     scope.d = {};
                     scope.d.userStatus = PresenceService.userStatus;
+                    scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
+
 
                     function trackUserPresenceCB(newStatus, userId) {
                         $timeout(function () {
@@ -177,7 +179,6 @@
                             }
                         });
                     }
-
 
                     if (!presenceActiveLiseners[scope.chatterObj.uid]) {
                         PresenceService.startTrackUserPresence(scope.chatterObj.uid, trackUserPresenceCB);
@@ -229,7 +230,7 @@
                                 znkChatSrv.updateLasSeenMessage(scope.chatterObj.chatGuid, scope.localUser.uid, lastSeenMessage);
                             } else {
                                 scope.chatterObj.messagesNotSeen++;
-                                scope.chatterObj.messagesNotSeen = scope.chatterObj.messagesNotSeen < 10 ? scope.chatterObj.messagesNotSeen : 10;
+                                scope.chatterObj.messagesNotSeen = scope.chatterObj.messagesNotSeen < ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES ? scope.chatterObj.messagesNotSeen : 10;
                             }
                         }
 
@@ -263,12 +264,9 @@
                         offEvent.chatConnectionEvent.path = path;
                         offEvent.chatConnectionEvent.eventType = evenType;
                         offEvent.chatConnectionEvent.callback = _newChatHandler;
-
                         znkChatEventSrv.registerNewChatEvent(evenType, path, _newChatHandler);
-
                         return deferred.promise;
                     }
-
 
                     scope.$on('$destroy', function () {
                         znkChatEventSrv.offEvent(offEvent.messageEvent.eventType, offEvent.messageEvent.path, offEvent.messageEvent.callback);
@@ -286,7 +284,7 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('znkChat',
-        ["$translatePartialLoader", "znkChatSrv", "$q", "UtilitySrv", function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv) {
+        ["$translatePartialLoader", "znkChatSrv", "$q", "UtilitySrv", "ZNK_CHAT", function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, ZNK_CHAT) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/znkChat.template.html',
@@ -304,12 +302,13 @@
                     var isChatClosed = true;
                     var WATCH_ON = true, WATCH_OFF = false;
 
+
                     scope.d = {};
                     scope.d.selectedChatter = {};
                     scope.d.chatData = {};
                     scope.d.chatData.localUser = scope.localUser;
                     scope.d.chatStateView = scope.statesView.CHAT_BUTTON_VIEW;
-
+                    scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
 
                     $q.all([znkChatSrv.getChatParticipants(), znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher)]).then(function (res) {
                         scope.d.chatData.chatParticipantsArr = UtilitySrv.object.convertToArray(res[0]);
@@ -354,7 +353,7 @@
                                     for (var i = 0; i < chatParticipantsArr.length; i++) {
                                         if (chatParticipantsArr[i].messagesNotSeen > 0) {
                                             scope.d.numOfNotSeenMessages += chatParticipantsArr[i].messagesNotSeen;
-                                            scope.d.numOfNotSeenMessages = (scope.d.numOfNotSeenMessages < 10) ? scope.d.numOfNotSeenMessages : 10;
+                                            scope.d.numOfNotSeenMessages = (scope.d.numOfNotSeenMessages < ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES) ? scope.d.numOfNotSeenMessages : 10;
                                         }
                                     }
                                 }
@@ -364,7 +363,7 @@
                         }
                     }
 
-                    _closedChatHandler(WATCH_ON);              // indication to new messages when the chat is closed
+                    _closedChatHandler(WATCH_ON);         // indication to new messages when the chat is closed
 
                     scope.d.openChat = function () {
                         scope.d.chatStateView = scope.statesView.CHAT_VIEW;
@@ -387,6 +386,14 @@
     );
 })(angular);
 
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkChat').constant('ZNK_CHAT', {
+        MAX_NUM_UNSEEN_MESSAGES: 10
+    });
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -449,7 +456,7 @@
             self.registerMessagesEvent = function (type, path, callback) {
                 return _getStorage().then(function (userStorage) {
                     var adapterRef = userStorage.adapter.getRef(path);
-                    adapterRef.orderByChild('time').limitToLast(10).on(type, callback);
+                    adapterRef.orderByKey().limitToLast(10).on(type, callback);
                 });
             };
 
@@ -623,51 +630,37 @@
 
 angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkChat/svg/znk-chat-chat-icon.svg",
-    "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\n" +
-    "<svg xmlns=\"http://www.w3.org/2000/svg\"\n" +
-    "     version=\"1.1\" id=\"Capa_1\"\n" +
-    "     x=\"0px\" y=\"0px\"\n" +
-    "     viewBox=\"0 0 477.6 477.6\"\n" +
-    "     style=\"enable-background:new 0 0 477.6 477.6;\"\n" +
-    "     xml:space=\"preserve\" width=\"512px\" height=\"512px\">\n" +
-    "<g>\n" +
-    "	<g>\n" +
-    "		<path d=\"M407.583,70c-45.1-45.1-105-70-168.8-70s-123.7,24.9-168.8,70c-87,87-93.3,226-15.8,320.2c-10.7,21.9-23.3,36.5-37.6,43.5    c-8.7,4.3-13.6,13.7-12.2,23.3c1.5,9.7,8.9,17.2,18.6,18.7c5.3,0.8,11,1.3,16.9,1.3l0,0c29.3,0,60.1-10.1,85.8-27.8    c34.6,18.6,73.5,28.4,113.1,28.4c63.8,0,123.7-24.8,168.8-69.9s69.9-105.1,69.9-168.8S452.683,115.1,407.583,70z M388.483,388.5    c-40,40-93.2,62-149.7,62c-37.8,0-74.9-10.1-107.2-29.1c-2.1-1.2-4.5-1.9-6.8-1.9c-2.9,0-5.9,1-8.3,2.8    c-30.6,23.7-61.4,27.2-74.9,27.5c16.1-12,29.6-30.6,40.9-56.5c2.1-4.8,1.2-10.4-2.3-14.4c-74-83.6-70.1-211,8.9-290    c40-40,93.2-62,149.7-62s109.7,22,149.7,62C471.083,171.6,471.083,306,388.483,388.5z\" fill=\"#888c94\"/>\n" +
-    "		<path d=\"M338.783,160h-200c-7.5,0-13.5,6-13.5,13.5s6,13.5,13.5,13.5h200c7.5,0,13.5-6,13.5-13.5S346.183,160,338.783,160z\" fill=\"#888c94\"/>\n" +
-    "		<path d=\"M338.783,225.3h-200c-7.5,0-13.5,6-13.5,13.5s6,13.5,13.5,13.5h200c7.5,0,13.5-6,13.5-13.5S346.183,225.3,338.783,225.3z\" fill=\"#888c94\"/>\n" +
-    "		<path d=\"M338.783,290.6h-200c-7.5,0-13.5,6-13.5,13.5s6,13.5,13.5,13.5h200c7.5,0,13.5-6,13.5-13.5S346.183,290.6,338.783,290.6z\" fill=\"#888c94\"/>\n" +
-    "	</g>\n" +
-    "</g>\n" +
-    "<g>\n" +
-    "</g>\n" +
-    "<g>\n" +
-    "</g>\n" +
-    "<g>\n" +
-    "</g>\n" +
-    "<g>\n" +
-    "</g>\n" +
-    "<g>\n" +
-    "</g>\n" +
-    "<g>\n" +
-    "</g>\n" +
-    "<g>\n" +
-    "</g>\n" +
-    "<g>\n" +
-    "</g>\n" +
-    "<g>\n" +
-    "</g>\n" +
-    "<g>\n" +
-    "</g>\n" +
-    "<g>\n" +
-    "</g>\n" +
-    "<g>\n" +
-    "</g>\n" +
-    "<g>\n" +
-    "</g>\n" +
-    "<g>\n" +
-    "</g>\n" +
-    "<g>\n" +
-    "</g>\n" +
+    "<svg\n" +
+    "    id=\"Layer_1\"\n" +
+    "    xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "    x=\"0px\" y=\"0px\"\n" +
+    "    viewBox=\"0 0 200 178.1\"\n" +
+    "    class=\"znk-chat-chat-icon\">\n" +
+    "    <style>\n" +
+    "        .znk-chat-chat-icon{\n" +
+    "        width:25px;\n" +
+    "        height:25px;\n" +
+    "        enable-background:new 0 0 200 178.1;\n" +
+    "        }\n" +
+    "    </style>\n" +
+    "\n" +
+    "    <g id=\"XMLID_14_\">\n" +
+    "        <path id=\"XMLID_42_\" d=\"M2.4,71.1c1.6-5.4,2.7-11,5-16.2c9.7-22.2,27.1-36.4,49.2-44.5C98.3-4.8,137.7-0.4,172.8,28.2\n" +
+    "		c13.1,10.7,21.4,24.6,24.1,41.7c0.1,0.4,0.5,0.8,0.7,1.2c0,4.9,0,9.8,0,14.6c-1.5,5.1-2.6,10.4-4.6,15.3\n" +
+    "		c-8.3,20.4-23.8,33.8-43.2,42.9c-21.8,10.3-44.7,13.1-68.5,9.6c-2.3-0.3-4.9,0.1-7,0.9c-17.8,7-35.6,14.2-53.4,21.2\n" +
+    "		c-1.9,0.7-4.2,0.4-6.4,0.6c-0.2-2.3-0.9-4.7-0.4-6.8c3.2-12.9,6.7-25.8,9.8-38.7c0.4-1.6,0.1-4-0.9-5.1C12.6,114.8,5.4,102.2,3,87\n" +
+    "		c-0.1-0.5-0.4-0.9-0.6-1.3C2.4,80.9,2.4,76,2.4,71.1z M22.3,167.2c2.4-0.9,3.9-1.3,5.3-1.9c15.5-6.2,31-12.4,46.6-18.6\n" +
+    "		c1.6-0.6,3.4-1.1,5.1-1c5.8,0.5,11.6,1.7,17.4,1.8c26,0.6,50.1-5.3,70.3-22.4c19-16.1,27.7-36.3,21.2-61.2\n" +
+    "		c-5-19.1-18.1-32-34.8-41.3c-20.6-11.4-42.8-14.7-66-12.5c-18.4,1.8-35.5,7.6-50.5,18.8C22.5,39.6,12.6,53.3,10.2,71.4\n" +
+    "		c-2.5,19.9,4.8,36.3,19,49.9c3,2.9,3.8,5.4,2.6,9.4c-1.8,5.7-3.1,11.6-4.6,17.4C25.6,154.1,24.1,160.2,22.3,167.2z\"/>\n" +
+    "        <path id=\"XMLID_36_\" d=\"M103.6,62.3c-14.1,0-28.3,0-42.4,0c-1.1,0-2.5,0.4-3.4-0.1c-1.4-0.9-3.1-2.3-3.5-3.7\n" +
+    "		c-0.2-0.8,1.9-2.5,3.3-3.3c0.8-0.5,2.2-0.2,3.4-0.2c28.6,0,57.2,0,85.8,0c1,0,2.2-0.3,2.9,0.1c1.4,1,2.5,2.4,3.8,3.7\n" +
+    "		c-1.3,1.2-2.6,3.2-4,3.3c-4.3,0.4-8.8,0.2-13.1,0.2C125.4,62.3,114.5,62.3,103.6,62.3z\"/>\n" +
+    "        <path id=\"XMLID_35_\" d=\"M104,76c14.5,0,28.9,0,43.4,0c2.7,0,5.8-0.1,5.9,3.4c0.2,3.9-3.1,3.8-6,3.8c-29.1,0-58.2,0-87.2,0\n" +
+    "		c-2.6,0-5.8,0.3-5.9-3.4c-0.1-4,3.1-3.8,5.9-3.8C74.8,76,89.4,76,104,76z\"/>\n" +
+    "        <path id=\"XMLID_34_\" d=\"M86.8,104.2c-8.9,0-17.9,0-26.8,0c-2.7,0-5.7,0-5.8-3.5c-0.2-3.7,2.8-3.8,5.5-3.8c18.2,0,36.4,0,54.6,0\n" +
+    "		c2.5,0,5.2,0.1,5.3,3.5c0.1,3.7-2.7,3.8-5.5,3.8C105,104.2,95.9,104.2,86.8,104.2z\"/>\n" +
+    "    </g>\n" +
     "</svg>\n" +
     "");
   $templateCache.put("components/znkChat/svg/znk-chat-close-icon.svg",
@@ -724,7 +717,13 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "    <div class=\"my-chat-title\" translate=\".MY_CHAT\"></div>\n" +
     "\n" +
     "    <div class=\"chatter-repeater-wrapper znk-scrollbar\">\n" +
-    "        <div class=\"chatter-repeater\" ng-repeat=\"chatter in d.chatData.chatParticipantsArr \">\n" +
+    "\n" +
+    "        <div class=\"support-chat-wrapper\">\n" +
+    "            <div class=\"online-indicator online\"></div>\n" +
+    "            <div class=\"support\" translate=\".SUPPORT\"></div>\n" +
+    "        </div>\n" +
+    "\n" +
+    "        <div class=\"chatter-repeater\" ng-repeat=\"chatter in d.chatData.chatParticipantsArr | orderBy:'name' | orderBy:'-messagesNotSeen'\">\n" +
     "            <div class=\"chatter-drv-wrapper\"\n" +
     "                 ng-click=\"d.selectChatter()(chatter); d.selctedChatter = $index;\"\n" +
     "                 ng-class=\"{'selected-chatter': d.selctedChatter === $index}\">\n" +
@@ -738,10 +737,6 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "            </div>\n" +
     "        </div>\n" +
     "\n" +
-    "        <div class=\"support-chat-wrapper\">\n" +
-    "            <div class=\"online-indicator online\"></div>\n" +
-    "            <div class=\"support\" translate=\".SUPPORT\"></div>\n" +
-    "        </div>\n" +
     "    </div>\n" +
     "</div>\n" +
     "");
@@ -753,7 +748,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "    <div class=\"online-indicator\"></div>\n" +
     "    <div class=\"chatter-name\">{{chatterObj.name}}</div>\n" +
     "    <div class=\"message-not-seen\"\n" +
-    "         ng-class=\"{'ten-or-more-unseen-messages': chatterObj.messagesNotSeen > 9}\"\n" +
+    "         ng-class=\"{'ten-or-more-unseen-messages': chatterObj.messagesNotSeen >= d.maxNumUnseenMessages}\"\n" +
     "         ng-if=\"chatterObj.messagesNotSeen > 0\">\n" +
     "        {{chatterObj.messagesNotSeen}}\n" +
     "    </div>\n" +
@@ -763,7 +758,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "<div class=\"znk-chat-wrapper\" ng-switch=\"d.chatStateView\" translate-namespace=\"ZNK_CHAT\">\n" +
     "    <div class=\"button-wrapper\" ng-show=\"d.chatStateView === statesView.CHAT_BUTTON_VIEW\" ng-click=\"d.openChat()\">\n" +
     "        <div class=\"unseen-messages\"\n" +
-    "             ng-class=\"{'ten-or-more-unseen-messages': d.numOfNotSeenMessages > 9}\"\n" +
+    "             ng-class=\"{'ten-or-more-unseen-messages': d.numOfNotSeenMessages >=  d.maxNumUnseenMessages}\"\n" +
     "             ng-if=\"d.numOfNotSeenMessages > 0\">\n" +
     "            {{d.numOfNotSeenMessages}}\n" +
     "        </div>\n" +

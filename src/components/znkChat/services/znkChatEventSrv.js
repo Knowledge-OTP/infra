@@ -23,7 +23,7 @@
             self.registerMessagesEvent = function (type, path, callback) {
                 return _getStorage().then(function (userStorage) {
                     var adapterRef = userStorage.adapter.getRef(path);
-                    adapterRef.orderByChild('time').limitToLast(10).on(type, callback);
+                    adapterRef.orderByKey().limitToLast(10).on(type, callback);
                 });
             };
 

@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('chatter',
-        function (znkChatSrv, $q, znkChatEventSrv, $timeout, PresenceService) {
+        function (znkChatSrv, $q, znkChatEventSrv, $timeout, PresenceService, ZNK_CHAT) {
             'ngInject';
             var presenceActiveLiseners = {};
 
@@ -19,6 +19,8 @@
                     var offEvent = {};
                     scope.d = {};
                     scope.d.userStatus = PresenceService.userStatus;
+                    scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
+
 
                     function trackUserPresenceCB(newStatus, userId) {
                         $timeout(function () {
@@ -27,7 +29,6 @@
                             }
                         });
                     }
-
 
                     if (!presenceActiveLiseners[scope.chatterObj.uid]) {
                         PresenceService.startTrackUserPresence(scope.chatterObj.uid, trackUserPresenceCB);
@@ -79,7 +80,7 @@
                                 znkChatSrv.updateLasSeenMessage(scope.chatterObj.chatGuid, scope.localUser.uid, lastSeenMessage);
                             } else {
                                 scope.chatterObj.messagesNotSeen++;
-                                scope.chatterObj.messagesNotSeen = scope.chatterObj.messagesNotSeen < 10 ? scope.chatterObj.messagesNotSeen : 10;
+                                scope.chatterObj.messagesNotSeen = scope.chatterObj.messagesNotSeen < ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES ? scope.chatterObj.messagesNotSeen : 10;
                             }
                         }
 
@@ -113,12 +114,9 @@
                         offEvent.chatConnectionEvent.path = path;
                         offEvent.chatConnectionEvent.eventType = evenType;
                         offEvent.chatConnectionEvent.callback = _newChatHandler;
-
                         znkChatEventSrv.registerNewChatEvent(evenType, path, _newChatHandler);
-
                         return deferred.promise;
                     }
-
 
                     scope.$on('$destroy', function () {
                         znkChatEventSrv.offEvent(offEvent.messageEvent.eventType, offEvent.messageEvent.path, offEvent.messageEvent.callback);

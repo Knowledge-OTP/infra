@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('znkChat',
-        function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv) {
+        function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, ZNK_CHAT) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/znkChat.template.html',
@@ -20,12 +20,13 @@
                     var isChatClosed = true;
                     var WATCH_ON = true, WATCH_OFF = false;
 
+
                     scope.d = {};
                     scope.d.selectedChatter = {};
                     scope.d.chatData = {};
                     scope.d.chatData.localUser = scope.localUser;
                     scope.d.chatStateView = scope.statesView.CHAT_BUTTON_VIEW;
-
+                    scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
 
                     $q.all([znkChatSrv.getChatParticipants(), znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher)]).then(function (res) {
                         scope.d.chatData.chatParticipantsArr = UtilitySrv.object.convertToArray(res[0]);
@@ -70,7 +71,7 @@
                                     for (var i = 0; i < chatParticipantsArr.length; i++) {
                                         if (chatParticipantsArr[i].messagesNotSeen > 0) {
                                             scope.d.numOfNotSeenMessages += chatParticipantsArr[i].messagesNotSeen;
-                                            scope.d.numOfNotSeenMessages = (scope.d.numOfNotSeenMessages < 10) ? scope.d.numOfNotSeenMessages : 10;
+                                            scope.d.numOfNotSeenMessages = (scope.d.numOfNotSeenMessages < ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES) ? scope.d.numOfNotSeenMessages : 10;
                                         }
                                     }
                                 }
@@ -80,7 +81,7 @@
                         }
                     }
 
-                    _closedChatHandler(WATCH_ON);              // indication to new messages when the chat is closed
+                    _closedChatHandler(WATCH_ON);         // indication to new messages when the chat is closed
 
                     scope.d.openChat = function () {
                         scope.d.chatStateView = scope.statesView.CHAT_VIEW;

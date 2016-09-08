@@ -76,10 +76,10 @@
             height: 23px;
 
         }
-        .support::before {
+        .support::after {
             @include dimension(175px, 2px);
             left: -22px;
-            top: -3px;
+            top: 26px;
             position: absolute;
             content: '';
             background-color: $bgColor30;

@@ -4356,11 +4356,11 @@ $blueBG8: #75cbe8;
       font-weight: 400;
       position: relative;
       height: 23px; }
-    .chat-participants .support-chat-wrapper .support::before {
+    .chat-participants .support-chat-wrapper .support::after {
       width: 175px;
       height: 2px;
       left: -22px;
-      top: -3px;
+      top: 26px;
       position: absolute;
       content: '';
       background-color: #e1e1e1;
@@ -4545,6 +4545,7 @@ chat-message.otherMessage .message-wrapper .message {
 .znk-chat-wrapper .button-wrapper {
   width: 45px;
   height: 45px;
+  transition: linear 0.13s;
   position: relative;
   cursor: pointer;
   display: -ms-flexbox;
@@ -4562,10 +4563,10 @@ chat-message.otherMessage .message-wrapper .message {
     color: #fff;
     font-family: Lato;
     font-weight: 400;
+    transition: 0.5s;
     min-width: 15px;
     padding: 5px;
     box-sizing: border-box;
-    transition: 0.3s;
     display: -ms-flexbox;
     display: flex;
     -ms-flex-align: center;
@@ -4574,26 +4575,21 @@ chat-message.otherMessage .message-wrapper .message {
         justify-content: center;
     border-radius: 50px;
     position: absolute;
-    top: 0;
+    top: -1px;
     right: 1px;
     background-color: #ff6766; }
   .znk-chat-wrapper .button-wrapper .unseen-messages.ten-or-more-unseen-messages::after {
-    content: ' +'; }
+    content: '+'; }
   .znk-chat-wrapper .button-wrapper .ten-or-more-unseen-messages {
     right: -10px; }
-  .znk-chat-wrapper .button-wrapper .unseen-messagesmessages.ng-enter,
-  .znk-chat-wrapper .button-wrapper .unseen-messages.ng-leave.ng-leave-active {
-    opacity: 0; }
-  .znk-chat-wrapper .button-wrapper .unseen-messages.ng-leave,
-  .znk-chat-wrapper .button-wrapper .unseen-messages.ng-enter.ng-enter-active {
-    opacity: 1; }
-  .znk-chat-wrapper .button-wrapper svg {
-    width: 25px;
-    height: 25px; }
+  .znk-chat-wrapper .button-wrapper svg path {
+    fill: #757a83; }
 
 .znk-chat-wrapper .chat-container {
   width: 525px;
   height: 372px;
+  overflow: hidden;
+  transition: linear 0.2s;
   display: -ms-flexbox;
   display: flex;
   border-radius: 15px 15px 0 0;
@@ -4602,6 +4598,23 @@ chat-message.otherMessage .message-wrapper .message {
     width: 200px;
     height: 275px;
     border-radius: 15px; }
+
+.znk-chat-wrapper .unseen-messagesmessages.ng-enter,
+.znk-chat-wrapper .unseen-messages.ng-leave.ng-leave-active {
+  opacity: 0; }
+
+.znk-chat-wrapper .unseen-messages.ng-leave,
+.znk-chat-wrapper .unseen-messages.ng-enter.ng-enter-active {
+  opacity: 1; }
+
+.znk-chat-wrapper .chat-container.ng-hide {
+  width: 45px;
+  height: 45px;
+  overflow: hidden;
+  border-radius: 200px; }
+
+.znk-chat-wrapper .button-wrapper.ng-hide-add, .znk-chat-wrapper .button-wrapper.ng-hide-remove {
+  opacity: 0; }
 
 /* paths*/
 /* fonts size */
