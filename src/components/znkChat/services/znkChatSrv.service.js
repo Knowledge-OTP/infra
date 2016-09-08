@@ -20,8 +20,23 @@
                 return InfraConfigSrv.getGlobalStorage();
             }
 
-            self.getChatParticipants = function () { // e.g teacher --> connected students
-                return $q.when(znkChatDataSrv.getChatParticipants());
+            self.getChatParticipants = function () {          // e.g teacher --> connected students
+                return znkChatDataSrv.getChatParticipants().then(function (participants) {
+                    var chatParticipantsObj = {};
+                    var supportObj = {};
+                    var participantsKeys = Object.keys(participants);
+
+                    angular.forEach(participantsKeys, function (key) {
+                        if (participants[key].email === 'kostasupport@zinkerz.com') {
+                            supportObj = participants[key];
+                            delete participants[key];
+                        }
+                    });
+
+                    chatParticipantsObj.support = supportObj;
+                    chatParticipantsObj.participants = participants;
+                    return chatParticipantsObj;
+                });
             };
 
             self.getChatByGuid = function (chatGuid) {

@@ -29,7 +29,9 @@
                     scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
 
                     $q.all([znkChatSrv.getChatParticipants(), znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher)]).then(function (res) {
-                        scope.d.chatData.chatParticipantsArr = UtilitySrv.object.convertToArray(res[0]);
+                        var allChatParticipants = res[0];
+                        scope.d.chatData.chatParticipantsArr = UtilitySrv.object.convertToArray(allChatParticipants.participants);
+                        scope.d.chatData.support = allChatParticipants.support;
                         scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(res[1]);
                     });
 

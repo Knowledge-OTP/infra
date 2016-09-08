@@ -9,9 +9,8 @@
     .my-chat-title {
         @include text-style(12px, $fcColor15, Quicksand, $regularFontWeight);
         text-align: center;
-        margin-bottom: 15px;
+        margin-bottom: 25px;
     }
-
 
     .chatter-repeater, .support-chat-wrapper {
         @include dimension(190px, 30px);
@@ -19,10 +18,19 @@
         cursor: pointer;
     }
 
+    .support-chat-wrapper.selected-chatter {
+        background-color: $bgColor30;
+        .chatter-wrapper {
+            .chatter-name {
+                @include text-style(16px, $fcColor14, Lato, $regularFontWeight);
+            }
+        }
+    }
+
     .chatter-repeater-wrapper {
         overflow-y: auto;
         overflow-x: hidden;
-        height: 310px;
+        height: 265px;
         .chatter-repeater {
             .chatter-drv-wrapper {
                 @include dimension(190px, 30px);
@@ -38,7 +46,7 @@
                     }
                 }
 
-                &.selected-chatter{
+                &.selected-chatter {
                     background-color: $bgColor30;
                     .chatter-wrapper {
                         .chatter-name {
@@ -51,35 +59,23 @@
     }
 
     .support-chat-wrapper {
-        @include text-style(16px, $fcColor14, Lato, $regularFontWeight);
+        @include dimension(190px, 30px);
         display: flex;
         align-items: center;
+        background-color: transparent;
+        transition: 0.5s;
         padding-left: 9px;
+        position: relative;
+        margin-bottom: 7px;
 
-        .online-indicator {
-            @include dimension(7px, 7px);
-            border: 1px solid $bcColor5;
-            border-radius: 6px;
-            box-sizing: border-box;
-            margin-right: 13px;
+        .chatter-wrapper .chatter-name{
+            width:137px;
         }
 
-        .online {
-            .online-indicator {
-                background: $bgColor2
-            }
-        }
-
-        .support {
-            @include text-style(16px, $fcColor6, Lato, $regularFontWeight);
-            position: relative;
-            height: 23px;
-
-        }
-        .support::after {
+        &::after {
             @include dimension(175px, 2px);
-            left: -22px;
-            top: 26px;
+            left: 10px;
+            top: 33px;
             position: absolute;
             content: '';
             background-color: $bgColor30;
