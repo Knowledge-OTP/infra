@@ -18,7 +18,7 @@
             self.getAllTeachers = function () {
                 return InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
                     return studentStorage.get(INVITATION_PATH).then(function (teachers) {
-                        return _createNewTeachersObj(teachers);
+                        return angular.isDefined(teachers) ? _createNewTeachersObj(teachers) : null;
                     });
                 });
             };
@@ -26,7 +26,7 @@
             self.getTeacher = function (teacherUid) {
                 self.getAllTeachers().then(function (allTeachers) {
                     if (angular.isDefined(allTeachers[teacherUid])) {
-                        return allTeachers;
+                        return allTeachers[teacherUid];
                     }
                 });
             };

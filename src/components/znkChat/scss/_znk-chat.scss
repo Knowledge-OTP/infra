@@ -48,7 +48,7 @@
         transition: linear 0.2s;
         display: flex;
         border-radius: 15px 15px 0 0;
-        box-shadow: 0 -2px 3px 0 $bsColor2;
+        box-shadow: 0 -2px 3px 0 $bsColor1;
 
         .chat-messages-board {
             @include dimension(200px, 275px);

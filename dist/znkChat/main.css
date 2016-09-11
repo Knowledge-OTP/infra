@@ -640,7 +640,6 @@ chat-board {
     text-align: center; }
     chat-board .chat-board-wrapper .chat-board-header {
       background-color: #fff;
-      border-radius: 0 15px 0 0;
       display: -ms-flexbox;
       display: flex;
       -ms-flex-pack: center;
@@ -861,7 +860,7 @@ chat-message.otherMessage .message-wrapper .message {
   display: -ms-flexbox;
   display: flex;
   border-radius: 15px 15px 0 0;
-  box-shadow: 0 -2px 3px 0 rgba(0, 0, 0, 0.1); }
+  box-shadow: 0 -2px 3px 0 rgba(0, 0, 0, 0.37); }
   .znk-chat-wrapper .chat-container .chat-messages-board {
     width: 200px;
     height: 275px;

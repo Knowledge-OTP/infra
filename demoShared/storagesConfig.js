@@ -86,7 +86,6 @@
             };
         }
 
-        // todo - added teacher storage
         InfraConfigSrvProvider.setStorages(storageGetter(options.dataDbPath), storageGetter(options.dataDbPath + options.studentPath), storageGetter(options.dataDbPath + options.teacherPath));
     });
 })(angular);

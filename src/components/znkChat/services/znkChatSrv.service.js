@@ -39,36 +39,11 @@
                 });
             };
 
-            self.getChatByGuid = function (chatGuid) {
-                return _getStorage().then(function (globalStorage) {
-                    var chatPath = znkChatPaths.chatPath + '/' + chatGuid;
-                    return globalStorage.get(chatPath).then(function (chatObj) {
-                        return chatObj;
-                    });
-                });
-            };
-
             self.getChatGuidsByUid = function (uid, isTeacher) {
                 return _getUserStorage(isTeacher).then(function (userStorage) {
                     var chatsGuidsPath = znkChatPaths.chatsUsersGuids.replace('$$uid', uid);
                     return userStorage.get(chatsGuidsPath).then(function (chatsGuids) {
                         return UtilitySrv.object.convertToArray(chatsGuids);
-                    });
-                });
-            };
-
-            self.getChatMessages = function (chatGuid) {
-                return _getStorage().then(function (globalStorage) {
-                    return globalStorage.get(znkChatPaths.chatPath).then(function (chatObj) {
-                        return UtilitySrv.object.convertToArray(chatObj[chatGuid].messages);
-                    });
-                });
-            };
-
-            self.getMessage = function (chatGuid, messageGuid) {
-                return _getStorage().then(function (globalStorage) {
-                    return globalStorage.get(znkChatPaths.chatPath + '/' + chatGuid + '/' + messageGuid).then(function (messageObj) {
-                        return messageObj;
                     });
                 });
             };
@@ -111,7 +86,6 @@
                     }
                 }
             };
-
 
             self.createNewChat = function (localUser, secondUser) {
                 return _getStorage().then(function (globalStorage) {
@@ -157,7 +131,7 @@
                     time: 0
                 };
                 newChatObj.usersLastSeenMessage[secondCUser.uid] = {
-                    time: 0,
+                    time: 0
                 };
                 return newChatObj;
             }

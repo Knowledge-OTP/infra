@@ -140,7 +140,16 @@
                 link: function (scope) {
                     scope.d = {};
                     scope.d.chatData = scope.chatData;
-                    scope.d.selectChatter = scope.selectChatter;
+                    scope.d.selectChatter = scope.selectChatter();
+                    var ACTIVE_SUPPORT = -1;
+                    var FIRST_CHATTERS_ARRAY_INDEX = 0;
+
+                    if(scope.d.chatData.support && scope.d.chatData.support.uid){
+                        scope.d.selctedChatter = ACTIVE_SUPPORT;
+                    } else {
+                        scope.d.selctedChatter = FIRST_CHATTERS_ARRAY_INDEX;
+                    }
+
                 }
             };
         }
@@ -520,36 +529,11 @@
                 });
             };
 
-            self.getChatByGuid = function (chatGuid) {
-                return _getStorage().then(function (globalStorage) {
-                    var chatPath = znkChatPaths.chatPath + '/' + chatGuid;
-                    return globalStorage.get(chatPath).then(function (chatObj) {
-                        return chatObj;
-                    });
-                });
-            };
-
             self.getChatGuidsByUid = function (uid, isTeacher) {
                 return _getUserStorage(isTeacher).then(function (userStorage) {
                     var chatsGuidsPath = znkChatPaths.chatsUsersGuids.replace('$$uid', uid);
                     return userStorage.get(chatsGuidsPath).then(function (chatsGuids) {
                         return UtilitySrv.object.convertToArray(chatsGuids);
-                    });
-                });
-            };
-
-            self.getChatMessages = function (chatGuid) {
-                return _getStorage().then(function (globalStorage) {
-                    return globalStorage.get(znkChatPaths.chatPath).then(function (chatObj) {
-                        return UtilitySrv.object.convertToArray(chatObj[chatGuid].messages);
-                    });
-                });
-            };
-
-            self.getMessage = function (chatGuid, messageGuid) {
-                return _getStorage().then(function (globalStorage) {
-                    return globalStorage.get(znkChatPaths.chatPath + '/' + chatGuid + '/' + messageGuid).then(function (messageObj) {
-                        return messageObj;
                     });
                 });
             };
@@ -592,7 +576,6 @@
                     }
                 }
             };
-
 
             self.createNewChat = function (localUser, secondUser) {
                 return _getStorage().then(function (globalStorage) {
@@ -638,7 +621,7 @@
                     time: 0
                 };
                 newChatObj.usersLastSeenMessage[secondCUser.uid] = {
-                    time: 0,
+                    time: 0
                 };
                 return newChatObj;
             }
@@ -704,7 +687,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "<div class=\"chat-board-wrapper\">\n" +
     "    <div class=\"chat-board-header\">\n" +
     "        <chatter ng-if=\"chatterObj.uid\" chatter-obj=\"chatterObj\"></chatter>\n" +
-    "        <svg-icon name=\"znk-chat-close-icon\" ng-click=\"d.closeChat()()\"></svg-icon>\n" +
+    "        <svg-icon name=\"znk-chat-close-icon\" ng-click=\"d.closeChat()\"></svg-icon>\n" +
     "    </div>\n" +
     "    <div class=\"board-wrapper\">\n" +
     "        <div class=\"messages-container\">\n" +
@@ -735,11 +718,11 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "    <div class=\"my-chat-title\" translate=\".MY_CHAT\"></div>\n" +
     "\n" +
     "    <div class=\"chatter-drv-wrapper support-chat-wrapper\"\n" +
-    "         ng-click=\"d.selectChatter()(d.chatData.support); d.selctedChatter = -1;\"\n" +
+    "         ng-click=\"d.selectChatter(d.chatData.support); d.selctedChatter = -1;\"\n" +
     "         ng-if=\"d.chatData.support && d.chatData.support.uid\"\n" +
     "         ng-class=\"{'selected-chatter': d.selctedChatter === -1}\">\n" +
     "        <chatter\n" +
-    "            set-first-chatter=\"d.selectChatter()(d.chatData.support)\"\n" +
+    "            set-first-chatter=\"d.selectChatter(d.chatData.support)\"\n" +
     "            chat-data=\"d.chatData\"\n" +
     "            local-user=\"d.chatData.localUser\"\n" +
     "            local-user-chats-guids-arr=\"d.chatData.localUserChatsGuidsArr\"\n" +
@@ -750,10 +733,10 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "    <div class=\"chatter-repeater-wrapper znk-scrollbar\">\n" +
     "        <div class=\"chatter-repeater\" ng-repeat=\"chatter in d.chatData.chatParticipantsArr | orderBy:'name' | orderBy:'-messagesNotSeen'\">\n" +
     "            <div class=\"chatter-drv-wrapper\"\n" +
-    "                 ng-click=\"d.selectChatter()(chatter); d.selctedChatter = $index;\"\n" +
+    "                 ng-click=\"d.selectChatter(chatter); d.selctedChatter = $index;\"\n" +
     "                 ng-class=\"{'selected-chatter': d.selctedChatter === $index}\">\n" +
     "                <chatter\n" +
-    "                    set-first-chatter=\"angular.noop\"\n" +
+    "                    set-first-chatter=\"$index === 0 ? d.selectChatter(chatter) : angular.noop\"\n" +
     "                    chat-data=\"d.chatData\"\n" +
     "                    local-user=\"d.chatData.localUser\"\n" +
     "                    local-user-chats-guids-arr=\"d.chatData.localUserChatsGuidsArr\"\n" +
