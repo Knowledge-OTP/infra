@@ -8,7 +8,7 @@
                 return true;
             };
 
-            this.setShouldBroadCastExercise = function(_broadCastExerciseFn) {
+            this.setShouldBroadCastExerciseGetter = function(_broadCastExerciseFn) {
                 broadCastExerciseFn = _broadCastExerciseFn;
             };
 
@@ -67,12 +67,14 @@
                 };
 
                 ZnkExerciseUtilitySrv.shouldBroadCastExercise = function() {
-                    try {
-                        return $q.when($injector.invoke(broadCastExerciseFn));
-                    } catch (e) {
-                        $log.error('ZnkExerciseUtilitySrv shouldBroadCastExercise: failed in invoke broadCastExerciseFn');
-                        return $q.reject(e);
-                    }
+                    return function(shouldBroadCastObj) {
+                        try {
+                            return $q.when($injector.invoke(broadCastExerciseFn.bind(null, shouldBroadCastObj)));
+                        } catch (e) {
+                            $log.error('ZnkExerciseUtilitySrv shouldBroadCastExercise: failed in invoke broadCastExerciseFn');
+                            return $q.reject(e);
+                        }
+                    };
                 };
 
                 return ZnkExerciseUtilitySrv;
