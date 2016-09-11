@@ -10351,15 +10351,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     scope.d = {};
                     scope.d.chatData = scope.chatData;
                     scope.d.selectChatter = scope.selectChatter();
-                    var ACTIVE_SUPPORT = -1;
-                    var FIRST_CHATTERS_ARRAY_INDEX = 0;
-
-                    if(scope.d.chatData.support && scope.d.chatData.support.uid){
-                        scope.d.selctedChatter = ACTIVE_SUPPORT;
-                    } else {
-                        scope.d.selctedChatter = FIRST_CHATTERS_ARRAY_INDEX;
-                    }
-
                 }
             };
         }
@@ -10928,9 +10919,9 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "    <div class=\"my-chat-title\" translate=\".MY_CHAT\"></div>\n" +
     "\n" +
     "    <div class=\"chatter-drv-wrapper support-chat-wrapper\"\n" +
-    "         ng-click=\"d.selectChatter(d.chatData.support); d.selctedChatter = -1;\"\n" +
+    "         ng-click=\"d.selectChatter(d.chatData.support)\"\n" +
     "         ng-if=\"d.chatData.support && d.chatData.support.uid\"\n" +
-    "         ng-class=\"{'selected-chatter': d.selctedChatter === -1}\">\n" +
+    "         ng-class=\"{'selected-chatter': d.chatData.support.isActive}\">\n" +
     "        <chatter\n" +
     "            set-first-chatter=\"d.selectChatter(d.chatData.support)\"\n" +
     "            chat-data=\"d.chatData\"\n" +
@@ -10943,10 +10934,10 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "    <div class=\"chatter-repeater-wrapper znk-scrollbar\">\n" +
     "        <div class=\"chatter-repeater\" ng-repeat=\"chatter in d.chatData.chatParticipantsArr | orderBy:'name' | orderBy:'-messagesNotSeen'\">\n" +
     "            <div class=\"chatter-drv-wrapper\"\n" +
-    "                 ng-click=\"d.selectChatter(chatter); d.selctedChatter = $index;\"\n" +
-    "                 ng-class=\"{'selected-chatter': d.selctedChatter === $index}\">\n" +
+    "                 ng-click=\"d.selectChatter(chatter)\"\n" +
+    "                 ng-class=\"{'selected-chatter': chatter.isActive}\">\n" +
     "                <chatter\n" +
-    "                    set-first-chatter=\"$index === 0 ? d.selectChatter(chatter) : angular.noop\"\n" +
+    "                    set-first-chatter=\"$index === 0 && (!d.chatData.support || !d.chatData.support.uid) ? d.selectChatter(chatter) : null\"\n" +
     "                    chat-data=\"d.chatData\"\n" +
     "                    local-user=\"d.chatData.localUser\"\n" +
     "                    local-user-chats-guids-arr=\"d.chatData.localUserChatsGuidsArr\"\n" +
