@@ -31,8 +31,8 @@
             content: '+';
         }
 
-        .ten-or-more-unseen-messages{
-            right:-10px;
+        .ten-or-more-unseen-messages {
+            right: -10px;
         }
 
         svg {
@@ -48,6 +48,7 @@
         transition: linear 0.2s;
         display: flex;
         border-radius: 15px 15px 0 0;
+        border: 1px solid $bgColor30;
         box-shadow: 0 -2px 3px 0 $bsColor1;
 
         .chat-messages-board {
