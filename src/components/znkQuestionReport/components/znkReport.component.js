@@ -6,14 +6,14 @@
             bindings: {
                 reportData: '='
             },
-            template: '<svg-icon class="report-btn" name="report-icon" data-tooltip="{{\'REPORT_POPUP.REPORT_QUESTION\' | translate}}" ng-click="vm.showReportDialog()"></svg-icon>',
+            template: '<svg-icon class="report-btn" name="report-question-icon" data-tooltip="{{\'REPORT_POPUP.REPORT_QUESTION\' | translate}}" ng-click="vm.showReportDialog()"></svg-icon>',
             controller: znkReportComponent,
             controllerAs: 'vm'
         });
 
         function znkReportComponent($mdDialog, $translatePartialLoader) {
             'ngInject';
-            $translatePartialLoader.addPart('znkReport');
+            $translatePartialLoader.addPart('znkQuestionReport');
             var vm = this;
             vm.showReportDialog = showReportDialog;
 

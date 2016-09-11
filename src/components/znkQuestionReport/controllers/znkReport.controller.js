@@ -23,15 +23,15 @@
                     self.startLoader = true;
                     self.reportData.email = self.reportData.email ? self.reportData.email : userAuth.auth.email;
 
-                    // subject format: Report Question - [App Name]
+                    // subject format: ReportQuestion - [App Name]
                     var emailSubject = EMAIL_SUBJECT;
                     emailSubject += ' - ' + self.reportData.app;
 
                     var ADD_TO_MESSAGE = '\r\n\r\n' + 'App: ' + ENV.firebaseAppScopeName + ' | ';
-                    ADD_TO_MESSAGE += '\r\n' + 'Question QUID: ' + self.reportData.questionQUID + ' | ';
+                    ADD_TO_MESSAGE += '\r\n' + 'Question ID: ' + self.reportData.id + ' | ';
+                    ADD_TO_MESSAGE += '\r\n' + 'Question QUID: ' + self.reportData.quid + ' | ';
                     ADD_TO_MESSAGE += '\r\n' + 'Exercise ID: ' + self.reportData.exerciseID + ' | ';
                     ADD_TO_MESSAGE += '\r\n' + 'Exercise Type ID: ' + self.reportData.exerciseTypeID + ' | ';
-                    ADD_TO_MESSAGE += '\r\n' + 'Question ID: ' + self.reportData.questionID + ' | ';
                     ADD_TO_MESSAGE += '\r\n' + 'userEmail: ' + self.reportData.email + ' | ';
                     ADD_TO_MESSAGE += '\r\n' + 'userId: ' + userAuth.auth.uid;
 

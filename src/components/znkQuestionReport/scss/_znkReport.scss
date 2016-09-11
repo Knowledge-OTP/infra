@@ -1,14 +1,11 @@
 znk-question-report {
     .report-btn{
-        margin: 5em;
-        background-color: black;
         width: 25px;
         height: 25px;
-        .flag-svg{
-            .st0 {
-                fill: $fcColor18;
-                &:hover {fill: $fcColor5;}
-            }
+        float: right;
+        .report-question-icon{
+            fill: $fcColor18;
+            &:hover {fill: $fcColor5;}
 
         }
     }
@@ -32,10 +29,10 @@ znk-question-report {
         background: none;
         border-radius: 15px;
         &.report-container {
-            .report-icon {
-                path {
-                    fill: $bgColor33;
-                }
+            .report-question-icon{
+                height: 40px;
+                margin-bottom: 5px;
+                fill: $fcColor18;
             }
             md-dialog-content {
                 background-color: $bgColor6;
