@@ -9,10 +9,10 @@
             };
 
             this.setShouldBroadCastExercise = function(_broadCastExerciseFn) {
-                broadCastExerciseFn = _broadCastExerciseFn
+                broadCastExerciseFn = _broadCastExerciseFn;
             };
 
-            this.$get = function(AnswerTypeEnum, $log, $q) {
+            this.$get = function(AnswerTypeEnum, $log, $q, $injector) {
                 'ngInject';
 
                 var ZnkExerciseUtilitySrv = {};
