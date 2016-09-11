@@ -13160,7 +13160,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     });
                 };
 
-                ZnkExerciseUtilitySrv.shouldBroadCastExercise = function() {
+                ZnkExerciseUtilitySrv.shouldBroadCastExercisePromFnGetter = function() {
                     try {
                         return $q.when($injector.invoke(broadCastExerciseFn));
                     } catch (e) {

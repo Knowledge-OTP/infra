@@ -3014,7 +3014,7 @@
                     });
                 };
 
-                ZnkExerciseUtilitySrv.shouldBroadCastExercise = function() {
+                ZnkExerciseUtilitySrv.shouldBroadCastExercisePromFnGetter = function() {
                     try {
                         return $q.when($injector.invoke(broadCastExerciseFn));
                     } catch (e) {
