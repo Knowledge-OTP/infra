@@ -7,7 +7,7 @@
             var broadCastExerciseFn = function() {
                 return function() {
                     return true;
-                }
+                };
             };
 
             this.setShouldBroadCastExerciseGetter = function(_broadCastExerciseFn) {

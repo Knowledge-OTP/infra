@@ -13097,7 +13097,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
             // default true for all
             var broadCastExerciseFn = function() {
-                return true;
+                return function() {
+                    return true;
+                };
             };
 
             this.setShouldBroadCastExerciseGetter = function(_broadCastExerciseFn) {
@@ -13159,14 +13161,12 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 };
 
                 ZnkExerciseUtilitySrv.shouldBroadCastExercise = function() {
-                    return function(shouldBroadCastObj) {
-                        try {
-                            return $q.when($injector.invoke(broadCastExerciseFn.bind(null, shouldBroadCastObj)));
-                        } catch (e) {
-                            $log.error('ZnkExerciseUtilitySrv shouldBroadCastExercise: failed in invoke broadCastExerciseFn');
-                            return $q.reject(e);
-                        }
-                    };
+                    try {
+                        return $q.when($injector.invoke(broadCastExerciseFn));
+                    } catch (e) {
+                        $log.error('ZnkExerciseUtilitySrv shouldBroadCastExercise: failed in invoke broadCastExerciseFn');
+                        return $q.reject(e);
+                    }
                 };
 
                 return ZnkExerciseUtilitySrv;
