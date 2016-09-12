@@ -11856,7 +11856,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                                 return;
                             }
 
-                            if (currViewMode === ZnkExerciseViewModeEnum.ONLY_ANSWER.enum) {
+                            if (currViewMode === ZnkExerciseViewModeEnum.ONLY_ANSWER.enum || question.manualEvaluation) {
                                 pagerItemElement.addClass('neutral');
                                 return;
                             }
