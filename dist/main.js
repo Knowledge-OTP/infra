@@ -13765,7 +13765,7 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
 
             var self = this;
             var userAuth = AuthService.getAuth();
-            var MAIL_TO_SEND = 'ofir@zinkerz.com';
+            var MAIL_TO_SEND = 'support@zinkerz.com';
             var TEMPLATE_KEY = 'reportQuestion';
             var EMAIL_SUBJECT = 'Report Question';
 

@@ -5161,7 +5161,8 @@ znk-question-report .report-btn {
       font-family: Quicksand;
       font-weight: 400;
       margin: 0 auto 100px auto;
-      line-height: 1.594; }
+      line-height: 1.594;
+      text-align: center; }
     .report-dialog md-dialog.report-container md-dialog-content .base-form .hidden {
       visibility: hidden; }
     .report-dialog md-dialog.report-container md-dialog-content .base-form.ng-submitted .ng-invalid {
