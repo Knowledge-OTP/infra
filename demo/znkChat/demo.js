@@ -19,7 +19,10 @@
                 .preferredLanguage('en');
             var chatPaths = {
                 chatPath: 'chats',
-                chatsUsersGuids: 'users/$$uid/chats'
+                chatsUsersGuids: 'users/$$uid/chats',
+                studentAppName:'sat_app',
+                dashboardAppName: 'sat_dashboard'
+
             };
 
             function participantsGetterFn(teachersSrv) {
@@ -54,7 +57,7 @@
         fbDataEndPoint: "https://sat-dev.firebaseio.com/",
         appContext: 'student',
         studentAppName: 'sat_app',
-        dashboardAppName: 'sat_dashboard',
+        firebaseDashboardAppScopeName: 'sat_dashboard',
         videosEndPoint: "//dfz02hjbsqn5e.cloudfront.net/sat_app/",
         mediaEndPoint: "//dfz02hjbsqn5e.cloudfront.net/",
         fbGlobalEndPoint: 'https://znk-dev.firebaseio.com/'

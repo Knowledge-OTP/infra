@@ -85,6 +85,7 @@
                         }
                     }
                 }
+                return undefined;
             };
 
             self.createNewChat = function (localUser, secondUser) {
@@ -97,8 +98,8 @@
                     var newChatObj = _createNewChatObj(localUser, secondUser);
                     chatGuid = chatsRef.push(newChatObj).key();
 
-                    var localUserPath = localUser.isTeacher ? 'sat_dashboard/' : 'sat_app/';
-                    var secondUserPath = secondUser.isTeacher ? 'sat_dashboard/' : 'sat_app/';
+                    var localUserPath = localUser.isTeacher ? znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';
+                    var secondUserPath = secondUser.isTeacher ?znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';
 
                     localUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', localUser.uid);
                     secondUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', secondUser.uid);
@@ -113,6 +114,8 @@
                     var secondUserWriteChatGuidsProm = chatterRef.update(userNewChatGuid);
                     return $q.all([localUserWriteChatGuidsProm, secondUserWriteChatGuidsProm]).then(function () {
                         return chatGuid;
+                    },function(error){
+                        $log.error('znkChat- create new chat: ' + error);
                     });
                 });
             };
