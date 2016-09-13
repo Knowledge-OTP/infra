@@ -6519,11 +6519,11 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
         this.$get = [
             '$log', '$injector', 'ENV', '$rootScope', 'StorageFirebaseAdapter',
             function ($log, $injector, ENV, $rootScope, StorageFirebaseAdapter) {
-                var PresenceService = {};
+                var presenceService = {};
                 var rootRef = new StorageFirebaseAdapter(ENV.fbDataEndPoint);
                 var PRESENCE_PATH = 'presence/';
 
-                PresenceService.userStatus = {
+                presenceService.userStatus = {
                     'OFFLINE': 0,
                     'ONLINE': 1,
                     'IDLE': 2
@@ -6538,7 +6538,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
                     return authData;
                 }
 
-                PresenceService.addCurrentUserListeners = function () {
+                presenceService.addCurrentUserListeners = function () {
                     var authData = getAuthData();
                     if (authData) {
                         var amOnline = rootRef.getRef('.info/connected');
@@ -6546,39 +6546,39 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
                         amOnline.on('value', function (snapshot) {
                             if (snapshot.val()) {
                                 userRef.onDisconnect().remove();
-                                userRef.set(PresenceService.userStatus.ONLINE);
+                                userRef.set(presenceService.userStatus.ONLINE);
                             }
                         });
 
                         $rootScope.$on('IdleStart', function() {
-                            userRef.set(PresenceService.userStatus.IDLE);
+                            userRef.set(presenceService.userStatus.IDLE);
                         });
 
                         $rootScope.$on('IdleEnd', function() {
-                            userRef.set(PresenceService.userStatus.ONLINE);
+                            userRef.set(presenceService.userStatus.ONLINE);
                         });
                     }
                 };
 
-                PresenceService.getCurrentUserStatus = function (userId) {
+                presenceService.getCurrentUserStatus = function (userId) {
                     return rootRef.getRef(PRESENCE_PATH + userId).once('value').then(function(snapshot) {
-                        return (snapshot.val()) || PresenceService.userStatus.OFFLINE;
+                        return (snapshot.val()) || presenceService.userStatus.OFFLINE;
                     });
                 };
 
-                PresenceService.startTrackUserPresence = function (userId, cb) {
+                presenceService.startTrackUserPresence = function (userId, cb) {
                     var userRef = rootRef.getRef(PRESENCE_PATH + userId);
                     userRef.on('value', trackUserPresenceCB.bind(null, cb, userId));
                 };
 
-                PresenceService.stopTrackUserPresence = function (userId) {
+                presenceService.stopTrackUserPresence = function (userId) {
                     var userRef = rootRef.getRef(PRESENCE_PATH + userId);
                     userRef.off('value', trackUserPresenceCB);
                 };
 
                 function trackUserPresenceCB(cb, userId, snapshot) {
                     if (angular.isFunction(cb)) {
-                        var status = PresenceService.userStatus.OFFLINE;
+                        var status = presenceService.userStatus.OFFLINE;
                         if (snapshot && snapshot.val()){
                             status = snapshot.val();
                         }
@@ -6594,7 +6594,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
                     }
                 });
 
-                return PresenceService;
+                return presenceService;
             }];
     });
 })(angular);
