@@ -1,5 +1,6 @@
 /* paths*/
 /* fonts size */
+/* box shadow */
 /*
 //backgrounds
 $greyBG1: #B4BAD9;
@@ -349,7 +350,7 @@ $blueBG8: #75cbe8;
       background: #fff;
       padding-bottom: 50px; }
       .znk-popup .base-popup .znk-popup-wrapper .znk-popup-buttons .button-wrapper:nth-child(2) button.btn {
-        color: #fff;
+        color: #ffffff;
         margin-left: 10px;
         background-color: #0a9bad; }
       .znk-popup .base-popup .znk-popup-wrapper .znk-popup-buttons .button-wrapper button.btn {

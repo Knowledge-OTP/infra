@@ -1,5 +1,6 @@
 /* paths*/
 /* fonts size */
+/* box shadow */
 /*
 //backgrounds
 $greyBG1: #B4BAD9;
@@ -332,7 +333,7 @@ znk-exercise.desktop {
       width: 100%;
       height: 100%;
       background: #ff931e;
-      color: #fff;
+      color: #ffffff;
       font-family: Lato;
       font-size: 13px;
       font-weight: normal;
@@ -421,7 +422,7 @@ znk-exercise-pager {
             background: transparent; }
           znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item .question-status-indicator .index {
             font-size: 12px;
-            color: #fff;
+            color: #ffffff;
             font-family: Lato;
             font-weight: 200; }
         znk-exercise-pager znk-scroll .pager-items-wrapper .pager-item.wrong .question-status-indicator {

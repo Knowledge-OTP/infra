@@ -1,5 +1,6 @@
 /* paths*/
 /* fonts size */
+/* box shadow */
 /*
 //backgrounds
 $greyBG1: #B4BAD9;
@@ -387,7 +388,7 @@ md-dialog.baseCallsModal {
         md-dialog.baseCallsModal md-dialog-content .btn-container button.primary {
           border: none;
           font-size: 14px;
-          color: #fff;
+          color: #ffffff;
           font-family: Lato;
           font-weight: 400;
           background-color: #0a9bad; }

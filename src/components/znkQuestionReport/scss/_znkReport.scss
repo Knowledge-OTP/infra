@@ -95,6 +95,7 @@ znk-question-report {
                         @include text-style(16px, $fcColor9, Quicksand, $regularFontWeight, null, null, null, center);
                         margin: 0 auto 100px auto;
                         line-height: 1.594;
+                        text-align: center;
                     }
                 }
                 .base-form {
