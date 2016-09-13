@@ -1,0 +1,85 @@
+.chat-participants {
+    @include dimension(200px, 372px);
+    padding-top: 15px;
+    box-sizing: border-box;
+    border-radius: 15px 0 0 0;
+    background-color: $bgColor21;
+    border-right: 3px solid $bcColor11;
+
+    .my-chat-title {
+        @include text-style(12px, $fcColor15, Quicksand, $regularFontWeight);
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .chatter-repeater, .support-chat-wrapper {
+        @include dimension(190px, 30px);
+        box-sizing: border-box;
+        cursor: pointer;
+    }
+
+    .support-chat-wrapper.selected-chatter {
+        background-color: $bgColor30;
+        .chatter-wrapper {
+            .chatter-name {
+                @include text-style(16px, $fcColor14, Lato, $regularFontWeight);
+            }
+        }
+    }
+
+    .chatter-repeater-wrapper {
+        overflow-y: auto;
+        overflow-x: hidden;
+        height: 265px;
+        .chatter-repeater {
+            .chatter-drv-wrapper {
+                @include dimension(190px, 30px);
+                display: flex;
+                align-items: center;
+                background-color: transparent;
+                transition: 0.5s;
+                padding-left: 9px;
+
+                chatter {
+                    .chatter-wrapper .chatter-name {
+                        width: 137px;
+                    }
+                }
+
+                &.selected-chatter {
+                    background-color: $bgColor30;
+                    .chatter-wrapper {
+                        .chatter-name {
+                            @include text-style(16px, $fcColor14, Lato, $regularFontWeight);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .support-chat-wrapper {
+        @include dimension(190px, 30px);
+        display: flex;
+        align-items: center;
+        background-color: transparent;
+        transition: 0.5s;
+        padding-left: 9px;
+        position: relative;
+        margin-bottom: 7px;
+
+        .chatter-wrapper .chatter-name{
+            width:137px;
+        }
+
+        &::after {
+            @include dimension(175px, 2px);
+            left: 10px;
+            top: 33px;
+            position: absolute;
+            content: '';
+            background-color: $bgColor30;
+            margin: 0 auto;
+        }
+    }
+}

@@ -1,0 +1,58 @@
+chat-message {
+    .message-wrapper {
+        @include text-style(14px, $fcColor6, Lato, $regularFontWeight);
+        text-align: center;
+        box-sizing: border-box;
+
+        .message {
+            max-width: 200px;
+            padding: 10px 10px;
+            border-radius: 15px;
+            word-wrap: break-word;
+            position: relative;
+            display: inline-block;
+            .bottom-triangle{
+                @include dimension(0,0);
+                position: absolute;
+                bottom: -7px;
+            }
+        }
+
+        .message-date{
+            @include text-style(12px, $fcColor16, Lato, $regularFontWeight);
+
+        }
+    }
+
+    &.myMessage {
+        .message-wrapper .message {
+            @include text-style(14px, $fcColor2, Lato, $regularFontWeight);
+            background-color: $bgColor2;
+            float: right;
+
+            .bottom-triangle{
+                border-top: 12px solid $bcColor1;
+                transform: rotate(-25deg);
+                right: 8px;
+                border-left: 8px solid transparent;
+                border-right: 3px solid transparent;
+            }
+        }
+    }
+
+    &.otherMessage {
+        .message-wrapper .message {
+            @include text-style(14px, $fcColor6, Lato, $regularFontWeight);
+            background-color: $bgColor17;
+            float: left;
+
+            .bottom-triangle{
+                border-top: 12px solid $bcColor11;
+                left: 8px;
+                transform: rotate(25deg);
+                border-left: 3px solid transparent;
+                border-right: 8px solid transparent;
+            }
+        }
+    }
+}
