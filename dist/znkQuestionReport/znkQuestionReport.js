@@ -72,8 +72,8 @@
             self.reportData = reportData;
             self.reportData.app = ENV.firebaseAppScopeName.split('_')[0].toUpperCase();
             self.reportData.email = userAuth.auth.email;
-            self.reportData.message = 'Hello Support,' + '<br>'+
-                                        'I\'ve noticed the following error in this question:'+'<br>';
+            self.reportData.message = 'Hello Support,\r\n' +
+                                        'I\'ve noticed the following error in this question:\r\n';
 
             this.sendFrom = function () {
                 if (self.reportForm.$valid) {
