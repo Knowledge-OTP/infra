@@ -1,0 +1,32 @@
+<div class="chat-participants">
+    <div class="my-chat-title" translate=".MY_CHAT"></div>
+
+    <div class="chatter-drv-wrapper support-chat-wrapper"
+         ng-click="d.selectChatter(d.chatData.support)"
+         ng-if="d.chatData.support && d.chatData.support.uid"
+         ng-class="{'selected-chatter': d.chatData.support.isActive}">
+        <chatter
+            set-first-chatter="d.selectChatter(d.chatData.support)"
+            chat-data="d.chatData"
+            local-user="d.chatData.localUser"
+            local-user-chats-guids-arr="d.chatData.localUserChatsGuidsArr"
+            chatter-obj="d.chatData.support">
+        </chatter>
+    </div>
+
+    <div class="chatter-repeater-wrapper znk-scrollbar">
+        <div class="chatter-repeater" ng-repeat="chatter in d.chatData.chatParticipantsArr | orderBy:'name' | orderBy:'-messagesNotSeen'">
+            <div class="chatter-drv-wrapper"
+                 ng-click="d.selectChatter(chatter)"
+                 ng-class="{'selected-chatter': chatter.isActive}">
+                <chatter
+                    set-first-chatter="$index === 0 && (!d.chatData.support || !d.chatData.support.uid) ? d.selectChatter(chatter) : null"
+                    chat-data="d.chatData"
+                    local-user="d.chatData.localUser"
+                    local-user-chats-guids-arr="d.chatData.localUserChatsGuidsArr"
+                    chatter-obj="chatter">
+                </chatter>
+            </div>
+        </div>
+    </div>
+</div>

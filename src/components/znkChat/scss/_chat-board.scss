@@ -1,0 +1,73 @@
+chat-board {
+    width: 100%;
+
+    .chat-board-wrapper {
+        text-align: center;
+
+        .chat-board-header {
+            background-color: $bgColor6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 1px solid $bcColor11;
+            height: 45px;
+
+            .znk-chat-close-icon{
+                position: absolute;
+                top:5px;
+                right:5px;
+                cursor: pointer;
+                svg line{
+                    stroke: $bgColor31;
+                    stroke-width: 6px;
+
+                }
+            }
+
+            chatter .chatter-wrapper{
+                .chatter-name{
+                    @include text-style(18px, $fcColor6, Quicksand, $boldFontWeight);
+                    height: 26px;
+                }
+
+            }
+        }
+
+        .board-wrapper{
+            background-color: $bgColor6;
+            .messages-container {
+                padding-right: 5px;
+                .messages-wrapper {
+                    @include dimension(100%, 276px);
+                    display: flex;
+                    flex-direction: column;
+                    overflow-y: auto;
+
+                        .message-repeater {
+                            margin: 9px;
+                            opacity: 1;
+                            height: auto;
+                        }
+                       .message-repeater.ng-enter {
+                            transition: 0.5s;
+                            opacity: 0;
+                        }
+                        .message-repeater.ng-enter-active {
+                            opacity: 1;
+                        }
+                    }
+            }
+
+            textarea{
+                @include dimension(100%, 50px);
+                @include text-style(14px, $fcColor16, Lato, $regularFontWeight);
+                padding: 5px;
+                border:none;
+                border-top: 1px solid $bcColor11;
+                box-sizing: border-box;
+                resize: none;
+                border-radius: 0 0 10px 0;
+            }
+        }
+    }
+}
