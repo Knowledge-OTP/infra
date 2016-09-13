@@ -72,8 +72,8 @@
             self.reportData = reportData;
             self.reportData.app = ENV.firebaseAppScopeName.split('_')[0].toUpperCase();
             self.reportData.email = userAuth.auth.email;
-            self.reportData.message = 'Hello Support,\r\n' +
-                                        'I\'ve noticed the following error in this question:';
+            self.reportData.message = 'Hello Support,' + '<br>'+
+                                        'I\'ve noticed the following error in this question:'+'<br>';
 
             this.sendFrom = function () {
                 if (self.reportForm.$valid) {
@@ -84,13 +84,13 @@
                     var emailSubject = EMAIL_SUBJECT;
                     emailSubject += ' - ' + self.reportData.app;
 
-                    var ADD_TO_MESSAGE = '\r\n\r\n' + 'App: ' + ENV.firebaseAppScopeName + ' | ';
-                    ADD_TO_MESSAGE += '\r\n' + 'Question ID: ' + self.reportData.id + ' | ';
-                    ADD_TO_MESSAGE += '\r\n' + 'Question QUID: ' + self.reportData.quid + ' | ';
-                    ADD_TO_MESSAGE += '\r\n' + 'Exercise ID: ' + self.reportData.parentId + ' | ';
-                    ADD_TO_MESSAGE += '\r\n' + 'Exercise Type ID: ' + self.reportData.parentTypeId + ' | ';
-                    ADD_TO_MESSAGE += '\r\n' + 'userEmail: ' + self.reportData.email + ' | ';
-                    ADD_TO_MESSAGE += '\r\n' + 'userId: ' + userAuth.auth.uid;
+                    var ADD_TO_MESSAGE = '<br><br>' + 'App: ' + ENV.firebaseAppScopeName + ' | ';
+                    ADD_TO_MESSAGE += '<br>' + 'Question ID: ' + self.reportData.id + ' | ';
+                    ADD_TO_MESSAGE += '<br>' + 'Question QUID: ' + self.reportData.quid + ' | ';
+                    ADD_TO_MESSAGE += '<br>' + 'Exercise ID: ' + self.reportData.parentId + ' | ';
+                    ADD_TO_MESSAGE += '<br>' + 'Exercise Type ID: ' + self.reportData.parentTypeId + ' | ';
+                    ADD_TO_MESSAGE += '<br>' + 'userEmail: ' + self.reportData.email + ' | ';
+                    ADD_TO_MESSAGE += '<br>' + 'userId: ' + userAuth.auth.uid;
 
                     var message = self.reportData.message + ADD_TO_MESSAGE;
 
