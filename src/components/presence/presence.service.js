@@ -22,15 +22,6 @@
                     'IDLE': 2
                 };
 
-                function getAuthData() {
-                    var authData;
-                    var authService = $injector.get(AuthSrvName);
-                    if (angular.isObject(authService)) {
-                        authData =  authService.getAuth();
-                    }
-                    return authData;
-                }
-
                 presenceService.addCurrentUserListeners = function () {
                     var authData = getAuthData();
                     if (authData) {
@@ -68,6 +59,15 @@
                     var userRef = rootRef.getRef(PRESENCE_PATH + userId);
                     userRef.off('value', trackUserPresenceCB);
                 };
+
+                function getAuthData() {
+                    var authData;
+                    var authService = $injector.get(AuthSrvName);
+                    if (angular.isObject(authService)) {
+                        authData =  authService.getAuth();
+                    }
+                    return authData;
+                }
 
                 function trackUserPresenceCB(cb, userId, snapshot) {
                     if (angular.isFunction(cb)) {
