@@ -5,7 +5,8 @@
             ng-change="vm.SlideChanged()"
             disable-swipe="{{vm.isLocked}}">
     <div class="swiper-slide"
-        ng-repeat="question in vm.questions ">
+        ng-repeat="question in vm.questions">
+        <znk-question-report report-data="question"></znk-question-report>
         <question-builder question="question"
                           rate-answer-formatter-parser
                           ng-model="question.__questionStatus.userAnswer"

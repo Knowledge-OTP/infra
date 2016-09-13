@@ -7,8 +7,8 @@
 
             var self = this;
             var userAuth = AuthService.getAuth();
-            var MAIL_TO_SEND = 'ofir@zinkerz.com';
-            var TEMPLATE_KEY = 'reschedule';
+            var MAIL_TO_SEND = 'support@zinkerz.com';
+            var TEMPLATE_KEY = 'reportQuestion';
             var EMAIL_SUBJECT = 'Report Question';
 
             self.success = false;
@@ -30,8 +30,8 @@
                     var ADD_TO_MESSAGE = '\r\n\r\n' + 'App: ' + ENV.firebaseAppScopeName + ' | ';
                     ADD_TO_MESSAGE += '\r\n' + 'Question ID: ' + self.reportData.id + ' | ';
                     ADD_TO_MESSAGE += '\r\n' + 'Question QUID: ' + self.reportData.quid + ' | ';
-                    ADD_TO_MESSAGE += '\r\n' + 'Exercise ID: ' + self.reportData.exerciseID + ' | ';
-                    ADD_TO_MESSAGE += '\r\n' + 'Exercise Type ID: ' + self.reportData.exerciseTypeID + ' | ';
+                    ADD_TO_MESSAGE += '\r\n' + 'Exercise ID: ' + self.reportData.parentId + ' | ';
+                    ADD_TO_MESSAGE += '\r\n' + 'Exercise Type ID: ' + self.reportData.parentTypeId + ' | ';
                     ADD_TO_MESSAGE += '\r\n' + 'userEmail: ' + self.reportData.email + ' | ';
                     ADD_TO_MESSAGE += '\r\n' + 'userId: ' + userAuth.auth.uid;
 
