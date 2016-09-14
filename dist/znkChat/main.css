@@ -728,7 +728,7 @@ chat-board {
     width: auto;
     height: 15px;
     font-size: 10px;
-    color: #fff;
+    color: #ffffff;
     font-family: Lato;
     font-weight: 400;
     min-width: 15px;
@@ -783,7 +783,7 @@ chat-message .message-wrapper {
 
 chat-message.myMessage .message-wrapper .message {
   font-size: 14px;
-  color: #fff;
+  color: #ffffff;
   font-family: Lato;
   font-weight: 400;
   background-color: #87ca4d;
@@ -827,7 +827,7 @@ chat-message.otherMessage .message-wrapper .message {
     width: auto;
     height: 15px;
     font-size: 12px;
-    color: #fff;
+    color: #ffffff;
     font-family: Lato;
     font-weight: 400;
     transition: 0.5s;

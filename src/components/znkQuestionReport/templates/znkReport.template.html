@@ -1,0 +1,78 @@
+<div class="report-dialog">
+    <md-dialog class="base base-border-radius report-container" translate-namespace="REPORT_POPUP">
+        <div class="top-icon-wrap">
+            <div class="top-icon">
+                <div class="round-icon-wrap">
+                    <svg-icon name="report-question-icon"></svg-icon>
+                </div>
+            </div>
+        </div>
+        <div class="popup-header">
+            <div class="close-popup-wrap" ng-click="vm.cancel();">
+                <svg-icon name="close-popup"></svg-icon>
+            </div>
+        </div>
+        <md-dialog-content>
+            <div class="report-inner">
+                <div class="main-title" translate=".REPORT_QUESTION"></div>
+                <ng-switch on="vm.success">
+                    <section ng-switch-when="false">
+                        <div class="sub-title" translate=".SUB_TITLE"></div>
+                        <form novalidate name="vm.reportForm" class="base-form" ng-submit="vm.sendFrom();">
+
+							<textarea
+                                    required
+                                    name="messageFeedback"
+                                    ng-model="vm.reportData.message"
+                                    placeholder="{{'REPORT_POPUP.PLACEHOLDER' | translate}}">
+                            </textarea>
+
+                            <label
+                                    ng-class="{'hidden': !(vm.reportForm.messageFeedback.$invalid && vm.reportForm.$submitted) }"
+                                    translate=".REQUIRED_FIELD">
+                            </label>
+
+                            <input
+                                    required
+                                    type="email"
+                                    name="emailFeedback"
+                                    placeholder="{{'REPORT_POPUP.EMAIL' | translate}}"
+                                    ng-model="vm.reportData.email"
+                                    ng-minlength="5"
+                                    ng-maxlength="254">
+
+                            <label
+                                    ng-class="{'hidden': !(vm.reportForm.emailFeedback.$invalid && vm.reportForm.$submitted) }"
+                                    translate=".CORRECT_EMAIL">
+                            </label>
+
+                            <button
+                                    class="md-button success success-green drop-shadow"
+                                    element-loader
+                                    fill-loader="vm.fillLoader"
+                                    show-loader="vm.startLoader"
+                                    bg-loader="'#72ab40'"
+                                    precentage="50"
+                                    font-color="'#FFFFFF'"
+                                    bg="'#87ca4d'">
+                                <span translate=".SEND"></span>
+                            </button>
+                        </form>
+                    </section>
+                    <section ng-switch-default class="success-report">
+                        <svg-icon name="completed-v-report-icon"></svg-icon>
+                        <div class="success-msg">
+                            <div translate=".THANKS"></div>
+                            <div translate=".OPINION"></div>
+                        </div>
+                        <md-button
+                                class="success success-green drop-shadow"
+                                ng-click="vm.cancel();">
+                            <span translate=".DONE"></span>
+                        </md-button>
+                    </section>
+                </ng-switch>
+            </div>
+        </md-dialog-content>
+    </md-dialog>
+</div>

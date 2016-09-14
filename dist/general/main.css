@@ -281,12 +281,12 @@ $blueBG8: #75cbe8;
     display: -ms-flexbox;
     display: flex; }
     .timer-drv .timer-type1 i {
-      color: #fff;
+      color: #ffffff;
       font-size: 17px;
       vertical-align: top; }
     .timer-drv .timer-type1 .timer-view {
       font-size: 17px;
-      color: #fff;
+      color: #ffffff;
       font-family: Lato;
       font-weight: 400;
       display: inline-block;
