@@ -2,26 +2,29 @@
     'use strict';
 
     angular.module('znk.infra.znkQuestionReport').controller('znkReportCtrl',
-        function($log, $mdDialog, $timeout, $http, ENV, AuthService, MailSenderService, reportData) {
+        function($log, $mdDialog, $timeout, $http, $translate, ENV, AuthService, MailSenderService, reportData) {
             'ngInject';
 
             var self = this;
             var userAuth = AuthService.getAuth();
             var MAIL_TO_SEND = 'ofir@zinkerz.com';
             var TEMPLATE_KEY = 'reportQuestion';
-            var EMAIL_SUBJECT = 'Report Question';
+            var EMAIL_SUBJECT = $translate('REPORT_POPUP.REPORT_QUESTION');
+            var emailMessagePromise = $translate('REPORT_POPUP.MESSAGE');
 
             self.success = false;
             self.reportData = reportData;
             self.reportData.app = ENV.firebaseAppScopeName.split('_')[0].toUpperCase();
             self.reportData.email = userAuth.auth.email;
-            self.reportData.message = 'Hello Support,\r\n' +
-                                        'I\'ve noticed the following error in this question:\r\n';
+            emailMessagePromise.then(function (message) {
+                self.reportData.message = message;
+            });
 
             this.sendFrom = function () {
                 if (self.reportForm.$valid) {
                     self.startLoader = true;
-                    self.reportData.email = self.reportData.email ? self.reportData.email : userAuth.auth.email;
+                    self.reportData.email = self.reportData.email ?
+                        self.reportData.email : userAuth.auth.email ? userAuth.auth.email : 'N/A';
 
                     // subject format: ReportQuestion - [App Name]
                     var emailSubject = EMAIL_SUBJECT;
@@ -53,6 +56,8 @@
 
                         if (res.data.success) {
                             self.success = true;
+                        } else {
+                            $log.error('Error sending mail');
                         }
                     }, function (message) {
                         $log.error(message);

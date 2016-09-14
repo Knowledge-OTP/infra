@@ -123,5 +123,4 @@
 
             setExercise('practice', '165');
         });
-
 })(angular);

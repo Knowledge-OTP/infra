@@ -24,7 +24,7 @@
                                     required
                                     name="messageFeedback"
                                     ng-model="vm.reportData.message"
-                                    placeholder="{{'REPORT_POPUP.MESSAGE' | translate}}">
+                                    placeholder="{{'REPORT_POPUP.PLACEHOLDER' | translate}}">
                             </textarea>
 
                             <label
@@ -57,11 +57,6 @@
                                     bg="'#87ca4d'">
                                 <span translate=".SEND"></span>
                             </button>
-                            <!--<div class="user-details-border"></div>-->
-                            <!--<div class="user-email" ng-if="vm.userEmail" translate=".USER_EMAIL"-->
-                                 <!--translate-values="{userEmail: vm.userEmail}"></div>-->
-                            <!--<div class="user-id" ng-if="vm.userId" translate=".USER_ID"-->
-                                 <!--translate-values="{userId: vm.userId}"></div>-->
                         </form>
                     </section>
                     <section ng-switch-default class="success-report">

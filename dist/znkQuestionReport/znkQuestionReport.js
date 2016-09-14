@@ -59,26 +59,29 @@
     'use strict';
 
     angular.module('znk.infra.znkQuestionReport').controller('znkReportCtrl',
-        ["$log", "$mdDialog", "$timeout", "$http", "ENV", "AuthService", "MailSenderService", "reportData", function($log, $mdDialog, $timeout, $http, ENV, AuthService, MailSenderService, reportData) {
+        ["$log", "$mdDialog", "$timeout", "$http", "$translate", "ENV", "AuthService", "MailSenderService", "reportData", function($log, $mdDialog, $timeout, $http, $translate, ENV, AuthService, MailSenderService, reportData) {
             'ngInject';
 
             var self = this;
             var userAuth = AuthService.getAuth();
             var MAIL_TO_SEND = 'ofir@zinkerz.com';
             var TEMPLATE_KEY = 'reportQuestion';
-            var EMAIL_SUBJECT = 'Report Question';
+            var EMAIL_SUBJECT = $translate('REPORT_POPUP.REPORT_QUESTION');
+            var emailMessagePromise = $translate('REPORT_POPUP.MESSAGE');
 
             self.success = false;
             self.reportData = reportData;
             self.reportData.app = ENV.firebaseAppScopeName.split('_')[0].toUpperCase();
             self.reportData.email = userAuth.auth.email;
-            self.reportData.message = 'Hello Support,\r\n' +
-                                        'I\'ve noticed the following error in this question:\r\n';
+            emailMessagePromise.then(function (message) {
+                self.reportData.message = message;
+            });
 
             this.sendFrom = function () {
                 if (self.reportForm.$valid) {
                     self.startLoader = true;
-                    self.reportData.email = self.reportData.email ? self.reportData.email : userAuth.auth.email;
+                    self.reportData.email = self.reportData.email ?
+                        self.reportData.email : userAuth.auth.email ? userAuth.auth.email : 'N/A';
 
                     // subject format: ReportQuestion - [App Name]
                     var emailSubject = EMAIL_SUBJECT;
@@ -110,6 +113,8 @@
 
                         if (res.data.success) {
                             self.success = true;
+                        } else {
+                            $log.error('Error sending mail');
                         }
                     }, function (message) {
                         $log.error(message);
@@ -237,7 +242,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     "                                    required\n" +
     "                                    name=\"messageFeedback\"\n" +
     "                                    ng-model=\"vm.reportData.message\"\n" +
-    "                                    placeholder=\"{{'REPORT_POPUP.MESSAGE' | translate}}\">\n" +
+    "                                    placeholder=\"{{'REPORT_POPUP.PLACEHOLDER' | translate}}\">\n" +
     "                            </textarea>\n" +
     "\n" +
     "                            <label\n" +
@@ -270,11 +275,6 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     "                                    bg=\"'#87ca4d'\">\n" +
     "                                <span translate=\".SEND\"></span>\n" +
     "                            </button>\n" +
-    "                            <!--<div class=\"user-details-border\"></div>-->\n" +
-    "                            <!--<div class=\"user-email\" ng-if=\"vm.userEmail\" translate=\".USER_EMAIL\"-->\n" +
-    "                                 <!--translate-values=\"{userEmail: vm.userEmail}\"></div>-->\n" +
-    "                            <!--<div class=\"user-id\" ng-if=\"vm.userId\" translate=\".USER_ID\"-->\n" +
-    "                                 <!--translate-values=\"{userId: vm.userId}\"></div>-->\n" +
     "                        </form>\n" +
     "                    </section>\n" +
     "                    <section ng-switch-default class=\"success-report\">\n" +

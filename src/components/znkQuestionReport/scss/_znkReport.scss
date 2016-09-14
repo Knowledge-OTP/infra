@@ -6,7 +6,7 @@ znk-question-report {
         margin: 20px 30px;
         outline: none;
         .report-question-icon{
-            fill: $fcColor18;
+            fill: $fcColor20;
             &:hover {fill: $fcColor5;}
 
         }
@@ -23,7 +23,7 @@ znk-question-report {
     }
     md-backdrop {
         &.md-opaque {
-            background-color: $bgColor32;
+            background-color: $bgColor35;
             opacity: .76;
         }
     }
@@ -34,7 +34,7 @@ znk-question-report {
             .report-question-icon{
                 height: 40px;
                 margin-bottom: 5px;
-                fill: $fcColor18;
+                fill: $fcColor20;
             }
             md-dialog-content {
                 background-color: $bgColor6;
@@ -54,10 +54,10 @@ znk-question-report {
                         width: 100%;
                         height: 42px;
                         margin-left: 0;
-                        box-shadow: 0 3px 0 0 $bsColor1;
+                        box-shadow: 0 3px 0 0 $bsColor2;
                         text-transform: none;
                         border-radius: 21px;
-                        background-color: $bgColor34;
+                        background-color: $bgColor37;
                     }
                     .user-details-border {
                         border-top: 1px solid;
@@ -86,9 +86,9 @@ znk-question-report {
                         width: 111px;
                         display: flex;
                         .st0{fill:none;enable-background:new;}
-                        .st1{fill:$fcColor16;}
+                        .st1{fill:$fcColor18;}
                         .st2{display:none;fill:none;}
-                        .st3{fill:$fcColor17;}
+                        .st3{fill:$fcColor19;}
                         .st4{fill:none;stroke:$fcColor2;stroke-width:11.9321;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}
                     }
                     .success-msg {
