@@ -107,7 +107,7 @@
                         receiverId = uid;
                         var promsArr = [
                             PresenceService.getCurrentUserStatus(receiverId),
-                            CallsUiSrv.getCalleeName(receiverId, uid)
+                            CallsUiSrv.getCalleeName(uid)
                         ];
                         $q.all(promsArr).then(function (res) {
                             scope.d.currentUserPresenceStatus = res[0];
@@ -1203,7 +1203,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 
             var soundSrc = ENV.mediaEndpoint + '/general/incomingCall.mp3';
 
-            CallsUiSrv.getCalleeName(callsData.receiverId, callsData.callerId).then(function(res){
+            CallsUiSrv.getCalleeName(callsData.callerId).then(function(res){
                 $scope.callerName = res;
             });
 
@@ -1337,7 +1337,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 isPendingClick = clickStatus;
             }
 
-            CallsUiSrv.getCalleeName(callsData.receiverId, callsData.callerId).then(function(res){
+            CallsUiSrv.getCalleeName(callsData.receiverId).then(function(res){
                 $scope.calleeName = res;
             });
 
@@ -1780,7 +1780,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                         break;
                     case 'alreadyActive':
                         modalData.errorMessage = CALLS_ERROR_TEXT.alreadyActive;
-                        errorProm = CallsUiSrv.getCalleeName(err.receiverId, err.callerId).then(function (name) {
+                        errorProm = CallsUiSrv.getCalleeName(err.receiverId).then(function (name) {
                             modalData.errorValues = {
                                 calleeName: name
                             };
@@ -2282,9 +2282,9 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     }
                 };
 
-                CallsUiSrv.getCalleeName = function(receiverId, callerId) {
+                CallsUiSrv.getCalleeName = function(uid) {
                     var namePromOrFnGetter = $injector.invoke(calleeNameFn);
-                    var nameProm = namePromOrFnGetter(receiverId, callerId);
+                    var nameProm = namePromOrFnGetter(uid);
                     return nameProm.then(function(res){
                         return res;
                     });
