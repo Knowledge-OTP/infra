@@ -601,7 +601,7 @@
                     return $q.all([localUserWriteChatGuidsProm, secondUserWriteChatGuidsProm]).then(function () {
                         return chatGuid;
                     },function(error){
-                        $log.error('znkChat- create new chat: ' + error);
+                        $log.error('znkChat: error while creating new chat: ' + error);
                     });
                 });
             };
