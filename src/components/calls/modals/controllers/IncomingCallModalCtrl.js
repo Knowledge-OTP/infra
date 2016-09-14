@@ -12,7 +12,7 @@
 
             var soundSrc = ENV.mediaEndpoint + '/general/incomingCall.mp3';
 
-            CallsUiSrv.getCalleeName(callsData.receiverId).then(function(res){
+            CallsUiSrv.getCalleeName(callsData.callerId).then(function(res){
                 $scope.callerName = res;
             });
 

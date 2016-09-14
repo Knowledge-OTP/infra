@@ -1203,7 +1203,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 
             var soundSrc = ENV.mediaEndpoint + '/general/incomingCall.mp3';
 
-            CallsUiSrv.getCalleeName(callsData.receiverId).then(function(res){
+            CallsUiSrv.getCalleeName(callsData.callerId).then(function(res){
                 $scope.callerName = res;
             });
 
@@ -1337,7 +1337,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 isPendingClick = clickStatus;
             }
 
-            CallsUiSrv.getCalleeName(callsData.callerId).then(function(res){
+            CallsUiSrv.getCalleeName(callsData.receiverId).then(function(res){
                 $scope.calleeName = res;
             });
 
@@ -1780,7 +1780,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                         break;
                     case 'alreadyActive':
                         modalData.errorMessage = CALLS_ERROR_TEXT.alreadyActive;
-                        errorProm = CallsUiSrv.getCalleeName(err.receiverId, err.callerId).then(function (name) {
+                        errorProm = CallsUiSrv.getCalleeName(err.receiverId).then(function (name) {
                             modalData.errorValues = {
                                 calleeName: name
                             };
