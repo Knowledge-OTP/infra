@@ -58,6 +58,13 @@
         }
     }
 
+    .chatter-repeater-wrapper.znk-scrollbar{
+        ::-webkit-scrollbar,
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
+    }
+
     .support-chat-wrapper {
         @include dimension(190px, 30px);
         display: flex;

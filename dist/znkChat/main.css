@@ -610,6 +610,8 @@ $blueBG8: #75cbe8;
           color: #161616;
           font-family: Lato;
           font-weight: 400; }
+  .chat-participants .chatter-repeater-wrapper.znk-scrollbar ::-webkit-scrollbar, .chat-participants .chatter-repeater-wrapper.znk-scrollbar::-webkit-scrollbar {
+    width: 6px; }
   .chat-participants .support-chat-wrapper {
     width: 190px;
     height: 30px;
@@ -723,7 +725,10 @@ chat-board {
     color: #4f4d4d;
     font-family: Lato;
     font-weight: 400;
-    height: 23px; }
+    height: 23px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden; }
   .chatter-wrapper .message-not-seen {
     width: auto;
     height: 15px;
@@ -861,7 +866,7 @@ chat-message.otherMessage .message-wrapper .message {
   display: flex;
   border-radius: 15px 15px 0 0;
   border: 1px solid #e1e1e1;
-  box-shadow: 0 -2px 3px 0 rgba(0, 0, 0, 0.37); }
+  box-shadow: 0 0 7px 0 rgba(0, 0, 0, 0.37); }
   .znk-chat-wrapper .chat-container .chat-messages-board {
     width: 200px;
     height: 275px;

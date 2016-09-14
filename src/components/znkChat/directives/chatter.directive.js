@@ -41,7 +41,12 @@
 
                         znkChatSrv.getChatGuidsByUid(scope.chatterObj.uid, scope.chatterObj.isTeacher).then(function (chatterChatGuidsArr) {
                             if (angular.isArray(chatterChatGuidsArr) && angular.isArray(scope.localUserChatsGuidsArr) && scope.localUserChatsGuidsArr.length > 0 && chatterChatGuidsArr.length > 0) {
-                                chatGuidProm = znkChatSrv.getChatGuidByTwoGuidsArray(scope.localUserChatsGuidsArr, chatterChatGuidsArr);
+                                var chatGuid = znkChatSrv.getChatGuidByTwoGuidsArray(scope.localUserChatsGuidsArr, chatterChatGuidsArr);
+                                if(angular.isDefined(chatGuid)){
+                                    chatGuidProm = chatGuid;
+                                } else {
+                                    chatGuidProm = _listenToNewChat();
+                                }
                             } else {
                                 scope.setFirstChatter(scope.chatterObj); // first chatter with no existing chat
                                 chatGuidProm = _listenToNewChat();

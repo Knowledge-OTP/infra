@@ -10402,7 +10402,12 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                         znkChatSrv.getChatGuidsByUid(scope.chatterObj.uid, scope.chatterObj.isTeacher).then(function (chatterChatGuidsArr) {
                             if (angular.isArray(chatterChatGuidsArr) && angular.isArray(scope.localUserChatsGuidsArr) && scope.localUserChatsGuidsArr.length > 0 && chatterChatGuidsArr.length > 0) {
-                                chatGuidProm = znkChatSrv.getChatGuidByTwoGuidsArray(scope.localUserChatsGuidsArr, chatterChatGuidsArr);
+                                var chatGuid = znkChatSrv.getChatGuidByTwoGuidsArray(scope.localUserChatsGuidsArr, chatterChatGuidsArr);
+                                if(angular.isDefined(chatGuid)){
+                                    chatGuidProm = chatGuid;
+                                } else {
+                                    chatGuidProm = _listenToNewChat();
+                                }
                             } else {
                                 scope.setFirstChatter(scope.chatterObj); // first chatter with no existing chat
                                 chatGuidProm = _listenToNewChat();
@@ -10777,6 +10782,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         }
                     }
                 }
+                return undefined;
             };
 
             self.createNewChat = function (localUser, secondUser) {
@@ -10789,8 +10795,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     var newChatObj = _createNewChatObj(localUser, secondUser);
                     chatGuid = chatsRef.push(newChatObj).key();
 
-                    var localUserPath = localUser.isTeacher ? 'sat_dashboard/' : 'sat_app/';
-                    var secondUserPath = secondUser.isTeacher ? 'sat_dashboard/' : 'sat_app/';
+                    var localUserPath = localUser.isTeacher ? znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';
+                    var secondUserPath = secondUser.isTeacher ?znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';
 
                     localUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', localUser.uid);
                     secondUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', secondUser.uid);
@@ -10805,6 +10811,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     var secondUserWriteChatGuidsProm = chatterRef.update(userNewChatGuid);
                     return $q.all([localUserWriteChatGuidsProm, secondUserWriteChatGuidsProm]).then(function () {
                         return chatGuid;
+                    },function(error){
+                        $log.error('znkChat: error while creating new chat: ' + error);
                     });
                 });
             };
