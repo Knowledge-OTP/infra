@@ -196,6 +196,14 @@
                         duration: 0
                     };
                 }
+                function newOverAll() {
+                    return {
+                        status: ExerciseStatusEnum.NEW.enum,
+                        totalCorrectAnswers: 0,
+                        totalWrongAnswers: 0,
+                        totalSkippedAnswers: 0
+                    };
+                }
 
                 if (assignModule.exercises) {
 
@@ -225,20 +233,17 @@
                                     _summary.totalAnswered = _summary.correctAnswersNum + _summary.wrongAnswersNum;
                                 }
                             }
-                            // modulesSummary.overAll
 
-                            if (modulesSummary.overAll) {
-                                var _overAll = modulesSummary.overAll;
-                                _overAll.status =  _overAll.status < exercise.status? exercise.status : _overAll.status;
-                                _overAll.totalCorrectAnswers += exercise.correctAnswersNum;
-                                _overAll.totalWrongAnswers += exercise.wrongAnswersNum;
-                                _overAll.totalSkippedAnswers += exercise.skippedAnswersNum;
-                            } else modulesSummary.overAll = {
-                                status: ExerciseStatusEnum.NEW.enum,
-                                totalCorrectAnswers: 0,
-                                totalWrongAnswers: 0,
-                                totalSkippedAnswers: 0
-                            };
+                            // modulesSummary.overAll
+                            if (!modulesSummary.overAll) {
+                                modulesSummary.overAll = newOverAll();
+                            }
+                            var _overAll = modulesSummary.overAll;
+                            _overAll.status =  _overAll.status < _summary.status? _summary.status : _overAll.status;
+                            _overAll.totalCorrectAnswers += _summary.correctAnswersNum;
+                            _overAll.totalWrongAnswers += _summary.wrongAnswersNum;
+                            _overAll.totalSkippedAnswers += _summary.skippedAnswersNum;
+
                         });
                     }
                 }
