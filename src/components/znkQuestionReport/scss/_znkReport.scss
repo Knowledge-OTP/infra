@@ -1,10 +1,12 @@
 znk-question-report {
     .report-btn{
-        width: 20px;
-        height: 20px;
-        float: right;
-        margin: 20px 30px;
+        width: 15px;
+        height: 15px;
         outline: none;
+        cursor: pointer;
+        position: absolute;
+        top: -6px;
+        right: 0;
         .report-question-icon{
             fill: $fcColor20;
             &:hover {fill: $fcColor5;}
