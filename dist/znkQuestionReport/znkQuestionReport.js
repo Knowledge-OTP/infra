@@ -77,6 +77,11 @@
                 self.reportData.message = message;
             });
 
+            this.stopBubbling = function (e) {
+                if (e.stopPropagation) { e.stopPropagation(); }
+                if (e.cancelBubble !== null) { e.cancelBubble = true; }
+            };
+
             this.sendFrom = function () {
                 if (self.reportForm.$valid) {
                     self.startLoader = true;
@@ -230,7 +235,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     "                <svg-icon name=\"close-popup\"></svg-icon>\n" +
     "            </div>\n" +
     "        </div>\n" +
-    "        <md-dialog-content>\n" +
+    "        <md-dialog-content ng-keyup=\"vm.stopBubbling($event)\">\n" +
     "            <div class=\"report-inner\">\n" +
     "                <div class=\"main-title\" translate=\".REPORT_QUESTION\"></div>\n" +
     "                <ng-switch on=\"vm.success\">\n" +

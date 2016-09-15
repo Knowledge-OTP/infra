@@ -22,7 +22,7 @@
 
             this.stopBubbling = function (e) {
                 if (e.stopPropagation) { e.stopPropagation(); }
-                if (e.cancelBubble != null) { e.cancelBubble = true; }
+                if (e.cancelBubble !== null) { e.cancelBubble = true; }
             };
 
             this.sendFrom = function () {
