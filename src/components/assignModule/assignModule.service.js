@@ -183,49 +183,66 @@
             }
 
             function getModuleSummary(assignModule) {
-                var exerciseId;
-                var exerciseTypeId = ExerciseTypeEnum.PRACTICE.enum,
-                    status = ExerciseStatusEnum.NEW.enum,
-                    correctAnswersNum = 0,
-                    wrongAnswersNum = 0,
-                    skippedAnswersNum = 0,
-                    totalAnswered = 0,
-                    duration = 0;
+                var modulesSummary = {};
+                var _exerciseResults = assignModule.exerciseResults;
 
-                if (assignModule.exercises) {
-                    var practiceExercise = assignModule.exercises.filter(function (exercise) {
-                        return exercise.exerciseTypeId === exerciseTypeId ? exercise.exerciseId : null;
-                    });
-
-                    if (practiceExercise && practiceExercise.length) {
-                        exerciseId = practiceExercise[0].exerciseId;
-
-                        if (assignModule.exercisesStatus) {
-                            if (assignModule.exercisesStatus[exerciseTypeId] && assignModule.exercisesStatus[exerciseTypeId][exerciseId]) {
-                                status = assignModule.exercisesStatus[exerciseTypeId][exerciseId];
-                            }
-                        }
-
-                        if (assignModule.exerciseResults) {
-                            if (assignModule.exerciseResults[exerciseTypeId] && assignModule.exerciseResults[exerciseTypeId][exerciseId]) {
-                                correctAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
-                                wrongAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
-                                skippedAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
-                                duration = assignModule.exerciseResults[exerciseTypeId][exerciseId].duration || 0;
-                                totalAnswered = correctAnswersNum + wrongAnswersNum;
-                            }
-                        }
-                    }
+                function newSummary() {
+                    return {
+                        status: ExerciseStatusEnum.NEW.enum,
+                        correctAnswersNum: 0,
+                        wrongAnswersNum: 0,
+                        skippedAnswersNum: 0,
+                        totalAnswered: 0,
+                        duration: 0
+                    };
                 }
 
-                return {
-                    status: status,
-                    correctAnswersNum: correctAnswersNum,
-                    wrongAnswersNum: wrongAnswersNum,
-                    skippedAnswersNum: skippedAnswersNum,
-                    duration: duration,
-                    totalAnswered: totalAnswered
-                };
+                if (assignModule.exercises) {
+
+                    var exercises = assignModule.exercises.filter(function (exercise) {
+                        return exercise.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum;
+                    });
+
+                    if (exercises && exercises.length) {
+                        exercises.forEach(function (exercise) {
+
+                            if (!modulesSummary[exercise.exerciseTypeId]){
+                                modulesSummary[exercise.exerciseTypeId] = {};
+                            }
+
+                            if (!modulesSummary[exercise.exerciseTypeId][exercise.exerciseId]){
+                                modulesSummary[exercise.exerciseTypeId][exercise.exerciseId] = newSummary();
+                            }
+                            var _summary = modulesSummary[exercise.exerciseTypeId][exercise.exerciseId];
+                            if (_exerciseResults) {
+                                if (_exerciseResults[exercise.exerciseTypeId] && _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]) {
+                                    _summary.status = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].status || ExerciseStatusEnum.NEW.enum;
+
+                                    _summary.correctAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].correctAnswersNum || 0;
+                                    _summary.wrongAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].wrongAnswersNum || 0;
+                                    _summary.skippedAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].skippedAnswersNum || 0;
+                                    _summary.duration = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].duration || 0;
+                                    _summary.totalAnswered = _summary.correctAnswersNum + _summary.wrongAnswersNum;
+                                }
+                            }
+                            // modulesSummary.overAll
+
+                            if (modulesSummary.overAll) {
+                                var _overAll = modulesSummary.overAll;
+                                _overAll.status =  _overAll.status < exercise.status? exercise.status : _overAll.status;
+                                _overAll.totalCorrectAnswers += exercise.correctAnswersNum;
+                                _overAll.totalWrongAnswers += exercise.wrongAnswersNum;
+                                _overAll.totalSkippedAnswers += exercise.skippedAnswersNum;
+                            } else modulesSummary.overAll = {
+                                status: ExerciseStatusEnum.NEW.enum,
+                                totalCorrectAnswers: 0,
+                                totalWrongAnswers: 0,
+                                totalSkippedAnswers: 0
+                            };
+                        });
+                    }
+                }
+                return modulesSummary;
             }
 
             return userAssignModuleService;

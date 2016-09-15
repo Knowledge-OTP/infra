@@ -519,16 +519,8 @@
 
                             moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResult.guid;
 
-                            if (!moduleResult.exercisesStatus) {
-                                moduleResult.exercisesStatus = {};
-                            }
-
-                            if (!moduleResult.exercisesStatus[exerciseTypeId]) {
-                                moduleResult.exercisesStatus[exerciseTypeId] = {};
-                            }
-
                             if (exerciseStatuses[exerciseTypeId] && exerciseStatuses[exerciseTypeId][exerciseId]) {
-                                moduleResult.exercisesStatus[exerciseTypeId][exerciseId] = exerciseStatuses[exerciseTypeId][exerciseId].status;
+                                dataToSave[EXERCISE_RESULTS_PATH].status = exerciseStatuses[exerciseTypeId][exerciseId].status;
                             }
 
                             moduleResult.lastUpdate = Date.now();

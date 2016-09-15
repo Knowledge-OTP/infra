@@ -47,6 +47,7 @@
 "znk.infra.znkExercise",
 "znk.infra.znkModule",
 "znk.infra.znkProgressBar",
+"znk.infra.znkQuestionReport",
 "znk.infra.znkTimeline"
     ]);
 })(angular);
@@ -853,49 +854,53 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             }
 
             function getModuleSummary(assignModule) {
-                var exerciseId;
-                var exerciseTypeId = ExerciseTypeEnum.PRACTICE.enum,
-                    status = ExerciseStatusEnum.NEW.enum,
-                    correctAnswersNum = 0,
-                    wrongAnswersNum = 0,
-                    skippedAnswersNum = 0,
-                    totalAnswered = 0,
-                    duration = 0;
+                var modulesSummary = {};
+                var _exerciseResults = assignModule.exerciseResults;
 
-                if (assignModule.exercises) {
-                    var practiceExercise = assignModule.exercises.filter(function (exercise) {
-                        return exercise.exerciseTypeId === exerciseTypeId ? exercise.exerciseId : null;
-                    });
-
-                    if (practiceExercise && practiceExercise.length) {
-                        exerciseId = practiceExercise[0].exerciseId;
-
-                        if (assignModule.exercisesStatus) {
-                            if (assignModule.exercisesStatus[exerciseTypeId] && assignModule.exercisesStatus[exerciseTypeId][exerciseId]) {
-                                status = assignModule.exercisesStatus[exerciseTypeId][exerciseId];
-                            }
-                        }
-
-                        if (assignModule.exerciseResults) {
-                            if (assignModule.exerciseResults[exerciseTypeId] && assignModule.exerciseResults[exerciseTypeId][exerciseId]) {
-                                correctAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
-                                wrongAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
-                                skippedAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
-                                duration = assignModule.exerciseResults[exerciseTypeId][exerciseId].duration || 0;
-                                totalAnswered = correctAnswersNum + wrongAnswersNum;
-                            }
-                        }
-                    }
+                function newSummary() {
+                    return {
+                        status: ExerciseStatusEnum.NEW.enum,
+                        correctAnswersNum: 0,
+                        wrongAnswersNum: 0,
+                        skippedAnswersNum: 0,
+                        totalAnswered: 0,
+                        duration: 0
+                    };
                 }
 
-                return {
-                    status: status,
-                    correctAnswersNum: correctAnswersNum,
-                    wrongAnswersNum: wrongAnswersNum,
-                    skippedAnswersNum: skippedAnswersNum,
-                    duration: duration,
-                    totalAnswered: totalAnswered
-                };
+                if (assignModule.exercises) {
+
+                    var exercises = assignModule.exercises.filter(function (exercise) {
+                        return exercise.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum;
+                    });
+
+                    if (exercises && exercises.length) {
+                        exercises.forEach(function (exercise) {
+
+                            if (!modulesSummary[exercise.exerciseTypeId]){
+                                modulesSummary[exercise.exerciseTypeId] = {};
+                            }
+
+                            if (!modulesSummary[exercise.exerciseTypeId][exercise.exerciseId]){
+                                modulesSummary[exercise.exerciseTypeId][exercise.exerciseId] = newSummary();
+                            }
+                            var _summary = modulesSummary[exercise.exerciseTypeId][exercise.exerciseId];
+                            if (_exerciseResults) {
+                                if (_exerciseResults[exercise.exerciseTypeId] && _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]) {
+                                    _summary.status = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].status || ExerciseStatusEnum.NEW.enum;
+
+                                    _summary.correctAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].correctAnswersNum || 0;
+                                    _summary.wrongAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].wrongAnswersNum || 0;
+                                    _summary.skippedAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].skippedAnswersNum || 0;
+                                    _summary.duration = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].duration || 0;
+                                    _summary.totalAnswered = _summary.correctAnswersNum + _summary.wrongAnswersNum;
+                                }
+                            }
+                        });
+                    }
+                }
+                $log.log('modulesSummary: ', modulesSummary);
+                return modulesSummary;
             }
 
             return userAssignModuleService;
@@ -4749,16 +4754,8 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
                             moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResult.guid;
 
-                            if (!moduleResult.exercisesStatus) {
-                                moduleResult.exercisesStatus = {};
-                            }
-
-                            if (!moduleResult.exercisesStatus[exerciseTypeId]) {
-                                moduleResult.exercisesStatus[exerciseTypeId] = {};
-                            }
-
                             if (exerciseStatuses[exerciseTypeId] && exerciseStatuses[exerciseTypeId][exerciseId]) {
-                                moduleResult.exercisesStatus[exerciseTypeId][exerciseId] = exerciseStatuses[exerciseTypeId][exerciseId].status;
+                                dataToSave[EXERCISE_RESULTS_PATH].status = exerciseStatuses[exerciseTypeId][exerciseId].status;
                             }
 
                             moduleResult.lastUpdate = Date.now();
@@ -14543,6 +14540,10 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
     "\n" +
     "\n" +
     "");
+}]);
+
+angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($templateCache) {
+
 }]);
 
 (function (angular) {
