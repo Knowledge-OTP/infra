@@ -21,7 +21,8 @@
                 chatPath: 'chats',
                 chatsUsersGuids: 'users/$$uid/chats',
                 studentAppName:'sat_app',
-                dashboardAppName: 'sat_dashboard'
+                dashboardAppName: 'sat_dashboard',
+                newChatParticipantsListener: 'users/$$uid/invitations/approved'
 
             };
 
