@@ -10318,7 +10318,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     };
 
                     scope.d.sendMessage = function () {
-                        if (scope.d.newMessage.length > 0) {
+                        if (scope.d.newMessage.length > 0 && angular.isDefined(scope.chatterObj) && scope.chatterObj.chatGuid) {
                             var newMessageObj = {
                                 time: Firebase.ServerValue.TIMESTAMP,
                                 uid: scope.userId,
@@ -10499,15 +10499,18 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('znkChat',
-        ["$translatePartialLoader", "znkChatSrv", "$q", "UtilitySrv", "ZNK_CHAT", function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, ZNK_CHAT) {
+        ["$translatePartialLoader", "znkChatSrv", "$q", "UtilitySrv", "ZNK_CHAT", "$timeout", function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, ZNK_CHAT, $timeout) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/znkChat.template.html',
                 scope: {
                     localUser: '='
                 },
-                link: function (scope) {
+                link: function (scope, element) {
                     $translatePartialLoader.addPart('znkChat');
+                    $timeout(function(){
+                        angular.element(element).addClass('animate-chat');
+                    });
 
                     scope.statesView = {
                         CHAT_BUTTON_VIEW: 1,

@@ -2,15 +2,18 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('znkChat',
-        function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, ZNK_CHAT) {
+        function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, ZNK_CHAT, $timeout) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/znkChat.template.html',
                 scope: {
                     localUser: '='
                 },
-                link: function (scope) {
+                link: function (scope, element) {
                     $translatePartialLoader.addPart('znkChat');
+                    $timeout(function(){
+                        angular.element(element).addClass('animate-chat');
+                    });
 
                     scope.statesView = {
                         CHAT_BUTTON_VIEW: 1,
