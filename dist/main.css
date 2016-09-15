@@ -4337,6 +4337,8 @@ $blueBG8: #75cbe8;
           color: #161616;
           font-family: Lato;
           font-weight: 400; }
+  .chat-participants .chatter-repeater-wrapper.znk-scrollbar ::-webkit-scrollbar, .chat-participants .chatter-repeater-wrapper.znk-scrollbar::-webkit-scrollbar {
+    width: 6px; }
   .chat-participants .support-chat-wrapper {
     width: 190px;
     height: 30px;
