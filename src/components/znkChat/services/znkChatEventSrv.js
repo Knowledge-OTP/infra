@@ -59,7 +59,7 @@
 
             self.offMsgOrNewChatEvent = function (type, path, callback) {
                 return _getUserStorage(oppositeStorageType).then(function (userStorage) {
-                    var userStorageRef = userStorage.adapter.getRef();  // the event was registered outside storageSrv so off event must unregistered outside also
+                    var userStorageRef = userStorage.adapter.getRef();  // the event was registered outside storageSrv so it must unregistered outside also
                     var eventPath = userStorageRef.child(path);
                     eventPath.off(type, callback);
                 });

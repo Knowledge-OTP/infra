@@ -10730,7 +10730,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
             self.offMsgOrNewChatEvent = function (type, path, callback) {
                 return _getUserStorage(oppositeStorageType).then(function (userStorage) {
-                    var userStorageRef = userStorage.adapter.getRef();  // the event was registered outside storageSrv so off event must unregistered outside also
+                    var userStorageRef = userStorage.adapter.getRef();  // the event was registered outside storageSrv so it must unregistered outside also
                     var eventPath = userStorageRef.child(path);
                     eventPath.off(type, callback);
                 });
@@ -10750,7 +10750,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkChat').service('znkChatSrv',
-        ["InfraConfigSrv", "$q", "UserProfileService", "znkChatDataSrv", "$log", "UtilitySrv", "ZNK_CHAT", function (InfraConfigSrv, $q, UserProfileService, znkChatDataSrv, $log, UtilitySrv, ZNK_CHAT) {
+        ["InfraConfigSrv", "$q", "UserProfileService", "znkChatDataSrv", "$log", "UtilitySrv", function (InfraConfigSrv, $q, UserProfileService, znkChatDataSrv, $log, UtilitySrv) {
             'ngInject';
 
             var self = this;
@@ -10767,25 +10767,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             function _getStorage() {
                 return InfraConfigSrv.getGlobalStorage();
             }
-
-            self.getChatParticipants = function () {          // e.g teacher --> connected students
-                return znkChatDataSrv.getChatParticipants().then(function (participants) {
-                    var chatParticipantsObj = {};
-                    var supportObj = {};
-                    var participantsKeys = Object.keys(participants);
-
-                    angular.forEach(participantsKeys, function (key) {
-                        if (participants[key].email === ZNK_CHAT.SUPPORT_EMAIL) {
-                            supportObj = participants[key];
-                            delete participants[key];
-                        }
-                    });
-
-                    chatParticipantsObj.support = supportObj;
-                    chatParticipantsObj.participants = participants;
-                    return chatParticipantsObj;
-                });
-            };
 
             self.getChatGuidsByUid = function (uid, isTeacher) {
                 return _getUserStorage(isTeacher).then(function (userStorage) {
