@@ -129,7 +129,7 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('chatParticipants',
-        function () {
+        ["znkChatDataSrv", "znkChatEventSrv", "ZNK_CHAT", function (znkChatDataSrv, znkChatEventSrv, ZNK_CHAT) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/chatParticipants.template.html',
@@ -141,9 +141,27 @@
                     scope.d = {};
                     scope.d.chatData = scope.chatData;
                     scope.d.selectChatter = scope.selectChatter();
+                    scope.d.chatData.chatParticipantsArr = [];
+                    var chatPaths = znkChatDataSrv.getChatPaths();
+                    var localUserUid = scope.d.chatData.localUser.uid;
+                    var chattersPath = chatPaths.newChatParticipantsListener;
+                    chattersPath = chattersPath.replace('$$uid', localUserUid);
+
+                    var newChatterHandler = function (newChatter) {
+                        if (newChatter.email === ZNK_CHAT.SUPPORT_EMAIL) {
+                            scope.d.chatData.support = newChatter;
+                        } else {
+                            scope.d.chatData.chatParticipantsArr.push(newChatter);
+                        }
+                    };
+                    znkChatEventSrv.getChattersListener(chattersPath, newChatterHandler);
+
+                    scope.$on('$destroy', function () {
+                        znkChatEventSrv.offNewChatterEvent(chattersPath);
+                    });
                 }
             };
-        }
+        }]
     );
 })(angular);
 
@@ -171,7 +189,6 @@
                     scope.d.userStatus = PresenceService.userStatus;
                     scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
 
-
                     function trackUserPresenceCB(newStatus, userId) {
                         $timeout(function () {
                             if (scope.chatterObj.uid === userId) {
@@ -192,7 +209,7 @@
                         znkChatSrv.getChatGuidsByUid(scope.chatterObj.uid, scope.chatterObj.isTeacher).then(function (chatterChatGuidsArr) {
                             if (angular.isArray(chatterChatGuidsArr) && angular.isArray(scope.localUserChatsGuidsArr) && scope.localUserChatsGuidsArr.length > 0 && chatterChatGuidsArr.length > 0) {
                                 var chatGuid = znkChatSrv.getChatGuidByTwoGuidsArray(scope.localUserChatsGuidsArr, chatterChatGuidsArr);
-                                if(angular.isDefined(chatGuid)){
+                                if (angular.isDefined(chatGuid)) {
                                     chatGuidProm = chatGuid;
                                 } else {
                                     chatGuidProm = _listenToNewChat();
@@ -254,14 +271,13 @@
                             var newChatObj = snapshot.val();
                             if (newChatObj) {
                                 znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher).then(function (localUserChatGuidsArr) {
-                                        var newChatGuid = Object.keys(newChatObj)[0];
-                                        var chatGuid = znkChatSrv.getChatGuidByTwoGuidsArray(localUserChatGuidsArr, [newChatGuid]);
-                                        if (angular.isDefined(chatGuid) && chatGuid === newChatGuid) {
-                                            znkChatEventSrv.offEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
-                                            deferred.resolve(newChatGuid);
-                                        }
+                                    var newChatGuid = Object.keys(newChatObj)[0];
+                                    var chatGuid = znkChatSrv.getChatGuidByTwoGuidsArray(localUserChatGuidsArr, [newChatGuid]);
+                                    if (angular.isDefined(chatGuid) && chatGuid === newChatGuid) {
+                                        znkChatEventSrv.offMsgOrNewChatEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
+                                        deferred.resolve(newChatGuid);
                                     }
-                                );
+                                });
                             }
                         }
 
@@ -274,8 +290,8 @@
                     }
 
                     scope.$on('$destroy', function () {
-                        znkChatEventSrv.offEvent(offEvent.messageEvent.eventType, offEvent.messageEvent.path, offEvent.messageEvent.callback);
-                        znkChatEventSrv.offEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
+                        znkChatEventSrv.offMsgOrNewChatEvent(offEvent.messageEvent.eventType, offEvent.messageEvent.path, offEvent.messageEvent.callback);
+                        znkChatEventSrv.offMsgOrNewChatEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
                         PresenceService.stopTrackUserPresence(scope.chatterObj.uid);
                     });
                 }
@@ -318,11 +334,8 @@
                     scope.d.chatStateView = scope.statesView.CHAT_BUTTON_VIEW;
                     scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
 
-                    $q.all([znkChatSrv.getChatParticipants(), znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher)]).then(function (res) {
-                        var allChatParticipants = res[0];
-                        scope.d.chatData.chatParticipantsArr = UtilitySrv.object.convertToArray(allChatParticipants.participants);
-                        scope.d.chatData.support = allChatParticipants.support;
-                        scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(res[1]);
+                    $q.when(znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher)).then(function (res) {
+                        scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(res);
                     });
 
                     scope.d.selectChatter = function (chatter) {
@@ -402,7 +415,9 @@
 
     angular.module('znk.infra.znkChat').constant('ZNK_CHAT', {
         MAX_NUM_UNSEEN_MESSAGES: 10,
-        SUPPORT_EMAIL: 'support@zinkerz.com'
+        SUPPORT_EMAIL: 'support@zinkerz.com',
+        STUDENT_STORAGE: 0,
+        TEACHER_STORAGE: 1
     });
 })(angular);
 
@@ -414,14 +429,14 @@
             'ngInject';
 
             var znkChatPathsObj = {};
-            var chatParticipantsGetter;
+            var buildNewChatterFnGetter;
 
             this.setChatPaths = function (chatPathsObj) {
                 znkChatPathsObj = chatPathsObj;
             };
 
-            this.setParticipantsGetterFn = function (participantsGetterFn) {
-                chatParticipantsGetter = participantsGetterFn;
+            this.setBuildChatterFnGetter = function (buildChatterFn) {
+                buildNewChatterFnGetter = buildChatterFn;
             };
 
             this.$get = ["$injector", function ($injector) {
@@ -431,8 +446,9 @@
                     return znkChatPathsObj;
                 };
 
-                znkChat.getChatParticipants = function () {
-                    return $injector.invoke(chatParticipantsGetter);
+                znkChat.buildNewChatter = function (user, userId) {
+                    var buildNewChatter = $injector.invoke(buildNewChatterFnGetter);
+                    return buildNewChatter(user, userId);
                 };
 
                 return znkChat;
@@ -446,43 +462,75 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').service('znkChatEventSrv',
-        ["$q", "InfraConfigSrv", "ENV", function ($q, InfraConfigSrv, ENV) {
+        ["$q", "InfraConfigSrv", "ENV", "znkChatDataSrv", "ZNK_CHAT", function ($q, InfraConfigSrv, ENV, znkChatDataSrv, ZNK_CHAT) {
             'ngInject';
 
             var self = this;
+            var appContext = ENV.appContext;
+            var oppositeStorageType = appContext === 'student' ? ZNK_CHAT.TEACHER_STORAGE : ZNK_CHAT.STUDENT_STORAGE;
+            var storageType = appContext === 'student' ? ZNK_CHAT.STUDENT_STORAGE : ZNK_CHAT.TEACHER_STORAGE;
 
-            function _getUserStorage(){
-                if(ENV.appContext === 'student'){
-                    return InfraConfigSrv.getTeacherStorage();
-                } else{
-                    return InfraConfigSrv.getStudentStorage();
+            var studentStorage = InfraConfigSrv.getStudentStorage();
+            var teacherStorage = InfraConfigSrv.getTeacherStorage();
+            function _getUserStorage(type) {
+                if (type === ZNK_CHAT.STUDENT_STORAGE) {
+                    return studentStorage;
+                }
+                if (type === ZNK_CHAT.TEACHER_STORAGE) {
+                    return teacherStorage;
                 }
             }
 
-            function _getStorage() {
+            function _getGlobalStorage() {
                 return InfraConfigSrv.getGlobalStorage();
             }
 
-
             self.registerMessagesEvent = function (type, path, callback) {
-                return _getStorage().then(function (userStorage) {
+                return _getGlobalStorage(oppositeStorageType).then(function (userStorage) {
                     var adapterRef = userStorage.adapter.getRef(path);
                     adapterRef.orderByKey().limitToLast(10).on(type, callback);
                 });
             };
 
             self.registerNewChatEvent = function (type, path, callback) {
-                return _getUserStorage().then(function (userStorage) {
+                return _getUserStorage(oppositeStorageType).then(function (userStorage) {
                     var adapterRef = userStorage.adapter.getRef(path);
                     adapterRef.orderByKey().limitToLast(1).on(type, callback);
                 });
             };
 
-            self.offEvent = function(type, path, callback){
-                return _getStorage().then(function (globalStorage) {
-                    globalStorage.offEvent(type,path, callback);
+            var getChattersCb;
+            function _buildChatterObject(callback) {
+                if (angular.isUndefined(getChattersCb)) {
+                    getChattersCb = function (user, UserUid) {
+                        znkChatDataSrv.buildNewChatter(user, UserUid).then(function (newChatter) {
+                            callback(newChatter);
+                        });
+                    };
+                }
+                return getChattersCb;
+            }
+
+            self.getChattersListener = function (path, callback) {
+                return _getUserStorage(storageType).then(function (userStorage) {
+                    userStorage.onEvent('child_added', path, _buildChatterObject(callback));
                 });
             };
+
+            self.offMsgOrNewChatEvent = function (type, path, callback) {
+                return _getUserStorage(oppositeStorageType).then(function (userStorage) {
+                    var userStorageRef = userStorage.adapter.getRef();  // the event was registered outside storageSrv so off event must unregistered outside also
+                    var eventPath = userStorageRef.child(path);
+                    eventPath.off(type, callback);
+                });
+            };
+
+            self.offNewChatterEvent = function (path) {
+                return _getUserStorage(storageType).then(function (userStorage) {
+                    userStorage.offEvent('child_added', path, getChattersCb);
+                });
+            };
+
         }]
     );
 })(angular);

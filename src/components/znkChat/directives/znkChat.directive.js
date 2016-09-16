@@ -31,11 +31,8 @@
                     scope.d.chatStateView = scope.statesView.CHAT_BUTTON_VIEW;
                     scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
 
-                    $q.all([znkChatSrv.getChatParticipants(), znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher)]).then(function (res) {
-                        var allChatParticipants = res[0];
-                        scope.d.chatData.chatParticipantsArr = UtilitySrv.object.convertToArray(allChatParticipants.participants);
-                        scope.d.chatData.support = allChatParticipants.support;
-                        scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(res[1]);
+                    $q.when(znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher)).then(function (res) {
+                        scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(res);
                     });
 
                     scope.d.selectChatter = function (chatter) {
