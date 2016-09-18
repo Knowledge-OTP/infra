@@ -22,7 +22,7 @@
 
             $timeout(function () {
                 document.getElementById('report-textarea').focus();
-            }, 10);
+            });
 
             this.stopBubbling = function (e) {
                 if (e.stopPropagation) { e.stopPropagation(); }
