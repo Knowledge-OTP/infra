@@ -77,6 +77,10 @@
                 self.reportData.message = message;
             });
 
+            $timeout(function () {
+                document.getElementById('report-textarea').focus();
+            });
+
             this.stopBubbling = function (e) {
                 if (e.stopPropagation) { e.stopPropagation(); }
                 if (e.cancelBubble !== null) { e.cancelBubble = true; }
@@ -235,7 +239,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     "                <svg-icon name=\"close-popup\"></svg-icon>\n" +
     "            </div>\n" +
     "        </div>\n" +
-    "        <md-dialog-content ng-keyup=\"vm.stopBubbling($event)\">\n" +
+    "        <md-dialog-content>\n" +
     "            <div class=\"report-inner\">\n" +
     "                <div class=\"main-title\" translate=\".REPORT_QUESTION\"></div>\n" +
     "                <ng-switch on=\"vm.success\">\n" +
@@ -244,8 +248,10 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     "                        <form novalidate name=\"vm.reportForm\" class=\"base-form\" ng-submit=\"vm.sendFrom();\">\n" +
     "\n" +
     "							<textarea\n" +
-    "                                    required\n" +
+    "                                    required autofocus\n" +
+    "                                    id=\"report-textarea\"\n" +
     "                                    name=\"messageFeedback\"\n" +
+    "                                    ng-keydown=\"vm.stopBubbling($event)\"\n" +
     "                                    ng-model=\"vm.reportData.message\"\n" +
     "                                    placeholder=\"{{'REPORT_POPUP.PLACEHOLDER' | translate}}\">\n" +
     "                            </textarea>\n" +
@@ -260,6 +266,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     "                                    type=\"email\"\n" +
     "                                    name=\"emailFeedback\"\n" +
     "                                    placeholder=\"{{'REPORT_POPUP.EMAIL' | translate}}\"\n" +
+    "                                    ng-keydown=\"vm.stopBubbling($event)\"\n" +
     "                                    ng-model=\"vm.reportData.email\"\n" +
     "                                    ng-minlength=\"5\"\n" +
     "                                    ng-maxlength=\"254\">\n" +
