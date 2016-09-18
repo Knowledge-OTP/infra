@@ -20,6 +20,11 @@
                 self.reportData.message = message;
             });
 
+            this.stopBubbling = function (e) {
+                if (e.stopPropagation) { e.stopPropagation(); }
+                if (e.cancelBubble !== null) { e.cancelBubble = true; }
+            };
+
             this.sendFrom = function () {
                 if (self.reportForm.$valid) {
                     self.startLoader = true;

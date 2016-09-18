@@ -12,7 +12,7 @@
                 <svg-icon name="close-popup"></svg-icon>
             </div>
         </div>
-        <md-dialog-content>
+        <md-dialog-content ng-keyup="vm.stopBubbling($event)">
             <div class="report-inner">
                 <div class="main-title" translate=".REPORT_QUESTION"></div>
                 <ng-switch on="vm.success">
