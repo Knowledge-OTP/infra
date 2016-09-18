@@ -14689,6 +14689,15 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
                 self.reportData.message = message;
             });
 
+            $timeout(function () {
+                document.getElementById('report-textarea').focus();
+            });
+
+            this.stopBubbling = function (e) {
+                if (e.stopPropagation) { e.stopPropagation(); }
+                if (e.cancelBubble !== null) { e.cancelBubble = true; }
+            };
+
             this.sendFrom = function () {
                 if (self.reportForm.$valid) {
                     self.startLoader = true;
@@ -14851,8 +14860,10 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     "                        <form novalidate name=\"vm.reportForm\" class=\"base-form\" ng-submit=\"vm.sendFrom();\">\n" +
     "\n" +
     "							<textarea\n" +
-    "                                    required\n" +
+    "                                    required autofocus\n" +
+    "                                    id=\"report-textarea\"\n" +
     "                                    name=\"messageFeedback\"\n" +
+    "                                    ng-keydown=\"vm.stopBubbling($event)\"\n" +
     "                                    ng-model=\"vm.reportData.message\"\n" +
     "                                    placeholder=\"{{'REPORT_POPUP.PLACEHOLDER' | translate}}\">\n" +
     "                            </textarea>\n" +
@@ -14867,6 +14878,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     "                                    type=\"email\"\n" +
     "                                    name=\"emailFeedback\"\n" +
     "                                    placeholder=\"{{'REPORT_POPUP.EMAIL' | translate}}\"\n" +
+    "                                    ng-keydown=\"vm.stopBubbling($event)\"\n" +
     "                                    ng-model=\"vm.reportData.email\"\n" +
     "                                    ng-minlength=\"5\"\n" +
     "                                    ng-maxlength=\"254\">\n" +
