@@ -315,7 +315,7 @@
                 link: function (scope, element) {
                     $translatePartialLoader.addPart('znkChat');
                     $timeout(function(){
-                        angular.element(element).addClass('animate-chat');
+                        element.addClass('animate-chat');
                     });
 
                     scope.statesView = {
@@ -334,8 +334,8 @@
                     scope.d.chatStateView = scope.statesView.CHAT_BUTTON_VIEW;
                     scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
 
-                    $q.when(znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher)).then(function (res) {
-                        scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(res);
+                    znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher).then(function (chatGuidsObj) {
+                        scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(chatGuidsObj);
                     });
 
                     scope.d.selectChatter = function (chatter) {
