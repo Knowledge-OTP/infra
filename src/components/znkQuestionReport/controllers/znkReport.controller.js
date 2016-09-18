@@ -20,6 +20,10 @@
                 self.reportData.message = message;
             });
 
+            $timeout(function () {
+                document.getElementById('report-textarea').focus();
+            }, 10);
+
             this.stopBubbling = function (e) {
                 if (e.stopPropagation) { e.stopPropagation(); }
                 if (e.cancelBubble !== null) { e.cancelBubble = true; }
