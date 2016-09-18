@@ -21,7 +21,6 @@
                     scope.d.userStatus = PresenceService.userStatus;
                     scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
 
-
                     function trackUserPresenceCB(newStatus, userId) {
                         $timeout(function () {
                             if (scope.chatterObj.uid === userId) {
@@ -42,7 +41,7 @@
                         znkChatSrv.getChatGuidsByUid(scope.chatterObj.uid, scope.chatterObj.isTeacher).then(function (chatterChatGuidsArr) {
                             if (angular.isArray(chatterChatGuidsArr) && angular.isArray(scope.localUserChatsGuidsArr) && scope.localUserChatsGuidsArr.length > 0 && chatterChatGuidsArr.length > 0) {
                                 var chatGuid = znkChatSrv.getChatGuidByTwoGuidsArray(scope.localUserChatsGuidsArr, chatterChatGuidsArr);
-                                if(angular.isDefined(chatGuid)){
+                                if (angular.isDefined(chatGuid)) {
                                     chatGuidProm = chatGuid;
                                 } else {
                                     chatGuidProm = _listenToNewChat();
@@ -104,14 +103,13 @@
                             var newChatObj = snapshot.val();
                             if (newChatObj) {
                                 znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher).then(function (localUserChatGuidsArr) {
-                                        var newChatGuid = Object.keys(newChatObj)[0];
-                                        var chatGuid = znkChatSrv.getChatGuidByTwoGuidsArray(localUserChatGuidsArr, [newChatGuid]);
-                                        if (angular.isDefined(chatGuid) && chatGuid === newChatGuid) {
-                                            znkChatEventSrv.offEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
-                                            deferred.resolve(newChatGuid);
-                                        }
+                                    var newChatGuid = Object.keys(newChatObj)[0];
+                                    var chatGuid = znkChatSrv.getChatGuidByTwoGuidsArray(localUserChatGuidsArr, [newChatGuid]);
+                                    if (angular.isDefined(chatGuid) && chatGuid === newChatGuid) {
+                                        znkChatEventSrv.offMsgOrNewChatEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
+                                        deferred.resolve(newChatGuid);
                                     }
-                                );
+                                });
                             }
                         }
 
@@ -124,8 +122,8 @@
                     }
 
                     scope.$on('$destroy', function () {
-                        znkChatEventSrv.offEvent(offEvent.messageEvent.eventType, offEvent.messageEvent.path, offEvent.messageEvent.callback);
-                        znkChatEventSrv.offEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
+                        znkChatEventSrv.offMsgOrNewChatEvent(offEvent.messageEvent.eventType, offEvent.messageEvent.path, offEvent.messageEvent.callback);
+                        znkChatEventSrv.offMsgOrNewChatEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
                         PresenceService.stopTrackUserPresence(scope.chatterObj.uid);
                     });
                 }

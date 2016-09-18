@@ -134,7 +134,8 @@
                         ref.on(type, function (snapshot) {
                             self.__registeredEvents[type][path].firstOnWasInvoked = true;
                             var newVal = snapshot.val();
-                            self.__invokeEventCb(type, path, [newVal]);
+                            var key = snapshot.key();
+                            self.__invokeEventCb(type, path, [newVal, key]);
                         });
                     } else {
                         if (self.__registeredEvents[type][path].firstOnWasInvoked) {

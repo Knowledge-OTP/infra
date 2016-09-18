@@ -4416,7 +4416,7 @@ chat-board {
         width: 100%;
         height: 50px;
         font-size: 14px;
-        color: #c2c2c2;
+        color: #4f4d4d;
         font-family: Lato;
         font-weight: 400;
         padding: 5px;
@@ -4544,7 +4544,6 @@ chat-message.otherMessage .message-wrapper .message {
 .znk-chat-wrapper .button-wrapper {
   width: 45px;
   height: 45px;
-  transition: linear 0.13s;
   position: relative;
   cursor: pointer;
   display: -ms-flexbox;
@@ -4585,10 +4584,9 @@ chat-message.otherMessage .message-wrapper .message {
     fill: #757a83; }
 
 .znk-chat-wrapper .chat-container {
-  width: 525px;
-  height: 372px;
+  width: 0;
+  height: 0;
   overflow: hidden;
-  transition: linear 0.2s;
   display: -ms-flexbox;
   display: flex;
   border-radius: 15px 15px 0 0;
@@ -4615,6 +4613,14 @@ chat-message.otherMessage .message-wrapper .message {
 
 .znk-chat-wrapper .button-wrapper.ng-hide-add, .znk-chat-wrapper .button-wrapper.ng-hide-remove {
   opacity: 0; }
+
+.animate-chat .button-wrapper {
+  transition: linear 0.13s; }
+
+.animate-chat .chat-container {
+  width: 525px;
+  height: 372px;
+  transition: linear 0.2s; }
 
 /* paths*/
 /* fonts size */
