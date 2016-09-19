@@ -185,6 +185,7 @@
             function getModuleSummary(assignModule) {
                 var modulesSummary = {};
                 var _exerciseResults = assignModule.exerciseResults;
+                console.log('_exerciseResults: ', _exerciseResults);
 
                 function newSummary() {
                     return {
@@ -202,7 +203,7 @@
                         totalCorrectAnswers: 0,
                         totalWrongAnswers: 0,
                         totalSkippedAnswers: 0
-                    };
+                    }
                 }
 
                 if (assignModule.exercises) {
@@ -221,10 +222,15 @@
                             if (!modulesSummary[exercise.exerciseTypeId][exercise.exerciseId]){
                                 modulesSummary[exercise.exerciseTypeId][exercise.exerciseId] = newSummary();
                             }
+
                             var _summary = modulesSummary[exercise.exerciseTypeId][exercise.exerciseId];
                             if (_exerciseResults) {
-                                if (_exerciseResults[exercise.exerciseTypeId] && _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]) {
-                                    _summary.status = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].status || ExerciseStatusEnum.NEW.enum;
+                                if (_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]) {
+                                    if (_exerciseResults[exercise.exerciseTypeId] && _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]){
+                                        _summary.status =  _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].isComplete ? ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum
+                                    } else {
+                                        _summary.status = _summary.status ? _summary.status : ExerciseStatusEnum.NEW.enum;
+                                    }
 
                                     _summary.correctAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].correctAnswersNum || 0;
                                     _summary.wrongAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].wrongAnswersNum || 0;
@@ -234,16 +240,14 @@
                                 }
                             }
 
-                            // modulesSummary.overAll
                             if (!modulesSummary.overAll) {
                                 modulesSummary.overAll = newOverAll();
                             }
                             var _overAll = modulesSummary.overAll;
-                            _overAll.status =  _overAll.status < _summary.status? _summary.status : _overAll.status;
+                            _overAll.status =  _overAll.status < _summary.status ? _summary.status : _overAll.status;
                             _overAll.totalCorrectAnswers += _summary.correctAnswersNum;
                             _overAll.totalWrongAnswers += _summary.wrongAnswersNum;
                             _overAll.totalSkippedAnswers += _summary.skippedAnswersNum;
-
                         });
                     }
                 }
