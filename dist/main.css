@@ -5882,11 +5882,13 @@ md-dialog.base {
       height: 19px; }
 
 znk-question-report .report-btn {
-  width: 20px;
-  height: 20px;
-  float: right;
-  margin: 20px 30px;
-  outline: none; }
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  outline: none;
+  position: absolute;
+  top: 15px;
+  right: 30px; }
   znk-question-report .report-btn .report-question-icon {
     fill: #E1E1E1; }
     znk-question-report .report-btn .report-question-icon:hover {
