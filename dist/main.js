@@ -47,7 +47,6 @@
 "znk.infra.znkExercise",
 "znk.infra.znkModule",
 "znk.infra.znkProgressBar",
-"znk.infra.znkQuestionReport",
 "znk.infra.znkTimeline"
     ]);
 })(angular);
@@ -856,6 +855,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             function getModuleSummary(assignModule) {
                 var modulesSummary = {};
                 var _exerciseResults = assignModule.exerciseResults;
+                console.log('_exerciseResults: ', _exerciseResults);
 
                 function newSummary() {
                     return {
@@ -865,6 +865,14 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                         skippedAnswersNum: 0,
                         totalAnswered: 0,
                         duration: 0
+                    };
+                }
+                function newOverAll() {
+                    return {
+                        status: ExerciseStatusEnum.NEW.enum,
+                        totalCorrectAnswers: 0,
+                        totalWrongAnswers: 0,
+                        totalSkippedAnswers: 0
                     };
                 }
 
@@ -884,10 +892,15 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                             if (!modulesSummary[exercise.exerciseTypeId][exercise.exerciseId]){
                                 modulesSummary[exercise.exerciseTypeId][exercise.exerciseId] = newSummary();
                             }
+
                             var _summary = modulesSummary[exercise.exerciseTypeId][exercise.exerciseId];
                             if (_exerciseResults) {
-                                if (_exerciseResults[exercise.exerciseTypeId] && _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]) {
-                                    _summary.status = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].status || ExerciseStatusEnum.NEW.enum;
+                                if (_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]) {
+                                    if (_exerciseResults[exercise.exerciseTypeId] && _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]){
+                                        _summary.status =  _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].isComplete ? ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
+                                    } else {
+                                        _summary.status = _summary.status ? _summary.status : ExerciseStatusEnum.NEW.enum;
+                                    }
 
                                     _summary.correctAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].correctAnswersNum || 0;
                                     _summary.wrongAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].wrongAnswersNum || 0;
@@ -896,10 +909,18 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                                     _summary.totalAnswered = _summary.correctAnswersNum + _summary.wrongAnswersNum;
                                 }
                             }
+
+                            if (!modulesSummary.overAll) {
+                                modulesSummary.overAll = newOverAll();
+                            }
+                            var _overAll = modulesSummary.overAll;
+                            _overAll.status =  _overAll.status < _summary.status ? _summary.status : _overAll.status;
+                            _overAll.totalCorrectAnswers += _summary.correctAnswersNum;
+                            _overAll.totalWrongAnswers += _summary.wrongAnswersNum;
+                            _overAll.totalSkippedAnswers += _summary.skippedAnswersNum;
                         });
                     }
                 }
-                $log.log('modulesSummary: ', modulesSummary);
                 return modulesSummary;
             }
 
@@ -4755,7 +4776,8 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                             moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResult.guid;
 
                             if (exerciseStatuses[exerciseTypeId] && exerciseStatuses[exerciseTypeId][exerciseId]) {
-                                dataToSave[EXERCISE_RESULTS_PATH].status = exerciseStatuses[exerciseTypeId][exerciseId].status;
+                                var exerciseResultsPath = _getExerciseResultPath(exerciseResult.guid);
+                                dataToSave[exerciseResultsPath].status = exerciseStatuses[exerciseTypeId][exerciseId].status;
                             }
 
                             moduleResult.lastUpdate = Date.now();
@@ -5015,6 +5037,37 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
             };
         }
     ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+    /**
+     * @returns Truncated text after the given num and add '...'
+     */
+
+    angular.module('znk.infra.filters').filter('ellipsis', function () {
+        return function (value, wordwise, max, tail) {
+            if (!value) { return ''; }
+
+            max = parseInt(max, 10);
+            if (!max) { return value; }
+            if (value.length <= max) { return value; }
+
+            value = value.substr(0, max);
+            if (wordwise) {
+                var lastspace = value.lastIndexOf(' ');
+                if (lastspace !== -1) {
+                    //Also remove . and , so its gives a cleaner result.
+                    if (value.charAt(lastspace-1) === '.' || value.charAt(lastspace-1) === ',') {
+                        lastspace = lastspace - 1;
+                    }
+                    value = value.substr(0, lastspace);
+                }
+            }
+
+            return value + (tail || ' …');
+        };
+    });
 })(angular);
 
 (function (angular) {
@@ -14540,10 +14593,6 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
     "\n" +
     "\n" +
     "");
-}]);
-
-angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($templateCache) {
-
 }]);
 
 (function (angular) {

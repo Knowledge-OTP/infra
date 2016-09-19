@@ -520,7 +520,8 @@
                             moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResult.guid;
 
                             if (exerciseStatuses[exerciseTypeId] && exerciseStatuses[exerciseTypeId][exerciseId]) {
-                                dataToSave[EXERCISE_RESULTS_PATH].status = exerciseStatuses[exerciseTypeId][exerciseId].status;
+                                var exerciseResultsPath = _getExerciseResultPath(exerciseResult.guid);
+                                dataToSave[exerciseResultsPath].status = exerciseStatuses[exerciseTypeId][exerciseId].status;
                             }
 
                             moduleResult.lastUpdate = Date.now();

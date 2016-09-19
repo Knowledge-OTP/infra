@@ -203,7 +203,7 @@
                         totalCorrectAnswers: 0,
                         totalWrongAnswers: 0,
                         totalSkippedAnswers: 0
-                    }
+                    };
                 }
 
                 if (assignModule.exercises) {
@@ -227,7 +227,7 @@
                             if (_exerciseResults) {
                                 if (_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]) {
                                     if (_exerciseResults[exercise.exerciseTypeId] && _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]){
-                                        _summary.status =  _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].isComplete ? ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum
+                                        _summary.status =  _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].isComplete ? ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
                                     } else {
                                         _summary.status = _summary.status ? _summary.status : ExerciseStatusEnum.NEW.enum;
                                     }
