@@ -31,7 +31,7 @@
                         break;
                     case 'alreadyActive':
                         modalData.errorMessage = CALLS_ERROR_TEXT.alreadyActive;
-                        errorProm = CallsUiSrv.getCalleeName(err.receiverId, err.callerId).then(function (name) {
+                        errorProm = CallsUiSrv.getCalleeName(err.receiverId).then(function (name) {
                             modalData.errorValues = {
                                 calleeName: name
                             };

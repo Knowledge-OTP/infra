@@ -6,14 +6,14 @@
             'ngInject';
 
             var znkChatPathsObj = {};
-            var chatParticipantsGetter;
+            var buildNewChatterFnGetter;
 
             this.setChatPaths = function (chatPathsObj) {
                 znkChatPathsObj = chatPathsObj;
             };
 
-            this.setParticipantsGetterFn = function (participantsGetterFn) {
-                chatParticipantsGetter = participantsGetterFn;
+            this.setBuildChatterFnGetter = function (buildChatterFn) {
+                buildNewChatterFnGetter = buildChatterFn;
             };
 
             this.$get = function ($injector) {
@@ -23,8 +23,9 @@
                     return znkChatPathsObj;
                 };
 
-                znkChat.getChatParticipants = function () {
-                    return $injector.invoke(chatParticipantsGetter);
+                znkChat.buildNewChatter = function (user, userId) {
+                    var buildNewChatter = $injector.invoke(buildNewChatterFnGetter);
+                    return buildNewChatter(user, userId);
                 };
 
                 return znkChat;

@@ -1,7 +1,6 @@
 .znk-chat-wrapper {
     .button-wrapper {
         @include dimension(45px, 45px);
-        transition: linear 0.13s;
         position: relative;
         cursor: pointer;
         display: flex;
@@ -43,13 +42,12 @@
     }
 
     .chat-container {
-        @include dimension(525px, 372px);
+        @include dimension(0,0);
         overflow: hidden;
-        transition: linear 0.2s;
         display: flex;
         border-radius: 15px 15px 0 0;
         border: 1px solid $bgColor30;
-        box-shadow: 0 -2px 3px 0 $bsColor1;
+        box-shadow: 0 0 7px 0 $bsColor1;
 
         .chat-messages-board {
             @include dimension(200px, 275px);
@@ -75,5 +73,15 @@
 
     .button-wrapper.ng-hide-add, .button-wrapper.ng-hide-remove {
         opacity: 0;
+    }
+}
+
+.animate-chat{
+    .button-wrapper {
+        transition: linear 0.13s;
+    }
+    .chat-container {
+        @include dimension(525px, 372px);
+        transition: linear 0.2s;
     }
 }

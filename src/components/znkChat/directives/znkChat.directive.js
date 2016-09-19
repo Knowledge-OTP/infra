@@ -2,15 +2,18 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('znkChat',
-        function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, ZNK_CHAT) {
+        function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, ZNK_CHAT, $timeout) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/znkChat.template.html',
                 scope: {
                     localUser: '='
                 },
-                link: function (scope) {
+                link: function (scope, element) {
                     $translatePartialLoader.addPart('znkChat');
+                    $timeout(function(){
+                        element.addClass('animate-chat');
+                    });
 
                     scope.statesView = {
                         CHAT_BUTTON_VIEW: 1,
@@ -28,11 +31,8 @@
                     scope.d.chatStateView = scope.statesView.CHAT_BUTTON_VIEW;
                     scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
 
-                    $q.all([znkChatSrv.getChatParticipants(), znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher)]).then(function (res) {
-                        var allChatParticipants = res[0];
-                        scope.d.chatData.chatParticipantsArr = UtilitySrv.object.convertToArray(allChatParticipants.participants);
-                        scope.d.chatData.support = allChatParticipants.support;
-                        scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(res[1]);
+                    znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher).then(function (chatGuidsObj) {
+                        scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(chatGuidsObj);
                     });
 
                     scope.d.selectChatter = function (chatter) {

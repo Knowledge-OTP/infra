@@ -19,21 +19,28 @@
                 .preferredLanguage('en');
             var chatPaths = {
                 chatPath: 'chats',
-                chatsUsersGuids: 'users/$$uid/chats'
+                chatsUsersGuids: 'users/$$uid/chats',
+                studentAppName: 'sat_app',
+                dashboardAppName: 'sat_dashboard',
+                newChatParticipantsListener: 'users/$$uid/invitations/approved'
             };
 
-            function participantsGetterFn(teachersSrv) {
-                return teachersSrv.getAllTeachers().then(function (teachers) {
-                    var teachersKeys = Object.keys(teachers);
-                    angular.forEach(teachersKeys, function (key) {
-                        teachers[key].isTeacher = true;
-                    });
-                    return teachers;
-                })
+            function buildChatter($q) {
+                'ngInject';
+                return function (teacher) {
+                    var studentObj = {
+                        name: teacher.senderName,
+                        email: teacher.senderEmail,
+                        uid: teacher.senderUid,
+                        isTeacher: true
+                    };
+                    return $q.when(studentObj);
+                }
+
             }
 
             znkChatDataSrvProvider.setChatPaths(chatPaths);
-            znkChatDataSrvProvider.setParticipantsGetterFn(participantsGetterFn);
+            znkChatDataSrvProvider.setBuildChatterFnGetter(buildChatter);
             PresenceServiceProvider.setAuthServiceName('AuthService');
 
         })
@@ -54,7 +61,7 @@
         fbDataEndPoint: "https://sat-dev.firebaseio.com/",
         appContext: 'student',
         studentAppName: 'sat_app',
-        dashboardAppName: 'sat_dashboard',
+        firebaseDashboardAppScopeName: 'sat_dashboard',
         videosEndPoint: "//dfz02hjbsqn5e.cloudfront.net/sat_app/",
         mediaEndPoint: "//dfz02hjbsqn5e.cloudfront.net/",
         fbGlobalEndPoint: 'https://znk-dev.firebaseio.com/'

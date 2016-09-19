@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').service('znkChatSrv',
-        function (InfraConfigSrv, $q, UserProfileService, znkChatDataSrv, $log, UtilitySrv, ZNK_CHAT) {
+        function (InfraConfigSrv, $q, UserProfileService, znkChatDataSrv, $log, UtilitySrv) {
             'ngInject';
 
             var self = this;
@@ -19,25 +19,6 @@
             function _getStorage() {
                 return InfraConfigSrv.getGlobalStorage();
             }
-
-            self.getChatParticipants = function () {          // e.g teacher --> connected students
-                return znkChatDataSrv.getChatParticipants().then(function (participants) {
-                    var chatParticipantsObj = {};
-                    var supportObj = {};
-                    var participantsKeys = Object.keys(participants);
-
-                    angular.forEach(participantsKeys, function (key) {
-                        if (participants[key].email === ZNK_CHAT.SUPPORT_EMAIL) {
-                            supportObj = participants[key];
-                            delete participants[key];
-                        }
-                    });
-
-                    chatParticipantsObj.support = supportObj;
-                    chatParticipantsObj.participants = participants;
-                    return chatParticipantsObj;
-                });
-            };
 
             self.getChatGuidsByUid = function (uid, isTeacher) {
                 return _getUserStorage(isTeacher).then(function (userStorage) {
@@ -85,6 +66,7 @@
                         }
                     }
                 }
+                return undefined;
             };
 
             self.createNewChat = function (localUser, secondUser) {
@@ -97,8 +79,8 @@
                     var newChatObj = _createNewChatObj(localUser, secondUser);
                     chatGuid = chatsRef.push(newChatObj).key();
 
-                    var localUserPath = localUser.isTeacher ? 'sat_dashboard/' : 'sat_app/';
-                    var secondUserPath = secondUser.isTeacher ? 'sat_dashboard/' : 'sat_app/';
+                    var localUserPath = localUser.isTeacher ? znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';
+                    var secondUserPath = secondUser.isTeacher ?znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';
 
                     localUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', localUser.uid);
                     secondUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', secondUser.uid);
@@ -113,6 +95,8 @@
                     var secondUserWriteChatGuidsProm = chatterRef.update(userNewChatGuid);
                     return $q.all([localUserWriteChatGuidsProm, secondUserWriteChatGuidsProm]).then(function () {
                         return chatGuid;
+                    },function(error){
+                        $log.error('znkChat: error while creating new chat: ' + error);
                     });
                 });
             };

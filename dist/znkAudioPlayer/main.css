@@ -283,7 +283,7 @@ znk-audio-player {
   min-width: 150px; }
   znk-audio-player .time-display {
     font-size: 14px;
-    color: #fff;
+    color: #ffffff;
     font-family: Lato;
     min-width: 41px; }
     znk-audio-player .time-display.time-passed {

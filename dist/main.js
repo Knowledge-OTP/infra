@@ -47,6 +47,7 @@
 "znk.infra.znkExercise",
 "znk.infra.znkModule",
 "znk.infra.znkProgressBar",
+"znk.infra.znkQuestionReport",
 "znk.infra.znkTimeline"
     ]);
 })(angular);
@@ -106,7 +107,7 @@
                         receiverId = uid;
                         var promsArr = [
                             PresenceService.getCurrentUserStatus(receiverId),
-                            CallsUiSrv.getCalleeName(receiverId, uid)
+                            CallsUiSrv.getCalleeName(uid)
                         ];
                         $q.all(promsArr).then(function (res) {
                             scope.d.currentUserPresenceStatus = res[0];
@@ -1228,7 +1229,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 
             var soundSrc = ENV.mediaEndpoint + '/general/incomingCall.mp3';
 
-            CallsUiSrv.getCalleeName(callsData.receiverId, callsData.callerId).then(function(res){
+            CallsUiSrv.getCalleeName(callsData.callerId).then(function(res){
                 $scope.callerName = res;
             });
 
@@ -1362,7 +1363,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 isPendingClick = clickStatus;
             }
 
-            CallsUiSrv.getCalleeName(callsData.receiverId, callsData.callerId).then(function(res){
+            CallsUiSrv.getCalleeName(callsData.receiverId).then(function(res){
                 $scope.calleeName = res;
             });
 
@@ -1805,7 +1806,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                         break;
                     case 'alreadyActive':
                         modalData.errorMessage = CALLS_ERROR_TEXT.alreadyActive;
-                        errorProm = CallsUiSrv.getCalleeName(err.receiverId, err.callerId).then(function (name) {
+                        errorProm = CallsUiSrv.getCalleeName(err.receiverId).then(function (name) {
                             modalData.errorValues = {
                                 calleeName: name
                             };
@@ -2307,9 +2308,9 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     }
                 };
 
-                CallsUiSrv.getCalleeName = function(receiverId, callerId) {
+                CallsUiSrv.getCalleeName = function(uid) {
                     var namePromOrFnGetter = $injector.invoke(calleeNameFn);
-                    var nameProm = namePromOrFnGetter(receiverId, callerId);
+                    var nameProm = namePromOrFnGetter(uid);
                     return nameProm.then(function(res){
                         return res;
                     });
@@ -8263,7 +8264,8 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                         ref.on(type, function (snapshot) {
                             self.__registeredEvents[type][path].firstOnWasInvoked = true;
                             var newVal = snapshot.val();
-                            self.__invokeEventCb(type, path, [newVal]);
+                            var key = snapshot.key();
+                            self.__invokeEventCb(type, path, [newVal, key]);
                         });
                     } else {
                         if (self.__registeredEvents[type][path].firstOnWasInvoked) {
@@ -10368,7 +10370,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     };
 
                     scope.d.sendMessage = function () {
-                        if (scope.d.newMessage.length > 0) {
+                        if (scope.d.newMessage.length > 0 && angular.isDefined(scope.chatterObj) && scope.chatterObj.chatGuid) {
                             var newMessageObj = {
                                 time: Firebase.ServerValue.TIMESTAMP,
                                 uid: scope.userId,
@@ -10389,7 +10391,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('chatParticipants',
-        function () {
+        ["znkChatDataSrv", "znkChatEventSrv", "ZNK_CHAT", function (znkChatDataSrv, znkChatEventSrv, ZNK_CHAT) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/chatParticipants.template.html',
@@ -10401,9 +10403,27 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     scope.d = {};
                     scope.d.chatData = scope.chatData;
                     scope.d.selectChatter = scope.selectChatter();
+                    scope.d.chatData.chatParticipantsArr = [];
+                    var chatPaths = znkChatDataSrv.getChatPaths();
+                    var localUserUid = scope.d.chatData.localUser.uid;
+                    var chattersPath = chatPaths.newChatParticipantsListener;
+                    chattersPath = chattersPath.replace('$$uid', localUserUid);
+
+                    var newChatterHandler = function (newChatter) {
+                        if (newChatter.email === ZNK_CHAT.SUPPORT_EMAIL) {
+                            scope.d.chatData.support = newChatter;
+                        } else {
+                            scope.d.chatData.chatParticipantsArr.push(newChatter);
+                        }
+                    };
+                    znkChatEventSrv.getChattersListener(chattersPath, newChatterHandler);
+
+                    scope.$on('$destroy', function () {
+                        znkChatEventSrv.offNewChatterEvent(chattersPath);
+                    });
                 }
             };
-        }
+        }]
     );
 })(angular);
 
@@ -10431,7 +10451,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     scope.d.userStatus = PresenceService.userStatus;
                     scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
 
-
                     function trackUserPresenceCB(newStatus, userId) {
                         $timeout(function () {
                             if (scope.chatterObj.uid === userId) {
@@ -10451,7 +10470,12 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                         znkChatSrv.getChatGuidsByUid(scope.chatterObj.uid, scope.chatterObj.isTeacher).then(function (chatterChatGuidsArr) {
                             if (angular.isArray(chatterChatGuidsArr) && angular.isArray(scope.localUserChatsGuidsArr) && scope.localUserChatsGuidsArr.length > 0 && chatterChatGuidsArr.length > 0) {
-                                chatGuidProm = znkChatSrv.getChatGuidByTwoGuidsArray(scope.localUserChatsGuidsArr, chatterChatGuidsArr);
+                                var chatGuid = znkChatSrv.getChatGuidByTwoGuidsArray(scope.localUserChatsGuidsArr, chatterChatGuidsArr);
+                                if (angular.isDefined(chatGuid)) {
+                                    chatGuidProm = chatGuid;
+                                } else {
+                                    chatGuidProm = _listenToNewChat();
+                                }
                             } else {
                                 scope.setFirstChatter(scope.chatterObj); // first chatter with no existing chat
                                 chatGuidProm = _listenToNewChat();
@@ -10509,14 +10533,13 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                             var newChatObj = snapshot.val();
                             if (newChatObj) {
                                 znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher).then(function (localUserChatGuidsArr) {
-                                        var newChatGuid = Object.keys(newChatObj)[0];
-                                        var chatGuid = znkChatSrv.getChatGuidByTwoGuidsArray(localUserChatGuidsArr, [newChatGuid]);
-                                        if (angular.isDefined(chatGuid) && chatGuid === newChatGuid) {
-                                            znkChatEventSrv.offEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
-                                            deferred.resolve(newChatGuid);
-                                        }
+                                    var newChatGuid = Object.keys(newChatObj)[0];
+                                    var chatGuid = znkChatSrv.getChatGuidByTwoGuidsArray(localUserChatGuidsArr, [newChatGuid]);
+                                    if (angular.isDefined(chatGuid) && chatGuid === newChatGuid) {
+                                        znkChatEventSrv.offMsgOrNewChatEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
+                                        deferred.resolve(newChatGuid);
                                     }
-                                );
+                                });
                             }
                         }
 
@@ -10529,8 +10552,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     }
 
                     scope.$on('$destroy', function () {
-                        znkChatEventSrv.offEvent(offEvent.messageEvent.eventType, offEvent.messageEvent.path, offEvent.messageEvent.callback);
-                        znkChatEventSrv.offEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
+                        znkChatEventSrv.offMsgOrNewChatEvent(offEvent.messageEvent.eventType, offEvent.messageEvent.path, offEvent.messageEvent.callback);
+                        znkChatEventSrv.offMsgOrNewChatEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
                         PresenceService.stopTrackUserPresence(scope.chatterObj.uid);
                     });
                 }
@@ -10544,15 +10567,18 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('znkChat',
-        ["$translatePartialLoader", "znkChatSrv", "$q", "UtilitySrv", "ZNK_CHAT", function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, ZNK_CHAT) {
+        ["$translatePartialLoader", "znkChatSrv", "$q", "UtilitySrv", "ZNK_CHAT", "$timeout", function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, ZNK_CHAT, $timeout) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/znkChat.template.html',
                 scope: {
                     localUser: '='
                 },
-                link: function (scope) {
+                link: function (scope, element) {
                     $translatePartialLoader.addPart('znkChat');
+                    $timeout(function(){
+                        element.addClass('animate-chat');
+                    });
 
                     scope.statesView = {
                         CHAT_BUTTON_VIEW: 1,
@@ -10570,11 +10596,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     scope.d.chatStateView = scope.statesView.CHAT_BUTTON_VIEW;
                     scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
 
-                    $q.all([znkChatSrv.getChatParticipants(), znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher)]).then(function (res) {
-                        var allChatParticipants = res[0];
-                        scope.d.chatData.chatParticipantsArr = UtilitySrv.object.convertToArray(allChatParticipants.participants);
-                        scope.d.chatData.support = allChatParticipants.support;
-                        scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(res[1]);
+                    znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher).then(function (chatGuidsObj) {
+                        scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(chatGuidsObj);
                     });
 
                     scope.d.selectChatter = function (chatter) {
@@ -10654,7 +10677,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
     angular.module('znk.infra.znkChat').constant('ZNK_CHAT', {
         MAX_NUM_UNSEEN_MESSAGES: 10,
-        SUPPORT_EMAIL: 'support@zinkerz.com'
+        SUPPORT_EMAIL: 'support@zinkerz.com',
+        STUDENT_STORAGE: 0,
+        TEACHER_STORAGE: 1
     });
 })(angular);
 
@@ -10666,14 +10691,14 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             'ngInject';
 
             var znkChatPathsObj = {};
-            var chatParticipantsGetter;
+            var buildNewChatterFnGetter;
 
             this.setChatPaths = function (chatPathsObj) {
                 znkChatPathsObj = chatPathsObj;
             };
 
-            this.setParticipantsGetterFn = function (participantsGetterFn) {
-                chatParticipantsGetter = participantsGetterFn;
+            this.setBuildChatterFnGetter = function (buildChatterFn) {
+                buildNewChatterFnGetter = buildChatterFn;
             };
 
             this.$get = ["$injector", function ($injector) {
@@ -10683,8 +10708,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     return znkChatPathsObj;
                 };
 
-                znkChat.getChatParticipants = function () {
-                    return $injector.invoke(chatParticipantsGetter);
+                znkChat.buildNewChatter = function (user, userId) {
+                    var buildNewChatter = $injector.invoke(buildNewChatterFnGetter);
+                    return buildNewChatter(user, userId);
                 };
 
                 return znkChat;
@@ -10698,43 +10724,75 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkChat').service('znkChatEventSrv',
-        ["$q", "InfraConfigSrv", "ENV", function ($q, InfraConfigSrv, ENV) {
+        ["$q", "InfraConfigSrv", "ENV", "znkChatDataSrv", "ZNK_CHAT", function ($q, InfraConfigSrv, ENV, znkChatDataSrv, ZNK_CHAT) {
             'ngInject';
 
             var self = this;
+            var appContext = ENV.appContext;
+            var oppositeStorageType = appContext === 'student' ? ZNK_CHAT.TEACHER_STORAGE : ZNK_CHAT.STUDENT_STORAGE;
+            var storageType = appContext === 'student' ? ZNK_CHAT.STUDENT_STORAGE : ZNK_CHAT.TEACHER_STORAGE;
 
-            function _getUserStorage(){
-                if(ENV.appContext === 'student'){
-                    return InfraConfigSrv.getTeacherStorage();
-                } else{
-                    return InfraConfigSrv.getStudentStorage();
+            var studentStorage = InfraConfigSrv.getStudentStorage();
+            var teacherStorage = InfraConfigSrv.getTeacherStorage();
+            function _getUserStorage(type) {
+                if (type === ZNK_CHAT.STUDENT_STORAGE) {
+                    return studentStorage;
+                }
+                if (type === ZNK_CHAT.TEACHER_STORAGE) {
+                    return teacherStorage;
                 }
             }
 
-            function _getStorage() {
+            function _getGlobalStorage() {
                 return InfraConfigSrv.getGlobalStorage();
             }
 
-
             self.registerMessagesEvent = function (type, path, callback) {
-                return _getStorage().then(function (userStorage) {
+                return _getGlobalStorage(oppositeStorageType).then(function (userStorage) {
                     var adapterRef = userStorage.adapter.getRef(path);
                     adapterRef.orderByKey().limitToLast(10).on(type, callback);
                 });
             };
 
             self.registerNewChatEvent = function (type, path, callback) {
-                return _getUserStorage().then(function (userStorage) {
+                return _getUserStorage(oppositeStorageType).then(function (userStorage) {
                     var adapterRef = userStorage.adapter.getRef(path);
                     adapterRef.orderByKey().limitToLast(1).on(type, callback);
                 });
             };
 
-            self.offEvent = function(type, path, callback){
-                return _getStorage().then(function (globalStorage) {
-                    globalStorage.offEvent(type,path, callback);
+            var getChattersCb;
+            function _buildChatterObject(callback) {
+                if (angular.isUndefined(getChattersCb)) {
+                    getChattersCb = function (user, UserUid) {
+                        znkChatDataSrv.buildNewChatter(user, UserUid).then(function (newChatter) {
+                            callback(newChatter);
+                        });
+                    };
+                }
+                return getChattersCb;
+            }
+
+            self.getChattersListener = function (path, callback) {
+                return _getUserStorage(storageType).then(function (userStorage) {
+                    userStorage.onEvent('child_added', path, _buildChatterObject(callback));
                 });
             };
+
+            self.offMsgOrNewChatEvent = function (type, path, callback) {
+                return _getUserStorage(oppositeStorageType).then(function (userStorage) {
+                    var userStorageRef = userStorage.adapter.getRef();  // the event was registered outside storageSrv so it must unregistered outside also
+                    var eventPath = userStorageRef.child(path);
+                    eventPath.off(type, callback);
+                });
+            };
+
+            self.offNewChatterEvent = function (path) {
+                return _getUserStorage(storageType).then(function (userStorage) {
+                    userStorage.offEvent('child_added', path, getChattersCb);
+                });
+            };
+
         }]
     );
 })(angular);
@@ -10743,7 +10801,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkChat').service('znkChatSrv',
-        ["InfraConfigSrv", "$q", "UserProfileService", "znkChatDataSrv", "$log", "UtilitySrv", "ZNK_CHAT", function (InfraConfigSrv, $q, UserProfileService, znkChatDataSrv, $log, UtilitySrv, ZNK_CHAT) {
+        ["InfraConfigSrv", "$q", "UserProfileService", "znkChatDataSrv", "$log", "UtilitySrv", function (InfraConfigSrv, $q, UserProfileService, znkChatDataSrv, $log, UtilitySrv) {
             'ngInject';
 
             var self = this;
@@ -10760,25 +10818,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             function _getStorage() {
                 return InfraConfigSrv.getGlobalStorage();
             }
-
-            self.getChatParticipants = function () {          // e.g teacher --> connected students
-                return znkChatDataSrv.getChatParticipants().then(function (participants) {
-                    var chatParticipantsObj = {};
-                    var supportObj = {};
-                    var participantsKeys = Object.keys(participants);
-
-                    angular.forEach(participantsKeys, function (key) {
-                        if (participants[key].email === ZNK_CHAT.SUPPORT_EMAIL) {
-                            supportObj = participants[key];
-                            delete participants[key];
-                        }
-                    });
-
-                    chatParticipantsObj.support = supportObj;
-                    chatParticipantsObj.participants = participants;
-                    return chatParticipantsObj;
-                });
-            };
 
             self.getChatGuidsByUid = function (uid, isTeacher) {
                 return _getUserStorage(isTeacher).then(function (userStorage) {
@@ -10826,6 +10865,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         }
                     }
                 }
+                return undefined;
             };
 
             self.createNewChat = function (localUser, secondUser) {
@@ -10838,8 +10878,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     var newChatObj = _createNewChatObj(localUser, secondUser);
                     chatGuid = chatsRef.push(newChatObj).key();
 
-                    var localUserPath = localUser.isTeacher ? 'sat_dashboard/' : 'sat_app/';
-                    var secondUserPath = secondUser.isTeacher ? 'sat_dashboard/' : 'sat_app/';
+                    var localUserPath = localUser.isTeacher ? znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';
+                    var secondUserPath = secondUser.isTeacher ?znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';
 
                     localUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', localUser.uid);
                     secondUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', secondUser.uid);
@@ -10854,6 +10894,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     var secondUserWriteChatGuidsProm = chatterRef.update(userNewChatGuid);
                     return $q.all([localUserWriteChatGuidsProm, secondUserWriteChatGuidsProm]).then(function () {
                         return chatGuid;
+                    },function(error){
+                        $log.error('znkChat: error while creating new chat: ' + error);
                     });
                 });
             };
@@ -11046,6 +11088,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     angular.module('znk.infra.znkExercise', [
         'ngAnimate',
         'pascalprecht.translate',
+        'znk.infra.znkQuestionReport',
         'znk.infra.svgIcon',
         'znk.infra.scroll',
         'znk.infra.autofocus',
@@ -11054,23 +11097,23 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
         'znk.infra.popUp',
         'znk.infra.user'
     ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
-                var svgMap = {
-                    'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg',
-                    'znk-exercise-eraser': 'components/znkExercise/svg/tools-eraser.svg',
-                    'znk-exercise-pencil': 'components/znkExercise/svg/tools-pencil.svg',
-                    'znk-exercise-pointer': 'components/znkExercise/svg/tools-pointer.svg',
-                    'znk-exercise-remove': 'components/znkExercise/svg/tools-remove.svg',
-                    'znk-exercise-touche': 'components/znkExercise/svg/tools-touche.svg'
-                };
-                SvgIconSrvProvider.registerSvgSources(svgMap);
-            }])
-        .run(["$translatePartialLoader", function ($translatePartialLoader) {
-            'ngInject';
-            $translatePartialLoader.addPart('znkExercise');
-        }]);
+    .config([
+        'SvgIconSrvProvider',
+        function (SvgIconSrvProvider) {
+            var svgMap = {
+                'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg',
+                'znk-exercise-eraser': 'components/znkExercise/svg/tools-eraser.svg',
+                'znk-exercise-pencil': 'components/znkExercise/svg/tools-pencil.svg',
+                'znk-exercise-pointer': 'components/znkExercise/svg/tools-pointer.svg',
+                'znk-exercise-remove': 'components/znkExercise/svg/tools-remove.svg',
+                'znk-exercise-touche': 'components/znkExercise/svg/tools-touche.svg'
+            };
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+        }])
+    .run(["$translatePartialLoader", function ($translatePartialLoader) {
+        'ngInject';
+        $translatePartialLoader.addPart('znkExercise');
+    }]);
 })(angular);
 
 /**
@@ -11598,8 +11641,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('questionsCarousel', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum', '$timeout',
-        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum, $timeout) {
+        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ExerciseTypeEnum',
+        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum, $timeout, ExerciseTypeEnum) {
             return {
                 templateUrl: function(){
                     var templateUrl = "components/znkExercise/core/template/";
@@ -11625,6 +11668,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 },
                 link: function (scope, element, attrs, ngModelCtrl) {
                     scope.vm = {};
+
+                    scope.vm.exerciseTypeEnum = ExerciseTypeEnum;
 
                     ngModelCtrl.$render = function(){
                         scope.vm.currSlideIndex = ngModelCtrl.$viewValue;
@@ -14131,7 +14176,8 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "            ng-change=\"vm.SlideChanged()\"\n" +
     "            disable-swipe=\"{{vm.isLocked}}\">\n" +
     "    <div class=\"swiper-slide\"\n" +
-    "        ng-repeat=\"question in vm.questions \">\n" +
+    "        ng-repeat=\"question in vm.questions\">\n" +
+    "        <znk-question-report report-data=\"question\" ng-if=\"question.parentTypeId !== vm.exerciseTypeEnum.LECTURE.enum\"></znk-question-report>\n" +
     "        <question-builder question=\"question\"\n" +
     "                          rate-answer-formatter-parser\n" +
     "                          ng-model=\"question.__questionStatus.userAnswer\"\n" +
@@ -14260,6 +14306,27 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "<g>\n" +
     "	<line class=\"st0\" x1=\"7.5\" y1=\"62\" x2=\"67\" y2=\"121.5\"/>\n" +
     "	<line class=\"st0\" x1=\"67\" y1=\"121.5\" x2=\"181\" y2=\"7.5\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/report-question-icon.svg",
+    "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"0 0 141.3 179.7\" class=\"report-question-icon\">\n" +
+    "	    <style type=\"text/css\">\n" +
+    "        .report-question-icon {\n" +
+    "            fill: #ffffff;\n" +
+    "            width: 100%;\n" +
+    "            height: auto;\n" +
+    "        }\n" +
+    "    </style>\n" +
+    "<g id=\"_x33_UU5wB.tif\">\n" +
+    "	<g>\n" +
+    "		<path d=\"M141.3,68.7c0,0.7,0,1.3,0,2c-6.7,12.2-18,17.3-31,18.9c-10.5,1.3-21.2,1.6-31.7,3.2c-9.7,1.5-18.4,5.5-24.3,14.1\n" +
+    "			c-1.8,2.6-2,4.8-0.5,7.7c8,16.3,15.7,32.6,23.6,49c4.2,8.8,3.8,10.4-3.9,16.1c-2.3,0-4.7,0-7,0c-1.8-2.7-3.8-5.3-5.2-8.3\n" +
+    "			c-9.8-20-19.4-40.1-29.1-60.1C21.8,90.4,11.7,69.4,1.6,48.5c-1.8-3.7-2.6-8,0.6-10.6c2.5-2.1,6.6-3,9.9-2.9\n" +
+    "			c2.2,0.1,4.3,2.9,6.5,4.6c8.9-11.4,14.8-15.2,28.2-17.5c5.9-1,11.9-0.9,17.9-1.4c16.6-1.3,33.1-2.9,42.7-20.7\n" +
+    "			c3.3,6.8,6.4,13,9.4,19.2C124.9,35.7,133.1,52.2,141.3,68.7z\"/>\n" +
+    "	</g>\n" +
     "</g>\n" +
     "</svg>\n" +
     "");
@@ -14592,6 +14659,317 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
     "\n" +
     "\n" +
     "\n" +
+    "");
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkQuestionReport',
+        [
+            'ngMaterial',
+            'znk.infra.popUp',
+            'pascalprecht.translate',
+            'znk.infra.auth',
+            'znk.infra.analytics',
+            'znk.infra.general',
+            'znk.infra.user',
+            'znk.infra.svgIcon',
+            'znk.infra.mailSender'
+        ])
+        .config([
+            'SvgIconSrvProvider',
+            function (SvgIconSrvProvider) {
+                var svgMap = {
+                    'close-popup': 'components/znkQuestionReport/svg/close-popup.svg',
+                    'report-question-icon': 'components/znkQuestionReport/svg/report-question-icon.svg',
+                    'completed-v-report-icon': 'components/znkQuestionReport/svg/completed-v-report.svg'
+                };
+                SvgIconSrvProvider.registerSvgSources(svgMap);
+            }
+        ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkQuestionReport')
+        .component('znkQuestionReport', {
+            bindings: {
+                reportData: '='
+            },
+            template: '<svg-icon class="report-btn" name="report-question-icon" title="{{\'REPORT_POPUP.REPORT_QUESTION\' | translate}}" ng-click="vm.showReportDialog()"></svg-icon>',
+            controllerAs: 'vm',
+            controller: ["$mdDialog", "$translatePartialLoader", function ($mdDialog, $translatePartialLoader) {
+                'ngInject';
+                var vm = this;
+
+                $translatePartialLoader.addPart('znkQuestionReport');
+
+                vm.showReportDialog = function () {
+                    $mdDialog.show({
+                        locals:{ reportData: vm.reportData },
+                        controller: 'znkReportCtrl',
+                        controllerAs: 'vm',
+                        templateUrl: 'components/znkQuestionReport/templates/znkReport.template.html',
+                        clickOutsideToClose: true
+                    });
+                };
+            }]
+        });
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkQuestionReport').controller('znkReportCtrl',
+        ["$log", "$mdDialog", "$timeout", "$http", "$translate", "ENV", "AuthService", "MailSenderService", "reportData", function($log, $mdDialog, $timeout, $http, $translate, ENV, AuthService, MailSenderService, reportData) {
+            'ngInject';
+
+            var self = this;
+            var userAuth = AuthService.getAuth();
+            var MAIL_TO_SEND = 'support@zinkerz.com';
+            var TEMPLATE_KEY = 'reportQuestion';
+            var EMAIL_SUBJECT = $translate('REPORT_POPUP.REPORT_QUESTION');
+            var emailMessagePromise = $translate('REPORT_POPUP.MESSAGE');
+
+            self.success = false;
+            self.reportData = reportData;
+            self.reportData.app = ENV.firebaseAppScopeName.split('_')[0].toUpperCase();
+            self.reportData.email = userAuth.auth.email;
+            emailMessagePromise.then(function (message) {
+                self.reportData.message = message;
+            });
+
+            $timeout(function () {
+                document.getElementById('report-textarea').focus();
+            });
+
+            this.stopBubbling = function (e) {
+                if (e.stopPropagation) { e.stopPropagation(); }
+                if (e.cancelBubble !== null) { e.cancelBubble = true; }
+            };
+
+            this.sendFrom = function () {
+                if (self.reportForm.$valid) {
+                    self.startLoader = true;
+                    self.reportData.email = self.reportData.email ?
+                        self.reportData.email : userAuth.auth.email ? userAuth.auth.email : 'N/A';
+
+                    // subject format: ReportQuestion - [App Name]
+                    var emailSubject = EMAIL_SUBJECT;
+                    emailSubject += ' - ' + self.reportData.app;
+
+                    var ADD_TO_MESSAGE = '<br><br>' + 'App: ' + ENV.firebaseAppScopeName + ' | ';
+                    ADD_TO_MESSAGE += '<br>' + 'Question ID: ' + self.reportData.id + ' | ';
+                    ADD_TO_MESSAGE += '<br>' + 'Question QUID: ' + self.reportData.quid + ' | ';
+                    ADD_TO_MESSAGE += '<br>' + 'Exercise ID: ' + self.reportData.parentId + ' | ';
+                    ADD_TO_MESSAGE += '<br>' + 'Exercise Type ID: ' + self.reportData.parentTypeId + ' | ';
+                    ADD_TO_MESSAGE += '<br>' + 'userEmail: ' + self.reportData.email + ' | ';
+                    ADD_TO_MESSAGE += '<br>' + 'userId: ' + userAuth.auth.uid;
+
+                    var message = self.reportData.message + ADD_TO_MESSAGE;
+
+                    var dataToSend = {
+                        emails: [MAIL_TO_SEND],
+                        message: message,
+                        subject: emailSubject,
+                        appName: ENV.firebaseAppScopeName,
+                        templateKey: TEMPLATE_KEY
+                    };
+
+                    MailSenderService.postMailRequest(dataToSend).then(function (res) {
+                        self.fillLoader = true;
+                        $timeout(function () {
+                            self.startLoader = self.fillLoader = false;
+                        }, 100);
+
+                        if (res.data.success) {
+                            self.success = true;
+                        } else {
+                            $log.error('Error sending mail');
+                        }
+                    }, function (message) {
+                        $log.error(message);
+
+                        self.fillLoader = true;
+                        $timeout(function () {
+                            self.startLoader = self.fillLoader = false;
+                        }, 100);
+                    });
+                }
+            };
+            this.cancel = function () {
+                $mdDialog.cancel();
+            };
+        }]);
+})(angular);
+
+angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/znkQuestionReport/svg/close-popup.svg",
+    "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"-596.6 492.3 133.2 133.5\" xml:space=\"preserve\" class=\"close-pop-svg\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.close-pop-svg {width: 100%; height: auto;}\n" +
+    "	.close-pop-svg .st0{fill:none;enable-background:new    ;}\n" +
+    "	.close-pop-svg .st1{fill:none;stroke:#ffffff;stroke-width:8;stroke-linecap:round;stroke-miterlimit:10;}\n" +
+    "</style>\n" +
+    "<path class=\"st0\"/>\n" +
+    "<g>\n" +
+    "	<line class=\"st1\" x1=\"-592.6\" y1=\"496.5\" x2=\"-467.4\" y2=\"621.8\"/>\n" +
+    "	<line class=\"st1\" x1=\"-592.6\" y1=\"621.5\" x2=\"-467.4\" y2=\"496.3\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkQuestionReport/svg/completed-v-report.svg",
+    "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"-1040 834.9 220.4 220.4\" xml:space=\"preserve\" class=\"completed-v-feedback-svg\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.completed-v-feedback-svg {width: 100%; height: auto;}\n" +
+    "	.completed-v-feedback-svg .st0{fill:none;enable-background:new    ;}\n" +
+    "	.completed-v-feedback-svg .st1{fill:#CACBCC;}\n" +
+    "	.completed-v-feedback-svg .st2{display:none;fill:none;}\n" +
+    "	.completed-v-feedback-svg .st3{fill:#D1D2D2;}\n" +
+    "	.completed-v-feedback-svg .st4{fill:none;stroke:#FFFFFF;stroke-width:11.9321;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}\n" +
+    "</style>\n" +
+    "<path class=\"st0\" d=\"M-401,402.7\"/>\n" +
+    "<circle class=\"st1\" cx=\"-929.8\" cy=\"945.1\" r=\"110.2\"/>\n" +
+    "<circle class=\"st2\" cx=\"-929.8\" cy=\"945.1\" r=\"110.2\"/>\n" +
+    "<path class=\"st3\" d=\"M-860.2,895.8l40,38.1c-5.6-55.6-52.6-99-109.6-99c-60.9,0-110.2,49.3-110.2,110.2\n" +
+    "	c0,60.9,49.3,110.2,110.2,110.2c11.6,0,22.8-1.8,33.3-5.1l-61.2-58.3L-860.2,895.8z\"/>\n" +
+    "<polyline class=\"st4\" points=\"-996.3,944.8 -951.8,989.3 -863.3,900.8 \"/>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkQuestionReport/svg/report-flag.svg",
+    "<svg x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "	 viewBox=\"-145 277 60 60\"\n" +
+    "	 class=\"flag-svg\">\n" +
+    "    <style type=\"text/css\">\n" +
+    "        .flag-svg .st0 {\n" +
+    "            fill: #ffffff;\n" +
+    "            stroke-width: 5;\n" +
+    "            stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "        .flag-svg {\n" +
+    "            width: 100%;\n" +
+    "            height: auto;\n" +
+    "        }\n" +
+    "    </style>\n" +
+    "<g id=\"kUxrE9.tif\">\n" +
+    "	<g>\n" +
+    "		<path class=\"st0\" id=\"XMLID_93_\" d=\"M-140.1,287c0.6-1.1,1.7-1.7,2.9-1.4c1.3,0.3,2,1.1,2.3,2.3c1.1,4,2.1,8,3.2,12c2.4,9.3,4.9,18.5,7.3,27.8\n" +
+    "			c0.1,0.3,0.2,0.6,0.2,0.9c0.3,1.7-0.6,3-2.1,3.3c-1.4,0.3-2.8-0.5-3.3-2.1c-1-3.6-2-7.3-2.9-10.9c-2.5-9.5-5-19-7.6-28.6\n" +
+    "			C-140.1,290-140.8,288.3-140.1,287M-89.6,289.1c-1,6.8-2.9,13-10,16c-3.2,1.4-6.5,1.6-9.9,0.9c-2-0.4-4-0.7-6-0.6c-4.2,0.3-7.1,2.7-9,6.4\n" +
+    "			c-0.3,0.5-0.5,1.1-0.9,2c-0.3-1-0.5-1.7-0.8-2.5c-2-7-3.9-14.1-5.9-21.2c-0.3-1-0.1-1.7,0.5-2.4c4.5-6,11-7.4,17.5-3.6\n" +
+    "			c3.4,2,6.7,4.2,10.2,6.1c1.9,1,3.9,1.9,5.9,2.4c3.2,0.9,5.9,0,7.9-2.6C-90,289.7-89.8,289.4-89.6,289.1z\"/>\n" +
+    "	</g>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkQuestionReport/svg/report-question-icon.svg",
+    "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"0 0 141.3 179.7\" class=\"report-question-icon\">\n" +
+    "	    <style type=\"text/css\">\n" +
+    "        .report-question-icon {\n" +
+    "            fill: #ffffff;\n" +
+    "            width: 100%;\n" +
+    "            height: auto;\n" +
+    "        }\n" +
+    "    </style>\n" +
+    "<g id=\"_x33_UU5wB.tif\">\n" +
+    "	<g>\n" +
+    "		<path d=\"M141.3,68.7c0,0.7,0,1.3,0,2c-6.7,12.2-18,17.3-31,18.9c-10.5,1.3-21.2,1.6-31.7,3.2c-9.7,1.5-18.4,5.5-24.3,14.1\n" +
+    "			c-1.8,2.6-2,4.8-0.5,7.7c8,16.3,15.7,32.6,23.6,49c4.2,8.8,3.8,10.4-3.9,16.1c-2.3,0-4.7,0-7,0c-1.8-2.7-3.8-5.3-5.2-8.3\n" +
+    "			c-9.8-20-19.4-40.1-29.1-60.1C21.8,90.4,11.7,69.4,1.6,48.5c-1.8-3.7-2.6-8,0.6-10.6c2.5-2.1,6.6-3,9.9-2.9\n" +
+    "			c2.2,0.1,4.3,2.9,6.5,4.6c8.9-11.4,14.8-15.2,28.2-17.5c5.9-1,11.9-0.9,17.9-1.4c16.6-1.3,33.1-2.9,42.7-20.7\n" +
+    "			c3.3,6.8,6.4,13,9.4,19.2C124.9,35.7,133.1,52.2,141.3,68.7z\"/>\n" +
+    "	</g>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkQuestionReport/templates/znkReport.template.html",
+    "<div class=\"report-dialog\">\n" +
+    "    <md-dialog class=\"base base-border-radius report-container\" translate-namespace=\"REPORT_POPUP\">\n" +
+    "        <div class=\"top-icon-wrap\">\n" +
+    "            <div class=\"top-icon\">\n" +
+    "                <div class=\"round-icon-wrap\">\n" +
+    "                    <svg-icon name=\"report-question-icon\"></svg-icon>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"popup-header\">\n" +
+    "            <div class=\"close-popup-wrap\" ng-click=\"vm.cancel();\">\n" +
+    "                <svg-icon name=\"close-popup\"></svg-icon>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "        <md-dialog-content>\n" +
+    "            <div class=\"report-inner\">\n" +
+    "                <div class=\"main-title\" translate=\".REPORT_QUESTION\"></div>\n" +
+    "                <ng-switch on=\"vm.success\">\n" +
+    "                    <section ng-switch-when=\"false\">\n" +
+    "                        <div class=\"sub-title\" translate=\".SUB_TITLE\"></div>\n" +
+    "                        <form novalidate name=\"vm.reportForm\" class=\"base-form\" ng-submit=\"vm.sendFrom();\">\n" +
+    "\n" +
+    "							<textarea\n" +
+    "                                    required autofocus\n" +
+    "                                    id=\"report-textarea\"\n" +
+    "                                    name=\"messageFeedback\"\n" +
+    "                                    ng-keydown=\"vm.stopBubbling($event)\"\n" +
+    "                                    ng-model=\"vm.reportData.message\"\n" +
+    "                                    placeholder=\"{{'REPORT_POPUP.PLACEHOLDER' | translate}}\">\n" +
+    "                            </textarea>\n" +
+    "\n" +
+    "                            <label\n" +
+    "                                    ng-class=\"{'hidden': !(vm.reportForm.messageFeedback.$invalid && vm.reportForm.$submitted) }\"\n" +
+    "                                    translate=\".REQUIRED_FIELD\">\n" +
+    "                            </label>\n" +
+    "\n" +
+    "                            <input\n" +
+    "                                    required\n" +
+    "                                    type=\"email\"\n" +
+    "                                    name=\"emailFeedback\"\n" +
+    "                                    placeholder=\"{{'REPORT_POPUP.EMAIL' | translate}}\"\n" +
+    "                                    ng-keydown=\"vm.stopBubbling($event)\"\n" +
+    "                                    ng-model=\"vm.reportData.email\"\n" +
+    "                                    ng-minlength=\"5\"\n" +
+    "                                    ng-maxlength=\"254\">\n" +
+    "\n" +
+    "                            <label\n" +
+    "                                    ng-class=\"{'hidden': !(vm.reportForm.emailFeedback.$invalid && vm.reportForm.$submitted) }\"\n" +
+    "                                    translate=\".CORRECT_EMAIL\">\n" +
+    "                            </label>\n" +
+    "\n" +
+    "                            <button\n" +
+    "                                    class=\"md-button success success-green drop-shadow\"\n" +
+    "                                    element-loader\n" +
+    "                                    fill-loader=\"vm.fillLoader\"\n" +
+    "                                    show-loader=\"vm.startLoader\"\n" +
+    "                                    bg-loader=\"'#72ab40'\"\n" +
+    "                                    precentage=\"50\"\n" +
+    "                                    font-color=\"'#FFFFFF'\"\n" +
+    "                                    bg=\"'#87ca4d'\">\n" +
+    "                                <span translate=\".SEND\"></span>\n" +
+    "                            </button>\n" +
+    "                        </form>\n" +
+    "                    </section>\n" +
+    "                    <section ng-switch-default class=\"success-report\">\n" +
+    "                        <svg-icon name=\"completed-v-report-icon\"></svg-icon>\n" +
+    "                        <div class=\"success-msg\">\n" +
+    "                            <div translate=\".THANKS\"></div>\n" +
+    "                            <div translate=\".OPINION\"></div>\n" +
+    "                        </div>\n" +
+    "                        <md-button\n" +
+    "                                class=\"success success-green drop-shadow\"\n" +
+    "                                ng-click=\"vm.cancel();\">\n" +
+    "                            <span translate=\".DONE\"></span>\n" +
+    "                        </md-button>\n" +
+    "                    </section>\n" +
+    "                </ng-switch>\n" +
+    "            </div>\n" +
+    "        </md-dialog-content>\n" +
+    "    </md-dialog>\n" +
+    "</div>\n" +
     "");
 }]);
 

@@ -4,6 +4,7 @@
     angular.module('znk.infra.znkExercise', [
         'ngAnimate',
         'pascalprecht.translate',
+        'znk.infra.znkQuestionReport',
         'znk.infra.svgIcon',
         'znk.infra.scroll',
         'znk.infra.autofocus',
@@ -12,23 +13,23 @@
         'znk.infra.popUp',
         'znk.infra.user'
     ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
-                var svgMap = {
-                    'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg',
-                    'znk-exercise-eraser': 'components/znkExercise/svg/tools-eraser.svg',
-                    'znk-exercise-pencil': 'components/znkExercise/svg/tools-pencil.svg',
-                    'znk-exercise-pointer': 'components/znkExercise/svg/tools-pointer.svg',
-                    'znk-exercise-remove': 'components/znkExercise/svg/tools-remove.svg',
-                    'znk-exercise-touche': 'components/znkExercise/svg/tools-touche.svg'
-                };
-                SvgIconSrvProvider.registerSvgSources(svgMap);
-            }])
-        .run(["$translatePartialLoader", function ($translatePartialLoader) {
-            'ngInject';
-            $translatePartialLoader.addPart('znkExercise');
-        }]);
+    .config([
+        'SvgIconSrvProvider',
+        function (SvgIconSrvProvider) {
+            var svgMap = {
+                'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg',
+                'znk-exercise-eraser': 'components/znkExercise/svg/tools-eraser.svg',
+                'znk-exercise-pencil': 'components/znkExercise/svg/tools-pencil.svg',
+                'znk-exercise-pointer': 'components/znkExercise/svg/tools-pointer.svg',
+                'znk-exercise-remove': 'components/znkExercise/svg/tools-remove.svg',
+                'znk-exercise-touche': 'components/znkExercise/svg/tools-touche.svg'
+            };
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+        }])
+    .run(["$translatePartialLoader", function ($translatePartialLoader) {
+        'ngInject';
+        $translatePartialLoader.addPart('znkExercise');
+    }]);
 })(angular);
 
 /**
@@ -556,8 +557,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('questionsCarousel', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum', '$timeout',
-        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum, $timeout) {
+        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ExerciseTypeEnum',
+        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum, $timeout, ExerciseTypeEnum) {
             return {
                 templateUrl: function(){
                     var templateUrl = "components/znkExercise/core/template/";
@@ -583,6 +584,8 @@
                 },
                 link: function (scope, element, attrs, ngModelCtrl) {
                     scope.vm = {};
+
+                    scope.vm.exerciseTypeEnum = ExerciseTypeEnum;
 
                     ngModelCtrl.$render = function(){
                         scope.vm.currSlideIndex = ngModelCtrl.$viewValue;
@@ -3089,7 +3092,8 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "            ng-change=\"vm.SlideChanged()\"\n" +
     "            disable-swipe=\"{{vm.isLocked}}\">\n" +
     "    <div class=\"swiper-slide\"\n" +
-    "        ng-repeat=\"question in vm.questions \">\n" +
+    "        ng-repeat=\"question in vm.questions\">\n" +
+    "        <znk-question-report report-data=\"question\" ng-if=\"question.parentTypeId !== vm.exerciseTypeEnum.LECTURE.enum\"></znk-question-report>\n" +
     "        <question-builder question=\"question\"\n" +
     "                          rate-answer-formatter-parser\n" +
     "                          ng-model=\"question.__questionStatus.userAnswer\"\n" +
@@ -3218,6 +3222,27 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "<g>\n" +
     "	<line class=\"st0\" x1=\"7.5\" y1=\"62\" x2=\"67\" y2=\"121.5\"/>\n" +
     "	<line class=\"st0\" x1=\"67\" y1=\"121.5\" x2=\"181\" y2=\"7.5\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/svg/report-question-icon.svg",
+    "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"0 0 141.3 179.7\" class=\"report-question-icon\">\n" +
+    "	    <style type=\"text/css\">\n" +
+    "        .report-question-icon {\n" +
+    "            fill: #ffffff;\n" +
+    "            width: 100%;\n" +
+    "            height: auto;\n" +
+    "        }\n" +
+    "    </style>\n" +
+    "<g id=\"_x33_UU5wB.tif\">\n" +
+    "	<g>\n" +
+    "		<path d=\"M141.3,68.7c0,0.7,0,1.3,0,2c-6.7,12.2-18,17.3-31,18.9c-10.5,1.3-21.2,1.6-31.7,3.2c-9.7,1.5-18.4,5.5-24.3,14.1\n" +
+    "			c-1.8,2.6-2,4.8-0.5,7.7c8,16.3,15.7,32.6,23.6,49c4.2,8.8,3.8,10.4-3.9,16.1c-2.3,0-4.7,0-7,0c-1.8-2.7-3.8-5.3-5.2-8.3\n" +
+    "			c-9.8-20-19.4-40.1-29.1-60.1C21.8,90.4,11.7,69.4,1.6,48.5c-1.8-3.7-2.6-8,0.6-10.6c2.5-2.1,6.6-3,9.9-2.9\n" +
+    "			c2.2,0.1,4.3,2.9,6.5,4.6c8.9-11.4,14.8-15.2,28.2-17.5c5.9-1,11.9-0.9,17.9-1.4c16.6-1.3,33.1-2.9,42.7-20.7\n" +
+    "			c3.3,6.8,6.4,13,9.4,19.2C124.9,35.7,133.1,52.2,141.3,68.7z\"/>\n" +
+    "	</g>\n" +
     "</g>\n" +
     "</svg>\n" +
     "");

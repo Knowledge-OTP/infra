@@ -60,7 +60,7 @@ chat-board {
 
             textarea{
                 @include dimension(100%, 50px);
-                @include text-style(14px, $fcColor16, Lato, $regularFontWeight);
+                @include text-style(14px, $fcColor6, Lato, $regularFontWeight);
                 padding: 5px;
                 border:none;
                 border-top: 1px solid $bcColor11;

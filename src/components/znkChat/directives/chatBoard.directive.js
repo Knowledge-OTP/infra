@@ -44,7 +44,7 @@
                     };
 
                     scope.d.sendMessage = function () {
-                        if (scope.d.newMessage.length > 0) {
+                        if (scope.d.newMessage.length > 0 && angular.isDefined(scope.chatterObj) && scope.chatterObj.chatGuid) {
                             var newMessageObj = {
                                 time: Firebase.ServerValue.TIMESTAMP,
                                 uid: scope.userId,
