@@ -5,7 +5,7 @@
         "CORRECT_EMAIL"  : "Please enter a valid email address",
         "EMAIL"          : "Your email address",
         "PLACEHOLDER"    : "Add your comments or suggestions...",
-        "MESSAGE"        : "Hello Support,\r\n I've noticed the following error in this question:\r\n",
+        "MESSAGE"        : "Hello Support,\r\nI've noticed the following error in this question:\r\n",
         "SEND"           : "Send",
         "SUB_TITLE"      : "Found a mistake in the question? Les us know.",
         "THANKS"         : "Thank you!",
