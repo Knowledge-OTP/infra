@@ -11,7 +11,8 @@
             'znk.infra.general',
             'znk.infra.user',
             'znk.infra.svgIcon',
-            'znk.infra.mailSender'
+            'znk.infra.mailSender',
+            'znk.infra.exerciseUtility'
         ])
         .config([
             'SvgIconSrvProvider',
@@ -34,12 +35,14 @@
             bindings: {
                 reportData: '='
             },
-            template: '<svg-icon class="report-btn" name="report-question-icon" title="{{\'REPORT_POPUP.REPORT_QUESTION\' | translate}}" ng-click="vm.showReportDialog()"></svg-icon>',
+            template: '<svg-icon class="report-btn" name="report-question-icon" ' +
+            'title="{{\'REPORT_POPUP.REPORT_QUESTION\' | translate}}" ng-hide="vm.isLectureType" ng-click="vm.showReportDialog()"></svg-icon>',
             controllerAs: 'vm',
-            controller: ["$mdDialog", "$translatePartialLoader", function ($mdDialog, $translatePartialLoader) {
+            controller: ["$mdDialog", "$translatePartialLoader", "ExerciseTypeEnum", function ($mdDialog, $translatePartialLoader, ExerciseTypeEnum) {
                 'ngInject';
                 var vm = this;
 
+                vm.isLectureType = vm.reportData.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum;
                 $translatePartialLoader.addPart('znkQuestionReport');
 
                 vm.showReportDialog = function () {
