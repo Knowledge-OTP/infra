@@ -1651,7 +1651,18 @@
                 };
 
                 BindExerciseEventManager.prototype.update = function(key, value) {
-                    self.__exerciseViewBinding[key] = value;
+                    var valueToUpdate;
+                    var curValue = self.__exerciseViewBinding[key];
+
+                    if (angular.isArray(curValue)) {
+                        valueToUpdate = curValue.push(value);
+                    } else if (angular.isObject(curValue) && angular.isObject(value)) {
+                        valueToUpdate = angular.extend(curValue, value);
+                    } else {
+                        valueToUpdate = value;
+                    }
+
+                    self.__exerciseViewBinding[key] = valueToUpdate;
                 };
 
                 BindExerciseEventManager.prototype.registerCb = function(key, cb) {
