@@ -851,7 +851,7 @@ describe('testing directive "znkExerciseDrv":', function () {
             currSlideIndex: 5
         };
         scope.d.actions.bindExerciseViewTo(exerciseView);
-        scope.d.actions.unbindExerciseView(exerciseView);
+        scope.d.actions.unbindExerciseView();
 
         scope.d.actions.setSlideIndex(2);
         scope.$digest();

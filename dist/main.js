@@ -11576,6 +11576,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                         var functionsToBind = ['getViewMode','addQuestionChangeResolver','removeQuestionChangeResolver', 'getCurrentIndex'];
                         ZnkExerciseUtilitySrv.bindFunctions(questionBuilderCtrl, znkExerciseCtrl,functionsToBind);
+
+                        questionBuilderCtrl.bindExerciseEventManager = znkExerciseCtrl.bindExerciseEventManager;
                     },
                     post: function post(scope, element, attrs, ctrls) {
                         var questionBuilderCtrl = ctrls[0];
@@ -12304,34 +12306,9 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 return !!scope.vm.showPager;
                             };
 
-                            var killExerciseViewListener;
-                            scope.actions.bindExerciseViewTo = function(exerciseView){
-                                if(!angular.isObject(exerciseView)){
-                                    $log.error('znkExerciseDrv: exercise view should be an object');
-                                    return;
-                                }
+                            scope.actions.bindExerciseViewTo = znkExerciseDrvCtrl.bindExerciseViewTo;
 
-                                znkExerciseDrvCtrl.__exerciseViewBinding = exerciseView;
-
-                                killExerciseViewListener = scope.$watch(function(){
-                                    return exerciseView.currSlideIndex;
-                                },function(newVal){
-                                    if(angular.isDefined(newVal)){
-                                        znkExerciseDrvCtrl.setCurrentIndex(newVal);
-                                    }
-                                });
-                            };
-
-                            scope.actions.unbindExerciseView = function(){
-                                if(killExerciseViewListener){
-                                    killExerciseViewListener();
-                                    killExerciseViewListener = null;
-                                }
-
-                                if(znkExerciseDrvCtrl.__exerciseViewBinding ){
-                                    znkExerciseDrvCtrl.__exerciseViewBinding = null;
-                                }
-                            };
+                            scope.actions.unbindExerciseView = znkExerciseDrvCtrl.unbindExerciseView;
                             /**
                              *  ACTIONS END
                              * */
@@ -12721,6 +12698,92 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     return questions[currIndex];
                 });
             };
+            /**
+             *  bind exercise
+             */
+            (function(self) {
+
+                function BindExerciseEventManager() {
+                    this.cbObj = {};
+                }
+
+                BindExerciseEventManager.prototype.trigger = function(key, value) {
+                    this.cbObj[key].forEach(function (cb) {
+                        cb(value);
+                    }, this);
+                };
+
+                BindExerciseEventManager.prototype.update = function(key, value) {
+                    self.__exerciseViewBinding[key] = value;
+                };
+
+                BindExerciseEventManager.prototype.registerCb = function(key, cb) {
+                     if (!angular.isArray(this.cbObj[key])) {
+                         this.cbObj[key] = [];
+                     }
+                     this.cbObj[key].push(cb);
+                };
+
+                self.bindExerciseEventManager = new BindExerciseEventManager();
+
+                var keys = [
+                    {
+                        getterName: 'currSlideIndex',
+                        setterName: 'setCurrentIndex'
+                    },
+                    {
+                        getterName: 'answerExplanation'
+                    }
+                ];
+
+                var exerciseViewListenersObj =  {};
+
+                self.bindExerciseViewTo = function (exerciseView) {
+                    if(!angular.isObject(exerciseView)) {
+                        $log.error('ZnkExerciseDrvCtrl bindExerciseViewTo: exercise view should be an object');
+                        return;
+                    }
+
+                    self.__exerciseViewBinding = exerciseView;
+
+                    angular.forEach(keys, function (keyObj) {
+                        exerciseViewListenersObj[keyObj.getterName] = $scope.$watch(function () {
+                            return exerciseView[keyObj.getterName];
+                        },function (newVal) {
+                            if(angular.isDefined(newVal)) {
+                                if (keyObj.setterName) {
+                                    self[keyObj.setterName](newVal);
+                                } else {
+                                    self.bindExerciseEventManager.trigger(keyObj.getterName, newVal);
+                                }
+                            }
+                        });
+                    });
+                };
+
+                self.unbindExerciseView = function (keyNameObj) {
+                    angular.forEach(exerciseViewListenersObj, function(fn, key) {
+                        if (!keyNameObj || keyNameObj[key]) {
+                            exerciseViewListenersObj[key]();
+                            exerciseViewListenersObj[key] = null;
+                        }
+                    });
+
+                    var cleanExerciseViewBinding = true;
+
+                    for (var i in exerciseViewListenersObj) {
+                        if (exerciseViewListenersObj.hasOwnProperty(i) && exerciseViewListenersObj[i] !== null) {
+                            cleanExerciseViewBinding = false;
+                            break;
+                        }
+                    }
+
+                    if (self.__exerciseViewBinding && cleanExerciseViewBinding){
+                        self.__exerciseViewBinding = null;
+                    }
+                };
+
+            })(self);
         }]);
 })(angular);
 
