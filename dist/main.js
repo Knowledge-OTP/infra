@@ -12747,7 +12747,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     self.__exerciseViewBinding = exerciseView;
 
                     angular.forEach(keys, function (keyObj) {
-                        exerciseViewListenersObj[keyObj.getterName] = $scope.$watch(function () {
+                        exerciseViewListenersObj[keyObj.getterName] = $scope.$watchCollection(function () {
                             return exerciseView[keyObj.getterName];
                         },function (newVal) {
                             if(angular.isDefined(newVal)) {
