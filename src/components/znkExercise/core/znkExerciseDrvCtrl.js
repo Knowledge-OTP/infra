@@ -206,19 +206,13 @@
                     });
                 };
 
-                self.unbindExerciseView = function (keyName) {
-
-                    if(exerciseViewListenersObj[keyName]) {
-                        exerciseViewListenersObj[keyName]();
-                        exerciseViewListenersObj[keyName] = null;
-                    }
-
-                    if (!keyName) {
-                        angular.forEach(exerciseViewListenersObj, function(key) {
+                self.unbindExerciseView = function (keyNameObj) {
+                    angular.forEach(exerciseViewListenersObj, function(fn, key) {
+                        if (!keyNameObj || keyNameObj[key]) {
                             exerciseViewListenersObj[key]();
                             exerciseViewListenersObj[key] = null;
-                        });
-                    }
+                        }
+                    });
 
                     var cleanExerciseViewBinding = true;
 
