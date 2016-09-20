@@ -11591,8 +11591,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('questionsCarousel', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ExerciseTypeEnum',
-        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum, $timeout, ExerciseTypeEnum) {
+        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum', '$timeout',
+        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum, $timeout) {
             return {
                 templateUrl: function(){
                     var templateUrl = "components/znkExercise/core/template/";
@@ -11618,8 +11618,6 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 },
                 link: function (scope, element, attrs, ngModelCtrl) {
                     scope.vm = {};
-
-                    scope.vm.exerciseTypeEnum = ExerciseTypeEnum;
 
                     ngModelCtrl.$render = function(){
                         scope.vm.currSlideIndex = ngModelCtrl.$viewValue;
@@ -14127,7 +14125,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "            disable-swipe=\"{{vm.isLocked}}\">\n" +
     "    <div class=\"swiper-slide\"\n" +
     "        ng-repeat=\"question in vm.questions\">\n" +
-    "        <znk-question-report report-data=\"question\" ng-if=\"question.parentTypeId !== vm.exerciseTypeEnum.LECTURE.enum\"></znk-question-report>\n" +
+    "        <znk-question-report report-data=\"question\"></znk-question-report>\n" +
     "        <question-builder question=\"question\"\n" +
     "                          rate-answer-formatter-parser\n" +
     "                          ng-model=\"question.__questionStatus.userAnswer\"\n" +
@@ -14625,7 +14623,8 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
             'znk.infra.general',
             'znk.infra.user',
             'znk.infra.svgIcon',
-            'znk.infra.mailSender'
+            'znk.infra.mailSender',
+            'znk.infra.exerciseUtility'
         ])
         .config([
             'SvgIconSrvProvider',
@@ -14648,12 +14647,14 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
             bindings: {
                 reportData: '='
             },
-            template: '<svg-icon class="report-btn" name="report-question-icon" title="{{\'REPORT_POPUP.REPORT_QUESTION\' | translate}}" ng-click="vm.showReportDialog()"></svg-icon>',
+            template: '<svg-icon class="report-btn" name="report-question-icon" ' +
+            'title="{{\'REPORT_POPUP.REPORT_QUESTION\' | translate}}" ng-hide="vm.isLectureType" ng-click="vm.showReportDialog()"></svg-icon>',
             controllerAs: 'vm',
-            controller: ["$mdDialog", "$translatePartialLoader", function ($mdDialog, $translatePartialLoader) {
+            controller: ["$mdDialog", "$translatePartialLoader", "ExerciseTypeEnum", function ($mdDialog, $translatePartialLoader, ExerciseTypeEnum) {
                 'ngInject';
                 var vm = this;
 
+                vm.isLectureType = vm.reportData.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum;
                 $translatePartialLoader.addPart('znkQuestionReport');
 
                 vm.showReportDialog = function () {

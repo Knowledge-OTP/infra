@@ -9,8 +9,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('questionsCarousel', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ExerciseTypeEnum',
-        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum, $timeout, ExerciseTypeEnum) {
+        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum', '$timeout',
+        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum, $timeout) {
             return {
                 templateUrl: function(){
                     var templateUrl = "components/znkExercise/core/template/";
@@ -36,8 +36,6 @@
                 },
                 link: function (scope, element, attrs, ngModelCtrl) {
                     scope.vm = {};
-
-                    scope.vm.exerciseTypeEnum = ExerciseTypeEnum;
 
                     ngModelCtrl.$render = function(){
                         scope.vm.currSlideIndex = ngModelCtrl.$viewValue;
