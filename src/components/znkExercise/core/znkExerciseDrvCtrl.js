@@ -159,6 +159,9 @@
                     this.cbObj[key].forEach(function (cb) {
                         cb(value);
                     }, this);
+                };
+
+                BindExerciseEventManager.prototype.update = function(key, value) {
                     self.__exerciseViewBinding[key] = value;
                 };
 
