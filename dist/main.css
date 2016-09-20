@@ -4553,7 +4553,8 @@ chat-message.otherMessage .message-wrapper .message {
   -ms-flex-pack: center;
       justify-content: center;
   border-radius: 35px;
-  background-color: #ebebeb; }
+  background-color: #ebebeb;
+  border: 1px solid #e1e1e1; }
   .znk-chat-wrapper .button-wrapper .unseen-messages {
     width: auto;
     height: 15px;
