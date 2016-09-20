@@ -202,7 +202,7 @@
                         totalCorrectAnswers: 0,
                         totalWrongAnswers: 0,
                         totalSkippedAnswers: 0
-                    }
+                    };
                 }
 
                 if (assignModule.exercises) {
