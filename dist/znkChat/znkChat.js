@@ -107,7 +107,9 @@
                         });
                     };
 
-                    scope.d.sendMessage = function () {
+                    scope.d.sendMessage = function (e) {
+                        stopBubbling(e);
+                        if (e.keyCode !== 13) { return; }
                         if (scope.d.newMessage.length > 0 && angular.isDefined(scope.chatterObj) && scope.chatterObj.chatGuid) {
                             var newMessageObj = {
                                 time: Firebase.ServerValue.TIMESTAMP,
@@ -117,7 +119,13 @@
                             znkChatSrv.updateChat(scope.chatterObj.chatGuid, newMessageObj, scope.userId);
                             scope.d.newMessage = '';
                         }
+
                     };
+
+                    function stopBubbling(e) {
+                        if (e.stopPropagation) { e.stopPropagation(); }
+                        if (e.cancelBubble !== null) { e.cancelBubble = true; }
+                    }
                 }
             };
         }]
@@ -305,7 +313,7 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('znkChat',
-        ["$translatePartialLoader", "znkChatSrv", "$q", "UtilitySrv", "ZNK_CHAT", "$timeout", function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, ZNK_CHAT, $timeout) {
+        ["$translatePartialLoader", "znkChatSrv", "$q", "UtilitySrv", "ZNK_CHAT", "$timeout", "$window", function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, ZNK_CHAT, $timeout, $window) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/znkChat.template.html',
@@ -389,6 +397,10 @@
                     _closedChatHandler(WATCH_ON);         // indication to new messages when the chat is closed
 
                     scope.d.openChat = function () {
+                        $timeout(function () {
+                            $window.document.querySelector('.chat-textarea').focus();
+                        });
+
                         scope.d.chatStateView = scope.statesView.CHAT_VIEW;
                         isChatClosed = false;
                         if(angular.isDefined(scope.d.selectedChatter.uid)) {
@@ -735,9 +747,9 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "            </div>\n" +
     "        </div>\n" +
     "\n" +
-    "        <textarea\n" +
+    "        <textarea class=\"chat-textarea\"\n" +
     "            placeholder=\"{{ 'ZNK_CHAT.PLACEHOLDER' | translate }}\"\n" +
-    "            ng-keyup=\"$event.keyCode == 13 && d.sendMessage()\"\n" +
+    "            ng-keydown=\"d.sendMessage($event)\"\n" +
     "            ng-model=\"d.newMessage\">\n" +
     "            </textarea>\n" +
     "    </div>\n" +

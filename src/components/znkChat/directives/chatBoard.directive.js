@@ -45,7 +45,7 @@
 
                     scope.d.sendMessage = function (e) {
                         stopBubbling(e);
-                        if (e.keyCode !== 13) return;
+                        if (e.keyCode !== 13) { return; }
                         if (scope.d.newMessage.length > 0 && angular.isDefined(scope.chatterObj) && scope.chatterObj.chatGuid) {
                             var newMessageObj = {
                                 time: Firebase.ServerValue.TIMESTAMP,
