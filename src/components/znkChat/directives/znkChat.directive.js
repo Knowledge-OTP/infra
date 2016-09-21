@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('znkChat',
-        function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, ZNK_CHAT, $timeout) {
+        function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, ZNK_CHAT, $timeout, $window) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/znkChat.template.html',
@@ -86,6 +86,10 @@
                     _closedChatHandler(WATCH_ON);         // indication to new messages when the chat is closed
 
                     scope.d.openChat = function () {
+                        $timeout(function () {
+                            $window.document.querySelector('.chat-textarea').focus();
+                        });
+
                         scope.d.chatStateView = scope.statesView.CHAT_VIEW;
                         isChatClosed = false;
                         if(angular.isDefined(scope.d.selectedChatter.uid)) {

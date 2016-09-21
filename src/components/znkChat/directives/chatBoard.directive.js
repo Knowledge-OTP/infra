@@ -43,7 +43,9 @@
                         });
                     };
 
-                    scope.d.sendMessage = function () {
+                    scope.d.sendMessage = function (e) {
+                        stopBubbling(e);
+                        if (e.keyCode !== 13) return;
                         if (scope.d.newMessage.length > 0 && angular.isDefined(scope.chatterObj) && scope.chatterObj.chatGuid) {
                             var newMessageObj = {
                                 time: Firebase.ServerValue.TIMESTAMP,
@@ -53,7 +55,13 @@
                             znkChatSrv.updateChat(scope.chatterObj.chatGuid, newMessageObj, scope.userId);
                             scope.d.newMessage = '';
                         }
+
                     };
+
+                    function stopBubbling(e) {
+                        if (e.stopPropagation) { e.stopPropagation(); }
+                        if (e.cancelBubble !== null) { e.cancelBubble = true; }
+                    }
                 }
             };
         }
