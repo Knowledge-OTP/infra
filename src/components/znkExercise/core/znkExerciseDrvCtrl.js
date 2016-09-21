@@ -168,7 +168,7 @@
                     if (angular.isArray(curValue)) {
                         valueToUpdate = curValue.push(value);
                     } else if (angular.isObject(curValue) && angular.isObject(value)) {
-                        valueToUpdate = angular.extend(curValue, value);
+                        valueToUpdate = angular.extend({}, curValue, value);
                     } else {
                         valueToUpdate = value;
                     }
