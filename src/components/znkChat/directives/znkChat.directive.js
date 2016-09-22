@@ -23,13 +23,14 @@
                     var isChatClosed = true;
                     var WATCH_ON = true, WATCH_OFF = false;
 
-
                     scope.d = {};
                     scope.d.selectedChatter = {};
                     scope.d.chatData = {};
                     scope.d.chatData.localUser = scope.localUser;
                     scope.d.chatStateView = scope.statesView.CHAT_BUTTON_VIEW;
                     scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
+
+                    scope.d.actions = {};
 
                     znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher).then(function (chatGuidsObj) {
                         scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(chatGuidsObj);
@@ -83,13 +84,17 @@
                         }
                     }
 
-                    _closedChatHandler(WATCH_ON);         // indication to new messages when the chat is closed
+                    _closedChatHandler(WATCH_ON);        // indication to new messages when the chat is closed
+
 
                     scope.d.openChat = function () {
-                        $timeout(function () {
-                            $window.document.querySelector('.chat-textarea').focus();
-                        });
+                        if(scope.d.actions.scrollToLastMessage){
+                            scope.d.actions.scrollToLastMessage();
+                        }
 
+                        $timeout(function () {
+                            element[0].querySelector('.chat-textarea').focus();
+                        });
                         scope.d.chatStateView = scope.statesView.CHAT_VIEW;
                         isChatClosed = false;
                         if(angular.isDefined(scope.d.selectedChatter.uid)) {

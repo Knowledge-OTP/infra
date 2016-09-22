@@ -9,11 +9,14 @@
                 scope: {
                     chatterObj: '=',
                     getUserId: '&userId',
-                    closeChat: '&'
+                    closeChat: '&',
+                    exposeScrollToLastMessageFn: '&',
+                    actions:'='
                 },
                 link: function (scope, element) {
                     var chatBoardScrollElement = element[0].querySelector('.messages-wrapper');
                     var dateMap = {};
+                    var ENTER_KEY_CODE = 13;
 
                     scope.d = {};
 
@@ -23,6 +26,12 @@
                         });
                     };
 
+                    if(!scope.actions){
+                        scope.actions = {};
+                    }
+
+                    scope.actions.scrollToLastMessage = scope.d.scrollToLastMessage;
+
                     scope.userId = scope.getUserId();
 
                     scope.d.closeChat = scope.closeChat();
@@ -30,6 +39,7 @@
                     scope.$watch('chatterObj', function (newVal, oldVal) {
                         if (newVal !== oldVal) {
                             dateMap = {};
+                            element[0].querySelector('.chat-textarea').focus();
                         }
                     });
 
@@ -45,7 +55,9 @@
 
                     scope.d.sendMessage = function (e) {
                         stopBubbling(e);
-                        if (e.keyCode !== 13) { return; }
+                        if (e.keyCode !== ENTER_KEY_CODE) {
+                            return;
+                        }
                         if (scope.d.newMessage.length > 0 && angular.isDefined(scope.chatterObj) && scope.chatterObj.chatGuid) {
                             var newMessageObj = {
                                 time: Firebase.ServerValue.TIMESTAMP,
@@ -59,8 +71,12 @@
                     };
 
                     function stopBubbling(e) {
-                        if (e.stopPropagation) { e.stopPropagation(); }
-                        if (e.cancelBubble !== null) { e.cancelBubble = true; }
+                        if (e.stopPropagation) {
+                            e.stopPropagation();
+                        }
+                        if (e.cancelBubble !== null) {
+                            e.cancelBubble = true;
+                        }
                     }
                 }
             };

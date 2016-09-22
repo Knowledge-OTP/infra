@@ -19,6 +19,7 @@
         </div>
 
         <textarea class="chat-textarea"
+            ng-focus="true"
             placeholder="{{ 'ZNK_CHAT.PLACEHOLDER' | translate }}"
             ng-keydown="d.sendMessage($event)"
             ng-model="d.newMessage">
