@@ -73,11 +73,14 @@
                 scope: {
                     chatterObj: '=',
                     getUserId: '&userId',
-                    closeChat: '&'
+                    closeChat: '&',
+                    exposeScrollToLastMessageFn: '&',
+                    actions:'='
                 },
                 link: function (scope, element) {
                     var chatBoardScrollElement = element[0].querySelector('.messages-wrapper');
                     var dateMap = {};
+                    var ENTER_KEY_CODE = 13;
 
                     scope.d = {};
 
@@ -87,6 +90,12 @@
                         });
                     };
 
+                    if(!scope.actions){
+                        scope.actions = {};
+                    }
+
+                    scope.actions.scrollToLastMessage = scope.d.scrollToLastMessage;
+
                     scope.userId = scope.getUserId();
 
                     scope.d.closeChat = scope.closeChat();
@@ -94,6 +103,7 @@
                     scope.$watch('chatterObj', function (newVal, oldVal) {
                         if (newVal !== oldVal) {
                             dateMap = {};
+                            element[0].querySelector('.chat-textarea').focus();
                         }
                     });
 
@@ -109,7 +119,9 @@
 
                     scope.d.sendMessage = function (e) {
                         stopBubbling(e);
-                        if (e.keyCode !== 13) { return; }
+                        if (e.keyCode !== ENTER_KEY_CODE) {
+                            return;
+                        }
                         if (scope.d.newMessage.length > 0 && angular.isDefined(scope.chatterObj) && scope.chatterObj.chatGuid) {
                             var newMessageObj = {
                                 time: Firebase.ServerValue.TIMESTAMP,
@@ -123,8 +135,12 @@
                     };
 
                     function stopBubbling(e) {
-                        if (e.stopPropagation) { e.stopPropagation(); }
-                        if (e.cancelBubble !== null) { e.cancelBubble = true; }
+                        if (e.stopPropagation) {
+                            e.stopPropagation();
+                        }
+                        if (e.cancelBubble !== null) {
+                            e.cancelBubble = true;
+                        }
                     }
                 }
             };
@@ -313,7 +329,7 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('znkChat',
-        ["$translatePartialLoader", "znkChatSrv", "$q", "UtilitySrv", "ZNK_CHAT", "$timeout", "$window", function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, ZNK_CHAT, $timeout, $window) {
+        ["$translatePartialLoader", "znkChatSrv", "$q", "UtilitySrv", "ZNK_CHAT", "$timeout", function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, ZNK_CHAT, $timeout) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/znkChat.template.html',
@@ -334,13 +350,14 @@
                     var isChatClosed = true;
                     var WATCH_ON = true, WATCH_OFF = false;
 
-
                     scope.d = {};
                     scope.d.selectedChatter = {};
                     scope.d.chatData = {};
                     scope.d.chatData.localUser = scope.localUser;
                     scope.d.chatStateView = scope.statesView.CHAT_BUTTON_VIEW;
                     scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
+
+                    scope.d.actions = {};
 
                     znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher).then(function (chatGuidsObj) {
                         scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(chatGuidsObj);
@@ -394,13 +411,17 @@
                         }
                     }
 
-                    _closedChatHandler(WATCH_ON);         // indication to new messages when the chat is closed
+                    _closedChatHandler(WATCH_ON);        // indication to new messages when the chat is closed
+
 
                     scope.d.openChat = function () {
-                        $timeout(function () {
-                            $window.document.querySelector('.chat-textarea').focus();
-                        });
+                        if(scope.d.actions.scrollToLastMessage){
+                            scope.d.actions.scrollToLastMessage();
+                        }
 
+                        $timeout(function () {
+                            element[0].querySelector('.chat-textarea').focus();
+                        });
                         scope.d.chatStateView = scope.statesView.CHAT_VIEW;
                         isChatClosed = false;
                         if(angular.isDefined(scope.d.selectedChatter.uid)) {
@@ -748,6 +769,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "        </div>\n" +
     "\n" +
     "        <textarea class=\"chat-textarea\"\n" +
+    "            ng-focus=\"true\"\n" +
     "            placeholder=\"{{ 'ZNK_CHAT.PLACEHOLDER' | translate }}\"\n" +
     "            ng-keydown=\"d.sendMessage($event)\"\n" +
     "            ng-model=\"d.newMessage\">\n" +
@@ -823,6 +845,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "        </chat-participants>\n" +
     "\n" +
     "        <chat-board\n" +
+    "            actions=\"d.actions\"\n" +
     "            user-id=\"localUser.uid\"\n" +
     "            close-chat=\"d.closeChat\"\n" +
     "            chatter-obj=\"d.selectedChatter\">\n" +
