@@ -1,0 +1,28 @@
+<div class="chat-board-wrapper">
+    <div class="chat-board-header">
+        <chatter ng-if="chatterObj.uid" chatter-obj="chatterObj"></chatter>
+        <svg-icon name="znk-chat-close-icon" ng-click="d.closeChat()"></svg-icon>
+    </div>
+    <div class="board-wrapper">
+        <div class="messages-container">
+            <div class="messages-wrapper znk-scrollbar">
+                <div class="message-repeater" ng-repeat="message in chatterObj.chatMessages | orderBy:'time'">
+                    <chat-message
+                        show-date="d.showDate"
+                        last-message="$index === chatterObj.chatMessages.length-1"
+                        scroll-to-last-message="d.scrollToLastMessage"
+                        local-user-id="userId"
+                        message="message">
+                    </chat-message>
+                </div>
+            </div>
+        </div>
+
+        <textarea class="chat-textarea"
+            placeholder="{{ 'ZNK_CHAT.PLACEHOLDER' | translate }}"
+            ng-keydown="d.sendMessage($event)"
+            ng-model="d.newMessage">
+            </textarea>
+    </div>
+
+</div>

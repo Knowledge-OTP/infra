@@ -53,7 +53,7 @@
                         receiverId = uid;
                         var promsArr = [
                             PresenceService.getCurrentUserStatus(receiverId),
-                            CallsUiSrv.getCalleeName(receiverId, uid)
+                            CallsUiSrv.getCalleeName(uid)
                         ];
                         $q.all(promsArr).then(function (res) {
                             scope.d.currentUserPresenceStatus = res[0];

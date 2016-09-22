@@ -209,7 +209,7 @@
 
             var soundSrc = ENV.mediaEndpoint + '/general/incomingCall.mp3';
 
-            CallsUiSrv.getCalleeName(callsData.receiverId, callsData.callerId).then(function(res){
+            CallsUiSrv.getCalleeName(callsData.callerId).then(function(res){
                 $scope.callerName = res;
             });
 
@@ -220,6 +220,7 @@
                     switch(newVal.status) {
                         case CallsStatusEnum.DECLINE_CALL.enum:
                             otherUserDecline = true;
+                            stopAudio();
                             break;
                     }
                     callsData = newVal;
@@ -287,6 +288,10 @@
                 }
             }
 
+            $scope.$on('$destroy', function() {
+                stopAudio();
+            });
+
             playAudio();
 
             function _baseCall(callFn, methodName) {
@@ -343,7 +348,7 @@
                 isPendingClick = clickStatus;
             }
 
-            CallsUiSrv.getCalleeName(callsData.receiverId, callsData.callerId).then(function(res){
+            CallsUiSrv.getCalleeName(callsData.receiverId).then(function(res){
                 $scope.calleeName = res;
             });
 
@@ -786,7 +791,7 @@
                         break;
                     case 'alreadyActive':
                         modalData.errorMessage = CALLS_ERROR_TEXT.alreadyActive;
-                        errorProm = CallsUiSrv.getCalleeName(err.receiverId, err.callerId).then(function (name) {
+                        errorProm = CallsUiSrv.getCalleeName(err.receiverId).then(function (name) {
                             modalData.errorValues = {
                                 calleeName: name
                             };
@@ -1288,9 +1293,9 @@
                     }
                 };
 
-                CallsUiSrv.getCalleeName = function(receiverId, callerId) {
+                CallsUiSrv.getCalleeName = function(uid) {
                     var namePromOrFnGetter = $injector.invoke(calleeNameFn);
-                    var nameProm = namePromOrFnGetter(receiverId, callerId);
+                    var nameProm = namePromOrFnGetter(uid);
                     return nameProm.then(function(res){
                         return res;
                     });

@@ -29,7 +29,7 @@
     }
 }
 
-@mixin text-style($size: null,$color: null,$family: null,$weight: null,$letter-spacing:null,$text-transform: null, $style: null){
+@mixin text-style($size: null,$color: null,$family: null,$weight: null,$letter-spacing:null,$text-transform: null, $style: null, $align: null){
     @if($size){
         font-size: $size;
     }

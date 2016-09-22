@@ -58,9 +58,9 @@
                     }
                 };
 
-                CallsUiSrv.getCalleeName = function(receiverId, callerId) {
+                CallsUiSrv.getCalleeName = function(uid) {
                     var namePromOrFnGetter = $injector.invoke(calleeNameFn);
-                    var nameProm = namePromOrFnGetter(receiverId, callerId);
+                    var nameProm = namePromOrFnGetter(uid);
                     return nameProm.then(function(res){
                         return res;
                     });

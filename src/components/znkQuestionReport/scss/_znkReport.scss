@@ -1,0 +1,134 @@
+znk-question-report {
+    .report-btn{
+        width: 15px;
+        height: 15px;
+        cursor: pointer;
+        outline: none;
+        position: absolute;
+        top: 15px;
+        right: 30px;
+        .report-question-icon{
+            fill: $fcColor20;
+            &:hover {fill: $fcColor5;}
+
+        }
+    }
+}
+
+.report-dialog {
+    .popup-header {
+        position: relative;
+        height: 40px;
+        background-color: $bgColor3;
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+    }
+    md-backdrop {
+        &.md-opaque {
+            background-color: $bgColor35;
+            opacity: .76;
+        }
+    }
+    md-dialog {
+        background: none;
+        border-radius: 15px;
+        &.report-container {
+            .report-question-icon{
+                height: 40px;
+                margin-bottom: 5px;
+                fill: $fcColor20;
+            }
+            md-dialog-content {
+                background-color: $bgColor6;
+                padding:50px 0;
+                border-bottom-left-radius: 15px;
+                border-bottom-right-radius: 15px;
+                .report-inner {
+                    width: 350px;
+                    margin: 0 auto;
+                    .main-title {
+                        @include text-style(32px, $fcColor6,Quicksand,$semiBoldFontWeight);
+                        text-align: center;
+                        margin-top:0;
+                    }
+                    .md-button {
+                        @include text-style(14px, $fcColor2, Lato, $regularFontWeight);
+                        width: 100%;
+                        height: 42px;
+                        margin-left: 0;
+                        box-shadow: 0 3px 0 0 $bsColor2;
+                        text-transform: none;
+                        border-radius: 21px;
+                        background-color: $bgColor37;
+                    }
+                    .user-details-border {
+                        border-top: 1px solid;
+                        opacity: 0.2;
+                        margin-top: 25px;
+                    }
+                    .user-email {
+                        text-align: center;
+                        @include text-style(12px, $fcColor9, Lato, $regularFontWeight);
+                        margin-top: 15px;
+                        line-height: 25px;
+                    }
+
+                    .user-id {
+                        text-align: center;
+                        font-size: 10px;
+                        @include text-style(12px, $fcColor9, Lato, $regularFontWeight);
+                    }
+                }
+                .sub-title {
+                    @include text-style(16px, $fcColor9, Lato, $regularFontWeight);
+                }
+                .success-report {
+                    svg-icon.completed-v-report-icon {
+                        margin: 36px auto 22px auto;
+                        width: 111px;
+                        display: flex;
+                        .st0{fill:none;enable-background:new;}
+                        .st1{fill:$fcColor18;}
+                        .st2{display:none;fill:none;}
+                        .st3{fill:$fcColor19;}
+                        .st4{fill:none;stroke:$fcColor2;stroke-width:11.9321;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}
+                    }
+                    .success-msg {
+                        @include text-style(16px, $fcColor9, Quicksand, $regularFontWeight, null, null, null, center);
+                        margin: 0 auto 100px auto;
+                        line-height: 1.594;
+                        text-align: center;
+                    }
+                }
+                .base-form {
+                    .hidden {
+                        visibility: hidden;
+                    }
+                    &.ng-submitted .ng-invalid {
+                        border: solid thin $bgColor1;
+                    }
+                    input,
+                    textarea {
+                        width: 100%;
+                        @include text-style(14px, $fcColor9, Lato, $regularFontWeight);
+                        padding: 11px;
+                        margin: 0;
+                        box-sizing: border-box;
+                    }
+                    textarea {
+                        resize: none;
+                        height: 120px;
+                    }
+                    input {
+                        height: 40px;
+                    }
+                    label {
+                        @include text-style(12px, $fcColor3, Lato, $regularFontWeight);
+                        line-height: 30px;
+                        padding: 5px 0;
+                    }
+                }
+            }
+        }
+    }
+}

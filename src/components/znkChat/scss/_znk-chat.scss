@@ -1,0 +1,88 @@
+.znk-chat-wrapper {
+    .button-wrapper {
+        @include dimension(45px, 45px);
+        position: relative;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 35px;
+        background-color: $bgColor17;
+        border:1px solid $bcColor16;
+
+        .unseen-messages {
+            @include dimension(auto, 15px);
+            @include text-style(12px, $fcColor2, Lato, $regularFontWeight);
+            transition: 0.5s;
+            min-width: 15px;
+            padding: 5px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50px;
+            position: absolute;
+            top: -1px;
+            right: 1px;
+            background-color: $bgColor1;
+        }
+
+        .unseen-messages.ten-or-more-unseen-messages::after {
+            content: '+';
+        }
+
+        .ten-or-more-unseen-messages {
+            right: -10px;
+        }
+
+        svg {
+            path {
+                fill: $bgColor31;
+            }
+        }
+    }
+
+    .chat-container {
+        @include dimension(0,0);
+        overflow: hidden;
+        display: flex;
+        border-radius: 15px 15px 0 0;
+        border: 1px solid $bgColor30;
+        box-shadow: 0 0 7px 0 $bsColor1;
+
+        .chat-messages-board {
+            @include dimension(200px, 275px);
+            border-radius: 15px;
+        }
+    }
+
+    .unseen-messagesmessages.ng-enter,
+    .unseen-messages.ng-leave.ng-leave-active {
+        opacity: 0;
+    }
+
+    .unseen-messages.ng-leave,
+    .unseen-messages.ng-enter.ng-enter-active {
+        opacity: 1;
+    }
+
+    .chat-container.ng-hide {
+        @include dimension(45px, 45px);
+        overflow: hidden;
+        border-radius: 200px;
+    }
+
+    .button-wrapper.ng-hide-add, .button-wrapper.ng-hide-remove {
+        opacity: 0;
+    }
+}
+
+.animate-chat{
+    .button-wrapper {
+        transition: linear 0.13s;
+    }
+    .chat-container {
+        @include dimension(525px, 372px);
+        transition: linear 0.2s;
+    }
+}

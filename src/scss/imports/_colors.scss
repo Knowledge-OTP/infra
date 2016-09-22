@@ -1,6 +1,6 @@
 //font color
 $fcColor1: #363636;
-$fcColor2: #fff;
+$fcColor2: #ffffff;
 $fcColor3: #ff6766;
 $fcColor4: #2AB79E;
 $fcColor5: #0a9bad;
@@ -13,6 +13,12 @@ $fcColor11: #cccccc;
 $fcColor12: #d2d2d2;
 $fcColor13 : #979797;
 $fcColor14 : #161616;
+$fcColor15 : #acacac;
+$fcColor16 : #c2c2c2;
+$fcColor17 : #659938;
+$fcColor18 : #CACBCC;
+$fcColor19 : #D1D2D2;
+$fcColor20 : #E1E1E1;
 
 //background color
 $bgColor1: #ff6766;
@@ -44,6 +50,14 @@ $bgColor26 : #464646;
 $bgColor27 : #dbb910;
 $bgColor28 : #8abec4;
 $bgColor29 : #e1b688;
+$bgColor30 : #e1e1e1;
+$bgColor31 : #757a83;
+$bgColor32 : #f9f9f9;
+$bgColor33 : #c95050;
+$bgColor34 : #252525;
+$bgColor35 : #037684;
+$bgColor36 : rgba(255, 255, 255, 0.8);
+$bgColor37 : #76b63e;
 
 //border color
 $bcColor1: #87ca4d;
@@ -59,6 +73,9 @@ $bcColor10 : #d3d0d0;
 $bcColor11 : #ebebeb;
 $bcColor12 : #cccccc;
 $bcColor13 : #4f4d4d;
+$bcColor14 : #acacac;
+$bcColor15 : #e1e1e1;
+$bcColor16 : #c2c2c2;
 
 //background with transparency
 $tbgColor1: rgba(0,0,0,0.7);
@@ -68,6 +85,10 @@ $tbgColor4: rgba(0, 0, 0, 0.08);
 $tbgColor5: rgba(255, 255, 255, 0.3);
 $tbgColor6: rgba(255, 255, 255, 0.08);
 $tbgColor7: rgba(15, 15, 15, 0.85);
+
+//box shadow
+$bsColor1 : rgba(0, 0, 0, 0.37);
+$bsColor2: #72ab40;
 
 /*
 //backgrounds

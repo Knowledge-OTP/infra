@@ -9,7 +9,8 @@
             'znk.infra.stats',
             'pascalprecht.translate',
             'znk.infra.analytics',
-            'znk.infra.popUp'
+            'znk.infra.popUp',
+            'demoEnv'
         ])
         .controller('Main', function ($scope, $timeout, ContentSrv, ZnkExerciseUtilitySrv, ExerciseResultSrv, $controller ) {
 
@@ -121,11 +122,5 @@
             };
 
             setExercise('practice', '165');
-        })
-        .run(function ($rootScope, $translate) {
-            $rootScope.$on('$translatePartialLoaderStructureChanged', function () {
-                $translate.refresh();
-            });
         });
-
 })(angular);

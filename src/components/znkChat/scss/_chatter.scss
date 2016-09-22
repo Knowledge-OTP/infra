@@ -1,0 +1,75 @@
+.chatter-wrapper {
+    display: flex;
+    align-items: center;
+
+    .online-indicator {
+        @include dimension(7px, 7px);
+        border: 1px solid $bcColor5;
+        border-radius: 6px;
+        box-sizing: border-box;
+        margin-right: 13px;
+    }
+
+    &.online {
+        .online-indicator {
+            background: $bgColor2;
+            border:none;
+        }
+    }
+
+    &.idle{
+        .online-indicator {
+            background: $bgColor27;
+            border:none;
+        }
+    }
+
+    &.offline {
+        .chatter-name {
+            font-family: $fcColor6;
+            border:none;
+        }
+    }
+
+    .chatter-name {
+        @include text-style(16px, $fcColor6, Lato, $regularFontWeight);
+        height: 23px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    .message-not-seen{
+        @include dimension(auto, 15px);
+        @include text-style(10px, $fcColor2, Lato, $regularFontWeight);
+        min-width: 15px;
+        padding: 5px;
+        box-sizing: border-box;
+        line-height: 15px;
+        transition: 0.2s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color:white;
+        border-radius: 50px;
+        background-color: $bgColor1;
+    }
+
+    .message-not-seen.ten-or-more-unseen-messages::after {
+        content: ' +';
+    }
+
+    .ten-or-more-unseen-messages{
+        right:-10px;
+    }
+
+    .message-not-seen.ng-enter,
+    .message-not-seen.ng-leave.ng-leave-active {
+        opacity:0;
+    }
+
+    .message-not-seen.ng-leave,
+    .message-not-seen.ng-enter.ng-enter-active {
+        opacity:1;
+    }
+}

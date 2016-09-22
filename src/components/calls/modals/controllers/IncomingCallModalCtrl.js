@@ -12,7 +12,7 @@
 
             var soundSrc = ENV.mediaEndpoint + '/general/incomingCall.mp3';
 
-            CallsUiSrv.getCalleeName(callsData.receiverId, callsData.callerId).then(function(res){
+            CallsUiSrv.getCalleeName(callsData.callerId).then(function(res){
                 $scope.callerName = res;
             });
 
@@ -23,6 +23,7 @@
                     switch(newVal.status) {
                         case CallsStatusEnum.DECLINE_CALL.enum:
                             otherUserDecline = true;
+                            stopAudio();
                             break;
                     }
                     callsData = newVal;
@@ -89,6 +90,10 @@
                     mySound = new $window.Audio('');
                 }
             }
+
+            $scope.$on('$destroy', function() {
+                stopAudio();
+            });
 
             playAudio();
 

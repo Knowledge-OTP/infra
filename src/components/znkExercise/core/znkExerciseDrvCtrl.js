@@ -146,5 +146,102 @@
                     return questions[currIndex];
                 });
             };
+            /**
+             *  bind exercise
+             */
+            (function(self) {
+
+                function BindExerciseEventManager() {
+                    this.cbObj = {};
+                }
+
+                BindExerciseEventManager.prototype.trigger = function(key, value) {
+                    this.cbObj[key].forEach(function (cb) {
+                        cb(value);
+                    }, this);
+                };
+
+                BindExerciseEventManager.prototype.update = function(key, value) {
+                    var valueToUpdate;
+                    var curValue = self.__exerciseViewBinding[key];
+
+                    if (angular.isArray(curValue)) {
+                        valueToUpdate = curValue.push(value);
+                    } else if (angular.isObject(curValue) && angular.isObject(value)) {
+                        valueToUpdate = angular.extend({}, curValue, value);
+                    } else {
+                        valueToUpdate = value;
+                    }
+
+                    self.__exerciseViewBinding[key] = valueToUpdate;
+                };
+
+                BindExerciseEventManager.prototype.registerCb = function(key, cb) {
+                     if (!angular.isArray(this.cbObj[key])) {
+                         this.cbObj[key] = [];
+                     }
+                     this.cbObj[key].push(cb);
+                };
+
+                self.bindExerciseEventManager = new BindExerciseEventManager();
+
+                var keys = [
+                    {
+                        getterName: 'currSlideIndex',
+                        setterName: 'setCurrentIndex'
+                    },
+                    {
+                        getterName: 'answerExplanation'
+                    }
+                ];
+
+                var exerciseViewListenersObj =  {};
+
+                self.bindExerciseViewTo = function (exerciseView) {
+                    if(!angular.isObject(exerciseView)) {
+                        $log.error('ZnkExerciseDrvCtrl bindExerciseViewTo: exercise view should be an object');
+                        return;
+                    }
+
+                    self.__exerciseViewBinding = exerciseView;
+
+                    angular.forEach(keys, function (keyObj) {
+                        exerciseViewListenersObj[keyObj.getterName] = $scope.$watchCollection(function () {
+                            return exerciseView[keyObj.getterName];
+                        },function (newVal) {
+                            if(angular.isDefined(newVal)) {
+                                if (keyObj.setterName) {
+                                    self[keyObj.setterName](newVal);
+                                } else {
+                                    self.bindExerciseEventManager.trigger(keyObj.getterName, newVal);
+                                }
+                            }
+                        });
+                    });
+                };
+
+                self.unbindExerciseView = function (keyNameObj) {
+                    angular.forEach(exerciseViewListenersObj, function(fn, key) {
+                        if (!keyNameObj || keyNameObj[key]) {
+                            exerciseViewListenersObj[key]();
+                            exerciseViewListenersObj[key] = null;
+                        }
+                    });
+
+                    var cleanExerciseViewBinding = true;
+
+                    for (var i in exerciseViewListenersObj) {
+                        if (exerciseViewListenersObj.hasOwnProperty(i) && exerciseViewListenersObj[i] !== null) {
+                            cleanExerciseViewBinding = false;
+                            break;
+                        }
+                    }
+
+                    if (self.__exerciseViewBinding && cleanExerciseViewBinding){
+                        self.__exerciseViewBinding = null;
+                    }
+                };
+
+            })(self);
         }]);
 })(angular);
