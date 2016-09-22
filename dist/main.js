@@ -1214,6 +1214,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     switch(newVal.status) {
                         case CallsStatusEnum.DECLINE_CALL.enum:
                             otherUserDecline = true;
+                            stopAudio();
                             break;
                     }
                     callsData = newVal;
@@ -1280,6 +1281,10 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     mySound = new $window.Audio('');
                 }
             }
+
+            $scope.$on('$destroy', function() {
+                stopAudio();
+            });
 
             playAudio();
 
