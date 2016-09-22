@@ -10315,7 +10315,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     chatterObj: '=',
                     getUserId: '&userId',
                     closeChat: '&',
-                    exposeScrollToLastMessageFn: '&',
                     actions:'='
                 },
                 link: function (scope, element) {
