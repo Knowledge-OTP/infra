@@ -11009,7 +11009,6 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "        </div>\n" +
     "\n" +
     "        <textarea class=\"chat-textarea\"\n" +
-    "            ng-focus=\"true\"\n" +
     "            placeholder=\"{{ 'ZNK_CHAT.PLACEHOLDER' | translate }}\"\n" +
     "            ng-keydown=\"d.sendMessage($event)\"\n" +
     "            ng-model=\"d.newMessage\">\n" +
