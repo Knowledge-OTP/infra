@@ -10,7 +10,6 @@
                     chatterObj: '=',
                     getUserId: '&userId',
                     closeChat: '&',
-                    exposeScrollToLastMessageFn: '&',
                     actions:'='
                 },
                 link: function (scope, element) {
