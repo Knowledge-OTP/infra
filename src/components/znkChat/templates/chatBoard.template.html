@@ -18,9 +18,9 @@
             </div>
         </div>
 
-        <textarea
+        <textarea class="chat-textarea"
             placeholder="{{ 'ZNK_CHAT.PLACEHOLDER' | translate }}"
-            ng-keyup="$event.keyCode == 13 && d.sendMessage()"
+            ng-keydown="d.sendMessage($event)"
             ng-model="d.newMessage">
             </textarea>
     </div>
