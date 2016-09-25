@@ -513,6 +513,8 @@
 
                         var functionsToBind = ['getViewMode','addQuestionChangeResolver','removeQuestionChangeResolver', 'getCurrentIndex'];
                         ZnkExerciseUtilitySrv.bindFunctions(questionBuilderCtrl, znkExerciseCtrl,functionsToBind);
+
+                        questionBuilderCtrl.bindExerciseEventManager = znkExerciseCtrl.bindExerciseEventManager;
                     },
                     post: function post(scope, element, attrs, ctrls) {
                         var questionBuilderCtrl = ctrls[0];
@@ -557,8 +559,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('questionsCarousel', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ExerciseTypeEnum',
-        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum, $timeout, ExerciseTypeEnum) {
+        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum', '$timeout',
+        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum, $timeout) {
             return {
                 templateUrl: function(){
                     var templateUrl = "components/znkExercise/core/template/";
@@ -584,8 +586,6 @@
                 },
                 link: function (scope, element, attrs, ngModelCtrl) {
                     scope.vm = {};
-
-                    scope.vm.exerciseTypeEnum = ExerciseTypeEnum;
 
                     ngModelCtrl.$render = function(){
                         scope.vm.currSlideIndex = ngModelCtrl.$viewValue;
@@ -1243,34 +1243,9 @@
                                 return !!scope.vm.showPager;
                             };
 
-                            var killExerciseViewListener;
-                            scope.actions.bindExerciseViewTo = function(exerciseView){
-                                if(!angular.isObject(exerciseView)){
-                                    $log.error('znkExerciseDrv: exercise view should be an object');
-                                    return;
-                                }
+                            scope.actions.bindExerciseViewTo = znkExerciseDrvCtrl.bindExerciseViewTo;
 
-                                znkExerciseDrvCtrl.__exerciseViewBinding = exerciseView;
-
-                                killExerciseViewListener = scope.$watch(function(){
-                                    return exerciseView.currSlideIndex;
-                                },function(newVal){
-                                    if(angular.isDefined(newVal)){
-                                        znkExerciseDrvCtrl.setCurrentIndex(newVal);
-                                    }
-                                });
-                            };
-
-                            scope.actions.unbindExerciseView = function(){
-                                if(killExerciseViewListener){
-                                    killExerciseViewListener();
-                                    killExerciseViewListener = null;
-                                }
-
-                                if(znkExerciseDrvCtrl.__exerciseViewBinding ){
-                                    znkExerciseDrvCtrl.__exerciseViewBinding = null;
-                                }
-                            };
+                            scope.actions.unbindExerciseView = znkExerciseDrvCtrl.unbindExerciseView;
                             /**
                              *  ACTIONS END
                              * */
@@ -1660,6 +1635,103 @@
                     return questions[currIndex];
                 });
             };
+            /**
+             *  bind exercise
+             */
+            (function(self) {
+
+                function BindExerciseEventManager() {
+                    this.cbObj = {};
+                }
+
+                BindExerciseEventManager.prototype.trigger = function(key, value) {
+                    this.cbObj[key].forEach(function (cb) {
+                        cb(value);
+                    }, this);
+                };
+
+                BindExerciseEventManager.prototype.update = function(key, value) {
+                    var valueToUpdate;
+                    var curValue = self.__exerciseViewBinding[key];
+
+                    if (angular.isArray(curValue)) {
+                        valueToUpdate = curValue.push(value);
+                    } else if (angular.isObject(curValue) && angular.isObject(value)) {
+                        valueToUpdate = angular.extend({}, curValue, value);
+                    } else {
+                        valueToUpdate = value;
+                    }
+
+                    self.__exerciseViewBinding[key] = valueToUpdate;
+                };
+
+                BindExerciseEventManager.prototype.registerCb = function(key, cb) {
+                     if (!angular.isArray(this.cbObj[key])) {
+                         this.cbObj[key] = [];
+                     }
+                     this.cbObj[key].push(cb);
+                };
+
+                self.bindExerciseEventManager = new BindExerciseEventManager();
+
+                var keys = [
+                    {
+                        getterName: 'currSlideIndex',
+                        setterName: 'setCurrentIndex'
+                    },
+                    {
+                        getterName: 'answerExplanation'
+                    }
+                ];
+
+                var exerciseViewListenersObj =  {};
+
+                self.bindExerciseViewTo = function (exerciseView) {
+                    if(!angular.isObject(exerciseView)) {
+                        $log.error('ZnkExerciseDrvCtrl bindExerciseViewTo: exercise view should be an object');
+                        return;
+                    }
+
+                    self.__exerciseViewBinding = exerciseView;
+
+                    angular.forEach(keys, function (keyObj) {
+                        exerciseViewListenersObj[keyObj.getterName] = $scope.$watchCollection(function () {
+                            return exerciseView[keyObj.getterName];
+                        },function (newVal) {
+                            if(angular.isDefined(newVal)) {
+                                if (keyObj.setterName) {
+                                    self[keyObj.setterName](newVal);
+                                } else {
+                                    self.bindExerciseEventManager.trigger(keyObj.getterName, newVal);
+                                }
+                            }
+                        });
+                    });
+                };
+
+                self.unbindExerciseView = function (keyNameObj) {
+                    angular.forEach(exerciseViewListenersObj, function(fn, key) {
+                        if (!keyNameObj || keyNameObj[key]) {
+                            exerciseViewListenersObj[key]();
+                            exerciseViewListenersObj[key] = null;
+                        }
+                    });
+
+                    var cleanExerciseViewBinding = true;
+
+                    for (var i in exerciseViewListenersObj) {
+                        if (exerciseViewListenersObj.hasOwnProperty(i) && exerciseViewListenersObj[i] !== null) {
+                            cleanExerciseViewBinding = false;
+                            break;
+                        }
+                    }
+
+                    if (self.__exerciseViewBinding && cleanExerciseViewBinding){
+                        self.__exerciseViewBinding = null;
+                    }
+                };
+
+            })(self);
         }]);
 })(angular);
 
@@ -3093,7 +3165,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "            disable-swipe=\"{{vm.isLocked}}\">\n" +
     "    <div class=\"swiper-slide\"\n" +
     "        ng-repeat=\"question in vm.questions\">\n" +
-    "        <znk-question-report report-data=\"question\" ng-if=\"question.parentTypeId !== vm.exerciseTypeEnum.LECTURE.enum\"></znk-question-report>\n" +
+    "        <znk-question-report report-data=\"question\"></znk-question-report>\n" +
     "        <question-builder question=\"question\"\n" +
     "                          rate-answer-formatter-parser\n" +
     "                          ng-model=\"question.__questionStatus.userAnswer\"\n" +

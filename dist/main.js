@@ -1214,6 +1214,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     switch(newVal.status) {
                         case CallsStatusEnum.DECLINE_CALL.enum:
                             otherUserDecline = true;
+                            stopAudio();
                             break;
                     }
                     callsData = newVal;
@@ -1280,6 +1281,10 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                     mySound = new $window.Audio('');
                 }
             }
+
+            $scope.$on('$destroy', function() {
+                stopAudio();
+            });
 
             playAudio();
 
@@ -8087,6 +8092,35 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.storage').service('InvitationStorageSrv',
+        ["StorageFirebaseAdapter", "ENV", "StorageSrv", "AuthService", function (StorageFirebaseAdapter, ENV, StorageSrv, AuthService) {
+        'ngInjedct';
+
+            var fbAdapter = new StorageFirebaseAdapter(ENV.fbDataEndPoint + 'invitations');
+            var config = {
+                variables: {
+                    uid: function () {
+                        var auth = AuthService.getAuth();
+                        return auth && auth.uid;
+                    }
+                },
+                cacheRules: [/.*/]
+            };
+
+            var storage = new StorageSrv(fbAdapter, config);
+
+            storage.getInvitationObject = function (inviteId) {
+                return storage.get(inviteId);
+            };
+
+            return storage;
+        }]
+    );
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.storage').service('StorageFirebaseAdapter',
         ["$log", "$q", "StorageSrv", "ENV", "$timeout", function ($log, $q, StorageSrv, ENV, $timeout) {
             'ngInject';
@@ -10285,11 +10319,13 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 scope: {
                     chatterObj: '=',
                     getUserId: '&userId',
-                    closeChat: '&'
+                    closeChat: '&',
+                    actions:'='
                 },
                 link: function (scope, element) {
                     var chatBoardScrollElement = element[0].querySelector('.messages-wrapper');
                     var dateMap = {};
+                    var ENTER_KEY_CODE = 13;
 
                     scope.d = {};
 
@@ -10299,6 +10335,12 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         });
                     };
 
+                    if(!scope.actions){
+                        scope.actions = {};
+                    }
+
+                    scope.actions.scrollToLastMessage = scope.d.scrollToLastMessage;
+
                     scope.userId = scope.getUserId();
 
                     scope.d.closeChat = scope.closeChat();
@@ -10306,6 +10348,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     scope.$watch('chatterObj', function (newVal, oldVal) {
                         if (newVal !== oldVal) {
                             dateMap = {};
+                            element[0].querySelector('.chat-textarea').focus();
                         }
                     });
 
@@ -10319,7 +10362,11 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         });
                     };
 
-                    scope.d.sendMessage = function () {
+                    scope.d.sendMessage = function (e) {
+                        stopBubbling(e);
+                        if (e.keyCode !== ENTER_KEY_CODE) {
+                            return;
+                        }
                         if (scope.d.newMessage.length > 0 && angular.isDefined(scope.chatterObj) && scope.chatterObj.chatGuid) {
                             var newMessageObj = {
                                 time: Firebase.ServerValue.TIMESTAMP,
@@ -10329,7 +10376,17 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                             znkChatSrv.updateChat(scope.chatterObj.chatGuid, newMessageObj, scope.userId);
                             scope.d.newMessage = '';
                         }
+
                     };
+
+                    function stopBubbling(e) {
+                        if (e.stopPropagation) {
+                            e.stopPropagation();
+                        }
+                        if (e.cancelBubble !== null) {
+                            e.cancelBubble = true;
+                        }
+                    }
                 }
             };
         }]
@@ -10538,13 +10595,14 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     var isChatClosed = true;
                     var WATCH_ON = true, WATCH_OFF = false;
 
-
                     scope.d = {};
                     scope.d.selectedChatter = {};
                     scope.d.chatData = {};
                     scope.d.chatData.localUser = scope.localUser;
                     scope.d.chatStateView = scope.statesView.CHAT_BUTTON_VIEW;
                     scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
+
+                    scope.d.actions = {};
 
                     znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher).then(function (chatGuidsObj) {
                         scope.d.chatData.localUserChatsGuidsArr = UtilitySrv.object.convertToArray(chatGuidsObj);
@@ -10598,9 +10656,17 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         }
                     }
 
-                    _closedChatHandler(WATCH_ON);         // indication to new messages when the chat is closed
+                    _closedChatHandler(WATCH_ON);        // indication to new messages when the chat is closed
+
 
                     scope.d.openChat = function () {
+                        if(scope.d.actions.scrollToLastMessage){
+                            scope.d.actions.scrollToLastMessage();
+                        }
+
+                        $timeout(function () {
+                            element[0].querySelector('.chat-textarea').focus();
+                        });
                         scope.d.chatStateView = scope.statesView.CHAT_VIEW;
                         isChatClosed = false;
                         if(angular.isDefined(scope.d.selectedChatter.uid)) {
@@ -10947,9 +11013,9 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "            </div>\n" +
     "        </div>\n" +
     "\n" +
-    "        <textarea\n" +
+    "        <textarea class=\"chat-textarea\"\n" +
     "            placeholder=\"{{ 'ZNK_CHAT.PLACEHOLDER' | translate }}\"\n" +
-    "            ng-keyup=\"$event.keyCode == 13 && d.sendMessage()\"\n" +
+    "            ng-keydown=\"d.sendMessage($event)\"\n" +
     "            ng-model=\"d.newMessage\">\n" +
     "            </textarea>\n" +
     "    </div>\n" +
@@ -11023,6 +11089,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "        </chat-participants>\n" +
     "\n" +
     "        <chat-board\n" +
+    "            actions=\"d.actions\"\n" +
     "            user-id=\"localUser.uid\"\n" +
     "            close-chat=\"d.closeChat\"\n" +
     "            chatter-obj=\"d.selectedChatter\">\n" +
@@ -11547,6 +11614,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                         var functionsToBind = ['getViewMode','addQuestionChangeResolver','removeQuestionChangeResolver', 'getCurrentIndex'];
                         ZnkExerciseUtilitySrv.bindFunctions(questionBuilderCtrl, znkExerciseCtrl,functionsToBind);
+
+                        questionBuilderCtrl.bindExerciseEventManager = znkExerciseCtrl.bindExerciseEventManager;
                     },
                     post: function post(scope, element, attrs, ctrls) {
                         var questionBuilderCtrl = ctrls[0];
@@ -11591,8 +11660,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('questionsCarousel', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ExerciseTypeEnum',
-        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum, $timeout, ExerciseTypeEnum) {
+        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum', '$timeout',
+        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum, $timeout) {
             return {
                 templateUrl: function(){
                     var templateUrl = "components/znkExercise/core/template/";
@@ -11618,8 +11687,6 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 },
                 link: function (scope, element, attrs, ngModelCtrl) {
                     scope.vm = {};
-
-                    scope.vm.exerciseTypeEnum = ExerciseTypeEnum;
 
                     ngModelCtrl.$render = function(){
                         scope.vm.currSlideIndex = ngModelCtrl.$viewValue;
@@ -12277,34 +12344,9 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 return !!scope.vm.showPager;
                             };
 
-                            var killExerciseViewListener;
-                            scope.actions.bindExerciseViewTo = function(exerciseView){
-                                if(!angular.isObject(exerciseView)){
-                                    $log.error('znkExerciseDrv: exercise view should be an object');
-                                    return;
-                                }
+                            scope.actions.bindExerciseViewTo = znkExerciseDrvCtrl.bindExerciseViewTo;
 
-                                znkExerciseDrvCtrl.__exerciseViewBinding = exerciseView;
-
-                                killExerciseViewListener = scope.$watch(function(){
-                                    return exerciseView.currSlideIndex;
-                                },function(newVal){
-                                    if(angular.isDefined(newVal)){
-                                        znkExerciseDrvCtrl.setCurrentIndex(newVal);
-                                    }
-                                });
-                            };
-
-                            scope.actions.unbindExerciseView = function(){
-                                if(killExerciseViewListener){
-                                    killExerciseViewListener();
-                                    killExerciseViewListener = null;
-                                }
-
-                                if(znkExerciseDrvCtrl.__exerciseViewBinding ){
-                                    znkExerciseDrvCtrl.__exerciseViewBinding = null;
-                                }
-                            };
+                            scope.actions.unbindExerciseView = znkExerciseDrvCtrl.unbindExerciseView;
                             /**
                              *  ACTIONS END
                              * */
@@ -12694,6 +12736,103 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     return questions[currIndex];
                 });
             };
+            /**
+             *  bind exercise
+             */
+            (function(self) {
+
+                function BindExerciseEventManager() {
+                    this.cbObj = {};
+                }
+
+                BindExerciseEventManager.prototype.trigger = function(key, value) {
+                    this.cbObj[key].forEach(function (cb) {
+                        cb(value);
+                    }, this);
+                };
+
+                BindExerciseEventManager.prototype.update = function(key, value) {
+                    var valueToUpdate;
+                    var curValue = self.__exerciseViewBinding[key];
+
+                    if (angular.isArray(curValue)) {
+                        valueToUpdate = curValue.push(value);
+                    } else if (angular.isObject(curValue) && angular.isObject(value)) {
+                        valueToUpdate = angular.extend({}, curValue, value);
+                    } else {
+                        valueToUpdate = value;
+                    }
+
+                    self.__exerciseViewBinding[key] = valueToUpdate;
+                };
+
+                BindExerciseEventManager.prototype.registerCb = function(key, cb) {
+                     if (!angular.isArray(this.cbObj[key])) {
+                         this.cbObj[key] = [];
+                     }
+                     this.cbObj[key].push(cb);
+                };
+
+                self.bindExerciseEventManager = new BindExerciseEventManager();
+
+                var keys = [
+                    {
+                        getterName: 'currSlideIndex',
+                        setterName: 'setCurrentIndex'
+                    },
+                    {
+                        getterName: 'answerExplanation'
+                    }
+                ];
+
+                var exerciseViewListenersObj =  {};
+
+                self.bindExerciseViewTo = function (exerciseView) {
+                    if(!angular.isObject(exerciseView)) {
+                        $log.error('ZnkExerciseDrvCtrl bindExerciseViewTo: exercise view should be an object');
+                        return;
+                    }
+
+                    self.__exerciseViewBinding = exerciseView;
+
+                    angular.forEach(keys, function (keyObj) {
+                        exerciseViewListenersObj[keyObj.getterName] = $scope.$watchCollection(function () {
+                            return exerciseView[keyObj.getterName];
+                        },function (newVal) {
+                            if(angular.isDefined(newVal)) {
+                                if (keyObj.setterName) {
+                                    self[keyObj.setterName](newVal);
+                                } else {
+                                    self.bindExerciseEventManager.trigger(keyObj.getterName, newVal);
+                                }
+                            }
+                        });
+                    });
+                };
+
+                self.unbindExerciseView = function (keyNameObj) {
+                    angular.forEach(exerciseViewListenersObj, function(fn, key) {
+                        if (!keyNameObj || keyNameObj[key]) {
+                            exerciseViewListenersObj[key]();
+                            exerciseViewListenersObj[key] = null;
+                        }
+                    });
+
+                    var cleanExerciseViewBinding = true;
+
+                    for (var i in exerciseViewListenersObj) {
+                        if (exerciseViewListenersObj.hasOwnProperty(i) && exerciseViewListenersObj[i] !== null) {
+                            cleanExerciseViewBinding = false;
+                            break;
+                        }
+                    }
+
+                    if (self.__exerciseViewBinding && cleanExerciseViewBinding){
+                        self.__exerciseViewBinding = null;
+                    }
+                };
+
+            })(self);
         }]);
 })(angular);
 
@@ -14127,7 +14266,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "            disable-swipe=\"{{vm.isLocked}}\">\n" +
     "    <div class=\"swiper-slide\"\n" +
     "        ng-repeat=\"question in vm.questions\">\n" +
-    "        <znk-question-report report-data=\"question\" ng-if=\"question.parentTypeId !== vm.exerciseTypeEnum.LECTURE.enum\"></znk-question-report>\n" +
+    "        <znk-question-report report-data=\"question\"></znk-question-report>\n" +
     "        <question-builder question=\"question\"\n" +
     "                          rate-answer-formatter-parser\n" +
     "                          ng-model=\"question.__questionStatus.userAnswer\"\n" +
@@ -14625,7 +14764,8 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
             'znk.infra.general',
             'znk.infra.user',
             'znk.infra.svgIcon',
-            'znk.infra.mailSender'
+            'znk.infra.mailSender',
+            'znk.infra.exerciseUtility'
         ])
         .config([
             'SvgIconSrvProvider',
@@ -14648,12 +14788,14 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
             bindings: {
                 reportData: '='
             },
-            template: '<svg-icon class="report-btn" name="report-question-icon" title="{{\'REPORT_POPUP.REPORT_QUESTION\' | translate}}" ng-click="vm.showReportDialog()"></svg-icon>',
+            template: '<svg-icon class="report-btn" name="report-question-icon" ' +
+            'title="{{\'REPORT_POPUP.REPORT_QUESTION\' | translate}}" ng-hide="vm.isLectureType" ng-click="vm.showReportDialog()"></svg-icon>',
             controllerAs: 'vm',
-            controller: ["$mdDialog", "$translatePartialLoader", function ($mdDialog, $translatePartialLoader) {
+            controller: ["$mdDialog", "$translatePartialLoader", "ExerciseTypeEnum", function ($mdDialog, $translatePartialLoader, ExerciseTypeEnum) {
                 'ngInject';
                 var vm = this;
 
+                vm.isLectureType = vm.reportData.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum;
                 $translatePartialLoader.addPart('znkQuestionReport');
 
                 vm.showReportDialog = function () {
