@@ -6,8 +6,8 @@
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    'exclamation-mark': 'components/popUp/svg/exclamation-mark-icon.svg',
-                    'correct': 'components/popUp/svg/correct-icon.svg'
+                    'popup-exclamation-mark': 'components/popUp/svg/exclamation-mark-icon.svg',
+                    'popup-correct': 'components/popUp/svg/correct-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }]);
@@ -153,7 +153,7 @@
 
             PopUpSrv.error = function error(title,content){
                 var btn = new BaseButton('OK',null,'ok', undefined, true);
-                return basePopup('error-popup','exclamation-mark',title || 'OOOPS...',content,[btn]);
+                return basePopup('error-popup','popup-exclamation-mark',title || 'OOOPS...',content,[btn]);
             };
 
             PopUpSrv.ErrorConfirmation = function error(title, content, acceptBtnTitle,cancelBtnTitle){
@@ -161,12 +161,12 @@
                     new BaseButton(acceptBtnTitle,null,acceptBtnTitle),
                     new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle, true)
                 ];
-                return basePopup('error-popup','exclamation-mark',title,content,buttons);
+                return basePopup('error-popup','popup-exclamation-mark',title,content,buttons);
             };
 
             PopUpSrv.success = function success(title,content){
                 var btn = new BaseButton('OK',null,'ok', undefined, true);
-                return basePopup('success-popup','correct',title || '',content,[btn]);
+                return basePopup('success-popup','popup-correct',title || '',content,[btn]);
             };
 
             PopUpSrv.warning = function warning(title,content,acceptBtnTitle,cancelBtnTitle){
@@ -174,7 +174,7 @@
                     new BaseButton(acceptBtnTitle,null,acceptBtnTitle),
                     new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle, true)
                 ];
-                return basePopup('warning-popup','exclamation-mark',title,content,buttons);
+                return basePopup('warning-popup','popup-exclamation-mark',title,content,buttons);
             };
 
             PopUpSrv.isPopupOpen = function(){

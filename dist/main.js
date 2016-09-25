@@ -5123,7 +5123,7 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
         'SvgIconSrvProvider',
         function (SvgIconSrvProvider) {
             var svgMap = {
-                'clock-icon': 'components/general/svg/clock-icon.svg'
+                'general-clock-icon': 'components/general/svg/clock-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
         }]);
@@ -5914,7 +5914,7 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
   $templateCache.put("components/general/templates/timerDrv.html",
     "<div ng-switch=\"type\" class=\"timer-drv\">\n" +
     "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +
-    "        <svg-icon class=\"icon-wrapper\" name=\"clock-icon\"></svg-icon>\n" +
+    "        <svg-icon class=\"icon-wrapper\" name=\"general-clock-icon\"></svg-icon>\n" +
     "        <div class=\"timer-view\"></div>\n" +
     "    </div>\n" +
     "    <div ng-switch-when=\"2\" class=\"timer-type2\">\n" +
@@ -6262,8 +6262,8 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function($templat
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    'exclamation-mark': 'components/popUp/svg/exclamation-mark-icon.svg',
-                    'correct': 'components/popUp/svg/correct-icon.svg'
+                    'popup-exclamation-mark': 'components/popUp/svg/exclamation-mark-icon.svg',
+                    'popup-correct': 'components/popUp/svg/correct-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }]);
@@ -6409,7 +6409,7 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function($templat
 
             PopUpSrv.error = function error(title,content){
                 var btn = new BaseButton('OK',null,'ok', undefined, true);
-                return basePopup('error-popup','exclamation-mark',title || 'OOOPS...',content,[btn]);
+                return basePopup('error-popup','popup-exclamation-mark',title || 'OOOPS...',content,[btn]);
             };
 
             PopUpSrv.ErrorConfirmation = function error(title, content, acceptBtnTitle,cancelBtnTitle){
@@ -6417,12 +6417,12 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function($templat
                     new BaseButton(acceptBtnTitle,null,acceptBtnTitle),
                     new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle, true)
                 ];
-                return basePopup('error-popup','exclamation-mark',title,content,buttons);
+                return basePopup('error-popup','popup-exclamation-mark',title,content,buttons);
             };
 
             PopUpSrv.success = function success(title,content){
                 var btn = new BaseButton('OK',null,'ok', undefined, true);
-                return basePopup('success-popup','correct',title || '',content,[btn]);
+                return basePopup('success-popup','popup-correct',title || '',content,[btn]);
             };
 
             PopUpSrv.warning = function warning(title,content,acceptBtnTitle,cancelBtnTitle){
@@ -6430,7 +6430,7 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function($templat
                     new BaseButton(acceptBtnTitle,null,acceptBtnTitle),
                     new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle, true)
                 ];
-                return basePopup('warning-popup','exclamation-mark',title,content,buttons);
+                return basePopup('warning-popup','popup-exclamation-mark',title,content,buttons);
             };
 
             PopUpSrv.isPopupOpen = function(){
@@ -14771,7 +14771,7 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    'close-popup': 'components/znkQuestionReport/svg/close-popup.svg',
+                    'report-question-close-popup': 'components/znkQuestionReport/svg/close-popup.svg',
                     'report-question-icon': 'components/znkQuestionReport/svg/report-question-icon.svg',
                     'completed-v-report-icon': 'components/znkQuestionReport/svg/completed-v-report.svg'
                 };
@@ -14992,7 +14992,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     "        </div>\n" +
     "        <div class=\"popup-header\">\n" +
     "            <div class=\"close-popup-wrap\" ng-click=\"vm.cancel();\">\n" +
-    "                <svg-icon name=\"close-popup\"></svg-icon>\n" +
+    "                <svg-icon name=\"report-question-close-popup\"></svg-icon>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "        <md-dialog-content>\n" +
