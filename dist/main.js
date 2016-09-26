@@ -994,7 +994,22 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
             };
 
             authService.getAuth = function() {
-                return rootRef.getAuth();
+                var authData = rootRef.getAuth();
+                if (!authData) {
+                    return null;
+                }
+
+                if (!authData.auth) {
+                    authData.auth = {};
+                }
+
+                if (!authData.password) {
+                    authData.password = {};
+                }
+
+                var userEmail = authData.auth.email || authData.password.email;
+                authData.auth.email = authData.password.email = userEmail;
+                return authData;
             };
 
             authService.changePassword = function (changePasswordData) {
