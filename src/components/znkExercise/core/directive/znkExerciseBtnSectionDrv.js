@@ -187,7 +187,7 @@
                         }
 
                         scope.$on('$destroy',function(){
-                            body.removeEventListener('keydown',keyboardClickCB);
+                            body.removeEventListener('keyup',keyboardClickCB);
                         });
                     }
                 }
