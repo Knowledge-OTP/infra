@@ -10724,7 +10724,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 },
                 link: function (scope, element) {
                     $translatePartialLoader.addPart('znkChat');
-                    $timeout(function(){
+                    $timeout(function () {
                         element.addClass('animate-chat');
                     });
 
@@ -10781,27 +10781,46 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                     function _closedChatHandler(watch) {
                         if (watch) {
-                            destroyClosedChatWatcher = scope.$watch('d.chatData.chatParticipantsArr', function (chatParticipantsArr) {
-                                if (angular.isArray(chatParticipantsArr)) {
-                                    scope.d.numOfNotSeenMessages = 0;
-                                    for (var i = 0; i < chatParticipantsArr.length; i++) {
-                                        if (chatParticipantsArr[i].messagesNotSeen > 0) {
-                                            scope.d.numOfNotSeenMessages += chatParticipantsArr[i].messagesNotSeen;
-                                            scope.d.numOfNotSeenMessages = (scope.d.numOfNotSeenMessages < ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES) ? scope.d.numOfNotSeenMessages : 10;
-                                        }
-                                    }
-                                }
+                            destroyClosedChatWatcher.chatters = scope.$watch('d.chatData.chatParticipantsArr', function () {
+                                _countUnseenMessages();
                             }, true);
+
+                            destroyClosedChatWatcher.support = scope.$watch('d.chatData.support && d.chatData.support.messagesNotSeen', function () {
+                                _countUnseenMessages();
+                            });
+
                         } else {
-                            destroyClosedChatWatcher();
+                            destroyClosedChatWatcher.chatters();
+                            destroyClosedChatWatcher.support();
                         }
+                    }
+
+                    function _countUnseenMessages() {
+                        scope.d.numOfNotSeenMessages = 0;
+                        var chatParticipantsArr = scope.d.chatData.chatParticipantsArr;
+                        var supportObj = scope.d.chatData.support;
+
+                        if (angular.isArray(chatParticipantsArr)) {
+                            for (var i = 0; i < chatParticipantsArr.length; i++) {
+                                if (chatParticipantsArr[i].messagesNotSeen > 0) {
+                                    scope.d.numOfNotSeenMessages += chatParticipantsArr[i].messagesNotSeen;
+                                }
+                            }
+                        }
+
+                        if (angular.isDefined(supportObj)) {
+                            if (supportObj.messagesNotSeen > 0) {
+                                scope.d.numOfNotSeenMessages += supportObj.messagesNotSeen;
+                            }
+                        }
+                        scope.d.numOfNotSeenMessages = (scope.d.numOfNotSeenMessages < ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES) ? scope.d.numOfNotSeenMessages : ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
                     }
 
                     _closedChatHandler(WATCH_ON);        // indication to new messages when the chat is closed
 
 
                     scope.d.openChat = function () {
-                        if(scope.d.actions.scrollToLastMessage){
+                        if (scope.d.actions.scrollToLastMessage) {
                             scope.d.actions.scrollToLastMessage();
                         }
 
@@ -10810,7 +10829,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         });
                         scope.d.chatStateView = scope.statesView.CHAT_VIEW;
                         isChatClosed = false;
-                        if(angular.isDefined(scope.d.selectedChatter.uid)) {
+                        if (angular.isDefined(scope.d.selectedChatter.uid)) {
                             scope.d.selectChatter(scope.d.selectedChatter);
                         }
                         _closedChatHandler(WATCH_OFF);
