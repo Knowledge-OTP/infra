@@ -1,9 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.userContext').service('TeacherContextSrv', ['$window', '$log',
+    angular.module('znk.infra.userContext').service('TeacherContextSrv', ['$window', '$log', '$q',
 
-        function ($window, $log) {
+        function ($window, $log, $q) {
             var TeacherContextSrv = {};
 
             var _storageTeacherUidKey = 'currentTeacherUid';
@@ -24,7 +24,7 @@
                         $log.error('TeacherContextSrv: no teacher uid');
                     }
                 }
-                return _currentTeacherUid;
+                return $q.when(_currentTeacherUid);
             };
 
             TeacherContextSrv.setCurrentUid = function (uid) {

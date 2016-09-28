@@ -6,7 +6,7 @@
         'SvgIconSrvProvider',
         function (SvgIconSrvProvider) {
             var svgMap = {
-                'clock-icon': 'components/general/svg/clock-icon.svg'
+                'general-clock-icon': 'components/general/svg/clock-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
         }]);
@@ -797,7 +797,7 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
   $templateCache.put("components/general/templates/timerDrv.html",
     "<div ng-switch=\"type\" class=\"timer-drv\">\n" +
     "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +
-    "        <svg-icon class=\"icon-wrapper\" name=\"clock-icon\"></svg-icon>\n" +
+    "        <svg-icon class=\"icon-wrapper\" name=\"general-clock-icon\"></svg-icon>\n" +
     "        <div class=\"timer-view\"></div>\n" +
     "    </div>\n" +
     "    <div ng-switch-when=\"2\" class=\"timer-type2\">\n" +

@@ -111,7 +111,7 @@
                         ];
                         $q.all(promsArr).then(function (res) {
                             scope.d.currentUserPresenceStatus = res[0];
-                            isOffline = scope.d.currentUserPresenceStatus === scope.d.presenceStatusMap.OFFLINE;
+                            isOffline = scope.d.currentUserPresenceStatus === PresenceService.userStatus.OFFLINE;
                             scope.d.calleeName = (res[1]) ? (res[1]) : '';
                             scope.d.callBtnModel = {
                                 isOffline: isOffline,
@@ -921,7 +921,7 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
     'use strict';
 
     angular.module('znk.infra.auth').factory('AuthService',
-        ["ENV", function (ENV) {
+        ["ENV", "$q", "$timeout", "$log", "StorageFirebaseAdapter", "StorageSrv", "$http", "$rootScope", function (ENV, $q, $timeout, $log, StorageFirebaseAdapter, StorageSrv, $http, $rootScope) {
             'ngInject';
 
             var refAuthDB = new Firebase(ENV.fbGlobalEndPoint, ENV.firebaseAppScopeName);
@@ -929,13 +929,87 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
 
             var authService = {};
 
-            authService.getAuth = function() {
-                return rootRef.getAuth();
+            authService.saveRegistration = function (registration, login) {
+                var registerInProgress = true;
+                var dfd = $q.defer();
+                authService.logout(true);
+
+                var timeoutPromise = $timeout(function () {
+                    if (registerInProgress) {
+                        dfd.reject('timeout');
+                    }
+                }, ENV.promiseTimeOut);
+
+                registration.profile = {};
+
+                refAuthDB.createUser(registration).then(function () {
+                    registerInProgress = false;
+                    $timeout.cancel(timeoutPromise);
+
+                    if (login) {
+                        authService.login({
+                            email: registration.email,
+                            password: registration.password
+                        }).then(function (loginData) {
+                            authService.registerFirstLogin();
+                            dfd.resolve(loginData);
+                        }, function (err) {
+                            dfd.reject(err);
+                        });
+                    } else {
+                        dfd.resolve();
+                    }
+                }, function (error) {
+                    $timeout.cancel(timeoutPromise);
+                    dfd.reject(error);
+                });
+                return dfd.promise;
+            };
+
+            authService.login = function (loginData) {
+                var deferred = $q.defer();
+
+                refAuthDB.unauth();
+
+                refAuthDB.authWithPassword(loginData).then(function (authData) {
+                    $log.debug('authSrv::login(): uid=' + authData.uid);
+                    _onAuth(authData).then(function () {
+                        deferred.resolve(authData);
+                    });
+                }).catch(function (err) {
+                    authService.logout();
+                    deferred.reject(err);
+                });
+
+                return deferred.promise;
             };
 
             authService.logout = function () {
                 refAuthDB.unauth();
                 rootRef.unauth();
+            };
+
+            authService.forgotPassword = function (forgotPasswordData) {
+                return refAuthDB.resetPassword(forgotPasswordData);
+            };
+
+            authService.getAuth = function() {
+                var authData = rootRef.getAuth();
+                if (!authData) {
+                    return null;
+                }
+
+                if (!authData.auth) {
+                    authData.auth = {};
+                }
+
+                if (!authData.password) {
+                    authData.password = {};
+                }
+
+                var userEmail = authData.auth.email || authData.password.email;
+                authData.auth.email = authData.password.email = userEmail;
+                return authData;
             };
 
             authService.changePassword = function (changePasswordData) {
@@ -944,7 +1018,120 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
                 return refAuthDB.changePassword(changePasswordData);
             };
 
+            authService.createAuthWithCustomToken = function (refDB, token) {
+                var deferred = $q.defer();
+                refDB.authWithCustomToken(token, function (error, userData) {
+                    if (error) {
+                        deferred.reject(error);
+                    }
+                    $log.debug('createAuthWithCustomToken: uid=' + userData.uid);
+                    deferred.resolve(userData);
+                });
+                return deferred.promise;
+            };
+
+            authService.userDataForAuthAndDataFb = function (data) {
+                var proms = [
+                    authService.createAuthWithCustomToken(refAuthDB, data.authToken),
+                    authService.createAuthWithCustomToken(rootRef, data.dataToken)
+                ];
+                return $q.all(proms);
+            };
+
+            authService.registerFirstLogin = function () {
+                var storageSrv = storageObj();
+                var firstLoginPath = 'firstLogin/' + authService.getAuth().uid;
+                return storageSrv.get(firstLoginPath).then(function (userFirstLoginTime) {
+                    if (angular.equals(userFirstLoginTime, {})) {
+                        storageSrv.set(firstLoginPath, Date.now());
+                    }
+                });
+            };
+
+            function storageObj (){
+                var fbAdapter = new StorageFirebaseAdapter(ENV.fbDataEndPoint + '/' + ENV.firebaseAppScopeName);
+                var config = {
+                    variables: {
+                        uid: function () {
+                            return authService.getAuth().uid;
+                        }
+                    }
+                };
+                return new StorageSrv(fbAdapter, config);
+            }
+
+            function _dataLogin() {
+                var postUrl = ENV.backendEndpoint + 'firebase/token';
+                var authData = refAuthDB.getAuth();
+                var postData = {
+                    email: authData.password ? authData.password.email : '',
+                    uid: authData.uid,
+                    fbDataEndPoint: ENV.fbDataEndPoint,
+                    fbEndpoint: ENV.fbGlobalEndPoint,
+                    auth: ENV.dataAuthSecret,
+                    token: authData.token
+                };
+
+                return $http.post(postUrl, postData).then(function (token) {
+                    var defer = $q.defer();
+                    rootRef.authWithCustomToken(token.data, function (error, userAuthData) {
+                        if (error) {
+                            defer.reject(error);
+                        }
+                        $log.debug('authSrv::login(): uid=' + userAuthData.uid);
+                        defer.resolve(userAuthData);
+                    });
+                    return defer.promise;
+                });
+            }
+
+            function _onAuth(data) {
+                var _loginAuthData = data;
+
+                if (_loginAuthData) {
+                    return _dataLogin(_loginAuthData).then(function () {
+                        $rootScope.$broadcast('auth:login', _loginAuthData);
+                    });
+                }
+                $rootScope.$broadcast('auth:logout');
+                return $q.when();
+            }
+
             return authService;
+        }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.auth')
+        .service('AuthHelperService', ["$filter", "ENV", function ($filter, ENV) {
+            'ngInject';
+
+            var translateFilter = $filter('translate');
+            var excludeDomains = ['mailinator.com'];
+
+            this.errorMessages = {
+                DEFAULT_ERROR: translateFilter('AUTH_HELPER.DEFAULT_ERROR_MESSAGE'),
+                FB_ERROR: translateFilter('AUTH_HELPER.FACEBOOK_ERROR'),
+                EMAIL_EXIST: translateFilter('AUTH_HELPER.EMAIL_EXIST'),
+                INVALID_EMAIL: translateFilter('AUTH_HELPER.INVALID_EMAIL'),
+                NO_INTERNET_CONNECTION_ERR: translateFilter('AUTH_HELPER.NO_INTERNET_CONNECTION_ERR'),
+                EMAIL_NOT_EXIST: translateFilter('AUTH_HELPER.EMAIL_NOT_EXIST'),
+                INCORRECT_EMAIL_AND_PASSWORD_COMBINATION: translateFilter('AUTH_HELPER.INCORRECT_EMAIL_AND_PASSWORD_COMBINATION')
+            };
+
+            this.isDomainExclude = function (userEmail) {
+                var userDomain = userEmail.substr(userEmail.indexOf('@') + 1);
+                if (userDomain.toLowerCase() !== 'zinkerz.com' && ENV.enforceZinkerzDomainSignup) {
+                    return true;
+                }
+
+                var domains = excludeDomains.filter(function (excludeDomain) {
+                    return excludeDomain === userDomain;
+                });
+                return domains.length > 0;
+            };
         }]);
 })(angular);
 
@@ -3203,24 +3390,12 @@ angular.module('znk.infra.contentAvail').run(['$templateCache', function($templa
 'use strict';
 
 angular.module('znk.infra.contentGetters').service('CategoryService',
-    ["StorageRevSrv", "$q", "categoryEnum", "$log", "EnumSrv", function (StorageRevSrv, $q, categoryEnum, $log, EnumSrv) {
+    ["StorageRevSrv", "$q", "categoryEnum", "$log", function (StorageRevSrv, $q, categoryEnum, $log) {
         'ngInject';
 
         var categoryMapObj;
         var self = this;
-        var categoryTypeEnum = new EnumSrv.BaseEnum([
-            ['TUTORIAL', 1, 'tutorial'],
-            ['EXERCISE', 2, 'exercise'],
-            ['MINI_CHALLENGE', 3, 'miniChallenge'],
-            ['SECTION', 4, 'section'],
-            ['DRILL', 5, 'drill'],
-            ['GENERAL', 6, 'general'],
-            ['SPECIFIC', 7, 'specific'],
-            ['STRATEGY', 8, 'strategy'],
-            ['SUBJECT', 9, 'subject'],
-            ['SUB_SCORE', 10, 'subScore'],
-            ['TEST_SCORE', 11, 'testScore']
-        ]);
+
         self.get = function () {
             return StorageRevSrv.getContent({
                 exerciseType: 'category'
@@ -3274,7 +3449,6 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
                 return self.getCategoryLevel1Parent(parentCategory);
             });
         };
-
 
         self.getCategoryLevel2Parent = function (categoryId) {
             return self.getCategoryMap().then(function (categories) {
@@ -3363,39 +3537,6 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
                 return getAllLevel4CategoriessProm;
             };
         })();
-        //(igor) sat patch should be removed
-        self.getAllGeneralCategoriesBySubjectId = (function () {
-            var getAllGeneralCategoriesBySubjectIdProm;
-            return function (subjectId) {
-                if (!getAllGeneralCategoriesBySubjectIdProm) {
-                    getAllGeneralCategoriesBySubjectIdProm = self.getAllGeneralCategories().then(function (categories) {
-                        var generalCategories = {};
-                        var promArray = [];
-                        angular.forEach(categories, function (generalCategory) {
-                            var prom = self.getSubjectIdByCategory(generalCategory).then(function (currentCategorySubjectId) {
-                                if (currentCategorySubjectId === subjectId) {
-                                    generalCategories[generalCategory.id] = generalCategory;
-                                }
-                            });
-                            promArray.push(prom);
-                        });
-                        return $q.all(promArray).then(function () {
-                            return generalCategories;
-                        });
-                    });
-                }
-                return getAllGeneralCategoriesBySubjectIdProm;
-            };
-        })();
-        //(igor) sat patch should be removed
-        self.getSubjectIdByCategory = function (category) {
-            if (category.typeId === categoryTypeEnum.SUBJECT.enum) {
-                return $q.when(category.id);
-            }
-            return self.getParentCategory(category.id).then(function (parentCategory) {
-                return self.getSubjectIdByCategory(parentCategory);
-            });
-        };
     }]);
 
 angular.module('znk.infra.contentGetters').run(['$templateCache', function($templateCache) {
@@ -5123,7 +5264,7 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
         'SvgIconSrvProvider',
         function (SvgIconSrvProvider) {
             var svgMap = {
-                'clock-icon': 'components/general/svg/clock-icon.svg'
+                'general-clock-icon': 'components/general/svg/clock-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
         }]);
@@ -5914,7 +6055,7 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
   $templateCache.put("components/general/templates/timerDrv.html",
     "<div ng-switch=\"type\" class=\"timer-drv\">\n" +
     "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +
-    "        <svg-icon class=\"icon-wrapper\" name=\"clock-icon\"></svg-icon>\n" +
+    "        <svg-icon class=\"icon-wrapper\" name=\"general-clock-icon\"></svg-icon>\n" +
     "        <div class=\"timer-view\"></div>\n" +
     "    </div>\n" +
     "    <div ng-switch-when=\"2\" class=\"timer-type2\">\n" +
@@ -6262,8 +6403,8 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function($templat
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    'exclamation-mark': 'components/popUp/svg/exclamation-mark-icon.svg',
-                    'correct': 'components/popUp/svg/correct-icon.svg'
+                    'popup-exclamation-mark': 'components/popUp/svg/exclamation-mark-icon.svg',
+                    'popup-correct': 'components/popUp/svg/correct-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }]);
@@ -6409,7 +6550,7 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function($templat
 
             PopUpSrv.error = function error(title,content){
                 var btn = new BaseButton('OK',null,'ok', undefined, true);
-                return basePopup('error-popup','exclamation-mark',title || 'OOOPS...',content,[btn]);
+                return basePopup('error-popup','popup-exclamation-mark',title || 'OOOPS...',content,[btn]);
             };
 
             PopUpSrv.ErrorConfirmation = function error(title, content, acceptBtnTitle,cancelBtnTitle){
@@ -6417,12 +6558,12 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function($templat
                     new BaseButton(acceptBtnTitle,null,acceptBtnTitle),
                     new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle, true)
                 ];
-                return basePopup('error-popup','exclamation-mark',title,content,buttons);
+                return basePopup('error-popup','popup-exclamation-mark',title,content,buttons);
             };
 
             PopUpSrv.success = function success(title,content){
                 var btn = new BaseButton('OK',null,'ok', undefined, true);
-                return basePopup('success-popup','correct',title || '',content,[btn]);
+                return basePopup('success-popup','popup-correct',title || '',content,[btn]);
             };
 
             PopUpSrv.warning = function warning(title,content,acceptBtnTitle,cancelBtnTitle){
@@ -6430,7 +6571,7 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function($templat
                     new BaseButton(acceptBtnTitle,null,acceptBtnTitle),
                     new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle, true)
                 ];
-                return basePopup('warning-popup','exclamation-mark',title,content,buttons);
+                return basePopup('warning-popup','popup-exclamation-mark',title,content,buttons);
             };
 
             PopUpSrv.isPopupOpen = function(){
@@ -6527,14 +6668,52 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
         this.$get = [
             '$log', '$injector', 'ENV', '$rootScope', 'StorageFirebaseAdapter',
             function ($log, $injector, ENV, $rootScope, StorageFirebaseAdapter) {
-                var PresenceService = {};
+                var presenceService = {};
                 var rootRef = new StorageFirebaseAdapter(ENV.fbDataEndPoint);
                 var PRESENCE_PATH = 'presence/';
 
-                PresenceService.userStatus = {
+                presenceService.userStatus = {
                     'OFFLINE': 0,
                     'ONLINE': 1,
                     'IDLE': 2
+                };
+
+                presenceService.addCurrentUserListeners = function () {
+                    var authData = getAuthData();
+                    if (authData) {
+                        var amOnline = rootRef.getRef('.info/connected');
+                        var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
+                        amOnline.on('value', function (snapshot) {
+                            if (snapshot.val()) {
+                                userRef.onDisconnect().remove();
+                                userRef.set(presenceService.userStatus.ONLINE);
+                            }
+                        });
+
+                        $rootScope.$on('IdleStart', function() {
+                            userRef.set(presenceService.userStatus.IDLE);
+                        });
+
+                        $rootScope.$on('IdleEnd', function() {
+                            userRef.set(presenceService.userStatus.ONLINE);
+                        });
+                    }
+                };
+
+                presenceService.getCurrentUserStatus = function (userId) {
+                    return rootRef.getRef(PRESENCE_PATH + userId).once('value').then(function(snapshot) {
+                        return (snapshot.val()) || presenceService.userStatus.OFFLINE;
+                    });
+                };
+
+                presenceService.startTrackUserPresence = function (userId, cb) {
+                    var userRef = rootRef.getRef(PRESENCE_PATH + userId);
+                    userRef.on('value', trackUserPresenceCB.bind(null, cb, userId));
+                };
+
+                presenceService.stopTrackUserPresence = function (userId) {
+                    var userRef = rootRef.getRef(PRESENCE_PATH + userId);
+                    userRef.off('value', trackUserPresenceCB);
                 };
 
                 function getAuthData() {
@@ -6546,47 +6725,9 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
                     return authData;
                 }
 
-                PresenceService.addCurrentUserListeners = function () {
-                    var authData = getAuthData();
-                    if (authData) {
-                        var amOnline = rootRef.getRef('.info/connected');
-                        var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
-                        amOnline.on('value', function (snapshot) {
-                            if (snapshot.val()) {
-                                userRef.onDisconnect().remove();
-                                userRef.set(PresenceService.userStatus.ONLINE);
-                            }
-                        });
-
-                        $rootScope.$on('IdleStart', function() {
-                            userRef.set(PresenceService.userStatus.IDLE);
-                        });
-
-                        $rootScope.$on('IdleEnd', function() {
-                            userRef.set(PresenceService.userStatus.ONLINE);
-                        });
-                    }
-                };
-
-                PresenceService.getCurrentUserStatus = function (userId) {
-                    return rootRef.getRef(PRESENCE_PATH + userId).once('value').then(function(snapshot) {
-                        return (snapshot.val()) || PresenceService.userStatus.OFFLINE;
-                    });
-                };
-
-                PresenceService.startTrackUserPresence = function (userId, cb) {
-                    var userRef = rootRef.getRef(PRESENCE_PATH + userId);
-                    userRef.on('value', trackUserPresenceCB.bind(null, cb, userId));
-                };
-
-                PresenceService.stopTrackUserPresence = function (userId) {
-                    var userRef = rootRef.getRef(PRESENCE_PATH + userId);
-                    userRef.off('value', trackUserPresenceCB);
-                };
-
                 function trackUserPresenceCB(cb, userId, snapshot) {
                     if (angular.isFunction(cb)) {
-                        var status = PresenceService.userStatus.OFFLINE;
+                        var status = presenceService.userStatus.OFFLINE;
                         if (snapshot && snapshot.val()){
                             status = snapshot.val();
                         }
@@ -6602,7 +6743,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
                     }
                 });
 
-                return PresenceService;
+                return presenceService;
             }];
     });
 })(angular);
@@ -9005,9 +9146,9 @@ angular.module('znk.infra.user').run(['$templateCache', function($templateCache)
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.userContext').service('TeacherContextSrv', ['$window', '$log',
+    angular.module('znk.infra.userContext').service('TeacherContextSrv', ['$window', '$log', '$q',
 
-        function ($window, $log) {
+        function ($window, $log, $q) {
             var TeacherContextSrv = {};
 
             var _storageTeacherUidKey = 'currentTeacherUid';
@@ -9028,7 +9169,7 @@ angular.module('znk.infra.user').run(['$templateCache', function($templateCache)
                         $log.error('TeacherContextSrv: no teacher uid');
                     }
                 }
-                return _currentTeacherUid;
+                return $q.when(_currentTeacherUid);
             };
 
             TeacherContextSrv.setCurrentUid = function (uid) {
@@ -14759,7 +14900,7 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
     "\n" +
     "<div class=\"progress-wrap\">\n" +
     "    <div class=\"progress\" ng-style=\"{width: progressWidth + '%'}\"></div>\n" +
-    "    <div class=\"answer-count ng-hide\" ng-show=\"{{::showProgressValue}}\" ng-style=\"{left: progressWidth + '%'}\">\n" +
+    "    <div class=\"answer-count ng-hide\" ng-show=\"{{::showProgressValue}}\">\n" +
     "        {{progressValue}}\n" +
     "    </div>\n" +
     "</div>\n" +
@@ -14790,7 +14931,7 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    'close-popup': 'components/znkQuestionReport/svg/close-popup.svg',
+                    'report-question-close-popup': 'components/znkQuestionReport/svg/close-popup.svg',
                     'report-question-icon': 'components/znkQuestionReport/svg/report-question-icon.svg',
                     'completed-v-report-icon': 'components/znkQuestionReport/svg/completed-v-report.svg'
                 };
@@ -15011,7 +15152,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     "        </div>\n" +
     "        <div class=\"popup-header\">\n" +
     "            <div class=\"close-popup-wrap\" ng-click=\"vm.cancel();\">\n" +
-    "                <svg-icon name=\"close-popup\"></svg-icon>\n" +
+    "                <svg-icon name=\"report-question-close-popup\"></svg-icon>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "        <md-dialog-content>\n" +
