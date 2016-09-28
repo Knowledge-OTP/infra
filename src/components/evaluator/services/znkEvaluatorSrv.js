@@ -7,10 +7,10 @@
         var evaluateFnMap = {};
 
         var evaluateFnArr = [
-            'shouldEvaluateQuestion',
-            'isEvaluateQuestion',
+            'shouldEvaluateQuestionFn',
+            'isEvaluateQuestionTypeFn',
             'isEvaluateExerciseTypeFn',
-            'evaluateStatusFn'
+            'getEvaluateStatusFn'
         ];
 
         angular.forEach(evaluateFnArr, function(fnName) {
