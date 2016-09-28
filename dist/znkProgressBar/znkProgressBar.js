@@ -56,7 +56,7 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
     "\n" +
     "<div class=\"progress-wrap\">\n" +
     "    <div class=\"progress\" ng-style=\"{width: progressWidth + '%'}\"></div>\n" +
-    "    <div class=\"answer-count ng-hide\" ng-show=\"{{::showProgressValue}}\" ng-style=\"{left: progressWidth + '%'}\">\n" +
+    "    <div class=\"answer-count ng-hide\" ng-show=\"{{::showProgressValue}}\">\n" +
     "        {{progressValue}}\n" +
     "    </div>\n" +
     "</div>\n" +

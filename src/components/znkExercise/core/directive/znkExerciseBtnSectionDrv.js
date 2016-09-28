@@ -174,7 +174,7 @@
                             }
                         }
                         var body = document.body;
-                        body.addEventListener('keydown',keyboardClickCB);
+                        body.addEventListener('keyup',keyboardClickCB);
 
                         var currentQuestionAnsweredWatchFn;
                         if(_notReviewMode()){
@@ -187,7 +187,7 @@
                         }
 
                         scope.$on('$destroy',function(){
-                            body.removeEventListener('keydown',keyboardClickCB);
+                            body.removeEventListener('keyup',keyboardClickCB);
                         });
                     }
                 }

@@ -1,6 +1,6 @@
 {
   "name": "infra",
-  "version": "v5.0.36",
+  "version": "v5.0.50",
   "authors": [
     "Zinkerz"
   ],
@@ -13,7 +13,7 @@
     "firebase": "^2.4.2",
     "ng-idle": "1.2.2",
     "angulartics": "1.0.3",
-    "angular-translate": "^2.11.0",
+    "angular-translate": "^2.12.0",
     "angular-translate-loader-partial": "^2.11.0",
     "angular-svg-round-progressbar": "~0.2.7",
     "plivo": "https://github.com/Knowledge-OTP/plivo.git",

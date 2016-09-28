@@ -185,34 +185,9 @@
                                 return !!scope.vm.showPager;
                             };
 
-                            var killExerciseViewListener;
-                            scope.actions.bindExerciseViewTo = function(exerciseView){
-                                if(!angular.isObject(exerciseView)){
-                                    $log.error('znkExerciseDrv: exercise view should be an object');
-                                    return;
-                                }
+                            scope.actions.bindExerciseViewTo = znkExerciseDrvCtrl.bindExerciseViewTo;
 
-                                znkExerciseDrvCtrl.__exerciseViewBinding = exerciseView;
-
-                                killExerciseViewListener = scope.$watch(function(){
-                                    return exerciseView.currSlideIndex;
-                                },function(newVal){
-                                    if(angular.isDefined(newVal)){
-                                        znkExerciseDrvCtrl.setCurrentIndex(newVal);
-                                    }
-                                });
-                            };
-
-                            scope.actions.unbindExerciseView = function(){
-                                if(killExerciseViewListener){
-                                    killExerciseViewListener();
-                                    killExerciseViewListener = null;
-                                }
-
-                                if(znkExerciseDrvCtrl.__exerciseViewBinding ){
-                                    znkExerciseDrvCtrl.__exerciseViewBinding = null;
-                                }
-                            };
+                            scope.actions.unbindExerciseView = znkExerciseDrvCtrl.unbindExerciseView;
                             /**
                              *  ACTIONS END
                              * */

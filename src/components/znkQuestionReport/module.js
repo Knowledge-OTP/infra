@@ -11,13 +11,14 @@
             'znk.infra.general',
             'znk.infra.user',
             'znk.infra.svgIcon',
-            'znk.infra.mailSender'
+            'znk.infra.mailSender',
+            'znk.infra.exerciseUtility'
         ])
         .config([
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    'close-popup': 'components/znkQuestionReport/svg/close-popup.svg',
+                    'report-question-close-popup': 'components/znkQuestionReport/svg/close-popup.svg',
                     'report-question-icon': 'components/znkQuestionReport/svg/report-question-icon.svg',
                     'completed-v-report-icon': 'components/znkQuestionReport/svg/completed-v-report.svg'
                 };

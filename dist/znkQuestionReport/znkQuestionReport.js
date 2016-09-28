@@ -11,13 +11,14 @@
             'znk.infra.general',
             'znk.infra.user',
             'znk.infra.svgIcon',
-            'znk.infra.mailSender'
+            'znk.infra.mailSender',
+            'znk.infra.exerciseUtility'
         ])
         .config([
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    'close-popup': 'components/znkQuestionReport/svg/close-popup.svg',
+                    'report-question-close-popup': 'components/znkQuestionReport/svg/close-popup.svg',
                     'report-question-icon': 'components/znkQuestionReport/svg/report-question-icon.svg',
                     'completed-v-report-icon': 'components/znkQuestionReport/svg/completed-v-report.svg'
                 };
@@ -34,12 +35,14 @@
             bindings: {
                 reportData: '='
             },
-            template: '<svg-icon class="report-btn" name="report-question-icon" title="{{\'REPORT_POPUP.REPORT_QUESTION\' | translate}}" ng-click="vm.showReportDialog()"></svg-icon>',
+            template: '<svg-icon class="report-btn" name="report-question-icon" ' +
+            'title="{{\'REPORT_POPUP.REPORT_QUESTION\' | translate}}" ng-hide="vm.isLectureType" ng-click="vm.showReportDialog()"></svg-icon>',
             controllerAs: 'vm',
-            controller: ["$mdDialog", "$translatePartialLoader", function ($mdDialog, $translatePartialLoader) {
+            controller: ["$mdDialog", "$translatePartialLoader", "ExerciseTypeEnum", function ($mdDialog, $translatePartialLoader, ExerciseTypeEnum) {
                 'ngInject';
                 var vm = this;
 
+                vm.isLectureType = vm.reportData.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum;
                 $translatePartialLoader.addPart('znkQuestionReport');
 
                 vm.showReportDialog = function () {
@@ -236,7 +239,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     "        </div>\n" +
     "        <div class=\"popup-header\">\n" +
     "            <div class=\"close-popup-wrap\" ng-click=\"vm.cancel();\">\n" +
-    "                <svg-icon name=\"close-popup\"></svg-icon>\n" +
+    "                <svg-icon name=\"report-question-close-popup\"></svg-icon>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "        <md-dialog-content>\n" +
