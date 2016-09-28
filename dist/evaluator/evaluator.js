@@ -8,22 +8,22 @@
 
 (function (angular) {
     angular.module('znk.infra.evaluator').provider('ZnkEvaluatorSrv', function () {
+        var self = this;
 
-        var _shouldEvaluateQuestionFn;
-        var _isEvaluateQuestionFn;
-        var _evaluateStatusFn;
+        var evaluateFnMap = {};
 
-        this.shouldEvaluateQuestionFnGetter = function(shouldEvaluateQuestionFn) {
-            _shouldEvaluateQuestionFn = shouldEvaluateQuestionFn;
-        };
+        var evaluateFnArr = [
+            'shouldEvaluateQuestion',
+            'isEvaluateQuestion',
+            'isEvaluateExerciseTypeFn',
+            'evaluateStatusFn'
+        ];
 
-        this.isEvaluateQuestionTypeFnGetter = function(isEvaluateQuestionFn) {
-            _isEvaluateQuestionFn = isEvaluateQuestionFn;
-        };
-
-        this.getEvaluateStatusFnGetter = function(evaluateStatusFn) {
-            _evaluateStatusFn = evaluateStatusFn;
-        };
+        angular.forEach(evaluateFnArr, function(fnName) {
+            self[fnName + 'Getter'] = function(fn) {
+                evaluateFnMap[fnName] = fn;
+            };
+        });
 
         this.$get = ["$q", "$injector", "$log", function ($q, $injector, $log) {
             'ngInject';
@@ -48,11 +48,9 @@
                 }
             }
 
-            znkEvaluatorSrvApi.shouldEvaluateQuestionFn = invokeEvaluateFn.bind(null, _shouldEvaluateQuestionFn, 'shouldEvaluateQuestionFn');
-
-            znkEvaluatorSrvApi.isEvaluateQuestionTypeFn = invokeEvaluateFn.bind(null, _isEvaluateQuestionFn, 'isEvaluateQuestionFn');
-
-            znkEvaluatorSrvApi.getEvaluateStatusFn = invokeEvaluateFn.bind(null, _evaluateStatusFn, 'evaluateStatusFn');
+            angular.forEach(evaluateFnArr, function(fnName) {
+                znkEvaluatorSrvApi[fnName] = invokeEvaluateFn.bind(null, evaluateFnMap[fnName], fnName);
+            });
 
             znkEvaluatorSrvApi.evaluateQuestion = function () {
                 //@todo(oded) implement saving data to firebase
