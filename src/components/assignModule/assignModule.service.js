@@ -236,8 +236,7 @@
                                 _summary.duration = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].duration || 0;
                                 _summary.totalAnswered = _summary.correctAnswersNum + _summary.wrongAnswersNum;
                             }
-
-                            // moduleSummary.overAll
+                            
                             if (!moduleSummary.overAll) {
                                 moduleSummary.overAll = newOverAll();
                             }
