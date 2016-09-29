@@ -7,7 +7,7 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseDrawContainer',
-        ['ZnkExerciseDrawSrv', function (ZnkExerciseDrawSrv) {
+        function (ZnkExerciseDrawSrv) {
             //'ngInject';
 
             return {
@@ -24,7 +24,7 @@
                 }
             };
 
-        }]);
+        });
 
 })(angular);
 

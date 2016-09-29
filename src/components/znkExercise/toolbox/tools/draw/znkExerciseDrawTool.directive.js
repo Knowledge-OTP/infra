@@ -98,7 +98,7 @@
 
                         var dataPromMap = {
                             globalStorage: InfraConfigSrv.getGlobalStorage(),
-                            pathPrefix: $q.when(pathPrefixProm),
+                            pathPrefix: $q.when(pathPrefixProm)
                         };
 
                         return $q.all(dataPromMap).then(function (data) {
@@ -120,7 +120,7 @@
                     scope.d.cleanCanvas = function () {
                         if (!currQuestion) {
                             var errMsg = 'znkExerciseDrawTool:_getFbRef: curr question was not set yet';
-                            $log.debug(errMsg);
+                            $log.error(errMsg);
                             return;
                         }
 
@@ -422,6 +422,9 @@
                                     return _fbChildChanged;
                                 case eventsManager._fbCallbackEnum.CHILD_REMOVED:
                                     return _fbChildRemoved;
+                                default:
+                                    $log.error('znkExerciseDrawTool:_fbChildCallbackWrapper: wrong fbCallbackNum received!');
+                                    return;
                         }
                     };
 
@@ -488,7 +491,7 @@
                     }
 
                     function _init() {
-                        canvasContainerElement = angular.element(
+                        canvasContainerElementInitial = angular.element(
                             '<div class="draw-tool-container" ' +
                                 'ng-show="d.drawMode !== d.DRAWING_MODES.NONE" ' +
                                 'ng-class="{' +
@@ -529,26 +532,26 @@
 
                     function addCanvasToElement(elementToCover, question) {
                         // we clone the element defined in _init to not mess with the upcoming append function (which doesn't work multiple times using the same element)
-                        var canvasContainerElementClone = canvasContainerElement.clone();
+                        var canvasContainerElement = canvasContainerElementInitial.clone();
                         // cast selector element to html element
                         var elementToCoverDomElement = elementToCover[0];
 
                         // get the <canvas> element from the container
-                        var canvasDomElementClone = canvasContainerElementClone.children()[0];
+                        var canvasDomElement = canvasContainerElement.children()[0];
 
                         // this is the attribute name passed to znkExerciseDrawContainer directive
                         var canvasContextName = elementToCover.attr('canvas-name');
 
                         // when hovering over a canvas, set the global context to it
-                        _setContextOnHover(elementToCover, canvasDomElementClone, canvasContextName);
+                        _setContextOnHover(elementToCover, canvasDomElement, canvasContextName);
 
-                        _setCanvasDimensions(canvasDomElementClone, elementToCoverDomElement);
+                        _setCanvasDimensions(canvasDomElement, elementToCoverDomElement);
                         
-                         canvasDomElement = canvasDomElementClone;
-                         canvasContext = canvasDomElementClone.getContext("2d"); 
+                         canvasDomElement = canvasDomElement;
+                         canvasContext = canvasDomElement.getContext("2d"); 
 
-                        elementToCover.append(canvasContainerElementClone);
-                        $compile(canvasContainerElementClone)(scope);
+                        elementToCover.append(canvasContainerElement);
+                        $compile(canvasContainerElement)(scope);
 
                         // save to service for further management
                         if (!ZnkExerciseDrawSrv.canvasContextManager[question.id]) {

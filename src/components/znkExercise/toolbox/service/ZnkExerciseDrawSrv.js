@@ -6,7 +6,7 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').service('ZnkExerciseDrawSrv',
-        [function () {
+        function () {
             //'ngInject';
             
             var self = this;
@@ -30,7 +30,7 @@
 
             // addCanvasToElement function is to be added into this service as well. see znkExerciseDrawContainer directive
 
-        }]);
+        });
 
 })(angular);
 
