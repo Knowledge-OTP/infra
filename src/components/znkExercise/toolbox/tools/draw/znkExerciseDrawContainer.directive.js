@@ -14,11 +14,12 @@
                 require: '^questionBuilder',
                 link: function (scope,element,attrs, questionBuilderCtrl) {
 
-                    var question = questionBuilderCtrl.question 
+                    var question = questionBuilderCtrl.question;
 
                     // make the canvas container relative to this element
-                    if (element.css('position') != 'relative')
+                    if (element.css('position') !== 'relative') {
                         element.css('position', 'relative');
+                    }
                     ZnkExerciseDrawSrv.addCanvasToElement(element,question);
                 }
             };
