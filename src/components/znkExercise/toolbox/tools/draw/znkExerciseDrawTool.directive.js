@@ -27,7 +27,7 @@
                 link: function (scope, element, attrs, toolBoxCtrl) {
                     var canvasDomElement,
                         canvasContext,
-                        canvasContainerElement,
+                        canvasContainerElementInitial,
                         drawer,
                         eventsManager,
                         serverDrawingUpdater,
@@ -537,7 +537,8 @@
                         var elementToCoverDomElement = elementToCover[0];
 
                         // get the <canvas> element from the container
-                        var canvasDomElement = canvasContainerElement.children()[0];
+                        canvasDomElement = canvasContainerElement.children()[0];
+                        canvasContext = canvasDomElement.getContext("2d"); 
 
                         // this is the attribute name passed to znkExerciseDrawContainer directive
                         var canvasContextName = elementToCover.attr('canvas-name');
@@ -547,8 +548,6 @@
 
                         _setCanvasDimensions(canvasDomElement, elementToCoverDomElement);
                         
-                         canvasDomElement = canvasDomElement;
-                         canvasContext = canvasDomElement.getContext("2d"); 
 
                         elementToCover.append(canvasContainerElement);
                         $compile(canvasContainerElement)(scope);
