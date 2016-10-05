@@ -907,8 +907,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                                 _summary.duration = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].duration || 0;
                                 _summary.totalAnswered = _summary.correctAnswersNum + _summary.wrongAnswersNum;
                             }
-
-                            // moduleSummary.overAll
+                            
                             if (!moduleSummary.overAll) {
                                 moduleSummary.overAll = newOverAll();
                             }
@@ -5183,37 +5182,6 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
             };
         }
     ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-    /**
-     * @returns Truncated text after the given num and add '...'
-     */
-
-    angular.module('znk.infra.filters').filter('ellipsis', function () {
-        return function (value, wordwise, max, tail) {
-            if (!value) { return ''; }
-
-            max = parseInt(max, 10);
-            if (!max) { return value; }
-            if (value.length <= max) { return value; }
-
-            value = value.substr(0, max);
-            if (wordwise) {
-                var lastspace = value.lastIndexOf(' ');
-                if (lastspace !== -1) {
-                    //Also remove . and , so its gives a cleaner result.
-                    if (value.charAt(lastspace-1) === '.' || value.charAt(lastspace-1) === ',') {
-                        lastspace = lastspace - 1;
-                    }
-                    value = value.substr(0, lastspace);
-                }
-            }
-
-            return value + (tail || ' …');
-        };
-    });
 })(angular);
 
 (function (angular) {
