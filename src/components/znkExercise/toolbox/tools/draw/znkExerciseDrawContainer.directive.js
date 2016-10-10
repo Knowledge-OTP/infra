@@ -19,6 +19,8 @@
                     // make the canvas container relative to this element
                     if (element.css('position') !== 'relative') {
                         element.css('position', 'relative');
+                        // sometimes position relative adds an unnecessary scrollbar. hide it
+                        element.css('overflow-x', 'hidden');
                     }
                     ZnkExerciseDrawSrv.addCanvasToElement(element,question);
                 }
