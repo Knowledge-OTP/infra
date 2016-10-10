@@ -6059,7 +6059,7 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
     "    <div ng-switch-when=\"2\" class=\"timer-type2\">\n" +
     "        <div class=\"timer-display-wrapper\">\n" +
     "            <div class=\"timer-display\"></div>\n" +
-    "            <div class=\"seconds-text\" translate=\"TIMER.SECONDS\"></div>\n" +
+    "            <div class=\"seconds-text\" translate=\"TIMER.SECONDS\" ng-if=\"!config.hideSecondsText\"></div>\n" +
     "        </div>\n" +
     "        <div round-progress\n" +
     "             current=\"timeElapsed\"\n" +
