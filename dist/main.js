@@ -13472,6 +13472,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     // make the canvas container relative to this element
                     if (element.css('position') !== 'relative') {
                         element.css('position', 'relative');
+                        // sometimes position relative adds an unnecessary scrollbar. hide it
+                        element.css('overflow-x', 'hidden');
                     }
                     ZnkExerciseDrawSrv.addCanvasToElement(element,question);
                 }
@@ -13995,23 +13997,26 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     function _setContextOnHover(elementToHoverOn, canvasOfElement, canvasContextName) {
                         
                         var onHoverCb = function () {
-                            eventsManager.killMouseEvents();
+                            if (currQuestion) {
+                                eventsManager.killMouseEvents();
 
-                            canvasDomElement = canvasOfElement;
-                            canvasContext = canvasDomElement.getContext("2d");
-                            serverDrawingUpdater = new ServerDrawingUpdater(currQuestion.id, canvasContextName);
+                                canvasDomElement = canvasOfElement;
+                                canvasContext = canvasDomElement.getContext("2d");
+                                serverDrawingUpdater = new ServerDrawingUpdater(currQuestion.id, canvasContextName);
 
-                            eventsManager.registerMouseEvents();
+                                eventsManager.registerMouseEvents();
+                            }
                         };
 
                         eventsManager.registerHoverEvent(elementToHoverOn, onHoverCb);
 
                     }
 
-                    function _setCanvasDimensions(canvasDomElement, elementToCoverDomElement) {
+                    function _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement) {
                         toolBoxCtrl.isExerciseReady().then(function () {
-                            canvasDomElement.setAttribute('height', elementToCoverDomElement.offsetHeight);
-                            canvasDomElement.setAttribute('width', elementToCoverDomElement.offsetWidth);
+                            canvasDomContainerElement[0].setAttribute('height', elementToCoverDomElement.offsetHeight);
+                            canvasDomContainerElement[0].setAttribute('width', elementToCoverDomElement.offsetWidth);
+                            canvasDomContainerElement.css('position', 'absolute');
                         });
 
                     }
@@ -14023,7 +14028,9 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         var elementToCoverDomElement = elementToCover[0];
 
                         // get the <canvas> element from the container
-                        canvasDomElement = canvasContainerElement.children()[0];
+                        var canvasDomContainerElement = canvasContainerElement.children();
+                        canvasDomElement = canvasDomContainerElement[0];
+
                         canvasContext = canvasDomElement.getContext("2d"); 
 
                         // this is the attribute name passed to znkExerciseDrawContainer directive
@@ -14032,7 +14039,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         // when hovering over a canvas, set the global context to it
                         _setContextOnHover(elementToCover, canvasDomElement, canvasContextName);
 
-                        _setCanvasDimensions(canvasDomElement, elementToCoverDomElement);
+                        _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement);
                         
 
                         elementToCover.append(canvasContainerElement);
