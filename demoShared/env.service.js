@@ -10,6 +10,7 @@
         videosEndPoint: "//dfz02hjbsqn5e.cloudfront.net/sat_app/",
         mediaEndPoint: "//dfz02hjbsqn5e.cloudfront.net/",
         fbGlobalEndPoint: 'https://znk-dev.firebaseio.com/',
-        backendEndpoint: 'https://znk-web-backend-dev.azurewebsites.net/'
+        backendEndpoint: 'https://znk-web-backend-dev.azurewebsites.net/',
+        teachworksDataUrl: 'teachworks'
     });
 })(angular);
