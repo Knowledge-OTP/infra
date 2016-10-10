@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demoApp', ['znk.infra.general', 'angular-svg-round-progress', 'pascalprecht.translate'])
+    angular.module('demoApp', ['znk.infra.general', 'pascalprecht.translate'])
         .config(function ($translateProvider) {
             $translateProvider.useLoader('$translatePartialLoader', {
                 urlTemplate: '/{part}/locale/{lang}.json'

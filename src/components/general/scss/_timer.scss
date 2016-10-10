@@ -14,11 +14,17 @@
         }
 
         .timer-view {
-            @include text-style(17px, $fcColor2, Lato, $regularFontWeight);
+            @include text-style(18px, $fcColor9, Lato, $regularFontWeight);
+            min-width: 15px;
             display: inline-block;
             margin: {
                 left: 10px;
             }
+        }
+
+        .timer-seconds-text{
+            @include text-style(18px, $fcColor9, Quicksand, $regularFontWeight);
+            margin-left: 10px;
         }
     }
 
