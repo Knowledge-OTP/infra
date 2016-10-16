@@ -3741,7 +3741,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
     'use strict';
 
     angular.module('znk.infra.estimatedScore').provider('EstimatedScoreEventsHandlerSrv', function EstimatedScoreEventsHandler() {
-        function pointsMap(correctWithinAllowedTimeFrame, correctAfterAllowedTimeFrame, wrongWithinAllowedTimeFrame, wrongAfterAllowedTimeFrame) {
+        function pointsMap(correctWithinAllowedTimeFrame, correctAfterAllowedTimeFrame, wrongWithinAllowedTimeFrame, wrongAfterAllowedTimeFrame,  correctTooFast, wrongTooFast) {
             var ret = {};
 
             if (angular.isDefined(correctWithinAllowedTimeFrame)) {
@@ -3758,6 +3758,14 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
 
             if (angular.isDefined(wrongAfterAllowedTimeFrame)) {
                 ret.wrongAfter = wrongAfterAllowedTimeFrame;
+            }
+
+            if (angular.isDefined(correctTooFast)) {
+                ret.correctTooFast = correctTooFast;
+            }
+
+            if (angular.isDefined(wrongTooFast)) {
+                ret.wrongTooFast = wrongTooFast;
             }
 
             ret.unanswered = 0;
@@ -3782,6 +3790,22 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
         var eventProcessControl;
         this.setEventProcessControl = function(_eventProcessControl){
             eventProcessControl = _eventProcessControl;
+        };
+
+        var getPointsMapByQuestion = function (question) {  // defualt function
+            return diagnosticScoring[question.difficulty];
+        };
+
+        this.setGetPointsMapByQuestionFn = function (fn) {
+            getPointsMapByQuestion = fn.bind(null,diagnosticScoring);
+        };
+
+        var getAnswerTimeType = function(){
+            return 'Within';
+        };
+
+        this.setAnswerTimeTypeFn = function (fn) {
+            getAnswerTimeType = fn;
         };
 
         this.$get = [
@@ -3810,10 +3834,23 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                     return pointsMap[key];
                 }
 
+                function _pointsGetter(pointsMap, answerStatus, answerTimeType) {
+                    var key;
+                    if (answerStatus === ExerciseAnswerStatusEnum.unanswered.enum) {
+                        key = 'unanswered';
+                    } else {
+                        key = answerStatus === ExerciseAnswerStatusEnum.correct.enum ? 'correct' : 'wrong';
+                        key += answerTimeType;
+                    }
+                    return pointsMap[key];
+                }
+
+
                 function _getDiagnosticQuestionPoints(question, result) {
-                    var pointsMap = diagnosticScoring[question.difficulty];
+                    var pointsMap = getPointsMapByQuestion(question);
                     var answerStatus = result.isAnsweredCorrectly ? ExerciseAnswerStatusEnum.correct.enum : ExerciseAnswerStatusEnum.wrong.enum;
-                    return _basePointsGetter(pointsMap, answerStatus, true);
+                    var answerTimeType = getAnswerTimeType(result.timeSpent);
+                    return _pointsGetter(pointsMap, answerStatus, answerTimeType);
                 }
 
                 function _diagnosticSectionCompleteHandler(section, sectionResult) {
