@@ -510,16 +510,9 @@
 
                             moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResult.guid;
 
-                            if (!moduleResult.exercisesStatus) {
-                                moduleResult.exercisesStatus = {};
-                            }
-
-                            if (!moduleResult.exercisesStatus[exerciseTypeId]) {
-                                moduleResult.exercisesStatus[exerciseTypeId] = {};
-                            }
-
                             if (exerciseStatuses[exerciseTypeId] && exerciseStatuses[exerciseTypeId][exerciseId]) {
-                                moduleResult.exercisesStatus[exerciseTypeId][exerciseId] = exerciseStatuses[exerciseTypeId][exerciseId].status;
+                                var exerciseResultsPath = _getExerciseResultPath(exerciseResult.guid);
+                                dataToSave[exerciseResultsPath].status = exerciseStatuses[exerciseTypeId][exerciseId].status;
                             }
 
                             moduleResult.lastUpdate = Date.now();

@@ -1,5 +1,6 @@
 {
     "TIMER": {
-        "SECONDS": "seconds"
+        "SECONDS": "seconds",
+        "SEC":"sec"
     }
 }

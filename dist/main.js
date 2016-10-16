@@ -285,17 +285,20 @@
 
             var self = this;
 
-            var body = angular.element($document).find('body');
+            this.loadActivePanel = function () {
+                var body = angular.element($document).find('body');
 
-            var canvasContainerElement = angular.element(
-                '<active-panel></active-panel>'
-            );
+                var canvasContainerElement = angular.element(
+                    '<active-panel></active-panel>'
+                );
 
-            if (!angular.element(body[0].querySelector('active-panel')).length) {
-                self.scope = $rootScope.$new(true);
-                body.append(canvasContainerElement);
-                $compile(canvasContainerElement)(self.scope);
-            }
+                if (!angular.element(body[0].querySelector('active-panel')).length) {
+                    self.scope = $rootScope.$new(true);
+                    body.append(canvasContainerElement);
+                    $compile(canvasContainerElement)(self.scope);
+                }
+            };
+
         }]);
 })(angular);
 
@@ -854,49 +857,73 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             }
 
             function getModuleSummary(assignModule) {
-                var exerciseId;
-                var exerciseTypeId = ExerciseTypeEnum.PRACTICE.enum,
-                    status = ExerciseStatusEnum.NEW.enum,
-                    correctAnswersNum = 0,
-                    wrongAnswersNum = 0,
-                    skippedAnswersNum = 0,
-                    totalAnswered = 0,
-                    duration = 0;
+                var moduleSummary = {};
+                var _exerciseResults = assignModule.exerciseResults;
 
-                if (assignModule.exercises) {
-                    var practiceExercise = assignModule.exercises.filter(function (exercise) {
-                        return exercise.exerciseTypeId === exerciseTypeId ? exercise.exerciseId : null;
-                    });
-
-                    if (practiceExercise && practiceExercise.length) {
-                        exerciseId = practiceExercise[0].exerciseId;
-
-                        if (assignModule.exercisesStatus) {
-                            if (assignModule.exercisesStatus[exerciseTypeId] && assignModule.exercisesStatus[exerciseTypeId][exerciseId]) {
-                                status = assignModule.exercisesStatus[exerciseTypeId][exerciseId];
-                            }
-                        }
-
-                        if (assignModule.exerciseResults) {
-                            if (assignModule.exerciseResults[exerciseTypeId] && assignModule.exerciseResults[exerciseTypeId][exerciseId]) {
-                                correctAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
-                                wrongAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
-                                skippedAnswersNum = assignModule.exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
-                                duration = assignModule.exerciseResults[exerciseTypeId][exerciseId].duration || 0;
-                                totalAnswered = correctAnswersNum + wrongAnswersNum;
-                            }
-                        }
-                    }
+                function newSummary() {
+                    return {
+                        status: ExerciseStatusEnum.NEW.enum,
+                        correctAnswersNum: 0,
+                        wrongAnswersNum: 0,
+                        skippedAnswersNum: 0,
+                        totalAnswered: 0,
+                        duration: 0
+                    };
+                }
+                function newOverAll() {
+                    return {
+                        status: ExerciseStatusEnum.NEW.enum,
+                        totalCorrectAnswers: 0,
+                        totalWrongAnswers: 0,
+                        totalSkippedAnswers: 0
+                    };
                 }
 
-                return {
-                    status: status,
-                    correctAnswersNum: correctAnswersNum,
-                    wrongAnswersNum: wrongAnswersNum,
-                    skippedAnswersNum: skippedAnswersNum,
-                    duration: duration,
-                    totalAnswered: totalAnswered
-                };
+                if (assignModule.exercises) {
+
+                    var exercises = assignModule.exercises.filter(function (exercise) {
+                        return exercise.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum;
+                    });
+
+                    if (exercises && exercises.length) {
+                        exercises.forEach(function (exercise) {
+
+                            if (!moduleSummary[exercise.exerciseTypeId]){
+                                moduleSummary[exercise.exerciseTypeId] = {};
+                            }
+
+                            if (!moduleSummary[exercise.exerciseTypeId][exercise.exerciseId]){
+                                moduleSummary[exercise.exerciseTypeId][exercise.exerciseId] = newSummary();
+                            }
+
+                            var _summary = moduleSummary[exercise.exerciseTypeId][exercise.exerciseId];
+                            if (_exerciseResults && _exerciseResults[exercise.exerciseTypeId]) {
+                                if (_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]){
+                                    _summary.status =  _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].isComplete ? ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
+                                } else {
+                                    _summary.status = _summary.status ? _summary.status : ExerciseStatusEnum.NEW.enum;
+                                }
+
+                                _summary.correctAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].correctAnswersNum || 0;
+                                _summary.wrongAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].wrongAnswersNum || 0;
+                                _summary.skippedAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].skippedAnswersNum || 0;
+                                _summary.duration = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].duration || 0;
+                                _summary.totalAnswered = _summary.correctAnswersNum + _summary.wrongAnswersNum;
+                            }
+                            
+                            if (!moduleSummary.overAll) {
+                                moduleSummary.overAll = newOverAll();
+                            }
+                            var _overAll = moduleSummary.overAll;
+                            _overAll.status =  _overAll.status < _summary.status ? _summary.status : _overAll.status;
+                            _overAll.totalCorrectAnswers += _summary.correctAnswersNum;
+                            _overAll.totalWrongAnswers += _summary.wrongAnswersNum;
+                            _overAll.totalSkippedAnswers += _summary.skippedAnswersNum;
+
+                        });
+                    }
+                }
+                return moduleSummary;
             }
 
             return userAssignModuleService;
@@ -4894,16 +4921,9 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
                             moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResult.guid;
 
-                            if (!moduleResult.exercisesStatus) {
-                                moduleResult.exercisesStatus = {};
-                            }
-
-                            if (!moduleResult.exercisesStatus[exerciseTypeId]) {
-                                moduleResult.exercisesStatus[exerciseTypeId] = {};
-                            }
-
                             if (exerciseStatuses[exerciseTypeId] && exerciseStatuses[exerciseTypeId][exerciseId]) {
-                                moduleResult.exercisesStatus[exerciseTypeId][exerciseId] = exerciseStatuses[exerciseTypeId][exerciseId].status;
+                                var exerciseResultsPath = _getExerciseResultPath(exerciseResult.guid);
+                                dataToSave[exerciseResultsPath].status = exerciseStatuses[exerciseTypeId][exerciseId].status;
                             }
 
                             moduleResult.lastUpdate = Date.now();
@@ -6055,11 +6075,12 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
     "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +
     "        <svg-icon class=\"icon-wrapper\" name=\"general-clock-icon\"></svg-icon>\n" +
     "        <div class=\"timer-view\"></div>\n" +
+    "        <span class=\"timer-seconds-text\" translate=\"TIMER.SEC\"></span>\n" +
     "    </div>\n" +
     "    <div ng-switch-when=\"2\" class=\"timer-type2\">\n" +
     "        <div class=\"timer-display-wrapper\">\n" +
     "            <div class=\"timer-display\"></div>\n" +
-    "            <div class=\"seconds-text\" translate=\"TIMER.SECONDS\"></div>\n" +
+    "            <div class=\"seconds-text\" translate=\"TIMER.SECONDS\" ng-if=\"!config.hideSecondsText\"></div>\n" +
     "        </div>\n" +
     "        <div round-progress\n" +
     "             current=\"timeElapsed\"\n" +
@@ -13165,6 +13186,44 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 })(angular);
 
 
+/**
+ * This service serves as a communication tool between znkExerciseDrawContainer and znkExerciseDrawTool
+ */
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').service('ZnkExerciseDrawSrv',
+        function () {
+            //'ngInject';
+            
+            var self = this;
+
+            /** example of self.canvasContextManager
+             *  {
+             *      10981: {
+             *                question: CanvasContextObject,
+             *                answer: CanvasContextObject
+             *             },
+             *      10982: {
+             *                question: CanvasContextObject,
+             *                answer: CanvasContextObject
+             *             }
+             *  } 
+             *
+             *  the names (such as 'question' or 'answer') are set according to the attribute name 'canvas-name' of znkExerciseDrawContainer directive
+             */
+
+            self.canvasContextManager = {};
+
+            // addCanvasToElement function is to be added into this service as well. see znkExerciseDrawContainer directive
+
+        });
+
+})(angular);
+
+
+
 'use strict';
 
 (function () {
@@ -13553,6 +13612,41 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
 
 /**
+ * This directive is bound to elements requesting a canvas to cover them
+ * since the canvas is positioned as 'absolute', the directive also sets a 'relative' position to relate to the canvas
+ */
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('znkExerciseDrawContainer',
+        ["ZnkExerciseDrawSrv", function (ZnkExerciseDrawSrv) {
+            //'ngInject';
+
+            return {
+                require: '^questionBuilder',
+                link: function (scope,element,attrs, questionBuilderCtrl) {
+
+                    var question = questionBuilderCtrl.question;
+
+                    // make the canvas container relative to this element
+                    if (element.css('position') !== 'relative') {
+                        element.css('position', 'relative');
+                        // sometimes position relative adds an unnecessary scrollbar. hide it
+                        element.css('overflow-x', 'hidden');
+                    }
+                    ZnkExerciseDrawSrv.addCanvasToElement(element,question);
+                }
+            };
+
+        }]);
+
+})(angular);
+
+
+
+
+/**
  * attrs:
  *  settings:
  *      exerciseDrawingPathPrefix
@@ -13563,7 +13657,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseDrawTool',
-        ["ZnkExerciseEvents", "InfraConfigSrv", "$log", "$q", "$compile", "$timeout", "$window", function (ZnkExerciseEvents, InfraConfigSrv, $log, $q, $compile, $timeout, $window) {
+        ["ZnkExerciseEvents", "ZnkExerciseDrawSrv", "InfraConfigSrv", "$log", "$q", "$compile", "$timeout", "$window", function (ZnkExerciseEvents, ZnkExerciseDrawSrv, InfraConfigSrv, $log, $q, $compile, $timeout, $window) {
             'ngInject';
 
             var TOUCHE_COLORS = {
@@ -13581,6 +13675,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 link: function (scope, element, attrs, toolBoxCtrl) {
                     var canvasDomElement,
                         canvasContext,
+                        canvasContainerElementInitial,
                         drawer,
                         eventsManager,
                         serverDrawingUpdater,
@@ -13627,20 +13722,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         }
                     };
 
-                    scope.d.cleanCanvas = function () {
-                        drawer.clean();
-                        if (!currQuestion) {
-                            var errMsg = 'znkExerciseDrawTool:_getFbRef: curr question was not set yet';
-                            $log.debug(errMsg);
-                            return;
-                        }
-
-                        _getFbRef(currQuestion.id).then(function (exerciseDrawingRef) {
-                            exerciseDrawingRef.set(null);
-                        });
-                    };
-
-                    function _getFbRef(currQuestionId) {
+                    function _getFbRef(currQuestionId, canvasContextName) {
                         var errMsg;
 
                         if (!scope.settings || !scope.settings.exerciseDrawingPathPrefix) {
@@ -13668,10 +13750,40 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         };
 
                         return $q.all(dataPromMap).then(function (data) {
-                            var path = 'exerciseDrawings/' + data.pathPrefix + '/' + currQuestionId;
+                            var path = 'exerciseDrawings/' + data.pathPrefix + '/' + currQuestionId + '/' + canvasContextName;
                             return data.globalStorage.adapter.getRef(path);
                         });
+
                     }
+
+                    function _getCanvasContextByContextName(canvasContextName) {
+                        return ZnkExerciseDrawSrv.canvasContextManager[currQuestion.id][canvasContextName];
+                    }
+
+                    function _getCanvasContextNamesOfQuestion(questionId) {
+                        var canvasContextObj = ZnkExerciseDrawSrv.canvasContextManager[questionId] || {};
+                        return Object.keys(canvasContextObj);
+                    }
+
+                    scope.d.cleanCanvas = function () {
+                        if (!currQuestion) {
+                            var errMsg = 'znkExerciseDrawTool:_getFbRef: curr question was not set yet';
+                            $log.error(errMsg);
+                            return;
+                        }
+
+                        // for each canvas in the current page (the current question), set the global canvasContext to it and clear it using drawer.clean()
+                        var canvasContextNames = _getCanvasContextNamesOfQuestion(currQuestion.id);
+                        angular.forEach(canvasContextNames, function (canvasContextName) {
+                            canvasContext = _getCanvasContextByContextName(canvasContextName);
+                            drawer.clean();
+                            _getFbRef(currQuestion.id, canvasContextName).then(function (exerciseDrawingRef) {
+                                exerciseDrawingRef.set(null);
+                            });
+
+                        });
+                    };
+
 
                     function _getToucheColor(drawMode) {
                         if (drawMode === DRAWING_MODES.VIEW_ERASE) {
@@ -13703,52 +13815,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         }
                     }
 
-                    function _updateQuestionDrawMode(drawMode) {
-                        toolBoxCtrl.getCurrentQuestion().then(function (currQuestion) {
-                            currQuestion.__questionStatus.drawingToolViewMode = drawMode;
-                        });
-                    }
-
-                    function _reloadCanvas() {
-                        if (scope.d.drawMode === DRAWING_MODES.NONE) {
-                            return;
-                        }
-
-                        drawer.clean();
-                        eventsManager.registerFbListeners(currQuestion.id);
-                    }
-
-                    function _init() {
-                        var znkExerciseElement = toolBoxCtrl.getZnkExerciseElement();
-                        var znkExerciseDomElement = znkExerciseElement[0];
-
-                        var canvasContainerElement = angular.element(
-                            '<div class="draw-tool-container" ' +
-                            'ng-show="d.drawMode !== d.DRAWING_MODES.NONE" ' +
-                            'ng-class="{' +
-                            '\'no-pointer-events\': d.drawMode === d.DRAWING_MODES.VIEW,' +
-                            '\'crosshair-cursor\': d.drawMode !== d.DRAWING_MODES.NONE && d.drawMode !== d.DRAWING_MODES.VIEW' +
-                            '}">' +
-                            '<canvas></canvas>' +
-                            '</div>'
-                        );
-
-                        canvasDomElement = canvasContainerElement.children()[0];
-                        toolBoxCtrl.isExerciseReady().then(function () {
-                            canvasDomElement.setAttribute('height', znkExerciseDomElement.offsetHeight);
-                            canvasDomElement.setAttribute('width', znkExerciseDomElement.offsetWidth);
-                        });
-
-                        canvasContext = canvasDomElement.getContext("2d");
-
-                        znkExerciseElement.append(canvasContainerElement);
-                        $compile(canvasContainerElement)(scope);
-
-                        drawer = new Drawer();
-                        eventsManager = new EventsManager();
-                    }
-
-                    function ServerDrawingUpdater(questionUid) {
+                    function ServerDrawingUpdater(questionUid, canvasContextName) {
                         if (angular.isUndefined(questionUid)) {
                             $log.error('znkExerciseDrawTool: Question id was not provided');
                             return;
@@ -13756,7 +13823,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                         this.pixelsMapToUpdate = {};
 
-                        this.exerciseDrawingRefProm = _getFbRef(questionUid);
+                        this.exerciseDrawingRefProm = _getFbRef(questionUid, canvasContextName);
                     }
 
                     ServerDrawingUpdater.prototype._triggerServerUpdate = function () {
@@ -13791,22 +13858,28 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         this.lastPoint = null;
                     }
 
-                    Drawer.prototype.drawPixel = function (coordStr, colorId) {
-                        if (!canvasContext) {
+                    Drawer.prototype.drawPixel = function (coordStr, colorId, canvasToChange) {
+                        if (!canvasContext && !canvasToChange) {
                             return;
                         }
+
+                        // relevant canvas can be either passed to the function or be the global one
+                        canvasToChange = canvasToChange || canvasContext;
 
                         var coords = coordStr.split(":");
                         $window.requestAnimationFrame(function () {
-                            canvasContext.fillStyle = TOUCHE_COLORS[colorId];
-                            canvasContext.fillRect(parseInt(coords[0]), parseInt(coords[1]), PIXEL_SIZE, PIXEL_SIZE);
+                            canvasToChange.fillStyle = TOUCHE_COLORS[colorId];
+                            canvasToChange.fillRect(parseInt(coords[0]), parseInt(coords[1]), PIXEL_SIZE, PIXEL_SIZE);
                         });
                     };
 
-                    Drawer.prototype.clearPixel = function (coordStr) {
-                        if (!canvasContext) {
+                    Drawer.prototype.clearPixel = function (coordStr, canvasToChange) {
+                        if (!canvasContext && !canvasToChange) {
                             return;
                         }
+
+                        // relevant canvas can be either passed to the function or be the global one
+                        canvasToChange = canvasToChange || canvasContext;
 
                         var coords = coordStr.split(":");
 
@@ -13817,7 +13890,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             var height = 10 * PIXEL_SIZE;
                             var xOffset = width/2;
                             var yOffset = height/2;
-                            canvasContext.clearRect(xCoord - xOffset, yCoord - yOffset, width, height);
+                            canvasToChange.clearRect(xCoord - xOffset, yCoord - yOffset, width, height);
                         });
                     };
 
@@ -13868,41 +13941,17 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     };
 
                     Drawer.prototype.clean = function () {
+                        if (!canvasContext) {
+                            return;
+                        }
                         canvasContext.clearRect(0, 0, canvasDomElement.offsetWidth, canvasDomElement.offsetHeight);
                     };
-
-                    function _fbChildChanged(snapShot) {
-                        var coordsStr = snapShot.key();
-                        var color = snapShot.val();
-
-                        if (color === 0) {
-                            drawer.clearPixel(coordsStr);
-                        } else {
-                            drawer.drawPixel(coordsStr, color);
-                        }
-                    }
-
-                    function _fbChildRemoved(snapShot) {
-                        var coordsStr = snapShot.key();
-                        drawer.clearPixel(coordsStr);
-                    }
 
                     function _mousemoveCb(evt) {
                         drawer.draw(evt);
                         evt.stopImmediatePropagation();
                         evt.preventDefault();
                         return false;
-                    }
-
-                    function _mousedownCb(evt) {
-                        //left mouse
-                        if (evt.which === 1) {
-                            canvasDomElement.addEventListener('mousemove', _mousemoveCb);
-                            canvasDomElement.addEventListener('mouseup', _mouseupCb);
-                            evt.stopImmediatePropagation();
-                            evt.preventDefault();
-                            return false;
-                        }
                     }
 
                     function _mouseupCb(evt) {
@@ -13917,67 +13966,22 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         }
                     }
 
-                    function EventsManager() {
-                        this._fbRegisterProm = $q.when();
+                    function _mousedownCb(evt) {
+                        //left mouse
+                        if (evt.which === 1) {
+                            canvasDomElement.addEventListener('mousemove', _mousemoveCb);
+                            canvasDomElement.addEventListener('mouseup', _mouseupCb);
+                            evt.stopImmediatePropagation();
+                            evt.preventDefault();
+                            return false;
+                        }
                     }
 
-                    EventsManager.prototype.registerMouseEvents = function () {
-                        if (this._mouseEventsRegistered) {
-                            return;
-                        }
-                        this._mouseEventsRegistered = true;
-
-                        canvasDomElement.addEventListener('mousedown', _mousedownCb);
-                    };
-
-                    EventsManager.prototype.killMouseEvents = function () {
-                        canvasDomElement.removeEventListener('mousedown', _mousedownCb);
-                        canvasDomElement.removeEventListener('mouseup', _mouseupCb);
-                        canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
-
-                        this._mouseEventsRegistered = null;
-                    };
-
-                    EventsManager.prototype.registerFbListeners = function (questionId) {
-                        if (angular.isUndefined(questionId)) {
-                            $log.error('znkExerciseDrawTool:registerFbListeners: questionId was not provided');
-                            return;
-                        }
-
-                        var self = this;
-
-                        return _getFbRef(questionId).then(function (ref) {
-                            if (self.ref) {
-                                if (self.ref.key() === ref.key()) {
-                                    return;
-                                }
-                                self.killFbListeners();
-                            }
-
-                            self.ref = ref;
-
-                            self.ref.on("child_added", _fbChildChanged);
-                            self.ref.on("child_changed", _fbChildChanged);
-                            self.ref.on("child_removed", _fbChildRemoved);
+                    function _updateQuestionDrawMode(drawMode) {
+                        toolBoxCtrl.getCurrentQuestion().then(function (currQuestion) {
+                            currQuestion.__questionStatus.drawingToolViewMode = drawMode;
                         });
-                    };
-
-                    EventsManager.prototype.killFbListeners = function () {
-                        if (!this.ref) {
-                            return;
-                        }
-
-                        this.ref.off("child_added", _fbChildChanged);
-                        this.ref.off("child_changed", _fbChildChanged);
-                        this.ref.off("child_removed", _fbChildRemoved);
-
-                        this.ref = null;
-                    };
-
-                    EventsManager.prototype.cleanListeners = function () {
-                        this.killMouseEvents();
-                        this.killFbListeners();
-                    };
+                    }
 
                     scope.$watch('d.drawMode', function (newDrawMode) {
                         if (!newDrawMode) {
@@ -13992,6 +13996,226 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         eventsManager.cleanListeners();
                     });
 
+                    function EventsManager() {
+                        this._fbRegisterProm = $q.when();
+                        this._hoveredElementsOfQuestions = {};
+                        this._fbCallbackEnum =
+                            {
+                                CHILD_CHANGED: 0,
+                                CHILD_REMOVED: 1
+                            };
+                    }
+
+                    EventsManager.prototype.registerHoverEvent = function (elementToHoverOn, onHoverCb) {
+                        var domElementToHoverOn = elementToHoverOn[0];
+
+                        domElementToHoverOn.addEventListener("mouseenter", onHoverCb);
+
+                        if (!this._hoveredElements) {
+                            this._hoveredElements = [];
+                        }
+
+                        this._hoveredElements.push({'hoveredElement' : elementToHoverOn, 'onHoverCb' : onHoverCb});
+                    };
+
+
+                    EventsManager.prototype.killHoverEvents = function() {
+                        angular.forEach(this._hoveredElements, function (elementAndCbPair) {
+                            var domHoveredElement = elementAndCbPair.hoveredElement[0];
+                            domHoveredElement.removeEventListener("mouseenter", elementAndCbPair.onHoverCb);
+                        });
+                    };
+
+                    EventsManager.prototype.registerMouseEvents = function () {
+                        if (this._mouseEventsRegistered || !canvasDomElement) {
+                            return;
+                        }
+                        this._mouseEventsRegistered = true;
+
+                        canvasDomElement.addEventListener('mousedown', _mousedownCb);
+                    };
+
+                    EventsManager.prototype.killMouseEvents = function () {
+                        if (this._mouseEventsRegistered) {
+                            canvasDomElement.removeEventListener('mousedown', _mousedownCb);
+                            canvasDomElement.removeEventListener('mouseup', _mouseupCb);
+                            canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
+                        }
+                        this._mouseEventsRegistered = null;
+                    };
+
+                    var _fbChildCallbackWrapper = function(canvasContextName, fbCallbackNum) {
+
+                        function _fbChildChanged(snapShot) {
+                            var canvasToChange = _getCanvasContextByContextName(canvasContextName); 
+                            var coordsStr = snapShot.key();
+                            var color = snapShot.val();
+
+                            if (color === 0) {
+                                drawer.clearPixel(coordsStr, canvasToChange);
+                            } else {
+                                drawer.drawPixel(coordsStr, color, canvasToChange);
+                            }
+                        }
+
+                        function _fbChildRemoved(snapShot) {
+                            var canvasToChange = _getCanvasContextByContextName(canvasContextName); // "this" refers to context passed to ref.on in registerFbListeners
+
+                            var coordsStr = snapShot.key();
+                            drawer.clearPixel(coordsStr, canvasToChange);
+                        }
+
+                        switch (fbCallbackNum) {
+                                case eventsManager._fbCallbackEnum.CHILD_CHANGED:
+                                    return _fbChildChanged;
+                                case eventsManager._fbCallbackEnum.CHILD_REMOVED:
+                                    return _fbChildRemoved;
+                                default:
+                                    $log.error('znkExerciseDrawTool:_fbChildCallbackWrapper: wrong fbCallbackNum received!');
+                                    return;
+                        }
+                    };
+
+                    EventsManager.prototype.registerFbListeners = function (questionId) {
+                        if (angular.isUndefined(questionId)) {
+                            $log.error('znkExerciseDrawTool:registerFbListeners: questionId was not provided');
+                            return;
+                        }
+
+                        var self = this;
+
+                        if (self._fbLastRegisteredQuestionId === questionId) {
+                            return;
+                        }
+                        else {
+                            self.killFbListeners();
+                        }
+
+                        var canvasContextNames = _getCanvasContextNamesOfQuestion(questionId);
+
+                        angular.forEach(canvasContextNames, function (canvasContextName) {
+                            _getFbRef(questionId, canvasContextName).then(function (ref) {
+                                self.ref = ref;
+
+                                self.ref.on("child_added", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                                self.ref.on("child_changed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                                self.ref.on("child_removed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_REMOVED));
+
+                            });
+
+                        });
+                        self._fbLastRegisteredQuestionId = questionId;
+                    };
+
+
+                    EventsManager.prototype.killFbListeners = function () {
+                        
+                        var self = this;
+
+                        var canvasContextNames = _getCanvasContextNamesOfQuestion(self._fbLastRegisteredQuestionId);
+                        angular.forEach(canvasContextNames, function (canvasContextName) {
+                            _getFbRef(self._fbLastRegisteredQuestionId, canvasContextName).then(function (ref) {
+                                self.ref = ref;
+
+                                self.ref.off("child_added", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                                self.ref.off("child_changed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                                self.ref.off("child_removed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_REMOVED));
+                            });
+                        });
+                        self._fbLastRegisteredQuestionId = null;
+                    };
+
+                    EventsManager.prototype.cleanListeners = function () {
+                        this.killMouseEvents();
+                        this.killFbListeners();
+                        this.killHoverEvents(); 
+                    };
+
+                    function _reloadCanvas() {
+                        if (scope.d.drawMode === DRAWING_MODES.NONE) {
+                            return;
+                        }
+                        eventsManager.registerFbListeners(currQuestion.id);
+                    }
+
+                    function _init() {
+                        canvasContainerElementInitial = angular.element(
+                            '<div class="draw-tool-container" ' +
+                                'ng-show="d.drawMode !== d.DRAWING_MODES.NONE" ' +
+                                'ng-class="{' +
+                                '\'no-pointer-events\': d.drawMode === d.DRAWING_MODES.VIEW,' +
+                                '\'crosshair-cursor\': d.drawMode !== d.DRAWING_MODES.NONE && d.drawMode !== d.DRAWING_MODES.VIEW' +
+                                '}">' +
+                                '<canvas></canvas>' +
+                                '</div>'
+                        );
+
+                        drawer = new Drawer();
+                        eventsManager = new EventsManager();
+                    }
+
+                    function _setContextOnHover(elementToHoverOn, canvasOfElement, canvasContextName) {
+                        
+                        var onHoverCb = function () {
+                            if (currQuestion) {
+                                eventsManager.killMouseEvents();
+
+                                canvasDomElement = canvasOfElement;
+                                canvasContext = canvasDomElement.getContext("2d");
+                                serverDrawingUpdater = new ServerDrawingUpdater(currQuestion.id, canvasContextName);
+
+                                eventsManager.registerMouseEvents();
+                            }
+                        };
+
+                        eventsManager.registerHoverEvent(elementToHoverOn, onHoverCb);
+
+                    }
+
+                    function _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement) {
+                        toolBoxCtrl.isExerciseReady().then(function () {
+                            canvasDomContainerElement[0].setAttribute('height', elementToCoverDomElement.offsetHeight);
+                            canvasDomContainerElement[0].setAttribute('width', elementToCoverDomElement.offsetWidth);
+                            canvasDomContainerElement.css('position', 'absolute');
+                        });
+
+                    }
+
+                    function addCanvasToElement(elementToCover, question) {
+                        // we clone the element defined in _init to not mess with the upcoming append function (which doesn't work multiple times using the same element)
+                        var canvasContainerElement = canvasContainerElementInitial.clone();
+                        // cast selector element to html element
+                        var elementToCoverDomElement = elementToCover[0];
+
+                        // get the <canvas> element from the container
+                        var canvasDomContainerElement = canvasContainerElement.children();
+                        canvasDomElement = canvasDomContainerElement[0];
+
+                        canvasContext = canvasDomElement.getContext("2d"); 
+
+                        // this is the attribute name passed to znkExerciseDrawContainer directive
+                        var canvasContextName = elementToCover.attr('canvas-name');
+
+                        // when hovering over a canvas, set the global context to it
+                        _setContextOnHover(elementToCover, canvasDomElement, canvasContextName);
+
+                        _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement);
+                        
+
+                        elementToCover.append(canvasContainerElement);
+                        $compile(canvasContainerElement)(scope);
+
+                        // save to service for further management
+                        if (!ZnkExerciseDrawSrv.canvasContextManager[question.id]) {
+                            ZnkExerciseDrawSrv.canvasContextManager[question.id] = {};
+                        }
+
+                        ZnkExerciseDrawSrv.canvasContextManager[question.id][canvasContextName] = canvasContext;
+                    }
+
+
+                    
+
                     scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex, oldIndex, _currQuestion) {
                         if (angular.isUndefined(scope.d.drawMode)) {
                             scope.d.drawMode = DRAWING_MODES.VIEW;
@@ -14002,12 +14226,14 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         if (serverDrawingUpdater) {
                             serverDrawingUpdater.flush();
                         }
-                        serverDrawingUpdater = new ServerDrawingUpdater(currQuestion.id);
 
-                        _reloadCanvas();
+                        _reloadCanvas(); // re-registers fb listeners to reflect new question
                     });
 
                     _init();
+
+                    // publish addCanvasToElement function to make it callable from znkExerciseDrawContainer directive
+                    ZnkExerciseDrawSrv.addCanvasToElement = addCanvasToElement;
                 }
             };
         }]);

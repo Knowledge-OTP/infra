@@ -1,14 +1,14 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demoApp', ['znk.infra.general', 'angular-svg-round-progress','pascalprecht.translate'])
-        .config(function($translateProvider){
+    angular.module('demoApp', ['znk.infra.general', 'pascalprecht.translate'])
+        .config(function ($translateProvider) {
             $translateProvider.useLoader('$translatePartialLoader', {
                 urlTemplate: '/{part}/locale/{lang}.json'
             })
                 .preferredLanguage('en');
         })
-        .controller('ctrl',function($scope){
+        .controller('ctrl', function ($scope) {
             var countdownTime = 300 * 1000;
             $scope.d = {
                 timer: {
@@ -20,12 +20,12 @@
                         format: 'tss',
                         radius: 62,
                         color: '#0a9bad',
-                        bgcolor: '#e1e1e1'
+                        bgcolor: '#e1e1e1',
                     }
                 }
             };
 
-            $scope.$watch('d.timer.timeLeft', function(timeLeft) {
+            $scope.$watch('d.timer.timeLeft', function (timeLeft) {
                 if (timeLeft <= 0) {
                     $scope.d.timer.play = false;
                 }
