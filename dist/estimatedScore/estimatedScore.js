@@ -69,22 +69,6 @@
             eventProcessControl = _eventProcessControl;
         };
 
-        var getPointsMapByQuestion = function (question) {  // defualt function
-            return diagnosticScoring[question.difficulty];
-        };
-
-        this.setGetPointsMapByQuestionFn = function (fn) {
-            getPointsMapByQuestion = fn.bind(null,diagnosticScoring);
-        };
-
-        var getAnswerTimeType = function(){
-            return 'Within';
-        };
-
-        this.setAnswerTimeTypeFn = function (fn) {
-            getAnswerTimeType = fn;
-        };
-
         this.$get = [
             '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum', 'ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log', 'UtilitySrv', '$injector', '$q',
             function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum, ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log, UtilitySrv, $injector, $q) {
@@ -100,18 +84,7 @@
 
                 var childScope = $rootScope.$new(true);
 
-                function _basePointsGetter(pointsMap, answerStatus, withinAllowTime) {
-                    var key;
-                    if (answerStatus === ExerciseAnswerStatusEnum.unanswered.enum) {
-                        key = 'unanswered';
-                    } else {
-                        key = answerStatus === ExerciseAnswerStatusEnum.correct.enum ? 'correct' : 'wrong';
-                        key += withinAllowTime ? 'Within' : 'After';
-                    }
-                    return pointsMap[key];
-                }
-
-                function _pointsGetter(pointsMap, answerStatus, answerTimeType) {
+                function _basePointsGetter(pointsMap, answerStatus, answerTimeType) {
                     var key;
                     if (answerStatus === ExerciseAnswerStatusEnum.unanswered.enum) {
                         key = 'unanswered';
@@ -122,12 +95,11 @@
                     return pointsMap[key];
                 }
 
-
                 function _getDiagnosticQuestionPoints(question, result) {
-                    var pointsMap = getPointsMapByQuestion(question);
+                    var pointsMap = diagnosticScoring[question.difficulty];
                     var answerStatus = result.isAnsweredCorrectly ? ExerciseAnswerStatusEnum.correct.enum : ExerciseAnswerStatusEnum.wrong.enum;
-                    var answerTimeType = getAnswerTimeType(result.timeSpent);
-                    return _pointsGetter(pointsMap, answerStatus, answerTimeType);
+                    var answerTimeType = result.answeredBellowFiveSeconds ? 'TooFast' : 'Within';
+                    return _basePointsGetter(pointsMap, answerStatus, answerTimeType);
                 }
 
                 function _diagnosticSectionCompleteHandler(section, sectionResult) {
@@ -151,12 +123,12 @@
                 }
 
                 function _getQuestionRawPoints(exerciseType, result) {
-                    var isAnsweredWithinAllowedTime = !result.afterAllowedTime;
+                    var answerTimeType = !result.afterAllowedTime ?  'Within' : 'After';
 
                     var answerStatus = ExerciseAnswerStatusEnum.convertSimpleAnswerToAnswerStatusEnum(result.isAnsweredCorrectly);
 
                     var rawPointsMap = exercisesRawScoring[exerciseType];
-                    return _basePointsGetter(rawPointsMap, answerStatus, isAnsweredWithinAllowedTime);
+                    return _basePointsGetter(rawPointsMap, answerStatus, answerTimeType);
                 }
 
                 function _calculateRawScore(exerciseType, exerciseResult) {
