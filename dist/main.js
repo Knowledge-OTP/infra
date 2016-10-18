@@ -9509,7 +9509,7 @@ angular.module('znk.infra.webcall').run(['$templateCache', function($templateCac
                 });
             }
 
-            this.getAllWorkouts = function () {
+            this.getAllWorkouts = function (skipAddInitWorkouts) {
                 return _getWorkoutsData().then(function (workoutsData) {
                     var workoutsArr = [],
                         promArr = [];
@@ -9517,14 +9517,15 @@ angular.module('znk.infra.webcall').run(['$templateCache', function($templateCac
                         workoutsArr.push(workout);
                         promArr.push(_setIsAvailForWorkout(workout));
                     });
-
-                    for (var i = 0; i < 5; i++) {
-                        var workoutToAdd = {
-                            status: ExerciseStatusEnum.NEW.enum,
-                            workoutOrder: workoutsArr.length + 1
-                        };
-                        workoutsArr.push(workoutToAdd);
-                        promArr.push(_setIsAvailForWorkout(workoutToAdd));
+                    if (!skipAddInitWorkouts) {
+                        for (var i = 0; i < 5; i++) {
+                            var workoutToAdd = {
+                                status: ExerciseStatusEnum.NEW.enum,
+                                workoutOrder: workoutsArr.length + 1
+                            };
+                            workoutsArr.push(workoutToAdd);
+                            promArr.push(_setIsAvailForWorkout(workoutToAdd));
+                        }
                     }
                     return $q.all(promArr).then(function () {
                         return workoutsArr.sort(function (workout1, workout2) {
