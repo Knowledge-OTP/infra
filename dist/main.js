@@ -3741,7 +3741,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
     'use strict';
 
     angular.module('znk.infra.estimatedScore').provider('EstimatedScoreEventsHandlerSrv', function EstimatedScoreEventsHandler() {
-        function pointsMap(correctWithinAllowedTimeFrame, correctAfterAllowedTimeFrame, wrongWithinAllowedTimeFrame, wrongAfterAllowedTimeFrame) {
+        function pointsMap(correctWithinAllowedTimeFrame, correctAfterAllowedTimeFrame, wrongWithinAllowedTimeFrame, wrongAfterAllowedTimeFrame,  correctTooFast, wrongTooFast) {
             var ret = {};
 
             if (angular.isDefined(correctWithinAllowedTimeFrame)) {
@@ -3758,6 +3758,14 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
 
             if (angular.isDefined(wrongAfterAllowedTimeFrame)) {
                 ret.wrongAfter = wrongAfterAllowedTimeFrame;
+            }
+
+            if (angular.isDefined(correctTooFast)) {
+                ret.correctTooFast = correctTooFast;
+            }
+
+            if (angular.isDefined(wrongTooFast)) {
+                ret.wrongTooFast = wrongTooFast;
             }
 
             ret.unanswered = 0;
@@ -3799,13 +3807,13 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
 
                 var childScope = $rootScope.$new(true);
 
-                function _basePointsGetter(pointsMap, answerStatus, withinAllowTime) {
+                function _basePointsGetter(pointsMap, answerStatus, answerTimeType) {
                     var key;
                     if (answerStatus === ExerciseAnswerStatusEnum.unanswered.enum) {
                         key = 'unanswered';
                     } else {
                         key = answerStatus === ExerciseAnswerStatusEnum.correct.enum ? 'correct' : 'wrong';
-                        key += withinAllowTime ? 'Within' : 'After';
+                        key += answerTimeType;
                     }
                     return pointsMap[key];
                 }
@@ -3813,7 +3821,8 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                 function _getDiagnosticQuestionPoints(question, result) {
                     var pointsMap = diagnosticScoring[question.difficulty];
                     var answerStatus = result.isAnsweredCorrectly ? ExerciseAnswerStatusEnum.correct.enum : ExerciseAnswerStatusEnum.wrong.enum;
-                    return _basePointsGetter(pointsMap, answerStatus, true);
+                    var answerTimeType = result.answeredBellowFiveSeconds ? 'TooFast' : 'Within';
+                    return _basePointsGetter(pointsMap, answerStatus, answerTimeType);
                 }
 
                 function _diagnosticSectionCompleteHandler(section, sectionResult) {
@@ -3837,12 +3846,12 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                 }
 
                 function _getQuestionRawPoints(exerciseType, result) {
-                    var isAnsweredWithinAllowedTime = !result.afterAllowedTime;
+                    var answerTimeType = !result.afterAllowedTime ?  'Within' : 'After';
 
                     var answerStatus = ExerciseAnswerStatusEnum.convertSimpleAnswerToAnswerStatusEnum(result.isAnsweredCorrectly);
 
                     var rawPointsMap = exercisesRawScoring[exerciseType];
-                    return _basePointsGetter(rawPointsMap, answerStatus, isAnsweredWithinAllowedTime);
+                    return _basePointsGetter(rawPointsMap, answerStatus, answerTimeType);
                 }
 
                 function _calculateRawScore(exerciseType, exerciseResult) {
@@ -12664,6 +12673,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                     updateTimeSpentOnQuestion(undefined,true);
                                     var afterAllowedTime = _isExceededAllowedTime();
                                     currQuestion.__questionStatus.afterAllowedTime = afterAllowedTime;
+                                    currQuestion.__questionStatus.answeredBellowFiveSeconds = currQuestion.__questionStatus.timeSpent  < 5000;
                                     setViewValue();
                                 }
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
