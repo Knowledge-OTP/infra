@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.estimatedScore').provider('EstimatedScoreEventsHandlerSrv', function EstimatedScoreEventsHandler() {
-        function pointsMap(correctWithinAllowedTimeFrame, correctAfterAllowedTimeFrame, wrongWithinAllowedTimeFrame, wrongAfterAllowedTimeFrame,  correctTooFast, wrongTooFast) {
+        function pointsMap(correctWithinAllowedTimeFrame, correctAfterAllowedTimeFrame, wrongWithinAllowedTimeFrame, wrongAfterAllowedTimeFrame, correctTooFast, wrongTooFast) {
             var ret = {};
 
             if (angular.isDefined(correctWithinAllowedTimeFrame)) {
@@ -49,9 +49,18 @@
         };
 
         var eventProcessControl;
-        this.setEventProcessControl = function(_eventProcessControl){
+        this.setEventProcessControl = function (_eventProcessControl) {
             eventProcessControl = _eventProcessControl;
         };
+
+        var getAnswerTimeSpentType = function () { // default function
+            return 'Within';
+        };
+
+        this.setAnswerTimeSpentTypeFn = function(fn){
+            getAnswerTimeSpentType = fn;
+        };
+
 
         this.$get = [
             '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum', 'ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log', 'UtilitySrv', '$injector', '$q',
@@ -82,7 +91,7 @@
                 function _getDiagnosticQuestionPoints(question, result) {
                     var pointsMap = diagnosticScoring[question.difficulty];
                     var answerStatus = result.isAnsweredCorrectly ? ExerciseAnswerStatusEnum.correct.enum : ExerciseAnswerStatusEnum.wrong.enum;
-                    var answerTimeType = result.answeredBellowFiveSeconds ? 'TooFast' : 'Within';
+                    var answerTimeType = getAnswerTimeSpentType(result);
                     return _basePointsGetter(pointsMap, answerStatus, answerTimeType);
                 }
 
@@ -107,7 +116,7 @@
                 }
 
                 function _getQuestionRawPoints(exerciseType, result) {
-                    var answerTimeType = !result.afterAllowedTime ?  'Within' : 'After';
+                    var answerTimeType = !result.afterAllowedTime ? 'Within' : 'After';
 
                     var answerStatus = ExerciseAnswerStatusEnum.convertSimpleAnswerToAnswerStatusEnum(result.isAnsweredCorrectly);
 
@@ -133,13 +142,13 @@
                     return rawPoints;
                 }
 
-                function _shouldEventBeProcessed(exerciseType, exercise, exerciseResult){
-                    if(!eventProcessControl){
+                function _shouldEventBeProcessed(exerciseType, exercise, exerciseResult) {
+                    if (!eventProcessControl) {
                         return $q.when(true);
                     }
 
-                    var shouldEventBeProcessed =$injector.invoke(eventProcessControl);
-                    if(angular.isFunction(shouldEventBeProcessed )){
+                    var shouldEventBeProcessed = $injector.invoke(eventProcessControl);
+                    if (angular.isFunction(shouldEventBeProcessed)) {
                         shouldEventBeProcessed = shouldEventBeProcessed(exerciseType, exercise, exerciseResult);
                     }
                     return $q.when(shouldEventBeProcessed);
@@ -147,8 +156,8 @@
 
                 childScope.$on(exerciseEventsConst.section.FINISH, function (evt, section, sectionResult, exam) {
                     _shouldEventBeProcessed(exerciseEventsConst.section.FINISH, section, sectionResult)
-                        .then(function(shouldBeProcessed){
-                            if(shouldBeProcessed){
+                        .then(function (shouldBeProcessed) {
+                            if (shouldBeProcessed) {
                                 var isDiagnostic = exam.typeId === ExamTypeEnum.DIAGNOSTIC.enum;
                                 if (isDiagnostic) {
                                     _diagnosticSectionCompleteHandler(section, sectionResult);
@@ -160,16 +169,16 @@
                 });
 
                 function _baseExerciseFinishHandler(exerciseType, evt, exercise, exerciseResult) {
-                    _shouldEventBeProcessed(exerciseType, exercise, exerciseResult).then(function(shouldBeProcessed){
-                        if(shouldBeProcessed){
+                    _shouldEventBeProcessed(exerciseType, exercise, exerciseResult).then(function (shouldBeProcessed) {
+                        if (shouldBeProcessed) {
                             var rawScore = _calculateRawScore(exerciseType, exerciseResult);
                             EstimatedScoreSrv.addRawScore(rawScore, exerciseType, exercise.subjectId, exercise.id);
-                }
+                        }
                     });
                 }
 
-                angular.forEach(ExerciseTypeEnum, function(enumObj, enumName){
-                    if(enumName !== 'SECTION' && enumName !== 'LECTURE'){
+                angular.forEach(ExerciseTypeEnum, function (enumObj, enumName) {
+                    if (enumName !== 'SECTION' && enumName !== 'LECTURE') {
                         var enumLowercaseName = enumName.toLowerCase();
                         var evtName = exerciseEventsConst[enumLowercaseName].FINISH;
                         childScope.$on(evtName, _baseExerciseFinishHandler.bind(EstimatedScoreEventsHandlerSrv, enumObj.enum));

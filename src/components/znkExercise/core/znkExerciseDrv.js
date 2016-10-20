@@ -326,7 +326,6 @@
                                     updateTimeSpentOnQuestion(undefined,true);
                                     var afterAllowedTime = _isExceededAllowedTime();
                                     currQuestion.__questionStatus.afterAllowedTime = afterAllowedTime;
-                                    currQuestion.__questionStatus.answeredBellowFiveSeconds = currQuestion.__questionStatus.timeSpent  < 5000;
                                     setViewValue();
                                 }
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
