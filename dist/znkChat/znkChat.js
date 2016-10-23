@@ -4,7 +4,8 @@
     angular.module('znk.infra.znkChat',
         [
             'znk.infra.svgIcon',
-            'znk.infra.teachers'
+            'znk.infra.teachers',
+            'znk.infra.znkMedia'
         ])
         .config([
             'SvgIconSrvProvider',
@@ -193,7 +194,7 @@
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('chatter',
-        ["znkChatSrv", "$q", "znkChatEventSrv", "$timeout", "PresenceService", "ZNK_CHAT", function (znkChatSrv, $q, znkChatEventSrv, $timeout, PresenceService, ZNK_CHAT) {
+        ["znkChatSrv", "$q", "znkChatEventSrv", "$timeout", "PresenceService", "ZNK_CHAT", "MediaSrv", function (znkChatSrv, $q, znkChatEventSrv, $timeout, PresenceService, ZNK_CHAT, MediaSrv) {
             'ngInject';
             var presenceActiveLiseners = {};
 
@@ -208,6 +209,8 @@
                 link: function (scope) {
                     var chatGuidProm;
                     var offEvent = {};
+                    var sound =  MediaSrv.loadSound('znkChat/assets/sounds/sound.mp3');
+
                     scope.d = {};
                     scope.d.userStatus = PresenceService.userStatus;
                     scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
@@ -275,7 +278,8 @@
                                 znkChatSrv.updateLasSeenMessage(scope.chatterObj.chatGuid, scope.localUser.uid, lastSeenMessage);
                             } else {
                                 scope.chatterObj.messagesNotSeen++;
-                                scope.chatterObj.messagesNotSeen = scope.chatterObj.messagesNotSeen < ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES ? scope.chatterObj.messagesNotSeen : 10;
+                                scope.chatterObj.messagesNotSeen = scope.chatterObj.messagesNotSeen < ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES ? scope.chatterObj.messagesNotSeen :  ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
+                                sound.play();
                             }
                         }
 

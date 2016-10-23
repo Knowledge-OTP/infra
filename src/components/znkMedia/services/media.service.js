@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkAudioPlayer').factory('MediaSrv', [
+    angular.module('znk.infra.znkMedia').factory('MediaSrv', [
         'ENV', '$q', '$window',
         function (ENV, $q, $window) {
 
@@ -156,7 +156,7 @@
                 }
 
                 function failFnMain(e) {
-                    var errMsg = 'MediaSrv: fail to load sound, src: '+src;
+                    var errMsg = 'MediaSrv: fail to load sounds, src: '+src;
                     console.error(errMsg, e);
                     if(angular.isDefined($window.atatus) && angular.isFunction($window.atatus.notify)) {
                         $window.atatus.notify(errMsg);
