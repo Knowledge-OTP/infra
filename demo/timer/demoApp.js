@@ -30,11 +30,6 @@
                     $scope.d.timer.play = false;
                 }
             });
-        })
-        .run(function ($rootScope, $translate) {
-            $rootScope.$on('$translatePartialLoaderStructureChanged', function () {
-                $translate.refresh();
-            })
         });
 
 })(angular);

@@ -2,6 +2,7 @@
     'use strict';
 
     angular.module('demo', [
+        'demoEnv',
         'znk.infra.calls',
         'ngAria',
         'ngMaterial',
@@ -9,7 +10,11 @@
         'znk.infra.filters',
         'znk.infra.userContext'
     ])
-        .config(function (CallsModalServiceProvider) {
+        .config(function ($translateProvider, CallsModalServiceProvider, CallsUiSrvProvider) {
+            'ngInject';
+            $translateProvider.preferredLanguage('en');
+            $translateProvider.useSanitizeValueStrategy(null);
+
             CallsModalServiceProvider.setBaseTemplatePath('components/calls/modals/templates/baseCallsModal.template.html');
 
             var isTeacher = localStorage.getItem('isTeacher');
@@ -24,6 +29,14 @@
             } else {
                 localStorage.setItem('znkAuthToken', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2IjowLCJkIjp7InVpZCI6IjIxNzk0ZTJiLTMwNTEtNDAxNi04NDkxLWIzZmU3MGU4MjEyZCIsImVtYWlsIjoidGVzdGVyQHppbmtlcnouY29tIn0sImlhdCI6MTQ2OTUyMTI4N30.hfEgjFMAQ1eAylEOWxSmkBc2ejAZ0KIL2rb6aS5KjLI');
             }
+
+            var fn = function($q) {
+                return function(receiverId, callerId) {
+                    console.log('receiverId: ' + receiverId + ' callerId: ' + callerId);
+                    return $q.when('fake name');
+                }
+            };
+            CallsUiSrvProvider.setCalleeNameFnGetter(fn);
         })
         .run(function ($rootScope) {
             /**
@@ -32,12 +45,15 @@
              *     znkData   https://act-dev.firebaseio.com/
              *     znkStudentPath	 /act_app
              */
+            'ngInject';
+
             $rootScope.offline = { isOffline: true, receiverId: 1 };
 
             $rootScope.call = { isOffline: false, receiverId: '21794e2b-3051-4016-8491-b3fe70e8212d' };
             $rootScope.called = { isOffline: false, receiverId: 'eebe2b53-08b7-4296-bcfd-62b69b531473' };
         })
         .controller('demoCtrl', function ($scope, CallsUiSrv, $rootScope, ActivePanelSrv) {
+            'ngInject';
 
             ActivePanelSrv.init();
 
@@ -62,30 +78,23 @@
                 CallsUiSrv.showErrorModal(CallsUiSrv.modals.ERROR, modalData);
             };
         })
-        .service('ENV', function () {
+        .decorator('ENV', function ($delegate) {
+            'ngInject';
             var isTeacher = localStorage.getItem('isTeacher');
-            this.mediaEndpoint = '//dfz02hjbsqn5e.cloudfront.net';
+            $delegate.mediaEndpoint = '//dfz02hjbsqn5e.cloudfront.net';
             if(isTeacher) {
                 // teacher
-                this.firebaseAppScopeName = "act_dashboard";
-                this.appContext = 'dashboard';
-                this.studentAppName = 'act_app';
-                this.dashboardAppName = 'act_dashboard';
+                $delegate.firebaseAppScopeName = "act_dashboard";
+                $delegate.appContext = 'dashboard';
+                $delegate.studentAppName = 'act_app';
+                $delegate.dashboardAppName = 'act_dashboard';
             } else {
                 // student
-                this.firebaseAppScopeName = "act_app";
-                this.appContext = 'student';
-                this.studentAppName = 'act_app';
-                this.dashboardAppName = 'act_dashboard';
+                $delegate.firebaseAppScopeName = "act_app";
+                $delegate.appContext = 'student';
+                $delegate.studentAppName = 'act_app';
+                $delegate.dashboardAppName = 'act_dashboard';
             }
-        })
-        .config(function(CallsUiSrvProvider){
-            var fn = function($q) {
-                return function(receiverId, callerId) {
-                    console.log('receiverId: ' + receiverId + ' callerId: ' + callerId);
-                    return $q.when('fake name');
-                }
-            };
-            CallsUiSrvProvider.setCalleeNameFnGetter(fn);
+            return $delegate;
         });
 })(angular);

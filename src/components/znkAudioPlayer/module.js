@@ -2,6 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.znkAudioPlayer', [
+        'pascalprecht.translate',
         'znk.infra.svgIcon'
     ])
         .config([

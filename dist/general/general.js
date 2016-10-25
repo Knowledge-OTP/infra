@@ -1,7 +1,13 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.general', ['znk.infra.enum', 'znk.infra.svgIcon', 'angular-svg-round-progressbar'])
+    angular.module('znk.infra.general',
+        [
+            'znk.infra.enum',
+            'znk.infra.svgIcon',
+            'pascalprecht.translate',
+            'angular-svg-round-progressbar'
+        ])
         .config([
         'SvgIconSrvProvider',
         function (SvgIconSrvProvider) {
@@ -70,6 +76,22 @@
             }
         };
     }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.general')
+        .config(
+            ["$translateProvider", function ($translateProvider) {
+                'ngInject';
+                $translateProvider.translations('en', {
+                    "TIMER": {
+                        "SECONDS": "seconds",
+                        "SEC":"sec"
+                    }
+                });
+            }]);
 })(angular);
 
 (function (angular) {
@@ -352,7 +374,7 @@
 
     angular.module('znk.infra.general').directive('timer', [
         '$interval', '$translatePartialLoader', '$timeout',
-        function ($interval, $translatePartialLoader, $timeout) {
+        function ($interval, $timeout) {
             var timerTypes = {
                 'REGULAR': 1,
                 'ROUND_PROGRESSBAR': 2
@@ -368,7 +390,6 @@
                 replace: true,
                 templateUrl: 'components/general/templates/timerDrv.html',
                 link: function link(scope, element, attrs, ngModelCtrl) {
-                    $translatePartialLoader.addPart('general');
                     var domElement = element[0];
 
                     scope.ngModelCtrl = ngModelCtrl;

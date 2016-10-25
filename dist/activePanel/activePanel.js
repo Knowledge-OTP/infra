@@ -252,6 +252,23 @@
     'use strict';
 
     angular.module('znk.infra.activePanel')
+        .config(
+            ["$translateProvider", function ($translateProvider) {
+                'ngInject';
+                $translateProvider.translations('en', {
+                    "ACTIVE_PANEL":{
+                        "SHOW_STUDENT_SCREEN": "Show Teacher Screen",
+                        "SHOW_TEACHER_SCREEN": "Show Student Screen",
+                        "SHARE_MY_SCREEN": "Share my screen"
+                    }
+                });
+            }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.activePanel')
         .config(["SvgIconSrvProvider", function (SvgIconSrvProvider) {
             'ngInject';
 
@@ -262,19 +279,6 @@
                 'active-panel-track-student-icon': 'components/activePanel/svg/track-student-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
-        }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.activePanel')
-        .run(["$timeout", "$translatePartialLoader", function($timeout, $translatePartialLoader){
-            'ngInject';
-            //must be wrapped in timeout because the parting adding cannot be made directly in a run block
-            $timeout(function(){
-                $translatePartialLoader.addPart('activePanel');
-            });
         }]);
 })(angular);
 

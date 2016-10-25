@@ -1,12 +1,12 @@
 (function(angular) {
     'use strict';
     angular.module('demo', [
-        'znk.infra.znkQuestionReport',
-        'demoEnv'
+        'znk.infra.znkQuestionReport'
         ])
         .config(function ($translateProvider) {
             'ngInject';
             $translateProvider.preferredLanguage('en');
+            $translateProvider.useSanitizeValueStrategy(null);
         })
         .controller('Main', function () {
             'ngInject';

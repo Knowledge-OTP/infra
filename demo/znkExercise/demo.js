@@ -15,6 +15,7 @@
         .config(function ($translateProvider) {
             'ngInject';
             $translateProvider.preferredLanguage('en');
+            $translateProvider.useSanitizeValueStrategy(null);
         })
         .controller('Main', function ($scope, $timeout, ContentSrv, ZnkExerciseUtilitySrv, ExerciseResultSrv, $controller ) {
 

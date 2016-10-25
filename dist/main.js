@@ -306,6 +306,23 @@
     'use strict';
 
     angular.module('znk.infra.activePanel')
+        .config(
+            ["$translateProvider", function ($translateProvider) {
+                'ngInject';
+                $translateProvider.translations('en', {
+                    "ACTIVE_PANEL":{
+                        "SHOW_STUDENT_SCREEN": "Show Teacher Screen",
+                        "SHOW_TEACHER_SCREEN": "Show Student Screen",
+                        "SHARE_MY_SCREEN": "Share my screen"
+                    }
+                });
+            }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.activePanel')
         .config(["SvgIconSrvProvider", function (SvgIconSrvProvider) {
             'ngInject';
 
@@ -316,19 +333,6 @@
                 'active-panel-track-student-icon': 'components/activePanel/svg/track-student-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
-        }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.activePanel')
-        .run(["$timeout", "$translatePartialLoader", function($timeout, $translatePartialLoader){
-            'ngInject';
-            //must be wrapped in timeout because the parting adding cannot be made directly in a run block
-            $timeout(function(){
-                $translatePartialLoader.addPart('activePanel');
-            });
         }]);
 })(angular);
 
@@ -940,9 +944,31 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
     'use strict';
 
     angular.module('znk.infra.auth', [
+        'pascalprecht.translate',
         'znk.infra.config'
     ]);
 })(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.auth')
+        .config(
+            ["$translateProvider", function ($translateProvider) {
+                'ngInject';
+                $translateProvider.translations('en', {
+                    "AUTH_HELPER": {
+                        "DEFAULT_ERROR_MESSAGE": "An error has occurred, please try again later.",
+                        "FACEBOOK_ERROR": "An error has occurred with facebook, please try again later.",
+                        "EMAIL_EXIST": "Email already exists. Try a different email address.",
+                        "INVALID_EMAIL": "Invalid email address.",
+                        "NO_INTERNET_CONNECTION_ERR": "No internet connection. Please try again later.",
+                        "EMAIL_NOT_EXIST": "We don’t recognize that email. Did you use another one to sign up?",
+                        "INCORRECT_EMAIL_AND_PASSWORD_COMBINATION": "Incorrect email and password combination."
+                    }
+                });
+            }]);
+    })(angular);
 
 (function (angular) {
     'use strict';
@@ -1215,8 +1241,39 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         'znk.infra.user',
         'znk.infra.enum',
         'ngMaterial',
+        'znk.infra.svgIcon',
         'znk.infra.callsModals'
     ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.calls')
+        .config(
+            ["$translateProvider", function ($translateProvider) {
+                'ngInject';
+                $translateProvider.translations('en', {
+                    "AUDIO_CALLS":{
+                        "INCOMING_CALL": "Incoming Call",
+                        "OUTGOING_CALL": "Outgoing Call",
+                        "REJECT": "DECLINE",
+                        "ACCEPT": "ACCEPT",
+                        "DECLINE": "DECLINE",
+                        "OK": "OK",
+                        "CANCEL": "Cancel",
+                        "NAME_IS_CALLING": "{{callerName}} is calling...",
+                        "CALLING_NAME": "Calling {{calleeName}}",
+                        "CALLING_DECLINE": "Call is declined",
+                        "CALLING_CANCELED": "Call was canceled",
+                        "CALLING_ANSWERED": "Call Answered",
+                        "CALL_FAILED_HEADER": "Call Failed",
+                        "CALL_FAILED_DESC_GENERAL": "A general error occurred, please try again </br> If this persist, please contact us at </br> <a href='https://www.zinkerz.com/contact' target='_blank'>support@zinkerz.com</a>",
+                        "CALL_FAILED_DESC_MICROPHONE": "No microphone access </br> Please make sure you allowed the browser </br> access to your microphone",
+                        "CALL_FAILED_DESC_ALREADY_ACTIVE": "{{calleeName}} </br> is already in an active call </br> Please try again later"
+                    }
+                });
+            }]);
 })(angular);
 
 (function (angular) {
@@ -1611,19 +1668,6 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         }]
     );
 })();
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.calls')
-        .run(["$timeout", "$translatePartialLoader", function($timeout, $translatePartialLoader){
-            'ngInject';
-            //must be wrapped in timeout because the parting adding cannot be made directly in a run block
-            $timeout(function(){
-                $translatePartialLoader.addPart('calls');
-            });
-        }]);
-})(angular);
 
 (function (angular) {
     'use strict';
@@ -5295,7 +5339,13 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.general', ['znk.infra.enum', 'znk.infra.svgIcon', 'angular-svg-round-progressbar'])
+    angular.module('znk.infra.general',
+        [
+            'znk.infra.enum',
+            'znk.infra.svgIcon',
+            'pascalprecht.translate',
+            'angular-svg-round-progressbar'
+        ])
         .config([
         'SvgIconSrvProvider',
         function (SvgIconSrvProvider) {
@@ -5364,6 +5414,22 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
             }
         };
     }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.general')
+        .config(
+            ["$translateProvider", function ($translateProvider) {
+                'ngInject';
+                $translateProvider.translations('en', {
+                    "TIMER": {
+                        "SECONDS": "seconds",
+                        "SEC":"sec"
+                    }
+                });
+            }]);
 })(angular);
 
 (function (angular) {
@@ -5646,7 +5712,7 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
 
     angular.module('znk.infra.general').directive('timer', [
         '$interval', '$translatePartialLoader', '$timeout',
-        function ($interval, $translatePartialLoader, $timeout) {
+        function ($interval, $timeout) {
             var timerTypes = {
                 'REGULAR': 1,
                 'ROUND_PROGRESSBAR': 2
@@ -5662,7 +5728,6 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
                 replace: true,
                 templateUrl: 'components/general/templates/timerDrv.html',
                 link: function link(scope, element, attrs, ngModelCtrl) {
-                    $translatePartialLoader.addPart('general');
                     var domElement = element[0];
 
                     scope.ngModelCtrl = ngModelCtrl;
@@ -6952,6 +7017,24 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.screenSharing')
+        .config(
+            ["$translateProvider", function ($translateProvider) {
+                'ngInject';
+                $translateProvider.translations('en', {
+                    "SCREEN_SHARING":{
+                        "SHARE_SCREEN_REQUEST": "Share Screen Request",
+                        "WANT_TO_SHARE": "{{name}} wants to share his screen with you.",
+                        "REJECT": "REJECT",
+                        "ACCEPT": "ACCEPT"
+                    }
+                });
+            }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.screenSharing')
         .config(["SvgIconSrvProvider", function (SvgIconSrvProvider) {
             'ngInject';
 
@@ -7047,19 +7130,6 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
         }]
     );
 })();
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.screenSharing')
-        .run(["$timeout", "$translatePartialLoader", function($timeout, $translatePartialLoader){
-            'ngInject';
-            //must be wrapped in timeout because the parting adding cannot be made directly in a run block
-            $timeout(function(){
-                $translatePartialLoader.addPart('screenSharing');
-            });
-        }]);
-})(angular);
 
 (function (angular) {
     'use strict';
@@ -9604,6 +9674,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
     'use strict';
 
     angular.module('znk.infra.znkAudioPlayer', [
+        'pascalprecht.translate',
         'znk.infra.svgIcon'
     ])
         .config([
@@ -9615,6 +9686,25 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                     'znk-audio-player-close': 'components/znkAudioPlayer/svg/close-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
+            }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkAudioPlayer')
+        .config(
+            ["$translateProvider", function ($translateProvider) {
+                'ngInject';
+                $translateProvider.translations('en', {
+                    "ZNK_AUDIO_PLAYER": {
+                        "PLAY_AUDIO": "PLAY AUDIO",
+                        "THIS_VIDEO_ALREADY_PLAYED": "The audio has already been played."
+                    },
+                    "ZNK_IMAGE_AUDIO": {
+                        "SKIP": "Skip"
+                    }
+                });
             }]);
 })(angular);
 
@@ -9970,7 +10060,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
 (function (angular) {
 
     angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', ['$translatePartialLoader',
-        function znkImageAudio($translatePartialLoader) {
+        function znkImageAudio() {
 
             return {
                 templateUrl: 'components/znkAudioPlayer/templates/znkImageAudio.template.html',
@@ -9987,7 +10077,6 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                     blurredImageGetter: '&?blurredImage'
                 },
                 link: function (scope) {
-                    $translatePartialLoader.addPart('znkAudioPlayer');
 
                     scope.d = {
                         image: scope.imageGetter(),
@@ -10445,6 +10534,24 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.znkChat')
+        .config(
+            ["$translateProvider", function ($translateProvider) {
+                'ngInject';
+                $translateProvider.translations('en', {
+                        "ZNK_CHAT":{
+                            "MY_CHAT": "MY CHATS",
+                            "SUPPORT": "Support",
+                            "PLACEHOLDER": "Type..."
+                        }
+                    }
+                );
+            }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.znkChat').directive('chatMessage', [
         function () {
             'ngInject';
@@ -10753,7 +10860,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('znkChat',
-        ["$translatePartialLoader", "znkChatSrv", "$q", "UtilitySrv", "ZNK_CHAT", "$timeout", function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, ZNK_CHAT, $timeout) {
+        ["znkChatSrv", "$q", "UtilitySrv", "ZNK_CHAT", "$timeout", function (znkChatSrv, $q, UtilitySrv, ZNK_CHAT, $timeout) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/znkChat.template.html',
@@ -10761,7 +10868,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     localUser: '='
                 },
                 link: function (scope, element) {
-                    $translatePartialLoader.addPart('znkChat');
                     $timeout(function () {
                         element.addClass('animate-chat');
                     });
@@ -15122,6 +15228,21 @@ angular.module('znk.infra.znkModule').run(['$templateCache', function($templateC
             }]);
 })(angular);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkProgressBar')
+        .config(
+            ["$translateProvider", function ($translateProvider) {
+                'ngInject';
+                $translateProvider.translations('en', {
+                    "ZNK_PROGRESS_BAR": {
+                        "MASTERY": "Mastery"
+                    }
+                });
+            }]);
+})(angular);
+
 /**
  * attrs:
  */
@@ -15130,7 +15251,7 @@ angular.module('znk.infra.znkModule').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.znkProgressBar').directive('znkProgressBar',
-        ["$translatePartialLoader", function ($translatePartialLoader) {
+        function () {
         'ngInject';
             return {
                 templateUrl: 'components/znkProgressBar/znkProgressBar.template.html',
@@ -15139,12 +15260,9 @@ angular.module('znk.infra.znkModule').run(['$templateCache', function($templateC
                     progressValue: '@',
                     showProgressValue: '@',
                     showProgressBubble: '&'
-                },
-                link: function () {
-                    $translatePartialLoader.addPart('znkProgressBar');
                 }
             };
-        }]
+        }
     );
 })(angular);
 

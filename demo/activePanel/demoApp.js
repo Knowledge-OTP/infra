@@ -5,10 +5,12 @@
         'demoEnv',
         'znk.infra.activePanel'
     ])
-        .controller('demoCtrl', function ($scope, ActivePanelSrv) {
-            ActivePanelSrv.init();
-        })
-        .config(function(PresenceServiceProvider){
-            // PresenceServiceProvider.setAuthServiceName('AuthService');
-        });
+    .config(function ($translateProvider) {
+        'ngInject';
+        $translateProvider.preferredLanguage('en');
+        $translateProvider.useSanitizeValueStrategy(null);
+    })
+    .controller('demoCtrl', function ($scope, ActivePanelSrv) {
+        ActivePanelSrv.init();
+    });
 })(angular);
