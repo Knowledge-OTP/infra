@@ -2,6 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.znkAudioPlayer', [
+        'pascalprecht.translate',
         'znk.infra.svgIcon'
     ])
         .config([
@@ -13,6 +14,25 @@
                     'znk-audio-player-close': 'components/znkAudioPlayer/svg/close-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
+            }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkAudioPlayer')
+        .config(
+            ["$translateProvider", function ($translateProvider) {
+                'ngInject';
+                $translateProvider.translations('en', {
+                    "ZNK_AUDIO_PLAYER": {
+                        "PLAY_AUDIO": "PLAY AUDIO",
+                        "THIS_VIDEO_ALREADY_PLAYED": "The audio has already been played."
+                    },
+                    "ZNK_IMAGE_AUDIO": {
+                        "SKIP": "Skip"
+                    }
+                });
             }]);
 })(angular);
 
@@ -368,7 +388,7 @@
 (function (angular) {
 
     angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', ['$translatePartialLoader',
-        function znkImageAudio($translatePartialLoader) {
+        function znkImageAudio() {
 
             return {
                 templateUrl: 'components/znkAudioPlayer/templates/znkImageAudio.template.html',
@@ -385,7 +405,6 @@
                     blurredImageGetter: '&?blurredImage'
                 },
                 link: function (scope) {
-                    $translatePartialLoader.addPart('znkAudioPlayer');
 
                     scope.d = {
                         image: scope.imageGetter(),
