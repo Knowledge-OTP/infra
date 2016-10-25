@@ -11324,11 +11324,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 'znk-exercise-touche': 'components/znkExercise/svg/tools-touche.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
-        }])
-    .run(["$translatePartialLoader", function ($translatePartialLoader) {
-        'ngInject';
-        $translatePartialLoader.addPart('znkExercise');
-    }]);
+        }]);
 })(angular);
 
 /**
@@ -11585,6 +11581,32 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             };
         }
     ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise')
+        .config(
+            ["$translateProvider", function ($translateProvider) {
+                'ngInject';
+                $translateProvider.translations('en', {
+                    "TEST": "works",
+                    "ZNK_EXERCISE": {
+                        "SOME_ANSWER_LEFT_CONTENT": "You’ve left some questions unanswered…",
+                        "FINISH_TITLE": "Finished?",
+                        "STAY_BTN": "STAY",
+                        "FINISH_BTN": "FINISH",
+                        "CONTINUE_BTN": "CONTINUE",
+                        "GO_TO_SUMMARY_BTN": "GO TO SUMMARY",
+                        "TIME_UP_CONTENT": "To best simulate the conditions of a real exam, we recommend you stop taking this practice test now. However, if you prefer to continue and complete all remaining questions, you may do so.",
+                        "TIME_UP_TITLE": "Time’s Up",
+                        "STOP": "STOP",
+                        "PASSAGE": "Passage ",
+                        "SECTION": "Section"
+                    }
+                });
+            }]);
 })(angular);
 
 (function (angular) {
@@ -15194,13 +15216,11 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
             template: '<svg-icon class="report-btn" name="report-question-icon" ' +
             'title="{{\'REPORT_POPUP.REPORT_QUESTION\' | translate}}" ng-hide="vm.isLectureType" ng-click="vm.showReportDialog()"></svg-icon>',
             controllerAs: 'vm',
-            controller: ["$mdDialog", "$translatePartialLoader", "ExerciseTypeEnum", function ($mdDialog, $translatePartialLoader, ExerciseTypeEnum) {
+            controller: ["$mdDialog", "ExerciseTypeEnum", function ($mdDialog, ExerciseTypeEnum) {
                 'ngInject';
                 var vm = this;
 
                 vm.isLectureType = vm.reportData.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum;
-                $translatePartialLoader.addPart('znkQuestionReport');
-
                 vm.showReportDialog = function () {
                     $mdDialog.show({
                         locals:{ reportData: vm.reportData },
@@ -15212,6 +15232,33 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
                 };
             }]
         });
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkQuestionReport')
+        .config(
+            ["$translateProvider", function ($translateProvider) {
+                'ngInject';
+                $translateProvider.translations('en', {
+                    "REPORT_POPUP": {
+                        "REPORT_QUESTION": "Report Question",
+                        "REQUIRED_FIELD" : "This field is required.",
+                        "CORRECT_EMAIL"  : "Please enter a valid email address",
+                        "EMAIL"          : "Your email address",
+                        "PLACEHOLDER"    : "Add your comments or suggestions...",
+                        "MESSAGE"        : "Hello Support,\r\nI've noticed the following error in this question:\r\n",
+                        "SEND"           : "Send",
+                        "SUB_TITLE"      : "Found a mistake in the question? Les us know.",
+                        "THANKS"         : "Thank you!",
+                        "OPINION"        : "We will improve this question.",
+                        "DONE"           : "Done",
+                        "USER_EMAIL"     : "email: {{userEmail}}",
+                        "USER_ID"        : "uid: {{userId}}"
+                    }
+                });
+            }]);
 })(angular);
 
 (function (angular) {

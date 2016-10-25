@@ -25,11 +25,7 @@
                 'znk-exercise-touche': 'components/znkExercise/svg/tools-touche.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
-        }])
-    .run(["$translatePartialLoader", function ($translatePartialLoader) {
-        'ngInject';
-        $translatePartialLoader.addPart('znkExercise');
-    }]);
+        }]);
 })(angular);
 
 /**
@@ -286,6 +282,32 @@
             };
         }
     ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise')
+        .config(
+            ["$translateProvider", function ($translateProvider) {
+                'ngInject';
+                $translateProvider.translations('en', {
+                    "TEST": "works",
+                    "ZNK_EXERCISE": {
+                        "SOME_ANSWER_LEFT_CONTENT": "You’ve left some questions unanswered…",
+                        "FINISH_TITLE": "Finished?",
+                        "STAY_BTN": "STAY",
+                        "FINISH_BTN": "FINISH",
+                        "CONTINUE_BTN": "CONTINUE",
+                        "GO_TO_SUMMARY_BTN": "GO TO SUMMARY",
+                        "TIME_UP_CONTENT": "To best simulate the conditions of a real exam, we recommend you stop taking this practice test now. However, if you prefer to continue and complete all remaining questions, you may do so.",
+                        "TIME_UP_TITLE": "Time’s Up",
+                        "STOP": "STOP",
+                        "PASSAGE": "Passage ",
+                        "SECTION": "Section"
+                    }
+                });
+            }]);
 })(angular);
 
 (function (angular) {

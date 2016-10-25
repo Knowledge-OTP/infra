@@ -12,6 +12,10 @@
             'znk.infra.popUp',
             'demoEnv'
         ])
+        .config(function ($translateProvider) {
+            'ngInject';
+            $translateProvider.preferredLanguage('en');
+        })
         .controller('Main', function ($scope, $timeout, ContentSrv, ZnkExerciseUtilitySrv, ExerciseResultSrv, $controller ) {
 
             var resultsData;

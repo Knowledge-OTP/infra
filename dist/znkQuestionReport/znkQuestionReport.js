@@ -38,13 +38,11 @@
             template: '<svg-icon class="report-btn" name="report-question-icon" ' +
             'title="{{\'REPORT_POPUP.REPORT_QUESTION\' | translate}}" ng-hide="vm.isLectureType" ng-click="vm.showReportDialog()"></svg-icon>',
             controllerAs: 'vm',
-            controller: ["$mdDialog", "$translatePartialLoader", "ExerciseTypeEnum", function ($mdDialog, $translatePartialLoader, ExerciseTypeEnum) {
+            controller: ["$mdDialog", "ExerciseTypeEnum", function ($mdDialog, ExerciseTypeEnum) {
                 'ngInject';
                 var vm = this;
 
                 vm.isLectureType = vm.reportData.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum;
-                $translatePartialLoader.addPart('znkQuestionReport');
-
                 vm.showReportDialog = function () {
                     $mdDialog.show({
                         locals:{ reportData: vm.reportData },
@@ -56,6 +54,33 @@
                 };
             }]
         });
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkQuestionReport')
+        .config(
+            ["$translateProvider", function ($translateProvider) {
+                'ngInject';
+                $translateProvider.translations('en', {
+                    "REPORT_POPUP": {
+                        "REPORT_QUESTION": "Report Question",
+                        "REQUIRED_FIELD" : "This field is required.",
+                        "CORRECT_EMAIL"  : "Please enter a valid email address",
+                        "EMAIL"          : "Your email address",
+                        "PLACEHOLDER"    : "Add your comments or suggestions...",
+                        "MESSAGE"        : "Hello Support,\r\nI've noticed the following error in this question:\r\n",
+                        "SEND"           : "Send",
+                        "SUB_TITLE"      : "Found a mistake in the question? Les us know.",
+                        "THANKS"         : "Thank you!",
+                        "OPINION"        : "We will improve this question.",
+                        "DONE"           : "Done",
+                        "USER_EMAIL"     : "email: {{userEmail}}",
+                        "USER_ID"        : "uid: {{userId}}"
+                    }
+                });
+            }]);
 })(angular);
 
 (function (angular) {

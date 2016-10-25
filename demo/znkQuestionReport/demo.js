@@ -4,6 +4,10 @@
         'znk.infra.znkQuestionReport',
         'demoEnv'
         ])
+        .config(function ($translateProvider) {
+            'ngInject';
+            $translateProvider.preferredLanguage('en');
+        })
         .controller('Main', function () {
             'ngInject';
             var vm = this;
