@@ -209,7 +209,8 @@
                 link: function (scope) {
                     var chatGuidProm;
                     var offEvent = {};
-                    var sound =  MediaSrv.loadSound('znkChat/assets/sounds/sound.mp3');
+                    var soundPath = ZNK_CHAT.SOUND_PATH + 'sound.mp3';
+                    var sound =  MediaSrv.loadSound(soundPath);
 
                     scope.d = {};
                     scope.d.userStatus = PresenceService.userStatus;
@@ -472,7 +473,8 @@
         MAX_NUM_UNSEEN_MESSAGES: 10,
         SUPPORT_EMAIL: 'support@zinkerz.com',
         STUDENT_STORAGE: 0,
-        TEACHER_STORAGE: 1
+        TEACHER_STORAGE: 1,
+        SOUND_PATH: '/assets/sounds/'
     });
 })(angular);
 

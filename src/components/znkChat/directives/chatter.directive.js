@@ -17,7 +17,8 @@
                 link: function (scope) {
                     var chatGuidProm;
                     var offEvent = {};
-                    var sound =  MediaSrv.loadSound('znkChat/assets/sounds/sound.mp3');
+                    var soundPath = ZNK_CHAT.SOUND_PATH + 'sound.mp3';
+                    var sound =  MediaSrv.loadSound(soundPath);
 
                     scope.d = {};
                     scope.d.userStatus = PresenceService.userStatus;
