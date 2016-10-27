@@ -1,13 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demoApp', ['znk.infra.general', 'pascalprecht.translate'])
-        .config(function ($translateProvider) {
-            $translateProvider.useLoader('$translatePartialLoader', {
-                urlTemplate: '/{part}/locale/{lang}.json'
-            })
-                .preferredLanguage('en');
-        })
+    angular.module('demoApp', ['znk.infra.general'])
         .controller('ctrl', function ($scope) {
             var countdownTime = 300 * 1000;
             $scope.d = {

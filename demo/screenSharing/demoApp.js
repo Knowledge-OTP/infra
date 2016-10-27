@@ -5,10 +5,8 @@
         'demoEnv',
         'znk.infra.screenSharing'
     ])
-    .config(function(ScreenSharingUiSrvProvider, $translateProvider){
+    .config(function(ScreenSharingUiSrvProvider){
         'ngInject';
-        $translateProvider.preferredLanguage('en');
-        $translateProvider.useSanitizeValueStrategy(null);
 
         ScreenSharingUiSrvProvider.setScreenSharingViewerTemplate('<div style="color: white">Screen sharing Viewer template</div>');
     })

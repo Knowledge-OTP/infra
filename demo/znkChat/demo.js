@@ -12,10 +12,8 @@
         'znk.infra.utility',
         'ngAnimate'
     ])
-        .config(function ($translateProvider, znkChatDataSrvProvider, PresenceServiceProvider) {
+        .config(function (znkChatDataSrvProvider, PresenceServiceProvider) {
             'ngInject';
-            $translateProvider.preferredLanguage('en');
-            $translateProvider.useSanitizeValueStrategy(null);
 
             var chatPaths = {
                 chatPath: 'chats',

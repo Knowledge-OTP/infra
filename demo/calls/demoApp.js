@@ -10,10 +10,8 @@
         'znk.infra.filters',
         'znk.infra.userContext'
     ])
-        .config(function ($translateProvider, CallsModalServiceProvider, CallsUiSrvProvider) {
+        .config(function (CallsModalServiceProvider, CallsUiSrvProvider) {
             'ngInject';
-            $translateProvider.preferredLanguage('en');
-            $translateProvider.useSanitizeValueStrategy(null);
 
             CallsModalServiceProvider.setBaseTemplatePath('components/calls/modals/templates/baseCallsModal.template.html');
 

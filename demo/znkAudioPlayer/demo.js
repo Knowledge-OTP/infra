@@ -2,11 +2,6 @@
     'use strict';
 
     angular.module('demo', ['znk.infra.znkAudioPlayer', 'pascalprecht.translate', 'ngAnimate'])
-        .config(function($translateProvider){
-            'ngInject';
-            $translateProvider.preferredLanguage('en');
-            $translateProvider.useSanitizeValueStrategy(null);
-        })
         .service('ENV', function () {
             this.debug = true;
         })

@@ -20,24 +20,6 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkChat')
-        .config(
-            ["$translateProvider", function ($translateProvider) {
-                'ngInject';
-                $translateProvider.translations('en', {
-                        "ZNK_CHAT":{
-                            "MY_CHAT": "MY CHATS",
-                            "SUPPORT": "Support",
-                            "PLACEHOLDER": "Type..."
-                        }
-                    }
-                );
-            }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.znkChat').directive('chatMessage', [
         function () {
             'ngInject';

@@ -10,9 +10,4 @@
             this.redirectLogin = "http://dev-act.zinkerz.com.s3-website-eu-west-1.amazonaws.com/";
             this.firebaseAppScopeName = "act_app";
         })
-        .config(function ($translateProvider) {
-            'ngInject';
-            $translateProvider.preferredLanguage('en');
-            $translateProvider.useSanitizeValueStrategy(null);
-        })
 })(angular);

@@ -137,7 +137,7 @@ module.exports = function (grunt) {
                 options: {
                     // Added to the top of the file
                     banner: '{',
-                    process: function(src, filepath) {
+                    process: function(src) {
                         src = JSON.parse(src);
                         return '"' + Object.keys(src) + '": ' + JSON.stringify(src[Object.keys(src)[0]]);
                     },
@@ -420,6 +420,7 @@ module.exports = function (grunt) {
             }
             allModulesReplaceStr += '"' + appConfig.appName + '.' + dirName + '"';
         });
+
         //setting new html2js config
         grunt.config.set('html2js', html2js);
 

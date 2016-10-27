@@ -306,23 +306,6 @@
     'use strict';
 
     angular.module('znk.infra.activePanel')
-        .config(
-            ["$translateProvider", function ($translateProvider) {
-                'ngInject';
-                $translateProvider.translations('en', {
-                    "ACTIVE_PANEL":{
-                        "SHOW_STUDENT_SCREEN": "Show Teacher Screen",
-                        "SHOW_TEACHER_SCREEN": "Show Student Screen",
-                        "SHARE_MY_SCREEN": "Share my screen"
-                    }
-                });
-            }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.activePanel')
         .config(["SvgIconSrvProvider", function (SvgIconSrvProvider) {
             'ngInject';
 
@@ -952,27 +935,6 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.auth')
-        .config(
-            ["$translateProvider", function ($translateProvider) {
-                'ngInject';
-                $translateProvider.translations('en', {
-                    "AUTH_HELPER": {
-                        "DEFAULT_ERROR_MESSAGE": "An error has occurred, please try again later.",
-                        "FACEBOOK_ERROR": "An error has occurred with facebook, please try again later.",
-                        "EMAIL_EXIST": "Email already exists. Try a different email address.",
-                        "INVALID_EMAIL": "Invalid email address.",
-                        "NO_INTERNET_CONNECTION_ERR": "No internet connection. Please try again later.",
-                        "EMAIL_NOT_EXIST": "We don’t recognize that email. Did you use another one to sign up?",
-                        "INCORRECT_EMAIL_AND_PASSWORD_COMBINATION": "Incorrect email and password combination."
-                    }
-                });
-            }]);
-    })(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.auth').factory('AuthService',
         ["ENV", "$q", "$timeout", "$log", "StorageFirebaseAdapter", "StorageSrv", "$http", "$rootScope", function (ENV, $q, $timeout, $log, StorageFirebaseAdapter, StorageSrv, $http, $rootScope) {
             'ngInject';
@@ -1244,36 +1206,6 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         'znk.infra.svgIcon',
         'znk.infra.callsModals'
     ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.calls')
-        .config(
-            ["$translateProvider", function ($translateProvider) {
-                'ngInject';
-                $translateProvider.translations('en', {
-                    "AUDIO_CALLS":{
-                        "INCOMING_CALL": "Incoming Call",
-                        "OUTGOING_CALL": "Outgoing Call",
-                        "REJECT": "DECLINE",
-                        "ACCEPT": "ACCEPT",
-                        "DECLINE": "DECLINE",
-                        "OK": "OK",
-                        "CANCEL": "Cancel",
-                        "NAME_IS_CALLING": "{{callerName}} is calling...",
-                        "CALLING_NAME": "Calling {{calleeName}}",
-                        "CALLING_DECLINE": "Call is declined",
-                        "CALLING_CANCELED": "Call was canceled",
-                        "CALLING_ANSWERED": "Call Answered",
-                        "CALL_FAILED_HEADER": "Call Failed",
-                        "CALL_FAILED_DESC_GENERAL": "A general error occurred, please try again </br> If this persist, please contact us at </br> <a href='https://www.zinkerz.com/contact' target='_blank'>support@zinkerz.com</a>",
-                        "CALL_FAILED_DESC_MICROPHONE": "No microphone access </br> Please make sure you allowed the browser </br> access to your microphone",
-                        "CALL_FAILED_DESC_ALREADY_ACTIVE": "{{calleeName}} </br> is already in an active call </br> Please try again later"
-                    }
-                });
-            }]);
 })(angular);
 
 (function (angular) {
@@ -5419,22 +5351,6 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.general')
-        .config(
-            ["$translateProvider", function ($translateProvider) {
-                'ngInject';
-                $translateProvider.translations('en', {
-                    "TIMER": {
-                        "SECONDS": "seconds",
-                        "SEC":"sec"
-                    }
-                });
-            }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.general').filter('cutString', function cutStringFilter() {
         return function (str, length, onlyFullWords) {
             length = +length;
@@ -7011,24 +6927,6 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
         'znk.infra.popUp',
         'znk.infra.general'
     ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.screenSharing')
-        .config(
-            ["$translateProvider", function ($translateProvider) {
-                'ngInject';
-                $translateProvider.translations('en', {
-                    "SCREEN_SHARING":{
-                        "SHARE_SCREEN_REQUEST": "Share Screen Request",
-                        "WANT_TO_SHARE": "{{name}} wants to share his screen with you.",
-                        "REJECT": "REJECT",
-                        "ACCEPT": "ACCEPT"
-                    }
-                });
-            }]);
 })(angular);
 
 (function (angular) {
@@ -9689,25 +9587,6 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
             }]);
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkAudioPlayer')
-        .config(
-            ["$translateProvider", function ($translateProvider) {
-                'ngInject';
-                $translateProvider.translations('en', {
-                    "ZNK_AUDIO_PLAYER": {
-                        "PLAY_AUDIO": "PLAY AUDIO",
-                        "THIS_VIDEO_ALREADY_PLAYED": "The audio has already been played."
-                    },
-                    "ZNK_IMAGE_AUDIO": {
-                        "SKIP": "Skip"
-                    }
-                });
-            }]);
-})(angular);
-
 'use strict';
 
 (function (angular) {
@@ -10528,24 +10407,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     'znk-chat-close-icon': 'components/znkChat/svg/znk-chat-close-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
-            }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkChat')
-        .config(
-            ["$translateProvider", function ($translateProvider) {
-                'ngInject';
-                $translateProvider.translations('en', {
-                        "ZNK_CHAT":{
-                            "MY_CHAT": "MY CHATS",
-                            "SUPPORT": "Support",
-                            "PLACEHOLDER": "Type..."
-                        }
-                    }
-                );
             }]);
 })(angular);
 
@@ -11687,32 +11548,6 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             };
         }
     ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkExercise')
-        .config(
-            ["$translateProvider", function ($translateProvider) {
-                'ngInject';
-                $translateProvider.translations('en', {
-                    "TEST": "works",
-                    "ZNK_EXERCISE": {
-                        "SOME_ANSWER_LEFT_CONTENT": "You’ve left some questions unanswered…",
-                        "FINISH_TITLE": "Finished?",
-                        "STAY_BTN": "STAY",
-                        "FINISH_BTN": "FINISH",
-                        "CONTINUE_BTN": "CONTINUE",
-                        "GO_TO_SUMMARY_BTN": "GO TO SUMMARY",
-                        "TIME_UP_CONTENT": "To best simulate the conditions of a real exam, we recommend you stop taking this practice test now. However, if you prefer to continue and complete all remaining questions, you may do so.",
-                        "TIME_UP_TITLE": "Time’s Up",
-                        "STOP": "STOP",
-                        "PASSAGE": "Passage ",
-                        "SECTION": "Section"
-                    }
-                });
-            }]);
 })(angular);
 
 (function (angular) {
@@ -15228,21 +15063,6 @@ angular.module('znk.infra.znkModule').run(['$templateCache', function($templateC
             }]);
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkProgressBar')
-        .config(
-            ["$translateProvider", function ($translateProvider) {
-                'ngInject';
-                $translateProvider.translations('en', {
-                    "ZNK_PROGRESS_BAR": {
-                        "MASTERY": "Mastery"
-                    }
-                });
-            }]);
-})(angular);
-
 /**
  * attrs:
  */
@@ -15350,33 +15170,6 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
                 };
             }]
         });
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkQuestionReport')
-        .config(
-            ["$translateProvider", function ($translateProvider) {
-                'ngInject';
-                $translateProvider.translations('en', {
-                    "REPORT_POPUP": {
-                        "REPORT_QUESTION": "Report Question",
-                        "REQUIRED_FIELD" : "This field is required.",
-                        "CORRECT_EMAIL"  : "Please enter a valid email address",
-                        "EMAIL"          : "Your email address",
-                        "PLACEHOLDER"    : "Add your comments or suggestions...",
-                        "MESSAGE"        : "Hello Support,\r\nI've noticed the following error in this question:\r\n",
-                        "SEND"           : "Send",
-                        "SUB_TITLE"      : "Found a mistake in the question? Les us know.",
-                        "THANKS"         : "Thank you!",
-                        "OPINION"        : "We will improve this question.",
-                        "DONE"           : "Done",
-                        "USER_EMAIL"     : "email: {{userEmail}}",
-                        "USER_ID"        : "uid: {{userId}}"
-                    }
-                });
-            }]);
 })(angular);
 
 (function (angular) {

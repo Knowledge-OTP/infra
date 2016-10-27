@@ -81,22 +81,6 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.general')
-        .config(
-            ["$translateProvider", function ($translateProvider) {
-                'ngInject';
-                $translateProvider.translations('en', {
-                    "TIMER": {
-                        "SECONDS": "seconds",
-                        "SEC":"sec"
-                    }
-                });
-            }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.general').filter('cutString', function cutStringFilter() {
         return function (str, length, onlyFullWords) {
             length = +length;
