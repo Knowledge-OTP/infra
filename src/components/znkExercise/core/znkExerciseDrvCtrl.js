@@ -185,21 +185,11 @@
 
                 self.bindExerciseEventManager = new BindExerciseEventManager();
 
-                var keys = [
-                    {
-                        getterName: 'currSlideIndex',
-                        setterName: 'setCurrentIndex'
-                    },
-                    {
-                        getterName: 'answerExplanation'
-                    }
-                ];
-
                 var exerciseViewListenersObj =  {};
 
-                self.bindExerciseViewTo = function (exerciseView) {
-                    if(!angular.isObject(exerciseView)) {
-                        $log.error('ZnkExerciseDrvCtrl bindExerciseViewTo: exercise view should be an object');
+                self.bindExerciseViewTo = function (exerciseView, keys) {
+                    if(!angular.isObject(exerciseView) || !angular.isArray(keys)) {
+                        $log.error('ZnkExerciseDrvCtrl bindExerciseViewTo: exercise view should be an object or keys should be an array');
                         return;
                     }
 

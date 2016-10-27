@@ -34,7 +34,7 @@
  *      getPagerDisplayState
  *      bindExerciseViewTo: receive as parameter the view state
  *          viewState properties:
- *              currSlideIndex:
+ *              currSlideIndex, answerExplanation + add extra with ZnkExerciseSrvProvider.addBindExerciseKeys
  *              questionView: it implemented per question
  *      unbindExerciseView: remove exercise view binding
  */
@@ -184,10 +184,18 @@
                             scope.actions.getPagerDisplayState = function(){
                                 return !!scope.vm.showPager;
                             };
+                            /**
+                             *  BIND EXERCISE
+                             */
+                            var bindExerciseKeys = ZnkExerciseSrv.getBindExerciseKeys();
 
-                            scope.actions.bindExerciseViewTo = znkExerciseDrvCtrl.bindExerciseViewTo;
+                            scope.actions.bindExerciseViewTo = znkExerciseDrvCtrl.bindExerciseViewTo.bind(null, bindExerciseKeys);
 
                             scope.actions.unbindExerciseView = znkExerciseDrvCtrl.unbindExerciseView;
+                            /**
+                             *  END BIND EXERCISE
+                             */
+
                             /**
                              *  ACTIONS END
                              * */
