@@ -187,9 +187,7 @@
                             /**
                              *  BIND EXERCISE
                              */
-                            var bindExerciseKeys = ZnkExerciseSrv.getBindExerciseKeys();
-
-                            scope.actions.bindExerciseViewTo = znkExerciseDrvCtrl.bindExerciseViewTo.bind(null, bindExerciseKeys);
+                            scope.actions.bindExerciseViewTo = znkExerciseDrvCtrl.bindExerciseViewTo;
 
                             scope.actions.unbindExerciseView = znkExerciseDrvCtrl.unbindExerciseView;
                             /**

@@ -2,8 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('ZnkExerciseDrvCtrl', [
-        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$element',
-        function ($scope, $q, ZnkExerciseEvents, $log, $element) {
+        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$element', 'ZnkExerciseSrv',
+        function ($scope, $q, ZnkExerciseEvents, $log, $element, ZnkExerciseSrv) {
             var self = this;
 
             var questionReadyDefer = $q.defer();
@@ -187,7 +187,9 @@
 
                 var exerciseViewListenersObj =  {};
 
-                self.bindExerciseViewTo = function (exerciseView, keys) {
+                var keys = ZnkExerciseSrv.getBindExerciseKeys();
+
+                self.bindExerciseViewTo = function (exerciseView) {
                     if(!angular.isObject(exerciseView) || !angular.isArray(keys)) {
                         $log.error('ZnkExerciseDrvCtrl bindExerciseViewTo: exercise view should be an object or keys should be an array');
                         return;
