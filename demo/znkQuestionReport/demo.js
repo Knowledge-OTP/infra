@@ -2,13 +2,9 @@
     'use strict';
     angular.module('demo', [
         'demoEnv',
+        'pascalprecht.translate',
         'znk.infra.znkQuestionReport'
         ])
-        .config(function ($translateProvider) {
-            'ngInject';
-            $translateProvider.preferredLanguage('en');
-            $translateProvider.useSanitizeValueStrategy(null);
-        })
         .controller('Main', function () {
             'ngInject';
             var vm = this;

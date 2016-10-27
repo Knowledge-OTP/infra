@@ -19,6 +19,8 @@ module.exports = function (grunt) {
         cdnify: 'grunt-google-cdn'
     });
 
+    grunt.loadNpmTasks('grunt-concat-json');
+
     // Configurable paths for the application
     var appConfig = {
         src: 'src',
@@ -117,6 +119,7 @@ module.exports = function (grunt) {
                 }
             }
         },
+
         concat: {
             mainModule: {
                 //js files configuration is generated in prepareConfiguration
@@ -127,8 +130,24 @@ module.exports = function (grunt) {
                     src: ['<%= yeoman.src %>/core/module.js', '<%= yeoman.tmp %>/*/*.js'],
                     dest: '<%= yeoman.tmp %>/main.js'
                 }]
+            },
+            locale: {
+                src: ['<%= yeoman.src %>/components/**/locale/en.json'],
+                dest: '<%= yeoman.tmp %>/locale-en.json',
+                options: {
+                    // Added to the top of the file
+                    banner: '{',
+                    process: function(src, filepath) {
+                        src = JSON.parse(src);
+                        return '"' + Object.keys(src) + '": ' + JSON.stringify(src[Object.keys(src)[0]]);
+                    },
+                    // Will be added at the end of the file
+                    footer: '}',
+                    separator: ','
+                }
             }
         },
+
         uglify: {
             dist: {
                 files: {
@@ -136,6 +155,7 @@ module.exports = function (grunt) {
                 }
             }
         },
+
         // ng-annotate tries to make the code safe for minification automatically
         // by using the Angular long form for dependency injection.
         ngAnnotate: {
@@ -148,6 +168,7 @@ module.exports = function (grunt) {
                 }]
             }
         },
+
         // Test settings
         karma: {
             unit: {
@@ -170,6 +191,7 @@ module.exports = function (grunt) {
                 ]
             }
         },
+
         connect: {
             options: {
                 base: ['.tmp', 'bower_components', 'demoShared', 'tmpLocalization'],
@@ -183,6 +205,7 @@ module.exports = function (grunt) {
                 }
             }
         },
+
         watch: {
             options: {
                 livereload: '<%= connect.options.livereload %>',
@@ -220,6 +243,7 @@ module.exports = function (grunt) {
                 tasks: ['wiredep']
             }
         },
+
         sass: {
             // options: {
             //     sourceMap: true
@@ -234,6 +258,7 @@ module.exports = function (grunt) {
                 }]
             }
         },
+
         copy: {
             build: {
                 files: [{
@@ -278,6 +303,7 @@ module.exports = function (grunt) {
                 }]
             }
         },
+
         html2js: {
             options: {
                 module: appConfig.appName,
@@ -285,6 +311,7 @@ module.exports = function (grunt) {
                 existingModule: true
             }
         },
+
         autoprefixer: {
             options: {
                 browsers: ['last 2 versions']
@@ -298,6 +325,7 @@ module.exports = function (grunt) {
                 }]
             }
         },
+
         replace: {
             allModulesInMainJs: {
                 options: {
@@ -414,6 +442,7 @@ module.exports = function (grunt) {
         'clean:html2JsTemplates',
         'concat:mainModule',
         'replace:allModulesInMainJs',
+        'concat:locale',
         'copy:build',
         'ngAnnotate'
     ]);
