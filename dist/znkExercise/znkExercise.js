@@ -996,6 +996,24 @@
                 exerciseTypeToAllowedQuestionTimeMap = _exerciseTypeToAllowedQuestionTimeMap;
             };
 
+            var defaultBindExerciseKeys = [
+                {
+                    getterName: 'currSlideIndex',
+                    setterName: 'setCurrentIndex'
+                },
+                {
+                    getterName: 'answerExplanation'
+                }
+            ];
+
+            var addBindExerciseKeys;
+
+            var bindExerciseKeys;
+
+            this.addBindExerciseKeys = function(_addBindExerciseKeys) {
+                addBindExerciseKeys = _addBindExerciseKeys;
+            };
+
             this.$get = ["EnumSrv", "$window", "PlatformEnum", "$log", function (EnumSrv, $window, PlatformEnum, $log) {
                 'ngInject';//jshint ignore:line
 
@@ -1036,6 +1054,14 @@
                         $log.error('ZnkExerciseSrv: the following exercise type:' + exerciseType +' has no question allowed time');
                     }
                     return exerciseTypeToAllowedQuestionTimeMap[exerciseType];
+                };
+
+                ZnkExerciseSrv.getBindExerciseKeys = function() {
+                    if (!bindExerciseKeys) {
+                        bindExerciseKeys = (angular.isArray(addBindExerciseKeys)) ?
+                            defaultBindExerciseKeys.concat(addBindExerciseKeys) : defaultBindExerciseKeys;
+                    }
+                    return bindExerciseKeys;
                 };
 
                 ZnkExerciseSrv.toolBoxTools = {
@@ -1088,7 +1114,7 @@
  *      getPagerDisplayState
  *      bindExerciseViewTo: receive as parameter the view state
  *          viewState properties:
- *              currSlideIndex:
+ *              currSlideIndex, answerExplanation + add extra with ZnkExerciseSrvProvider.addBindExerciseKeys
  *              questionView: it implemented per question
  *      unbindExerciseView: remove exercise view binding
  */
@@ -1238,10 +1264,16 @@
                             scope.actions.getPagerDisplayState = function(){
                                 return !!scope.vm.showPager;
                             };
-
+                            /**
+                             *  BIND EXERCISE
+                             */
                             scope.actions.bindExerciseViewTo = znkExerciseDrvCtrl.bindExerciseViewTo;
 
                             scope.actions.unbindExerciseView = znkExerciseDrvCtrl.unbindExerciseView;
+                            /**
+                             *  END BIND EXERCISE
+                             */
+
                             /**
                              *  ACTIONS END
                              * */
@@ -1487,8 +1519,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('ZnkExerciseDrvCtrl', [
-        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$element',
-        function ($scope, $q, ZnkExerciseEvents, $log, $element) {
+        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$element', 'ZnkExerciseSrv',
+        function ($scope, $q, ZnkExerciseEvents, $log, $element, ZnkExerciseSrv) {
             var self = this;
 
             var questionReadyDefer = $q.defer();
@@ -1670,21 +1702,13 @@
 
                 self.bindExerciseEventManager = new BindExerciseEventManager();
 
-                var keys = [
-                    {
-                        getterName: 'currSlideIndex',
-                        setterName: 'setCurrentIndex'
-                    },
-                    {
-                        getterName: 'answerExplanation'
-                    }
-                ];
-
                 var exerciseViewListenersObj =  {};
 
+                var keys = ZnkExerciseSrv.getBindExerciseKeys();
+
                 self.bindExerciseViewTo = function (exerciseView) {
-                    if(!angular.isObject(exerciseView)) {
-                        $log.error('ZnkExerciseDrvCtrl bindExerciseViewTo: exercise view should be an object');
+                    if(!angular.isObject(exerciseView) || !angular.isArray(keys)) {
+                        $log.error('ZnkExerciseDrvCtrl bindExerciseViewTo: exercise view should be an object or keys should be an array');
                         return;
                     }
 

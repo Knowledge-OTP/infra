@@ -2,6 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.znkAudioPlayer', [
+        'znk.infra.znkMedia'
         'pascalprecht.translate',
         'znk.infra.svgIcon'
     ])

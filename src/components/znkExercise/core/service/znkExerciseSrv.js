@@ -10,6 +10,24 @@
                 exerciseTypeToAllowedQuestionTimeMap = _exerciseTypeToAllowedQuestionTimeMap;
             };
 
+            var defaultBindExerciseKeys = [
+                {
+                    getterName: 'currSlideIndex',
+                    setterName: 'setCurrentIndex'
+                },
+                {
+                    getterName: 'answerExplanation'
+                }
+            ];
+
+            var addBindExerciseKeys;
+
+            var bindExerciseKeys;
+
+            this.addBindExerciseKeys = function(_addBindExerciseKeys) {
+                addBindExerciseKeys = _addBindExerciseKeys;
+            };
+
             this.$get = function (EnumSrv, $window, PlatformEnum, $log) {
                 'ngInject';//jshint ignore:line
 
@@ -50,6 +68,14 @@
                         $log.error('ZnkExerciseSrv: the following exercise type:' + exerciseType +' has no question allowed time');
                     }
                     return exerciseTypeToAllowedQuestionTimeMap[exerciseType];
+                };
+
+                ZnkExerciseSrv.getBindExerciseKeys = function() {
+                    if (!bindExerciseKeys) {
+                        bindExerciseKeys = (angular.isArray(addBindExerciseKeys)) ?
+                            defaultBindExerciseKeys.concat(addBindExerciseKeys) : defaultBindExerciseKeys;
+                    }
+                    return bindExerciseKeys;
                 };
 
                 ZnkExerciseSrv.toolBoxTools = {

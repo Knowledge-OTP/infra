@@ -4,7 +4,8 @@
     angular.module('znk.infra.znkChat',
         [
             'znk.infra.svgIcon',
-            'znk.infra.teachers'
+            'znk.infra.teachers',
+            'znk.infra.znkMedia'
         ])
         .config([
             'SvgIconSrvProvider',

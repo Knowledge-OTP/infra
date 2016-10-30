@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkAudioPlayer').factory('MediaSrv', [
+    angular.module('znk.infra.znkMedia').factory('MediaSrv', [
         'ENV', '$q', '$window',
         function (ENV, $q, $window) {
 
