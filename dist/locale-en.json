@@ -1,9 +1,4 @@
 {
-    "ACTIVE_PANEL": {
-        "SHOW_STUDENT_SCREEN": "Show Teacher Screen",
-        "SHOW_TEACHER_SCREEN": "Show Student Screen",
-        "SHARE_MY_SCREEN": "Share my screen"
-    },
     "AUTH_HELPER": {
         "DEFAULT_ERROR_MESSAGE": "An error has occurred, please try again later.",
         "FACEBOOK_ERROR": "An error has occurred with facebook, please try again later.",
@@ -13,7 +8,7 @@
         "EMAIL_NOT_EXIST": "We don’t recognize that email. Did you use another one to sign up?",
         "INCORRECT_EMAIL_AND_PASSWORD_COMBINATION": "Incorrect email and password combination."
     },
-    "AUDIO_CALLS": {
+    "AUDIO_CALLS":{
         "INCOMING_CALL": "Incoming Call",
         "OUTGOING_CALL": "Outgoing Call",
         "REJECT": "DECLINE",
@@ -33,40 +28,61 @@
     },
     "TIMER": {
         "SECONDS": "seconds",
-        "SEC": "sec"
+        "SEC":"sec"
     },
-    "SCREEN_SHARING": {
+    "ZNK_CHAT":{
+        "MY_CHAT": "MY CHATS",
+        "SUPPORT": "Support",
+        "PLACEHOLDER": "Type..."
+    },
+    "TEST": "works",
+    "ZNK_EXERCISE": {
+        "SOME_ANSWER_LEFT_CONTENT": "You’ve left some questions unanswered…",
+        "FINISH_TITLE": "Finished?",
+        "STAY_BTN": "STAY",
+        "FINISH_BTN": "FINISH",
+        "CONTINUE_BTN": "CONTINUE",
+        "GO_TO_SUMMARY_BTN": "GO TO SUMMARY",
+        "TIME_UP_CONTENT": "To best simulate the conditions of a real exam, we recommend you stop taking this practice test now. However, if you prefer to continue and complete all remaining questions, you may do so.",
+        "TIME_UP_TITLE": "Time’s Up",
+        "STOP": "STOP",
+        "PASSAGE": "Passage ",
+        "SECTION": "Section"
+    },
+    "ZNK_AUDIO_PLAYER": {
+        "PLAY_AUDIO": "PLAY AUDIO",
+        "THIS_VIDEO_ALREADY_PLAYED": "The audio has already been played."
+    },
+    "ZNK_IMAGE_AUDIO": {
+        "SKIP": "Skip"
+    },
+    "ZNK_PROGRESS_BAR": {
+        "MASTERY": "Mastery"
+    },
+    "ACTIVE_PANEL":{
+        "SHOW_STUDENT_SCREEN": "Show Teacher Screen",
+        "SHOW_TEACHER_SCREEN": "Show Student Screen",
+        "SHARE_MY_SCREEN": "Share my screen"
+    },
+    "SCREEN_SHARING":{
         "SHARE_SCREEN_REQUEST": "Share Screen Request",
         "WANT_TO_SHARE": "{{name}} wants to share his screen with you.",
         "REJECT": "REJECT",
         "ACCEPT": "ACCEPT"
     },
-    "ZNK_AUDIO_PLAYER,ZNK_IMAGE_AUDIO": {
-        "PLAY_AUDIO": "PLAY AUDIO",
-        "THIS_VIDEO_ALREADY_PLAYED": "The audio has already been played."
-    },
-    "ZNK_CHAT": {
-        "MY_CHAT": "MY CHATS",
-        "SUPPORT": "Support",
-        "PLACEHOLDER": "Type..."
-    },
-    "TEST,ZNK_EXERCISE": "works",
-    "ZNK_PROGRESS_BAR": {
-        "MASTERY": "Mastery"
-    },
     "REPORT_POPUP": {
         "REPORT_QUESTION": "Report Question",
-        "REQUIRED_FIELD": "This field is required.",
-        "CORRECT_EMAIL": "Please enter a valid email address",
-        "EMAIL": "Your email address",
-        "PLACEHOLDER": "Add your comments or suggestions...",
-        "MESSAGE": "Hello Support,\r\nI've noticed the following error in this question:\r\n",
-        "SEND": "Send",
-        "SUB_TITLE": "Found a mistake in the question? Les us know.",
-        "THANKS": "Thank you!",
-        "OPINION": "We will improve this question.",
-        "DONE": "Done",
-        "USER_EMAIL": "email: {{userEmail}}",
-        "USER_ID": "uid: {{userId}}"
+        "REQUIRED_FIELD" : "This field is required.",
+        "CORRECT_EMAIL"  : "Please enter a valid email address",
+        "EMAIL"          : "Your email address",
+        "PLACEHOLDER"    : "Add your comments or suggestions...",
+        "MESSAGE"        : "Hello Support,\r\nI've noticed the following error in this question:\r\n",
+        "SEND"           : "Send",
+        "SUB_TITLE"      : "Found a mistake in the question? Les us know.",
+        "THANKS"         : "Thank you!",
+        "OPINION"        : "We will improve this question.",
+        "DONE"           : "Done",
+        "USER_EMAIL"     : "email: {{userEmail}}",
+        "USER_ID"        : "uid: {{userId}}"
     }
 }
