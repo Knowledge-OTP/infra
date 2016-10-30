@@ -290,8 +290,8 @@ module.exports = function (grunt) {
                 files: [{
                     expand: true,
                     cwd: '<%= yeoman.src %>/locale',
-                    src: ['*.json'],
-                    dest: 'tmpLocalization/'
+                    src: '*.*',
+                    dest: '<%= yeoman.tmp %>'
                 }]
             },
             dist: {
