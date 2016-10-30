@@ -45,6 +45,7 @@
 "znk.infra.znkAudioPlayer",
 "znk.infra.znkChat",
 "znk.infra.znkExercise",
+"znk.infra.znkMedia",
 "znk.infra.znkModule",
 "znk.infra.znkProgressBar",
 "znk.infra.znkQuestionReport",
@@ -897,7 +898,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                                 _summary.duration = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].duration || 0;
                                 _summary.totalAnswered = _summary.correctAnswersNum + _summary.wrongAnswersNum;
                             }
-
+                            
                             if (!moduleSummary.overAll) {
                                 moduleSummary.overAll = newOverAll();
                             }
@@ -5145,7 +5146,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
     angular.module('znk.infra.exerciseUtility').factory('ExerciseUtilitySrv',
         function () {
             'ngInject';
-
+            
             var ExerciseUtilitySrv = {};
 
             return ExerciseUtilitySrv;
@@ -5172,7 +5173,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
                 if(!angular.isString(str) || !str.length){
                     return '';
                 }
-
+                
                 return str[0].toUpperCase() + str.substr(1);
             };
         }
@@ -6254,7 +6255,7 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function($template
 
 (function (angular) {
     'use strict';
-
+    
     angular.module('znk.infra.personalization')
         .service('PersonalizationSrv',
             ["StorageRevSrv", "$log", "$q", function (StorageRevSrv, $log, $q) {
@@ -7019,7 +7020,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
 (function(){
     'use strict';
-
+    
     angular.module('znk.infra.screenSharing').run(
         ["ScreenSharingEventsSrv", function(ScreenSharingEventsSrv){
             'ngInject';
@@ -8885,7 +8886,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.teachers', [
-
+        
     ]);
 })(angular);
 
@@ -9572,7 +9573,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
     'use strict';
 
     angular.module('znk.infra.znkAudioPlayer', [
-        'znk.infra.znkMedia'
+        'znk.infra.znkMedia',
         'pascalprecht.translate',
         'znk.infra.svgIcon'
     ])
@@ -12956,7 +12957,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     angular.module('znk.infra.znkExercise').service('ZnkExerciseDrawSrv',
         function () {
             //'ngInject';
-
+            
             var self = this;
 
             /** example of self.canvasContextManager
@@ -12969,7 +12970,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
              *                question: CanvasContextObject,
              *                answer: CanvasContextObject
              *             }
-             *  }
+             *  } 
              *
              *  the names (such as 'question' or 'answer') are set according to the attribute name 'canvas-name' of znkExerciseDrawContainer directive
              */
@@ -13807,7 +13808,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     var _fbChildCallbackWrapper = function(canvasContextName, fbCallbackNum) {
 
                         function _fbChildChanged(snapShot) {
-                            var canvasToChange = _getCanvasContextByContextName(canvasContextName);
+                            var canvasToChange = _getCanvasContextByContextName(canvasContextName); 
                             var coordsStr = snapShot.key();
                             var color = snapShot.val();
 
@@ -13869,7 +13870,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
 
                     EventsManager.prototype.killFbListeners = function () {
-
+                        
                         var self = this;
 
                         var canvasContextNames = _getCanvasContextNamesOfQuestion(self._fbLastRegisteredQuestionId);
@@ -13888,7 +13889,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     EventsManager.prototype.cleanListeners = function () {
                         this.killMouseEvents();
                         this.killFbListeners();
-                        this.killHoverEvents();
+                        this.killHoverEvents(); 
                     };
 
                     function _reloadCanvas() {
@@ -13915,7 +13916,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     }
 
                     function _setContextOnHover(elementToHoverOn, canvasOfElement, canvasContextName) {
-
+                        
                         var onHoverCb = function () {
                             if (currQuestion) {
                                 eventsManager.killMouseEvents();
@@ -13951,7 +13952,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         var canvasDomContainerElement = canvasContainerElement.children();
                         canvasDomElement = canvasDomContainerElement[0];
 
-                        canvasContext = canvasDomElement.getContext("2d");
+                        canvasContext = canvasDomElement.getContext("2d"); 
 
                         // this is the attribute name passed to znkExerciseDrawContainer directive
                         var canvasContextName = elementToCover.attr('canvas-name');
@@ -13960,7 +13961,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         _setContextOnHover(elementToCover, canvasDomElement, canvasContextName);
 
                         _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement);
-
+                        
 
                         elementToCover.append(canvasContainerElement);
                         $compile(canvasContainerElement)(scope);
@@ -13974,7 +13975,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     }
 
 
-
+                    
 
                     scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex, oldIndex, _currQuestion) {
                         if (angular.isUndefined(scope.d.drawMode)) {
