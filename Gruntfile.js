@@ -130,21 +130,6 @@ module.exports = function (grunt) {
                     src: ['<%= yeoman.src %>/core/module.js', '<%= yeoman.tmp %>/*/*.js'],
                     dest: '<%= yeoman.tmp %>/main.js'
                 }]
-            },
-            locale: {
-                src: ['<%= yeoman.src %>/components/**/locale/en.json'],
-                dest: '<%= yeoman.tmp %>/locale-en.json',
-                options: {
-                    // Added to the top of the file
-                    banner: '{',
-                    process: function(src) {
-                        src = JSON.parse(src);
-                        return '"' + Object.keys(src) + '": ' + JSON.stringify(src[Object.keys(src)[0]]);
-                    },
-                    // Will be added at the end of the file
-                    footer: '}',
-                    separator: ','
-                }
             }
         },
 
