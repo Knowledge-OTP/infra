@@ -1,8 +1,9 @@
 (function(angular) {
     'use strict';
     angular.module('demo', [
-        'znk.infra.znkQuestionReport',
-        'demoEnv'
+        'demoEnv',
+        'pascalprecht.translate',
+        'znk.infra.znkQuestionReport'
         ])
         .controller('Main', function () {
             'ngInject';

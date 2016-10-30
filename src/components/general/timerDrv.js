@@ -22,8 +22,8 @@
 (function (angular) {
 
     angular.module('znk.infra.general').directive('timer', [
-        '$interval', '$translatePartialLoader', '$timeout',
-        function ($interval, $translatePartialLoader, $timeout) {
+        '$interval', '$timeout',
+        function ($interval, $timeout) {
             var timerTypes = {
                 'REGULAR': 1,
                 'ROUND_PROGRESSBAR': 2
@@ -39,7 +39,6 @@
                 replace: true,
                 templateUrl: 'components/general/templates/timerDrv.html',
                 link: function link(scope, element, attrs, ngModelCtrl) {
-                    $translatePartialLoader.addPart('general');
                     var domElement = element[0];
 
                     scope.ngModelCtrl = ngModelCtrl;

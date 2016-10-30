@@ -25,9 +25,5 @@
                 'znk-exercise-touche': 'components/znkExercise/svg/tools-touche.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
-        }])
-    .run(function ($translatePartialLoader) {
-        'ngInject';
-        $translatePartialLoader.addPart('znkExercise');
-    });
+        }]);
 })(angular);

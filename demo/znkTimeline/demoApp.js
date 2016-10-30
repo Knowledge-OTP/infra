@@ -70,6 +70,5 @@
                     console.log('onFinish', obj);
                 }
             }
-
         });
 })(angular);

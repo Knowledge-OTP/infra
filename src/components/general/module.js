@@ -1,7 +1,13 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.general', ['znk.infra.enum', 'znk.infra.svgIcon', 'angular-svg-round-progressbar'])
+    angular.module('znk.infra.general',
+        [
+            'znk.infra.enum',
+            'znk.infra.svgIcon',
+            'pascalprecht.translate',
+            'angular-svg-round-progressbar'
+        ])
         .config([
         'SvgIconSrvProvider',
         function (SvgIconSrvProvider) {

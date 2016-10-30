@@ -2,8 +2,8 @@
 
 (function (angular) {
 
-    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', ['$translatePartialLoader',
-        function znkImageAudio($translatePartialLoader) {
+    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', [
+        function znkImageAudio() {
 
             return {
                 templateUrl: 'components/znkAudioPlayer/templates/znkImageAudio.template.html',
@@ -20,7 +20,6 @@
                     blurredImageGetter: '&?blurredImage'
                 },
                 link: function (scope) {
-                    $translatePartialLoader.addPart('znkAudioPlayer');
 
                     scope.d = {
                         image: scope.imageGetter(),

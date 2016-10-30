@@ -2,8 +2,9 @@
     'use strict';
 
     angular.module('znk.infra.znkAudioPlayer', [
-        'znk.infra.svgIcon',
-        'znk.infra.znkMedia'
+        'znk.infra.znkMedia',
+        'pascalprecht.translate',
+        'znk.infra.svgIcon'
     ])
         .config([
             'SvgIconSrvProvider',

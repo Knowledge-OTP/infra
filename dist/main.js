@@ -320,19 +320,6 @@
         }]);
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.activePanel')
-        .run(["$timeout", "$translatePartialLoader", function($timeout, $translatePartialLoader){
-            'ngInject';
-            //must be wrapped in timeout because the parting adding cannot be made directly in a run block
-            $timeout(function(){
-                $translatePartialLoader.addPart('activePanel');
-            });
-        }]);
-})(angular);
-
 angular.module('znk.infra.activePanel').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/activePanel/activePanel.template.html",
     "<div class=\"active-panel ng-hide\"\n" +
@@ -941,6 +928,7 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
     'use strict';
 
     angular.module('znk.infra.auth', [
+        'pascalprecht.translate',
         'znk.infra.config'
     ]);
 })(angular);
@@ -1216,6 +1204,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         'znk.infra.user',
         'znk.infra.enum',
         'ngMaterial',
+        'znk.infra.svgIcon',
         'znk.infra.callsModals'
     ]);
 })(angular);
@@ -1612,19 +1601,6 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         }]
     );
 })();
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.calls')
-        .run(["$timeout", "$translatePartialLoader", function($timeout, $translatePartialLoader){
-            'ngInject';
-            //must be wrapped in timeout because the parting adding cannot be made directly in a run block
-            $timeout(function(){
-                $translatePartialLoader.addPart('calls');
-            });
-        }]);
-})(angular);
 
 (function (angular) {
     'use strict';
@@ -5296,7 +5272,13 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.general', ['znk.infra.enum', 'znk.infra.svgIcon', 'angular-svg-round-progressbar'])
+    angular.module('znk.infra.general',
+        [
+            'znk.infra.enum',
+            'znk.infra.svgIcon',
+            'pascalprecht.translate',
+            'angular-svg-round-progressbar'
+        ])
         .config([
         'SvgIconSrvProvider',
         function (SvgIconSrvProvider) {
@@ -5646,8 +5628,8 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
 (function (angular) {
 
     angular.module('znk.infra.general').directive('timer', [
-        '$interval', '$translatePartialLoader', '$timeout',
-        function ($interval, $translatePartialLoader, $timeout) {
+        '$interval', '$timeout',
+        function ($interval, $timeout) {
             var timerTypes = {
                 'REGULAR': 1,
                 'ROUND_PROGRESSBAR': 2
@@ -5663,7 +5645,6 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
                 replace: true,
                 templateUrl: 'components/general/templates/timerDrv.html',
                 link: function link(scope, element, attrs, ngModelCtrl) {
-                    $translatePartialLoader.addPart('general');
                     var domElement = element[0];
 
                     scope.ngModelCtrl = ngModelCtrl;
@@ -7048,19 +7029,6 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
         }]
     );
 })();
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.screenSharing')
-        .run(["$timeout", "$translatePartialLoader", function($timeout, $translatePartialLoader){
-            'ngInject';
-            //must be wrapped in timeout because the parting adding cannot be made directly in a run block
-            $timeout(function(){
-                $translatePartialLoader.addPart('screenSharing');
-            });
-        }]);
-})(angular);
 
 (function (angular) {
     'use strict';
@@ -9605,8 +9573,9 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
     'use strict';
 
     angular.module('znk.infra.znkAudioPlayer', [
-        'znk.infra.svgIcon',
-        'znk.infra.znkMedia'
+        'znk.infra.znkMedia',
+        'pascalprecht.translate',
+        'znk.infra.svgIcon'
     ])
         .config([
             'SvgIconSrvProvider',
@@ -9971,8 +9940,8 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
 
 (function (angular) {
 
-    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', ['$translatePartialLoader',
-        function znkImageAudio($translatePartialLoader) {
+    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', [
+        function znkImageAudio() {
 
             return {
                 templateUrl: 'components/znkAudioPlayer/templates/znkImageAudio.template.html',
@@ -9989,7 +9958,6 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                     blurredImageGetter: '&?blurredImage'
                 },
                 link: function (scope) {
-                    $translatePartialLoader.addPart('znkAudioPlayer');
 
                     scope.d = {
                         image: scope.imageGetter(),
@@ -10507,7 +10475,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('znkChat',
-        ["$translatePartialLoader", "znkChatSrv", "$q", "UtilitySrv", "ZNK_CHAT", "$timeout", function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, ZNK_CHAT, $timeout) {
+        ["znkChatSrv", "$q", "UtilitySrv", "ZNK_CHAT", "$timeout", function (znkChatSrv, $q, UtilitySrv, ZNK_CHAT, $timeout) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/znkChat.template.html',
@@ -10515,7 +10483,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     localUser: '='
                 },
                 link: function (scope, element) {
-                    $translatePartialLoader.addPart('znkChat');
                     $timeout(function () {
                         element.addClass('animate-chat');
                     });
@@ -11079,11 +11046,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 'znk-exercise-touche': 'components/znkExercise/svg/tools-touche.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
-        }])
-    .run(["$translatePartialLoader", function ($translatePartialLoader) {
-        'ngInject';
-        $translatePartialLoader.addPart('znkExercise');
-    }]);
+        }]);
 })(angular);
 
 /**
@@ -15149,7 +15112,7 @@ angular.module('znk.infra.znkModule').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.znkProgressBar').directive('znkProgressBar',
-        ["$translatePartialLoader", function ($translatePartialLoader) {
+        function () {
         'ngInject';
             return {
                 templateUrl: 'components/znkProgressBar/znkProgressBar.template.html',
@@ -15158,12 +15121,9 @@ angular.module('znk.infra.znkModule').run(['$templateCache', function($templateC
                     progressValue: '@',
                     showProgressValue: '@',
                     showProgressBubble: '&'
-                },
-                link: function () {
-                    $translatePartialLoader.addPart('znkProgressBar');
                 }
             };
-        }]
+        }
     );
 })(angular);
 
@@ -15235,13 +15195,11 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
             template: '<svg-icon class="report-btn" name="report-question-icon" ' +
             'title="{{\'REPORT_POPUP.REPORT_QUESTION\' | translate}}" ng-hide="vm.isLectureType" ng-click="vm.showReportDialog()"></svg-icon>',
             controllerAs: 'vm',
-            controller: ["$mdDialog", "$translatePartialLoader", "ExerciseTypeEnum", function ($mdDialog, $translatePartialLoader, ExerciseTypeEnum) {
+            controller: ["$mdDialog", "ExerciseTypeEnum", function ($mdDialog, ExerciseTypeEnum) {
                 'ngInject';
                 var vm = this;
 
                 vm.isLectureType = vm.reportData.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum;
-                $translatePartialLoader.addPart('znkQuestionReport');
-
                 vm.showReportDialog = function () {
                     $mdDialog.show({
                         locals:{ reportData: vm.reportData },

@@ -265,19 +265,6 @@
         }]);
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.activePanel')
-        .run(["$timeout", "$translatePartialLoader", function($timeout, $translatePartialLoader){
-            'ngInject';
-            //must be wrapped in timeout because the parting adding cannot be made directly in a run block
-            $timeout(function(){
-                $translatePartialLoader.addPart('activePanel');
-            });
-        }]);
-})(angular);
-
 angular.module('znk.infra.activePanel').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/activePanel/activePanel.template.html",
     "<div class=\"active-panel ng-hide\"\n" +
