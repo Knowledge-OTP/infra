@@ -22,7 +22,7 @@
 (function (angular) {
 
     angular.module('znk.infra.general').directive('timer', [
-        '$interval', '$translatePartialLoader', '$timeout',
+        '$interval', '$timeout',
         function ($interval, $timeout) {
             var timerTypes = {
                 'REGULAR': 1,

@@ -368,7 +368,7 @@
 
 (function (angular) {
 
-    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', ['$translatePartialLoader',
+    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', [
         function znkImageAudio() {
 
             return {
