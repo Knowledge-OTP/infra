@@ -12700,7 +12700,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 BindExerciseEventManager.prototype.trigger = function(key, value) {
                     this.cbObj[key].forEach(function (obj) {
                         if (obj.id && value.id && obj.updatedBy && value.updatedBy) {
-                            if (obj.id === value.id && obj.updatedBy === value.updatedBy) {
+                            if (obj.id === value.id && obj.updatedBy !== value.updatedBy) {
                                 obj.cb(value);
                             }
                         } else if (obj.id && value.id) {
@@ -12708,7 +12708,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 obj.cb(value);
                             }
                         } else if (obj.updatedBy && value.updatedBy) {
-                            if (obj.updatedBy === value.updatedBy) {
+                            if (obj.updatedBy !== value.updatedBy) {
                                 obj.cb(value);
                             }
                         } else {
