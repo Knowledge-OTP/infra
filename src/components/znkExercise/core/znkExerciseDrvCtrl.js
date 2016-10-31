@@ -148,6 +148,10 @@
             };
             /**
              *  bind exercise
+             *  BindExerciseEventManager: use the registerCb and update in directives
+             *    update: update the bind object in firebase that something change
+             *    registerCb: register callback to sync data after update
+             *    trigger: internally when the watch update the trigger fires
              */
             (function(self) {
 
@@ -156,19 +160,25 @@
                 }
 
                 BindExerciseEventManager.prototype.trigger = function(key, value) {
-                    this.cbObj[key].forEach(function (cb) {
-                        cb(value);
+                    this.cbObj[key].forEach(function (obj) {
+                        if (obj.id && value.lastUpdatedId) {
+                            if (obj.id === value.lastUpdatedId) {
+                                obj.cb(value);
+                            }
+                        } else {
+                            obj.cb(value);
+                        }
                     }, this);
                 };
 
-                BindExerciseEventManager.prototype.update = function(key, value) {
+                BindExerciseEventManager.prototype.update = function(key, value, lastUpdatedId) {
                     var valueToUpdate;
                     var curValue = self.__exerciseViewBinding[key];
 
                     if (angular.isArray(curValue)) {
                         valueToUpdate = curValue.push(value);
                     } else if (angular.isObject(curValue) && angular.isObject(value)) {
-                        valueToUpdate = angular.extend({}, curValue, value);
+                        valueToUpdate = angular.extend({}, curValue, value, { lastUpdatedId: lastUpdatedId });
                     } else {
                         valueToUpdate = value;
                     }
@@ -176,11 +186,11 @@
                     self.__exerciseViewBinding[key] = valueToUpdate;
                 };
 
-                BindExerciseEventManager.prototype.registerCb = function(key, cb) {
+                BindExerciseEventManager.prototype.registerCb = function(key, cb, id) {
                      if (!angular.isArray(this.cbObj[key])) {
                          this.cbObj[key] = [];
                      }
-                     this.cbObj[key].push(cb);
+                     this.cbObj[key].push({ id: id, cb: cb });
                 };
 
                 self.bindExerciseEventManager = new BindExerciseEventManager();
@@ -201,7 +211,7 @@
                         exerciseViewListenersObj[keyObj.getterName] = $scope.$watchCollection(function () {
                             return exerciseView[keyObj.getterName];
                         },function (newVal) {
-                            if(angular.isDefined(newVal)) {
+                            if (angular.isDefined(newVal)) {
                                 if (keyObj.setterName) {
                                     self[keyObj.setterName](newVal);
                                 } else {
