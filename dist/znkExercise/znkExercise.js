@@ -1702,7 +1702,10 @@
 
                     if (angular.isArray(curValue)) {
                         valueToUpdate = curValue.push(value);
-                    } else if (angular.isObject(curValue) && angular.isObject(value)) {
+                    } else if (angular.isObject(value)) {
+                        if (!angular.isObject(curValue)) {
+                            curValue = {};
+                        }
                         valueToUpdate = angular.extend({}, curValue, value, { id: id, updatedBy: updatedBy });
                     } else {
                         valueToUpdate = value;
