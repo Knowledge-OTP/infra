@@ -12714,23 +12714,25 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 }
 
                 BindExerciseEventManager.prototype.trigger = function(key, value) {
-                    this.cbObj[key].forEach(function (obj) {
-                        if (obj.id && value.id && obj.updatedBy && value.updatedBy) {
-                            if (obj.id === value.id && obj.updatedBy !== value.updatedBy) {
+                    if (angular.isObject(this.cbObj) && angular.isArray(this.cbObj[key])) {
+                        this.cbObj[key].forEach(function (obj) {
+                            if (obj.id && value.id && obj.updatedBy && value.updatedBy) {
+                                if (obj.id === value.id && obj.updatedBy !== value.updatedBy) {
+                                    obj.cb(value);
+                                }
+                            } else if (obj.id && value.id) {
+                                if (obj.id === value.id) {
+                                    obj.cb(value);
+                                }
+                            } else if (obj.updatedBy && value.updatedBy) {
+                                if (obj.updatedBy !== value.updatedBy) {
+                                    obj.cb(value);
+                                }
+                            } else {
                                 obj.cb(value);
                             }
-                        } else if (obj.id && value.id) {
-                            if (obj.id === value.id) {
-                                obj.cb(value);
-                            }
-                        } else if (obj.updatedBy && value.updatedBy) {
-                            if (obj.updatedBy !== value.updatedBy) {
-                                obj.cb(value);
-                            }
-                        } else {
-                            obj.cb(value);
-                        }
-                    }, this);
+                        }, this);
+                    }
                 };
 
                 BindExerciseEventManager.prototype.update = function(key, value, id, updatedBy) {
