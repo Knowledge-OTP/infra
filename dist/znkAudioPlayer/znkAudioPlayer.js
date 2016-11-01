@@ -109,6 +109,10 @@
                         scope.isPlaying = state === STATE_ENUM.PLAYING;
                     });
 
+                    scope.$watch('autoPlayGetter()', function(playStatus) {
+                        scope.audioPlayer.currState = playStatus ? STATE_ENUM.PLAYING : STATE_ENUM.START_PLAY;
+                    });
+
                     scope.$watch('showAsDone', function (showAsDone) {
                         if(showAsDone && !allowReplay){
                             scope.audioPlayer.currState = STATE_ENUM.ALREADY_PLAYED;

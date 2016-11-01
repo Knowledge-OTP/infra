@@ -1672,6 +1672,9 @@
              */
             (function(self) {
 
+                // initial an empty object in case bindExerciseViewTo was not called
+                self.__exerciseViewBinding = {};
+
                 function BindExerciseEventManager() {
                     this.cbObj = {};
                 }

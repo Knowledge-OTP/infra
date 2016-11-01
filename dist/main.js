@@ -9680,6 +9680,10 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                         scope.isPlaying = state === STATE_ENUM.PLAYING;
                     });
 
+                    scope.$watch('autoPlayGetter()', function(playStatus) {
+                        scope.audioPlayer.currState = playStatus ? STATE_ENUM.PLAYING : STATE_ENUM.START_PLAY;
+                    });
+
                     scope.$watch('showAsDone', function (showAsDone) {
                         if(showAsDone && !allowReplay){
                             scope.audioPlayer.currState = STATE_ENUM.ALREADY_PLAYED;
@@ -12701,6 +12705,9 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
              *    trigger: internally when the watch update the trigger fires
              */
             (function(self) {
+
+                // initial an empty object in case bindExerciseViewTo was not called
+                self.__exerciseViewBinding = {};
 
                 function BindExerciseEventManager() {
                     this.cbObj = {};
