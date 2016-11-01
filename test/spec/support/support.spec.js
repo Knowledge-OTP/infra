@@ -30,6 +30,8 @@ describe('testing service "SupportSrv":', function () {
     beforeEach(module('znk.infra.support', 'storage.mock', 'testUtility','user.mock', 'env.mock','znk.infra.auth', 'znk.infra.teachers'));
 
     var _deps = {};
+    var supportUrl;
+
     var resultObject = {
         receiverAppName: 'test_app',
         receiverEmail: 'fakeEmail',
@@ -56,9 +58,9 @@ describe('testing service "SupportSrv":', function () {
             _deps[depName] = $injector.get(depName);
         });
 
-        _deps.GlobalStorage = _deps.TestUtilitySrv.general.asyncToSync(_deps.InfraConfigSrv.getGlobalStorage, _deps.InfraConfigSrv)();
         _deps.getTeacherStorage = _deps.TestUtilitySrv.general.asyncToSync(_deps.InfraConfigSrv.getTeacherStorage, _deps.InfraConfigSrv)();
         _deps.getStudentStorage = _deps.TestUtilitySrv.general.asyncToSync(_deps.InfraConfigSrv.getStudentStorage, _deps.InfraConfigSrv)();
+        supportUrl = _deps.ENV.backendEndpoint + 'invitation/support';
     }));
 
 
@@ -66,7 +68,7 @@ describe('testing service "SupportSrv":', function () {
     it('when student not connected to support connectStudentWithSupport function must send correct data to backend', inject(function($http, _$httpBackend_) {
         var supportDataToBackend;
         var respondFromBackend;
-        _$httpBackend_.when('POST', 'https://test/support')
+        _$httpBackend_.when('POST', supportUrl)
             .respond(function(method, url, data) {         // the "server" returns the data that was send - now we test it.
                 supportDataToBackend = angular.fromJson(data);
                 return [200, {respond:'ok'}];
@@ -87,7 +89,7 @@ describe('testing service "SupportSrv":', function () {
         var supportDataToBackend;
         var respondFromBackend;
 
-        _$httpBackend_.when('POST', 'https://test/support')
+        _$httpBackend_.when('POST', supportUrl)
             .respond(function(method, url, data) {         // the "server" returns the data that was send - now we test it.
                 supportDataToBackend = angular.fromJson(data);
                 return [200, {respond:'ok'}];

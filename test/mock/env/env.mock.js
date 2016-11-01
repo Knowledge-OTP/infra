@@ -11,7 +11,7 @@
                 'studentAppName': 'test_app',
                 'dashboardAppName': 'test_dashboard',
                 'supportEmail':'support@zinkerz.com',
-                "backendEndpoint": "https://test"
+                "backendEndpoint": "https://test/"
             };
         });
 })(angular);

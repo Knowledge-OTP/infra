@@ -8813,6 +8813,7 @@ angular.module('znk.infra.storage').run(['$templateCache', function($templateCac
 
             var authData = AuthService.getAuth();
             var APPROVED_STUDENTS_PATH = 'users/$$uid/approvedStudents/';
+            var invitationEndpoint = ENV.backendEndpoint + 'invitation';
             var SUPPORT_EMAIL = ENV.supportEmail;
             var NO_EMAIL = 'noEmail@zinkerz.com'; // in case the user has no email.
 
@@ -8910,7 +8911,7 @@ angular.module('znk.infra.storage').run(['$templateCache', function($templateCac
                 var config = {
                     timeout: ENV.promiseTimeOut || 15000
                 };
-                return $http.post( 'https://test/support', dataToSend, config).then(
+                return $http.post(invitationEndpoint + '/support', dataToSend, config).then(
                     function (response) {
                         return {
                             data: response.data
