@@ -383,6 +383,7 @@
                     showAsDone: '=?',
                     allowReplay: '&?',
                     showSkipOption: '&?',
+                    onPlayerStart: '&?',
                     autoPlayGetter: '&autoPlay',
                     blurredImageGetter: '&?blurredImage'
                 },
@@ -393,17 +394,26 @@
                         blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined
                     };
 
-                    scope.d.skippedHandler = function(){
+                    function isSkipOptionExist() {
+                       return angular.isDefined(scope.showSkipOption) && scope.showSkipOption();
+                    }
+
+                    scope.d.skippedHandler = function() {
                         scope.showAsDone = true;
                         scope.d.showSkipButton = false;
                         scope.onEnded();
                     };
 
-                    if(angular.isDefined(scope.showSkipOption) && scope.showSkipOption()){
-                        scope.d.showSkipButtonFn = function(){
+                    scope.d.onPlayerStart = function() {
+                        if (isSkipOptionExist()) {
                             scope.d.showSkipButton = true;
-                        };
+                        }
+                        if (scope.onPlayerStart) {
+                            scope.onPlayerStart();
+                        }
+                    };
 
+                    if (isSkipOptionExist()) {
                         var onEnded = scope.onEnded;  // reference to onEnded function.
                         scope.onEnded = function(){ // extend the onEnded function (if passed).
                             if(onEnded){
@@ -412,7 +422,6 @@
                             scope.d.showSkipButton = false;
                         };
                     }
-
                 }
             };
         }]);
@@ -555,7 +564,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "            switch-init=\"audioPlayer.currState\"\n" +
     "            source=\"source\"\n" +
     "            on-ended=\"onEnded()\"\n" +
-    "            on-start=\"d.showSkipButtonFn()\"\n" +
+    "            on-start=\"d.onPlayerStart()\"\n" +
     "            allow-replay=\"allowReplay()\"\n" +
     "            show-as-done=\"showAsDone\"\n" +
     "            auto-play=\"autoPlayGetter()\">\n" +
