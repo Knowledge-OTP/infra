@@ -8189,11 +8189,7 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
                                 var categoryStats = levelStats[categoryKey];
                                 if (!categoryStats) {
                                     categoryStats = new BaseStats(categoryId);
-                                    //need to add init offset only when working on lowest category,
-                                    if (level === deepestLevel) {
-                                        var initStatWithOffset = new BaseStats(null, true);
-                                        _baseStatsUpdater(newStat, initStatWithOffset);
-                                    }
+
                                     var parentsIds = categoriesToUpdate.slice(index + 1);
                                     if (parentsIds.length) {
                                         categoryStats.parentsIds = parentsIds;
