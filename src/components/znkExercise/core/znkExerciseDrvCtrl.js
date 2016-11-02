@@ -163,7 +163,7 @@
                 }
 
                 BindExerciseEventManager.prototype.trigger = function(key, value) {
-                    if (angular.isObject(this.cbObj) && angular.isArray(this.cbObj[key])) {
+                    if (angular.isArray(this.cbObj[key])) {
                         this.cbObj[key].forEach(function (obj) {
                             if (obj.id && value.id && obj.updatedBy && value.updatedBy) {
                                 if (obj.id === value.id && obj.updatedBy !== value.updatedBy) {
@@ -185,21 +185,19 @@
                 };
 
                 BindExerciseEventManager.prototype.update = function(key, value, id, updatedBy) {
-                    var valueToUpdate;
-                    var curValue = self.__exerciseViewBinding[key];
+                    var curValue = self.__exerciseViewBinding[key] || {};
 
-                    if (angular.isArray(curValue)) {
-                        valueToUpdate = curValue.push(value);
+                    if (!curValue.data) {
+                        curValue.data = value;
+                        curValue.id = id;
+                        curValue.updatedBy = updatedBy;
                     } else if (angular.isObject(value)) {
-                        if (!angular.isObject(curValue)) {
-                            curValue = {};
-                        }
-                        valueToUpdate = angular.extend({}, curValue, value, { id: id, updatedBy: updatedBy });
+                        curValue.data = angular.extend({}, curValue, value);
                     } else {
-                        valueToUpdate = value;
+                        curValue.data = value;
                     }
 
-                    self.__exerciseViewBinding[key] = valueToUpdate;
+                    self.__exerciseViewBinding[key] = curValue;
                 };
 
                 BindExerciseEventManager.prototype.registerCb = function(key, cb, id, updatedBy) {
