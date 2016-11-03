@@ -8801,25 +8801,7 @@ angular.module('znk.infra.storage').run(['$templateCache', function($templateCac
                                 });
                                 $q.all(promsArray).then(function () {
                                     if (!linkedToSupport && authData.auth.email !== SUPPORT_EMAIL) {
-                                        UserProfileService.getProfileByUserId(authData.uid).then(function (userProfile) {
-                                            var receiverName = userProfile.nickname;
-                                            var receiverEmail = authData.auth.email || userProfile.email || NO_EMAIL;
-                                            if (angular.isUndefined(receiverName) || angular.equals(receiverName, '')) {
-                                                receiverName = receiverEmail;
-                                            }
-
-                                            var dataToSend = {
-                                                receiverEmail: receiverEmail,
-                                                receiverName: receiverName,
-                                                receiverUid: authData.uid,
-                                                receiverAppName: ENV.firebaseAppScopeName,
-                                                receiverParentEmail: '',
-                                                receiverParentName: ''
-                                            };
-                                            _connectSupportToUser(dataToSend).then(function (response) {
-                                                callbackFn(response);
-                                            });
-                                        });
+                                        _buildDataToSend(callbackFn);
                                     } else {
                                         callbackFn();
                                     }
@@ -8844,32 +8826,36 @@ angular.module('znk.infra.storage').run(['$templateCache', function($templateCac
                         });
 
                         if (!linkedToSupport && authData.auth.email !== SUPPORT_EMAIL) {
-                            UserProfileService.getProfileByUserId(authData.uid).then(function (userProfile) {
-                                var receiverName = userProfile.nickname;
-                                var receiverEmail = authData.auth.email || userProfile.email || NO_EMAIL;
-                                if (angular.isUndefined(receiverName) || angular.equals(receiverName, '')) {
-                                    receiverName = receiverEmail;
-                                }
-
-                                var dataToSend = {
-                                    receiverAppName: ENV.firebaseAppScopeName,
-                                    receiverEmail: receiverEmail,
-                                    receiverName: receiverName,
-                                    receiverUid: authData.uid,
-                                    receiverParentEmail: '',
-                                    receiverParentName: ''
-                                };
-
-                                _connectSupportToUser(dataToSend).then(function (response) {
-                                    callbackFn(response);
-                                });
-                            });
+                            _buildDataToSend(callbackFn);
                         } else {
                             callbackFn();
                         }
                     });
                 }
             };
+
+            function _buildDataToSend(callbackFn){
+                UserProfileService.getProfileByUserId(authData.uid).then(function (userProfile) {
+                    var receiverName = userProfile.nickname;
+                    var receiverEmail = authData.auth.email || userProfile.email || NO_EMAIL;
+                    if (angular.isUndefined(receiverName) || angular.equals(receiverName, '')) {
+                        receiverName = receiverEmail;
+                    }
+
+                    var dataToSend = {
+                        receiverAppName: ENV.firebaseAppScopeName,
+                        receiverEmail: receiverEmail,
+                        receiverName: receiverName,
+                        receiverUid: authData.uid,
+                        receiverParentEmail: '',
+                        receiverParentName: ''
+                    };
+
+                    _connectSupportToUser(dataToSend).then(function (response) {
+                        callbackFn(response);
+                    });
+                });
+            }
 
             function _connectSupportToUser(dataToSend) {
                 var config = {
