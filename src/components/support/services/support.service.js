@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.support').service('SupportSrv',
-        function (InfraConfigSrv, ENV, AuthService, UserProfileService, $q, $injector, $log, teachersSrv, $http) {
+        function (InfraConfigSrv, ENV, AuthService, UserProfileService,GroupsService, $q, $injector, $log, teachersSrv, $http) {
             'ngInject';
             var SupportSrv = {};
 

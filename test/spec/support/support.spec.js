@@ -1,21 +1,36 @@
 describe('testing service "SupportSrv":', function () {
     'use strict';
 
-    angular.module('znk.infra.auth', [])
-        .factory('AuthService', function(){
-            return {
-                getAuth: function(){
+
+
+    beforeEach(module('znk.infra.support', 'storage.mock', 'testUtility','user.mock', 'env.mock','znk.infra.auth', 'znk.infra.teachers'));
+
+    var _deps = {};
+    var supportUrl;
+
+    var resultObject = {
+        receiverAppName: 'test_app',
+        receiverEmail: 'fake@Email.com',
+        receiverName: 'fake@Email.com',
+        receiverUid: '123456Fake',
+        receiverParentEmail: '',
+        receiverParentName: ''
+    };
+
+    beforeEach(angular.mock.module(function ($provide) {
+        $provide.decorator('AuthService', function ($delegate) {
+            $delegate.getAuth = function () {
                 return {
-                    uid: 'fakeUid',
-                    auth:{
-                        email:'fakeEmail'
+                    uid: '123456Fake',
+                    auth: {
+                        email: 'fake@Email.com'
                     }
                 };
-            } }
+            };
+            return $delegate;
         });
 
-    angular.module('znk.infra.support')
-        .factory('GroupsService', function(){
+        $provide.factory("GroupsService", function () {
             return {
                 getUserData: function(){
                     return {
@@ -27,31 +42,15 @@ describe('testing service "SupportSrv":', function () {
                 } }
         });
 
-    beforeEach(module('znk.infra.support', 'storage.mock', 'testUtility','user.mock', 'env.mock','znk.infra.auth', 'znk.infra.teachers'));
-
-    var _deps = {};
-    var supportUrl;
-
-    var resultObject = {
-        receiverAppName: 'test_app',
-        receiverEmail: 'fakeEmail',
-        receiverName: 'fakeEmail',
-        receiverUid: 'fakeUid',
-        receiverParentEmail: '',
-        receiverParentName: ''
-    };
+    }));
 
     beforeEach(inject(function ($injector) {
         var depsToInject = [
             'TestUtilitySrv',
             'InfraConfigSrv',
-            'UserProfileService',
             'SupportSrv',
             '$rootScope',
-            'ENV',
-            '$q',
-            'testUser',
-            'teachersSrv',
+            'ENV'
         ];
 
         depsToInject.forEach(function (depName) {
@@ -62,6 +61,7 @@ describe('testing service "SupportSrv":', function () {
         _deps.getStudentStorage = _deps.TestUtilitySrv.general.asyncToSync(_deps.InfraConfigSrv.getStudentStorage, _deps.InfraConfigSrv)();
         supportUrl = _deps.ENV.backendEndpoint + 'invitation/support';
     }));
+
 
 
 
