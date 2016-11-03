@@ -9680,6 +9680,10 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                         scope.isPlaying = state === STATE_ENUM.PLAYING;
                     });
 
+                    scope.$watch('autoPlayGetter()', function(playStatus) {
+                        scope.audioPlayer.currState = playStatus ? STATE_ENUM.PLAYING : STATE_ENUM.START_PLAY;
+                    });
+
                     scope.$watch('showAsDone', function (showAsDone) {
                         if(showAsDone && !allowReplay){
                             scope.audioPlayer.currState = STATE_ENUM.ALREADY_PLAYED;
@@ -9954,6 +9958,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                     showAsDone: '=?',
                     allowReplay: '&?',
                     showSkipOption: '&?',
+                    onPlayerStart: '&?',
                     autoPlayGetter: '&autoPlay',
                     blurredImageGetter: '&?blurredImage'
                 },
@@ -9964,17 +9969,26 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                         blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined
                     };
 
-                    scope.d.skippedHandler = function(){
+                    function isSkipOptionExist() {
+                       return angular.isDefined(scope.showSkipOption) && scope.showSkipOption();
+                    }
+
+                    scope.d.skippedHandler = function() {
                         scope.showAsDone = true;
                         scope.d.showSkipButton = false;
                         scope.onEnded();
                     };
 
-                    if(angular.isDefined(scope.showSkipOption) && scope.showSkipOption()){
-                        scope.d.showSkipButtonFn = function(){
+                    scope.d.onPlayerStart = function() {
+                        if (isSkipOptionExist()) {
                             scope.d.showSkipButton = true;
-                        };
+                        }
+                        if (scope.onPlayerStart) {
+                            scope.onPlayerStart();
+                        }
+                    };
 
+                    if (isSkipOptionExist()) {
                         var onEnded = scope.onEnded;  // reference to onEnded function.
                         scope.onEnded = function(){ // extend the onEnded function (if passed).
                             if(onEnded){
@@ -9983,7 +9997,6 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                             scope.d.showSkipButton = false;
                         };
                     }
-
                 }
             };
         }]);
@@ -10126,7 +10139,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "            switch-init=\"audioPlayer.currState\"\n" +
     "            source=\"source\"\n" +
     "            on-ended=\"onEnded()\"\n" +
-    "            on-start=\"d.showSkipButtonFn()\"\n" +
+    "            on-start=\"d.onPlayerStart()\"\n" +
     "            allow-replay=\"allowReplay()\"\n" +
     "            show-as-done=\"showAsDone\"\n" +
     "            auto-play=\"autoPlayGetter()\">\n" +
@@ -12686,39 +12699,63 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             };
             /**
              *  bind exercise
+             *  BindExerciseEventManager: use the registerCb and update in directives
+             *    update: update the bind object in firebase that something change
+             *    registerCb: register callback to sync data after update
+             *    trigger: internally when the watch update the trigger fires
              */
             (function(self) {
+
+                // initial an empty object in case bindExerciseViewTo was not called
+                self.__exerciseViewBinding = {};
 
                 function BindExerciseEventManager() {
                     this.cbObj = {};
                 }
 
                 BindExerciseEventManager.prototype.trigger = function(key, value) {
-                    this.cbObj[key].forEach(function (cb) {
-                        cb(value);
-                    }, this);
+                    if (angular.isArray(this.cbObj[key])) {
+                        this.cbObj[key].forEach(function (obj) {
+                            if (obj.id && value.id && obj.updatedBy && value.updatedBy) {
+                                if (obj.id === value.id && obj.updatedBy !== value.updatedBy) {
+                                    obj.cb(value);
+                                }
+                            } else if (obj.id && value.id) {
+                                if (obj.id === value.id) {
+                                    obj.cb(value);
+                                }
+                            } else if (obj.updatedBy && value.updatedBy) {
+                                if (obj.updatedBy !== value.updatedBy) {
+                                    obj.cb(value);
+                                }
+                            } else {
+                                obj.cb(value);
+                            }
+                        }, this);
+                    }
                 };
 
-                BindExerciseEventManager.prototype.update = function(key, value) {
-                    var valueToUpdate;
-                    var curValue = self.__exerciseViewBinding[key];
+                BindExerciseEventManager.prototype.update = function(key, value, id, updatedBy) {
+                    var curValue = self.__exerciseViewBinding[key] || {};
 
-                    if (angular.isArray(curValue)) {
-                        valueToUpdate = curValue.push(value);
-                    } else if (angular.isObject(curValue) && angular.isObject(value)) {
-                        valueToUpdate = angular.extend({}, curValue, value);
+                    if (!curValue.data) {
+                        curValue.data = value;
+                        curValue.id = id;
+                        curValue.updatedBy = updatedBy;
+                    } else if (angular.isObject(value)) {
+                        curValue.data = angular.extend({}, curValue, value);
                     } else {
-                        valueToUpdate = value;
+                        curValue.data = value;
                     }
 
-                    self.__exerciseViewBinding[key] = valueToUpdate;
+                    self.__exerciseViewBinding[key] = curValue;
                 };
 
-                BindExerciseEventManager.prototype.registerCb = function(key, cb) {
+                BindExerciseEventManager.prototype.registerCb = function(key, cb, id, updatedBy) {
                      if (!angular.isArray(this.cbObj[key])) {
                          this.cbObj[key] = [];
                      }
-                     this.cbObj[key].push(cb);
+                     this.cbObj[key].push({ id: id, cb: cb, updatedBy: updatedBy });
                 };
 
                 self.bindExerciseEventManager = new BindExerciseEventManager();
@@ -12739,7 +12776,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         exerciseViewListenersObj[keyObj.getterName] = $scope.$watchCollection(function () {
                             return exerciseView[keyObj.getterName];
                         },function (newVal) {
-                            if(angular.isDefined(newVal)) {
+                            if (angular.isDefined(newVal)) {
                                 if (keyObj.setterName) {
                                     self[keyObj.setterName](newVal);
                                 } else {
