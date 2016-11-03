@@ -8,7 +8,7 @@
     'use strict';
 
     angular.module('znk.infra.support').service('SupportSrv',
-        ["InfraConfigSrv", "ENV", "AuthService", "UserProfileService", "GroupsService", "$q", "$injector", "$log", "teachersSrv", "$http", function (InfraConfigSrv, ENV, AuthService, UserProfileService,GroupsService, $q, $injector, $log, teachersSrv, $http) {
+        ["InfraConfigSrv", "ENV", "AuthService", "UserProfileService", "$q", "$injector", "$log", "teachersSrv", "$http", function (InfraConfigSrv, ENV, AuthService, UserProfileService, $q, $injector, $log, teachersSrv, $http) {
             'ngInject';
             var SupportSrv = {};
 
@@ -19,7 +19,7 @@
             var NO_EMAIL = 'noEmail@zinkerz.com'; // in case the user has no email.
 
             SupportSrv.connectTeacherWithSupport = function (callbackFn) {
-
+                $injector.invoke(['GroupsService', function(GroupsService){
                     if (authData && authData.uid) {
                         return InfraConfigSrv.getTeacherStorage().then(function (teacherStorage) {
                             return teacherStorage.get(APPROVED_STUDENTS_PATH).then(function (students) {
@@ -64,7 +64,7 @@
                             });
                         });
                     }
-
+                }]);
             };
 
             SupportSrv.connectStudentWithSupport = function (callbackFn) {
