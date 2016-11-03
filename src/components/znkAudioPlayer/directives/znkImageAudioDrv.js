@@ -2,8 +2,8 @@
 
 (function (angular) {
 
-    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', ['$translatePartialLoader',
-        function znkImageAudio($translatePartialLoader) {
+    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', [
+        function znkImageAudio() {
 
             return {
                 templateUrl: 'components/znkAudioPlayer/templates/znkImageAudio.template.html',
@@ -16,28 +16,37 @@
                     showAsDone: '=?',
                     allowReplay: '&?',
                     showSkipOption: '&?',
+                    onPlayerStart: '&?',
                     autoPlayGetter: '&autoPlay',
                     blurredImageGetter: '&?blurredImage'
                 },
                 link: function (scope) {
-                    $translatePartialLoader.addPart('znkAudioPlayer');
 
                     scope.d = {
                         image: scope.imageGetter(),
                         blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined
                     };
 
-                    scope.d.skippedHandler = function(){
+                    function isSkipOptionExist() {
+                       return angular.isDefined(scope.showSkipOption) && scope.showSkipOption();
+                    }
+
+                    scope.d.skippedHandler = function() {
                         scope.showAsDone = true;
                         scope.d.showSkipButton = false;
                         scope.onEnded();
                     };
 
-                    if(angular.isDefined(scope.showSkipOption) && scope.showSkipOption()){
-                        scope.d.showSkipButtonFn = function(){
+                    scope.d.onPlayerStart = function() {
+                        if (isSkipOptionExist()) {
                             scope.d.showSkipButton = true;
-                        };
+                        }
+                        if (scope.onPlayerStart) {
+                            scope.onPlayerStart();
+                        }
+                    };
 
+                    if (isSkipOptionExist()) {
                         var onEnded = scope.onEnded;  // reference to onEnded function.
                         scope.onEnded = function(){ // extend the onEnded function (if passed).
                             if(onEnded){
@@ -46,7 +55,6 @@
                             scope.d.showSkipButton = false;
                         };
                     }
-
                 }
             };
         }]);

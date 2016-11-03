@@ -2,12 +2,6 @@
     'use strict';
 
     angular.module('demo', ['znk.infra.znkAudioPlayer', 'pascalprecht.translate', 'ngAnimate'])
-        .config(function($translateProvider){
-            $translateProvider.useLoader('$translatePartialLoader', {
-                urlTemplate: '/{part}/locale/{lang}.json'
-            })
-                .preferredLanguage('en');
-        })
         .service('ENV', function () {
             this.debug = true;
         })
@@ -19,11 +13,5 @@
             $scope.d.onAudioEnded = function(){
                 alert('audio ended');
             }
-        })
-        .run(function ($rootScope, $translate) {
-            $rootScope.$on('$translatePartialLoaderStructureChanged', function () {
-                $translate.refresh();
-            })
         });
-
 })(angular);

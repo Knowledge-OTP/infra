@@ -19,6 +19,8 @@ module.exports = function (grunt) {
         cdnify: 'grunt-google-cdn'
     });
 
+    grunt.loadNpmTasks('grunt-concat-json');
+
     // Configurable paths for the application
     var appConfig = {
         src: 'src',
@@ -117,6 +119,7 @@ module.exports = function (grunt) {
                 }
             }
         },
+
         concat: {
             mainModule: {
                 //js files configuration is generated in prepareConfiguration
@@ -129,6 +132,7 @@ module.exports = function (grunt) {
                 }]
             }
         },
+
         uglify: {
             dist: {
                 files: {
@@ -136,6 +140,7 @@ module.exports = function (grunt) {
                 }
             }
         },
+
         // ng-annotate tries to make the code safe for minification automatically
         // by using the Angular long form for dependency injection.
         ngAnnotate: {
@@ -148,6 +153,7 @@ module.exports = function (grunt) {
                 }]
             }
         },
+
         // Test settings
         karma: {
             unit: {
@@ -170,6 +176,7 @@ module.exports = function (grunt) {
                 ]
             }
         },
+
         connect: {
             options: {
                 base: ['.tmp', 'bower_components', 'demoShared', 'tmpLocalization'],
@@ -183,6 +190,7 @@ module.exports = function (grunt) {
                 }
             }
         },
+
         watch: {
             options: {
                 livereload: '<%= connect.options.livereload %>',
@@ -220,6 +228,7 @@ module.exports = function (grunt) {
                 tasks: ['wiredep']
             }
         },
+
         sass: {
             // options: {
             //     sourceMap: true
@@ -234,12 +243,13 @@ module.exports = function (grunt) {
                 }]
             }
         },
+
         copy: {
             build: {
                 files: [{
                     expand: true,
-                    cwd: '<%= yeoman.src %>/components',
-                    src: '*/locale/*.*',
+                    cwd: '<%= yeoman.src %>/locale',
+                    src: '*.*',
                     dest: '<%= yeoman.tmp %>'
                 }, {
                     expand: true,
@@ -264,9 +274,9 @@ module.exports = function (grunt) {
             serve:{
                 files: [{
                     expand: true,
-                    cwd: '<%= yeoman.src %>/components',
-                    src: ['*/locale/*.json'],
-                    dest: 'tmpLocalization/'
+                    cwd: '<%= yeoman.src %>/locale',
+                    src: '*.*',
+                    dest: '<%= yeoman.tmp %>'
                 }]
             },
             dist: {
@@ -278,6 +288,7 @@ module.exports = function (grunt) {
                 }]
             }
         },
+
         html2js: {
             options: {
                 module: appConfig.appName,
@@ -285,6 +296,7 @@ module.exports = function (grunt) {
                 existingModule: true
             }
         },
+
         autoprefixer: {
             options: {
                 browsers: ['last 2 versions']
@@ -298,6 +310,7 @@ module.exports = function (grunt) {
                 }]
             }
         },
+
         replace: {
             allModulesInMainJs: {
                 options: {
@@ -392,6 +405,7 @@ module.exports = function (grunt) {
             }
             allModulesReplaceStr += '"' + appConfig.appName + '.' + dirName + '"';
         });
+
         //setting new html2js config
         grunt.config.set('html2js', html2js);
 

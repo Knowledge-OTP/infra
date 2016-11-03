@@ -7,6 +7,7 @@
         'znk.infra.user',
         'znk.infra.enum',
         'ngMaterial',
+        'znk.infra.svgIcon',
         'znk.infra.callsModals'
     ]);
 })(angular);
@@ -403,19 +404,6 @@
         }]
     );
 })();
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.calls')
-        .run(["$timeout", "$translatePartialLoader", function($timeout, $translatePartialLoader){
-            'ngInject';
-            //must be wrapped in timeout because the parting adding cannot be made directly in a run block
-            $timeout(function(){
-                $translatePartialLoader.addPart('calls');
-            });
-        }]);
-})(angular);
 
 (function (angular) {
     'use strict';

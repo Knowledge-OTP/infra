@@ -6,7 +6,7 @@
     'use strict';
 
     angular.module('znk.infra.znkProgressBar').directive('znkProgressBar',
-        function ($translatePartialLoader) {
+        function () {
         'ngInject';
             return {
                 templateUrl: 'components/znkProgressBar/znkProgressBar.template.html',
@@ -15,9 +15,6 @@
                     progressValue: '@',
                     showProgressValue: '@',
                     showProgressBubble: '&'
-                },
-                link: function () {
-                    $translatePartialLoader.addPart('znkProgressBar');
                 }
             };
         }

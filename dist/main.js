@@ -321,19 +321,6 @@
         }]);
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.activePanel')
-        .run(["$timeout", "$translatePartialLoader", function($timeout, $translatePartialLoader){
-            'ngInject';
-            //must be wrapped in timeout because the parting adding cannot be made directly in a run block
-            $timeout(function(){
-                $translatePartialLoader.addPart('activePanel');
-            });
-        }]);
-})(angular);
-
 angular.module('znk.infra.activePanel').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/activePanel/activePanel.template.html",
     "<div class=\"active-panel ng-hide\"\n" +
@@ -942,6 +929,7 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
     'use strict';
 
     angular.module('znk.infra.auth', [
+        'pascalprecht.translate',
         'znk.infra.config'
     ]);
 })(angular);
@@ -1217,6 +1205,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         'znk.infra.user',
         'znk.infra.enum',
         'ngMaterial',
+        'znk.infra.svgIcon',
         'znk.infra.callsModals'
     ]);
 })(angular);
@@ -1613,19 +1602,6 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         }]
     );
 })();
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.calls')
-        .run(["$timeout", "$translatePartialLoader", function($timeout, $translatePartialLoader){
-            'ngInject';
-            //must be wrapped in timeout because the parting adding cannot be made directly in a run block
-            $timeout(function(){
-                $translatePartialLoader.addPart('calls');
-            });
-        }]);
-})(angular);
 
 (function (angular) {
     'use strict';
@@ -5297,7 +5273,13 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.general', ['znk.infra.enum', 'znk.infra.svgIcon', 'angular-svg-round-progressbar'])
+    angular.module('znk.infra.general',
+        [
+            'znk.infra.enum',
+            'znk.infra.svgIcon',
+            'pascalprecht.translate',
+            'angular-svg-round-progressbar'
+        ])
         .config([
         'SvgIconSrvProvider',
         function (SvgIconSrvProvider) {
@@ -5647,8 +5629,8 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
 (function (angular) {
 
     angular.module('znk.infra.general').directive('timer', [
-        '$interval', '$translatePartialLoader', '$timeout',
-        function ($interval, $translatePartialLoader, $timeout) {
+        '$interval', '$timeout',
+        function ($interval, $timeout) {
             var timerTypes = {
                 'REGULAR': 1,
                 'ROUND_PROGRESSBAR': 2
@@ -5664,7 +5646,6 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
                 replace: true,
                 templateUrl: 'components/general/templates/timerDrv.html',
                 link: function link(scope, element, attrs, ngModelCtrl) {
-                    $translatePartialLoader.addPart('general');
                     var domElement = element[0];
 
                     scope.ngModelCtrl = ngModelCtrl;
@@ -7053,19 +7034,6 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.screenSharing')
-        .run(["$timeout", "$translatePartialLoader", function($timeout, $translatePartialLoader){
-            'ngInject';
-            //must be wrapped in timeout because the parting adding cannot be made directly in a run block
-            $timeout(function(){
-                $translatePartialLoader.addPart('screenSharing');
-            });
-        }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.screenSharing').service('ScreenSharingDataGetterSrv',
         ["InfraConfigSrv", "$q", "ENV", "UserProfileService", function (InfraConfigSrv, $q, ENV, UserProfileService) {
             'ngInject';
@@ -8222,11 +8190,7 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
                                 var categoryStats = levelStats[categoryKey];
                                 if (!categoryStats) {
                                     categoryStats = new BaseStats(categoryId);
-                                    //need to add init offset only when working on lowest category,
-                                    if (level === deepestLevel) {
-                                        var initStatWithOffset = new BaseStats(null, true);
-                                        _baseStatsUpdater(newStat, initStatWithOffset);
-                                    }
+
                                     var parentsIds = categoriesToUpdate.slice(index + 1);
                                     if (parentsIds.length) {
                                         categoryStats.parentsIds = parentsIds;
@@ -9743,8 +9707,9 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
     'use strict';
 
     angular.module('znk.infra.znkAudioPlayer', [
-        'znk.infra.svgIcon',
-        'znk.infra.znkMedia'
+        'znk.infra.znkMedia',
+        'pascalprecht.translate',
+        'znk.infra.svgIcon'
     ])
         .config([
             'SvgIconSrvProvider',
@@ -9847,6 +9812,10 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
 
                     scope.$watch('audioPlayer.currState', function (state) {
                         scope.isPlaying = state === STATE_ENUM.PLAYING;
+                    });
+
+                    scope.$watch('autoPlayGetter()', function(playStatus) {
+                        scope.audioPlayer.currState = playStatus ? STATE_ENUM.PLAYING : STATE_ENUM.START_PLAY;
                     });
 
                     scope.$watch('showAsDone', function (showAsDone) {
@@ -10109,8 +10078,8 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
 
 (function (angular) {
 
-    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', ['$translatePartialLoader',
-        function znkImageAudio($translatePartialLoader) {
+    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', [
+        function znkImageAudio() {
 
             return {
                 templateUrl: 'components/znkAudioPlayer/templates/znkImageAudio.template.html',
@@ -10123,28 +10092,37 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                     showAsDone: '=?',
                     allowReplay: '&?',
                     showSkipOption: '&?',
+                    onPlayerStart: '&?',
                     autoPlayGetter: '&autoPlay',
                     blurredImageGetter: '&?blurredImage'
                 },
                 link: function (scope) {
-                    $translatePartialLoader.addPart('znkAudioPlayer');
 
                     scope.d = {
                         image: scope.imageGetter(),
                         blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined
                     };
 
-                    scope.d.skippedHandler = function(){
+                    function isSkipOptionExist() {
+                       return angular.isDefined(scope.showSkipOption) && scope.showSkipOption();
+                    }
+
+                    scope.d.skippedHandler = function() {
                         scope.showAsDone = true;
                         scope.d.showSkipButton = false;
                         scope.onEnded();
                     };
 
-                    if(angular.isDefined(scope.showSkipOption) && scope.showSkipOption()){
-                        scope.d.showSkipButtonFn = function(){
+                    scope.d.onPlayerStart = function() {
+                        if (isSkipOptionExist()) {
                             scope.d.showSkipButton = true;
-                        };
+                        }
+                        if (scope.onPlayerStart) {
+                            scope.onPlayerStart();
+                        }
+                    };
 
+                    if (isSkipOptionExist()) {
                         var onEnded = scope.onEnded;  // reference to onEnded function.
                         scope.onEnded = function(){ // extend the onEnded function (if passed).
                             if(onEnded){
@@ -10153,7 +10131,6 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                             scope.d.showSkipButton = false;
                         };
                     }
-
                 }
             };
         }]);
@@ -10296,7 +10273,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "            switch-init=\"audioPlayer.currState\"\n" +
     "            source=\"source\"\n" +
     "            on-ended=\"onEnded()\"\n" +
-    "            on-start=\"d.showSkipButtonFn()\"\n" +
+    "            on-start=\"d.onPlayerStart()\"\n" +
     "            allow-replay=\"allowReplay()\"\n" +
     "            show-as-done=\"showAsDone\"\n" +
     "            auto-play=\"autoPlayGetter()\">\n" +
@@ -10645,7 +10622,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     'use strict';
 
     angular.module('znk.infra.znkChat').directive('znkChat',
-        ["$translatePartialLoader", "znkChatSrv", "$q", "UtilitySrv", "ZNK_CHAT", "$timeout", function ($translatePartialLoader, znkChatSrv, $q, UtilitySrv, ZNK_CHAT, $timeout) {
+        ["znkChatSrv", "$q", "UtilitySrv", "ZNK_CHAT", "$timeout", function (znkChatSrv, $q, UtilitySrv, ZNK_CHAT, $timeout) {
             'ngInject';
             return {
                 templateUrl: 'components/znkChat/templates/znkChat.template.html',
@@ -10653,7 +10630,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     localUser: '='
                 },
                 link: function (scope, element) {
-                    $translatePartialLoader.addPart('znkChat');
                     $timeout(function () {
                         element.addClass('animate-chat');
                     });
@@ -11217,11 +11193,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 'znk-exercise-touche': 'components/znkExercise/svg/tools-touche.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
-        }])
-    .run(["$translatePartialLoader", function ($translatePartialLoader) {
-        'ngInject';
-        $translatePartialLoader.addPart('znkExercise');
-    }]);
+        }]);
 })(angular);
 
 /**
@@ -12192,6 +12164,24 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 exerciseTypeToAllowedQuestionTimeMap = _exerciseTypeToAllowedQuestionTimeMap;
             };
 
+            var defaultBindExerciseKeys = [
+                {
+                    getterName: 'currSlideIndex',
+                    setterName: 'setCurrentIndex'
+                },
+                {
+                    getterName: 'answerExplanation'
+                }
+            ];
+
+            var addBindExerciseKeys;
+
+            var bindExerciseKeys;
+
+            this.addBindExerciseKeys = function(_addBindExerciseKeys) {
+                addBindExerciseKeys = _addBindExerciseKeys;
+            };
+
             this.$get = ["EnumSrv", "$window", "PlatformEnum", "$log", function (EnumSrv, $window, PlatformEnum, $log) {
                 'ngInject';//jshint ignore:line
 
@@ -12232,6 +12222,14 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         $log.error('ZnkExerciseSrv: the following exercise type:' + exerciseType +' has no question allowed time');
                     }
                     return exerciseTypeToAllowedQuestionTimeMap[exerciseType];
+                };
+
+                ZnkExerciseSrv.getBindExerciseKeys = function() {
+                    if (!bindExerciseKeys) {
+                        bindExerciseKeys = (angular.isArray(addBindExerciseKeys)) ?
+                            defaultBindExerciseKeys.concat(addBindExerciseKeys) : defaultBindExerciseKeys;
+                    }
+                    return bindExerciseKeys;
                 };
 
                 ZnkExerciseSrv.toolBoxTools = {
@@ -12284,7 +12282,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
  *      getPagerDisplayState
  *      bindExerciseViewTo: receive as parameter the view state
  *          viewState properties:
- *              currSlideIndex:
+ *              currSlideIndex, answerExplanation + add extra with ZnkExerciseSrvProvider.addBindExerciseKeys
  *              questionView: it implemented per question
  *      unbindExerciseView: remove exercise view binding
  */
@@ -12434,10 +12432,16 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             scope.actions.getPagerDisplayState = function(){
                                 return !!scope.vm.showPager;
                             };
-
+                            /**
+                             *  BIND EXERCISE
+                             */
                             scope.actions.bindExerciseViewTo = znkExerciseDrvCtrl.bindExerciseViewTo;
 
                             scope.actions.unbindExerciseView = znkExerciseDrvCtrl.unbindExerciseView;
+                            /**
+                             *  END BIND EXERCISE
+                             */
+
                             /**
                              *  ACTIONS END
                              * */
@@ -12683,8 +12687,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('ZnkExerciseDrvCtrl', [
-        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$element',
-        function ($scope, $q, ZnkExerciseEvents, $log, $element) {
+        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$element', 'ZnkExerciseSrv',
+        function ($scope, $q, ZnkExerciseEvents, $log, $element, ZnkExerciseSrv) {
             var self = this;
 
             var questionReadyDefer = $q.defer();
@@ -12829,58 +12833,74 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             };
             /**
              *  bind exercise
+             *  BindExerciseEventManager: use the registerCb and update in directives
+             *    update: update the bind object in firebase that something change
+             *    registerCb: register callback to sync data after update
+             *    trigger: internally when the watch update the trigger fires
              */
             (function(self) {
+
+                // initial an empty object in case bindExerciseViewTo was not called
+                self.__exerciseViewBinding = {};
 
                 function BindExerciseEventManager() {
                     this.cbObj = {};
                 }
 
                 BindExerciseEventManager.prototype.trigger = function(key, value) {
-                    this.cbObj[key].forEach(function (cb) {
-                        cb(value);
-                    }, this);
+                    if (angular.isArray(this.cbObj[key])) {
+                        this.cbObj[key].forEach(function (obj) {
+                            if (obj.id && value.id && obj.updatedBy && value.updatedBy) {
+                                if (obj.id === value.id && obj.updatedBy !== value.updatedBy) {
+                                    obj.cb(value);
+                                }
+                            } else if (obj.id && value.id) {
+                                if (obj.id === value.id) {
+                                    obj.cb(value);
+                                }
+                            } else if (obj.updatedBy && value.updatedBy) {
+                                if (obj.updatedBy !== value.updatedBy) {
+                                    obj.cb(value);
+                                }
+                            } else {
+                                obj.cb(value);
+                            }
+                        }, this);
+                    }
                 };
 
-                BindExerciseEventManager.prototype.update = function(key, value) {
-                    var valueToUpdate;
-                    var curValue = self.__exerciseViewBinding[key];
+                BindExerciseEventManager.prototype.update = function(key, value, id, updatedBy) {
+                    var curValue = self.__exerciseViewBinding[key] || {};
 
-                    if (angular.isArray(curValue)) {
-                        valueToUpdate = curValue.push(value);
-                    } else if (angular.isObject(curValue) && angular.isObject(value)) {
-                        valueToUpdate = angular.extend({}, curValue, value);
+                    if (!curValue.data) {
+                        curValue.data = value;
+                        curValue.id = id;
+                        curValue.updatedBy = updatedBy;
+                    } else if (angular.isObject(value)) {
+                        curValue.data = angular.extend({}, curValue, value);
                     } else {
-                        valueToUpdate = value;
+                        curValue.data = value;
                     }
 
-                    self.__exerciseViewBinding[key] = valueToUpdate;
+                    self.__exerciseViewBinding[key] = curValue;
                 };
 
-                BindExerciseEventManager.prototype.registerCb = function(key, cb) {
+                BindExerciseEventManager.prototype.registerCb = function(key, cb, id, updatedBy) {
                      if (!angular.isArray(this.cbObj[key])) {
                          this.cbObj[key] = [];
                      }
-                     this.cbObj[key].push(cb);
+                     this.cbObj[key].push({ id: id, cb: cb, updatedBy: updatedBy });
                 };
 
                 self.bindExerciseEventManager = new BindExerciseEventManager();
 
-                var keys = [
-                    {
-                        getterName: 'currSlideIndex',
-                        setterName: 'setCurrentIndex'
-                    },
-                    {
-                        getterName: 'answerExplanation'
-                    }
-                ];
-
                 var exerciseViewListenersObj =  {};
 
+                var keys = ZnkExerciseSrv.getBindExerciseKeys();
+
                 self.bindExerciseViewTo = function (exerciseView) {
-                    if(!angular.isObject(exerciseView)) {
-                        $log.error('ZnkExerciseDrvCtrl bindExerciseViewTo: exercise view should be an object');
+                    if(!angular.isObject(exerciseView) || !angular.isArray(keys)) {
+                        $log.error('ZnkExerciseDrvCtrl bindExerciseViewTo: exercise view should be an object or keys should be an array');
                         return;
                     }
 
@@ -12890,7 +12910,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         exerciseViewListenersObj[keyObj.getterName] = $scope.$watchCollection(function () {
                             return exerciseView[keyObj.getterName];
                         },function (newVal) {
-                            if(angular.isDefined(newVal)) {
+                            if (angular.isDefined(newVal)) {
                                 if (keyObj.setterName) {
                                     self[keyObj.setterName](newVal);
                                 } else {
@@ -15263,7 +15283,7 @@ angular.module('znk.infra.znkModule').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.znkProgressBar').directive('znkProgressBar',
-        ["$translatePartialLoader", function ($translatePartialLoader) {
+        function () {
         'ngInject';
             return {
                 templateUrl: 'components/znkProgressBar/znkProgressBar.template.html',
@@ -15272,12 +15292,9 @@ angular.module('znk.infra.znkModule').run(['$templateCache', function($templateC
                     progressValue: '@',
                     showProgressValue: '@',
                     showProgressBubble: '&'
-                },
-                link: function () {
-                    $translatePartialLoader.addPart('znkProgressBar');
                 }
             };
-        }]
+        }
     );
 })(angular);
 
@@ -15349,13 +15366,11 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
             template: '<svg-icon class="report-btn" name="report-question-icon" ' +
             'title="{{\'REPORT_POPUP.REPORT_QUESTION\' | translate}}" ng-hide="vm.isLectureType" ng-click="vm.showReportDialog()"></svg-icon>',
             controllerAs: 'vm',
-            controller: ["$mdDialog", "$translatePartialLoader", "ExerciseTypeEnum", function ($mdDialog, $translatePartialLoader, ExerciseTypeEnum) {
+            controller: ["$mdDialog", "ExerciseTypeEnum", function ($mdDialog, ExerciseTypeEnum) {
                 'ngInject';
                 var vm = this;
 
                 vm.isLectureType = vm.reportData.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum;
-                $translatePartialLoader.addPart('znkQuestionReport');
-
                 vm.showReportDialog = function () {
                     $mdDialog.show({
                         locals:{ reportData: vm.reportData },

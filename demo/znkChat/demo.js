@@ -12,11 +12,9 @@
         'znk.infra.utility',
         'ngAnimate'
     ])
-        .config(function ($translateProvider, znkChatDataSrvProvider, PresenceServiceProvider) {
-            $translateProvider.useLoader('$translatePartialLoader', {
-                urlTemplate: '/znkChat/locale/{lang}.json'
-            })
-                .preferredLanguage('en');
+        .config(function (znkChatDataSrvProvider, PresenceServiceProvider) {
+            'ngInject';
+
             var chatPaths = {
                 chatPath: 'chats',
                 chatsUsersGuids: 'users/$$uid/chats',
@@ -49,11 +47,6 @@
                 uid: 'simplelogin:12333',
                 isTeacher: false
             };
-        })
-        .run(function ($rootScope, $translate) {
-            $rootScope.$on('$translatePartialLoaderStructureChanged', function () {
-                $translate.refresh();
-            })
         });
 
     angular.module('znk.infra.presence').constant('ENV', {

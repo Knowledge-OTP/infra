@@ -3,18 +3,12 @@
 
     angular.module('demo')
         .config(function ($translateProvider) {
-            $translateProvider.useLoader('$translatePartialLoader', {
-                urlTemplate: '/{part}/locale/{lang}.json'
-            }).preferredLanguage('en');
-        })
-        .run(function ($rootScope, $translate) {
-            $rootScope.$on('$translatePartialLoaderStructureChanged', function () {
-                $translate.refresh();
+            $translateProvider.useStaticFilesLoader({
+                prefix: 'locale-',
+                suffix: '.json'
             });
-        })
-        .run(function ($translatePartialLoader, $timeout) {
-            $timeout(function () {
-                $translatePartialLoader.addPart('demoLocale');
-            });
+            $translateProvider.preferredLanguage('en');
+            $translateProvider.forceAsyncReload(true);
+            $translateProvider.useSanitizeValueStrategy(null);
         });
 })(angular);
