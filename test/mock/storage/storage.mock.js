@@ -31,10 +31,24 @@
 
                 return studentStorage;
             }
+            function teacherStorageGetter(StorageSrv, $$testAdapter){
+                if(!studentStorage){
+                    var config = {
+                        variables:{
+                            uid: '$$$$uid'
+                        }
+                    };
+                    studentStorage = new StorageSrv(new $$testAdapter(),config);
+                }
+
+                return studentStorage;
+            }
 
             InfraConfigSrvProvider.setStorages(
                 globalStorageGetter,
-                studentStorageGetter
+                studentStorageGetter,
+                teacherStorageGetter
+
             );
         })
         .service('$$testAdapter', function($q, StorageSrv, $parse){
