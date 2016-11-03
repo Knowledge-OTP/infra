@@ -7,6 +7,8 @@
             'znk.infra.popUp',
             'pascalprecht.translate',
             'znk.infra.auth',
+            'znk.infra.userContext',
+            'znk.infra.utility',
             'znk.infra.analytics',
             'znk.infra.general',
             'znk.infra.user',
