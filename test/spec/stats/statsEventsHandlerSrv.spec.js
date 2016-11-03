@@ -45,20 +45,20 @@ describe('testing service "StatsEventsHandlerSrv":', function () {
         var expectedLevel1Stats = {
             id_1: {
                 id: 1,
-                correct: 12,
-                wrong: 31,
+                correct: 2,
+                wrong: 11,
                 unanswered: 2,
-                totalQuestions: 45
+                totalQuestions: 15
             }
         };
 
         var expectedLevel2Stats = {
             id_266: {
                 id: 266,
-                correct: 12,
-                wrong: 31,
+                correct: 2,
+                wrong: 11,
                 unanswered: 2,
-                totalQuestions: 45,
+                totalQuestions: 15,
                 parentsIds: [1]
             }
         };
@@ -66,42 +66,42 @@ describe('testing service "StatsEventsHandlerSrv":', function () {
         var expectedLevel3Stats = {
             id_275: {
                 id: 275,
-                correct: 4,
-                wrong: 13,
+                correct: 0,
+                wrong: 5,
                 unanswered: 0,
-                totalQuestions: 17,
+                totalQuestions: 5,
                 parentsIds: [266, 1]
             },
             id_276: {
                 id: 276,
-                correct: 4,
-                wrong: 8,
+                correct: 1,
+                wrong: 2,
                 unanswered: 0,
-                totalQuestions: 12,
+                totalQuestions: 3,
                 parentsIds: [266, 1]
             },
             id_277: {
                 id: 277,
-                correct: 2,
-                wrong: 3,
+                correct: 1,
+                wrong: 1,
                 unanswered: 1,
-                totalQuestions: 6,
+                totalQuestions: 3,
                 parentsIds: [266, 1]
             },
             id_278: {
                 id: 278,
-                correct: 1,
-                wrong: 4,
+                correct: 0,
+                wrong: 2,
                 unanswered: 1,
-                totalQuestions: 6,
+                totalQuestions: 3,
                 parentsIds: [266, 1]
             },
             id_279: {
                 id: 279,
-                correct: 1,
-                wrong: 3,
+                correct: 0,
+                wrong: 1,
                 unanswered: 0,
-                totalQuestions: 4,
+                totalQuestions: 1,
                 parentsIds: [266, 1]
             }
         };
@@ -109,82 +109,82 @@ describe('testing service "StatsEventsHandlerSrv":', function () {
         var expectedLevel4Stats = {
             id_316: {
                 id: 316,
-                correct: 1,
-                wrong: 4,
+                correct: 0,
+                wrong: 2,
                 unanswered: 0,
-                totalQuestions: 5,
+                totalQuestions: 2,
                 parentsIds: [275, 266, 1]
             },
             id_318: {
                 id: 318,
-                correct: 1,
-                wrong: 3,
+                correct: 0,
+                wrong: 1,
                 unanswered: 0,
-                totalQuestions: 4,
+                totalQuestions: 1,
                 parentsIds: [275, 266, 1]
             },
             id_319: {
                 id: 319,
-                correct: 1,
-                wrong: 3,
+                correct: 0,
+                wrong: 1,
                 unanswered: 0,
-                totalQuestions: 4,
+                totalQuestions: 1,
                 parentsIds: [275, 266, 1]
             },
             id_321: {
                 id: 321,
-                correct: 1,
-                wrong: 3,
+                correct: 0,
+                wrong: 1,
                 unanswered: 0,
-                totalQuestions: 4,
+                totalQuestions: 1,
                 parentsIds: [275, 266, 1]
             },
             id_322: {
                 id: 322,
-                correct: 1,
-                wrong: 3,
+                correct: 0,
+                wrong: 1,
                 unanswered: 0,
-                totalQuestions: 4,
+                totalQuestions: 1,
                 parentsIds: [276, 266, 1]
             },
             id_323: {
                 id: 323,
-                correct: 1,
-                wrong: 3,
+                correct: 0,
+                wrong: 1,
                 unanswered: 0,
-                totalQuestions: 4,
+                totalQuestions: 1,
                 parentsIds: [276, 266, 1]
             },
             id_324: {
                 id: 324,
-                correct: 2,
-                wrong: 2,
+                correct: 1,
+                wrong: 0,
                 unanswered: 0,
-                totalQuestions: 4,
+                totalQuestions: 1,
                 parentsIds: [276, 266, 1]
             },
             id_325: {
                 id: 325,
-                correct: 2,
-                wrong: 3,
+                correct: 1,
+                wrong: 1,
                 unanswered: 1,
-                totalQuestions: 6,
+                totalQuestions: 3,
                 parentsIds: [277, 266, 1]
             },
             id_326: {
                 id: 326,
-                correct: 1,
-                wrong: 4,
+                correct: 0,
+                wrong: 2,
                 unanswered: 1,
-                totalQuestions: 6,
+                totalQuestions: 3,
                 parentsIds: [278, 266, 1]
             },
             id_328: {
                 id: 328,
-                correct: 1,
-                wrong: 3,
+                correct: 0,
+                wrong: 1,
                 unanswered: 0,
-                totalQuestions: 4,
+                totalQuestions: 1,
                 parentsIds: [279, 266, 1]
             }
         };
