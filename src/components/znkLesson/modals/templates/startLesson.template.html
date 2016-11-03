@@ -9,7 +9,7 @@
                 <div class="lesson-icon-wrap"
                      ng-repeat="subject in vm.lessonsSubjects"
                      ng-class="subject.name"
-                     ng-click="vm.openActivePanel(subject); vm.saveLesson(subject);">
+                     ng-click="vm.subjectClicked(subject);">
                     <svg-icon name={{subject.iconName}}></svg-icon>
                     <span>{{subject.name}}</span>
                 </div>

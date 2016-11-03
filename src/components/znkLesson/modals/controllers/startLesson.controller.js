@@ -5,20 +5,20 @@
         function($mdDialog, SubjectEnum, LessonSrv) {
             'ngInject';
 
-            var vm = this;
-            vm.saveLesson = LessonSrv.saveLesson;
-
-            vm.lessonsSubjects = [
-                {id: 0, name: SubjectEnum.MATH.val, iconName: 'znkLesson-math-icon'},
-                {id: 5, name: SubjectEnum.ENGLISH.val, iconName: 'znkLesson-english-icon'}
-            ];
-
-            vm.openActivePanel = function (subject) {
+            function openActivePanel(subject) {
                 console.log('openActivePanel, subject name: ', subject.name);
-            };
+            }
 
+            var vm = this;
+            vm.lessonsSubjects = LessonSrv.getSubjects();
             vm.cancel = function () {
                 $mdDialog.cancel();
             };
+
+            vm.subjectClicked = function (subject) {
+                LessonSrv.saveLesson(subject);
+                openActivePanel(subject);
+                vm.cancel();
+            }
         });
 })(angular);
