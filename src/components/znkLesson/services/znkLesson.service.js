@@ -8,29 +8,16 @@
                 subjects = _subjects;
             };
 
-            this.$get = function($log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, UtilitySrv, SubjectEnumConst) {
+            this.$get = function($log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, UtilitySrv,
+                                 SubjectEnumConst, $mdDialog) {
                 'ngInject';
-                var lessonSrvApi = {};
-                var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';
-                var userAuth = AuthService.getAuth();
-                var globalStorageProm = InfraConfigSrv.getGlobalStorage();
-                var lessonData = {
-                    appName: ENV.studentAppName.split('_')[0].toUpperCase(),
-                    lessonGUID: UtilitySrv.general.createGuid(),
-                    educatorUID: userAuth.uid || 'N/A',
-                    studentUID: StudentContextSrv.getCurrUid() || 'N/A',
-                    startTime: Date.now(),
-                    duration: null,
-                    extendTime: minToUnixTimestamp(ENV.lessonExtendTime),
-                    lessonSubject: null,
-                    status: 1  //(values: 1 = Active, 0 = Ended)
-                };
 
                 function getKeyByValue(obj, value) {
                     for( var prop in obj ) {
                         if( obj.hasOwnProperty( prop ) ) {
-                            if( obj[ prop ] === value )
+                            if( obj[ prop ] === value ) {
                                 return prop;
+                            }
                         }
                     }
                 }
@@ -58,6 +45,34 @@
                             return;
                     }
                 }
+                function openActivePanel() {
+                    $log.debug('openActivePanel');
+                }
+
+
+                var lessonSrvApi = {};
+                var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';
+                var userAuth = AuthService.getAuth();
+                var globalStorageProm = InfraConfigSrv.getGlobalStorage();
+                var lessonData = {
+                    appName: ENV.studentAppName.split('_')[0].toUpperCase(),
+                    lessonGUID: UtilitySrv.general.createGuid(),
+                    educatorUID: userAuth.uid || 'N/A',
+                    studentUID: StudentContextSrv.getCurrUid() || 'N/A',
+                    startTime: Date.now(),
+                    duration: null,
+                    extendTime: minToUnixTimestamp(ENV.activeLesson.lessonExtendTime),
+                    lessonSubject: null,
+                    status: 1  //(values: 1 = Active, 0 = Ended)
+                };
+
+
+                lessonSrvApi.startLesson = function (subject) {
+                    $log.debug('startLesson, subject name: ', subject.name);
+                    lessonSrvApi.saveLesson(subject);
+                    openActivePanel();
+                };
+
 
                 lessonSrvApi.saveLesson = function (subject) {
                     lessonData.lessonSubject = subject;
@@ -80,15 +95,35 @@
                             id: subjectId,
                             name: name,
                             iconName: 'znkLesson-' + name + '-icon'
-                        }
+                        };
                     });
                 };
 
                 lessonSrvApi.getActiveLessonData = function () {
+                    var activeLessonPath  = isTeacherApp ? getPath('educator') : getPath('student');
                     return globalStorageProm.then(function (globalStorage) {
-                        return globalStorage.getAndBindToServer(purchasePath);
+                        return globalStorage.getAndBindToServer(activeLessonPath);
                     });
                 };
+
+                lessonSrvApi.haveActiveLesson = function () {
+                    lessonSrvApi.getActiveLessonData().then(function (lessonData) {
+                        console.log('haveActiveLesson lessonData: ', lessonData);
+                        return lessonData ? true : false;
+                    });
+                };
+
+                lessonSrvApi.showActiveLessonModal = function () {
+                    return $mdDialog.show({
+                        controller: 'activeLessonCtrl',
+                        templateUrl: 'components/znkLesson/modals/templates/activeLesson.template.html',
+                        disableParentScroll: false,
+                        clickOutsideToClose: true,
+                        fullscreen: false,
+                        controllerAs: 'vm'
+                    });
+                };
+
 
                 return lessonSrvApi;
             };

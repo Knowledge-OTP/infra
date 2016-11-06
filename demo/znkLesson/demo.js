@@ -11,14 +11,20 @@
         })
         .decorator('ENV', function ($delegate) {
             'ngInject';
-            $delegate.lessonExtendTime = 15;  // in minutes
+
+            $delegate.activeLesson = {
+                eessonLength: 55,    // in minutes
+                lessonExtendTime: 15, // in minutes
+                lessonEndAlertTime: 5 // in minutes
+            };
             $delegate.appContext = "dashboard";
             $delegate.studentAppName = "sat_app";
             return $delegate;
         })
-        .controller('Main', function () {
+        .controller('Main', function (LessonSrv) {
             'ngInject';
             var vm = this;
+            vm.showActiveLessonModal = LessonSrv.showActiveLessonModal;
 
         });
 })(angular);

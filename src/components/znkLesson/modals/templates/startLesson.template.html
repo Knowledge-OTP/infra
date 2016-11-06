@@ -1,6 +1,6 @@
 <div class="start-lesson-modal">
     <md-dialog class="base" translate-namespace="ZNK_LESSON">
-        <div class="close-popup-wrap" ng-click="vm.cancel()">
+        <div class="close-popup-wrap" ng-click="vm.closeModal()">
             <svg-icon name="znkLesson-close-popup"></svg-icon>
         </div>
         <md-dialog-content>
@@ -9,7 +9,7 @@
                 <div class="lesson-icon-wrap"
                      ng-repeat="subject in vm.lessonsSubjects"
                      ng-class="subject.name"
-                     ng-click="vm.subjectClicked(subject);">
+                     ng-click="vm.startLesson(subject); vm.closeModal();">
                     <svg-icon name={{subject.iconName}}></svg-icon>
                     <span>{{subject.name}}</span>
                 </div>
