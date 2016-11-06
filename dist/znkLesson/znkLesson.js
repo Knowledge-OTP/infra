@@ -226,14 +226,17 @@
                 };
 
                 lessonSrvApi.getSubjects = function() {
-                    return subjects.map(function (subjectId) {
-                        var name = getKeyByValue(SubjectEnumConst, subjectId).toLowerCase();
-                        return {
-                            id: subjectId,
-                            name: name,
-                            iconName: 'znkLesson-' + name + '-icon'
-                        };
-                    });
+                    if (subjects) { return subjects; }
+                    else {
+                        return subjects.map(function (subjectId) {
+                            var name = getKeyByValue(SubjectEnumConst, subjectId).toLowerCase();
+                            return {
+                                id: subjectId,
+                                name: name,
+                                iconName: 'znkLesson-' + name + '-icon'
+                            };
+                        });
+                    }
                 };
 
                 lessonSrvApi.getActiveLessonData = function () {
