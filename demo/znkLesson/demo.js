@@ -13,7 +13,7 @@
             'ngInject';
 
             $delegate.activeLesson = {
-                eessonLength: 55,    // in minutes
+                lessonLength: 55,    // in minutes
                 lessonExtendTime: 15, // in minutes
                 lessonEndAlertTime: 5 // in minutes
             };
