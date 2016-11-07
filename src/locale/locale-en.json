@@ -85,12 +85,12 @@
         "USER_EMAIL"     : "email: {{userEmail}}",
         "USER_ID"        : "uid: {{userId}}"
     },
-    "ZNK_LESSON":{
-        "START_LESSON":  "Start Lesson",
-        "END_LESSON": "End Lesson",
-        "LESSON_SUBJECT": "Lesson Subject",
+    "ZNK_SESSION":{
+        "START_SESSION":  "Start Session",
+        "END_SESSION": "End Session",
+        "SESSION_SUBJECT": "Session Subject",
         "MATH": "math",
         "ENGLISH": "english",
-        "HAVE_ACTIVE_LESSON": "You have active lesson"
+        "HAVE_ACTIVE_SESSION": "You have active Session"
     }
 }
