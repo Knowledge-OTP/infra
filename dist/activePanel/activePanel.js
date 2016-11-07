@@ -16,10 +16,7 @@
 (function (angular) {
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "CallsEventsSrv", "CallsStatusEnum", "ScreenSharingSrv", "UserScreenSharingStateEnum", "UserProfileService", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", "$translate", "SessionSrv", function ($q, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, CallsStatusEnum,
-                                            ScreenSharingSrv, UserScreenSharingStateEnum, UserProfileService,
-                                            PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document,
-                                            $translate, SessionSrv) {
+        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "CallsEventsSrv", "ActivePanelSrv", "CallsStatusEnum", "ScreenSharingSrv", "UserScreenSharingStateEnum", "UserProfileService", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", "$translate", function ($q, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, ActivePanelSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum, UserProfileService, PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document, $translate) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
@@ -32,6 +29,7 @@
                         timerInterval,
                         screenShareStatus = 0,
                         callStatus = 0,
+                        // activePanelStatus = 0,
                         screenShareIsViewer,
                         timerSecondInterval = 1000,
                         activePanelVisibleClassName = 'activePanel-visible';
@@ -65,13 +63,15 @@
                             scope.d.calleeName = (res[1]) ? (res[1]) : '';
                             scope.d.callBtnModel = {
                                 isOffline: isOffline,
-                                receiverId: uid
+                                receiverId: uid,
+                                autoCall: true
                             };
                         }).catch(function (err) {
                             $log.debug('error caught at listenToStudentOrTeacherContextChange', err);
                         });
                         $log.debug('student or teacher context changed: ', receiverId);
                     };
+
 
 
                     var initialUid = StudentContextSrv.getCurrUid();
@@ -217,15 +217,18 @@
                         }
                     };
 
+                    // // Listen to status changes in ScreenSharing
+                    // var listenToActivePanelStatus = function (activePanelStatus) {
+                    //     screenShareStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
+                    //     screenShareIsViewer = false;
+                    //     updateStatus();
+                    // };
+
                     ScreenSharingSrv.registerToCurrUserScreenSharingStateChanges(listenToScreenShareStatus);
 
                     CallsEventsSrv.registerToCurrUserCallStateChanges(listenToCallsStatus);
 
-                    SessionSrv.registerToCallAndScreenSharing({
-                        screenSharing: listenToScreenShareStatus,
-                        call: listenToCallsStatus
-                    });
-
+                    // ActivePanelSrv.registerActivePanelCb(listenToActivePanelStatus);
                 }
             };
         }]);
@@ -235,10 +238,12 @@
     'use strict';
 
     angular.module('znk.infra.activePanel').service('ActivePanelSrv',
-        ["$document", "$compile", "$rootScope", function ($document, $compile, $rootScope) {
+        ["$document", "$compile", "$rootScope", "$log", function ($document, $compile, $rootScope, $log) {
             'ngInject';
 
             var self = this;
+
+            var activePanelCb;
 
             this.loadActivePanel = function () {
                 var body = angular.element($document).find('body');
@@ -252,6 +257,18 @@
                     body.append(canvasContainerElement);
                     $compile(canvasContainerElement)(self.scope);
                 }
+            };
+
+            this.registerActivePanelCb = function(_cb) {
+                activePanelCb = _cb;
+            };
+
+            this.showActivePanel = function () {
+                if (angular.isUndefined(activePanelCb)){
+                    $log.error('activePanelCb is undefined');
+                    return;
+                }
+                activePanelCb();
             };
 
         }]);

@@ -21,10 +21,10 @@
             $delegate.dashboardAppName = 'sat_dashboard';
             return $delegate;
         })
-        .controller('Main', function (SessionSrv) {
+        .controller('Main', function (SessionSrv, ActivePanelSrv) {
             'ngInject';
             var vm = this;
             vm.showActiveSessionModal = SessionSrv.showActiveSessionModal;
-
+            ActivePanelSrv.loadActivePanel();
         });
 })(angular);

@@ -2,10 +2,12 @@
     'use strict';
 
     angular.module('znk.infra.activePanel').service('ActivePanelSrv',
-        function ($document, $compile, $rootScope) {
+        function ($document, $compile, $rootScope, $log) {
             'ngInject';
 
             var self = this;
+
+            var activePanelCb;
 
             this.loadActivePanel = function () {
                 var body = angular.element($document).find('body');
@@ -19,6 +21,18 @@
                     body.append(canvasContainerElement);
                     $compile(canvasContainerElement)(self.scope);
                 }
+            };
+
+            this.registerActivePanelCb = function(_cb) {
+                activePanelCb = _cb;
+            };
+
+            this.showActivePanel = function () {
+                if (angular.isUndefined(activePanelCb)){
+                    $log.error('activePanelCb is undefined');
+                    return;
+                }
+                activePanelCb();
             };
 
         });

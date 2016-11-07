@@ -132,8 +132,9 @@
                 subjects = _subjects;
             };
 
-            this.$get = ["$log", "ENV", "AuthService", "InfraConfigSrv", "StudentContextSrv", "UtilitySrv", "SessionSubjectEnumConst", "$mdDialog", "ActivePanelSrv", "SessionsStatusEnum", function($log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, UtilitySrv,
-                                 SessionSubjectEnumConst, $mdDialog, ActivePanelSrv, SessionsStatusEnum) {
+            this.$get = ["$log", "ENV", "AuthService", "InfraConfigSrv", "StudentContextSrv", "TeacherContextSrv", "UtilitySrv", "SessionSubjectEnumConst", "$mdDialog", "ActivePanelSrv", "SessionsStatusEnum", "ScreenSharingSrv", "$window", function($log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
+                                 UtilitySrv, SessionSubjectEnumConst, $mdDialog, ActivePanelSrv, SessionsStatusEnum,
+                                 ScreenSharingSrv, $window) {
                 'ngInject';
 
                 function sessionDataInit(sessionSubject) {
@@ -188,7 +189,21 @@
                         globalStorage.update(getPath('sessions'), sessionData);
                     });
                 }
-
+                // function shareMyScreen() {
+                //     if (isTeacherApp) {
+                //         var teacherData = {
+                //             isTeacher: true,
+                //             uid: userAuth.uid
+                //         };
+                //         ScreenSharingSrv.shareMyScreen(teacherData);
+                //     }
+                // }
+                function showActivePanel() {
+                    console.log('showActivePanel ' );
+                    var activePanelElm = $window.document.querySelector('.active-panel');
+                    activePanelElm.classList.remove('ng-hide');
+                    activePanelElm.click();
+                }
 
                 var sessionSrvApi = {};
                 var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';
@@ -202,13 +217,12 @@
 
                     $log.debug('startSession, subject name: ', sessionSubject.name);
                     sessionSrvApi.saveSession();
-                    ActivePanelSrv.loadActivePanel();
-                };
-
-                sessionSrvApi.registerToCallAndScreenSharing = function (cbs) {
-                    console.log('cbs: ', cbs);
-                    // cbs.screenSharing(3);
-                    // cbs.call(3);
+                    showActivePanel();
+                    // ActivePanelSrv.showActivePanel();
+                    // show active panel
+                    // call // ng-model=''
+                    // share screen
+                    // shareMyScreen();
                 };
 
                 sessionSrvApi.saveSession = function () {
@@ -256,12 +270,12 @@
                 // };
 
                 sessionSrvApi.haveActiveSession = function () {
-                    sessionSrvApi.getActiveSessionGUID().then(function (sessionGUID) {
+                    return sessionSrvApi.getActiveSessionGUID().then(function (sessionGUID) {
                         sessionData.sessionGUID = sessionGUID;
                         sessionsStatus = (!(angular.equals(sessionGUID, {}))) ?
                             SessionsStatusEnum.ACTIVE.enum: SessionsStatusEnum.INACTIVE.enum;
 
-                        return sessionsStatus;
+                        return !(angular.equals(sessionGUID, {}));
                     });
                 };
 
