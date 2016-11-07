@@ -153,7 +153,7 @@
                 };
 
                 sessionSrvApi.endSession = function () {
-                    var endTime = Date.now();
+                    // var endTime = Date.now();
                     sessionSrvApi.getActiveSessionGUID().then(function (sessionGUID) {
                         sessionData.sessionGUID = sessionGUID;
 
