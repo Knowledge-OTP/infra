@@ -10,7 +10,7 @@
 
             this.$get = function($log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
                                  UtilitySrv, SessionSubjectEnumConst, $mdDialog, ActivePanelSrv, SessionsStatusEnum,
-                                 ScreenSharingSrv, $window) {
+                                 ScreenSharingSrv, $window, $timeout) {
                 'ngInject';
 
                 function sessionDataInit(sessionSubject) {
@@ -65,20 +65,14 @@
                         globalStorage.update(getPath('sessions'), sessionData);
                     });
                 }
-                // function shareMyScreen() {
-                //     if (isTeacherApp) {
-                //         var teacherData = {
-                //             isTeacher: true,
-                //             uid: userAuth.uid
-                //         };
-                //         ScreenSharingSrv.shareMyScreen(teacherData);
-                //     }
-                // }
                 function showActivePanel() {
                     console.log('showActivePanel ' );
                     var activePanelElm = $window.document.querySelector('.active-panel');
                     activePanelElm.classList.remove('ng-hide');
-                    activePanelElm.click();
+                    var shareScreenElm = activePanelElm.querySelector('.share-my-screen');
+                    $timeout(function () {
+                        shareScreenElm.click();
+                    });
                 }
 
                 var sessionSrvApi = {};
@@ -94,11 +88,7 @@
                     $log.debug('startSession, subject name: ', sessionSubject.name);
                     sessionSrvApi.saveSession();
                     showActivePanel();
-                    // ActivePanelSrv.showActivePanel();
-                    // show active panel
                     // call // ng-model=''
-                    // share screen
-                    // shareMyScreen();
                 };
 
                 sessionSrvApi.saveSession = function () {
