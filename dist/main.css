@@ -6426,6 +6426,9 @@ znk-session .session-btn {
   text-transform: none;
   outline: none; }
 
+znk-session .end-session {
+  background-color: #FF6766; }
+
 .start-session-modal md-dialog.base {
   width: 400px;
   border-radius: 15px; }

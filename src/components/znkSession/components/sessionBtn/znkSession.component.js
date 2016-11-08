@@ -6,10 +6,23 @@
             bindings: {},
             templateUrl: 'components/znkSession/components/sessionBtn/znkSession.template.html',
             controllerAs: 'vm',
-            controller: function ($mdDialog) {
+            controller: function ($scope, $log, $mdDialog, SessionSrv) {
                 'ngInject';
                 var vm = this;
-                vm.isSessionActive = false;
+
+                var activeSessionGuid;
+                vm.isLiveSessionActive = false;
+                vm.endSession = SessionSrv.endSession;
+
+                SessionSrv.getLiveSessionGUID().then(function (currSessionGuid) {
+                    activeSessionGuid = currSessionGuid;
+                });
+
+                $scope.$watch(function () {
+                    return activeSessionGuid;
+                }, function (newLiveSessionGUID) {
+                    vm.isLiveSessionActive = newLiveSessionGUID ? true : false;
+                });
 
                 vm.showSessionModal = function () {
                     $mdDialog.show({

@@ -6,7 +6,7 @@
             'ngInject';
 
             return new EnumSrv.BaseEnum([
-                ['INACTIVE', 0, 'ended Session'],
+                ['ENDED', 0, 'ended Session'],
                 ['ACTIVE', 1, 'active Session']
             ]);
         }

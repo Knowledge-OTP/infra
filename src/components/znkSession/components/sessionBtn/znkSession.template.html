@@ -1,5 +1,12 @@
 <md-button class="session-btn"
-           ng-click="vm.showSessionModal()">
-    <span ng-if="!vm.isSessionActive">{{'ZNK_SESSION.START_SESSION' | translate}}</span>
-    <span ng-if="vm.isSessionActive">{{'ZNK_SESSION.END_SESSION' | translate}}</span>
+           ng-click="vm.showSessionModal()"
+           ng-if="!vm.isLiveSessionActive">
+    <span>{{'ZNK_SESSION.START_SESSION' | translate}}</span>
+</md-button>
+
+<md-button class="session-btn"
+           ng-class="{'end-session': vm.isLiveSessionActive}"
+           ng-click="vm.endSession()"
+           ng-if="vm.isLiveSessionActive">
+    <span>{{'ZNK_SESSION.END_SESSION' | translate}}</span>
 </md-button>
