@@ -44,18 +44,18 @@
                         return;
                     }
                     var path;
-                    sessionData.educatorUID = isTeacherApp ? userAuth.uid : TeacherContextSrv.getCurrUid();
-                    sessionData.studentUID = isTeacherApp ? StudentContextSrv.getCurrUid() : userAuth.uid;
+                    var educatorUID = isTeacherApp ? userAuth.uid : TeacherContextSrv.getCurrUid();
+                    var studentUID = isTeacherApp ? StudentContextSrv.getCurrUid() : userAuth.uid;
                     switch (param) {
                         case 'sessions':
-                            path = ENV.studentAppName + '/liveSession/' + sessionData.sessionGUID;
+                            path = ENV.studentAppName + '/liveSession/' + currLiveSessionsGUID;
                             return path;
                         case 'student':
                             path = ENV.studentAppName + '/users/$$uid/liveSession';
-                            return path.replace('$$uid', '' + sessionData.studentUID);
+                            return path.replace('$$uid', '' + studentUID);
                         case 'educator':
                             path = ENV.dashboardAppName + '/users/$$uid/liveSession';
-                            return path.replace('$$uid', '' + sessionData.educatorUID);
+                            return path.replace('$$uid', '' + educatorUID);
                         default:
                             return;
                     }
@@ -121,6 +121,7 @@
 
                 sessionSrvApi.startSession = function (sessionSubject) {
                     sessionData = sessionInit(sessionSubject);
+                    currLiveSessionsGUID = sessionData.sessionGUID;
                     liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
 
                     $log.debug('startSession, subject name: ', sessionSubject.name);
@@ -146,7 +147,6 @@
                 sessionSrvApi.getLiveSessionGUID = function () {
                     var activeSessionPath  = isTeacherApp ? getPath('educator') : getPath('student');
                     activeSessionPath += '/active';
-                    $log.debug('activeSessionPath: ', activeSessionPath);
                     return globalStorageProm.then(function (globalStorage) {
                         return globalStorage.getAndBindToServer(activeSessionPath);
                     });
@@ -184,8 +184,9 @@
                 sessionSrvApi.endSession = function () {
                     $log.debug('sessionData before end', sessionData);
                     var endTime = Date.now();
-                    sessionData.duration = endTime - sessionData.startTime;
+                    liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
                     sessionData.status = SessionsStatusEnum.ENDED.enum;
+                    sessionData.duration = endTime - sessionData.startTime;
                     updateSession();
                     $log.debug('sessionData after end', sessionData);
                 };

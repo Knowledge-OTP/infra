@@ -6425,9 +6425,13 @@ znk-session .session-btn {
   border-radius: 15px;
   text-transform: none;
   outline: none; }
+  znk-session .session-btn:not([disabled]):hover {
+    background-color: #ff931e; }
 
 znk-session .end-session {
   background-color: #FF6766; }
+  znk-session .end-session:not([disabled]):hover {
+    background-color: #FF6766; }
 
 .start-session-modal md-dialog.base {
   width: 400px;

@@ -21,7 +21,7 @@
                 $scope.$watch(function () {
                     return activeSessionGuid;
                 }, function (newLiveSessionGUID) {
-                    vm.isLiveSessionActive = newLiveSessionGUID ? true : false;
+                    vm.isLiveSessionActive = newLiveSessionGUID && !(angular.equals(newLiveSessionGUID, {})) ? true : false;
                 });
 
                 vm.showSessionModal = function () {

@@ -1,5 +1,5 @@
 znk-session {
-    .session-btn{
+    .session-btn {
         background-color: #ff931e;
         color: #FFFFFF;
         height: 30px;
@@ -10,9 +10,15 @@ znk-session {
         border-radius: 15px;
         text-transform: none;
         outline: none;
+        &:not([disabled]):hover {
+            background-color: #ff931e;
+        }
     }
-    .end-session{
+    .end-session {
         background-color: #FF6766;
+        &:not([disabled]):hover {
+            background-color: #FF6766;
+        }
     }
 }
 
