@@ -28,10 +28,10 @@
             } else {
                 remainedMin = time%ONE_HOUR_IN_MILLISECONDS;
                 remainedSec = remainedMin%ONE_MIN_IN_MILLISECONDS;
-                numOfHours = Math.floor(time/ONE_HOUR_IN_MILLISECONDS) + 'h ';
-                numOfMin = remainedMin && remainedMin >  ONE_MIN_IN_MILLISECONDS ? Math.floor(remainedMin/ONE_MIN_IN_MILLISECONDS) + ' min ': '';
-                numOfSec = remainedSec ? Math.round(remainedSec/1000) + ' sec': '';
-                filteredTime = numOfHours + numOfMin + numOfSec;
+                numOfHours = Math.floor(time/ONE_HOUR_IN_MILLISECONDS);
+                numOfMin = remainedMin ? Math.floor(remainedMin/ONE_MIN_IN_MILLISECONDS) + ' min ': '';
+                numOfSec = remainedSec ? Math.round(remainedSec/1000) + ' sec';
+                filteredTime = numOfHours + 'h ' + numOfMin + numOfSec;
             }
             return filteredTime;
         }
