@@ -48,7 +48,7 @@
                         userRef.on('value', function(snapshot) {
                             var val = snapshot.val();
                             if (!val) {
-                                userRef.set(presenceService.userStatus.ONLINE);
+                                userRef.set(PresenceService.userStatus.ONLINE);
                             }
                         });
 
