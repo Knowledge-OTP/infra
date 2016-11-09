@@ -8,7 +8,7 @@
                 subjects = _subjects;
             };
 
-            this.$get = function($rootScope, $log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
+            this.$get = function($log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
                                  UtilitySrv, SessionSubjectEnumConst, $mdDialog, ActivePanelSrv, SessionsStatusEnum,
                                  ScreenSharingSrv, $window, $timeout) {
                 'ngInject';
@@ -45,7 +45,7 @@
                     }
                     var path;
                     var educatorUID = isTeacherApp ? userAuth.uid : TeacherContextSrv.getCurrUid();
-                    var studentUID = isTeacherApp ? StudentContextSrv.getCurrUid() : userAuth.uid;
+                    var studentUID = isTeacherApp ? 'cb377ddc-6d71-496f-aef5-a357d9afee88' : userAuth.uid;
                     switch (param) {
                         case 'sessions':
                             path = ENV.studentAppName + '/liveSession/' + currLiveSessionsGUID;
@@ -85,8 +85,8 @@
                         dataToSave[sessionPath] = sessionData;
                         dataToSave[studentPathArchive] = sessionData.sessionGUID;
                         dataToSave[educatorPathArchive] = sessionData.sessionGUID;
-                        dataToSave[studentPathActive] = null;
-                        dataToSave[educatorPathActive] = null;
+                        dataToSave[studentPathActive] = false;
+                        dataToSave[educatorPathActive] = false;
                         globalStorage.update(dataToSave);
                     });
                 }
@@ -107,17 +107,6 @@
                 var userAuth = AuthService.getAuth();
                 var globalStorageProm = InfraConfigSrv.getGlobalStorage();
                 var sessionData = {};
-
-                $rootScope.$watch(function () {
-                    return currLiveSessionsGUID;
-                }, function (newLiveSessionGUID) {
-                    liveSessionsStatus = newLiveSessionGUID ?
-                        SessionsStatusEnum.ACTIVE.enum : SessionsStatusEnum.ENDED.enum;
-                    var isSessionData = !(angular.equals(sessionData, {}));
-                    if (liveSessionsStatus === SessionsStatusEnum.ACTIVE.enum && !isSessionData) {
-                        sessionSrvApi.loadLiveSessionData();
-                    }
-                });
 
                 sessionSrvApi.startSession = function (sessionSubject) {
                     sessionData = sessionInit(sessionSubject);
@@ -155,7 +144,7 @@
                 sessionSrvApi.loadLiveSessionData = function () {
                     $log.debug('Load Live Session Data, session GUID: ', currLiveSessionsGUID);
                     globalStorageProm.then(function (globalStorage) {
-                        var sessionsPath = getPath('sessions') + '/' + currLiveSessionsGUID;
+                        var sessionsPath = getPath('sessions');
                         globalStorage.get(sessionsPath).then(function (currSessionData) {
                             sessionData = currSessionData;
                             $log.debug('loadLiveSessionData, sessionData: ', sessionData);
@@ -166,9 +155,20 @@
                 sessionSrvApi.listenToLiveSessionsStatus = function () {
                     return sessionSrvApi.getLiveSessionGUID().then(function (sessionGUID) {
                         currLiveSessionsGUID = sessionGUID;
+                        liveSessionsStatus = currLiveSessionsGUID ?
+                            SessionsStatusEnum.ACTIVE.enum : SessionsStatusEnum.ENDED.enum;
+                        var isSessionData = !(angular.equals(sessionData, {}));
+                        if (liveSessionsStatus === SessionsStatusEnum.ACTIVE.enum && !isSessionData) {
+                            sessionSrvApi.loadLiveSessionData();
+                        }
+                        if (currLiveSessionsGUID &&!(angular.equals(currLiveSessionsGUID, {}))) {
+                            $log.debug('There is an active session');
+                            sessionSrvApi.showLiveSessionModal();
+                        } else {
+                            $log.debug('There is no active session');
+                        }
                     });
                 };
-
 
                 sessionSrvApi.showLiveSessionModal = function () {
                     return $mdDialog.show({

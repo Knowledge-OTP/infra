@@ -36,7 +36,9 @@
                     variables: {
                         uid: null
                     },
-                    cacheRules: []
+                    cacheRules: [function (path) {
+                        return path.indexOf('liveSesson') > -1;
+                    }]
                 };
                 this.__config = angular.extend(defaultConfig, config);
 

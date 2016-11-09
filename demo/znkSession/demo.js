@@ -26,5 +26,6 @@
             var vm = this;
             vm.showActiveSessionModal = SessionSrv.showActiveSessionModal;
             ActivePanelSrv.loadActivePanel();
+            SessionSrv.listenToLiveSessionsStatus();
         });
 })(angular);

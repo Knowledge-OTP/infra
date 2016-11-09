@@ -10,17 +10,16 @@
                 'ngInject';
                 var vm = this;
 
-                var activeSessionGuid;
+                vm.activeSessionGuid = {};
                 vm.isLiveSessionActive = false;
                 vm.endSession = SessionSrv.endSession;
 
-                SessionSrv.getLiveSessionGUID().then(function (currSessionGuid) {
-                    activeSessionGuid = currSessionGuid;
+                SessionSrv.getLiveSessionGUID().then(function (currSessionGuid, key) {
+                    $log.debug('getLiveSessionGUID key: ', key);
+                    vm.activeSessionGuid = currSessionGuid;
                 });
 
-                $scope.$watch(function () {
-                    return activeSessionGuid;
-                }, function (newLiveSessionGUID) {
+                $scope.$watch('vm.activeSessionGuid', function (newLiveSessionGUID) {
                     vm.isLiveSessionActive = newLiveSessionGUID && !(angular.equals(newLiveSessionGUID, {})) ? true : false;
                 });
 
