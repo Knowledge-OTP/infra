@@ -8,29 +8,31 @@
             controllerAs: 'vm',
             controller: function ($scope, $log, $mdDialog, SessionSrv) {
                 'ngInject';
+
                 var vm = this;
 
-                vm.activeSessionGuid = {};
-                vm.isLiveSessionActive = false;
-                vm.endSession = SessionSrv.endSession;
+                // this.$onInit = function() {
+                    vm.activeSessionGuid = {};
+                    vm.isLiveSessionActive = false;
+                    vm.endSession = SessionSrv.endSession;
 
-                SessionSrv.getLiveSessionGUID().then(function (currSessionGuid, key) {
-                    $log.debug('getLiveSessionGUID key: ', key);
-                    vm.activeSessionGuid = currSessionGuid;
-                });
-
-                $scope.$watch('vm.activeSessionGuid', function (newLiveSessionGUID) {
-                    vm.isLiveSessionActive = newLiveSessionGUID && !(angular.equals(newLiveSessionGUID, {})) ? true : false;
-                });
-
-                vm.showSessionModal = function () {
-                    $mdDialog.show({
-                        controller: 'startSessionCtrl',
-                        controllerAs: 'vm',
-                        templateUrl: 'components/znkSession/modals/templates/startSession.template.html',
-                        clickOutsideToClose: true
+                    SessionSrv.getLiveSessionGUID().then(function (currSessionGuid) {
+                        vm.activeSessionGuid = currSessionGuid;
                     });
-                };
+
+                    $scope.$watch('vm.activeSessionGuid', function (newLiveSessionGUID) {
+                        vm.isLiveSessionActive = newLiveSessionGUID.guid ? true : false;
+                    }, true);
+
+                    vm.showSessionModal = function () {
+                        $mdDialog.show({
+                            controller: 'startSessionCtrl',
+                            controllerAs: 'vm',
+                            templateUrl: 'components/znkSession/modals/templates/startSession.template.html',
+                            clickOutsideToClose: true
+                        });
+                    };
+                // };
             }
         });
 })(angular);

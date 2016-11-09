@@ -234,9 +234,12 @@
 
                 return this.get(path).then(function (pathValue) {
                     self.adapter.onEvent('value', pathValue.$$path, function (serverValue) {
+                        if (typeof serverValue !== 'object'){
+                            $log.error('getAndBindToServer Fn support only object value')
+                        }
+
                         angular.extend(pathValue, serverValue);
                     });
-
                     self.__addPathBindedToServer(path);
                     return pathValue;
                 });
