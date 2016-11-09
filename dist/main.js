@@ -15545,7 +15545,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
 
                 var vm = this;
 
-                // this.$onInit = function() {
+                this.$onInit = function() {
                     vm.activeSessionGuid = {};
                     vm.isLiveSessionActive = false;
                     vm.endSession = SessionSrv.endSession;
@@ -15566,7 +15566,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                             clickOutsideToClose: true
                         });
                     };
-                // };
+                };
             }]
         });
 })(angular);

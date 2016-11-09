@@ -11,7 +11,7 @@
 
                 var vm = this;
 
-                // this.$onInit = function() {
+                this.$onInit = function() {
                     vm.activeSessionGuid = {};
                     vm.isLiveSessionActive = false;
                     vm.endSession = SessionSrv.endSession;
@@ -32,7 +32,7 @@
                             clickOutsideToClose: true
                         });
                     };
-                // };
+                };
             }
         });
 })(angular);
