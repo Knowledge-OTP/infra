@@ -90,7 +90,7 @@
                         globalStorage.update(dataToSave);
                     });
                 }
-                function makeCall() {
+                function handleCall() {
                     var activePanelElm = $window.document.querySelector('.active-panel');
                     activePanelElm.classList.remove('ng-hide');
                     var callBtnElm = activePanelElm.querySelector('call-btn');
@@ -122,6 +122,7 @@
                     liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
                     saveSession();
                     showActivePanel();
+                    handleCall();
                 };
 
 
@@ -191,6 +192,7 @@
                     liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
                     sessionData.status = SessionsStatusEnum.ENDED.enum;
                     sessionData.duration = endTime - sessionData.startTime;
+                    handleCall();
                     hideActivePanel();
                     updateSession();
                 };
