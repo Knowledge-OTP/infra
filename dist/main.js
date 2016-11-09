@@ -15684,7 +15684,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                     }
                     var path;
                     var educatorUID = isTeacherApp ? userAuth.uid : TeacherContextSrv.getCurrUid();
-                    var studentUID = isTeacherApp ? 'cb377ddc-6d71-496f-aef5-a357d9afee88' : userAuth.uid;
+                    var studentUID = isTeacherApp ? StudentContextSrv.getCurrUid() : userAuth.uid;
                     switch (param) {
                         case 'sessions':
                             path = ENV.studentAppName + '/liveSession/' + currLiveSessionsGUID.guid;
