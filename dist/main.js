@@ -8517,7 +8517,9 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                     variables: {
                         uid: null
                     },
-                    cacheRules: []
+                    cacheRules: [function (path) {
+                        return path.indexOf('liveSesson') > -1;
+                    }]
                 };
                 this.__config = angular.extend(defaultConfig, config);
 
@@ -8713,9 +8715,12 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
 
                 return this.get(path).then(function (pathValue) {
                     self.adapter.onEvent('value', pathValue.$$path, function (serverValue) {
+                        if (typeof serverValue !== 'object'){
+                            $log.error('getAndBindToServer Fn support only object value');
+                        }
+
                         angular.extend(pathValue, serverValue);
                     });
-
                     self.__addPathBindedToServer(path);
                     return pathValue;
                 });
@@ -15537,30 +15542,31 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
             controllerAs: 'vm',
             controller: ["$scope", "$log", "$mdDialog", "SessionSrv", function ($scope, $log, $mdDialog, SessionSrv) {
                 'ngInject';
+
                 var vm = this;
 
-                var activeSessionGuid;
-                vm.isLiveSessionActive = false;
-                vm.endSession = SessionSrv.endSession;
+                // this.$onInit = function() {
+                    vm.activeSessionGuid = {};
+                    vm.isLiveSessionActive = false;
+                    vm.endSession = SessionSrv.endSession;
 
-                SessionSrv.getLiveSessionGUID().then(function (currSessionGuid) {
-                    activeSessionGuid = currSessionGuid;
-                });
-
-                $scope.$watch(function () {
-                    return activeSessionGuid;
-                }, function (newLiveSessionGUID) {
-                    vm.isLiveSessionActive = newLiveSessionGUID && !(angular.equals(newLiveSessionGUID, {})) ? true : false;
-                });
-
-                vm.showSessionModal = function () {
-                    $mdDialog.show({
-                        controller: 'startSessionCtrl',
-                        controllerAs: 'vm',
-                        templateUrl: 'components/znkSession/modals/templates/startSession.template.html',
-                        clickOutsideToClose: true
+                    SessionSrv.getLiveSessionGUID().then(function (currSessionGuid) {
+                        vm.activeSessionGuid = currSessionGuid;
                     });
-                };
+
+                    $scope.$watch('vm.activeSessionGuid', function (newLiveSessionGUID) {
+                        vm.isLiveSessionActive = newLiveSessionGUID.guid ? true : false;
+                    }, true);
+
+                    vm.showSessionModal = function () {
+                        $mdDialog.show({
+                            controller: 'startSessionCtrl',
+                            controllerAs: 'vm',
+                            templateUrl: 'components/znkSession/modals/templates/startSession.template.html',
+                            clickOutsideToClose: true
+                        });
+                    };
+                // };
             }]
         });
 })(angular);
@@ -15641,9 +15647,9 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                 subjects = _subjects;
             };
 
-            this.$get = ["$rootScope", "$log", "ENV", "AuthService", "InfraConfigSrv", "StudentContextSrv", "TeacherContextSrv", "UtilitySrv", "SessionSubjectEnumConst", "$mdDialog", "ActivePanelSrv", "SessionsStatusEnum", "ScreenSharingSrv", "$window", "$timeout", function($rootScope, $log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
+            this.$get = ["$log", "ENV", "AuthService", "InfraConfigSrv", "StudentContextSrv", "TeacherContextSrv", "UtilitySrv", "SessionSubjectEnumConst", "$mdDialog", "ActivePanelSrv", "SessionsStatusEnum", "$window", "$timeout", function($log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
                                  UtilitySrv, SessionSubjectEnumConst, $mdDialog, ActivePanelSrv, SessionsStatusEnum,
-                                 ScreenSharingSrv, $window, $timeout) {
+                                 $window, $timeout) {
                 'ngInject';
 
                 function sessionInit(sessionSubject) {
@@ -15678,10 +15684,10 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                     }
                     var path;
                     var educatorUID = isTeacherApp ? userAuth.uid : TeacherContextSrv.getCurrUid();
-                    var studentUID = isTeacherApp ? StudentContextSrv.getCurrUid() : userAuth.uid;
+                    var studentUID = isTeacherApp ? 'cb377ddc-6d71-496f-aef5-a357d9afee88' : userAuth.uid;
                     switch (param) {
                         case 'sessions':
-                            path = ENV.studentAppName + '/liveSession/' + currLiveSessionsGUID;
+                            path = ENV.studentAppName + '/liveSession/' + currLiveSessionsGUID.guid;
                             return path;
                         case 'student':
                             path = ENV.studentAppName + '/users/$$uid/liveSession';
@@ -15702,7 +15708,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                         var sessionPath = getPath('sessions');
                         dataToSave[sessionPath] = sessionData;
                         dataToSave[studentPath] = sessionData.sessionGUID;
-                        dataToSave[educatorPath] = sessionData.sessionGUID;
+                        dataToSave[educatorPath] = { guid: sessionData.sessionGUID };
                         globalStorage.update(dataToSave);
                     });
                 }
@@ -15711,26 +15717,34 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                     var dataToSave = {};
                     globalStorageProm.then(function (globalStorage) {
                         var studentPathActive = getPath('student') + '/active';
-                        var studentPathArchive = getPath('student') + '/archive';
+                        var studentPathArchive = getPath('student') + '/archive/' + sessionData.sessionGUID;
                         var educatorPathActive = getPath('educator') + '/active';
-                        var educatorPathArchive = getPath('educator') + '/archive';
+                        var educatorPathArchive = getPath('educator') + '/archive/' + sessionData.sessionGUID;
                         var sessionPath = getPath('sessions');
                         dataToSave[sessionPath] = sessionData;
-                        dataToSave[studentPathArchive] = sessionData.sessionGUID;
-                        dataToSave[educatorPathArchive] = sessionData.sessionGUID;
-                        dataToSave[studentPathActive] = null;
-                        dataToSave[educatorPathActive] = null;
+                        dataToSave[studentPathArchive] = false;
+                        dataToSave[educatorPathArchive] = false;
+                        dataToSave[studentPathActive] = { guid: false };
+                        dataToSave[educatorPathActive] = { guid: false };
                         globalStorage.update(dataToSave);
                     });
                 }
-                function showActivePanel() {
-                    console.log('showActivePanel ' );
+                function handleCall() {
                     var activePanelElm = $window.document.querySelector('.active-panel');
                     activePanelElm.classList.remove('ng-hide');
-                    var shareScreenElm = activePanelElm.querySelector('.share-my-screen');
+                    var callBtnElm = activePanelElm.querySelector('call-btn');
                     $timeout(function () {
-                        shareScreenElm.click();
+                        callBtnElm.click();
                     });
+                }
+
+                function showActivePanel() {
+                    var activePanelElm = $window.document.querySelector('.active-panel');
+                    activePanelElm.classList.remove('ng-hide');
+                }
+                function hideActivePanel() {
+                    var activePanelElm = $window.document.querySelector('.active-panel');
+                    activePanelElm.classList.add('ng-hide');
                 }
 
                 var liveSessionsStatus;
@@ -15741,25 +15755,13 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                 var globalStorageProm = InfraConfigSrv.getGlobalStorage();
                 var sessionData = {};
 
-                $rootScope.$watch(function () {
-                    return currLiveSessionsGUID;
-                }, function (newLiveSessionGUID) {
-                    liveSessionsStatus = newLiveSessionGUID ?
-                        SessionsStatusEnum.ACTIVE.enum : SessionsStatusEnum.ENDED.enum;
-                    var isSessionData = !(angular.equals(sessionData, {}));
-                    if (liveSessionsStatus === SessionsStatusEnum.ACTIVE.enum && !isSessionData) {
-                        sessionSrvApi.loadLiveSessionData();
-                    }
-                });
-
                 sessionSrvApi.startSession = function (sessionSubject) {
                     sessionData = sessionInit(sessionSubject);
-                    currLiveSessionsGUID = sessionData.sessionGUID;
+                    currLiveSessionsGUID = { guid: sessionData.sessionGUID};
                     liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
-
-                    $log.debug('startSession, subject name: ', sessionSubject.name);
                     saveSession();
                     showActivePanel();
+                    handleCall();
                 };
 
 
@@ -15788,10 +15790,11 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                 sessionSrvApi.loadLiveSessionData = function () {
                     $log.debug('Load Live Session Data, session GUID: ', currLiveSessionsGUID);
                     globalStorageProm.then(function (globalStorage) {
-                        var sessionsPath = getPath('sessions') + '/' + currLiveSessionsGUID;
+                        var sessionsPath = getPath('sessions');
                         globalStorage.get(sessionsPath).then(function (currSessionData) {
                             sessionData = currSessionData;
                             $log.debug('loadLiveSessionData, sessionData: ', sessionData);
+                            showActivePanel();
                         });
                     });
                 };
@@ -15799,9 +15802,18 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                 sessionSrvApi.listenToLiveSessionsStatus = function () {
                     return sessionSrvApi.getLiveSessionGUID().then(function (sessionGUID) {
                         currLiveSessionsGUID = sessionGUID;
+                        liveSessionsStatus = currLiveSessionsGUID.guid ?
+                            SessionsStatusEnum.ACTIVE.enum : SessionsStatusEnum.ENDED.enum;
+                        var isSessionData = !(angular.equals(sessionData, {}));
+                        if (liveSessionsStatus === SessionsStatusEnum.ACTIVE.enum && !isSessionData) {
+                            sessionSrvApi.loadLiveSessionData();
+                        }
+                        if (currLiveSessionsGUID.guid) {
+                            $log.debug('There is an active session');
+                            sessionSrvApi.showLiveSessionModal();
+                        }
                     });
                 };
-
 
                 sessionSrvApi.showLiveSessionModal = function () {
                     return $mdDialog.show({
@@ -15815,13 +15827,13 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                 };
 
                 sessionSrvApi.endSession = function () {
-                    $log.debug('sessionData before end', sessionData);
                     var endTime = Date.now();
                     liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
                     sessionData.status = SessionsStatusEnum.ENDED.enum;
                     sessionData.duration = endTime - sessionData.startTime;
+                    handleCall();
+                    hideActivePanel();
                     updateSession();
-                    $log.debug('sessionData after end', sessionData);
                 };
 
                 sessionSrvApi.addExtendTime = function () {

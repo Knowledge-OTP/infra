@@ -64,11 +64,11 @@
                     $log.debug('saveSession, sessionData: ', sessionData);
                     var dataToSave = {};
                     globalStorageProm.then(function (globalStorage) {
-                        // var studentPath = getPath('student') + '/active';
+                        var studentPath = getPath('student') + '/active';
                         var educatorPath = getPath('educator') + '/active';
                         var sessionPath = getPath('sessions');
                         dataToSave[sessionPath] = sessionData;
-                        // dataToSave[studentPath] = sessionData.sessionGUID;
+                        dataToSave[studentPath] = sessionData.sessionGUID;
                         dataToSave[educatorPath] = { guid: sessionData.sessionGUID };
                         globalStorage.update(dataToSave);
                     });
@@ -77,15 +77,15 @@
                     $log.debug('updateSession, sessionData: ', sessionData);
                     var dataToSave = {};
                     globalStorageProm.then(function (globalStorage) {
-                        // var studentPathActive = getPath('student') + '/active';
-                        // var studentPathArchive = getPath('student') + '/archive/' + sessionData.sessionGUID;
+                        var studentPathActive = getPath('student') + '/active';
+                        var studentPathArchive = getPath('student') + '/archive/' + sessionData.sessionGUID;
                         var educatorPathActive = getPath('educator') + '/active';
                         var educatorPathArchive = getPath('educator') + '/archive/' + sessionData.sessionGUID;
                         var sessionPath = getPath('sessions');
                         dataToSave[sessionPath] = sessionData;
-                        // dataToSave[studentPathArchive] = false;
+                        dataToSave[studentPathArchive] = false;
                         dataToSave[educatorPathArchive] = false;
-                        // dataToSave[studentPathActive] = { guid: false };
+                        dataToSave[studentPathActive] = { guid: false };
                         dataToSave[educatorPathActive] = { guid: false };
                         globalStorage.update(dataToSave);
                     });
