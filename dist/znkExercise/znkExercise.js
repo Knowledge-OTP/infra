@@ -11,7 +11,8 @@
         'znk.infra.exerciseUtility',
         'znk.infra.analytics',
         'znk.infra.popUp',
-        'znk.infra.user'
+        'znk.infra.user',
+        'znk.infra.utility'
     ])
     .config([
         'SvgIconSrvProvider',
@@ -1519,8 +1520,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('ZnkExerciseDrvCtrl', [
-        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$element', 'ZnkExerciseSrv',
-        function ($scope, $q, ZnkExerciseEvents, $log, $element, ZnkExerciseSrv) {
+        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$element', 'ZnkExerciseSrv', 'UtilitySrv',
+        function ($scope, $q, ZnkExerciseEvents, $log, $element, ZnkExerciseSrv, UtilitySrv) {
             var self = this;
 
             var questionReadyDefer = $q.defer();
@@ -1715,6 +1716,11 @@
 
                     if (updatedBy) {
                         curValue.updatedBy = updatedBy;
+                    }
+
+                    // create new guid for each update to enforce it
+                    if (valueObj.update) {
+                        valueObj.update = UtilitySrv.general.createGuid();
                     }
 
                     curValue = angular.extend({}, curValue, valueObj);
