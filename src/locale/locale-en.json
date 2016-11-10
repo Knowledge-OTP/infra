@@ -57,7 +57,7 @@
         "SKIP": "Skip"
     },
     "ZNK_PROGRESS_BAR": {
-        "MASTERY": "Mastery"
+        "ACCURACY": "accuracy"
     },
     "ACTIVE_PANEL":{
         "SHOW_STUDENT_SCREEN": "Show Teacher Screen",
