@@ -103,6 +103,7 @@
                         @include flex-middle;
                         @include dimension(150px, 34px);
                         background: $bgColor6;
+                        outline: none;
                     }
                 }
             }
@@ -173,9 +174,8 @@
 
                 .content{
                     margin:{
-                        top: 0
+                        top: 0;
                     }
-                ;
                 }
             }
         }

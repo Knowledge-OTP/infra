@@ -8,9 +8,9 @@
                 subjects = _subjects;
             };
 
-            this.$get = function($log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
+            this.$get = function($rootScope, $log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
                                  UtilitySrv, SessionSubjectEnumConst, $mdDialog, ActivePanelSrv, SessionsStatusEnum,
-                                 $window, $timeout) {
+                                 $window, $timeout, PopUpSrv) {
                 'ngInject';
 
                 function sessionInit(sessionSubject) {
@@ -68,7 +68,7 @@
                         var educatorPath = getPath('educator') + '/active';
                         var sessionPath = getPath('sessions');
                         dataToSave[sessionPath] = sessionData;
-                        dataToSave[studentPath] = sessionData.sessionGUID;
+                        dataToSave[studentPath] = { guid: sessionData.sessionGUID };
                         dataToSave[educatorPath] = { guid: sessionData.sessionGUID };
                         globalStorage.update(dataToSave);
                     });
@@ -163,27 +163,19 @@
                 sessionSrvApi.listenToLiveSessionsStatus = function () {
                     return sessionSrvApi.getLiveSessionGUID().then(function (sessionGUID) {
                         currLiveSessionsGUID = sessionGUID;
-                        liveSessionsStatus = currLiveSessionsGUID.guid ?
-                            SessionsStatusEnum.ACTIVE.enum : SessionsStatusEnum.ENDED.enum;
-                        var isSessionData = !(angular.equals(sessionData, {}));
-                        if (liveSessionsStatus === SessionsStatusEnum.ACTIVE.enum && !isSessionData) {
-                            sessionSrvApi.loadLiveSessionData();
-                        }
-                        if (currLiveSessionsGUID.guid) {
-                            $log.debug('There is an active session');
-                            sessionSrvApi.showLiveSessionModal();
-                        }
-                    });
-                };
-
-                sessionSrvApi.showLiveSessionModal = function () {
-                    return $mdDialog.show({
-                        controller: 'activeSessionCtrl',
-                        templateUrl: 'components/znkSession/modals/templates/activeSession.template.html',
-                        disableParentScroll: false,
-                        clickOutsideToClose: true,
-                        fullscreen: false,
-                        controllerAs: 'vm'
+                        $rootScope.$watch(function () { return currLiveSessionsGUID; },
+                            function (newLiveSessionGUID) {
+                                liveSessionsStatus = newLiveSessionGUID.guid ?
+                                    SessionsStatusEnum.ACTIVE.enum : SessionsStatusEnum.ENDED.enum;
+                                var isSessionData = !(angular.equals(sessionData, {}));
+                                if (liveSessionsStatus === SessionsStatusEnum.ACTIVE.enum && !isSessionData) {
+                                    sessionSrvApi.loadLiveSessionData();
+                                }
+                                if (newLiveSessionGUID.guid && !isTeacherApp) {
+                                    $log.debug('There is an active live session');
+                                    PopUpSrv.info('You joined a live Session');
+                                }
+                            }, true);
                     });
                 };
 
@@ -195,6 +187,7 @@
                     handleCall();
                     hideActivePanel();
                     updateSession();
+                    PopUpSrv.info('Live session has ended');
                 };
 
                 sessionSrvApi.addExtendTime = function () {

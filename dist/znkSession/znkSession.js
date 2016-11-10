@@ -111,19 +111,6 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkSession').controller('activeSessionCtrl',
-        ["$mdDialog", function($mdDialog) {
-            'ngInject';
-
-            var vm = this;
-            vm.closeModal = $mdDialog.cancel;
-
-        }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.znkSession').controller('startSessionCtrl',
         ["$mdDialog", "SessionSrv", function($mdDialog, SessionSrv) {
             'ngInject';
@@ -146,9 +133,9 @@
                 subjects = _subjects;
             };
 
-            this.$get = ["$log", "ENV", "AuthService", "InfraConfigSrv", "StudentContextSrv", "TeacherContextSrv", "UtilitySrv", "SessionSubjectEnumConst", "$mdDialog", "ActivePanelSrv", "SessionsStatusEnum", "$window", "$timeout", function($log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
+            this.$get = ["$rootScope", "$log", "ENV", "AuthService", "InfraConfigSrv", "StudentContextSrv", "TeacherContextSrv", "UtilitySrv", "SessionSubjectEnumConst", "$mdDialog", "ActivePanelSrv", "SessionsStatusEnum", "$window", "$timeout", "PopUpSrv", function($rootScope, $log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
                                  UtilitySrv, SessionSubjectEnumConst, $mdDialog, ActivePanelSrv, SessionsStatusEnum,
-                                 $window, $timeout) {
+                                 $window, $timeout, PopUpSrv) {
                 'ngInject';
 
                 function sessionInit(sessionSubject) {
@@ -206,7 +193,7 @@
                         var educatorPath = getPath('educator') + '/active';
                         var sessionPath = getPath('sessions');
                         dataToSave[sessionPath] = sessionData;
-                        dataToSave[studentPath] = sessionData.sessionGUID;
+                        dataToSave[studentPath] = { guid: sessionData.sessionGUID };
                         dataToSave[educatorPath] = { guid: sessionData.sessionGUID };
                         globalStorage.update(dataToSave);
                     });
@@ -301,27 +288,19 @@
                 sessionSrvApi.listenToLiveSessionsStatus = function () {
                     return sessionSrvApi.getLiveSessionGUID().then(function (sessionGUID) {
                         currLiveSessionsGUID = sessionGUID;
-                        liveSessionsStatus = currLiveSessionsGUID.guid ?
-                            SessionsStatusEnum.ACTIVE.enum : SessionsStatusEnum.ENDED.enum;
-                        var isSessionData = !(angular.equals(sessionData, {}));
-                        if (liveSessionsStatus === SessionsStatusEnum.ACTIVE.enum && !isSessionData) {
-                            sessionSrvApi.loadLiveSessionData();
-                        }
-                        if (currLiveSessionsGUID.guid) {
-                            $log.debug('There is an active session');
-                            sessionSrvApi.showLiveSessionModal();
-                        }
-                    });
-                };
-
-                sessionSrvApi.showLiveSessionModal = function () {
-                    return $mdDialog.show({
-                        controller: 'activeSessionCtrl',
-                        templateUrl: 'components/znkSession/modals/templates/activeSession.template.html',
-                        disableParentScroll: false,
-                        clickOutsideToClose: true,
-                        fullscreen: false,
-                        controllerAs: 'vm'
+                        $rootScope.$watch(function () { return currLiveSessionsGUID; },
+                            function (newLiveSessionGUID) {
+                                liveSessionsStatus = newLiveSessionGUID.guid ?
+                                    SessionsStatusEnum.ACTIVE.enum : SessionsStatusEnum.ENDED.enum;
+                                var isSessionData = !(angular.equals(sessionData, {}));
+                                if (liveSessionsStatus === SessionsStatusEnum.ACTIVE.enum && !isSessionData) {
+                                    sessionSrvApi.loadLiveSessionData();
+                                }
+                                if (newLiveSessionGUID.guid && !isTeacherApp) {
+                                    $log.debug('There is an active live session');
+                                    PopUpSrv.info('You joined a live Session');
+                                }
+                            }, true);
                     });
                 };
 
@@ -333,6 +312,7 @@
                     handleCall();
                     hideActivePanel();
                     updateSession();
+                    PopUpSrv.info('Live session has ended');
                 };
 
                 sessionSrvApi.addExtendTime = function () {
@@ -361,18 +341,6 @@ angular.module('znk.infra.znkSession').run(['$templateCache', function($template
     "           ng-if=\"vm.isLiveSessionActive\">\n" +
     "    <span>{{'ZNK_SESSION.END_SESSION' | translate}}</span>\n" +
     "</md-button>\n" +
-    "");
-  $templateCache.put("components/znkSession/modals/templates/activeSession.template.html",
-    "<div class=\"start-session-modal\">\n" +
-    "    <md-dialog class=\"base\" translate-namespace=\"ZNK_SESSION\">\n" +
-    "        <div class=\"close-popup-wrap\" ng-click=\"vm.closeModal()\">\n" +
-    "            <svg-icon name=\"znkSession-close-popup\"></svg-icon>\n" +
-    "        </div>\n" +
-    "        <md-dialog-content>\n" +
-    "            <div class=\"main-title\" translate=\".HAVE_ACTIVE_SESSION\"></div>\n" +
-    "        </md-dialog-content>\n" +
-    "    </md-dialog>\n" +
-    "</div>\n" +
     "");
   $templateCache.put("components/znkSession/modals/templates/startSession.template.html",
     "<div class=\"start-session-modal\">\n" +

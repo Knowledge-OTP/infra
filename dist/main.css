@@ -1868,7 +1868,8 @@ $blueBG8: #75cbe8;
         -webkit-align-items: center;
         width: 150px;
         height: 34px;
-        background: #fff; }
+        background: #fff;
+        outline: none; }
   .znk-popup .base-popup.exercise-popup .znk-popup-wrapper {
     width: 68%;
     margin-top: 240px; }
