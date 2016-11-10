@@ -38,6 +38,7 @@
   },
   "resolutions": {
     "angular": "^1.5.8",
-    "angular-svg-round-progressbar": "^0.4.8"
+    "angular-svg-round-progressbar": "^0.4.8",
+    "angular-translate": "^2.12.0"
   }
 }

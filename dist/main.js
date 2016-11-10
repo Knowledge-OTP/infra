@@ -35,6 +35,7 @@
 "znk.infra.sharedScss",
 "znk.infra.stats",
 "znk.infra.storage",
+"znk.infra.support",
 "znk.infra.svgIcon",
 "znk.infra.teachers",
 "znk.infra.user",
@@ -5292,6 +5293,43 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
     }]);
 })(angular);
 
+(function() {
+    'use strict';
+    /*
+    @param time (in milliseconds)
+    */
+    angular
+        .module('znk.infra.filters').filter('roundDuration', function() {
+            return function FilterFilter(time) {
+                var ONE_MIN_IN_MILLISECONDS = 60000;
+                var ONE_HOUR_IN_MILLISECONDS = 3600000;
+                var remainedSec;
+                var remainedMin;
+                var numOfSec;
+                var numOfMin;
+                var numOfHours;
+                var filteredTime;
+                if (time <= ONE_MIN_IN_MILLISECONDS) {
+                    filteredTime = time / 1000 + ' sec';
+                } else if (time % ONE_MIN_IN_MILLISECONDS < time && time > 0 && time < 3600000) {
+                    remainedSec = time % ONE_MIN_IN_MILLISECONDS;
+                    numOfMin = Math.round(time / ONE_MIN_IN_MILLISECONDS) + ' min ';
+                    numOfSec = remainedSec ? Math.round(remainedSec / 1000) + ' sec' : '';
+                    filteredTime = numOfMin + numOfSec;
+                } else {
+                    remainedMin = time % ONE_HOUR_IN_MILLISECONDS;
+                    remainedSec = remainedMin % ONE_MIN_IN_MILLISECONDS;
+                    numOfHours = Math.floor(time / ONE_HOUR_IN_MILLISECONDS) + 'h ';
+                    numOfMin = remainedMin && remainedMin > ONE_MIN_IN_MILLISECONDS ? Math.floor(remainedMin / ONE_MIN_IN_MILLISECONDS) + ' min ' : '';
+                    numOfSec = remainedSec ? Math.round(remainedSec / 1000) + ' sec' : '';
+                    filteredTime = numOfHours + numOfMin + numOfSec;
+                }
+                return filteredTime;
+
+            };
+        }
+        );
+})();
 angular.module('znk.infra.filters').run(['$templateCache', function($templateCache) {
 
 }]);
@@ -8221,11 +8259,7 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
                                 var categoryStats = levelStats[categoryKey];
                                 if (!categoryStats) {
                                     categoryStats = new BaseStats(categoryId);
-                                    //need to add init offset only when working on lowest category,
-                                    if (level === deepestLevel) {
-                                        var initStatWithOffset = new BaseStats(null, true);
-                                        _baseStatsUpdater(newStat, initStatWithOffset);
-                                    }
+
                                     var parentsIds = categoriesToUpdate.slice(index + 1);
                                     if (parentsIds.length) {
                                         categoryStats.parentsIds = parentsIds;
@@ -8798,6 +8832,129 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
 })(angular);
 
 angular.module('znk.infra.storage').run(['$templateCache', function($templateCache) {
+
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.support', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.support').service('SupportSrv',
+        ["InfraConfigSrv", "ENV", "AuthService", "UserProfileService", "$q", "$injector", "$log", "teachersSrv", "$http", function (InfraConfigSrv, ENV, AuthService, UserProfileService, $q, $injector, $log, teachersSrv, $http) {
+            'ngInject';
+            var SupportSrv = {};
+
+            var authData = AuthService.getAuth();
+            var APPROVED_STUDENTS_PATH = 'users/$$uid/approvedStudents/';
+            var invitationEndpoint = ENV.backendEndpoint + 'invitation';
+            var SUPPORT_EMAIL = ENV.supportEmail;
+            var NO_EMAIL = 'noEmail@zinkerz.com'; // in case the user has no email.
+
+            SupportSrv.connectTeacherWithSupport = function (callbackFn) {
+                $injector.invoke(['GroupsService', function(GroupsService){
+                    if (authData && authData.uid) {
+                        return InfraConfigSrv.getTeacherStorage().then(function (teacherStorage) {
+                            return teacherStorage.get(APPROVED_STUDENTS_PATH).then(function (students) {
+                                var studentKeys = Object.keys(students);
+
+                                var linkedToSupport = false;
+
+                                var promsArray = [];
+                                angular.forEach(studentKeys, function (studentId) {
+                                    var prom = GroupsService.getUserData(studentId).then(function (studentData) {
+                                        if (studentData.originalReceiverEmail === SUPPORT_EMAIL) {
+                                            linkedToSupport = true;
+                                        }
+                                    });
+                                    promsArray.push(prom);
+                                });
+                                $q.all(promsArray).then(function () {
+                                    if (!linkedToSupport && authData.auth.email !== SUPPORT_EMAIL) {
+                                        _buildDataToSend(callbackFn);
+                                    } else {
+                                        callbackFn();
+                                    }
+                                });
+                            });
+                        });
+                    }
+                }]);
+            };
+
+            SupportSrv.connectStudentWithSupport = function (callbackFn) {
+                if (authData && authData.uid) {
+                    teachersSrv.getAllTeachers().then(function (teachers) {
+                        var teachersKeys = Object.keys(teachers);
+                        var linkedToSupport = false;
+
+                        angular.forEach(teachersKeys, function (key) {
+                            teachers[key].isTeacher = true;
+                            if (teachers[key].email === SUPPORT_EMAIL) {
+                                linkedToSupport = true;
+                            }
+                        });
+
+                        if (!linkedToSupport && authData.auth.email !== SUPPORT_EMAIL) {
+                            _buildDataToSend(callbackFn);
+                        } else {
+                            callbackFn();
+                        }
+                    });
+                }
+            };
+
+            function _buildDataToSend(callbackFn){
+                UserProfileService.getProfileByUserId(authData.uid).then(function (userProfile) {
+                    var receiverName = userProfile.nickname;
+                    var receiverEmail = authData.auth.email || userProfile.email || NO_EMAIL;
+                    if (angular.isUndefined(receiverName) || angular.equals(receiverName, '')) {
+                        receiverName = receiverEmail;
+                    }
+
+                    var dataToSend = {
+                        receiverAppName: ENV.firebaseAppScopeName,
+                        receiverEmail: receiverEmail,
+                        receiverName: receiverName,
+                        receiverUid: authData.uid,
+                        receiverParentEmail: '',
+                        receiverParentName: ''
+                    };
+
+                    _connectSupportToUser(dataToSend).then(function (response) {
+                        callbackFn(response);
+                    });
+                });
+            }
+
+            function _connectSupportToUser(dataToSend) {
+                var config = {
+                    timeout: ENV.promiseTimeOut || 15000
+                };
+                return $http.post(invitationEndpoint + '/support', dataToSend, config).then(
+                    function (response) {
+                        return {
+                            data: response.data
+                        };
+                    },
+                    function (error) {
+                        $log.debug(error);
+                });
+            }
+
+        return SupportSrv;
+        }]
+    );
+})(angular);
+
+
+
+
+angular.module('znk.infra.support').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -9717,6 +9874,10 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                         scope.isPlaying = state === STATE_ENUM.PLAYING;
                     });
 
+                    scope.$watch('autoPlayGetter()', function(playStatus) {
+                        scope.audioPlayer.currState = playStatus ? STATE_ENUM.PLAYING : STATE_ENUM.START_PLAY;
+                    });
+
                     scope.$watch('showAsDone', function (showAsDone) {
                         if(showAsDone && !allowReplay){
                             scope.audioPlayer.currState = STATE_ENUM.ALREADY_PLAYED;
@@ -9991,6 +10152,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                     showAsDone: '=?',
                     allowReplay: '&?',
                     showSkipOption: '&?',
+                    onPlayerStart: '&?',
                     autoPlayGetter: '&autoPlay',
                     blurredImageGetter: '&?blurredImage'
                 },
@@ -10001,17 +10163,26 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                         blurredImage: angular.isDefined(scope.blurredImageGetter) ? scope.blurredImageGetter : undefined
                     };
 
-                    scope.d.skippedHandler = function(){
+                    function isSkipOptionExist() {
+                       return angular.isDefined(scope.showSkipOption) && scope.showSkipOption();
+                    }
+
+                    scope.d.skippedHandler = function() {
                         scope.showAsDone = true;
                         scope.d.showSkipButton = false;
                         scope.onEnded();
                     };
 
-                    if(angular.isDefined(scope.showSkipOption) && scope.showSkipOption()){
-                        scope.d.showSkipButtonFn = function(){
+                    scope.d.onPlayerStart = function() {
+                        if (isSkipOptionExist()) {
                             scope.d.showSkipButton = true;
-                        };
+                        }
+                        if (scope.onPlayerStart) {
+                            scope.onPlayerStart();
+                        }
+                    };
 
+                    if (isSkipOptionExist()) {
                         var onEnded = scope.onEnded;  // reference to onEnded function.
                         scope.onEnded = function(){ // extend the onEnded function (if passed).
                             if(onEnded){
@@ -10020,7 +10191,6 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                             scope.d.showSkipButton = false;
                         };
                     }
-
                 }
             };
         }]);
@@ -10163,7 +10333,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "            switch-init=\"audioPlayer.currState\"\n" +
     "            source=\"source\"\n" +
     "            on-ended=\"onEnded()\"\n" +
-    "            on-start=\"d.showSkipButtonFn()\"\n" +
+    "            on-start=\"d.onPlayerStart()\"\n" +
     "            allow-replay=\"allowReplay()\"\n" +
     "            show-as-done=\"showAsDone\"\n" +
     "            auto-play=\"autoPlayGetter()\">\n" +
@@ -12723,39 +12893,63 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             };
             /**
              *  bind exercise
+             *  BindExerciseEventManager: use the registerCb and update in directives
+             *    update: update the bind object in firebase that something change
+             *    registerCb: register callback to sync data after update
+             *    trigger: internally when the watch update the trigger fires
              */
             (function(self) {
+
+                // initial an empty object in case bindExerciseViewTo was not called
+                self.__exerciseViewBinding = {};
 
                 function BindExerciseEventManager() {
                     this.cbObj = {};
                 }
 
                 BindExerciseEventManager.prototype.trigger = function(key, value) {
-                    this.cbObj[key].forEach(function (cb) {
-                        cb(value);
-                    }, this);
+                    if (angular.isArray(this.cbObj[key])) {
+                        this.cbObj[key].forEach(function (obj) {
+                            if (obj.id && value.id && obj.updatedBy && value.updatedBy) {
+                                if (obj.id === value.id && obj.updatedBy !== value.updatedBy) {
+                                    obj.cb(value);
+                                }
+                            } else if (obj.id && value.id) {
+                                if (obj.id === value.id) {
+                                    obj.cb(value);
+                                }
+                            } else if (obj.updatedBy && value.updatedBy) {
+                                if (obj.updatedBy !== value.updatedBy) {
+                                    obj.cb(value);
+                                }
+                            } else {
+                                obj.cb(value);
+                            }
+                        }, this);
+                    }
                 };
 
-                BindExerciseEventManager.prototype.update = function(key, value) {
-                    var valueToUpdate;
-                    var curValue = self.__exerciseViewBinding[key];
+                BindExerciseEventManager.prototype.update = function(key, value, id, updatedBy) {
+                    var curValue = self.__exerciseViewBinding[key] || {};
 
-                    if (angular.isArray(curValue)) {
-                        valueToUpdate = curValue.push(value);
-                    } else if (angular.isObject(curValue) && angular.isObject(value)) {
-                        valueToUpdate = angular.extend({}, curValue, value);
+                    if (!curValue.data) {
+                        curValue.data = value;
+                        curValue.id = id;
+                        curValue.updatedBy = updatedBy;
+                    } else if (angular.isObject(value)) {
+                        curValue.data = angular.extend({}, curValue, value);
                     } else {
-                        valueToUpdate = value;
+                        curValue.data = value;
                     }
 
-                    self.__exerciseViewBinding[key] = valueToUpdate;
+                    self.__exerciseViewBinding[key] = curValue;
                 };
 
-                BindExerciseEventManager.prototype.registerCb = function(key, cb) {
+                BindExerciseEventManager.prototype.registerCb = function(key, cb, id, updatedBy) {
                      if (!angular.isArray(this.cbObj[key])) {
                          this.cbObj[key] = [];
                      }
-                     this.cbObj[key].push(cb);
+                     this.cbObj[key].push({ id: id, cb: cb, updatedBy: updatedBy });
                 };
 
                 self.bindExerciseEventManager = new BindExerciseEventManager();
@@ -12776,7 +12970,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         exerciseViewListenersObj[keyObj.getterName] = $scope.$watchCollection(function () {
                             return exerciseView[keyObj.getterName];
                         },function (newVal) {
-                            if(angular.isDefined(newVal)) {
+                            if (angular.isDefined(newVal)) {
                                 if (keyObj.setterName) {
                                     self[keyObj.setterName](newVal);
                                 } else {
