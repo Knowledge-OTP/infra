@@ -184,18 +184,23 @@
                     }
                 };
 
-                BindExerciseEventManager.prototype.update = function(key, value, id, updatedBy) {
+                BindExerciseEventManager.prototype.update = function(key, valueObj, id, updatedBy) {
+                    if (!angular.isObject(valueObj) || angular.isArray(valueObj) && valueObj !== null) {
+                        $log.error('ZnkExerciseDrvCtrl BindExerciseEventManager: value that pass to update function must be an object ie: {}');
+                        return;
+                    }
+
                     var curValue = self.__exerciseViewBinding[key] || {};
 
-                    if (!curValue.data) {
-                        curValue.data = value;
+                    if (id && !curValue.id) {
                         curValue.id = id;
-                        curValue.updatedBy = updatedBy;
-                    } else if (angular.isObject(value)) {
-                        curValue.data = angular.extend({}, curValue, value);
-                    } else {
-                        curValue.data = value;
                     }
+
+                    if (updatedBy && !curValue.updatedBy) {
+                        curValue.updatedBy = updatedBy;
+                    }
+
+                    curValue = angular.extend({}, curValue, valueObj);
 
                     self.__exerciseViewBinding[key] = curValue;
                 };
