@@ -22,9 +22,9 @@
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    'znkSession-close-popup': 'components/znkSession/svg/znkSession-close-popup.svg',
                     'znkSession-english-icon': 'components/znkSession/svg/znkSession-verbal-icon.svg',
-                    'znkSession-math-icon': 'components/znkSession/svg/znkSession-math-icon.svg'
+                    'znkSession-math-icon': 'components/znkSession/svg/znkSession-math-icon.svg',
+                    'znkSession-start-lesson-popup-icon': 'components/znkSession/svg/znkSession-start-lesson-popup-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }

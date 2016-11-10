@@ -1,7 +1,7 @@
 znk-session {
     .session-btn {
-        background-color: #ff931e;
-        color: #FFFFFF;
+        background-color: $bgColor19;
+        color: $fcColor2;
         height: 30px;
         width: 140px;
         min-height: 30px;
@@ -11,65 +11,86 @@ znk-session {
         text-transform: none;
         outline: none;
         &:not([disabled]):hover {
-            background-color: #ff931e;
+            background-color: $bgColor19;
         }
     }
     .end-session {
-        background-color: #FF6766;
+        background-color: $bgColor1;
         &:not([disabled]):hover {
-            background-color: #FF6766;
+            background-color: $bgColor1;
         }
     }
 }
 
-.start-session-modal {
+.session-dialog {
+    .popup-header {
+        position: relative;
+        height: 40px;
+        background-color: $bgColor3;
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+    }
+    md-backdrop {
+        &.md-opaque {
+            background-color: $bgColor35;
+            opacity: .76;
+        }
+    }
     md-dialog {
         &.base {
             width:400px;
             border-radius: 15px;
         }
-        .close-popup-wrap{
-            outline: none;
-        }
-        .main-title{
-            @include text-style(18px, $fcColor6,Quicksand,$semiBoldFontWeight);
-            padding: 30px;
-            text-align: center;
-            text-transform: uppercase;
-        }
-        .sessions-types{
-            display: flex;
-            padding-bottom: 40px;
-            justify-content: center;
-            .session-icon-wrap{
-                width: 155px;
-                height: 55px;
-                border-radius: 30px;
-                color: #ffffff;
-                margin: auto 5px;
-                display: flex;
-                align-items: center;
-                outline: none;
-                cursor: pointer;
-                svg-icon path{
-                    fill: #ffffff;
+        &.session-container {
+            .session-content {
+                background-color: $bgColor6;
+                padding: 50px 0;
+                border-bottom-left-radius: 15px;
+                border-bottom-right-radius: 15px;
+                width: 350px;
+                margin: 0 auto;
+                .main-title {
+                    @include text-style(32px, $fcColor6,Quicksand,$semiBoldFontWeight);
+                    text-align: center;
+                    margin-top:0;
                 }
-                &.math {
-                    background-color: #AF89D2;
+                .sub-title {
+                    @include text-style(16px, $fcColor9, Lato, $regularFontWeight);
                 }
-                &.english{
-                    background-color: #F3CF19;
-                }
-                svg-icon{
-                    width: 30px;
-                    height: 30px;
-                    margin: auto 15px;
-                }
-                span{
-                    text-transform: uppercase;
+                .subjects-btns{
+                    display: flex;
+                    justify-content: center;
+                    .subject-icon-wrap{
+                        width: 155px;
+                        height: 35px;
+                        border-radius: 30px;
+                        color: $fcColor2;
+                        margin: auto 5px;
+                        display: flex;
+                        align-items: center;
+                        outline: none;
+                        cursor: pointer;
+                        border-style: none;
+                        svg-icon path{
+                            fill: $fcColor2;
+                        }
+                        &.math {
+                            background-color: $bgColor38;
+                        }
+                        &.english{
+                            background-color: $bgColor39;
+                        }
+                        svg-icon{
+                            width: 25px;
+                            height: 25px;
+                            margin: auto 15px;
+                        }
+                        span{
+                            text-transform: uppercase;
+                        }
+                    }
                 }
             }
         }
     }
-
 }
