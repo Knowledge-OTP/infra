@@ -16,7 +16,6 @@
                         timerInterval,
                         screenShareStatus = 0,
                         callStatus = 0,
-                        // activePanelStatus = 0,
                         screenShareIsViewer,
                         timerSecondInterval = 1000,
                         activePanelVisibleClassName = 'activePanel-visible';
@@ -204,18 +203,10 @@
                         }
                     };
 
-                    // // Listen to status changes in ScreenSharing
-                    // var listenToActivePanelStatus = function (activePanelStatus) {
-                    //     screenShareStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
-                    //     screenShareIsViewer = false;
-                    //     updateStatus();
-                    // };
-
                     ScreenSharingSrv.registerToCurrUserScreenSharingStateChanges(listenToScreenShareStatus);
 
                     CallsEventsSrv.registerToCurrUserCallStateChanges(listenToCallsStatus);
 
-                    // ActivePanelSrv.registerActivePanelCb(listenToActivePanelStatus);
                 }
             };
         });

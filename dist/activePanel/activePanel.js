@@ -29,7 +29,6 @@
                         timerInterval,
                         screenShareStatus = 0,
                         callStatus = 0,
-                        // activePanelStatus = 0,
                         screenShareIsViewer,
                         timerSecondInterval = 1000,
                         activePanelVisibleClassName = 'activePanel-visible';
@@ -217,18 +216,10 @@
                         }
                     };
 
-                    // // Listen to status changes in ScreenSharing
-                    // var listenToActivePanelStatus = function (activePanelStatus) {
-                    //     screenShareStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
-                    //     screenShareIsViewer = false;
-                    //     updateStatus();
-                    // };
-
                     ScreenSharingSrv.registerToCurrUserScreenSharingStateChanges(listenToScreenShareStatus);
 
                     CallsEventsSrv.registerToCurrUserCallStateChanges(listenToCallsStatus);
 
-                    // ActivePanelSrv.registerActivePanelCb(listenToActivePanelStatus);
                 }
             };
         }]);
@@ -238,12 +229,10 @@
     'use strict';
 
     angular.module('znk.infra.activePanel').service('ActivePanelSrv',
-        ["$document", "$compile", "$rootScope", "$log", function ($document, $compile, $rootScope, $log) {
+        ["$document", "$compile", "$rootScope", function ($document, $compile, $rootScope) {
             'ngInject';
 
             var self = this;
-
-            var activePanelCb;
 
             this.loadActivePanel = function () {
                 var body = angular.element($document).find('body');
@@ -258,19 +247,6 @@
                     $compile(canvasContainerElement)(self.scope);
                 }
             };
-
-            this.registerActivePanelCb = function(_cb) {
-                activePanelCb = _cb;
-            };
-
-            this.showActivePanel = function () {
-                if (angular.isUndefined(activePanelCb)){
-                    $log.error('activePanelCb is undefined');
-                    return;
-                }
-                activePanelCb();
-            };
-
         }]);
 })(angular);
 

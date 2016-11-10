@@ -15,10 +15,10 @@
 
                 function sessionInit(sessionSubject) {
                     return {
-                        appName: ENV.studentAppName.split('_')[0].toUpperCase(),
+                        appName: ENV.studentAppName.split('_')[0],
                         sessionGUID: UtilitySrv.general.createGuid(),
-                        educatorUID: userAuth.uid || 'N/A',
-                        studentUID: StudentContextSrv.getCurrUid() || 'N/A',
+                        educatorUID: userAuth.uid,
+                        studentUID: StudentContextSrv.getCurrUid(),
                         extendTime: 0,
                         startTime: Date.now(),
                         duration: null,
@@ -26,19 +26,12 @@
                         status: SessionsStatusEnum.ACTIVE.enum  //(values: 1 = Active, 0 = Ended)
                     };
                 }
-                function getKeyByValue(obj, value) {
-                    for( var prop in obj ) {
-                        if( obj.hasOwnProperty( prop ) ) {
-                            if( obj[ prop ] === value ) {
-                                return prop;
-                            }
-                        }
-                    }
-                }
+
                 function minToUnixTimestamp(min) {
+                    min = min || 0;
                     return min * 60 * 1000;
                 }
-                function getPath(param) {
+                function getLiveSessionPath(param) {
                     if (!userAuth) {
                         $log.error('Invalid user');
                         return;
@@ -64,12 +57,11 @@
                     $log.debug('saveSession, sessionData: ', sessionData);
                     var dataToSave = {};
                     globalStorageProm.then(function (globalStorage) {
-                        var studentPath = getPath('student') + '/active';
-                        var educatorPath = getPath('educator') + '/active';
-                        var sessionPath = getPath('sessions');
+                        var studentPath = getLiveSessionPath('student') + '/active';
+                        var educatorPath = getLiveSessionPath('educator') + '/active';
+                        var sessionPath = getLiveSessionPath('sessions');
                         dataToSave[sessionPath] = sessionData;
-                        dataToSave[studentPath] = { guid: sessionData.sessionGUID };
-                        dataToSave[educatorPath] = { guid: sessionData.sessionGUID };
+                        dataToSave[studentPath] = dataToSave[educatorPath] ={ guid: sessionData.sessionGUID };
                         globalStorage.update(dataToSave);
                     });
                 }
@@ -77,16 +69,16 @@
                     $log.debug('updateSession, sessionData: ', sessionData);
                     var dataToSave = {};
                     globalStorageProm.then(function (globalStorage) {
-                        var studentPathActive = getPath('student') + '/active';
-                        var studentPathArchive = getPath('student') + '/archive/' + sessionData.sessionGUID;
-                        var educatorPathActive = getPath('educator') + '/active';
-                        var educatorPathArchive = getPath('educator') + '/archive/' + sessionData.sessionGUID;
-                        var sessionPath = getPath('sessions');
+                        var studentPath = getLiveSessionPath('student');
+                        var studentPathActive = studentPath + '/active';
+                        var studentPathArchive = studentPath + '/archive/' + sessionData.sessionGUID;
+                        var educatorPath = getLiveSessionPath('educator');
+                        var educatorPathActive = educatorPath + '/active';
+                        var educatorPathArchive = educatorPath + '/archive/' + sessionData.sessionGUID;
+                        var sessionPath = getLiveSessionPath('sessions');
                         dataToSave[sessionPath] = sessionData;
-                        dataToSave[studentPathArchive] = false;
-                        dataToSave[educatorPathArchive] = false;
-                        dataToSave[studentPathActive] = { guid: false };
-                        dataToSave[educatorPathActive] = { guid: false };
+                        dataToSave[studentPathArchive] = dataToSave[educatorPathArchive] = false;
+                        dataToSave[studentPathActive] = dataToSave[educatorPathActive] = { guid: false };
                         globalStorage.update(dataToSave);
                     });
                 }
@@ -120,9 +112,14 @@
                     sessionData = sessionInit(sessionSubject);
                     currLiveSessionsGUID = { guid: sessionData.sessionGUID};
                     liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
-                    saveSession();
-                    showActivePanel();
-                    handleCall();
+                    var saveSessionProm = saveSession();
+                    saveSessionProm.then(function (res) {
+                        $log.debug('Session Saved: ', res);
+                        showActivePanel();
+                        handleCall();
+                    }).catch(function (err) {
+                        $log.error('Error saving session to firebase: ', err);
+                    });
                 };
 
 
@@ -131,7 +128,7 @@
                         subjects = [SessionSubjectEnumConst.MATH, SessionSubjectEnumConst.ENGLISH];
                     }
                     return subjects.map(function (subjectId) {
-                        var name = getKeyByValue(SessionSubjectEnumConst, subjectId).toLowerCase();
+                        var name = UtilitySrv.object.getKeyByValue(SessionSubjectEnumConst, subjectId).toLowerCase();
                         return {
                             id: subjectId,
                             name: name,
@@ -141,7 +138,7 @@
                 };
 
                 sessionSrvApi.getLiveSessionGUID = function () {
-                    var activeSessionPath  = isTeacherApp ? getPath('educator') : getPath('student');
+                    var activeSessionPath  = isTeacherApp ? getLiveSessionPath('educator') : getLiveSessionPath('student');
                     activeSessionPath += '/active';
                     return globalStorageProm.then(function (globalStorage) {
                         return globalStorage.getAndBindToServer(activeSessionPath);
@@ -151,7 +148,7 @@
                 sessionSrvApi.loadLiveSessionData = function () {
                     $log.debug('Load Live Session Data, session GUID: ', currLiveSessionsGUID);
                     globalStorageProm.then(function (globalStorage) {
-                        var sessionsPath = getPath('sessions');
+                        var sessionsPath = getLiveSessionPath('sessions');
                         globalStorage.get(sessionsPath).then(function (currSessionData) {
                             sessionData = currSessionData;
                             $log.debug('loadLiveSessionData, sessionData: ', sessionData);
@@ -186,8 +183,13 @@
                     sessionData.duration = endTime - sessionData.startTime;
                     handleCall();
                     hideActivePanel();
-                    updateSession();
-                    PopUpSrv.info('Live session has ended');
+                    var updateSessionProm = updateSession();
+                    updateSessionProm.then(function (res) {
+                        $log.debug('Session Updated: ', res);
+                        PopUpSrv.info('Live session has ended');
+                    }).catch(function (err) {
+                        $log.error('Error updating session to firebase: ', err);
+                    });
                 };
 
                 sessionSrvApi.addExtendTime = function () {

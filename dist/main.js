@@ -86,7 +86,6 @@
                         timerInterval,
                         screenShareStatus = 0,
                         callStatus = 0,
-                        // activePanelStatus = 0,
                         screenShareIsViewer,
                         timerSecondInterval = 1000,
                         activePanelVisibleClassName = 'activePanel-visible';
@@ -274,18 +273,10 @@
                         }
                     };
 
-                    // // Listen to status changes in ScreenSharing
-                    // var listenToActivePanelStatus = function (activePanelStatus) {
-                    //     screenShareStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
-                    //     screenShareIsViewer = false;
-                    //     updateStatus();
-                    // };
-
                     ScreenSharingSrv.registerToCurrUserScreenSharingStateChanges(listenToScreenShareStatus);
 
                     CallsEventsSrv.registerToCurrUserCallStateChanges(listenToCallsStatus);
 
-                    // ActivePanelSrv.registerActivePanelCb(listenToActivePanelStatus);
                 }
             };
         }]);
@@ -295,12 +286,10 @@
     'use strict';
 
     angular.module('znk.infra.activePanel').service('ActivePanelSrv',
-        ["$document", "$compile", "$rootScope", "$log", function ($document, $compile, $rootScope, $log) {
+        ["$document", "$compile", "$rootScope", function ($document, $compile, $rootScope) {
             'ngInject';
 
             var self = this;
-
-            var activePanelCb;
 
             this.loadActivePanel = function () {
                 var body = angular.element($document).find('body');
@@ -315,19 +304,6 @@
                     $compile(canvasContainerElement)(self.scope);
                 }
             };
-
-            this.registerActivePanelCb = function(_cb) {
-                activePanelCb = _cb;
-            };
-
-            this.showActivePanel = function () {
-                if (angular.isUndefined(activePanelCb)){
-                    $log.error('activePanelCb is undefined');
-                    return;
-                }
-                activePanelCb();
-            };
-
         }]);
 })(angular);
 
@@ -8556,9 +8532,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                     variables: {
                         uid: null
                     },
-                    cacheRules: [function (path) {
-                        return path.indexOf('liveSesson') > -1;
-                    }]
+                    cacheRules: []
                 };
                 this.__config = angular.extend(defaultConfig, config);
 
@@ -9448,6 +9422,16 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
                     arr.push(obj);
                 });
                 return arr;
+            };
+
+            UtilitySrv.object.getKeyByValue = function(obj, value) {
+                for( var prop in obj ) {
+                    if( obj.hasOwnProperty( prop ) ) {
+                        if( obj[ prop ] === value ) {
+                            return prop;
+                        }
+                    }
+                }
             };
 
             //array utility srv
@@ -15722,9 +15706,9 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
             'SvgIconSrvProvider',
             function (SvgIconSrvProvider) {
                 var svgMap = {
-                    'znkSession-close-popup': 'components/znkSession/svg/znkSession-close-popup.svg',
                     'znkSession-english-icon': 'components/znkSession/svg/znkSession-verbal-icon.svg',
-                    'znkSession-math-icon': 'components/znkSession/svg/znkSession-math-icon.svg'
+                    'znkSession-math-icon': 'components/znkSession/svg/znkSession-math-icon.svg',
+                    'znkSession-start-lesson-popup-icon': 'components/znkSession/svg/znkSession-start-lesson-popup-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }
@@ -15739,7 +15723,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
             bindings: {},
             templateUrl: 'components/znkSession/components/sessionBtn/znkSession.template.html',
             controllerAs: 'vm',
-            controller: ["$scope", "$log", "$mdDialog", "SessionSrv", function ($scope, $log, $mdDialog, SessionSrv) {
+            controller: ["$scope", "$mdDialog", "SessionSrv", function ($scope, $mdDialog, SessionSrv) {
                 'ngInject';
 
                 var vm = this;
@@ -15840,10 +15824,10 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
 
                 function sessionInit(sessionSubject) {
                     return {
-                        appName: ENV.studentAppName.split('_')[0].toUpperCase(),
+                        appName: ENV.studentAppName.split('_')[0],
                         sessionGUID: UtilitySrv.general.createGuid(),
-                        educatorUID: userAuth.uid || 'N/A',
-                        studentUID: StudentContextSrv.getCurrUid() || 'N/A',
+                        educatorUID: userAuth.uid,
+                        studentUID: StudentContextSrv.getCurrUid(),
                         extendTime: 0,
                         startTime: Date.now(),
                         duration: null,
@@ -15851,19 +15835,12 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                         status: SessionsStatusEnum.ACTIVE.enum  //(values: 1 = Active, 0 = Ended)
                     };
                 }
-                function getKeyByValue(obj, value) {
-                    for( var prop in obj ) {
-                        if( obj.hasOwnProperty( prop ) ) {
-                            if( obj[ prop ] === value ) {
-                                return prop;
-                            }
-                        }
-                    }
-                }
+
                 function minToUnixTimestamp(min) {
+                    min = min || 0;
                     return min * 60 * 1000;
                 }
-                function getPath(param) {
+                function getLiveSessionPath(param) {
                     if (!userAuth) {
                         $log.error('Invalid user');
                         return;
@@ -15889,12 +15866,11 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                     $log.debug('saveSession, sessionData: ', sessionData);
                     var dataToSave = {};
                     globalStorageProm.then(function (globalStorage) {
-                        var studentPath = getPath('student') + '/active';
-                        var educatorPath = getPath('educator') + '/active';
-                        var sessionPath = getPath('sessions');
+                        var studentPath = getLiveSessionPath('student') + '/active';
+                        var educatorPath = getLiveSessionPath('educator') + '/active';
+                        var sessionPath = getLiveSessionPath('sessions');
                         dataToSave[sessionPath] = sessionData;
-                        dataToSave[studentPath] = { guid: sessionData.sessionGUID };
-                        dataToSave[educatorPath] = { guid: sessionData.sessionGUID };
+                        dataToSave[studentPath] = dataToSave[educatorPath] ={ guid: sessionData.sessionGUID };
                         globalStorage.update(dataToSave);
                     });
                 }
@@ -15902,16 +15878,16 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                     $log.debug('updateSession, sessionData: ', sessionData);
                     var dataToSave = {};
                     globalStorageProm.then(function (globalStorage) {
-                        var studentPathActive = getPath('student') + '/active';
-                        var studentPathArchive = getPath('student') + '/archive/' + sessionData.sessionGUID;
-                        var educatorPathActive = getPath('educator') + '/active';
-                        var educatorPathArchive = getPath('educator') + '/archive/' + sessionData.sessionGUID;
-                        var sessionPath = getPath('sessions');
+                        var studentPath = getLiveSessionPath('student');
+                        var studentPathActive = studentPath + '/active';
+                        var studentPathArchive = studentPath + '/archive/' + sessionData.sessionGUID;
+                        var educatorPath = getLiveSessionPath('educator');
+                        var educatorPathActive = educatorPath + '/active';
+                        var educatorPathArchive = educatorPath + '/archive/' + sessionData.sessionGUID;
+                        var sessionPath = getLiveSessionPath('sessions');
                         dataToSave[sessionPath] = sessionData;
-                        dataToSave[studentPathArchive] = false;
-                        dataToSave[educatorPathArchive] = false;
-                        dataToSave[studentPathActive] = { guid: false };
-                        dataToSave[educatorPathActive] = { guid: false };
+                        dataToSave[studentPathArchive] = dataToSave[educatorPathArchive] = false;
+                        dataToSave[studentPathActive] = dataToSave[educatorPathActive] = { guid: false };
                         globalStorage.update(dataToSave);
                     });
                 }
@@ -15945,9 +15921,14 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                     sessionData = sessionInit(sessionSubject);
                     currLiveSessionsGUID = { guid: sessionData.sessionGUID};
                     liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
-                    saveSession();
-                    showActivePanel();
-                    handleCall();
+                    var saveSessionProm = saveSession();
+                    saveSessionProm.then(function (res) {
+                        $log.debug('Session Saved: ', res);
+                        showActivePanel();
+                        handleCall();
+                    }).catch(function (err) {
+                        $log.error('Error saving session to firebase: ', err);
+                    });
                 };
 
 
@@ -15956,7 +15937,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                         subjects = [SessionSubjectEnumConst.MATH, SessionSubjectEnumConst.ENGLISH];
                     }
                     return subjects.map(function (subjectId) {
-                        var name = getKeyByValue(SessionSubjectEnumConst, subjectId).toLowerCase();
+                        var name = UtilitySrv.object.getKeyByValue(SessionSubjectEnumConst, subjectId).toLowerCase();
                         return {
                             id: subjectId,
                             name: name,
@@ -15966,7 +15947,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                 };
 
                 sessionSrvApi.getLiveSessionGUID = function () {
-                    var activeSessionPath  = isTeacherApp ? getPath('educator') : getPath('student');
+                    var activeSessionPath  = isTeacherApp ? getLiveSessionPath('educator') : getLiveSessionPath('student');
                     activeSessionPath += '/active';
                     return globalStorageProm.then(function (globalStorage) {
                         return globalStorage.getAndBindToServer(activeSessionPath);
@@ -15976,7 +15957,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                 sessionSrvApi.loadLiveSessionData = function () {
                     $log.debug('Load Live Session Data, session GUID: ', currLiveSessionsGUID);
                     globalStorageProm.then(function (globalStorage) {
-                        var sessionsPath = getPath('sessions');
+                        var sessionsPath = getLiveSessionPath('sessions');
                         globalStorage.get(sessionsPath).then(function (currSessionData) {
                             sessionData = currSessionData;
                             $log.debug('loadLiveSessionData, sessionData: ', sessionData);
@@ -16011,8 +15992,13 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                     sessionData.duration = endTime - sessionData.startTime;
                     handleCall();
                     hideActivePanel();
-                    updateSession();
-                    PopUpSrv.info('Live session has ended');
+                    var updateSessionProm = updateSession();
+                    updateSessionProm.then(function (res) {
+                        $log.debug('Session Updated: ', res);
+                        PopUpSrv.info('Live session has ended');
+                    }).catch(function (err) {
+                        $log.error('Error updating session to firebase: ', err);
+                    });
                 };
 
                 sessionSrvApi.addExtendTime = function () {
@@ -16043,37 +16029,51 @@ angular.module('znk.infra.znkSession').run(['$templateCache', function($template
     "</md-button>\n" +
     "");
   $templateCache.put("components/znkSession/modals/templates/startSession.template.html",
-    "<div class=\"start-session-modal\">\n" +
-    "    <md-dialog class=\"base\" translate-namespace=\"ZNK_SESSION\">\n" +
-    "        <md-dialog-content>\n" +
-    "            <div class=\"main-title\" translate=\".SESSION_SUBJECT\"></div>\n" +
-    "            <div class=\"sessions-types\">\n" +
-    "                <div class=\"session-icon-wrap\"\n" +
-    "                     ng-repeat=\"subject in vm.sessionSubjects\"\n" +
+    "<!--<div class=\"start-session-modal\">-->\n" +
+    "    <!--<md-dialog class=\"base\" translate-namespace=\"ZNK_SESSION\">-->\n" +
+    "        <!--<md-dialog-content>-->\n" +
+    "            <!--<div class=\"main-title\" translate=\".SESSION_SUBJECT\"></div>-->\n" +
+    "            <!--<div class=\"sessions-types\">-->\n" +
+    "                <!--<div class=\"session-icon-wrap\"-->\n" +
+    "                     <!--ng-repeat=\"subject in ::vm.sessionSubjects\"-->\n" +
+    "                     <!--ng-class=\"subject.name\"-->\n" +
+    "                     <!--ng-click=\"vm.startSession(subject); vm.closeModal();\">-->\n" +
+    "                    <!--<svg-icon name={{subject.iconName}}></svg-icon>-->\n" +
+    "                    <!--<span>{{subject.name}}</span>-->\n" +
+    "                <!--</div>-->\n" +
+    "            <!--</div>-->\n" +
+    "        <!--</md-dialog-content>-->\n" +
+    "    <!--</md-dialog>-->\n" +
+    "<!--</div>-->\n" +
+    "\n" +
+    "<div class=\"session-dialog\">\n" +
+    "    <md-dialog class=\"base base-border-radius session-container\" translate-namespace=\"ZNK_SESSION\">\n" +
+    "        <div class=\"top-icon-wrap\">\n" +
+    "            <div class=\"top-icon\">\n" +
+    "                <div class=\"round-icon-wrap\">\n" +
+    "                    <svg-icon name=\"znkSession-start-lesson-popup-icon\"></svg-icon>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "        <div class=\"popup-header\"></div>\n" +
+    "        <md-dialog-content class=\"session-content\">\n" +
+    "            <div class=\"main-title\" translate=\".START_SESSION\"></div>\n" +
+    "            <div class=\"sub-title\" translate=\".SESSION_SUBJECT\"></div>\n" +
+    "            <div class=\"subjects-btns\">\n" +
+    "                <button class=\"subject-icon-wrap\"\n" +
+    "                     ng-repeat=\"subject in ::vm.sessionSubjects\"\n" +
     "                     ng-class=\"subject.name\"\n" +
     "                     ng-click=\"vm.startSession(subject); vm.closeModal();\">\n" +
     "                    <svg-icon name={{subject.iconName}}></svg-icon>\n" +
     "                    <span>{{subject.name}}</span>\n" +
-    "                </div>\n" +
+    "                </button>\n" +
     "            </div>\n" +
     "        </md-dialog-content>\n" +
     "    </md-dialog>\n" +
     "</div>\n" +
-    "");
-  $templateCache.put("components/znkSession/svg/znkSession-close-popup.svg",
-    "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\"\n" +
-    "	 viewBox=\"-596.6 492.3 133.2 133.5\" xml:space=\"preserve\" class=\"close-pop-svg\">\n" +
-    "<style type=\"text/css\">\n" +
-    "	.close-pop-svg {width: 100%; height: auto;}\n" +
-    "	.close-pop-svg .st0{fill:none;enable-background:new    ;}\n" +
-    "	.close-pop-svg .st1{fill:none;stroke:#ffffff;stroke-width:8;stroke-linecap:round;stroke-miterlimit:10;}\n" +
-    "</style>\n" +
-    "<path class=\"st0\"/>\n" +
-    "<g>\n" +
-    "	<line class=\"st1\" x1=\"-592.6\" y1=\"496.5\" x2=\"-467.4\" y2=\"621.8\"/>\n" +
-    "	<line class=\"st1\" x1=\"-592.6\" y1=\"621.5\" x2=\"-467.4\" y2=\"496.3\"/>\n" +
-    "</g>\n" +
-    "</svg>\n" +
+    "\n" +
+    "\n" +
+    "\n" +
     "");
   $templateCache.put("components/znkSession/svg/znkSession-english-icon.svg",
     "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\"\n" +
@@ -16150,6 +16150,24 @@ angular.module('znk.infra.znkSession').run(['$templateCache', function($template
     "		c2.5,0,5,0,7.5,0c1.3,0,2.3-0.5,2.4-1.9c0.1-1.3-0.8-2.1-2.4-2.1c-5,0-10.1,0-15.1,0c-1.6,0-2.6,0.9-2.5,2.1\n" +
     "		c0.2,1.4,1.1,1.9,2.5,1.9C-496.5,476-494,476-491.4,476z M-491.4,461.2c-2.5,0-5.1,0-7.6,0c-1.6,0-2.6,0.8-2.5,2\n" +
     "		c0.2,1.4,1.1,1.9,2.5,1.9c5,0,10.1,0,15.1,0c1.3,0,2.3-0.4,2.4-1.9c0.1-1.3-0.8-2-2.4-2C-486.4,461.2-488.9,461.2-491.4,461.2z\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkSession/svg/znkSession-start-lesson-popup-icon.svg",
+    "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"0 0 170.1 126.2\" xml:space=\"preserve\" class=\"start-lesson-icon-svg\">\n" +
+    "    <style type=\"text/css\">\n" +
+    "	.start-lesson-icon-svg {width: 100%; height: auto;}\n" +
+    "	.start-lesson-icon-svg .st0{fill:#ffffff;enable-background:new;}\n" +
+    "</style>\n" +
+    "<g class=\"st0\">\n" +
+    "	<path d=\"M63.6,90.4c0,11.8,0,23.6,0,35.8c-21.1,0-42,0-63.2,0c-0.1-1.5-0.3-2.9-0.3-4.4c0-14.7-0.1-29.3,0-44\n" +
+    "		c0.1-14.4,6.9-21,21.2-21c8,0,16,0,24,0c7.6,0.1,14.3,2.6,19.7,8.2c4.8,4.9,9.6,9.7,14.5,14.5C83.1,83,87,83,90.7,79.4\n" +
+    "		c5.3-5.3,10.5-10.7,15.9-15.9c4.9-4.7,10.4-4.1,14.1,1.1c2.6,3.7,2.2,7.4-0.8,10.5c-8.7,9.2-17.5,18.3-26.5,27.1\n" +
+    "		c-5.4,5.2-10.8,5.1-16.4-0.1c-4.2-3.9-7.9-8.5-11.8-12.8C64.6,89.6,64.1,90,63.6,90.4z\"/>\n" +
+    "	<path d=\"M161.5,117.4c0-36.7,0-72.4,0-108.4c-25.6,0-51,0-76.8,0c0,17.3,0,34.4,0,51.9c-3.1,0-5.8,0-8.8,0c0-20.1,0-40.2,0-60.6\n" +
+    "		c31.4,0,62.6,0,94.2,0c0,41.8,0,83.5,0,125.6c-31.3,0-62.6,0-94.3,0c0-2.7,0-5.3,0-8.5C104.3,117.4,132.7,117.4,161.5,117.4z\"/>\n" +
+    "	<path d=\"M6.6,25.3C6.6,11,17.9-0.2,32,0c13.7,0.2,25.1,11.7,25.1,25.4c0,13.9-11.7,25.5-25.6,25.3C17.8,50.6,6.6,39.2,6.6,25.3z\"/>\n" +
     "</g>\n" +
     "</svg>\n" +
     "");
