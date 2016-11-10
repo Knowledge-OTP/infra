@@ -12900,7 +12900,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                     var curValue = self.__exerciseViewBinding[key] || {};
 
-                    if (id && !curValue.id) {
+                    if (id) {
                         curValue.id = id;
                     }
 

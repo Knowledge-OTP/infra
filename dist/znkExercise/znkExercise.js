@@ -1709,7 +1709,7 @@
 
                     var curValue = self.__exerciseViewBinding[key] || {};
 
-                    if (id && !curValue.id) {
+                    if (id) {
                         curValue.id = id;
                     }
 
