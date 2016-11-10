@@ -1520,8 +1520,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('ZnkExerciseDrvCtrl', [
-        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$element', 'ZnkExerciseSrv', 'UtilitySrv',
-        function ($scope, $q, ZnkExerciseEvents, $log, $element, ZnkExerciseSrv, UtilitySrv) {
+        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$element', 'ZnkExerciseSrv', 'UtilitySrv', 'ENV',
+        function ($scope, $q, ZnkExerciseEvents, $log, $element, ZnkExerciseSrv, UtilitySrv, ENV) {
             var self = this;
 
             var questionReadyDefer = $q.defer();
@@ -1673,6 +1673,7 @@
              */
             (function(self) {
 
+                var updatedBy = ENV.appContext;
                 // initial an empty object in case bindExerciseViewTo was not called
                 self.__exerciseViewBinding = {};
 
@@ -1683,16 +1684,16 @@
                 BindExerciseEventManager.prototype.trigger = function(key, value) {
                     if (angular.isArray(this.cbObj[key])) {
                         this.cbObj[key].forEach(function (obj) {
-                            if (obj.id && value.id && obj.updatedBy && value.updatedBy) {
-                                if (obj.id === value.id && obj.updatedBy !== value.updatedBy) {
+                            if (obj.id && value.id && value.updatedBy && updatedBy) {
+                                if (obj.id === value.id && updatedBy !== value.updatedBy) {
                                     obj.cb(value);
                                 }
                             } else if (obj.id && value.id) {
                                 if (obj.id === value.id) {
                                     obj.cb(value);
                                 }
-                            } else if (obj.updatedBy && value.updatedBy) {
-                                if (obj.updatedBy !== value.updatedBy) {
+                            } else if (updatedBy && value.updatedBy) {
+                                if (updatedBy !== value.updatedBy) {
                                     obj.cb(value);
                                 }
                             } else {
@@ -1702,7 +1703,7 @@
                     }
                 };
 
-                BindExerciseEventManager.prototype.update = function(key, valueObj, id, updatedBy) {
+                BindExerciseEventManager.prototype.update = function(key, valueObj, id) {
                     if (!angular.isObject(valueObj) || angular.isArray(valueObj) && valueObj !== null) {
                         $log.error('ZnkExerciseDrvCtrl BindExerciseEventManager: value that pass to update function must be an object ie: {}');
                         return;
@@ -1728,11 +1729,11 @@
                     self.__exerciseViewBinding[key] = curValue;
                 };
 
-                BindExerciseEventManager.prototype.registerCb = function(key, cb, id, updatedBy) {
+                BindExerciseEventManager.prototype.registerCb = function(key, cb, id) {
                      if (!angular.isArray(this.cbObj[key])) {
                          this.cbObj[key] = [];
                      }
-                     this.cbObj[key].push({ id: id, cb: cb, updatedBy: updatedBy });
+                     this.cbObj[key].push({ id: id, cb: cb });
                 };
 
                 self.bindExerciseEventManager = new BindExerciseEventManager();

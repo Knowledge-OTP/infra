@@ -4,6 +4,14 @@ describe('testing directive "znkExerciseDrv":', function () {
     // Load  the module, which contains the directive
     beforeEach(module('znk.infra.znkExercise', 'htmlTemplates', 'analytics.mock'));
 
+    beforeEach(function () {
+        module(function ($provide) {
+            $provide.constant('ENV', {
+                appContext: 'student'
+            });
+        });
+    });
+
     //get dependencies
     var $rootScope, $compile, $timeout, $interval, ZnkExerciseSrv, $q, ZnkExerciseViewModeEnum,
         ZnkExerciseSlideDirectionEnum, ZnkExerciseEvents;
