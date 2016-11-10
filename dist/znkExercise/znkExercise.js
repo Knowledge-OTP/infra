@@ -1713,7 +1713,7 @@
                         curValue.id = id;
                     }
 
-                    if (updatedBy && !curValue.updatedBy) {
+                    if (updatedBy) {
                         curValue.updatedBy = updatedBy;
                     }
 
