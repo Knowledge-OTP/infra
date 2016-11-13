@@ -11223,7 +11223,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
         'znk.infra.exerciseUtility',
         'znk.infra.analytics',
         'znk.infra.popUp',
-        'znk.infra.user'
+        'znk.infra.user',
+        'znk.infra.utility'
     ])
     .config([
         'SvgIconSrvProvider',
@@ -12731,8 +12732,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('ZnkExerciseDrvCtrl', [
-        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$element', 'ZnkExerciseSrv',
-        function ($scope, $q, ZnkExerciseEvents, $log, $element, ZnkExerciseSrv) {
+        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$element', 'ZnkExerciseSrv', 'UtilitySrv', 'ENV',
+        function ($scope, $q, ZnkExerciseEvents, $log, $element, ZnkExerciseSrv, UtilitySrv, ENV) {
             var self = this;
 
             var questionReadyDefer = $q.defer();
@@ -12884,6 +12885,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
              */
             (function(self) {
 
+                self.updatedBy = ENV.appContext;
                 // initial an empty object in case bindExerciseViewTo was not called
                 self.__exerciseViewBinding = {};
 
@@ -12894,16 +12896,16 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 BindExerciseEventManager.prototype.trigger = function(key, value) {
                     if (angular.isArray(this.cbObj[key])) {
                         this.cbObj[key].forEach(function (obj) {
-                            if (obj.id && value.id && obj.updatedBy && value.updatedBy) {
-                                if (obj.id === value.id && obj.updatedBy !== value.updatedBy) {
+                            if (obj.id && value.id && value.updatedBy && self.updatedBy) {
+                                if (obj.id === value.id && self.updatedBy !== value.updatedBy) {
                                     obj.cb(value);
                                 }
                             } else if (obj.id && value.id) {
                                 if (obj.id === value.id) {
                                     obj.cb(value);
                                 }
-                            } else if (obj.updatedBy && value.updatedBy) {
-                                if (obj.updatedBy !== value.updatedBy) {
+                            } else if (self.updatedBy && value.updatedBy) {
+                                if (self.updatedBy !== value.updatedBy) {
                                     obj.cb(value);
                                 }
                             } else {
@@ -12913,27 +12915,35 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     }
                 };
 
-                BindExerciseEventManager.prototype.update = function(key, value, id, updatedBy) {
+                BindExerciseEventManager.prototype.update = function(key, valueObj, id) {
+                    if (!angular.isObject(valueObj) || angular.isArray(valueObj) && valueObj !== null) {
+                        $log.error('ZnkExerciseDrvCtrl BindExerciseEventManager: value that pass to update function must be an object ie: {}');
+                        return;
+                    }
+
                     var curValue = self.__exerciseViewBinding[key] || {};
 
-                    if (!curValue.data) {
-                        curValue.data = value;
+                    if (id) {
                         curValue.id = id;
-                        curValue.updatedBy = updatedBy;
-                    } else if (angular.isObject(value)) {
-                        curValue.data = angular.extend({}, curValue, value);
-                    } else {
-                        curValue.data = value;
                     }
+
+                    if (self.updatedBy) {
+                        curValue.updatedBy = self.updatedBy;
+                    }
+
+                    // create new guid for each update to enforce it
+                    valueObj.update = UtilitySrv.general.createGuid();
+
+                    curValue = angular.extend({}, curValue, valueObj);
 
                     self.__exerciseViewBinding[key] = curValue;
                 };
 
-                BindExerciseEventManager.prototype.registerCb = function(key, cb, id, updatedBy) {
+                BindExerciseEventManager.prototype.registerCb = function(key, cb, id) {
                      if (!angular.isArray(this.cbObj[key])) {
                          this.cbObj[key] = [];
                      }
-                     this.cbObj[key].push({ id: id, cb: cb, updatedBy: updatedBy });
+                     this.cbObj[key].push({ id: id, cb: cb });
                 };
 
                 self.bindExerciseEventManager = new BindExerciseEventManager();

@@ -4,9 +4,17 @@ describe('testing directive "znkExerciseDrv":', function () {
     // Load  the module, which contains the directive
     beforeEach(module('znk.infra.znkExercise', 'htmlTemplates', 'analytics.mock'));
 
+    beforeEach(function () {
+        module(function ($provide) {
+            $provide.value('ENV', { // added as value service so it can be changed during run time
+                appContext: 'student'
+            });
+        });
+    });
+
     //get dependencies
     var $rootScope, $compile, $timeout, $interval, ZnkExerciseSrv, $q, ZnkExerciseViewModeEnum,
-        ZnkExerciseSlideDirectionEnum, ZnkExerciseEvents;
+        ZnkExerciseSlideDirectionEnum, ZnkExerciseEvents, ENV;
     beforeEach(inject([
         '$rootScope', '$compile', '$timeout', '$injector',
         function (_$rootScope, _$compile, _$timeout, $injector) {
@@ -19,6 +27,7 @@ describe('testing directive "znkExerciseDrv":', function () {
             ZnkExerciseViewModeEnum = $injector.get('ZnkExerciseViewModeEnum');
             ZnkExerciseSlideDirectionEnum = $injector.get('ZnkExerciseSlideDirectionEnum');
             ZnkExerciseEvents = $injector.get('ZnkExerciseEvents');
+            ENV = $injector.get('ENV');
         }
     ]));
 
@@ -863,5 +872,70 @@ describe('testing directive "znkExerciseDrv":', function () {
         var currSlideIndex = scope.d.actions.getCurrentIndex();
         expectedResult = 2;
         expect(currSlideIndex).toBe(expectedResult);
+    });
+
+    it('when user (ie: student) update with bindExerciseEventManager then same user should not invoke callback and exerciseView' +
+        'should be populated accordingly, pass update in update method should return update string (new guid)', function(){
+        var scopeContent = createDirectiveHtml();
+        var scope = scopeContent.scope;
+        var isolateScope = scopeContent.isolateScope;
+        var vm = isolateScope.vm;
+        var exerciseView = {};
+        scope.d.actions.bindExerciseViewTo(exerciseView); // initialize bind exercise
+        var questionId = 1; // mock questionId
+
+        vm.bindExerciseEventManager.registerCb('answerExplanation', function() { // register key
+              expect(false).toBe(true); // should not be called
+        }, questionId);
+
+        scope.$digest();
+
+        var answerExplanationObj = vm.bindExerciseEventManager.cbObj['answerExplanation'][0]; // obj that created from register cb
+        spyOn(answerExplanationObj, 'cb'); // spy on cb to see if it's called
+        vm.bindExerciseEventManager.update('answerExplanation', { update: true }, questionId); // update key
+        expect(vm.bindExerciseEventManager.cbObj['answerExplanation']).toEqual(jasmine.any(Array));
+        expect(answerExplanationObj.cb).not.toHaveBeenCalled();
+        var expectedResult = {
+            id: 1,
+            updatedBy: 'student'
+        };
+        expect(exerciseView.answerExplanation.id).toEqual(expectedResult.id);
+        expect(exerciseView.answerExplanation.updatedBy).toEqual(expectedResult.updatedBy);
+        expect(exerciseView.answerExplanation.update).toEqual(jasmine.any(String)); // always changing
+    });
+
+    it('when user (ie: student) update with bindExerciseEventManager then other user (ie: dashboard) should get invoke callback and exerciseView' +
+        'should be populated accordingly, pass data should be send in callback function', function(){
+        var scopeContent = createDirectiveHtml();
+        var scope = scopeContent.scope;
+        var isolateScope = scopeContent.isolateScope;
+        var vm = isolateScope.vm;
+        var exerciseView = {};
+        scope.d.actions.bindExerciseViewTo(exerciseView); // initialize bind exercise
+        var questionId = 1; // mock questionId
+
+        vm.bindExerciseEventManager.registerCb('answerExplanation', function(newVal) { // register key
+            expect(newVal.data).toEqual('new data'); // should be called
+        }, questionId);
+
+        var answerExplanationObj = vm.bindExerciseEventManager.cbObj['answerExplanation'][0]; // obj that created from register cb
+        spyOn(answerExplanationObj, 'cb'); // spy on cb to see if it's called
+
+        vm.updatedBy = 'dashboard'; // change to teacher for update
+        scope.$digest();
+
+        vm.bindExerciseEventManager.update('answerExplanation', { data: 'new data' }, questionId); // update key
+
+        vm.updatedBy = 'student'; // change back to student so trigger method will be invoke with this appContext
+        scope.$digest();
+
+        expect(vm.bindExerciseEventManager.cbObj['answerExplanation']).toEqual(jasmine.any(Array));
+        expect(answerExplanationObj.cb).toHaveBeenCalled();
+        var expectedResult = {
+            id: 1,
+            updatedBy: 'dashboard'
+        };
+        expect(exerciseView.answerExplanation.id).toEqual(expectedResult.id);
+        expect(exerciseView.answerExplanation.updatedBy).toEqual(expectedResult.updatedBy);
     });
 });
