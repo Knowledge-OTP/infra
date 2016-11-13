@@ -202,9 +202,7 @@
                     }
 
                     // create new guid for each update to enforce it
-                    if (valueObj.update) {
-                        valueObj.update = UtilitySrv.general.createGuid();
-                    }
+                    valueObj.update = UtilitySrv.general.createGuid();
 
                     curValue = angular.extend({}, curValue, valueObj);
 
