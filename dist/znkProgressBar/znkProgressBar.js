@@ -57,9 +57,5 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
     "        {{progressValue}}\n" +
     "    </div>\n" +
     "</div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
     "");
 }]);
