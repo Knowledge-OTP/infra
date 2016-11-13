@@ -155,7 +155,7 @@
              */
             (function(self) {
 
-                var updatedBy = ENV.appContext;
+                self.updatedBy = ENV.appContext;
                 // initial an empty object in case bindExerciseViewTo was not called
                 self.__exerciseViewBinding = {};
 
@@ -166,16 +166,16 @@
                 BindExerciseEventManager.prototype.trigger = function(key, value) {
                     if (angular.isArray(this.cbObj[key])) {
                         this.cbObj[key].forEach(function (obj) {
-                            if (obj.id && value.id && value.updatedBy && updatedBy) {
-                                if (obj.id === value.id && updatedBy !== value.updatedBy) {
+                            if (obj.id && value.id && value.updatedBy && self.updatedBy) {
+                                if (obj.id === value.id && self.updatedBy !== value.updatedBy) {
                                     obj.cb(value);
                                 }
                             } else if (obj.id && value.id) {
                                 if (obj.id === value.id) {
                                     obj.cb(value);
                                 }
-                            } else if (updatedBy && value.updatedBy) {
-                                if (updatedBy !== value.updatedBy) {
+                            } else if (self.updatedBy && value.updatedBy) {
+                                if (self.updatedBy !== value.updatedBy) {
                                     obj.cb(value);
                                 }
                             } else {
@@ -197,8 +197,8 @@
                         curValue.id = id;
                     }
 
-                    if (updatedBy) {
-                        curValue.updatedBy = updatedBy;
+                    if (self.updatedBy) {
+                        curValue.updatedBy = self.updatedBy;
                     }
 
                     // create new guid for each update to enforce it
