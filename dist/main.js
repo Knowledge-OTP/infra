@@ -5304,7 +5304,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
                 var numOfHours;
                 var filteredTime;
                 if (time <= ONE_MIN_IN_MILLISECONDS) {
-                    filteredTime = time / 1000 + ' sec';
+                    filteredTime = Math.round(time / 1000) + ' sec';
                 } else if (time % ONE_MIN_IN_MILLISECONDS < time && time > 0 && time < 3600000) {
                     remainedSec = time % ONE_MIN_IN_MILLISECONDS;
                     numOfMin = Math.round(time / ONE_MIN_IN_MILLISECONDS) + ' min ';
