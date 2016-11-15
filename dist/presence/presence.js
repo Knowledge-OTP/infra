@@ -57,6 +57,15 @@
                             }
                         });
 
+                        // added listener for user to resolve other tabs closing
+                        // and removing user presence status, turning him offline, although his still online
+                        userRef.on('value', function(snapshot) {
+                            var val = snapshot.val();
+                            if (!val) {
+                                userRef.set(PresenceService.userStatus.ONLINE);
+                            }
+                        });
+
                         $rootScope.$on('IdleStart', function() {
                             userRef.set(presenceService.userStatus.IDLE);
                         });
