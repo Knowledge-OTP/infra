@@ -14144,6 +14144,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         
                         var onHoverCb = function () {
                             if (currQuestion) {
+                                drawer.stopDrawing();
                                 eventsManager.killMouseEvents();
 
                                 canvasDomElement = canvasOfElement;
@@ -14160,8 +14161,21 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                     function _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement) {
                         toolBoxCtrl.isExerciseReady().then(function () {
-                            canvasDomContainerElement[0].setAttribute('height', elementToCoverDomElement.offsetHeight);
-                            canvasDomContainerElement[0].setAttribute('width', elementToCoverDomElement.offsetWidth);
+                            var height,width;
+                            if (elementToCoverDomElement.scrollHeight) {
+                                height = elementToCoverDomElement.scrollHeight;
+                            }
+                            else {
+                                height = elementToCoverDomElement.offsetHeight;
+                            }
+                            if (elementToCoverDomElement.scrollWidth) {
+                                width = elementToCoverDomElement.scrollWidth;
+                            }
+                            else {
+                                width = elementToCoverDomElement.offsetWidth;
+                            }
+                            canvasDomContainerElement[0].setAttribute('height', height);
+                            canvasDomContainerElement[0].setAttribute('width', width);
                             canvasDomContainerElement.css('position', 'absolute');
                         });
 
