@@ -4576,8 +4576,9 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                     }
 
                     var exerciseNewStatus = exerciseResultObj.isComplete ? ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
+                    var exerciseStatusTypeAndExerciseIdPath = [USER_EXERCISES_STATUS_PATH + '/' + exerciseResultObj.exerciseTypeId + '/' + exerciseResultObj.exerciseId];
                     exercisesStatusData[exerciseResultObj.exerciseTypeId][exerciseResultObj.exerciseId] = new ExerciseStatus(exerciseNewStatus, totalTimeSpentOnQuestions);
-                    dataToSaveObj[USER_EXERCISES_STATUS_PATH] = exercisesStatusData;
+                    dataToSaveObj[exerciseStatusTypeAndExerciseIdPath] = exercisesStatusData[exerciseResultObj.exerciseTypeId][exerciseResultObj.exerciseId];
                     return {
                         exerciseResult: exerciseResultObj,
                         exercisesStatus: exercisesStatusData,
