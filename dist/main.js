@@ -8466,7 +8466,14 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                     } else {
                         if (self.__registeredEvents[type][path].firstOnWasInvoked) {
                             self.get(path).then(function (newVal) {
-                                cb(newVal);
+                                if (angular.isDefined(newVal) && newVal !== null && type === 'child_added') {
+                                    var keys = Object.keys(newVal);
+                                    angular.forEach(keys, function (key) {
+                                        cb(newVal[key], key);
+                                    });
+                                } else {
+                                    cb(newVal);
+                                }
                             });
                         }
                     }
