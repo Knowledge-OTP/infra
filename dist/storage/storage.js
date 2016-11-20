@@ -169,7 +169,14 @@
                     } else {
                         if (self.__registeredEvents[type][path].firstOnWasInvoked) {
                             self.get(path).then(function (newVal) {
-                                cb(newVal);
+                                if (angular.isDefined(newVal) && type === 'child_added') {
+                                    var keys = Object.keys(newVal);
+                                    angular.forEach(keys, function (key, val) {
+                                        cb(val);
+                                    });
+                                } else {
+                                    cb(newVal);
+                                }
                             });
                         }
                     }
