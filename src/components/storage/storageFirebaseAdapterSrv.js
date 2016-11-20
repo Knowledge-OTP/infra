@@ -134,7 +134,14 @@
                     } else {
                         if (self.__registeredEvents[type][path].firstOnWasInvoked) {
                             self.get(path).then(function (newVal) {
-                                cb(newVal);
+                                if (angular.isDefined(newVal) && newVal !== null && type === 'child_added') {
+                                    var keys = Object.keys(newVal);
+                                    angular.forEach(keys, function (key) {
+                                        cb(newVal[key], key);
+                                    });
+                                } else {
+                                    cb(newVal);
+                                }
                             });
                         }
                     }
@@ -156,23 +163,20 @@
                     });
                 },
                 offEvent: function (type, path, cb) {
-                    if (!this.__registeredEvents[type] || !this.__registeredEvents[type][path]) {
+                    if (!this.__registeredEvents[type] || !this.__registeredEvents[type][path] || angular.isUndefined(cb)) {
+                        if(angular.isUndefined(cb)){
+                            $log.debug('storageFirebaseAdapter: offEvent called without callback');
+                        }
                         return;
                     }
 
                     var _firstOnWasInvoked = this.__registeredEvents[type][path].firstOnWasInvoked;
 
-                    if (angular.isUndefined(cb)) {
-                        this.__registeredEvents[type][path] = [];
-                        this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
-                        return;
-                    }
-
                     var eventCbArr = this.__registeredEvents[type][path];
                     var newEventCbArr = [];
-                    eventCbArr.forEach(function (cb) {
-                        if (cb !== cb) {
-                            newEventCbArr.push(cb);
+                    eventCbArr.forEach(function (_cb) {
+                        if (cb !== _cb) {
+                            newEventCbArr.push(_cb);
                         }
                     });
                     this.__registeredEvents[type][path] = newEventCbArr;

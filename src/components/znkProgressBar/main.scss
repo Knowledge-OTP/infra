@@ -10,7 +10,7 @@
         position: relative;
 
         .progress-percentage{
-            @include absolute-position(7px, null, null, -23px);
+            @include absolute-position(2px, null, null, -23px);
             @include text-style(18px, $fcColor6, Quicksand, $regularFontWeight);
             z-index: 1;
 
@@ -23,6 +23,7 @@
                     @include text-style(9px, $fcColor9, Lato, $extraLightFontWeight);
                     position: relative;
                     bottom: 6px;
+                    margin-top: 6px;
                 }
             }
         }
