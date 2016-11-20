@@ -166,7 +166,6 @@
                     if (!this.__registeredEvents[type] || !this.__registeredEvents[type][path] || angular.isUndefined(cb)) {
                         if(angular.isUndefined(cb)){
                             $log.debug('storageFirebaseAdapter: offEvent called without callback');
-
                         }
                         return;
                     }
