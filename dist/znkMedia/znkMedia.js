@@ -14,6 +14,8 @@
 
             var sound = window.Audio && new Audio();
             function Html5Media(src, mediaSuccess, mediaError, mediaStatus) {
+                var audioEndedProm = $q.defer();
+
                 if (typeof $window.Audio !== 'function' && typeof $window.Audio !== 'object') {
                     console.warn('HTML5 Audio is not supported in this browser');
                 }
@@ -28,6 +30,8 @@
                     if (mediaSuccess) {
                         mediaSuccess();
                     }
+
+                    audioEndedProm.resolve();
                 }
                 sound.addEventListener('ended', endedHandler, false);
 
@@ -111,6 +115,9 @@
                         if (mediaSuccess) {
                             mediaSuccess();
                         }
+                    },
+                    onEnded: function(){
+                        return audioEndedProm.promise;
                     }
                 };
             }
