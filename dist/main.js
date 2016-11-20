@@ -4576,8 +4576,9 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                     }
 
                     var exerciseNewStatus = exerciseResultObj.isComplete ? ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
+                    var exerciseStatusTypeAndExerciseIdPath = [USER_EXERCISES_STATUS_PATH + '/' + exerciseResultObj.exerciseTypeId + '/' + exerciseResultObj.exerciseId];
                     exercisesStatusData[exerciseResultObj.exerciseTypeId][exerciseResultObj.exerciseId] = new ExerciseStatus(exerciseNewStatus, totalTimeSpentOnQuestions);
-                    dataToSaveObj[USER_EXERCISES_STATUS_PATH] = exercisesStatusData;
+                    dataToSaveObj[exerciseStatusTypeAndExerciseIdPath] = exercisesStatusData[exerciseResultObj.exerciseTypeId][exerciseResultObj.exerciseId];
                     return {
                         exerciseResult: exerciseResultObj,
                         exercisesStatus: exercisesStatusData,
@@ -5304,7 +5305,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
                 var numOfHours;
                 var filteredTime;
                 if (time <= ONE_MIN_IN_MILLISECONDS) {
-                    filteredTime = time / 1000 + ' sec';
+                    filteredTime = Math.round(time / 1000) + ' sec';
                 } else if (time % ONE_MIN_IN_MILLISECONDS < time && time > 0 && time < 3600000) {
                     remainedSec = time % ONE_MIN_IN_MILLISECONDS;
                     numOfMin = Math.round(time / ONE_MIN_IN_MILLISECONDS) + ' min ';
@@ -6764,6 +6765,15 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
                         amOnline.on('value', function (snapshot) {
                             if (snapshot.val()) {
                                 userRef.onDisconnect().remove();
+                                userRef.set(presenceService.userStatus.ONLINE);
+                            }
+                        });
+
+                        // added listener for the user to resolve the problem when other tabs are closing
+                        // it removes user presence status, turning him offline, although his still online
+                        userRef.on('value', function(snapshot) {
+                            var val = snapshot.val();
+                            if (!val) {
                                 userRef.set(presenceService.userStatus.ONLINE);
                             }
                         });
@@ -8456,7 +8466,14 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                     } else {
                         if (self.__registeredEvents[type][path].firstOnWasInvoked) {
                             self.get(path).then(function (newVal) {
-                                cb(newVal);
+                                if (angular.isDefined(newVal) && newVal !== null && type === 'child_added') {
+                                    var keys = Object.keys(newVal);
+                                    angular.forEach(keys, function (key) {
+                                        cb(newVal[key], key);
+                                    });
+                                } else {
+                                    cb(newVal);
+                                }
                             });
                         }
                     }
@@ -8478,23 +8495,20 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                     });
                 },
                 offEvent: function (type, path, cb) {
-                    if (!this.__registeredEvents[type] || !this.__registeredEvents[type][path]) {
+                    if (!this.__registeredEvents[type] || !this.__registeredEvents[type][path] || angular.isUndefined(cb)) {
+                        if(angular.isUndefined(cb)){
+                            $log.debug('storageFirebaseAdapter: offEvent called without callback');
+                        }
                         return;
                     }
 
                     var _firstOnWasInvoked = this.__registeredEvents[type][path].firstOnWasInvoked;
 
-                    if (angular.isUndefined(cb)) {
-                        this.__registeredEvents[type][path] = [];
-                        this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
-                        return;
-                    }
-
                     var eventCbArr = this.__registeredEvents[type][path];
                     var newEventCbArr = [];
-                    eventCbArr.forEach(function (cb) {
-                        if (cb !== cb) {
-                            newEventCbArr.push(cb);
+                    eventCbArr.forEach(function (_cb) {
+                        if (cb !== _cb) {
+                            newEventCbArr.push(_cb);
                         }
                     });
                     this.__registeredEvents[type][path] = newEventCbArr;
