@@ -18,7 +18,6 @@
                     var chatGuidProm;
                     var offEvent = {};
                     var soundPath = ZNK_CHAT.SOUND_PATH + 'sound.mp3';
-                    var sound =  MediaSrv.loadSound(soundPath);
 
                     scope.d = {};
                     scope.d.userStatus = PresenceService.userStatus;
@@ -88,7 +87,11 @@
                             } else {
                                 scope.chatterObj.messagesNotSeen++;
                                 scope.chatterObj.messagesNotSeen = scope.chatterObj.messagesNotSeen < ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES ? scope.chatterObj.messagesNotSeen :  ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
+                                var sound =  MediaSrv.loadSound(soundPath);
                                 sound.play();
+                                sound.onEnded().then(function(){
+                                    sound.release();
+                                });
                             }
                         }
 

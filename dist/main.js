@@ -10557,7 +10557,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     var chatGuidProm;
                     var offEvent = {};
                     var soundPath = ZNK_CHAT.SOUND_PATH + 'sound.mp3';
-                    var sound =  MediaSrv.loadSound(soundPath);
 
                     scope.d = {};
                     scope.d.userStatus = PresenceService.userStatus;
@@ -10627,7 +10626,11 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                             } else {
                                 scope.chatterObj.messagesNotSeen++;
                                 scope.chatterObj.messagesNotSeen = scope.chatterObj.messagesNotSeen < ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES ? scope.chatterObj.messagesNotSeen :  ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
+                                var sound =  MediaSrv.loadSound(soundPath);
                                 sound.play();
+                                sound.onEnded().then(function(){
+                                    sound.release();
+                                });
                             }
                         }
 
@@ -15060,6 +15063,8 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
 
             var sound = window.Audio && new Audio();
             function Html5Media(src, mediaSuccess, mediaError, mediaStatus) {
+                var audioEndedProm = $q.defer();
+
                 if (typeof $window.Audio !== 'function' && typeof $window.Audio !== 'object') {
                     console.warn('HTML5 Audio is not supported in this browser');
                 }
@@ -15074,6 +15079,8 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
                     if (mediaSuccess) {
                         mediaSuccess();
                     }
+
+                    audioEndedProm.resolve();
                 }
                 sound.addEventListener('ended', endedHandler, false);
 
@@ -15157,6 +15164,9 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
                         if (mediaSuccess) {
                             mediaSuccess();
                         }
+                    },
+                    onEnded: function(){
+                        return audioEndedProm.promise;
                     }
                 };
             }
