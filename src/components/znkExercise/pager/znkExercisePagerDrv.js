@@ -49,12 +49,12 @@
                             var answerTypeId = question.answerTypeId;
                             var currIndex = index || question.__questionStatus.index;
                             
-                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function () {
-                                 setPagerItemAnswerClass(currIndex, question); 
+                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function() {               
+                                setPagerItemAnswerClass(currIndex, question); 
                             }, function() {
                                  var pagerItemElement = getPagerItemByIndex(currIndex);
-                                 pagerItemElement.removeClass('neutral correct wrong');
-                            });
+                                 pagerItemElement.removeClass('neutral correct wrong');  
+                            }, question);
                         }
 
                         function setPagerItemAnswerClass(index, question) {

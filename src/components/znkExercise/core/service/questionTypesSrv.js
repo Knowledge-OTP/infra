@@ -35,7 +35,7 @@
                     return questionTypeGetterFn(question);
                 };
 
-                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer) {   
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {   
                     if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
                         $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
                         return;
@@ -58,7 +58,7 @@
                         currentFormatter = answersFormaterArr[i];
 
                         if (angular.isFunction(currentFormatter)) {
-                            answerValueBool = currentFormatter(userAnswer);
+                            answerValueBool = currentFormatter(userAnswer, question); // question is optional
                         }
 
                         if (currentFormatter instanceof RegExp) { // currentFormatter should be a regex pattren
