@@ -12221,7 +12221,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     return questionTypeGetterFn(question);
                 };
 
-                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer) {   
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {   
                     if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
                         $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
                         return;
@@ -12244,7 +12244,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         currentFormatter = answersFormaterArr[i];
 
                         if (angular.isFunction(currentFormatter)) {
-                            answerValueBool = currentFormatter(userAnswer);
+                            answerValueBool = currentFormatter(userAnswer, question); // question is optional
                         }
 
                         if (currentFormatter instanceof RegExp) { // currentFormatter should be a regex pattren
@@ -13126,12 +13126,12 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             var answerTypeId = question.answerTypeId;
                             var currIndex = index || question.__questionStatus.index;
                             
-                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function () {
-                                 setPagerItemAnswerClass(currIndex, question); 
+                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function() {               
+                                setPagerItemAnswerClass(currIndex, question); 
                             }, function() {
                                  var pagerItemElement = getPagerItemByIndex(currIndex);
-                                 pagerItemElement.removeClass('neutral correct wrong');
-                            });
+                                 pagerItemElement.removeClass('neutral correct wrong');  
+                            }, question);
                         }
 
                         function setPagerItemAnswerClass(index, question) {
