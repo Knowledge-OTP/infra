@@ -12230,7 +12230,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                    var answersFormaterArr = answersFormaterObjMap[answerTypeId];
 
                     // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
-                   if (!userAnswer ||
+                   if (angular.isUndefined(userAnswer) ||
                        !angular.isArray(answersFormaterArr) ||
                        !answersFormaterArr.length) {
                         callbackValidAnswer();
@@ -13117,6 +13117,17 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             }
                         }
 
+                        function setPagerItemAnswerClassValidAnswerWrapper(question, index) {
+                            var userAnswer = question.__questionStatus.userAnswer;
+                            var answerTypeId = question.answerTypeId;
+
+                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function () {
+                                 setPagerItemAnswerClass(index || question.__questionStatus.index, question); 
+                            }, function () {
+                                 $log.debug('znkExercisePager: question answer is not a valid answer', question);
+                            });
+                        }
+
                         function setPagerItemAnswerClass(index, question) {
                             var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
 
@@ -13156,7 +13167,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 for (i in scope.questions) {
                                     var question = scope.questions[i];
                                     setPagerItemBookmarkStatus(i, question.__questionStatus.bookmark);
-                                    setPagerItemAnswerClass(i, question);
+                                    setPagerItemAnswerClassValidAnswerWrapper(question, i);
                                 }
                             });
                         };
@@ -13166,13 +13177,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         });
 
                         scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function (evt, question) {
-                            var userAnswer = question.__questionStatus.userAnswer;
-                            var answerTypeId = question.answerTypeId;
-                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function () {
-                                 setPagerItemAnswerClass(question.__questionStatus.index, question); 
-                            }, function () {
-                                $log.debug('znkExercisePager: question answer is not a valid answer', question);
-                            });
+                            setPagerItemAnswerClassValidAnswerWrapper(question);
                         });
 
                         function init() {
