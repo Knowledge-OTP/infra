@@ -7,8 +7,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExercisePager', [
-        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum',
-        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum) {
+        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum', 'QuestionTypesSrv', '$log',
+        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum, QuestionTypesSrv, $log) {
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExercisePagerDrv.html',
                 restrict: 'E',
@@ -89,7 +89,13 @@
                         });
 
                         scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function (evt, question) {
-                            setPagerItemAnswerClass(question.__questionStatus.index, question);
+                            var userAnswer = question.__questionStatus.userAnswer;
+                            var questionFormatId = question.questionFormatId;
+                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, questionFormatId, function () {
+                                 setPagerItemAnswerClass(question.__questionStatus.index, question); 
+                            }, function () {
+                                $log.debug('znkExercisePager: question answer is not a valid answer', question);
+                            });
                         });
 
                         function init() {
