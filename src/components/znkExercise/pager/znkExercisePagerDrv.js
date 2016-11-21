@@ -90,8 +90,8 @@
 
                         scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function (evt, question) {
                             var userAnswer = question.__questionStatus.userAnswer;
-                            var questionFormatId = question.questionFormatId;
-                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, questionFormatId, function () {
+                            var answerTypeId = question.answerTypeId;
+                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function () {
                                  setPagerItemAnswerClass(question.__questionStatus.index, question); 
                             }, function () {
                                 $log.debug('znkExercisePager: question answer is not a valid answer', question);

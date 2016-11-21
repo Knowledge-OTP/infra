@@ -35,13 +35,13 @@
                     return questionTypeGetterFn(question);
                 };
 
-                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, questionFormatId, callbackValidAnswer, callbackUnValidAnswer) {   
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer) {   
                     if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
                         $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
                         return;
                     }
 
-                   var answersFormaterArr = answersFormaterObjMap[questionFormatId];
+                   var answersFormaterArr = answersFormaterObjMap[answerTypeId];
 
                     // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
                    if (!userAnswer ||

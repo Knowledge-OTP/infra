@@ -41,7 +41,7 @@ describe('testing directive "znkExercisePagerDrv":', function () {
                         isAnsweredCorrectly: true,
                         userAnswer: 2
                     },
-                    questionFormatId: 7
+                    answerTypeId: 7
                 },{
                     id: 3,
                     __questionStatus: {
