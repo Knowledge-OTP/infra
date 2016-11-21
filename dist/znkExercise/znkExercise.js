@@ -1887,11 +1887,12 @@
                         function setPagerItemAnswerClassValidAnswerWrapper(question, index) {
                             var userAnswer = question.__questionStatus.userAnswer;
                             var answerTypeId = question.answerTypeId;
-
+                            var currIndex = index || question.__questionStatus.index;
+                            
                             QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function () {
-                                 setPagerItemAnswerClass(index || question.__questionStatus.index, question); 
+                                 setPagerItemAnswerClass(currIndex, question); 
                             }, function() {
-                                 var pagerItemElement = getPagerItemByIndex(index);
+                                 var pagerItemElement = getPagerItemByIndex(currIndex);
                                  pagerItemElement.removeClass('neutral correct wrong');
                             });
                         }
