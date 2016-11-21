@@ -13084,8 +13084,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExercisePager', [
-        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum', 'QuestionTypesSrv', '$log',
-        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum, QuestionTypesSrv, $log) {
+        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum', 'QuestionTypesSrv',
+        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum, QuestionTypesSrv) {
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExercisePagerDrv.html',
                 restrict: 'E',
@@ -13108,6 +13108,10 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             znkExerciseCtrl.setCurrentIndex(newIndex);
                         };
 
+                        function getPagerItemByIndex(index) {
+                            return angular.element(domElement.querySelectorAll('.pager-item')[index]);
+                        }
+
                         function setPagerItemBookmarkStatus(index, status) {
                             var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
                             if (status) {
@@ -13123,13 +13127,14 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                             QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function () {
                                  setPagerItemAnswerClass(index || question.__questionStatus.index, question); 
-                            }, function () {
-                                 $log.debug('znkExercisePager: question answer is not a valid answer', question);
+                            }, function() {
+                                 var pagerItemElement = getPagerItemByIndex(index);
+                                 pagerItemElement.removeClass('neutral correct wrong');
                             });
                         }
 
                         function setPagerItemAnswerClass(index, question) {
-                            var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
+                            var pagerItemElement = getPagerItemByIndex(index);
 
                             if (angular.isUndefined(question.__questionStatus.userAnswer)) {
                                 pagerItemElement.removeClass('neutral correct wrong');
