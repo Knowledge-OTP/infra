@@ -2575,7 +2575,7 @@
                     function _setDrawMode(drawMode) {
                         switch (drawMode) {
                             case DRAWING_MODES.NONE:
-                                eventsManager.cleanListeners();
+                                eventsManager.cleanQuestionListeners();
                                 drawer.clean();
                                 break;
                             case DRAWING_MODES.VIEW:
@@ -2623,7 +2623,7 @@
                         var self = this;
 
                         return this.exerciseDrawingRefProm.then(function (exerciseDrawingRef) {
-                            exerciseDrawingRef.update(self.pixelsMapToUpdate);
+                            exerciseDrawingRef.child('coordinates').update(self.pixelsMapToUpdate);
                             self.pixelsMapToUpdate = {};
                         });
                     };
@@ -2767,12 +2767,13 @@
                     });
 
                     scope.$on('$destroy', function () {
-                        eventsManager.cleanListeners();
+                        eventsManager.cleanQuestionListeners();
+                        eventsManager.cleanGlobalListeners();
+
                     });
 
                     function EventsManager() {
                         this._fbRegisterProm = $q.when();
-                        this._hoveredElementsOfQuestions = {};
                         this._fbCallbackEnum =
                             {
                                 CHILD_CHANGED: 0,
@@ -2871,9 +2872,9 @@
                             _getFbRef(questionId, canvasContextName).then(function (ref) {
                                 self.ref = ref;
 
-                                self.ref.on("child_added", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
-                                self.ref.on("child_changed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
-                                self.ref.on("child_removed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_REMOVED));
+                                self.ref.child('coordinates').on("child_added", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                                self.ref.child('coordinates').on("child_changed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                                self.ref.child('coordinates').on("child_removed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_REMOVED));
 
                             });
 
@@ -2891,18 +2892,36 @@
                             _getFbRef(self._fbLastRegisteredQuestionId, canvasContextName).then(function (ref) {
                                 self.ref = ref;
 
-                                self.ref.off("child_added", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
-                                self.ref.off("child_changed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
-                                self.ref.off("child_removed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_REMOVED));
+                                self.ref.child('coordinates').off("child_added", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                                self.ref.child('coordinates').off("child_changed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                                self.ref.child('coordinates').off("child_removed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_REMOVED));
                             });
                         });
                         self._fbLastRegisteredQuestionId = null;
                     };
 
-                    EventsManager.prototype.cleanListeners = function () {
+                    EventsManager.prototype.cleanQuestionListeners = function () {
                         this.killMouseEvents();
                         this.killFbListeners();
                         this.killHoverEvents(); 
+                    };
+
+                    EventsManager.prototype.registerDimensionsListener = function(dimensionsRef, onValueCb) {
+                        if (!this._dimensionsRefPairs) {
+                            this._dimensionsRefPairs = [];
+                        }
+                        dimensionsRef.on('value', onValueCb);
+                        this._dimensionsRefPairs.push({dimensionsRef : dimensionsRef, onValueCb: onValueCb});
+                    };
+
+                    EventsManager.prototype.killDimensionsListener = function() {
+                        angular.forEach(this._dimensionsRefPairs, function (refAndCbPair) {
+                            refAndCbPair.dimensionsRef.off("value",refAndCbPair.onValueCb);
+                        });
+                    };
+
+                    EventsManager.prototype.cleanGlobalListeners = function() {
+                        this.killDimensionsListener();
                     };
 
                     function _reloadCanvas() {
@@ -2947,24 +2966,69 @@
 
                     }
 
-                    function _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement) {
+                    function _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement, canvasContextName, questionId) {
                         toolBoxCtrl.isExerciseReady().then(function () {
-                            var height,width;
-                            if (elementToCoverDomElement.scrollHeight) {
-                                height = elementToCoverDomElement.scrollHeight;
+                            var exerciseDrawingRefProm;
+
+                            // get the height and the width of the wrapper element
+                            function _getDimensionsByElementSize() {
+                                var height,width;
+                                if (elementToCoverDomElement.scrollHeight) {
+                                    height = elementToCoverDomElement.scrollHeight;
+                                }
+                                else {
+                                    height = elementToCoverDomElement.offsetHeight;
+                                }
+                                if (elementToCoverDomElement.scrollWidth) {
+                                    width = elementToCoverDomElement.scrollWidth;
+                                }
+                                else {
+                                    width = elementToCoverDomElement.offsetWidth;
+                                }
+                                return {height: height, width: width};
                             }
-                            else {
-                                height = elementToCoverDomElement.offsetHeight;
+
+                            // return the larger dimensions out of the element's dimensions and the saved FB dimensions
+                            function _compareFbDimensionsWithElementDimensions(fbDimensions) {
+                                var elementDimensions = _getDimensionsByElementSize();
+                                var finalDimensions = {
+                                    height : Math.max(elementDimensions.height, fbDimensions.height),
+                                    width : Math.max(elementDimensions.width, fbDimensions.width)
+                                };
+                                exerciseDrawingRefProm.child('maxDimensions').update(finalDimensions);
+                                return finalDimensions;
                             }
-                            if (elementToCoverDomElement.scrollWidth) {
-                                width = elementToCoverDomElement.scrollWidth;
-                            }
-                            else {
-                                width = elementToCoverDomElement.offsetWidth;
-                            }
-                            canvasDomContainerElement[0].setAttribute('height', height);
-                            canvasDomContainerElement[0].setAttribute('width', width);
-                            canvasDomContainerElement.css('position', 'absolute');
+
+                            // set the canvas dimensions to the larger dimensions between the two ^
+                            var setDimensionsCb = function(data) {
+                                // DOM dimensions
+                                var elementDimensions = _getDimensionsByElementSize();
+                                // FB dimensions
+                                var maxDimensions;
+                                // nothing is saved on FB, set the dimensions to be element dimensions
+                                if (!data.val()) {
+                                    maxDimensions = elementDimensions;
+                                }
+                                else {
+                                    maxDimensions = data.val();
+                                }
+                                // compare them and set the canvas dimensions to be the larger between the two
+                                // also save the new maxDimensions to FB
+                                var finalDimensions = _compareFbDimensionsWithElementDimensions(maxDimensions);            
+                                canvasDomContainerElement[0].setAttribute('height', finalDimensions.height);
+                                canvasDomContainerElement[0].setAttribute('width', finalDimensions.width);
+                                canvasDomContainerElement.css('position', 'absolute');
+
+                            };
+
+                            // this piece of code fetches the previously calculated maxDimensions from firebase, and then kickstart all the functions we just went by above ^
+                            _getFbRef(questionId, canvasContextName).then(function(ref) {
+                                exerciseDrawingRefProm = ref;
+                                eventsManager.registerDimensionsListener(exerciseDrawingRefProm.child('maxDimensions'), setDimensionsCb);
+                            });
+
+
+
                         });
 
                     }
@@ -2987,7 +3051,7 @@
                         // when hovering over a canvas, set the global context to it
                         _setContextOnHover(elementToCover, canvasDomElement, canvasContextName);
 
-                        _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement);
+                        _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement, canvasContextName, question.id);
                         
 
                         elementToCover.append(canvasContainerElement);
@@ -3026,7 +3090,6 @@
             };
         }]);
 })(angular);
-
 
 (function (angular) {
     'use strict';
