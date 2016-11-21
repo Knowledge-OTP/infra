@@ -40,6 +40,17 @@
                             }
                         }
 
+                        function setPagerItemAnswerClassValidAnswerWrapper(question, index) {
+                            var userAnswer = question.__questionStatus.userAnswer;
+                            var answerTypeId = question.answerTypeId;
+
+                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function () {
+                                 setPagerItemAnswerClass(index || question.__questionStatus.index, question); 
+                            }, function () {
+                                 $log.debug('znkExercisePager: question answer is not a valid answer', question);
+                            });
+                        }
+
                         function setPagerItemAnswerClass(index, question) {
                             var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
 
@@ -79,7 +90,7 @@
                                 for (i in scope.questions) {
                                     var question = scope.questions[i];
                                     setPagerItemBookmarkStatus(i, question.__questionStatus.bookmark);
-                                    setPagerItemAnswerClass(i, question);
+                                    setPagerItemAnswerClassValidAnswerWrapper(question, i);
                                 }
                             });
                         };
@@ -89,13 +100,7 @@
                         });
 
                         scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function (evt, question) {
-                            var userAnswer = question.__questionStatus.userAnswer;
-                            var answerTypeId = question.answerTypeId;
-                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function () {
-                                 setPagerItemAnswerClass(question.__questionStatus.index, question); 
-                            }, function () {
-                                $log.debug('znkExercisePager: question answer is not a valid answer', question);
-                            });
+                            setPagerItemAnswerClassValidAnswerWrapper(question);
                         });
 
                         function init() {

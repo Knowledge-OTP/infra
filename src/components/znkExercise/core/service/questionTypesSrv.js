@@ -44,7 +44,7 @@
                    var answersFormaterArr = answersFormaterObjMap[answerTypeId];
 
                     // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
-                   if (!userAnswer ||
+                   if (angular.isUndefined(userAnswer) ||
                        !angular.isArray(answersFormaterArr) ||
                        !answersFormaterArr.length) {
                         callbackValidAnswer();
