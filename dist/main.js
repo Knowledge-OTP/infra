@@ -12205,8 +12205,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
         };
 
         this.$get = [
-            '$log','$q',
-            function ($log, $q) {
+            '$log', '$q', '$injector',
+            function ($log, $q, $injector) {
                 var QuestionTypesSrv = {};
 
                 QuestionTypesSrv.getQuestionHtmlTemplate = function getQuestionHtmlTemplate(question) {
@@ -12241,12 +12241,17 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                     var answersFormaterArrLength = answersFormaterArr.length;
 
-                    var answerValueBool, currentFormatter;                     
+                    var answerValueBool, currentFormatter, functionGetter;                     
                     for (var i = 0; i < answersFormaterArrLength; i++) {
                         currentFormatter = answersFormaterArr[i];
-
+                       
                         if (angular.isFunction(currentFormatter)) {
-                            answerValueBool = currentFormatter(userAnswer, question); // question is optional
+                            try {
+                                 functionGetter = $injector.invoke(currentFormatter);
+                            } catch (e) {
+                                 $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: $injector.invoke faild! e: ' + e);
+                            }
+                            answerValueBool = functionGetter(userAnswer, question); // question is optional
                         }
 
                         if (currentFormatter instanceof RegExp) { // currentFormatter should be a regex pattren
