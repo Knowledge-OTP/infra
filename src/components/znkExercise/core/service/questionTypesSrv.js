@@ -53,13 +53,13 @@
 
                     var answersFormaterArrLength = answersFormaterArr.length;
 
-                    var answerValueBool, currentFormatter;                     
+                    var answerValueBool, currentFormatter, functionGetter;                     
                     for (var i = 0; i < answersFormaterArrLength; i++) {
                         currentFormatter = answersFormaterArr[i];
-
+                       
                         if (angular.isFunction(currentFormatter)) {
                             try {
-                               var functionGetter = $injector.invoke(currentFormatter);
+                                 functionGetter = $injector.invoke(currentFormatter);
                             } catch (e) {
                                  $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: $injector.invoke faild! e: ' + e);
                             }
