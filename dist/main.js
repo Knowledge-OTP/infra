@@ -535,7 +535,7 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
             };
 
             if(!eventsHandler) {
-                $log.error('znkAnalyticsSrv eventsHandler is missing!');
+                $log.debug('znkAnalyticsSrv eventsHandler is missing!');
                 return api;
             }
 
@@ -4979,13 +4979,21 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
+    var answerTypeEnum = {
+        SELECT_ANSWER: 0,
+        FREE_TEXT_ANSWER: 1,
+        RATE_ANSWER: 3
+    };
+
+    angular.module('znk.infra.exerciseUtility').constant('answerTypeEnumConst', answerTypeEnum);
+
     angular.module('znk.infra.exerciseUtility').factory('AnswerTypeEnum', [
         'EnumSrv',
         function (EnumSrv) {
             return new EnumSrv.BaseEnum([
-                ['SELECT_ANSWER',0 ,'select answer'],
-                ['FREE_TEXT_ANSWER',1 ,'free text answer'],
-                ['RATE_ANSWER',3 ,'rate answer']
+                ['SELECT_ANSWER', answerTypeEnum.SELECT_ANSWER, 'select answer'],
+                ['FREE_TEXT_ANSWER', answerTypeEnum.FREE_TEXT_ANSWER, 'free text answer'],
+                ['RATE_ANSWER', answerTypeEnum.RATE_ANSWER, 'rate answer']
             ]);
         }
     ]);
@@ -6750,6 +6758,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
                 var presenceService = {};
                 var rootRef = new StorageFirebaseAdapter(ENV.fbDataEndPoint);
                 var PRESENCE_PATH = 'presence/';
+                var isUserLoguot = false;
 
                 presenceService.userStatus = {
                     'OFFLINE': 0,
@@ -6773,7 +6782,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
                         // it removes user presence status, turning him offline, although his still online
                         userRef.on('value', function(snapshot) {
                             var val = snapshot.val();
-                            if (!val) {
+                            if (!val && !isUserLoguot) {
                                 userRef.set(presenceService.userStatus.ONLINE);
                             }
                         });
@@ -6827,6 +6836,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
                     var authData = getAuthData();
                     if (authData) {
                         var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
+                        isUserLoguot = true;
                         userRef.remove();
                     }
                 });
@@ -8495,23 +8505,20 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                     });
                 },
                 offEvent: function (type, path, cb) {
-                    if (!this.__registeredEvents[type] || !this.__registeredEvents[type][path]) {
+                    if (!this.__registeredEvents[type] || !this.__registeredEvents[type][path] || angular.isUndefined(cb)) {
+                        if(angular.isUndefined(cb)){
+                            $log.debug('storageFirebaseAdapter: offEvent called without callback');
+                        }
                         return;
                     }
 
                     var _firstOnWasInvoked = this.__registeredEvents[type][path].firstOnWasInvoked;
 
-                    if (angular.isUndefined(cb)) {
-                        this.__registeredEvents[type][path] = [];
-                        this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
-                        return;
-                    }
-
                     var eventCbArr = this.__registeredEvents[type][path];
                     var newEventCbArr = [];
-                    eventCbArr.forEach(function (cb) {
-                        if (cb !== cb) {
-                            newEventCbArr.push(cb);
+                    eventCbArr.forEach(function (_cb) {
+                        if (cb !== _cb) {
+                            newEventCbArr.push(_cb);
                         }
                     });
                     this.__registeredEvents[type][path] = newEventCbArr;
@@ -12192,6 +12199,11 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             questionTypeGetterFn = typeGetterFn;
         };
 
+        var answersFormaterObjMap = {};        
+        this.setAnswersFormatValidtors = function (_answersFormaterObjMap) {
+            answersFormaterObjMap = _answersFormaterObjMap;
+        };
+
         this.$get = [
             '$log','$q',
             function ($log, $q) {
@@ -12209,6 +12221,50 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                 QuestionTypesSrv.getQuestionType = function getQuestionType(question) {
                     return questionTypeGetterFn(question);
+                };
+
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {   
+                    if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
+                        $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
+                        return;
+                    }
+
+                   var answersFormaterArr = answersFormaterObjMap[answerTypeId];
+
+                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
+                   if (angular.isUndefined(userAnswer) ||
+                       !angular.isArray(answersFormaterArr) ||
+                       !answersFormaterArr.length) {
+                        callbackValidAnswer();
+                        return;
+                    }
+
+                    var answersFormaterArrLength = answersFormaterArr.length;
+
+                    var answerValueBool, currentFormatter;                     
+                    for (var i = 0; i < answersFormaterArrLength; i++) {
+                        currentFormatter = answersFormaterArr[i];
+
+                        if (angular.isFunction(currentFormatter)) {
+                            answerValueBool = currentFormatter(userAnswer, question); // question is optional
+                        }
+
+                        if (currentFormatter instanceof RegExp) { // currentFormatter should be a regex pattren
+                           answerValueBool = currentFormatter.test(userAnswer);
+                        }
+
+                        // break loop if userAnswer is a valid answer
+                        if (typeof answerValueBool === "boolean" && answerValueBool) {
+                            callbackValidAnswer();
+                            break;
+                        }
+                        // if last iteration, then answer is un valid, invoke callbackUnValidAnswer if exist
+                        if (i === answersFormaterArrLength - 1) {
+                            if (callbackUnValidAnswer) {
+                                callbackUnValidAnswer();
+                            }
+                        }
+                    }
                 };
 
                 return QuestionTypesSrv;
@@ -13030,8 +13086,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExercisePager', [
-        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum',
-        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum) {
+        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum', 'QuestionTypesSrv',
+        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum, QuestionTypesSrv) {
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExercisePagerDrv.html',
                 restrict: 'E',
@@ -13054,6 +13110,10 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             znkExerciseCtrl.setCurrentIndex(newIndex);
                         };
 
+                        function getPagerItemByIndex(index) {
+                            return angular.element(domElement.querySelectorAll('.pager-item')[index]);
+                        }
+
                         function setPagerItemBookmarkStatus(index, status) {
                             var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
                             if (status) {
@@ -13063,8 +13123,21 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             }
                         }
 
+                        function setPagerItemAnswerClassValidAnswerWrapper(question, index) {
+                            var userAnswer = question.__questionStatus.userAnswer;
+                            var answerTypeId = question.answerTypeId;
+                            var currIndex = index || question.__questionStatus.index;
+                            
+                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function() {               
+                                setPagerItemAnswerClass(currIndex, question); 
+                            }, function() {
+                                 var pagerItemElement = getPagerItemByIndex(currIndex);
+                                 pagerItemElement.removeClass('neutral correct wrong');  
+                            }, question);
+                        }
+
                         function setPagerItemAnswerClass(index, question) {
-                            var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
+                            var pagerItemElement = getPagerItemByIndex(index);
 
                             if (angular.isUndefined(question.__questionStatus.userAnswer)) {
                                 pagerItemElement.removeClass('neutral correct wrong');
@@ -13102,7 +13175,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 for (i in scope.questions) {
                                     var question = scope.questions[i];
                                     setPagerItemBookmarkStatus(i, question.__questionStatus.bookmark);
-                                    setPagerItemAnswerClass(i, question);
+                                    setPagerItemAnswerClassValidAnswerWrapper(question, i);
                                 }
                             });
                         };
@@ -13112,7 +13185,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         });
 
                         scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function (evt, question) {
-                            setPagerItemAnswerClass(question.__questionStatus.index, question);
+                            setPagerItemAnswerClassValidAnswerWrapper(question);
                         });
 
                         function init() {
@@ -13807,7 +13880,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     function _setDrawMode(drawMode) {
                         switch (drawMode) {
                             case DRAWING_MODES.NONE:
-                                eventsManager.cleanListeners();
+                                eventsManager.cleanQuestionListeners();
                                 drawer.clean();
                                 break;
                             case DRAWING_MODES.VIEW:
@@ -13855,7 +13928,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         var self = this;
 
                         return this.exerciseDrawingRefProm.then(function (exerciseDrawingRef) {
-                            exerciseDrawingRef.update(self.pixelsMapToUpdate);
+                            exerciseDrawingRef.child('coordinates').update(self.pixelsMapToUpdate);
                             self.pixelsMapToUpdate = {};
                         });
                     };
@@ -13999,12 +14072,13 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     });
 
                     scope.$on('$destroy', function () {
-                        eventsManager.cleanListeners();
+                        eventsManager.cleanQuestionListeners();
+                        eventsManager.cleanGlobalListeners();
+
                     });
 
                     function EventsManager() {
                         this._fbRegisterProm = $q.when();
-                        this._hoveredElementsOfQuestions = {};
                         this._fbCallbackEnum =
                             {
                                 CHILD_CHANGED: 0,
@@ -14103,9 +14177,9 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             _getFbRef(questionId, canvasContextName).then(function (ref) {
                                 self.ref = ref;
 
-                                self.ref.on("child_added", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
-                                self.ref.on("child_changed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
-                                self.ref.on("child_removed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_REMOVED));
+                                self.ref.child('coordinates').on("child_added", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                                self.ref.child('coordinates').on("child_changed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                                self.ref.child('coordinates').on("child_removed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_REMOVED));
 
                             });
 
@@ -14123,18 +14197,36 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             _getFbRef(self._fbLastRegisteredQuestionId, canvasContextName).then(function (ref) {
                                 self.ref = ref;
 
-                                self.ref.off("child_added", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
-                                self.ref.off("child_changed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
-                                self.ref.off("child_removed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_REMOVED));
+                                self.ref.child('coordinates').off("child_added", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                                self.ref.child('coordinates').off("child_changed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                                self.ref.child('coordinates').off("child_removed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_REMOVED));
                             });
                         });
                         self._fbLastRegisteredQuestionId = null;
                     };
 
-                    EventsManager.prototype.cleanListeners = function () {
+                    EventsManager.prototype.cleanQuestionListeners = function () {
                         this.killMouseEvents();
                         this.killFbListeners();
                         this.killHoverEvents(); 
+                    };
+
+                    EventsManager.prototype.registerDimensionsListener = function(dimensionsRef, onValueCb) {
+                        if (!this._dimensionsRefPairs) {
+                            this._dimensionsRefPairs = [];
+                        }
+                        dimensionsRef.on('value', onValueCb);
+                        this._dimensionsRefPairs.push({dimensionsRef : dimensionsRef, onValueCb: onValueCb});
+                    };
+
+                    EventsManager.prototype.killDimensionsListener = function() {
+                        angular.forEach(this._dimensionsRefPairs, function (refAndCbPair) {
+                            refAndCbPair.dimensionsRef.off("value",refAndCbPair.onValueCb);
+                        });
+                    };
+
+                    EventsManager.prototype.cleanGlobalListeners = function() {
+                        this.killDimensionsListener();
                     };
 
                     function _reloadCanvas() {
@@ -14179,24 +14271,69 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                     }
 
-                    function _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement) {
+                    function _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement, canvasContextName, questionId) {
                         toolBoxCtrl.isExerciseReady().then(function () {
-                            var height,width;
-                            if (elementToCoverDomElement.scrollHeight) {
-                                height = elementToCoverDomElement.scrollHeight;
+                            var exerciseDrawingRefProm;
+
+                            // get the height and the width of the wrapper element
+                            function _getDimensionsByElementSize() {
+                                var height,width;
+                                if (elementToCoverDomElement.scrollHeight) {
+                                    height = elementToCoverDomElement.scrollHeight;
+                                }
+                                else {
+                                    height = elementToCoverDomElement.offsetHeight;
+                                }
+                                if (elementToCoverDomElement.scrollWidth) {
+                                    width = elementToCoverDomElement.scrollWidth;
+                                }
+                                else {
+                                    width = elementToCoverDomElement.offsetWidth;
+                                }
+                                return {height: height, width: width};
                             }
-                            else {
-                                height = elementToCoverDomElement.offsetHeight;
+
+                            // return the larger dimensions out of the element's dimensions and the saved FB dimensions
+                            function _compareFbDimensionsWithElementDimensions(fbDimensions) {
+                                var elementDimensions = _getDimensionsByElementSize();
+                                var finalDimensions = {
+                                    height : Math.max(elementDimensions.height, fbDimensions.height),
+                                    width : Math.max(elementDimensions.width, fbDimensions.width)
+                                };
+                                exerciseDrawingRefProm.child('maxDimensions').update(finalDimensions);
+                                return finalDimensions;
                             }
-                            if (elementToCoverDomElement.scrollWidth) {
-                                width = elementToCoverDomElement.scrollWidth;
-                            }
-                            else {
-                                width = elementToCoverDomElement.offsetWidth;
-                            }
-                            canvasDomContainerElement[0].setAttribute('height', height);
-                            canvasDomContainerElement[0].setAttribute('width', width);
-                            canvasDomContainerElement.css('position', 'absolute');
+
+                            // set the canvas dimensions to the larger dimensions between the two ^
+                            var setDimensionsCb = function(data) {
+                                // DOM dimensions
+                                var elementDimensions = _getDimensionsByElementSize();
+                                // FB dimensions
+                                var maxDimensions;
+                                // nothing is saved on FB, set the dimensions to be element dimensions
+                                if (!data.val()) {
+                                    maxDimensions = elementDimensions;
+                                }
+                                else {
+                                    maxDimensions = data.val();
+                                }
+                                // compare them and set the canvas dimensions to be the larger between the two
+                                // also save the new maxDimensions to FB
+                                var finalDimensions = _compareFbDimensionsWithElementDimensions(maxDimensions);            
+                                canvasDomContainerElement[0].setAttribute('height', finalDimensions.height);
+                                canvasDomContainerElement[0].setAttribute('width', finalDimensions.width);
+                                canvasDomContainerElement.css('position', 'absolute');
+
+                            };
+
+                            // this piece of code fetches the previously calculated maxDimensions from firebase, and then kickstart all the functions we just went by above ^
+                            _getFbRef(questionId, canvasContextName).then(function(ref) {
+                                exerciseDrawingRefProm = ref;
+                                eventsManager.registerDimensionsListener(exerciseDrawingRefProm.child('maxDimensions'), setDimensionsCb);
+                            });
+
+
+
                         });
 
                     }
@@ -14219,7 +14356,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         // when hovering over a canvas, set the global context to it
                         _setContextOnHover(elementToCover, canvasDomElement, canvasContextName);
 
-                        _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement);
+                        _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement, canvasContextName, question.id);
                         
 
                         elementToCover.append(canvasContainerElement);
@@ -14258,7 +14395,6 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             };
         }]);
 })(angular);
-
 
 (function (angular) {
     'use strict';
