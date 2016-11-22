@@ -39,9 +39,11 @@
 
                     var listenToStudentOrTeacherContextChange = function (prevUid, uid) {
                         receiverId = uid;
+                        var currentUserStatus = PresenceService.getCurrentUserStatus(receiverId);
+                        var CalleeName = CallsUiSrv.getCalleeName(uid);
                         var promsArr = [
-                            PresenceService.getCurrentUserStatus(receiverId),
-                            CallsUiSrv.getCalleeName(uid)
+                            currentUserStatus,
+                            CalleeName
                         ];
                         $q.all(promsArr).then(function (res) {
                             scope.d.currentUserPresenceStatus = res[0];

@@ -56,13 +56,13 @@
                 function saveSession() {
                     $log.debug('saveSession, sessionData: ', sessionData);
                     var dataToSave = {};
-                    globalStorageProm.then(function (globalStorage) {
+                    return globalStorageProm.then(function (globalStorage) {
                         var studentPath = getLiveSessionPath('student') + '/active';
                         var educatorPath = getLiveSessionPath('educator') + '/active';
                         var sessionPath = getLiveSessionPath('sessions');
                         dataToSave[sessionPath] = sessionData;
                         dataToSave[studentPath] = dataToSave[educatorPath] ={ guid: sessionData.sessionGUID };
-                        globalStorage.update(dataToSave);
+                        return globalStorage.update(dataToSave);
                     });
                 }
                 function updateSession() {
