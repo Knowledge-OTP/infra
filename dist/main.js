@@ -535,7 +535,7 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
             };
 
             if(!eventsHandler) {
-                $log.error('znkAnalyticsSrv eventsHandler is missing!');
+                $log.debug('znkAnalyticsSrv eventsHandler is missing!');
                 return api;
             }
 
@@ -4979,13 +4979,21 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
+    var answerTypeEnum = {
+        SELECT_ANSWER: 0,
+        FREE_TEXT_ANSWER: 1,
+        RATE_ANSWER: 3
+    };
+
+    angular.module('znk.infra.exerciseUtility').constant('answerTypeEnumConst', answerTypeEnum);
+
     angular.module('znk.infra.exerciseUtility').factory('AnswerTypeEnum', [
         'EnumSrv',
         function (EnumSrv) {
             return new EnumSrv.BaseEnum([
-                ['SELECT_ANSWER',0 ,'select answer'],
-                ['FREE_TEXT_ANSWER',1 ,'free text answer'],
-                ['RATE_ANSWER',3 ,'rate answer']
+                ['SELECT_ANSWER', answerTypeEnum.SELECT_ANSWER, 'select answer'],
+                ['FREE_TEXT_ANSWER', answerTypeEnum.FREE_TEXT_ANSWER, 'free text answer'],
+                ['RATE_ANSWER', answerTypeEnum.RATE_ANSWER, 'rate answer']
             ]);
         }
     ]);
@@ -12191,6 +12199,11 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             questionTypeGetterFn = typeGetterFn;
         };
 
+        var answersFormaterObjMap = {};        
+        this.setAnswersFormatValidtors = function (_answersFormaterObjMap) {
+            answersFormaterObjMap = _answersFormaterObjMap;
+        };
+
         this.$get = [
             '$log','$q',
             function ($log, $q) {
@@ -12208,6 +12221,50 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                 QuestionTypesSrv.getQuestionType = function getQuestionType(question) {
                     return questionTypeGetterFn(question);
+                };
+
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {   
+                    if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
+                        $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
+                        return;
+                    }
+
+                   var answersFormaterArr = answersFormaterObjMap[answerTypeId];
+
+                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
+                   if (angular.isUndefined(userAnswer) ||
+                       !angular.isArray(answersFormaterArr) ||
+                       !answersFormaterArr.length) {
+                        callbackValidAnswer();
+                        return;
+                    }
+
+                    var answersFormaterArrLength = answersFormaterArr.length;
+
+                    var answerValueBool, currentFormatter;                     
+                    for (var i = 0; i < answersFormaterArrLength; i++) {
+                        currentFormatter = answersFormaterArr[i];
+
+                        if (angular.isFunction(currentFormatter)) {
+                            answerValueBool = currentFormatter(userAnswer, question); // question is optional
+                        }
+
+                        if (currentFormatter instanceof RegExp) { // currentFormatter should be a regex pattren
+                           answerValueBool = currentFormatter.test(userAnswer);
+                        }
+
+                        // break loop if userAnswer is a valid answer
+                        if (typeof answerValueBool === "boolean" && answerValueBool) {
+                            callbackValidAnswer();
+                            break;
+                        }
+                        // if last iteration, then answer is un valid, invoke callbackUnValidAnswer if exist
+                        if (i === answersFormaterArrLength - 1) {
+                            if (callbackUnValidAnswer) {
+                                callbackUnValidAnswer();
+                            }
+                        }
+                    }
                 };
 
                 return QuestionTypesSrv;
@@ -13029,8 +13086,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExercisePager', [
-        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum',
-        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum) {
+        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum', 'QuestionTypesSrv',
+        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum, QuestionTypesSrv) {
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExercisePagerDrv.html',
                 restrict: 'E',
@@ -13053,6 +13110,10 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             znkExerciseCtrl.setCurrentIndex(newIndex);
                         };
 
+                        function getPagerItemByIndex(index) {
+                            return angular.element(domElement.querySelectorAll('.pager-item')[index]);
+                        }
+
                         function setPagerItemBookmarkStatus(index, status) {
                             var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
                             if (status) {
@@ -13062,8 +13123,21 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             }
                         }
 
+                        function setPagerItemAnswerClassValidAnswerWrapper(question, index) {
+                            var userAnswer = question.__questionStatus.userAnswer;
+                            var answerTypeId = question.answerTypeId;
+                            var currIndex = index || question.__questionStatus.index;
+                            
+                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function() {               
+                                setPagerItemAnswerClass(currIndex, question); 
+                            }, function() {
+                                 var pagerItemElement = getPagerItemByIndex(currIndex);
+                                 pagerItemElement.removeClass('neutral correct wrong');  
+                            }, question);
+                        }
+
                         function setPagerItemAnswerClass(index, question) {
-                            var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
+                            var pagerItemElement = getPagerItemByIndex(index);
 
                             if (angular.isUndefined(question.__questionStatus.userAnswer)) {
                                 pagerItemElement.removeClass('neutral correct wrong');
@@ -13101,7 +13175,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 for (i in scope.questions) {
                                     var question = scope.questions[i];
                                     setPagerItemBookmarkStatus(i, question.__questionStatus.bookmark);
-                                    setPagerItemAnswerClass(i, question);
+                                    setPagerItemAnswerClassValidAnswerWrapper(question, i);
                                 }
                             });
                         };
@@ -13111,7 +13185,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         });
 
                         scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function (evt, question) {
-                            setPagerItemAnswerClass(question.__questionStatus.index, question);
+                            setPagerItemAnswerClassValidAnswerWrapper(question);
                         });
 
                         function init() {

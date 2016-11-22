@@ -960,6 +960,11 @@
             questionTypeGetterFn = typeGetterFn;
         };
 
+        var answersFormaterObjMap = {};        
+        this.setAnswersFormatValidtors = function (_answersFormaterObjMap) {
+            answersFormaterObjMap = _answersFormaterObjMap;
+        };
+
         this.$get = [
             '$log','$q',
             function ($log, $q) {
@@ -977,6 +982,50 @@
 
                 QuestionTypesSrv.getQuestionType = function getQuestionType(question) {
                     return questionTypeGetterFn(question);
+                };
+
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {   
+                    if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
+                        $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
+                        return;
+                    }
+
+                   var answersFormaterArr = answersFormaterObjMap[answerTypeId];
+
+                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
+                   if (angular.isUndefined(userAnswer) ||
+                       !angular.isArray(answersFormaterArr) ||
+                       !answersFormaterArr.length) {
+                        callbackValidAnswer();
+                        return;
+                    }
+
+                    var answersFormaterArrLength = answersFormaterArr.length;
+
+                    var answerValueBool, currentFormatter;                     
+                    for (var i = 0; i < answersFormaterArrLength; i++) {
+                        currentFormatter = answersFormaterArr[i];
+
+                        if (angular.isFunction(currentFormatter)) {
+                            answerValueBool = currentFormatter(userAnswer, question); // question is optional
+                        }
+
+                        if (currentFormatter instanceof RegExp) { // currentFormatter should be a regex pattren
+                           answerValueBool = currentFormatter.test(userAnswer);
+                        }
+
+                        // break loop if userAnswer is a valid answer
+                        if (typeof answerValueBool === "boolean" && answerValueBool) {
+                            callbackValidAnswer();
+                            break;
+                        }
+                        // if last iteration, then answer is un valid, invoke callbackUnValidAnswer if exist
+                        if (i === answersFormaterArrLength - 1) {
+                            if (callbackUnValidAnswer) {
+                                callbackUnValidAnswer();
+                            }
+                        }
+                    }
                 };
 
                 return QuestionTypesSrv;
@@ -1798,8 +1847,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExercisePager', [
-        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum',
-        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum) {
+        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum', 'QuestionTypesSrv',
+        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum, QuestionTypesSrv) {
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExercisePagerDrv.html',
                 restrict: 'E',
@@ -1822,6 +1871,10 @@
                             znkExerciseCtrl.setCurrentIndex(newIndex);
                         };
 
+                        function getPagerItemByIndex(index) {
+                            return angular.element(domElement.querySelectorAll('.pager-item')[index]);
+                        }
+
                         function setPagerItemBookmarkStatus(index, status) {
                             var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
                             if (status) {
@@ -1831,8 +1884,21 @@
                             }
                         }
 
+                        function setPagerItemAnswerClassValidAnswerWrapper(question, index) {
+                            var userAnswer = question.__questionStatus.userAnswer;
+                            var answerTypeId = question.answerTypeId;
+                            var currIndex = index || question.__questionStatus.index;
+                            
+                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function() {               
+                                setPagerItemAnswerClass(currIndex, question); 
+                            }, function() {
+                                 var pagerItemElement = getPagerItemByIndex(currIndex);
+                                 pagerItemElement.removeClass('neutral correct wrong');  
+                            }, question);
+                        }
+
                         function setPagerItemAnswerClass(index, question) {
-                            var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
+                            var pagerItemElement = getPagerItemByIndex(index);
 
                             if (angular.isUndefined(question.__questionStatus.userAnswer)) {
                                 pagerItemElement.removeClass('neutral correct wrong');
@@ -1870,7 +1936,7 @@
                                 for (i in scope.questions) {
                                     var question = scope.questions[i];
                                     setPagerItemBookmarkStatus(i, question.__questionStatus.bookmark);
-                                    setPagerItemAnswerClass(i, question);
+                                    setPagerItemAnswerClassValidAnswerWrapper(question, i);
                                 }
                             });
                         };
@@ -1880,7 +1946,7 @@
                         });
 
                         scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function (evt, question) {
-                            setPagerItemAnswerClass(question.__questionStatus.index, question);
+                            setPagerItemAnswerClassValidAnswerWrapper(question);
                         });
 
                         function init() {
