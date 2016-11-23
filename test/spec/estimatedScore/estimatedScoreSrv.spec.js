@@ -66,7 +66,7 @@ describe('testing service "EstimatedScoreSrv":', function () {
 
         expect(result[0]).toEqual(jasmine.objectContaining(roundEstimatedScoreMock[0]));
         expect(result[1]).toEqual(jasmine.objectContaining(roundEstimatedScoreMock[1]));
-        expect(result[2]).toEqual({});
+        expect(result[2]).toEqual([]);
     });
 
     it('when call getEstimatedScores with one subject then the function will use the notRoundEstimatedScoreMock object and converts the score of the subject array' +
@@ -77,7 +77,7 @@ describe('testing service "EstimatedScoreSrv":', function () {
 
     it('when call getEstimatedScores with one subject that does not have scores then it should return object instead of empty array', function () {
         var result = actions.getEstimatedScores(2);
-        expect(result).toEqual({});
+        expect(result).toEqual([]);
     });
 
     it('when call getLatestEstimatedScore then the function will use the notRoundEstimatedScoreMock object and converts the score of each subject array' +
