@@ -3,5 +3,16 @@
 '../../scss/imports/mixins';
 
 @import './scss/md-dialog';
-@import './scss/znk-session';
+@import './components/sessionBtn/sessionBtn.scss';
+@import './components/startSessionModal/startSessionModal';
+
+md-dialog {
+    border-radius: 15px;
+    md-backdrop {
+        &.md-opaque {
+            background-color: $bgColor35;
+            opacity: .76;
+        }
+    }
+}
 

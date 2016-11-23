@@ -24,10 +24,16 @@
 
 </head>
 <body ng-app="demo" layout="column"  ng-controller="Main as vm">
-<h2>znkSession</h2>
-<znk-session></znk-session>
+    <h2>znkSession</h2>
+    <!--<hr>-->
 
-<!--<button ng-click="vm.showActiveLessonModal()">Show Active Lesson Modal</button>-->
+    <!--<h3>Offline</h3>-->
+    <znk-session ng-model="offline"></znk-session>
+    <!--<h3>Live Session Available</h3>-->
+    <!--<znk-session ng-model="available"></znk-session>-->
+    <!--<h3>Live Session Ended</h3>-->
+    <!--<znk-session ng-model="ended"></znk-session>-->
+
 
 <!-- Bower:js -->
 <script src="angular/angular.js"></script>

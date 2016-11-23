@@ -9,9 +9,10 @@
             };
 
             this.$get = function($rootScope, $log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
-                                 UtilitySrv, SessionSubjectEnumConst, $mdDialog, ActivePanelSrv, SessionsStatusEnum,
+                                 UtilitySrv, SessionSubjectEnumConst, $mdDialog, SessionsStatusEnum,
                                  $window, $timeout, PopUpSrv) {
                 'ngInject';
+                var registeredCbToCurrUserLiveSessionStateChange = [];
 
                 function sessionInit(sessionSubject) {
                     return {
@@ -26,7 +27,6 @@
                         status: SessionsStatusEnum.ACTIVE.enum  //(values: 1 = Active, 0 = Ended)
                     };
                 }
-
                 function minToUnixTimestamp(min) {
                     min = min || 0;
                     return min * 60 * 1000;
@@ -68,7 +68,7 @@
                 function updateSession() {
                     $log.debug('updateSession, sessionData: ', sessionData);
                     var dataToSave = {};
-                    globalStorageProm.then(function (globalStorage) {
+                    return globalStorageProm.then(function (globalStorage) {
                         var studentPath = getLiveSessionPath('student');
                         var studentPathActive = studentPath + '/active';
                         var studentPathArchive = studentPath + '/archive/' + sessionData.sessionGUID;
@@ -79,18 +79,17 @@
                         dataToSave[sessionPath] = sessionData;
                         dataToSave[studentPathArchive] = dataToSave[educatorPathArchive] = false;
                         dataToSave[studentPathActive] = dataToSave[educatorPathActive] = { guid: false };
-                        globalStorage.update(dataToSave);
+                        return globalStorage.update(dataToSave);
                     });
                 }
                 function handleCall() {
                     var activePanelElm = $window.document.querySelector('.active-panel');
                     activePanelElm.classList.remove('ng-hide');
-                    var callBtnElm = activePanelElm.querySelector('call-btn');
+                    var callBtnElm = activePanelElm.querySelector('.call-btn');
                     $timeout(function () {
                         callBtnElm.click();
                     });
                 }
-
                 function showActivePanel() {
                     var activePanelElm = $window.document.querySelector('.active-panel');
                     activePanelElm.classList.remove('ng-hide');
@@ -99,6 +98,12 @@
                     var activePanelElm = $window.document.querySelector('.active-panel');
                     activePanelElm.classList.add('ng-hide');
                 }
+                function _invokeCbs(cbArr, args){
+                    cbArr.forEach(function(cb){
+                        cb.apply(null, args);
+                    });
+                }
+
 
                 var liveSessionsStatus;
                 var currLiveSessionsGUID;
@@ -114,9 +119,10 @@
                     liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
                     var saveSessionProm = saveSession();
                     saveSessionProm.then(function (res) {
+                        _invokeCbs(registeredCbToCurrUserLiveSessionStateChange, [sessionData]);
                         $log.debug('Session Saved: ', res);
-                        showActivePanel();
-                        handleCall();
+                        // showActivePanel();
+                        // handleCall();
                     }).catch(function (err) {
                         $log.error('Error saving session to firebase: ', err);
                     });
@@ -152,7 +158,8 @@
                         globalStorage.get(sessionsPath).then(function (currSessionData) {
                             sessionData = currSessionData;
                             $log.debug('loadLiveSessionData, sessionData: ', sessionData);
-                            showActivePanel();
+                            // showActivePanel();
+                            _invokeCbs(registeredCbToCurrUserLiveSessionStateChange, [sessionData]);
                         });
                     });
                 };
@@ -178,11 +185,9 @@
 
                 sessionSrvApi.endSession = function () {
                     var endTime = Date.now();
-                    liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
-                    sessionData.status = SessionsStatusEnum.ENDED.enum;
+                    sessionData.status = liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
                     sessionData.duration = endTime - sessionData.startTime;
-                    handleCall();
-                    hideActivePanel();
+                    _invokeCbs(registeredCbToCurrUserLiveSessionStateChange, [sessionData]);
                     var updateSessionProm = updateSession();
                     updateSessionProm.then(function (res) {
                         $log.debug('Session Updated: ', res);
@@ -196,6 +201,11 @@
                     sessionData.extendTime += minToUnixTimestamp(ENV.liveSession.sessionExtendTime);
                 };
 
+                sessionSrvApi.registerToCurrUserLiveSessionStateChanges = function (cb) {
+                    if (angular.isFunction(cb)) {
+                        registeredCbToCurrUserLiveSessionStateChange.push(cb);
+                    }
+                };
 
                 return sessionSrvApi;
             };

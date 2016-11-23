@@ -3,7 +3,10 @@
 (function (angular) {
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', function ($q, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, ActivePanelSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum, UserProfileService, PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document, $translate) {
+        .directive('activePanel', function ($q, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, ActivePanelSrv,
+                                            CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum,
+                                            UserProfileService, PresenceService, StudentContextSrv, TeacherContextSrv,
+                                            ENV, $document, $translate, SessionSrv, SessionsStatusEnum) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
@@ -11,11 +14,12 @@
                     var receiverId,
                         isOffline,
                         isTeacher,
-                        callDuration = 0,
                         durationToDisplay,
                         timerInterval,
                         screenShareStatus = 0,
                         callStatus = 0,
+                        liveSessionStatus = 0,
+                        liveSessionDuration = 0,
                         screenShareIsViewer,
                         timerSecondInterval = 1000,
                         activePanelVisibleClassName = 'activePanel-visible';
@@ -81,6 +85,7 @@
                         states: {
                             NONE: 0,
                             CALL_ACTIVE: 1,
+                            LIVE_SESSION: 1,
                             SCREEN_SHARE_ACTIVE: 10,
                             BOTH_ACTIVE: 11
                         },
@@ -108,12 +113,12 @@
                     var actions = {
                         startTimer: function () {
                             $log.debug('call timer started');
-                            if (callDuration !== 0) {
+                            if (liveSessionDuration !== 0) {
                                 return;
                             }
                             timerInterval = $interval(function () {
-                                callDuration += timerSecondInterval;
-                                durationToDisplay = $filter('formatDuration')(callDuration / 1000, 'hh:MM:SS', true);
+                                liveSessionDuration += timerSecondInterval;
+                                durationToDisplay = $filter('formatDuration')(liveSessionDuration / 1000, 'hh:MM:SS', true);
                                 angular.element(element[0].querySelector('.call-duration')).text(durationToDisplay);
                             }, 1000, 0, false);
                         },
@@ -132,7 +137,7 @@
                     };
 
                     function updateStatus() {
-                        scope.d.currStatus = screenShareStatus + callStatus;
+                        scope.d.currStatus = screenShareStatus + callStatus + liveSessionStatus;
                         $log.debug('ActivePanel d.currStatus: ', scope.d.currStatus);
 
                         switch (scope.d.currStatus) {
@@ -172,13 +177,26 @@
 
                     function destroyTimer() {
                         $interval.cancel(timerInterval);
-                        callDuration = 0;
+                        liveSessionDuration = 0;
                         durationToDisplay = 0;
                     }
 
                     element.on('$destroy', function() {
                         destroyTimer();
                     });
+
+                    // Listen to status changes in Live session
+                    var listenToLiveSessionStatus = function (sessionData) {
+                        $log.debug('sessionData: ', sessionData);
+                        if (sessionData) {
+                            if (sessionData.status === SessionsStatusEnum.ACTIVE.enum) {
+                                liveSessionStatus = scope.d.states.LIVE_SESSION;
+                            } else {
+                                liveSessionStatus = 0;
+                            }
+                            updateStatus();
+                        }
+                    };
 
                     // Listen to status changes in Calls
                     var listenToCallsStatus = function (callsData) {
@@ -206,8 +224,9 @@
                     };
 
                     ScreenSharingSrv.registerToCurrUserScreenSharingStateChanges(listenToScreenShareStatus);
-
                     CallsEventsSrv.registerToCurrUserCallStateChanges(listenToCallsStatus);
+
+                    SessionSrv.registerToCurrUserLiveSessionStateChanges(listenToLiveSessionStatus);
 
                 }
             };

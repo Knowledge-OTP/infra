@@ -75,6 +75,13 @@
             };
             return $delegate;
         })
+        .run(function ($rootScope) {
+            'ngInject';
+
+            $rootScope.offline = { isOffline: true, receiverId: 1 };
+            $rootScope.available = { isOffline: false, receiverId: 'c47f4f57-521c-4832-b505-c0093737ceff' };
+            $rootScope.ended = { isOffline: false, receiverId: 'c47f4f57-521c-4832-b505-c0093737ceff' };
+        })
         .controller('Main', function (SessionSrv, ActivePanelSrv) {
             'ngInject';
             var vm = this;
