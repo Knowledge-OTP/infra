@@ -77,7 +77,7 @@ describe('testing service "EstimatedScoreSrv":', function () {
 
     it('when call getEstimatedScores with one subject that does not have scores then it should return object instead of empty array', function () {
         var result = actions.getEstimatedScores(2);
-        expect(result).toEqual([]);
+        expect(result).toEqual({});
     });
 
     it('when call getLatestEstimatedScore then the function will use the notRoundEstimatedScoreMock object and converts the score of each subject array' +

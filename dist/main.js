@@ -4094,7 +4094,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                     return _baseGetter('estimatedScores', subjectId).then(function (allScoresOrScoreForSubject) {
                         if (angular.isDefined(subjectId)) {
                             if (!allScoresOrScoreForSubject.length) {
-                                return [];
+                                return {};
                             }
                             return allScoresOrScoreForSubject.map(convertObjScoreToRoundScore);
                         }
