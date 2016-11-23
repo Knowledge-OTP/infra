@@ -4100,7 +4100,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                         }
                         var allScoresPerSubject = {};
                         angular.forEach(allScoresOrScoreForSubject, function (scoresForSubject, subjectId) {
-                            allScoresPerSubject[subjectId] = scoresForSubject.length ? scoresForSubject.map(convertObjScoreToRoundScore) : {};
+                            allScoresPerSubject[subjectId] = scoresForSubject.length ? scoresForSubject.map(convertObjScoreToRoundScore) : [];
                         });
 
                         return allScoresPerSubject;
