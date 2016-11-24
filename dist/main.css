@@ -385,7 +385,7 @@ active-panel .active-panel {
       active-panel .active-panel .flex-col.call-controls call-btn svg-icon.etutoring-phone-icon {
         width: 28px;
         height: 28px; }
-  active-panel .active-panel .call-duration {
+  active-panel .active-panel .live-session-duration {
     font-size: 12px;
     color: #979797;
     font-family: Lato;
@@ -841,7 +841,8 @@ call-btn button.call-btn {
   cursor: pointer;
   background: none;
   border: none;
-  padding: 0; }
+  padding: 0;
+  outline: none; }
   call-btn button.call-btn svg-icon.etutoring-phone-icon {
     width: 25px;
     height: 25px;
@@ -6427,74 +6428,103 @@ znk-session .session-btn {
   text-transform: none;
   outline: none; }
   znk-session .session-btn:not([disabled]):hover {
-    background-color: #ff931e; }
+    background-color: #ff931e;
+    border: 1px solid #b7b7b7; }
 
 znk-session .end-session {
   background-color: #ff6766; }
   znk-session .end-session:not([disabled]):hover {
     background-color: #ff6766; }
 
-.session-dialog .popup-header {
-  position: relative;
-  height: 40px;
-  background-color: #0a9bad;
-  border-top-left-radius: 15px;
-  border-top-right-radius: 15px; }
-
-.session-dialog md-backdrop.md-opaque {
-  background-color: #037684;
-  opacity: .76; }
-
-.session-dialog md-dialog.base {
+start-session-modal .start-session-modal {
   width: 400px;
-  border-radius: 15px; }
-
-.session-dialog md-dialog.session-container .session-content {
-  background-color: #fff;
-  padding: 50px 0;
-  border-bottom-left-radius: 15px;
-  border-bottom-right-radius: 15px;
-  width: 350px;
-  margin: 0 auto; }
-  .session-dialog md-dialog.session-container .session-content .main-title {
-    font-size: 32px;
-    color: #4f4d4d;
-    font-family: Quicksand;
-    font-weight: 600;
-    text-align: center;
-    margin-top: 0; }
-  .session-dialog md-dialog.session-container .session-content .sub-title {
-    font-size: 16px;
-    color: #757a83;
-    font-family: Lato;
-    font-weight: 400; }
-  .session-dialog md-dialog.session-container .session-content .subjects-btns {
+  min-height: 265px; }
+  start-session-modal .start-session-modal .popup-header {
+    height: 40px;
+    background-color: #0a9bad;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px; }
+    start-session-modal .start-session-modal .popup-header .top-icon-wrap {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      height: 40px; }
+      start-session-modal .start-session-modal .popup-header .top-icon-wrap .top-icon {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-pack: center;
+            justify-content: center; }
+        start-session-modal .start-session-modal .popup-header .top-icon-wrap .top-icon .round-icon-wrap {
+          width: 76px;
+          height: 76px;
+          border-radius: 38px;
+          background-color: #0a9bad;
+          z-index: 9;
+          margin-top: -15px;
+          display: -ms-flexbox;
+          display: flex;
+          -ms-flex-pack: center;
+              justify-content: center;
+          -ms-flex-align: center;
+              align-items: center;
+          text-align: center; }
+          start-session-modal .start-session-modal .popup-header .top-icon-wrap .top-icon .round-icon-wrap svg-icon {
+            width: 40px; }
+  start-session-modal .start-session-modal .popup-content {
+    background-color: #fff;
+    padding: 30px 0;
+    min-height: 150px;
     display: -ms-flexbox;
     display: flex;
-    -ms-flex-pack: center;
-        justify-content: center; }
-    .session-dialog md-dialog.session-container .session-content .subjects-btns .subject-icon-wrap {
-      width: 155px;
-      height: 35px;
-      border-radius: 30px;
-      color: #ffffff;
-      margin: auto 5px;
+    -ms-flex-direction: column;
+        flex-direction: column;
+    -ms-flex-pack: distribute;
+        justify-content: space-around; }
+    start-session-modal .start-session-modal .popup-content .main-title {
+      font-size: 30px;
+      color: #4f4d4d;
+      font-family: Quicksand;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 0; }
+    start-session-modal .start-session-modal .popup-content .sub-title {
+      font-size: 16px;
+      color: #757a83;
+      font-family: Lato;
+      font-weight: 400; }
+    start-session-modal .start-session-modal .popup-content .subjects-btns {
       display: -ms-flexbox;
       display: flex;
-      -ms-flex-align: center;
-          align-items: center;
-      outline: none;
-      cursor: pointer;
-      border-style: none; }
-      .session-dialog md-dialog.session-container .session-content .subjects-btns .subject-icon-wrap svg-icon path {
-        fill: #ffffff; }
-      .session-dialog md-dialog.session-container .session-content .subjects-btns .subject-icon-wrap.math {
-        background-color: #AF89D2; }
-      .session-dialog md-dialog.session-container .session-content .subjects-btns .subject-icon-wrap.english {
-        background-color: #F3CF19; }
-      .session-dialog md-dialog.session-container .session-content .subjects-btns .subject-icon-wrap svg-icon {
-        width: 25px;
-        height: 25px;
-        margin: auto 15px; }
-      .session-dialog md-dialog.session-container .session-content .subjects-btns .subject-icon-wrap span {
-        text-transform: uppercase; }
+      -ms-flex-pack: center;
+          justify-content: center; }
+      start-session-modal .start-session-modal .popup-content .subjects-btns .subject-icon-wrap {
+        width: 155px;
+        height: 35px;
+        border-radius: 30px;
+        color: #ffffff;
+        margin: auto 5px;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-align: center;
+            align-items: center;
+        outline: none;
+        cursor: pointer;
+        border-style: none; }
+        start-session-modal .start-session-modal .popup-content .subjects-btns .subject-icon-wrap svg-icon path {
+          fill: #ffffff; }
+        start-session-modal .start-session-modal .popup-content .subjects-btns .subject-icon-wrap.math {
+          background-color: #AF89D2; }
+        start-session-modal .start-session-modal .popup-content .subjects-btns .subject-icon-wrap.english {
+          background-color: #F3CF19; }
+        start-session-modal .start-session-modal .popup-content .subjects-btns .subject-icon-wrap svg-icon {
+          width: 25px;
+          height: 25px;
+          margin: auto 15px; }
+        start-session-modal .start-session-modal .popup-content .subjects-btns .subject-icon-wrap span {
+          text-transform: uppercase; }
+
+md-dialog {
+  border-radius: 15px; }
+  md-dialog md-backdrop.md-opaque {
+    background-color: #037684;
+    opacity: .76; }

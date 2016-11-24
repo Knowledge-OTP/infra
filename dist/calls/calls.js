@@ -51,11 +51,13 @@
                 parent: '?^ngModel'
             },
             controllerAs: 'vm',
-            controller: ["CallsSrv", "CallsBtnSrv", "CallsErrorSrv", "CallsBtnStatusEnum", "$log", "$scope", "CALL_UPDATE", function (CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE) {
+            controller: ["CallsSrv", "CallsBtnSrv", "CallsErrorSrv", "CallsBtnStatusEnum", "$log", "$scope", "CALL_UPDATE", "toggleAutoCallEnum", "ENV", function (CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE,
+                                  toggleAutoCallEnum, ENV) {
                 var vm = this;
                 var receiverId;
-
                 var isPendingClick = false;
+                var autoCallStatusEnum = toggleAutoCallEnum;
+                var isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
 
                 vm.callBtnEnum = CallsBtnStatusEnum;
 
@@ -76,7 +78,7 @@
                 }
 
                 function _initializeBtnStatus(receiverId) {
-                    CallsBtnSrv.initializeBtnStatus(receiverId).then(function (status) {
+                    return CallsBtnSrv.initializeBtnStatus(receiverId).then(function (status) {
                         if (status) {
                             _changeBtnState(status);
                         }
@@ -105,7 +107,24 @@
                                 var curBtnStatus = modelValue.isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
                                 receiverId = modelValue.receiverId;
                                 _changeBtnState(curBtnStatus);
-                                _initializeBtnStatus(receiverId);
+                                _initializeBtnStatus(receiverId).then(function() {
+                                    if (angular.isDefined(modelValue.toggleAutoCall) && isTeacher) {
+                                        CallsSrv.isUserInActiveCall().then(function (isInActiveCall) {
+                                            switch (modelValue.toggleAutoCall) {
+                                                case autoCallStatusEnum.ACTIVATE.enum:
+                                                    if (!isInActiveCall) {
+                                                        vm.clickBtn();
+                                                    }
+                                                    break;
+                                                case autoCallStatusEnum.DISABLE.enum:
+                                                    if (isInActiveCall) {
+                                                        vm.clickBtn();
+                                                    }
+                                                    break;
+                                            }
+                                        });
+                                    }
+                                });
                             }
                         };
                     }
@@ -177,6 +196,22 @@
                 ['DECLINE_CALL', 2, 'decline call'],
                 ['ACTIVE_CALL', 3, 'active call'],
                 ['ENDED_CALL', 4, 'ended call']
+            ]);
+        }]
+    );
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.calls').factory('toggleAutoCallEnum',
+        ["EnumSrv", function (EnumSrv) {
+            'ngInject';
+
+            return new EnumSrv.BaseEnum([
+                ['DISABLE', 0, 'disable'],
+                ['ACTIVATE', 1, 'activate']
             ]);
         }]
     );

@@ -61,6 +61,7 @@
     angular.module('znk.infra.activePanel', [
         'znk.infra.svgIcon',
         'znk.infra.calls',
+        'znk.infra.filters',
         'pascalprecht.translate',
         'znk.infra.screenSharing',
         'znk.infra.presence',
@@ -73,7 +74,9 @@
 (function (angular) {
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "CallsEventsSrv", "ActivePanelSrv", "CallsStatusEnum", "ScreenSharingSrv", "UserScreenSharingStateEnum", "UserProfileService", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", "$translate", function ($q, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, ActivePanelSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum, UserProfileService, PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document, $translate) {
+        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "ScreenSharingSrv", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", "$translate", "SessionSrv", "SessionsStatusEnum", "toggleAutoCallEnum", function ($q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
+                                            PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document,
+                                            $translate, SessionSrv, SessionsStatusEnum, toggleAutoCallEnum) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
@@ -81,18 +84,17 @@
                     var receiverId,
                         isOffline,
                         isTeacher,
-                        callDuration = 0,
                         durationToDisplay,
                         timerInterval,
-                        screenShareStatus = 0,
-                        callStatus = 0,
-                        screenShareIsViewer,
+                        liveSessionStatus = 0,
+                        liveSessionDuration = 0,
                         timerSecondInterval = 1000,
                         activePanelVisibleClassName = 'activePanel-visible';
 
                     var bodyDomElem = angular.element($document).find('body');
 
                     var translateNamespace = 'ACTIVE_PANEL';
+
                     $translate([
                         translateNamespace + '.' + 'SHOW_STUDENT_SCREEN',
                         translateNamespace + '.' + 'SHOW_TEACHER_SCREEN',
@@ -109,9 +111,11 @@
 
                     var listenToStudentOrTeacherContextChange = function (prevUid, uid) {
                         receiverId = uid;
+                        var currentUserStatus = PresenceService.getCurrentUserStatus(receiverId);
+                        var CalleeName = CallsUiSrv.getCalleeName(uid);
                         var promsArr = [
-                            PresenceService.getCurrentUserStatus(receiverId),
-                            CallsUiSrv.getCalleeName(uid)
+                            currentUserStatus,
+                            CalleeName
                         ];
                         $q.all(promsArr).then(function (res) {
                             scope.d.currentUserPresenceStatus = res[0];
@@ -119,16 +123,13 @@
                             scope.d.calleeName = (res[1]) ? (res[1]) : '';
                             scope.d.callBtnModel = {
                                 isOffline: isOffline,
-                                receiverId: uid,
-                                autoCall: true
+                                receiverId: uid
                             };
                         }).catch(function (err) {
                             $log.debug('error caught at listenToStudentOrTeacherContextChange', err);
                         });
                         $log.debug('student or teacher context changed: ', receiverId);
                     };
-
-
 
                     var initialUid = StudentContextSrv.getCurrUid();
                     if (initialUid) {
@@ -148,9 +149,7 @@
                     scope.d = {
                         states: {
                             NONE: 0,
-                            CALL_ACTIVE: 1,
-                            SCREEN_SHARE_ACTIVE: 10,
-                            BOTH_ACTIVE: 11
+                            LIVE_SESSION: 1
                         },
                         shareScreenBtnsEnable: true,
                         isTeacher: isTeacher,
@@ -173,74 +172,18 @@
                         }
                     };
 
-                    var actions = {
-                        startTimer: function () {
-                            $log.debug('call timer started');
-                            if (callDuration !== 0) {
-                                return;
-                            }
-                            timerInterval = $interval(function () {
-                                callDuration += timerSecondInterval;
-                                durationToDisplay = $filter('formatDuration')(callDuration / 1000, 'hh:MM:SS', true);
-                                angular.element(element[0].querySelector('.call-duration')).text(durationToDisplay);
-                            }, 1000, 0, false);
-                        },
-                        stopTimer: function () {
-                            destroyTimer();
-                        },
-                        screenShareMode: function (isScreenShareMode) {
-                            if (isScreenShareMode && screenShareIsViewer) {
-                                element.addClass('screen-share-mode');
-                                $log.debug('screenShareMode activate');
-                            } else {
-                                element.removeClass('screen-share-mode');
-                                $log.debug('screenShareMode remove');
-                            }
-                        }
-                    };
-
-                    function updateStatus() {
-                        scope.d.currStatus = screenShareStatus + callStatus;
-                        $log.debug('ActivePanel d.currStatus: ', scope.d.currStatus);
-
-                        switch (scope.d.currStatus) {
-                            case scope.d.states.NONE :
-                                $log.debug('ActivePanel State: NONE');
-                                bodyDomElem.removeClass(activePanelVisibleClassName);
-                                actions.stopTimer();
-                                actions.screenShareMode(false);
-                                scope.d.shareScreenBtnsEnable = true;
-                                break;
-                            case scope.d.states.CALL_ACTIVE :
-                                bodyDomElem.addClass(activePanelVisibleClassName);
-                                actions.startTimer();
-                                scope.d.shareScreenBtnsEnable = true;
-                                actions.screenShareMode(false);
-                                $log.debug('ActivePanel State: CALL_ACTIVE');
-                                break;
-                            case scope.d.states.SCREEN_SHARE_ACTIVE :
-                                bodyDomElem.addClass(activePanelVisibleClassName);
-                                actions.stopTimer();
-                                actions.screenShareMode(true);
-                                scope.d.shareScreenBtnsEnable = false;
-                                $log.debug('ActivePanel State: SCREEN_SHARE_ACTIVE');
-                                break;
-                            case scope.d.states.BOTH_ACTIVE :
-                                bodyDomElem.addClass(activePanelVisibleClassName);
-                                $log.debug('ActivePanel State: BOTH_ACTIVE');
-                                actions.startTimer();
-                                scope.d.shareScreenBtnsEnable = false;
-                                actions.screenShareMode(true);
-                                break;
-
-                            default :
-                                $log.error('currStatus is in an unknown state', scope.d.currStatus);
-                        }
+                    function startTimer() {
+                        $log.debug('call timer started');
+                        timerInterval = $interval(function () {
+                            liveSessionDuration += timerSecondInterval;
+                            durationToDisplay = $filter('formatDuration')(liveSessionDuration / 1000, 'hh:MM:SS', true);
+                            angular.element(element[0].querySelector('.live-session-duration')).text(durationToDisplay);
+                        }, 1000, 0, false);
                     }
 
                     function destroyTimer() {
                         $interval.cancel(timerInterval);
-                        callDuration = 0;
+                        liveSessionDuration = 0;
                         durationToDisplay = 0;
                     }
 
@@ -248,34 +191,48 @@
                         destroyTimer();
                     });
 
-                    // Listen to status changes in Calls
-                    var listenToCallsStatus = function (callsData) {
-                        if (callsData) {
-                            if (callsData.status === CallsStatusEnum.ACTIVE_CALL.enum) {
-                                callStatus = scope.d.states.CALL_ACTIVE;
+                    function updateStatus() {
+                        scope.d.currStatus = liveSessionStatus;
+                        $log.debug('ActivePanel d.currStatus: ', scope.d.currStatus);
+
+                        switch (scope.d.currStatus) {
+                            case scope.d.states.NONE :
+                                $log.debug('ActivePanel State: NONE');
+                                bodyDomElem.removeClass(activePanelVisibleClassName);
+                                destroyTimer();
+                                scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.DISABLE.enum;
+                                scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
+                                break;
+                            case scope.d.states.LIVE_SESSION :
+                                bodyDomElem.addClass(activePanelVisibleClassName);
+                                startTimer();
+                                scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.ACTIVATE.enum;
+                                scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
+                                $log.debug('ActivePanel State: LIVE_SESSION');
+                                break;
+                            default :
+                                $log.error('currStatus is in an unknown state', scope.d.currStatus);
+                        }
+                    }
+
+                    function getRoundTime() {
+                        return Math.floor(Date.now() / 1000) * 1000;
+                    }
+
+                    // Listen to status changes in Live session
+                    function listenToLiveSessionStatus(sessionData) {
+                        if (sessionData) {
+                            if (sessionData.status === SessionsStatusEnum.ACTIVE.enum) {
+                                liveSessionStatus = scope.d.states.LIVE_SESSION;
+                                liveSessionDuration = getRoundTime() - sessionData.startTime;
                             } else {
-                                callStatus = 0;
+                                liveSessionStatus = 0;
                             }
                             updateStatus();
                         }
-                    };
+                    }
 
-                    // Listen to status changes in ScreenSharing
-                    var listenToScreenShareStatus = function (screenSharingStatus) {
-                        if (screenSharingStatus) {
-                            if (screenSharingStatus !== UserScreenSharingStateEnum.NONE.enum) {
-                                screenShareStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
-                                screenShareIsViewer = (screenSharingStatus === UserScreenSharingStateEnum.VIEWER.enum);
-                            } else {
-                                screenShareStatus = 0;
-                            }
-                            updateStatus();
-                        }
-                    };
-
-                    ScreenSharingSrv.registerToCurrUserScreenSharingStateChanges(listenToScreenShareStatus);
-
-                    CallsEventsSrv.registerToCurrUserCallStateChanges(listenToCallsStatus);
+                    SessionSrv.registerToCurrUserLiveSessionStateChanges(listenToLiveSessionStatus);
 
                 }
             };
@@ -327,7 +284,7 @@
 angular.module('znk.infra.activePanel').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/activePanel/activePanel.template.html",
     "<div class=\"active-panel ng-hide\"\n" +
-    "     ng-show=\"d.currStatus !== d.states.NONE\"\n" +
+    "     ng-show=\"d.currStatus === d.states.LIVE_SESSION\"\n" +
     "     translate-namespace=\"ACTIVE_PANEL\">\n" +
     "    <div class=\"flex-container\">\n" +
     "        <div class=\"callee-status flex-col\">\n" +
@@ -341,7 +298,7 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "        </div>\n" +
     "        <div class=\"callee-name flex-col\">\n" +
     "            {{d.calleeName}}\n" +
-    "            <div class=\"call-duration\">&nbsp;</div>\n" +
+    "            <div class=\"live-session-duration\">&nbsp;</div>\n" +
     "        </div>\n" +
     "        <div class=\"call-controls flex-col\">\n" +
     "            <div ng-click=\"d.viewOtherUserScreen()\"\n" +
@@ -1252,11 +1209,13 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 parent: '?^ngModel'
             },
             controllerAs: 'vm',
-            controller: ["CallsSrv", "CallsBtnSrv", "CallsErrorSrv", "CallsBtnStatusEnum", "$log", "$scope", "CALL_UPDATE", function (CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE) {
+            controller: ["CallsSrv", "CallsBtnSrv", "CallsErrorSrv", "CallsBtnStatusEnum", "$log", "$scope", "CALL_UPDATE", "toggleAutoCallEnum", "ENV", function (CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE,
+                                  toggleAutoCallEnum, ENV) {
                 var vm = this;
                 var receiverId;
-
                 var isPendingClick = false;
+                var autoCallStatusEnum = toggleAutoCallEnum;
+                var isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
 
                 vm.callBtnEnum = CallsBtnStatusEnum;
 
@@ -1277,7 +1236,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 }
 
                 function _initializeBtnStatus(receiverId) {
-                    CallsBtnSrv.initializeBtnStatus(receiverId).then(function (status) {
+                    return CallsBtnSrv.initializeBtnStatus(receiverId).then(function (status) {
                         if (status) {
                             _changeBtnState(status);
                         }
@@ -1306,7 +1265,24 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                 var curBtnStatus = modelValue.isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
                                 receiverId = modelValue.receiverId;
                                 _changeBtnState(curBtnStatus);
-                                _initializeBtnStatus(receiverId);
+                                _initializeBtnStatus(receiverId).then(function() {
+                                    if (angular.isDefined(modelValue.toggleAutoCall) && isTeacher) {
+                                        CallsSrv.isUserInActiveCall().then(function (isInActiveCall) {
+                                            switch (modelValue.toggleAutoCall) {
+                                                case autoCallStatusEnum.ACTIVATE.enum:
+                                                    if (!isInActiveCall) {
+                                                        vm.clickBtn();
+                                                    }
+                                                    break;
+                                                case autoCallStatusEnum.DISABLE.enum:
+                                                    if (isInActiveCall) {
+                                                        vm.clickBtn();
+                                                    }
+                                                    break;
+                                            }
+                                        });
+                                    }
+                                });
                             }
                         };
                     }
@@ -1378,6 +1354,22 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 ['DECLINE_CALL', 2, 'decline call'],
                 ['ACTIVE_CALL', 3, 'active call'],
                 ['ENDED_CALL', 4, 'ended call']
+            ]);
+        }]
+    );
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.calls').factory('toggleAutoCallEnum',
+        ["EnumSrv", function (EnumSrv) {
+            'ngInject';
+
+            return new EnumSrv.BaseEnum([
+                ['DISABLE', 0, 'disable'],
+                ['ACTIVATE', 1, 'activate']
             ]);
         }]
     );
@@ -15721,17 +15713,27 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     angular.module('znk.infra.znkSession')
         .component('znkSession', {
             bindings: {},
-            templateUrl: 'components/znkSession/components/sessionBtn/znkSession.template.html',
+            require: {
+                parent: '?^ngModel'
+            },
+            templateUrl: 'components/znkSession/components/sessionBtn/sessionBtn.template.html',
             controllerAs: 'vm',
-            controller: ["$scope", "$mdDialog", "SessionSrv", function ($scope, $mdDialog, SessionSrv) {
+            controller: ["$scope", "$mdDialog", "SessionSrv", "SessionBtnStatusEnum", function ($scope, $mdDialog, SessionSrv, SessionBtnStatusEnum) {
                 'ngInject';
 
                 var vm = this;
+                var receiverId;
+                vm.sessionBtnEnum = SessionBtnStatusEnum;
+
+                function _changeBtnState(state) {
+                    vm.sessionBtnState = state;
+                }
 
                 this.$onInit = function() {
                     vm.activeSessionGuid = {};
                     vm.isLiveSessionActive = false;
                     vm.endSession = SessionSrv.endSession;
+                    var ngModelCtrl = vm.parent;
 
                     SessionSrv.getLiveSessionGUID().then(function (currSessionGuid) {
                         vm.activeSessionGuid = currSessionGuid;
@@ -15743,15 +15745,63 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
 
                     vm.showSessionModal = function () {
                         $mdDialog.show({
-                            controller: 'startSessionCtrl',
-                            controllerAs: 'vm',
-                            templateUrl: 'components/znkSession/modals/templates/startSession.template.html',
+                            template: '<start-session-modal></start-session-modal>',
+                            scope: $scope,
+                            preserveScope: true,
                             clickOutsideToClose: true
                         });
                     };
+
+                    if (ngModelCtrl) {
+                        ngModelCtrl.$render = function() {
+                            var modelValue = ngModelCtrl.$modelValue;
+                            if (modelValue && angular.isDefined(modelValue.isOffline) && modelValue.receiverId) {
+                                var curBtnStatus = modelValue.isOffline ? SessionBtnStatusEnum.OFFLINE_BTN.enum : SessionBtnStatusEnum.START_BTN.enum;
+                                receiverId = modelValue.receiverId;
+                                _changeBtnState(curBtnStatus);
+                            }
+                        };
+                    }
+
                 };
             }]
         });
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkSession')
+        .component('startSessionModal', {
+            bindings: {},
+            templateUrl: 'components/znkSession/components/startSessionModal/startSessionModal.template.html',
+            controllerAs: 'vm',
+            controller: ["$mdDialog", "SessionSrv", function($mdDialog, SessionSrv) {
+                'ngInject';
+
+                var vm = this;
+                vm.sessionSubjects = SessionSrv.getSessionSubjects();
+                vm.closeModal = $mdDialog.cancel;
+                vm.startSession = SessionSrv.startSession;
+
+            }]
+        });
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkSession').factory('SessionBtnStatusEnum',
+        ["EnumSrv", function (EnumSrv) {
+            'ngInject';
+
+            return new EnumSrv.BaseEnum([
+                ['OFFLINE_BTN', 1, 'offline btn'],
+                ['START_BTN', 2, 'start btn'],
+                ['ENDED_BTN', 3, 'ended btn']
+            ]);
+        }]
+    );
 })(angular);
 
 (function (angular) {
@@ -15794,21 +15844,6 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
 
 (function (angular) {
     'use strict';
-
-    angular.module('znk.infra.znkSession').controller('startSessionCtrl',
-        ["$mdDialog", "SessionSrv", function($mdDialog, SessionSrv) {
-            'ngInject';
-
-            var vm = this;
-            vm.sessionSubjects = SessionSrv.getSessionSubjects();
-            vm.closeModal = $mdDialog.cancel;
-            vm.startSession = SessionSrv.startSession;
-
-        }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
     angular.module('znk.infra.znkSession').provider('SessionSrv',
         function() {
             var subjects;
@@ -15817,11 +15852,14 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                 subjects = _subjects;
             };
 
-            this.$get = ["$rootScope", "$log", "ENV", "AuthService", "InfraConfigSrv", "StudentContextSrv", "TeacherContextSrv", "UtilitySrv", "SessionSubjectEnumConst", "$mdDialog", "ActivePanelSrv", "SessionsStatusEnum", "$window", "$timeout", "PopUpSrv", function($rootScope, $log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
-                                 UtilitySrv, SessionSubjectEnumConst, $mdDialog, ActivePanelSrv, SessionsStatusEnum,
-                                 $window, $timeout, PopUpSrv) {
+            this.$get = ["$rootScope", "$log", "ENV", "AuthService", "InfraConfigSrv", "StudentContextSrv", "TeacherContextSrv", "UtilitySrv", "SessionSubjectEnumConst", "$mdDialog", "SessionsStatusEnum", "$window", "$timeout", "PopUpSrv", "$interval", function($rootScope, $log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
+                                 UtilitySrv, SessionSubjectEnumConst, $mdDialog, SessionsStatusEnum,
+                                 $window, $timeout, PopUpSrv, $interval) {
                 'ngInject';
 
+                function getRoundTime() {
+                    return Math.floor(Date.now() / 1000) * 1000;
+                }
                 function sessionInit(sessionSubject) {
                     return {
                         appName: ENV.studentAppName.split('_')[0],
@@ -15829,16 +15867,11 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                         educatorUID: userAuth.uid,
                         studentUID: StudentContextSrv.getCurrUid(),
                         extendTime: 0,
-                        startTime: Date.now(),
+                        startTime: getRoundTime(),
                         duration: null,
                         sessionSubject: sessionSubject.id,
                         status: SessionsStatusEnum.ACTIVE.enum  //(values: 1 = Active, 0 = Ended)
                     };
-                }
-
-                function minToUnixTimestamp(min) {
-                    min = min || 0;
-                    return min * 60 * 1000;
                 }
                 function getLiveSessionPath(param) {
                     if (!userAuth) {
@@ -15865,19 +15898,19 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                 function saveSession() {
                     $log.debug('saveSession, sessionData: ', sessionData);
                     var dataToSave = {};
-                    globalStorageProm.then(function (globalStorage) {
+                    return globalStorageProm.then(function (globalStorage) {
                         var studentPath = getLiveSessionPath('student') + '/active';
                         var educatorPath = getLiveSessionPath('educator') + '/active';
                         var sessionPath = getLiveSessionPath('sessions');
                         dataToSave[sessionPath] = sessionData;
                         dataToSave[studentPath] = dataToSave[educatorPath] ={ guid: sessionData.sessionGUID };
-                        globalStorage.update(dataToSave);
+                        return globalStorage.update(dataToSave);
                     });
                 }
                 function updateSession() {
                     $log.debug('updateSession, sessionData: ', sessionData);
                     var dataToSave = {};
-                    globalStorageProm.then(function (globalStorage) {
+                    return globalStorageProm.then(function (globalStorage) {
                         var studentPath = getLiveSessionPath('student');
                         var studentPathActive = studentPath + '/active';
                         var studentPathArchive = studentPath + '/archive/' + sessionData.sessionGUID;
@@ -15888,29 +15921,44 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                         dataToSave[sessionPath] = sessionData;
                         dataToSave[studentPathArchive] = dataToSave[educatorPathArchive] = false;
                         dataToSave[studentPathActive] = dataToSave[educatorPathActive] = { guid: false };
-                        globalStorage.update(dataToSave);
+                        return globalStorage.update(dataToSave);
                     });
                 }
-                function handleCall() {
-                    var activePanelElm = $window.document.querySelector('.active-panel');
-                    activePanelElm.classList.remove('ng-hide');
-                    var callBtnElm = activePanelElm.querySelector('call-btn');
-                    $timeout(function () {
-                        callBtnElm.click();
+                function checkSessionDuration() {
+                    checkDurationInterval = $interval(function () {
+                        liveSessionDuration = (getRoundTime() - sessionData.startTime)  / 60000; // convert to minutes
+                        var sessionTimeWithExtension = ENV.liveSession.sessionLength + sessionData.extendTime;
+                        var EndAlertTimeWithExtension = ENV.liveSession.sessionEndAlertTime + sessionData.extendTime;
+
+                        if (liveSessionDuration >= sessionTimeWithExtension) {
+                            sessionSrvApi.endSession();
+                        } else if (liveSessionDuration >= EndAlertTimeWithExtension && !isSessionAlertShown) {
+                            sessionEndAlert();
+                        }
+
+                    }, 60000);
+                }
+                function sessionEndAlert() {
+                    var alertPopupTitle = 'Live session will end in ' + ENV.liveSession.sessionEndAlertTime + ' minutes.';
+                    var popUpInstance = PopUpSrv.warning(alertPopupTitle, null,'Extend Session Time', 'OK');
+                    return popUpInstance.promise.then(function(){
+                        sessionData.extendTime += ENV.liveSession.sessionExtendTime;
+                        $log.debug('Live session is extend by ' + ENV.liveSession.sessionExtendTime + ' minutes.');
+                    },function(){
+                        isSessionAlertShown = true;
+                        $log.debug('Live session is continued.');
                     });
                 }
-
-                function showActivePanel() {
-                    var activePanelElm = $window.document.querySelector('.active-panel');
-                    activePanelElm.classList.remove('ng-hide');
-                }
-                function hideActivePanel() {
-                    var activePanelElm = $window.document.querySelector('.active-panel');
-                    activePanelElm.classList.add('ng-hide');
+                function destroyCheckDurationInterval() {
+                    $interval.cancel(checkDurationInterval);
                 }
 
+                var activePanelCb;
+                var checkDurationInterval;
+                var liveSessionDuration;
                 var liveSessionsStatus;
                 var currLiveSessionsGUID;
+                var isSessionAlertShown = false;
                 var sessionSrvApi = {};
                 var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';
                 var userAuth = AuthService.getAuth();
@@ -15919,15 +15967,14 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
 
                 sessionSrvApi.startSession = function (sessionSubject) {
                     sessionData = sessionInit(sessionSubject);
-                    currLiveSessionsGUID = { guid: sessionData.sessionGUID};
+                    currLiveSessionsGUID = { guid: sessionData.sessionGUID };
                     liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
-                    var saveSessionProm = saveSession();
-                    saveSessionProm.then(function (res) {
-                        $log.debug('Session Saved: ', res);
-                        showActivePanel();
-                        handleCall();
+                    checkSessionDuration();
+                    saveSession().then(function (res) {
+                        activePanelCb(sessionData);
+                        $log.debug('Live Session Saved: ', res);
                     }).catch(function (err) {
-                        $log.error('Error saving session to firebase: ', err);
+                        $log.error('Error saving live session to firebase: ', err);
                     });
                 };
 
@@ -15961,7 +16008,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                         globalStorage.get(sessionsPath).then(function (currSessionData) {
                             sessionData = currSessionData;
                             $log.debug('loadLiveSessionData, sessionData: ', sessionData);
-                            showActivePanel();
+                             activePanelCb(sessionData);
                         });
                     });
                 };
@@ -15986,25 +16033,25 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                 };
 
                 sessionSrvApi.endSession = function () {
-                    var endTime = Date.now();
-                    liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
-                    sessionData.status = SessionsStatusEnum.ENDED.enum;
+                    $log.debug('Live session has ended.');
+                    var endTime = getRoundTime();
+                    sessionData.status = liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
                     sessionData.duration = endTime - sessionData.startTime;
-                    handleCall();
-                    hideActivePanel();
-                    var updateSessionProm = updateSession();
-                    updateSessionProm.then(function (res) {
-                        $log.debug('Session Updated: ', res);
+                    destroyCheckDurationInterval();
+                    activePanelCb(sessionData);
+                    updateSession().then(function (res) {
+                        $log.debug('Live Session Updated in firebase: ', res);
                         PopUpSrv.info('Live session has ended');
                     }).catch(function (err) {
-                        $log.error('Error updating session to firebase: ', err);
+                        $log.error('Error updating live session to firebase: ', err);
                     });
                 };
 
-                sessionSrvApi.addExtendTime = function () {
-                    sessionData.extendTime += minToUnixTimestamp(ENV.liveSession.sessionExtendTime);
+                sessionSrvApi.registerToCurrUserLiveSessionStateChanges = function (cb) {
+                    if (angular.isFunction(cb)) {
+                        activePanelCb = cb;
+                    }
                 };
-
 
                 return sessionSrvApi;
             }];
@@ -16014,7 +16061,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
 
 
 angular.module('znk.infra.znkSession').run(['$templateCache', function($templateCache) {
-  $templateCache.put("components/znkSession/components/sessionBtn/znkSession.template.html",
+  $templateCache.put("components/znkSession/components/sessionBtn/sessionBtn.template.html",
     "<md-button class=\"session-btn\"\n" +
     "           ng-click=\"vm.showSessionModal()\"\n" +
     "           ng-if=\"!vm.isLiveSessionActive\">\n" +
@@ -16027,53 +16074,35 @@ angular.module('znk.infra.znkSession').run(['$templateCache', function($template
     "           ng-if=\"vm.isLiveSessionActive\">\n" +
     "    <span>{{'ZNK_SESSION.END_SESSION' | translate}}</span>\n" +
     "</md-button>\n" +
-    "");
-  $templateCache.put("components/znkSession/modals/templates/startSession.template.html",
-    "<!--<div class=\"start-session-modal\">-->\n" +
-    "    <!--<md-dialog class=\"base\" translate-namespace=\"ZNK_SESSION\">-->\n" +
-    "        <!--<md-dialog-content>-->\n" +
-    "            <!--<div class=\"main-title\" translate=\".SESSION_SUBJECT\"></div>-->\n" +
-    "            <!--<div class=\"sessions-types\">-->\n" +
-    "                <!--<div class=\"session-icon-wrap\"-->\n" +
-    "                     <!--ng-repeat=\"subject in ::vm.sessionSubjects\"-->\n" +
-    "                     <!--ng-class=\"subject.name\"-->\n" +
-    "                     <!--ng-click=\"vm.startSession(subject); vm.closeModal();\">-->\n" +
-    "                    <!--<svg-icon name={{subject.iconName}}></svg-icon>-->\n" +
-    "                    <!--<span>{{subject.name}}</span>-->\n" +
-    "                <!--</div>-->\n" +
-    "            <!--</div>-->\n" +
-    "        <!--</md-dialog-content>-->\n" +
-    "    <!--</md-dialog>-->\n" +
-    "<!--</div>-->\n" +
     "\n" +
-    "<div class=\"session-dialog\">\n" +
-    "    <md-dialog class=\"base base-border-radius session-container\" translate-namespace=\"ZNK_SESSION\">\n" +
-    "        <div class=\"top-icon-wrap\">\n" +
-    "            <div class=\"top-icon\">\n" +
-    "                <div class=\"round-icon-wrap\">\n" +
-    "                    <svg-icon name=\"znkSession-start-lesson-popup-icon\"></svg-icon>\n" +
+    "");
+  $templateCache.put("components/znkSession/components/startSessionModal/startSessionModal.template.html",
+    "<div class=\"start-session-modal\">\n" +
+    "    <div class=\"base base-border-radius session-container\" translate-namespace=\"ZNK_SESSION\">\n" +
+    "        <div class=\"popup-header\">\n" +
+    "            <div class=\"top-icon-wrap\">\n" +
+    "                <div class=\"top-icon\">\n" +
+    "                    <div class=\"round-icon-wrap\">\n" +
+    "                        <svg-icon name=\"znkSession-start-lesson-popup-icon\"></svg-icon>\n" +
+    "                    </div>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "        </div>\n" +
-    "        <div class=\"popup-header\"></div>\n" +
-    "        <md-dialog-content class=\"session-content\">\n" +
+    "        <div class=\"popup-content\">\n" +
     "            <div class=\"main-title\" translate=\".START_SESSION\"></div>\n" +
     "            <div class=\"sub-title\" translate=\".SESSION_SUBJECT\"></div>\n" +
     "            <div class=\"subjects-btns\">\n" +
     "                <button class=\"subject-icon-wrap\"\n" +
-    "                     ng-repeat=\"subject in ::vm.sessionSubjects\"\n" +
-    "                     ng-class=\"subject.name\"\n" +
-    "                     ng-click=\"vm.startSession(subject); vm.closeModal();\">\n" +
+    "                        ng-repeat=\"subject in ::vm.sessionSubjects\"\n" +
+    "                        ng-class=\"subject.name\"\n" +
+    "                        ng-click=\"vm.startSession(subject); vm.closeModal();\">\n" +
     "                    <svg-icon name={{subject.iconName}}></svg-icon>\n" +
     "                    <span>{{subject.name}}</span>\n" +
     "                </button>\n" +
     "            </div>\n" +
-    "        </md-dialog-content>\n" +
-    "    </md-dialog>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
     "</div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
     "");
   $templateCache.put("components/znkSession/svg/znkSession-english-icon.svg",
     "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\"\n" +

@@ -37,17 +37,27 @@
     angular.module('znk.infra.znkSession')
         .component('znkSession', {
             bindings: {},
-            templateUrl: 'components/znkSession/components/sessionBtn/znkSession.template.html',
+            require: {
+                parent: '?^ngModel'
+            },
+            templateUrl: 'components/znkSession/components/sessionBtn/sessionBtn.template.html',
             controllerAs: 'vm',
-            controller: ["$scope", "$mdDialog", "SessionSrv", function ($scope, $mdDialog, SessionSrv) {
+            controller: ["$scope", "$mdDialog", "SessionSrv", "SessionBtnStatusEnum", function ($scope, $mdDialog, SessionSrv, SessionBtnStatusEnum) {
                 'ngInject';
 
                 var vm = this;
+                var receiverId;
+                vm.sessionBtnEnum = SessionBtnStatusEnum;
+
+                function _changeBtnState(state) {
+                    vm.sessionBtnState = state;
+                }
 
                 this.$onInit = function() {
                     vm.activeSessionGuid = {};
                     vm.isLiveSessionActive = false;
                     vm.endSession = SessionSrv.endSession;
+                    var ngModelCtrl = vm.parent;
 
                     SessionSrv.getLiveSessionGUID().then(function (currSessionGuid) {
                         vm.activeSessionGuid = currSessionGuid;
@@ -59,15 +69,63 @@
 
                     vm.showSessionModal = function () {
                         $mdDialog.show({
-                            controller: 'startSessionCtrl',
-                            controllerAs: 'vm',
-                            templateUrl: 'components/znkSession/modals/templates/startSession.template.html',
+                            template: '<start-session-modal></start-session-modal>',
+                            scope: $scope,
+                            preserveScope: true,
                             clickOutsideToClose: true
                         });
                     };
+
+                    if (ngModelCtrl) {
+                        ngModelCtrl.$render = function() {
+                            var modelValue = ngModelCtrl.$modelValue;
+                            if (modelValue && angular.isDefined(modelValue.isOffline) && modelValue.receiverId) {
+                                var curBtnStatus = modelValue.isOffline ? SessionBtnStatusEnum.OFFLINE_BTN.enum : SessionBtnStatusEnum.START_BTN.enum;
+                                receiverId = modelValue.receiverId;
+                                _changeBtnState(curBtnStatus);
+                            }
+                        };
+                    }
+
                 };
             }]
         });
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkSession')
+        .component('startSessionModal', {
+            bindings: {},
+            templateUrl: 'components/znkSession/components/startSessionModal/startSessionModal.template.html',
+            controllerAs: 'vm',
+            controller: ["$mdDialog", "SessionSrv", function($mdDialog, SessionSrv) {
+                'ngInject';
+
+                var vm = this;
+                vm.sessionSubjects = SessionSrv.getSessionSubjects();
+                vm.closeModal = $mdDialog.cancel;
+                vm.startSession = SessionSrv.startSession;
+
+            }]
+        });
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkSession').factory('SessionBtnStatusEnum',
+        ["EnumSrv", function (EnumSrv) {
+            'ngInject';
+
+            return new EnumSrv.BaseEnum([
+                ['OFFLINE_BTN', 1, 'offline btn'],
+                ['START_BTN', 2, 'start btn'],
+                ['ENDED_BTN', 3, 'ended btn']
+            ]);
+        }]
+    );
 })(angular);
 
 (function (angular) {
@@ -110,21 +168,6 @@
 
 (function (angular) {
     'use strict';
-
-    angular.module('znk.infra.znkSession').controller('startSessionCtrl',
-        ["$mdDialog", "SessionSrv", function($mdDialog, SessionSrv) {
-            'ngInject';
-
-            var vm = this;
-            vm.sessionSubjects = SessionSrv.getSessionSubjects();
-            vm.closeModal = $mdDialog.cancel;
-            vm.startSession = SessionSrv.startSession;
-
-        }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
     angular.module('znk.infra.znkSession').provider('SessionSrv',
         function() {
             var subjects;
@@ -133,11 +176,14 @@
                 subjects = _subjects;
             };
 
-            this.$get = ["$rootScope", "$log", "ENV", "AuthService", "InfraConfigSrv", "StudentContextSrv", "TeacherContextSrv", "UtilitySrv", "SessionSubjectEnumConst", "$mdDialog", "ActivePanelSrv", "SessionsStatusEnum", "$window", "$timeout", "PopUpSrv", function($rootScope, $log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
-                                 UtilitySrv, SessionSubjectEnumConst, $mdDialog, ActivePanelSrv, SessionsStatusEnum,
-                                 $window, $timeout, PopUpSrv) {
+            this.$get = ["$rootScope", "$log", "ENV", "AuthService", "InfraConfigSrv", "StudentContextSrv", "TeacherContextSrv", "UtilitySrv", "SessionSubjectEnumConst", "$mdDialog", "SessionsStatusEnum", "$window", "$timeout", "PopUpSrv", "$interval", function($rootScope, $log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
+                                 UtilitySrv, SessionSubjectEnumConst, $mdDialog, SessionsStatusEnum,
+                                 $window, $timeout, PopUpSrv, $interval) {
                 'ngInject';
 
+                function getRoundTime() {
+                    return Math.floor(Date.now() / 1000) * 1000;
+                }
                 function sessionInit(sessionSubject) {
                     return {
                         appName: ENV.studentAppName.split('_')[0],
@@ -145,16 +191,11 @@
                         educatorUID: userAuth.uid,
                         studentUID: StudentContextSrv.getCurrUid(),
                         extendTime: 0,
-                        startTime: Date.now(),
+                        startTime: getRoundTime(),
                         duration: null,
                         sessionSubject: sessionSubject.id,
                         status: SessionsStatusEnum.ACTIVE.enum  //(values: 1 = Active, 0 = Ended)
                     };
-                }
-
-                function minToUnixTimestamp(min) {
-                    min = min || 0;
-                    return min * 60 * 1000;
                 }
                 function getLiveSessionPath(param) {
                     if (!userAuth) {
@@ -181,19 +222,19 @@
                 function saveSession() {
                     $log.debug('saveSession, sessionData: ', sessionData);
                     var dataToSave = {};
-                    globalStorageProm.then(function (globalStorage) {
+                    return globalStorageProm.then(function (globalStorage) {
                         var studentPath = getLiveSessionPath('student') + '/active';
                         var educatorPath = getLiveSessionPath('educator') + '/active';
                         var sessionPath = getLiveSessionPath('sessions');
                         dataToSave[sessionPath] = sessionData;
                         dataToSave[studentPath] = dataToSave[educatorPath] ={ guid: sessionData.sessionGUID };
-                        globalStorage.update(dataToSave);
+                        return globalStorage.update(dataToSave);
                     });
                 }
                 function updateSession() {
                     $log.debug('updateSession, sessionData: ', sessionData);
                     var dataToSave = {};
-                    globalStorageProm.then(function (globalStorage) {
+                    return globalStorageProm.then(function (globalStorage) {
                         var studentPath = getLiveSessionPath('student');
                         var studentPathActive = studentPath + '/active';
                         var studentPathArchive = studentPath + '/archive/' + sessionData.sessionGUID;
@@ -204,29 +245,44 @@
                         dataToSave[sessionPath] = sessionData;
                         dataToSave[studentPathArchive] = dataToSave[educatorPathArchive] = false;
                         dataToSave[studentPathActive] = dataToSave[educatorPathActive] = { guid: false };
-                        globalStorage.update(dataToSave);
+                        return globalStorage.update(dataToSave);
                     });
                 }
-                function handleCall() {
-                    var activePanelElm = $window.document.querySelector('.active-panel');
-                    activePanelElm.classList.remove('ng-hide');
-                    var callBtnElm = activePanelElm.querySelector('call-btn');
-                    $timeout(function () {
-                        callBtnElm.click();
+                function checkSessionDuration() {
+                    checkDurationInterval = $interval(function () {
+                        liveSessionDuration = (getRoundTime() - sessionData.startTime)  / 60000; // convert to minutes
+                        var sessionTimeWithExtension = ENV.liveSession.sessionLength + sessionData.extendTime;
+                        var EndAlertTimeWithExtension = ENV.liveSession.sessionEndAlertTime + sessionData.extendTime;
+
+                        if (liveSessionDuration >= sessionTimeWithExtension) {
+                            sessionSrvApi.endSession();
+                        } else if (liveSessionDuration >= EndAlertTimeWithExtension && !isSessionAlertShown) {
+                            sessionEndAlert();
+                        }
+
+                    }, 60000);
+                }
+                function sessionEndAlert() {
+                    var alertPopupTitle = 'Live session will end in ' + ENV.liveSession.sessionEndAlertTime + ' minutes.';
+                    var popUpInstance = PopUpSrv.warning(alertPopupTitle, null,'Extend Session Time', 'OK');
+                    return popUpInstance.promise.then(function(){
+                        sessionData.extendTime += ENV.liveSession.sessionExtendTime;
+                        $log.debug('Live session is extend by ' + ENV.liveSession.sessionExtendTime + ' minutes.');
+                    },function(){
+                        isSessionAlertShown = true;
+                        $log.debug('Live session is continued.');
                     });
                 }
-
-                function showActivePanel() {
-                    var activePanelElm = $window.document.querySelector('.active-panel');
-                    activePanelElm.classList.remove('ng-hide');
-                }
-                function hideActivePanel() {
-                    var activePanelElm = $window.document.querySelector('.active-panel');
-                    activePanelElm.classList.add('ng-hide');
+                function destroyCheckDurationInterval() {
+                    $interval.cancel(checkDurationInterval);
                 }
 
+                var activePanelCb;
+                var checkDurationInterval;
+                var liveSessionDuration;
                 var liveSessionsStatus;
                 var currLiveSessionsGUID;
+                var isSessionAlertShown = false;
                 var sessionSrvApi = {};
                 var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';
                 var userAuth = AuthService.getAuth();
@@ -235,15 +291,14 @@
 
                 sessionSrvApi.startSession = function (sessionSubject) {
                     sessionData = sessionInit(sessionSubject);
-                    currLiveSessionsGUID = { guid: sessionData.sessionGUID};
+                    currLiveSessionsGUID = { guid: sessionData.sessionGUID };
                     liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
-                    var saveSessionProm = saveSession();
-                    saveSessionProm.then(function (res) {
-                        $log.debug('Session Saved: ', res);
-                        showActivePanel();
-                        handleCall();
+                    checkSessionDuration();
+                    saveSession().then(function (res) {
+                        activePanelCb(sessionData);
+                        $log.debug('Live Session Saved: ', res);
                     }).catch(function (err) {
-                        $log.error('Error saving session to firebase: ', err);
+                        $log.error('Error saving live session to firebase: ', err);
                     });
                 };
 
@@ -277,7 +332,7 @@
                         globalStorage.get(sessionsPath).then(function (currSessionData) {
                             sessionData = currSessionData;
                             $log.debug('loadLiveSessionData, sessionData: ', sessionData);
-                            showActivePanel();
+                             activePanelCb(sessionData);
                         });
                     });
                 };
@@ -302,25 +357,25 @@
                 };
 
                 sessionSrvApi.endSession = function () {
-                    var endTime = Date.now();
-                    liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
-                    sessionData.status = SessionsStatusEnum.ENDED.enum;
+                    $log.debug('Live session has ended.');
+                    var endTime = getRoundTime();
+                    sessionData.status = liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
                     sessionData.duration = endTime - sessionData.startTime;
-                    handleCall();
-                    hideActivePanel();
-                    var updateSessionProm = updateSession();
-                    updateSessionProm.then(function (res) {
-                        $log.debug('Session Updated: ', res);
+                    destroyCheckDurationInterval();
+                    activePanelCb(sessionData);
+                    updateSession().then(function (res) {
+                        $log.debug('Live Session Updated in firebase: ', res);
                         PopUpSrv.info('Live session has ended');
                     }).catch(function (err) {
-                        $log.error('Error updating session to firebase: ', err);
+                        $log.error('Error updating live session to firebase: ', err);
                     });
                 };
 
-                sessionSrvApi.addExtendTime = function () {
-                    sessionData.extendTime += minToUnixTimestamp(ENV.liveSession.sessionExtendTime);
+                sessionSrvApi.registerToCurrUserLiveSessionStateChanges = function (cb) {
+                    if (angular.isFunction(cb)) {
+                        activePanelCb = cb;
+                    }
                 };
-
 
                 return sessionSrvApi;
             }];
@@ -330,7 +385,7 @@
 
 
 angular.module('znk.infra.znkSession').run(['$templateCache', function($templateCache) {
-  $templateCache.put("components/znkSession/components/sessionBtn/znkSession.template.html",
+  $templateCache.put("components/znkSession/components/sessionBtn/sessionBtn.template.html",
     "<md-button class=\"session-btn\"\n" +
     "           ng-click=\"vm.showSessionModal()\"\n" +
     "           ng-if=\"!vm.isLiveSessionActive\">\n" +
@@ -343,53 +398,35 @@ angular.module('znk.infra.znkSession').run(['$templateCache', function($template
     "           ng-if=\"vm.isLiveSessionActive\">\n" +
     "    <span>{{'ZNK_SESSION.END_SESSION' | translate}}</span>\n" +
     "</md-button>\n" +
-    "");
-  $templateCache.put("components/znkSession/modals/templates/startSession.template.html",
-    "<!--<div class=\"start-session-modal\">-->\n" +
-    "    <!--<md-dialog class=\"base\" translate-namespace=\"ZNK_SESSION\">-->\n" +
-    "        <!--<md-dialog-content>-->\n" +
-    "            <!--<div class=\"main-title\" translate=\".SESSION_SUBJECT\"></div>-->\n" +
-    "            <!--<div class=\"sessions-types\">-->\n" +
-    "                <!--<div class=\"session-icon-wrap\"-->\n" +
-    "                     <!--ng-repeat=\"subject in ::vm.sessionSubjects\"-->\n" +
-    "                     <!--ng-class=\"subject.name\"-->\n" +
-    "                     <!--ng-click=\"vm.startSession(subject); vm.closeModal();\">-->\n" +
-    "                    <!--<svg-icon name={{subject.iconName}}></svg-icon>-->\n" +
-    "                    <!--<span>{{subject.name}}</span>-->\n" +
-    "                <!--</div>-->\n" +
-    "            <!--</div>-->\n" +
-    "        <!--</md-dialog-content>-->\n" +
-    "    <!--</md-dialog>-->\n" +
-    "<!--</div>-->\n" +
     "\n" +
-    "<div class=\"session-dialog\">\n" +
-    "    <md-dialog class=\"base base-border-radius session-container\" translate-namespace=\"ZNK_SESSION\">\n" +
-    "        <div class=\"top-icon-wrap\">\n" +
-    "            <div class=\"top-icon\">\n" +
-    "                <div class=\"round-icon-wrap\">\n" +
-    "                    <svg-icon name=\"znkSession-start-lesson-popup-icon\"></svg-icon>\n" +
+    "");
+  $templateCache.put("components/znkSession/components/startSessionModal/startSessionModal.template.html",
+    "<div class=\"start-session-modal\">\n" +
+    "    <div class=\"base base-border-radius session-container\" translate-namespace=\"ZNK_SESSION\">\n" +
+    "        <div class=\"popup-header\">\n" +
+    "            <div class=\"top-icon-wrap\">\n" +
+    "                <div class=\"top-icon\">\n" +
+    "                    <div class=\"round-icon-wrap\">\n" +
+    "                        <svg-icon name=\"znkSession-start-lesson-popup-icon\"></svg-icon>\n" +
+    "                    </div>\n" +
     "                </div>\n" +
     "            </div>\n" +
     "        </div>\n" +
-    "        <div class=\"popup-header\"></div>\n" +
-    "        <md-dialog-content class=\"session-content\">\n" +
+    "        <div class=\"popup-content\">\n" +
     "            <div class=\"main-title\" translate=\".START_SESSION\"></div>\n" +
     "            <div class=\"sub-title\" translate=\".SESSION_SUBJECT\"></div>\n" +
     "            <div class=\"subjects-btns\">\n" +
     "                <button class=\"subject-icon-wrap\"\n" +
-    "                     ng-repeat=\"subject in ::vm.sessionSubjects\"\n" +
-    "                     ng-class=\"subject.name\"\n" +
-    "                     ng-click=\"vm.startSession(subject); vm.closeModal();\">\n" +
+    "                        ng-repeat=\"subject in ::vm.sessionSubjects\"\n" +
+    "                        ng-class=\"subject.name\"\n" +
+    "                        ng-click=\"vm.startSession(subject); vm.closeModal();\">\n" +
     "                    <svg-icon name={{subject.iconName}}></svg-icon>\n" +
     "                    <span>{{subject.name}}</span>\n" +
     "                </button>\n" +
     "            </div>\n" +
-    "        </md-dialog-content>\n" +
-    "    </md-dialog>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
     "</div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
     "");
   $templateCache.put("components/znkSession/svg/znkSession-english-icon.svg",
     "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\"\n" +
