@@ -10,10 +10,12 @@
 
             this.$get = function($rootScope, $log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
                                  UtilitySrv, SessionSubjectEnumConst, $mdDialog, SessionsStatusEnum,
-                                 $window, $timeout, PopUpSrv) {
+                                 $window, $timeout, PopUpSrv, $interval) {
                 'ngInject';
-                var registeredCbToCurrUserLiveSessionStateChange = [];
 
+                function getRoundTime() {
+                    return Math.floor(Date.now() / 1000) * 1000;
+                }
                 function sessionInit(sessionSubject) {
                     return {
                         appName: ENV.studentAppName.split('_')[0],
@@ -21,15 +23,11 @@
                         educatorUID: userAuth.uid,
                         studentUID: StudentContextSrv.getCurrUid(),
                         extendTime: 0,
-                        startTime: Date.now(),
+                        startTime: getRoundTime(),
                         duration: null,
                         sessionSubject: sessionSubject.id,
                         status: SessionsStatusEnum.ACTIVE.enum  //(values: 1 = Active, 0 = Ended)
                     };
-                }
-                function minToUnixTimestamp(min) {
-                    min = min || 0;
-                    return min * 60 * 1000;
                 }
                 function getLiveSessionPath(param) {
                     if (!userAuth) {
@@ -82,31 +80,41 @@
                         return globalStorage.update(dataToSave);
                     });
                 }
-                function handleCall() {
-                    var activePanelElm = $window.document.querySelector('.active-panel');
-                    activePanelElm.classList.remove('ng-hide');
-                    var callBtnElm = activePanelElm.querySelector('.call-btn');
-                    $timeout(function () {
-                        callBtnElm.click();
+                function checkSessionDuration() {
+                    checkDurationInterval = $interval(function () {
+                        liveSessionDuration = (getRoundTime() - sessionData.startTime)  / 60000; // convert to minutes
+                        var sessionTimeWithExtension = ENV.liveSession.sessionLength + sessionData.extendTime;
+                        var EndAlertTimeWithExtension = ENV.liveSession.sessionEndAlertTime + sessionData.extendTime;
+
+                        if (liveSessionDuration >= sessionTimeWithExtension) {
+                            sessionSrvApi.endSession();
+                        } else if (liveSessionDuration >= EndAlertTimeWithExtension && !isSessionAlertShown) {
+                            sessionEndAlert();
+                        }
+
+                    }, 60000);
+                }
+                function sessionEndAlert() {
+                    var alertPopupTitle = 'Live session will end in ' + ENV.liveSession.sessionEndAlertTime + ' minutes.';
+                    var popUpInstance = PopUpSrv.warning(alertPopupTitle, null,'Extend Session Time', 'OK');
+                    return popUpInstance.promise.then(function(){
+                        sessionData.extendTime += ENV.liveSession.sessionExtendTime;
+                        $log.debug('Live session is extend by ' + ENV.liveSession.sessionExtendTime + ' minutes.');
+                    },function(){
+                        isSessionAlertShown = true;
+                        $log.debug('Live session is continued.');
                     });
                 }
-                function showActivePanel() {
-                    var activePanelElm = $window.document.querySelector('.active-panel');
-                    activePanelElm.classList.remove('ng-hide');
-                }
-                function hideActivePanel() {
-                    var activePanelElm = $window.document.querySelector('.active-panel');
-                    activePanelElm.classList.add('ng-hide');
-                }
-                function _invokeCbs(cbArr, args){
-                    cbArr.forEach(function(cb){
-                        cb.apply(null, args);
-                    });
+                function destroyCheckDurationInterval() {
+                    $interval.cancel(checkDurationInterval);
                 }
 
-
+                var activePanelCb;
+                var checkDurationInterval;
+                var liveSessionDuration;
                 var liveSessionsStatus;
                 var currLiveSessionsGUID;
+                var isSessionAlertShown = false;
                 var sessionSrvApi = {};
                 var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';
                 var userAuth = AuthService.getAuth();
@@ -115,16 +123,14 @@
 
                 sessionSrvApi.startSession = function (sessionSubject) {
                     sessionData = sessionInit(sessionSubject);
-                    currLiveSessionsGUID = { guid: sessionData.sessionGUID};
+                    currLiveSessionsGUID = { guid: sessionData.sessionGUID };
                     liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
-                    var saveSessionProm = saveSession();
-                    saveSessionProm.then(function (res) {
-                        _invokeCbs(registeredCbToCurrUserLiveSessionStateChange, [sessionData]);
-                        $log.debug('Session Saved: ', res);
-                        // showActivePanel();
-                        // handleCall();
+                    checkSessionDuration();
+                    saveSession().then(function (res) {
+                        activePanelCb(sessionData);
+                        $log.debug('Live Session Saved: ', res);
                     }).catch(function (err) {
-                        $log.error('Error saving session to firebase: ', err);
+                        $log.error('Error saving live session to firebase: ', err);
                     });
                 };
 
@@ -158,8 +164,7 @@
                         globalStorage.get(sessionsPath).then(function (currSessionData) {
                             sessionData = currSessionData;
                             $log.debug('loadLiveSessionData, sessionData: ', sessionData);
-                            // showActivePanel();
-                            _invokeCbs(registeredCbToCurrUserLiveSessionStateChange, [sessionData]);
+                             activePanelCb(sessionData);
                         });
                     });
                 };
@@ -184,26 +189,23 @@
                 };
 
                 sessionSrvApi.endSession = function () {
-                    var endTime = Date.now();
+                    $log.debug('Live session has ended.');
+                    var endTime = getRoundTime();
                     sessionData.status = liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
                     sessionData.duration = endTime - sessionData.startTime;
-                    _invokeCbs(registeredCbToCurrUserLiveSessionStateChange, [sessionData]);
-                    var updateSessionProm = updateSession();
-                    updateSessionProm.then(function (res) {
-                        $log.debug('Session Updated: ', res);
+                    destroyCheckDurationInterval();
+                    activePanelCb(sessionData);
+                    updateSession().then(function (res) {
+                        $log.debug('Live Session Updated in firebase: ', res);
                         PopUpSrv.info('Live session has ended');
                     }).catch(function (err) {
-                        $log.error('Error updating session to firebase: ', err);
+                        $log.error('Error updating live session to firebase: ', err);
                     });
-                };
-
-                sessionSrvApi.addExtendTime = function () {
-                    sessionData.extendTime += minToUnixTimestamp(ENV.liveSession.sessionExtendTime);
                 };
 
                 sessionSrvApi.registerToCurrUserLiveSessionStateChanges = function (cb) {
                     if (angular.isFunction(cb)) {
-                        registeredCbToCurrUserLiveSessionStateChange.push(cb);
+                        activePanelCb = cb;
                     }
                 };
 
