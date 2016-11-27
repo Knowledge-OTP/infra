@@ -6,8 +6,8 @@
  *
  *  settings:
  *      allowedTimeForExercise: in milliseconds
- *      onUpdateModel: a general function that will invoke cb any time the model updates 
  *      onDone
+ *      onExit: invoke when $destroy has been called
  *      onQuestionAnswered
  *      wrapperCls
  *      toolsToHide
@@ -70,14 +70,14 @@
                         pre: function (scope, element, attrs, ctrls) {
                             var defaultSettings = {
                                 onDone: angular.noop,
+                                onExit: angular.noop,
                                 onQuestionAnswered: angular.noop,
                                 viewMode: ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
                                 onSlideChange: angular.noop,
                                 initSlideDirection: ZnkExerciseSlideDirectionEnum.ALL.enum,
                                 initForceDoneBtnDisplay: null,
                                 initPagerDisplay: true,
-                                allowedTimeForExercise: Infinity,
-                                onUpdateModel: angular.noop
+                                allowedTimeForExercise: Infinity
                             };
 
                             scope.settings.allowedTimeForExercise = +scope.settings.allowedTimeForExercise;
@@ -206,7 +206,6 @@
                             function render(viewValue) {
                                 allQuestionWithAnswersArr = viewValue;
                                 scope.vm.questionsWithAnswers = allQuestionWithAnswersArr;
-                                scope.settings.onUpdateModel(viewValue);
                             }
 
                             ngModelCtrl.$render = function () {
@@ -478,6 +477,7 @@
                                     toolBoxModalInstance.close();
                                 }
                                 updateTimeSpentOnQuestion();
+                                scope.settings.onExit();
                             });
                         }
                     };
