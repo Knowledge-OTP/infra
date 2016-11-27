@@ -12850,7 +12850,9 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 if (toolBoxModalInstance) {
                                     toolBoxModalInstance.close();
                                 }
-                                updateTimeSpentOnQuestion();
+                                updateTimeSpentOnQuestion({
+                                    removeLastTimeStamp: true
+                                });
                                 scope.settings.onExit();
                             });
                         }
