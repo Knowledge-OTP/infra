@@ -282,7 +282,7 @@ $blueBG8: #75cbe8;
     position: relative; }
     [znk-progress-bar] .progress-bubble-wrapper .progress-percentage, znk-progress-bar .progress-bubble-wrapper .progress-percentage {
       position: absolute;
-      top: 7px;
+      top: 2px;
       left: -23px;
       font-size: 18px;
       color: #4f4d4d;
@@ -299,7 +299,8 @@ $blueBG8: #75cbe8;
           font-family: Lato;
           font-weight: 100;
           position: relative;
-          bottom: 6px; }
+          bottom: 6px;
+          margin-top: 6px; }
     [znk-progress-bar] .progress-bubble-wrapper .progress-bubble, znk-progress-bar .progress-bubble-wrapper .progress-bubble {
       width: 52px;
       height: 40px;

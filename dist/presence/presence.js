@@ -38,6 +38,7 @@
                 var presenceService = {};
                 var rootRef = new StorageFirebaseAdapter(ENV.fbDataEndPoint);
                 var PRESENCE_PATH = 'presence/';
+                var isUserLoguot = false;
 
                 presenceService.userStatus = {
                     'OFFLINE': 0,
@@ -53,6 +54,15 @@
                         amOnline.on('value', function (snapshot) {
                             if (snapshot.val()) {
                                 userRef.onDisconnect().remove();
+                                userRef.set(presenceService.userStatus.ONLINE);
+                            }
+                        });
+
+                        // added listener for the user to resolve the problem when other tabs are closing
+                        // it removes user presence status, turning him offline, although his still online
+                        userRef.on('value', function(snapshot) {
+                            var val = snapshot.val();
+                            if (!val && !isUserLoguot) {
                                 userRef.set(presenceService.userStatus.ONLINE);
                             }
                         });
@@ -106,6 +116,7 @@
                     var authData = getAuthData();
                     if (authData) {
                         var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
+                        isUserLoguot = true;
                         userRef.remove();
                     }
                 });

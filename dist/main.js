@@ -495,7 +495,7 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
             };
 
             if(!eventsHandler) {
-                $log.error('znkAnalyticsSrv eventsHandler is missing!');
+                $log.debug('znkAnalyticsSrv eventsHandler is missing!');
                 return api;
             }
 
@@ -4076,24 +4076,45 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                     };
                 })();
 
-                EstimatedScoreSrv.getEstimatedScores = _baseGetter.bind(this, 'estimatedScores');
+                var convertObjScoreToRoundScore = function (obj) {
+                    obj.score = Math.round(obj.score);
+                    return obj;
+                };
 
                 EstimatedScoreSrv.getSectionsRawScores = _baseGetter.bind(this, 'sectionsRawScores');
 
                 EstimatedScoreSrv.getExercisesRawScore = _baseGetter.bind(this, 'exercisesRawScores');
 
-                EstimatedScoreSrv.getLatestEstimatedScore = function(subjectId){
-                    return _baseGetter('estimatedScores',subjectId).then(function(allScoresOrScoreForSubject){
-                        if(angular.isDefined(subjectId)){
-                            if(!allScoresOrScoreForSubject.length){
+                EstimatedScoreSrv.getEstimatedScores = function (subjectId){
+                    return _baseGetter('estimatedScores', subjectId).then(function (allScoresOrScoreForSubject) {
+                        if (angular.isDefined(subjectId)) {
+                            if (!allScoresOrScoreForSubject.length) {
                                 return {};
                             }
-                            return allScoresOrScoreForSubject[allScoresOrScoreForSubject.length - 1];
+                            return allScoresOrScoreForSubject.map(convertObjScoreToRoundScore);
+                        }
+                        var allScoresPerSubject = {};
+                        angular.forEach(allScoresOrScoreForSubject, function (scoresForSubject, subjectId) {
+                            allScoresPerSubject[subjectId] = scoresForSubject.length ? scoresForSubject.map(convertObjScoreToRoundScore) : [];
+                        });
+
+                        return allScoresPerSubject;
+                    });
+                };
+
+                EstimatedScoreSrv.getLatestEstimatedScore = function (subjectId) {
+                    return _baseGetter('estimatedScores',subjectId).then(function (allScoresOrScoreForSubject) {
+                        if (angular.isDefined(subjectId)){
+                            if (!allScoresOrScoreForSubject.length) {
+                                return {};
+                            }
+                            return convertObjScoreToRoundScore(allScoresOrScoreForSubject[allScoresOrScoreForSubject.length - 1]);
                         }
                         var latestScoresPerSubject = {};
-                        angular.forEach(allScoresOrScoreForSubject,function(scoresForSubject,subjectId){
-                            latestScoresPerSubject[subjectId] = scoresForSubject.length ? scoresForSubject[scoresForSubject.length -1] : {};
+                        angular.forEach(allScoresOrScoreForSubject, function (scoresForSubject, subjectId) {
+                            latestScoresPerSubject[subjectId] = scoresForSubject.length ? convertObjScoreToRoundScore(scoresForSubject[scoresForSubject.length -1]) : {};
                         });
+
                         return latestScoresPerSubject;
                     });
                 };
@@ -4550,8 +4571,9 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                     }
 
                     var exerciseNewStatus = exerciseResultObj.isComplete ? ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
+                    var exerciseStatusTypeAndExerciseIdPath = [USER_EXERCISES_STATUS_PATH + '/' + exerciseResultObj.exerciseTypeId + '/' + exerciseResultObj.exerciseId];
                     exercisesStatusData[exerciseResultObj.exerciseTypeId][exerciseResultObj.exerciseId] = new ExerciseStatus(exerciseNewStatus, totalTimeSpentOnQuestions);
-                    dataToSaveObj[USER_EXERCISES_STATUS_PATH] = exercisesStatusData;
+                    dataToSaveObj[exerciseStatusTypeAndExerciseIdPath] = exercisesStatusData[exerciseResultObj.exerciseTypeId][exerciseResultObj.exerciseId];
                     return {
                         exerciseResult: exerciseResultObj,
                         exercisesStatus: exercisesStatusData,
@@ -4952,13 +4974,21 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
+    var answerTypeEnum = {
+        SELECT_ANSWER: 0,
+        FREE_TEXT_ANSWER: 1,
+        RATE_ANSWER: 3
+    };
+
+    angular.module('znk.infra.exerciseUtility').constant('answerTypeEnumConst', answerTypeEnum);
+
     angular.module('znk.infra.exerciseUtility').factory('AnswerTypeEnum', [
         'EnumSrv',
         function (EnumSrv) {
             return new EnumSrv.BaseEnum([
-                ['SELECT_ANSWER',0 ,'select answer'],
-                ['FREE_TEXT_ANSWER',1 ,'free text answer'],
-                ['RATE_ANSWER',3 ,'rate answer']
+                ['SELECT_ANSWER', answerTypeEnum.SELECT_ANSWER, 'select answer'],
+                ['FREE_TEXT_ANSWER', answerTypeEnum.FREE_TEXT_ANSWER, 'free text answer'],
+                ['RATE_ANSWER', answerTypeEnum.RATE_ANSWER, 'rate answer']
             ]);
         }
     ]);
@@ -5278,7 +5308,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
                 var numOfHours;
                 var filteredTime;
                 if (time <= ONE_MIN_IN_MILLISECONDS) {
-                    filteredTime = time / 1000 + ' sec';
+                    filteredTime = Math.round(time / 1000) + ' sec';
                 } else if (time % ONE_MIN_IN_MILLISECONDS < time && time > 0 && time < 3600000) {
                     remainedSec = time % ONE_MIN_IN_MILLISECONDS;
                     numOfMin = Math.round(time / ONE_MIN_IN_MILLISECONDS) + ' min ';
@@ -6728,6 +6758,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
                 var presenceService = {};
                 var rootRef = new StorageFirebaseAdapter(ENV.fbDataEndPoint);
                 var PRESENCE_PATH = 'presence/';
+                var isUserLoguot = false;
 
                 presenceService.userStatus = {
                     'OFFLINE': 0,
@@ -6743,6 +6774,15 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
                         amOnline.on('value', function (snapshot) {
                             if (snapshot.val()) {
                                 userRef.onDisconnect().remove();
+                                userRef.set(presenceService.userStatus.ONLINE);
+                            }
+                        });
+
+                        // added listener for the user to resolve the problem when other tabs are closing
+                        // it removes user presence status, turning him offline, although his still online
+                        userRef.on('value', function(snapshot) {
+                            var val = snapshot.val();
+                            if (!val && !isUserLoguot) {
                                 userRef.set(presenceService.userStatus.ONLINE);
                             }
                         });
@@ -6796,6 +6836,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
                     var authData = getAuthData();
                     if (authData) {
                         var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
+                        isUserLoguot = true;
                         userRef.remove();
                     }
                 });
@@ -8435,7 +8476,14 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                     } else {
                         if (self.__registeredEvents[type][path].firstOnWasInvoked) {
                             self.get(path).then(function (newVal) {
-                                cb(newVal);
+                                if (angular.isDefined(newVal) && newVal !== null && type === 'child_added') {
+                                    var keys = Object.keys(newVal);
+                                    angular.forEach(keys, function (key) {
+                                        cb(newVal[key], key);
+                                    });
+                                } else {
+                                    cb(newVal);
+                                }
                             });
                         }
                     }
@@ -8457,23 +8505,20 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                     });
                 },
                 offEvent: function (type, path, cb) {
-                    if (!this.__registeredEvents[type] || !this.__registeredEvents[type][path]) {
+                    if (!this.__registeredEvents[type] || !this.__registeredEvents[type][path] || angular.isUndefined(cb)) {
+                        if(angular.isUndefined(cb)){
+                            $log.debug('storageFirebaseAdapter: offEvent called without callback');
+                        }
                         return;
                     }
 
                     var _firstOnWasInvoked = this.__registeredEvents[type][path].firstOnWasInvoked;
 
-                    if (angular.isUndefined(cb)) {
-                        this.__registeredEvents[type][path] = [];
-                        this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
-                        return;
-                    }
-
                     var eventCbArr = this.__registeredEvents[type][path];
                     var newEventCbArr = [];
-                    eventCbArr.forEach(function (cb) {
-                        if (cb !== cb) {
-                            newEventCbArr.push(cb);
+                    eventCbArr.forEach(function (_cb) {
+                        if (cb !== _cb) {
+                            newEventCbArr.push(_cb);
                         }
                     });
                     this.__registeredEvents[type][path] = newEventCbArr;
@@ -10535,7 +10580,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     var chatGuidProm;
                     var offEvent = {};
                     var soundPath = ZNK_CHAT.SOUND_PATH + 'sound.mp3';
-                    var sound =  MediaSrv.loadSound(soundPath);
 
                     scope.d = {};
                     scope.d.userStatus = PresenceService.userStatus;
@@ -10605,7 +10649,11 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                             } else {
                                 scope.chatterObj.messagesNotSeen++;
                                 scope.chatterObj.messagesNotSeen = scope.chatterObj.messagesNotSeen < ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES ? scope.chatterObj.messagesNotSeen :  ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
+                                var sound =  MediaSrv.loadSound(soundPath);
                                 sound.play();
+                                sound.onEnded().then(function(){
+                                    sound.release();
+                                });
                             }
                         }
 
@@ -11215,7 +11263,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
         'znk.infra.exerciseUtility',
         'znk.infra.analytics',
         'znk.infra.popUp',
-        'znk.infra.user'
+        'znk.infra.user',
+        'znk.infra.utility'
     ])
     .config([
         'SvgIconSrvProvider',
@@ -12163,9 +12212,14 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             questionTypeGetterFn = typeGetterFn;
         };
 
+        var answersFormaterObjMap = {};        
+        this.setAnswersFormatValidtors = function (_answersFormaterObjMap) {
+            answersFormaterObjMap = _answersFormaterObjMap;
+        };
+
         this.$get = [
-            '$log','$q',
-            function ($log, $q) {
+            '$log', '$q', '$injector',
+            function ($log, $q, $injector) {
                 var QuestionTypesSrv = {};
 
                 QuestionTypesSrv.getQuestionHtmlTemplate = function getQuestionHtmlTemplate(question) {
@@ -12180,6 +12234,55 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                 QuestionTypesSrv.getQuestionType = function getQuestionType(question) {
                     return questionTypeGetterFn(question);
+                };
+
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {   
+                    if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
+                        $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
+                        return;
+                    }
+
+                   var answersFormaterArr = answersFormaterObjMap[answerTypeId];
+
+                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
+                   if (angular.isUndefined(userAnswer) ||
+                       !angular.isArray(answersFormaterArr) ||
+                       !answersFormaterArr.length) {
+                        callbackValidAnswer();
+                        return;
+                    }
+
+                    var answersFormaterArrLength = answersFormaterArr.length;
+
+                    var answerValueBool, currentFormatter, functionGetter;                     
+                    for (var i = 0; i < answersFormaterArrLength; i++) {
+                        currentFormatter = answersFormaterArr[i];
+                       
+                        if (angular.isFunction(currentFormatter)) {
+                            try {
+                                 functionGetter = $injector.invoke(currentFormatter);
+                            } catch (e) {
+                                 $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: $injector.invoke faild! e: ' + e);
+                            }
+                            answerValueBool = functionGetter(userAnswer, question); // question is optional
+                        }
+
+                        if (currentFormatter instanceof RegExp) { // currentFormatter should be a regex pattren
+                           answerValueBool = currentFormatter.test(userAnswer);
+                        }
+
+                        // break loop if userAnswer is a valid answer
+                        if (typeof answerValueBool === "boolean" && answerValueBool) {
+                            callbackValidAnswer();
+                            break;
+                        }
+                        // if last iteration, then answer is un valid, invoke callbackUnValidAnswer if exist
+                        if (i === answersFormaterArrLength - 1) {
+                            if (callbackUnValidAnswer) {
+                                callbackUnValidAnswer();
+                            }
+                        }
+                    }
                 };
 
                 return QuestionTypesSrv;
@@ -12723,8 +12826,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').controller('ZnkExerciseDrvCtrl', [
-        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$element', 'ZnkExerciseSrv',
-        function ($scope, $q, ZnkExerciseEvents, $log, $element, ZnkExerciseSrv) {
+        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$element', 'ZnkExerciseSrv', 'UtilitySrv', 'ENV',
+        function ($scope, $q, ZnkExerciseEvents, $log, $element, ZnkExerciseSrv, UtilitySrv, ENV) {
             var self = this;
 
             var questionReadyDefer = $q.defer();
@@ -12876,6 +12979,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
              */
             (function(self) {
 
+                self.updatedBy = ENV.appContext;
                 // initial an empty object in case bindExerciseViewTo was not called
                 self.__exerciseViewBinding = {};
 
@@ -12886,16 +12990,16 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 BindExerciseEventManager.prototype.trigger = function(key, value) {
                     if (angular.isArray(this.cbObj[key])) {
                         this.cbObj[key].forEach(function (obj) {
-                            if (obj.id && value.id && obj.updatedBy && value.updatedBy) {
-                                if (obj.id === value.id && obj.updatedBy !== value.updatedBy) {
+                            if (obj.id && value.id && value.updatedBy && self.updatedBy) {
+                                if (obj.id === value.id && self.updatedBy !== value.updatedBy) {
                                     obj.cb(value);
                                 }
                             } else if (obj.id && value.id) {
                                 if (obj.id === value.id) {
                                     obj.cb(value);
                                 }
-                            } else if (obj.updatedBy && value.updatedBy) {
-                                if (obj.updatedBy !== value.updatedBy) {
+                            } else if (self.updatedBy && value.updatedBy) {
+                                if (self.updatedBy !== value.updatedBy) {
                                     obj.cb(value);
                                 }
                             } else {
@@ -12905,27 +13009,35 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     }
                 };
 
-                BindExerciseEventManager.prototype.update = function(key, value, id, updatedBy) {
+                BindExerciseEventManager.prototype.update = function(key, valueObj, id) {
+                    if (!angular.isObject(valueObj) || angular.isArray(valueObj) && valueObj !== null) {
+                        $log.error('ZnkExerciseDrvCtrl BindExerciseEventManager: value that pass to update function must be an object ie: {}');
+                        return;
+                    }
+
                     var curValue = self.__exerciseViewBinding[key] || {};
 
-                    if (!curValue.data) {
-                        curValue.data = value;
+                    if (id) {
                         curValue.id = id;
-                        curValue.updatedBy = updatedBy;
-                    } else if (angular.isObject(value)) {
-                        curValue.data = angular.extend({}, curValue, value);
-                    } else {
-                        curValue.data = value;
                     }
+
+                    if (self.updatedBy) {
+                        curValue.updatedBy = self.updatedBy;
+                    }
+
+                    // create new guid for each update to enforce it
+                    valueObj.update = UtilitySrv.general.createGuid();
+
+                    curValue = angular.extend({}, curValue, valueObj);
 
                     self.__exerciseViewBinding[key] = curValue;
                 };
 
-                BindExerciseEventManager.prototype.registerCb = function(key, cb, id, updatedBy) {
+                BindExerciseEventManager.prototype.registerCb = function(key, cb, id) {
                      if (!angular.isArray(this.cbObj[key])) {
                          this.cbObj[key] = [];
                      }
-                     this.cbObj[key].push({ id: id, cb: cb, updatedBy: updatedBy });
+                     this.cbObj[key].push({ id: id, cb: cb });
                 };
 
                 self.bindExerciseEventManager = new BindExerciseEventManager();
@@ -12992,8 +13104,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExercisePager', [
-        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum',
-        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum) {
+        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum', 'QuestionTypesSrv',
+        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum, QuestionTypesSrv) {
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExercisePagerDrv.html',
                 restrict: 'E',
@@ -13016,6 +13128,10 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             znkExerciseCtrl.setCurrentIndex(newIndex);
                         };
 
+                        function getPagerItemByIndex(index) {
+                            return angular.element(domElement.querySelectorAll('.pager-item')[index]);
+                        }
+
                         function setPagerItemBookmarkStatus(index, status) {
                             var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
                             if (status) {
@@ -13025,8 +13141,21 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             }
                         }
 
+                        function setPagerItemAnswerClassValidAnswerWrapper(question, index) {
+                            var userAnswer = question.__questionStatus.userAnswer;
+                            var answerTypeId = question.answerTypeId;
+                            var currIndex = index || question.__questionStatus.index;
+                            
+                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function() {               
+                                setPagerItemAnswerClass(currIndex, question); 
+                            }, function() {
+                                 var pagerItemElement = getPagerItemByIndex(currIndex);
+                                 pagerItemElement.removeClass('neutral correct wrong');  
+                            }, question);
+                        }
+
                         function setPagerItemAnswerClass(index, question) {
-                            var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
+                            var pagerItemElement = getPagerItemByIndex(index);
 
                             if (angular.isUndefined(question.__questionStatus.userAnswer)) {
                                 pagerItemElement.removeClass('neutral correct wrong');
@@ -13064,7 +13193,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 for (i in scope.questions) {
                                     var question = scope.questions[i];
                                     setPagerItemBookmarkStatus(i, question.__questionStatus.bookmark);
-                                    setPagerItemAnswerClass(i, question);
+                                    setPagerItemAnswerClassValidAnswerWrapper(question, i);
                                 }
                             });
                         };
@@ -13074,7 +13203,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         });
 
                         scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function (evt, question) {
-                            setPagerItemAnswerClass(question.__questionStatus.index, question);
+                            setPagerItemAnswerClassValidAnswerWrapper(question);
                         });
 
                         function init() {
@@ -13769,7 +13898,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     function _setDrawMode(drawMode) {
                         switch (drawMode) {
                             case DRAWING_MODES.NONE:
-                                eventsManager.cleanListeners();
+                                eventsManager.cleanQuestionListeners();
                                 drawer.clean();
                                 break;
                             case DRAWING_MODES.VIEW:
@@ -13817,7 +13946,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         var self = this;
 
                         return this.exerciseDrawingRefProm.then(function (exerciseDrawingRef) {
-                            exerciseDrawingRef.update(self.pixelsMapToUpdate);
+                            exerciseDrawingRef.child('coordinates').update(self.pixelsMapToUpdate);
                             self.pixelsMapToUpdate = {};
                         });
                     };
@@ -13961,12 +14090,13 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     });
 
                     scope.$on('$destroy', function () {
-                        eventsManager.cleanListeners();
+                        eventsManager.cleanQuestionListeners();
+                        eventsManager.cleanGlobalListeners();
+
                     });
 
                     function EventsManager() {
                         this._fbRegisterProm = $q.when();
-                        this._hoveredElementsOfQuestions = {};
                         this._fbCallbackEnum =
                             {
                                 CHILD_CHANGED: 0,
@@ -14065,9 +14195,9 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             _getFbRef(questionId, canvasContextName).then(function (ref) {
                                 self.ref = ref;
 
-                                self.ref.on("child_added", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
-                                self.ref.on("child_changed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
-                                self.ref.on("child_removed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_REMOVED));
+                                self.ref.child('coordinates').on("child_added", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                                self.ref.child('coordinates').on("child_changed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                                self.ref.child('coordinates').on("child_removed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_REMOVED));
 
                             });
 
@@ -14085,18 +14215,36 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             _getFbRef(self._fbLastRegisteredQuestionId, canvasContextName).then(function (ref) {
                                 self.ref = ref;
 
-                                self.ref.off("child_added", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
-                                self.ref.off("child_changed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
-                                self.ref.off("child_removed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_REMOVED));
+                                self.ref.child('coordinates').off("child_added", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                                self.ref.child('coordinates').off("child_changed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                                self.ref.child('coordinates').off("child_removed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_REMOVED));
                             });
                         });
                         self._fbLastRegisteredQuestionId = null;
                     };
 
-                    EventsManager.prototype.cleanListeners = function () {
+                    EventsManager.prototype.cleanQuestionListeners = function () {
                         this.killMouseEvents();
                         this.killFbListeners();
                         this.killHoverEvents(); 
+                    };
+
+                    EventsManager.prototype.registerDimensionsListener = function(dimensionsRef, onValueCb) {
+                        if (!this._dimensionsRefPairs) {
+                            this._dimensionsRefPairs = [];
+                        }
+                        dimensionsRef.on('value', onValueCb);
+                        this._dimensionsRefPairs.push({dimensionsRef : dimensionsRef, onValueCb: onValueCb});
+                    };
+
+                    EventsManager.prototype.killDimensionsListener = function() {
+                        angular.forEach(this._dimensionsRefPairs, function (refAndCbPair) {
+                            refAndCbPair.dimensionsRef.off("value",refAndCbPair.onValueCb);
+                        });
+                    };
+
+                    EventsManager.prototype.cleanGlobalListeners = function() {
+                        this.killDimensionsListener();
                     };
 
                     function _reloadCanvas() {
@@ -14126,6 +14274,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         
                         var onHoverCb = function () {
                             if (currQuestion) {
+                                drawer.stopDrawing();
                                 eventsManager.killMouseEvents();
 
                                 canvasDomElement = canvasOfElement;
@@ -14140,11 +14289,69 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                     }
 
-                    function _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement) {
+                    function _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement, canvasContextName, questionId) {
                         toolBoxCtrl.isExerciseReady().then(function () {
-                            canvasDomContainerElement[0].setAttribute('height', elementToCoverDomElement.offsetHeight);
-                            canvasDomContainerElement[0].setAttribute('width', elementToCoverDomElement.offsetWidth);
-                            canvasDomContainerElement.css('position', 'absolute');
+                            var exerciseDrawingRefProm;
+
+                            // get the height and the width of the wrapper element
+                            function _getDimensionsByElementSize() {
+                                var height,width;
+                                if (elementToCoverDomElement.scrollHeight) {
+                                    height = elementToCoverDomElement.scrollHeight;
+                                }
+                                else {
+                                    height = elementToCoverDomElement.offsetHeight;
+                                }
+                                if (elementToCoverDomElement.scrollWidth) {
+                                    width = elementToCoverDomElement.scrollWidth;
+                                }
+                                else {
+                                    width = elementToCoverDomElement.offsetWidth;
+                                }
+                                return {height: height, width: width};
+                            }
+
+                            // return the larger dimensions out of the element's dimensions and the saved FB dimensions
+                            function _compareFbDimensionsWithElementDimensions(fbDimensions) {
+                                var elementDimensions = _getDimensionsByElementSize();
+                                var finalDimensions = {
+                                    height : Math.max(elementDimensions.height, fbDimensions.height),
+                                    width : Math.max(elementDimensions.width, fbDimensions.width)
+                                };
+                                exerciseDrawingRefProm.child('maxDimensions').update(finalDimensions);
+                                return finalDimensions;
+                            }
+
+                            // set the canvas dimensions to the larger dimensions between the two ^
+                            var setDimensionsCb = function(data) {
+                                // DOM dimensions
+                                var elementDimensions = _getDimensionsByElementSize();
+                                // FB dimensions
+                                var maxDimensions;
+                                // nothing is saved on FB, set the dimensions to be element dimensions
+                                if (!data.val()) {
+                                    maxDimensions = elementDimensions;
+                                }
+                                else {
+                                    maxDimensions = data.val();
+                                }
+                                // compare them and set the canvas dimensions to be the larger between the two
+                                // also save the new maxDimensions to FB
+                                var finalDimensions = _compareFbDimensionsWithElementDimensions(maxDimensions);            
+                                canvasDomContainerElement[0].setAttribute('height', finalDimensions.height);
+                                canvasDomContainerElement[0].setAttribute('width', finalDimensions.width);
+                                canvasDomContainerElement.css('position', 'absolute');
+
+                            };
+
+                            // this piece of code fetches the previously calculated maxDimensions from firebase, and then kickstart all the functions we just went by above ^
+                            _getFbRef(questionId, canvasContextName).then(function(ref) {
+                                exerciseDrawingRefProm = ref;
+                                eventsManager.registerDimensionsListener(exerciseDrawingRefProm.child('maxDimensions'), setDimensionsCb);
+                            });
+
+
+
                         });
 
                     }
@@ -14167,7 +14374,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         // when hovering over a canvas, set the global context to it
                         _setContextOnHover(elementToCover, canvasDomElement, canvasContextName);
 
-                        _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement);
+                        _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement, canvasContextName, question.id);
                         
 
                         elementToCover.append(canvasContainerElement);
@@ -14206,7 +14413,6 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             };
         }]);
 })(angular);
-
 
 (function (angular) {
     'use strict';
@@ -15014,6 +15220,8 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
 
             var sound = window.Audio && new Audio();
             function Html5Media(src, mediaSuccess, mediaError, mediaStatus) {
+                var audioEndedProm = $q.defer();
+
                 if (typeof $window.Audio !== 'function' && typeof $window.Audio !== 'object') {
                     console.warn('HTML5 Audio is not supported in this browser');
                 }
@@ -15028,6 +15236,8 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
                     if (mediaSuccess) {
                         mediaSuccess();
                     }
+
+                    audioEndedProm.resolve();
                 }
                 sound.addEventListener('ended', endedHandler, false);
 
@@ -15111,6 +15321,9 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
                         if (mediaSuccess) {
                             mediaSuccess();
                         }
+                    },
+                    onEnded: function(){
+                        return audioEndedProm.promise;
                     }
                 };
             }
@@ -15340,7 +15553,7 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
     "<div ng-if=\"::showProgressBubble()\" class=\"progress-bubble-wrapper\" ng-style=\"{left: progressWidth + '%'}\">\n" +
     "    <div class=\"progress-percentage\">\n" +
     "        <div>{{progressWidth}}%\n" +
-    "            <div translate=\"ZNK_PROGRESS_BAR.MASTERY\"></div>\n" +
+    "            <div translate=\"ZNK_PROGRESS_BAR.ACCURACY\"></div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "    <div class=\"progress-bubble\">\n" +
@@ -15355,10 +15568,6 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
     "        {{progressValue}}\n" +
     "    </div>\n" +
     "</div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
     "");
 }]);
 

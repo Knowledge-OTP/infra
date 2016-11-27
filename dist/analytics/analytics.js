@@ -89,7 +89,7 @@
             };
 
             if(!eventsHandler) {
-                $log.error('znkAnalyticsSrv eventsHandler is missing!');
+                $log.debug('znkAnalyticsSrv eventsHandler is missing!');
                 return api;
             }
 

@@ -102,24 +102,45 @@
                     };
                 })();
 
-                EstimatedScoreSrv.getEstimatedScores = _baseGetter.bind(this, 'estimatedScores');
+                var convertObjScoreToRoundScore = function (obj) {
+                    obj.score = Math.round(obj.score);
+                    return obj;
+                };
 
                 EstimatedScoreSrv.getSectionsRawScores = _baseGetter.bind(this, 'sectionsRawScores');
 
                 EstimatedScoreSrv.getExercisesRawScore = _baseGetter.bind(this, 'exercisesRawScores');
 
-                EstimatedScoreSrv.getLatestEstimatedScore = function(subjectId){
-                    return _baseGetter('estimatedScores',subjectId).then(function(allScoresOrScoreForSubject){
-                        if(angular.isDefined(subjectId)){
-                            if(!allScoresOrScoreForSubject.length){
+                EstimatedScoreSrv.getEstimatedScores = function (subjectId){
+                    return _baseGetter('estimatedScores', subjectId).then(function (allScoresOrScoreForSubject) {
+                        if (angular.isDefined(subjectId)) {
+                            if (!allScoresOrScoreForSubject.length) {
                                 return {};
                             }
-                            return allScoresOrScoreForSubject[allScoresOrScoreForSubject.length - 1];
+                            return allScoresOrScoreForSubject.map(convertObjScoreToRoundScore);
+                        }
+                        var allScoresPerSubject = {};
+                        angular.forEach(allScoresOrScoreForSubject, function (scoresForSubject, subjectId) {
+                            allScoresPerSubject[subjectId] = scoresForSubject.length ? scoresForSubject.map(convertObjScoreToRoundScore) : [];
+                        });
+
+                        return allScoresPerSubject;
+                    });
+                };
+
+                EstimatedScoreSrv.getLatestEstimatedScore = function (subjectId) {
+                    return _baseGetter('estimatedScores',subjectId).then(function (allScoresOrScoreForSubject) {
+                        if (angular.isDefined(subjectId)){
+                            if (!allScoresOrScoreForSubject.length) {
+                                return {};
+                            }
+                            return convertObjScoreToRoundScore(allScoresOrScoreForSubject[allScoresOrScoreForSubject.length - 1]);
                         }
                         var latestScoresPerSubject = {};
-                        angular.forEach(allScoresOrScoreForSubject,function(scoresForSubject,subjectId){
-                            latestScoresPerSubject[subjectId] = scoresForSubject.length ? scoresForSubject[scoresForSubject.length -1] : {};
+                        angular.forEach(allScoresOrScoreForSubject, function (scoresForSubject, subjectId) {
+                            latestScoresPerSubject[subjectId] = scoresForSubject.length ? convertObjScoreToRoundScore(scoresForSubject[scoresForSubject.length -1]) : {};
                         });
+
                         return latestScoresPerSubject;
                     });
                 };

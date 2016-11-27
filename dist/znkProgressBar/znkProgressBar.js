@@ -42,7 +42,7 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
     "<div ng-if=\"::showProgressBubble()\" class=\"progress-bubble-wrapper\" ng-style=\"{left: progressWidth + '%'}\">\n" +
     "    <div class=\"progress-percentage\">\n" +
     "        <div>{{progressWidth}}%\n" +
-    "            <div translate=\"ZNK_PROGRESS_BAR.MASTERY\"></div>\n" +
+    "            <div translate=\"ZNK_PROGRESS_BAR.ACCURACY\"></div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "    <div class=\"progress-bubble\">\n" +
@@ -57,9 +57,5 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
     "        {{progressValue}}\n" +
     "    </div>\n" +
     "</div>\n" +
-    "\n" +
-    "\n" +
-    "\n" +
-    "\n" +
     "");
 }]);

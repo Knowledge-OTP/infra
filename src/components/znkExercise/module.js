@@ -11,7 +11,8 @@
         'znk.infra.exerciseUtility',
         'znk.infra.analytics',
         'znk.infra.popUp',
-        'znk.infra.user'
+        'znk.infra.user',
+        'znk.infra.utility'
     ])
     .config([
         'SvgIconSrvProvider',
