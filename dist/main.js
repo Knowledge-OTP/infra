@@ -12380,6 +12380,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
  *
  *  settings:
  *      allowedTimeForExercise: in milliseconds
+ *      onUpdateModel: a general function that will invoke cb any time the model updates 
  *      onDone
  *      onQuestionAnswered
  *      wrapperCls
@@ -12449,7 +12450,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 initSlideDirection: ZnkExerciseSlideDirectionEnum.ALL.enum,
                                 initForceDoneBtnDisplay: null,
                                 initPagerDisplay: true,
-                                allowedTimeForExercise: Infinity
+                                allowedTimeForExercise: Infinity,
+                                onUpdateModel: angular.noop
                             };
 
                             scope.settings.allowedTimeForExercise = +scope.settings.allowedTimeForExercise;
@@ -12578,6 +12580,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             function render(viewValue) {
                                 allQuestionWithAnswersArr = viewValue;
                                 scope.vm.questionsWithAnswers = allQuestionWithAnswersArr;
+                                scope.settings.onUpdateModel(viewValue);
                             }
 
                             ngModelCtrl.$render = function () {
@@ -12714,7 +12717,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 }
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
                                 //skip 1 digest cycle before triggering question answered
-                                $timeout(function(){
+                                $timeout(function() {
                                     scope.settings.onQuestionAnswered(scope.vm.currentSlide);
                                 });
                             };

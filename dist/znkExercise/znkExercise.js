@@ -1141,6 +1141,7 @@
  *
  *  settings:
  *      allowedTimeForExercise: in milliseconds
+ *      onUpdateModel: a general function that will invoke cb any time the model updates 
  *      onDone
  *      onQuestionAnswered
  *      wrapperCls
@@ -1210,7 +1211,8 @@
                                 initSlideDirection: ZnkExerciseSlideDirectionEnum.ALL.enum,
                                 initForceDoneBtnDisplay: null,
                                 initPagerDisplay: true,
-                                allowedTimeForExercise: Infinity
+                                allowedTimeForExercise: Infinity,
+                                onUpdateModel: angular.noop
                             };
 
                             scope.settings.allowedTimeForExercise = +scope.settings.allowedTimeForExercise;
@@ -1339,6 +1341,7 @@
                             function render(viewValue) {
                                 allQuestionWithAnswersArr = viewValue;
                                 scope.vm.questionsWithAnswers = allQuestionWithAnswersArr;
+                                scope.settings.onUpdateModel(viewValue);
                             }
 
                             ngModelCtrl.$render = function () {
@@ -1475,7 +1478,7 @@
                                 }
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
                                 //skip 1 digest cycle before triggering question answered
-                                $timeout(function(){
+                                $timeout(function() {
                                     scope.settings.onQuestionAnswered(scope.vm.currentSlide);
                                 });
                             };
