@@ -12,6 +12,8 @@ describe('testing directive "znkExerciseDrv":', function () {
         });
     });
 
+    var DateNowOriginal = Date.now;
+
     //get dependencies
     var $rootScope, $compile, $timeout, $interval, ZnkExerciseSrv, $q, ZnkExerciseViewModeEnum,
         ZnkExerciseSlideDirectionEnum, ZnkExerciseEvents, ENV;
@@ -31,6 +33,22 @@ describe('testing directive "znkExerciseDrv":', function () {
         }
     ]));
 
+    var time, actions = {};    
+    beforeEach(function () {
+        time = 0;
+        Date.now = function () {
+            return time;
+        }; 
+    });
+
+    actions.addTime = function (newTime) {
+        time += newTime;
+    };
+
+    actions.setTime = function (newTime) {
+        time = newTime;
+    };
+    
     function createDirectiveHtml($scope, content, scopeSettings, scopeAnswers) {
         if (!$scope) {
             $scope = $rootScope.$new();
@@ -324,26 +342,86 @@ describe('testing directive "znkExerciseDrv":', function () {
         expect(!!scope.d.answers[answerIndex].bookmark).toBe(!!initState);
     });
 
-    it('when 5000 second is passed then the time spend on question property should be increased by 5 seconds', function () {
-        var time = 1;
-        Date.now = function () {
-            return time;
-        };
-        var scopeContent = createDirectiveHtml();
+    it('when start a question it should initialize timeSpent 0', function () {
+        // initial answer without userAnswer beacause otherwise will not update
+        var scopeContent = createDirectiveHtml(null, null, null, [{ questionId: 1 }]);
         var scope = scopeContent.scope;
-        //var content = scopeContent.content;
-        time += 5000;
-        scope.d.actions.finishExercise();
-        expect(scope.d.answers[0].timeSpent).toBe(5000);
+        expect(scope.d.answers[0].timeSpent).toBe(0);
     });
 
-    it('given review mode when 3000 second is passed then the time spend on question property should not be increased', function () {
-        var scopeContent = createDirectiveHtml(null, null, {viewMode: ZnkExerciseViewModeEnum.REVIEW.enum});
+    it('when the user exit the exercise then the timeSpent of the current question should be updated', function () {
+        // initial answer without userAnswer beacause otherwise will not update
+        var scopeContent = createDirectiveHtml(null, null, null, [{ questionId: 1 }]);
         var scope = scopeContent.scope;
-        var initSpentTime = scope.d.answers[0].timeSpent;
-        $interval.flush(5000);
-        expect(scope.d.answers[0].timeSpent).toBe(initSpentTime);
+        actions.addTime(5000);
+        scope.$destroy();   
+        expect(scope.d.answers[0].timeSpent).toBe(5000);
     });
+    
+    it('when the user swipe to another question then save the timeSpent of the current question and other question should be init with 0', function () {
+        // initial answer without userAnswer beacause otherwise will not update
+        var scopeContent = createDirectiveHtml(null, null, null, [{ questionId: 1 }, { questionId: 2 }]);
+        var scope = scopeContent.scope;
+        var content = scopeContent.content;
+        actions.setTime(5000);
+        content.setCurrentIndex(1);   
+        expect(scope.d.answers[0].timeSpent).toBe(5000);
+        expect(scope.d.answers[1].timeSpent).toBe(0);
+   });
+
+   it('when the user go back to question then save the start the timeSpent from previous saved time', function () {
+        // initial answer without userAnswer beacause otherwise will not update
+        var scopeContent = createDirectiveHtml(null, null, null, [{ questionId: 1 }, { questionId: 2 }]);
+        var scope = scopeContent.scope;
+        var content = scopeContent.content;
+        actions.addTime(5000);
+        content.setCurrentIndex(1);   
+        actions.addTime(5000);
+        content.setCurrentIndex(0); 
+        actions.addTime(10000);
+        scope.d.actions.finishExercise();
+        expect(scope.d.answers[0].timeSpent).toBe(15000);
+   });
+    
+   it('when the user answer the question save to time spent', function () {
+        var scopeContent = createDirectiveHtml();
+        var scope = scopeContent.scope;
+        var isolateScope = scopeContent.isolateScope;
+        actions.addTime(5000);
+        isolateScope.vm.questionAnswered();
+        expect(scope.d.answers[0].timeSpent).toBe(5000);
+   });
+    
+   it('when the user answer the question then do not update anymore', function () {
+        // initial answer without userAnswer beacause otherwise will not update
+        var scopeContent = createDirectiveHtml(null, null, null, [{ questionId: 1 }, { questionId: 2 }]);
+        var scope = scopeContent.scope;
+        var isolateScope = scopeContent.isolateScope;
+        var content = scopeContent.content;
+        actions.addTime(5000);
+        scope.d.answers[0].userAnswer = 1;
+        isolateScope.vm.questionAnswered();
+        content.setCurrentIndex(1);     
+        actions.addTime(5000);
+        content.setCurrentIndex(0);
+        actions.addTime(5000);
+        scope.d.actions.finishExercise();
+        expect(scope.d.answers[0].timeSpent).toBe(5000);
+   });
+
+   it('given review mode when 3000 second is passed then the time spend on question property should not be increased', function () {
+        var scopeContent = createDirectiveHtml(null, null, {viewMode: ZnkExerciseViewModeEnum.REVIEW.enum}, [{ questionId: 1 }, { questionId: 2 }]);
+        var scope = scopeContent.scope;
+        var content = scopeContent.content;
+        var initSpentTime = scope.d.answers[0].timeSpent;
+        actions.addTime(5000);
+        content.setCurrentIndex(1); 
+        actions.addTime(5000);
+        content.setCurrentIndex(0); 
+        actions.addTime(5000);
+        scope.$destroy();  
+        expect(scope.d.answers[0].timeSpent).toBe(initSpentTime);
+   });
 
     xit('when blackboard tool is opened then it data should be set with current question black board data', function () {
         var modalSettings;
