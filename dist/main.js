@@ -12749,7 +12749,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 }, question);
                             }
                             
-                            // obj { questionNum, removeLastTimeStamp, updateForce }
+                            // example of obj { questionNum, removeLastTimeStamp, updateForce }
                             function updateTimeSpentOnQuestion(obj) {
                                 if (scope.settings.viewMode === ZnkExerciseViewModeEnum.REVIEW.enum) {
                                     return;
