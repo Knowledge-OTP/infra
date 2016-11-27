@@ -43,12 +43,12 @@ start-session-modal{
             flex-direction: column;
             justify-content: space-around;
             .main-title {
-                @include text-style(30px, $fcColor6,Quicksand,$semiBoldFontWeight);
+                @include text-style(30px, $fcColor6,Quicksand,$semiBoldFontWeight, null, null, null, center);
                 text-align: center;
                 margin-top:0;
             }
             .sub-title {
-                @include text-style(16px, $fcColor9, Lato, $regularFontWeight);
+                @include text-style(16px, $fcColor9, Lato, $regularFontWeight, null, null, null, center);
             }
             .subjects-btns{
                 display: flex;
