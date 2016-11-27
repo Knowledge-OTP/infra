@@ -134,7 +134,6 @@
                     });
                 };
 
-
                 sessionSrvApi.getSessionSubjects = function() {
                     if (!subjects) {
                         subjects = [SessionSubjectEnumConst.MATH, SessionSubjectEnumConst.ENGLISH];

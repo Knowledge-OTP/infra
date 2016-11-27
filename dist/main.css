@@ -6417,15 +6417,18 @@ md-dialog.base {
       height: 19px; }
 
 znk-session .session-btn {
-  background-color: #ff931e;
+  font-size: 14px;
   color: #ffffff;
+  font-family: Lato;
+  font-weight: 400;
+  text-transform: none;
+  background-color: #ff931e;
   height: 30px;
   width: 140px;
   min-height: 30px;
   min-width: 80px;
   line-height: 28px;
   border-radius: 15px;
-  text-transform: none;
   outline: none; }
   znk-session .session-btn:not([disabled]):hover {
     background-color: #ff931e;
@@ -6435,6 +6438,9 @@ znk-session .end-session {
   background-color: #ff6766; }
   znk-session .end-session:not([disabled]):hover {
     background-color: #ff6766; }
+
+znk-session .offline {
+  border: 1px solid #b7b7b7; }
 
 start-session-modal .start-session-modal {
   width: 400px;

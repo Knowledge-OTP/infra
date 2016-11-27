@@ -49,7 +49,7 @@
                         $q.all(promsArr).then(function (res) {
                             scope.d.currentUserPresenceStatus = res[0];
                             isOffline = scope.d.currentUserPresenceStatus === PresenceService.userStatus.OFFLINE;
-                            scope.d.calleeName = (res[1]) ? (res[1]) : '';
+                            scope.d.calleeName = (res[1]) ? (res[1]) : 'Student';
                             scope.d.callBtnModel = {
                                 isOffline: isOffline,
                                 receiverId: uid

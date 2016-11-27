@@ -1,14 +1,13 @@
 znk-session {
     .session-btn {
+        @include text-style(14px, $fcColor2, Lato, $regularFontWeight, null, none);
         background-color: $bgColor19;
-        color: $fcColor2;
         height: 30px;
         width: 140px;
         min-height: 30px;
         min-width: 80px;
         line-height: 28px;
         border-radius: 15px;
-        text-transform: none;
         outline: none;
         &:not([disabled]):hover {
             background-color: $bgColor19;
@@ -20,5 +19,9 @@ znk-session {
         &:not([disabled]):hover {
             background-color: $bgColor1;
         }
+    }
+
+    .offline {
+        border: 1px solid $bcColor8;
     }
 }

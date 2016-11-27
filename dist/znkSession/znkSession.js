@@ -37,27 +37,39 @@
     angular.module('znk.infra.znkSession')
         .component('znkSession', {
             bindings: {},
-            require: {
-                parent: '?^ngModel'
-            },
             templateUrl: 'components/znkSession/components/sessionBtn/sessionBtn.template.html',
             controllerAs: 'vm',
-            controller: ["$scope", "$mdDialog", "SessionSrv", "SessionBtnStatusEnum", function ($scope, $mdDialog, SessionSrv, SessionBtnStatusEnum) {
+            controller: ["$log", "$scope", "$mdDialog", "SessionSrv", "StudentContextSrv", "PresenceService", function ($log, $scope, $mdDialog, SessionSrv, StudentContextSrv,
+                                  PresenceService) {
                 'ngInject';
 
                 var vm = this;
                 var receiverId;
-                vm.sessionBtnEnum = SessionBtnStatusEnum;
-
-                function _changeBtnState(state) {
-                    vm.sessionBtnState = state;
+                var currentUserPresenceStatus;
+                var initialUid = StudentContextSrv.getCurrUid();
+                function listenToStudentContextChange(prevUid, uid) {
+                    receiverId = uid;
+                    var currentUserStatus = PresenceService.getCurrentUserStatus(receiverId);
+                    currentUserStatus.then(function (res) {
+                        currentUserPresenceStatus = res;
+                        vm.isOffline = currentUserPresenceStatus === PresenceService.userStatus.OFFLINE;
+                    }).catch(function (err) {
+                        $log.debug('error caught at listenToStudentContextChange', err);
+                    });
+                    $log.debug('student context changed: ', receiverId);
                 }
 
                 this.$onInit = function() {
                     vm.activeSessionGuid = {};
                     vm.isLiveSessionActive = false;
                     vm.endSession = SessionSrv.endSession;
-                    var ngModelCtrl = vm.parent;
+                    vm.isOffline = true;
+
+                    if (initialUid) {
+                        listenToStudentContextChange(null, initialUid);
+                    }
+
+                    StudentContextSrv.registerToStudentContextChange(listenToStudentContextChange);
 
                     SessionSrv.getLiveSessionGUID().then(function (currSessionGuid) {
                         vm.activeSessionGuid = currSessionGuid;
@@ -75,18 +87,6 @@
                             clickOutsideToClose: true
                         });
                     };
-
-                    if (ngModelCtrl) {
-                        ngModelCtrl.$render = function() {
-                            var modelValue = ngModelCtrl.$modelValue;
-                            if (modelValue && angular.isDefined(modelValue.isOffline) && modelValue.receiverId) {
-                                var curBtnStatus = modelValue.isOffline ? SessionBtnStatusEnum.OFFLINE_BTN.enum : SessionBtnStatusEnum.START_BTN.enum;
-                                receiverId = modelValue.receiverId;
-                                _changeBtnState(curBtnStatus);
-                            }
-                        };
-                    }
-
                 };
             }]
         });
@@ -302,7 +302,6 @@
                     });
                 };
 
-
                 sessionSrvApi.getSessionSubjects = function() {
                     if (!subjects) {
                         subjects = [SessionSubjectEnumConst.MATH, SessionSubjectEnumConst.ENGLISH];
@@ -386,17 +385,11 @@
 
 angular.module('znk.infra.znkSession').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkSession/components/sessionBtn/sessionBtn.template.html",
-    "<md-button class=\"session-btn\"\n" +
-    "           ng-click=\"vm.showSessionModal()\"\n" +
-    "           ng-if=\"!vm.isLiveSessionActive\">\n" +
-    "    <span>{{'ZNK_SESSION.START_SESSION' | translate}}</span>\n" +
-    "</md-button>\n" +
-    "\n" +
-    "<md-button class=\"session-btn\"\n" +
-    "           ng-class=\"{'end-session': vm.isLiveSessionActive}\"\n" +
-    "           ng-click=\"vm.endSession()\"\n" +
-    "           ng-if=\"vm.isLiveSessionActive\">\n" +
-    "    <span>{{'ZNK_SESSION.END_SESSION' | translate}}</span>\n" +
+    "<md-button class=\"session-btn\" ng-disabled=\"vm.isOffline\"\n" +
+    "           ng-class=\"{'offline': vm.isOffline, 'end-session': vm.isLiveSessionActive}\"\n" +
+    "           ng-click=\"!vm.isLiveSessionActive ? vm.showSessionModal() : vm.endSession()\">\n" +
+    "    <span ng-if=\"!vm.isLiveSessionActive\">{{'ZNK_SESSION.START_SESSION' | translate}}</span>\n" +
+    "    <span ng-if=\"vm.isLiveSessionActive\">{{'ZNK_SESSION.END_SESSION' | translate}}</span>\n" +
     "</md-button>\n" +
     "\n" +
     "");
