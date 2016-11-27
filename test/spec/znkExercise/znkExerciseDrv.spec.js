@@ -409,7 +409,7 @@ describe('testing directive "znkExerciseDrv":', function () {
         expect(scope.d.answers[0].timeSpent).toBe(5000);
    });
 
-   it('given review mode when 3000 second is passed then the time spend on question property should not be increased', function () {
+   it('given review mode then the time spend on question property should not be increased', function () {
         var scopeContent = createDirectiveHtml(null, null, {viewMode: ZnkExerciseViewModeEnum.REVIEW.enum}, [{ questionId: 1 }, { questionId: 2 }]);
         var scope = scopeContent.scope;
         var content = scopeContent.content;
