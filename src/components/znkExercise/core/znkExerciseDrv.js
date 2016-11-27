@@ -476,7 +476,9 @@
                                 if (toolBoxModalInstance) {
                                     toolBoxModalInstance.close();
                                 }
-                                updateTimeSpentOnQuestion();
+                                updateTimeSpentOnQuestion({
+                                    removeLastTimeStamp: true
+                                });
                                 scope.settings.onExit();
                             });
                         }
