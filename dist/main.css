@@ -6498,7 +6498,8 @@ start-session-modal .start-session-modal {
       font-size: 16px;
       color: #757a83;
       font-family: Lato;
-      font-weight: 400; }
+      font-weight: 400;
+      text-align: center; }
     start-session-modal .start-session-modal .popup-content .subjects-btns {
       display: -ms-flexbox;
       display: flex;

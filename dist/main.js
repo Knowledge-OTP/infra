@@ -1191,11 +1191,11 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls')
-        .config(["WebcallSrvProvider", "ENV", function (WebcallSrvProvider, ENV) {
+        .config(["WebcallSrvProvider", function (WebcallSrvProvider) {
             'ngInject';
             WebcallSrvProvider.setCallCred({
-                username: ENV.plivoUsername,
-                password: ENV.plivoPassword
+            username: 'ZinkerzDev160731091034',     // ENV.plivoUsername,
+            password: 'zinkerz$9999'     // ENV.plivoPassword
             });
         }]);
 })(angular);
@@ -6725,16 +6725,17 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
         'ngIdle',
         'znk.infra.auth'
     ])
-        .config(["IdleProvider", "KeepaliveProvider", "ENV", function (IdleProvider, KeepaliveProvider, ENV) {
+        .config(["IdleProvider", "KeepaliveProvider", function (IdleProvider, KeepaliveProvider) {
             // userIdleTime: how many sec until user is 'IDLE'
             // idleTimeout: how many sec after idle to stop track the user, 0: keep track
             // idleKeepalive: keepalive interval in sec
 
-            IdleProvider.idle(ENV.userIdleTime || 30);
-            IdleProvider.timeout(ENV.idleTimeout || 0);
-            KeepaliveProvider.interval(ENV.idleKeepalive || 2);
+            IdleProvider.idle(30);
+            IdleProvider.timeout(0);
+            KeepaliveProvider.interval(2);
         }])
         .run(["PresenceService", "Idle", function (PresenceService, Idle) {
+            'ngInject';
                 PresenceService.addCurrentUserListeners();
                 Idle.watch();
             }]
@@ -15900,7 +15901,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
             'znk.infra.svgIcon',
             'znk.infra.mailSender',
             'znk.infra.exerciseUtility',
-            // 'znk.infra.calls',
+            'znk.infra.calls',
             'znk.infra.activePanel'
         ])
         .config([

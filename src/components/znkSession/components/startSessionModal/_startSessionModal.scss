@@ -49,6 +49,7 @@ start-session-modal{
             }
             .sub-title {
                 @include text-style(16px, $fcColor9, Lato, $regularFontWeight, null, null, null, center);
+                text-align: center;
             }
             .subjects-btns{
                 display: flex;
