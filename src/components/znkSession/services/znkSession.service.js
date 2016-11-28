@@ -20,8 +20,8 @@
                     return {
                         appName: ENV.studentAppName.split('_')[0],
                         sessionGUID: UtilitySrv.general.createGuid(),
-                        educatorUID: userAuth.uid,
-                        studentUID: StudentContextSrv.getCurrUid(),
+                        educatorUID: isTeacherApp ? userAuth.uid : TeacherContextSrv.getCurrUid(),
+                        studentUID: isTeacherApp ? StudentContextSrv.getCurrUid() : userAuth.uid,
                         extendTime: 0,
                         startTime: getRoundTime(),
                         duration: null,
@@ -178,6 +178,8 @@
                                 var isSessionData = !(angular.equals(sessionData, {}));
                                 if (liveSessionsStatus === SessionsStatusEnum.ACTIVE.enum && !isSessionData) {
                                     sessionSrvApi.loadLiveSessionData();
+                                } else {
+                                    activePanelCb(sessionData);
                                 }
                                 if (newLiveSessionGUID.guid && !isTeacherApp) {
                                     $log.debug('There is an active live session');
@@ -190,6 +192,7 @@
                 sessionSrvApi.endSession = function () {
                     $log.debug('Live session has ended.');
                     var endTime = getRoundTime();
+                    currLiveSessionsGUID = {};
                     sessionData.status = liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
                     sessionData.duration = endTime - sessionData.startTime;
                     destroyCheckDurationInterval();

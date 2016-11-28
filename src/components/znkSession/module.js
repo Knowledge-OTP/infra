@@ -15,7 +15,7 @@
             'znk.infra.svgIcon',
             'znk.infra.mailSender',
             'znk.infra.exerciseUtility',
-            'znk.infra.calls',
+            // 'znk.infra.calls',
             'znk.infra.activePanel'
         ])
         .config([

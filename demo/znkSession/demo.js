@@ -13,7 +13,9 @@
             localStorage.setItem('studentPath', '/act_app');
             localStorage.setItem('teacherPath', '/act_dashboard');
         })
-        .config(function (SessionSrvProvider, znkAnalyticsSrvProvider, CallsUiSrvProvider) {
+        .config(function (PresenceServiceProvider, SessionSrvProvider, znkAnalyticsSrvProvider, CallsUiSrvProvider) {
+
+            PresenceServiceProvider.setAuthServiceName('AuthService');
 
             SessionSrvProvider.setSessionSubjects( [0, 5] );
 
@@ -30,7 +32,7 @@
             var calleeNameFunc = function ($q) {
                 'ngInject';
                 return function () {
-                    return $q.when('Student');
+                    return $q.when('Ofir Student');
 
                 }
             };
@@ -50,9 +52,14 @@
             $delegate.fbGlobalEndPoint = '//znk-dev.firebaseio.com/';
             $delegate.backendEndpoint = '//znk-web-backend-dev.azurewebsites.net/';
             $delegate.teachworksDataUrl = 'teachworks';
+            $delegate.userIdleTime = 30;
+            $delegate.idleTimeout = 0;
+            $delegate.idleKeepalive = 2;
+            $delegate.plivoUsername = "ZinkerzDev160731091034";
+            $delegate.plivoPassword = "zinkerz$9999";
 
             $delegate.liveSession = {
-                sessionLength: 55,    // in minutes
+                sessionLength: 45,    // in minutes
                 sessionExtendTime: 15, // in minutes
                 sessionEndAlertTime: 5 // in minutes
             };
@@ -74,13 +81,6 @@
                 return { uid: '56e66fe6-bc5e-4e60-8b1d-8e87f44e96d9' };
             };
             return $delegate;
-        })
-        .run(function ($rootScope) {
-            'ngInject';
-
-            $rootScope.offline = { isOffline: true, receiverId: 1 };
-            $rootScope.available = { isOffline: false, receiverId: 'c47f4f57-521c-4832-b505-c0093737ceff' };
-            $rootScope.ended = { isOffline: false, receiverId: 'c47f4f57-521c-4832-b505-c0093737ceff' };
         })
         .controller('Main', function (SessionSrv, ActivePanelSrv) {
             'ngInject';

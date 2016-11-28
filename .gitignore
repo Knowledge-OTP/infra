@@ -7,3 +7,6 @@
 .DS_Store
 /tmpLocalization/
 /.history
+
+/src/components/calls/config/webcallsConfig.js
+/src/components/presence/module.js

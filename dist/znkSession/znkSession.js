@@ -44,19 +44,11 @@
                 'ngInject';
 
                 var vm = this;
-                var receiverId;
-                var currentUserPresenceStatus;
-                var initialUid = StudentContextSrv.getCurrUid();
-                function listenToStudentContextChange(prevUid, uid) {
-                    receiverId = uid;
-                    var currentUserStatus = PresenceService.getCurrentUserStatus(receiverId);
-                    currentUserStatus.then(function (res) {
-                        currentUserPresenceStatus = res;
-                        vm.isOffline = currentUserPresenceStatus === PresenceService.userStatus.OFFLINE;
-                    }).catch(function (err) {
-                        $log.debug('error caught at listenToStudentContextChange', err);
-                    });
-                    $log.debug('student context changed: ', receiverId);
+                var studentUid = StudentContextSrv.getCurrUid();
+
+                function trackStudentPresenceCB(userId, newStatus) {
+                    console.log('newStatus: ',newStatus );
+                    vm.isOffline = newStatus === PresenceService.userStatus.OFFLINE;
                 }
 
                 this.$onInit = function() {
@@ -65,11 +57,7 @@
                     vm.endSession = SessionSrv.endSession;
                     vm.isOffline = true;
 
-                    if (initialUid) {
-                        listenToStudentContextChange(null, initialUid);
-                    }
-
-                    StudentContextSrv.registerToStudentContextChange(listenToStudentContextChange);
+                    PresenceService.startTrackUserPresence(studentUid, trackStudentPresenceCB.bind(null, studentUid));
 
                     SessionSrv.getLiveSessionGUID().then(function (currSessionGuid) {
                         vm.activeSessionGuid = currSessionGuid;
@@ -346,6 +334,8 @@
                                 var isSessionData = !(angular.equals(sessionData, {}));
                                 if (liveSessionsStatus === SessionsStatusEnum.ACTIVE.enum && !isSessionData) {
                                     sessionSrvApi.loadLiveSessionData();
+                                } else {
+                                    activePanelCb(sessionData);
                                 }
                                 if (newLiveSessionGUID.guid && !isTeacherApp) {
                                     $log.debug('There is an active live session');
@@ -358,6 +348,7 @@
                 sessionSrvApi.endSession = function () {
                     $log.debug('Live session has ended.');
                     var endTime = getRoundTime();
+                    currLiveSessionsGUID = {};
                     sessionData.status = liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
                     sessionData.duration = endTime - sessionData.startTime;
                     destroyCheckDurationInterval();

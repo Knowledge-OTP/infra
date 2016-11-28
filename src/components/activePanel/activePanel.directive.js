@@ -1,6 +1,6 @@
-'use strict';
 
 (function (angular) {
+    'use strict';
 
     angular.module('znk.infra.activePanel')
         .directive('activePanel', function ($q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,

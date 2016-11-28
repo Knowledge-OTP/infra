@@ -859,7 +859,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                                 _summary.duration = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].duration || 0;
                                 _summary.totalAnswered = _summary.correctAnswersNum + _summary.wrongAnswersNum;
                             }
-                            
+
                             if (!moduleSummary.overAll) {
                                 moduleSummary.overAll = newOverAll();
                             }
@@ -5172,7 +5172,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
     angular.module('znk.infra.exerciseUtility').factory('ExerciseUtilitySrv',
         function () {
             'ngInject';
-            
+
             var ExerciseUtilitySrv = {};
 
             return ExerciseUtilitySrv;
@@ -5199,7 +5199,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
                 if(!angular.isString(str) || !str.length){
                     return '';
                 }
-                
+
                 return str[0].toUpperCase() + str.substr(1);
             };
         }
@@ -6318,7 +6318,7 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function($template
 
 (function (angular) {
     'use strict';
-    
+
     angular.module('znk.infra.personalization')
         .service('PersonalizationSrv',
             ["StorageRevSrv", "$log", "$q", function (StorageRevSrv, $log, $q) {
@@ -6724,21 +6724,21 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
     angular.module('znk.infra.presence', [
         'ngIdle',
         'znk.infra.auth'
-    ]);
-        // .config(function (IdleProvider, KeepaliveProvider) {
-        //     // userIdleTime: how many sec until user is 'IDLE'
-        //     // idleTimeout: how many sec after idle to stop track the user, 0: keep track
-        //     // idleKeepalive: keepalive interval in sec
-        //
-        //     IdleProvider.idle(30);
-        //     IdleProvider.timeout(0);
-        //     KeepaliveProvider.interval(2);
-        // })
-        // .run(function (PresenceService, Idle) {
-        //         PresenceService.addCurrentUserListeners();
-        //         Idle.watch();
-        //     }
-        // );
+    ])
+        .config(["IdleProvider", "KeepaliveProvider", function (IdleProvider, KeepaliveProvider) {
+            // userIdleTime: how many sec until user is 'IDLE'
+            // idleTimeout: how many sec after idle to stop track the user, 0: keep track
+            // idleKeepalive: keepalive interval in sec
+
+            IdleProvider.idle(30);
+            IdleProvider.timeout(0);
+            KeepaliveProvider.interval(2);
+        }])
+        .run(["PresenceService", "Idle", function (PresenceService, Idle) {
+                PresenceService.addCurrentUserListeners();
+                Idle.watch();
+            }]
+        );
 })(angular);
 
 'use strict';
@@ -7099,7 +7099,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
 (function(){
     'use strict';
-    
+
     angular.module('znk.infra.screenSharing').run(
         ["ScreenSharingEventsSrv", function(ScreenSharingEventsSrv){
             'ngInject';
@@ -9091,7 +9091,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.teachers', [
-        
+
     ]);
 })(angular);
 
@@ -12212,7 +12212,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             questionTypeGetterFn = typeGetterFn;
         };
 
-        var answersFormaterObjMap = {};        
+        var answersFormaterObjMap = {};
         this.setAnswersFormatValidtors = function (_answersFormaterObjMap) {
             answersFormaterObjMap = _answersFormaterObjMap;
         };
@@ -12236,7 +12236,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     return questionTypeGetterFn(question);
                 };
 
-                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {   
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {
                     if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
                         $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
                         return;
@@ -12244,7 +12244,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                    var answersFormaterArr = answersFormaterObjMap[answerTypeId];
 
-                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
+                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer
                    if (angular.isUndefined(userAnswer) ||
                        !angular.isArray(answersFormaterArr) ||
                        !answersFormaterArr.length) {
@@ -12254,10 +12254,10 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                     var answersFormaterArrLength = answersFormaterArr.length;
 
-                    var answerValueBool, currentFormatter, functionGetter;                     
+                    var answerValueBool, currentFormatter, functionGetter;
                     for (var i = 0; i < answersFormaterArrLength; i++) {
                         currentFormatter = answersFormaterArr[i];
-                       
+
                         if (angular.isFunction(currentFormatter)) {
                             try {
                                  functionGetter = $injector.invoke(currentFormatter);
@@ -13145,12 +13145,12 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             var userAnswer = question.__questionStatus.userAnswer;
                             var answerTypeId = question.answerTypeId;
                             var currIndex = index || question.__questionStatus.index;
-                            
-                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function() {               
-                                setPagerItemAnswerClass(currIndex, question); 
+
+                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function() {
+                                setPagerItemAnswerClass(currIndex, question);
                             }, function() {
                                  var pagerItemElement = getPagerItemByIndex(currIndex);
-                                 pagerItemElement.removeClass('neutral correct wrong');  
+                                 pagerItemElement.removeClass('neutral correct wrong');
                             }, question);
                         }
 
@@ -13293,7 +13293,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     angular.module('znk.infra.znkExercise').service('ZnkExerciseDrawSrv',
         function () {
             //'ngInject';
-            
+
             var self = this;
 
             /** example of self.canvasContextManager
@@ -13306,7 +13306,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
              *                question: CanvasContextObject,
              *                answer: CanvasContextObject
              *             }
-             *  } 
+             *  }
              *
              *  the names (such as 'question' or 'answer') are set according to the attribute name 'canvas-name' of znkExerciseDrawContainer directive
              */
@@ -14145,7 +14145,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     var _fbChildCallbackWrapper = function(canvasContextName, fbCallbackNum) {
 
                         function _fbChildChanged(snapShot) {
-                            var canvasToChange = _getCanvasContextByContextName(canvasContextName); 
+                            var canvasToChange = _getCanvasContextByContextName(canvasContextName);
                             var coordsStr = snapShot.key();
                             var color = snapShot.val();
 
@@ -14207,7 +14207,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
 
                     EventsManager.prototype.killFbListeners = function () {
-                        
+
                         var self = this;
 
                         var canvasContextNames = _getCanvasContextNamesOfQuestion(self._fbLastRegisteredQuestionId);
@@ -14226,7 +14226,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     EventsManager.prototype.cleanQuestionListeners = function () {
                         this.killMouseEvents();
                         this.killFbListeners();
-                        this.killHoverEvents(); 
+                        this.killHoverEvents();
                     };
 
                     EventsManager.prototype.registerDimensionsListener = function(dimensionsRef, onValueCb) {
@@ -14271,7 +14271,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     }
 
                     function _setContextOnHover(elementToHoverOn, canvasOfElement, canvasContextName) {
-                        
+
                         var onHoverCb = function () {
                             if (currQuestion) {
                                 drawer.stopDrawing();
@@ -14337,7 +14337,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 }
                                 // compare them and set the canvas dimensions to be the larger between the two
                                 // also save the new maxDimensions to FB
-                                var finalDimensions = _compareFbDimensionsWithElementDimensions(maxDimensions);            
+                                var finalDimensions = _compareFbDimensionsWithElementDimensions(maxDimensions);
                                 canvasDomContainerElement[0].setAttribute('height', finalDimensions.height);
                                 canvasDomContainerElement[0].setAttribute('width', finalDimensions.width);
                                 canvasDomContainerElement.css('position', 'absolute');
@@ -14366,7 +14366,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         var canvasDomContainerElement = canvasContainerElement.children();
                         canvasDomElement = canvasDomContainerElement[0];
 
-                        canvasContext = canvasDomElement.getContext("2d"); 
+                        canvasContext = canvasDomElement.getContext("2d");
 
                         // this is the attribute name passed to znkExerciseDrawContainer directive
                         var canvasContextName = elementToCover.attr('canvas-name');
@@ -14375,7 +14375,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         _setContextOnHover(elementToCover, canvasDomElement, canvasContextName);
 
                         _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement, canvasContextName, question.id);
-                        
+
 
                         elementToCover.append(canvasContainerElement);
                         $compile(canvasContainerElement)(scope);
@@ -14389,7 +14389,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     }
 
 
-                    
+
 
                     scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex, oldIndex, _currQuestion) {
                         if (angular.isUndefined(scope.d.drawMode)) {
@@ -15929,19 +15929,11 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                 'ngInject';
 
                 var vm = this;
-                var receiverId;
-                var currentUserPresenceStatus;
-                var initialUid = StudentContextSrv.getCurrUid();
-                function listenToStudentContextChange(prevUid, uid) {
-                    receiverId = uid;
-                    var currentUserStatus = PresenceService.getCurrentUserStatus(receiverId);
-                    currentUserStatus.then(function (res) {
-                        currentUserPresenceStatus = res;
-                        vm.isOffline = currentUserPresenceStatus === PresenceService.userStatus.OFFLINE;
-                    }).catch(function (err) {
-                        $log.debug('error caught at listenToStudentContextChange', err);
-                    });
-                    $log.debug('student context changed: ', receiverId);
+                var studentUid = StudentContextSrv.getCurrUid();
+
+                function trackStudentPresenceCB(userId, newStatus) {
+                    console.log('newStatus: ',newStatus );
+                    vm.isOffline = newStatus === PresenceService.userStatus.OFFLINE;
                 }
 
                 this.$onInit = function() {
@@ -15950,11 +15942,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                     vm.endSession = SessionSrv.endSession;
                     vm.isOffline = true;
 
-                    if (initialUid) {
-                        listenToStudentContextChange(null, initialUid);
-                    }
-
-                    StudentContextSrv.registerToStudentContextChange(listenToStudentContextChange);
+                    PresenceService.startTrackUserPresence(studentUid, trackStudentPresenceCB.bind(null, studentUid));
 
                     SessionSrv.getLiveSessionGUID().then(function (currSessionGuid) {
                         vm.activeSessionGuid = currSessionGuid;
@@ -16231,6 +16219,8 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                                 var isSessionData = !(angular.equals(sessionData, {}));
                                 if (liveSessionsStatus === SessionsStatusEnum.ACTIVE.enum && !isSessionData) {
                                     sessionSrvApi.loadLiveSessionData();
+                                } else {
+                                    activePanelCb(sessionData);
                                 }
                                 if (newLiveSessionGUID.guid && !isTeacherApp) {
                                     $log.debug('There is an active live session');
@@ -16243,6 +16233,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                 sessionSrvApi.endSession = function () {
                     $log.debug('Live session has ended.');
                     var endTime = getRoundTime();
+                    currLiveSessionsGUID = {};
                     sessionData.status = liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
                     sessionData.duration = endTime - sessionData.startTime;
                     destroyCheckDurationInterval();

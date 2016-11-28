@@ -2,11 +2,11 @@
     'use strict';
 
     angular.module('znk.infra.calls')
-        .config(function (WebcallSrvProvider, ENV) {
+        .config(function (WebcallSrvProvider) {
             'ngInject';
             WebcallSrvProvider.setCallCred({
-                username: ENV.plivoUsername,
-                password: ENV.plivoPassword
+            username: 'ZinkerzDev160731091034',     // ENV.plivoUsername,
+            password: 'zinkerz$9999'     // ENV.plivoPassword
             });
         });
 })(angular);
