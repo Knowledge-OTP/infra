@@ -5,19 +5,19 @@
         'ngIdle',
         'znk.infra.auth'
     ])
-        .config(function (IdleProvider, KeepaliveProvider) {
+        .config(["IdleProvider", "KeepaliveProvider", "ENV", function (IdleProvider, KeepaliveProvider, ENV) {
             // userIdleTime: how many sec until user is 'IDLE'
             // idleTimeout: how many sec after idle to stop track the user, 0: keep track
             // idleKeepalive: keepalive interval in sec
 
-            IdleProvider.idle(30);
-            IdleProvider.timeout(0);
-            KeepaliveProvider.interval(2);
-        })
-        .run(function (PresenceService, Idle) {
+            IdleProvider.idle(ENV.userIdleTime || 30);
+            IdleProvider.timeout(ENV.idleTimeout || 0);
+            KeepaliveProvider.interval(ENV.idleKeepalive || 2);
+        }])
+        .run(["PresenceService", "Idle", function (PresenceService, Idle) {
                 PresenceService.addCurrentUserListeners();
                 Idle.watch();
-            }
+            }]
         );
 })(angular);
 

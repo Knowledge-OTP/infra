@@ -47,7 +47,6 @@
                 var studentUid = StudentContextSrv.getCurrUid();
 
                 function trackStudentPresenceCB(userId, newStatus) {
-                    console.log('newStatus: ',newStatus );
                     vm.isOffline = newStatus === PresenceService.userStatus.OFFLINE;
                 }
 
@@ -277,13 +276,20 @@
                 var globalStorageProm = InfraConfigSrv.getGlobalStorage();
                 var sessionData = {};
 
+                $rootScope.$watch(function () { return sessionData; },
+                    function (newSessionData) {
+                        activePanelCb(newSessionData);
+                        if (newSessionData.status === SessionsStatusEnum.ENDED.enum) {
+                            PopUpSrv.info('Live session has ended');
+                        }
+                    }, true);
+
                 sessionSrvApi.startSession = function (sessionSubject) {
                     sessionData = sessionInit(sessionSubject);
                     currLiveSessionsGUID = { guid: sessionData.sessionGUID };
                     liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
                     checkSessionDuration();
                     saveSession().then(function (res) {
-                        activePanelCb(sessionData);
                         $log.debug('Live Session Saved: ', res);
                     }).catch(function (err) {
                         $log.error('Error saving live session to firebase: ', err);
@@ -316,10 +322,9 @@
                     $log.debug('Load Live Session Data, session GUID: ', currLiveSessionsGUID);
                     globalStorageProm.then(function (globalStorage) {
                         var sessionsPath = getLiveSessionPath('sessions');
-                        globalStorage.get(sessionsPath).then(function (currSessionData) {
+                        globalStorage.getAndBindToServer(sessionsPath).then(function (currSessionData) {
                             sessionData = currSessionData;
                             $log.debug('loadLiveSessionData, sessionData: ', sessionData);
-                             activePanelCb(sessionData);
                         });
                     });
                 };
@@ -334,8 +339,6 @@
                                 var isSessionData = !(angular.equals(sessionData, {}));
                                 if (liveSessionsStatus === SessionsStatusEnum.ACTIVE.enum && !isSessionData) {
                                     sessionSrvApi.loadLiveSessionData();
-                                } else {
-                                    activePanelCb(sessionData);
                                 }
                                 if (newLiveSessionGUID.guid && !isTeacherApp) {
                                     $log.debug('There is an active live session');
@@ -348,14 +351,11 @@
                 sessionSrvApi.endSession = function () {
                     $log.debug('Live session has ended.');
                     var endTime = getRoundTime();
-                    currLiveSessionsGUID = {};
                     sessionData.status = liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
                     sessionData.duration = endTime - sessionData.startTime;
                     destroyCheckDurationInterval();
-                    activePanelCb(sessionData);
                     updateSession().then(function (res) {
                         $log.debug('Live Session Updated in firebase: ', res);
-                        PopUpSrv.info('Live session has ended');
                     }).catch(function (err) {
                         $log.error('Error updating live session to firebase: ', err);
                     });
