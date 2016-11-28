@@ -14,7 +14,6 @@
                 var studentUid = StudentContextSrv.getCurrUid();
 
                 function trackStudentPresenceCB(userId, newStatus) {
-                    console.log('newStatus: ', newStatus);
                     vm.isOffline = newStatus === PresenceService.userStatus.OFFLINE;
                 }
 

@@ -41,7 +41,7 @@
                     var listenToStudentOrTeacherContextChange = function (prevUid, uid) {
                         receiverId = uid;
                         var currentUserStatus = PresenceService.getCurrentUserStatus(receiverId);
-                        var CalleeName = CallsUiSrv.getCalleeName(uid);
+                        var CalleeName = CallsUiSrv.getCalleeName(receiverId);
                         var promsArr = [
                             currentUserStatus,
                             CalleeName
@@ -49,21 +49,17 @@
                         $q.all(promsArr).then(function (res) {
                             scope.d.currentUserPresenceStatus = res[0];
                             isOffline = scope.d.currentUserPresenceStatus === PresenceService.userStatus.OFFLINE;
-                            scope.d.calleeName = (res[1]) ? (res[1]) : 'Student';
+                            scope.d.calleeName = (res[1]) ? (res[1]) : '';
                             scope.d.callBtnModel = {
                                 isOffline: isOffline,
-                                receiverId: uid
+                                receiverId: uid,
+                                toggleAutoCall: toggleAutoCallEnum.DISABLE.enum
                             };
                         }).catch(function (err) {
                             $log.debug('error caught at listenToStudentOrTeacherContextChange', err);
                         });
                         $log.debug('student or teacher context changed: ', receiverId);
                     };
-
-                    var initialUid = StudentContextSrv.getCurrUid();
-                    if (initialUid) {
-                        listenToStudentOrTeacherContextChange(null, initialUid);
-                    }
 
                     if (ENV.appContext.toLowerCase() === 'dashboard') {
                         isTeacher = true;
@@ -154,8 +150,12 @@
                             if (sessionData.status === SessionsStatusEnum.ACTIVE.enum) {
                                 liveSessionStatus = scope.d.states.LIVE_SESSION;
                                 liveSessionDuration = getRoundTime() - sessionData.startTime;
+
+                                var initialUid = isTeacher ? sessionData.studentUID : sessionData.educatorUID;
+                                listenToStudentOrTeacherContextChange(null, initialUid);
                             } else {
-                                liveSessionStatus = 0;
+                                liveSessionStatus = scope.d.states.NONE;
+                                scope.d.callBtnModel = { toggleAutoCall: toggleAutoCallEnum.DISABLE.enum };
                             }
                             updateStatus();
                         }
