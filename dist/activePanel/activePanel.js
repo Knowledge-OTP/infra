@@ -169,7 +169,6 @@
                                 listenToStudentOrTeacherContextChange(null, initialUid);
                             } else {
                                 liveSessionStatus = scope.d.states.NONE;
-                                scope.d.callBtnModel = { toggleAutoCall: toggleAutoCallEnum.DISABLE.enum };
                             }
                             updateStatus();
                         }

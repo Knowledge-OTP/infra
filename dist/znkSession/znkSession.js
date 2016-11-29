@@ -39,31 +39,34 @@
             bindings: {},
             templateUrl: 'components/znkSession/components/sessionBtn/sessionBtn.template.html',
             controllerAs: 'vm',
-            controller: ["$log", "$scope", "$mdDialog", "SessionSrv", "StudentContextSrv", "PresenceService", function ($log, $scope, $mdDialog, SessionSrv, StudentContextSrv,
-                                  PresenceService) {
+            controller: ["$log", "$scope", "$mdDialog", "SessionSrv", "StudentContextSrv", "PresenceService", "ENV", function ($log, $scope, $mdDialog, SessionSrv, StudentContextSrv,
+                                  PresenceService, ENV) {
                 'ngInject';
 
                 var vm = this;
-                var studentUid = StudentContextSrv.getCurrUid();
+                var isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
 
                 function trackStudentPresenceCB(userId, newStatus) {
                     vm.isOffline = newStatus === PresenceService.userStatus.OFFLINE;
                 }
 
                 this.$onInit = function() {
-                    vm.activeSessionGuid = {};
+                    vm.sessionData = {};
                     vm.isLiveSessionActive = false;
                     vm.endSession = SessionSrv.endSession;
                     vm.isOffline = true;
 
-                    PresenceService.startTrackUserPresence(studentUid, trackStudentPresenceCB.bind(null, studentUid));
+                    if (!isTeacher){
+                        var studentUid = StudentContextSrv.getCurrUid();
+                        PresenceService.startTrackUserPresence(studentUid, trackStudentPresenceCB.bind(null, studentUid));
+                    }
 
-                    SessionSrv.getLiveSessionGUID().then(function (currSessionGuid) {
-                        vm.activeSessionGuid = currSessionGuid;
+                    SessionSrv.loadLiveSessionData().then(function (currSessionData) {
+                        vm.sessionData = currSessionData;
                     });
 
-                    $scope.$watch('vm.activeSessionGuid', function (newLiveSessionGUID) {
-                        vm.isLiveSessionActive = newLiveSessionGUID.guid ? true : false;
+                    $scope.$watch('vm.sessionData', function (newSessionData) {
+                        vm.isLiveSessionActive = newSessionData.sessionGUID ? true : false;
                     }, true);
 
                     vm.showSessionModal = function () {
@@ -175,8 +178,8 @@
                     return {
                         appName: ENV.studentAppName.split('_')[0],
                         sessionGUID: UtilitySrv.general.createGuid(),
-                        educatorUID: userAuth.uid,
-                        studentUID: StudentContextSrv.getCurrUid(),
+                        educatorUID: isTeacher ? userAuth.uid : TeacherContextSrv.getCurrUid(),
+                        studentUID: isTeacher ? StudentContextSrv.getCurrUid() : userAuth.uid,
                         extendTime: 0,
                         startTime: getRoundTime(),
                         duration: null,
@@ -190,11 +193,11 @@
                         return;
                     }
                     var path;
-                    var educatorUID = isTeacherApp ? userAuth.uid : TeacherContextSrv.getCurrUid();
-                    var studentUID = isTeacherApp ? StudentContextSrv.getCurrUid() : userAuth.uid;
+                    var educatorUID = isTeacher ? userAuth.uid : TeacherContextSrv.getCurrUid();
+                    var studentUID = isTeacher ? StudentContextSrv.getCurrUid() : userAuth.uid;
                     switch (param) {
                         case 'sessions':
-                            path = ENV.studentAppName + '/liveSession/' + currLiveSessionsGUID.guid;
+                            path = ENV.studentAppName + '/liveSession/' + sessionData.sessionGUID;
                             return path;
                         case 'student':
                             path = ENV.studentAppName + '/users/$$uid/liveSession';
@@ -268,25 +271,28 @@
                 var checkDurationInterval;
                 var liveSessionDuration;
                 var liveSessionsStatus;
-                var currLiveSessionsGUID;
                 var isSessionAlertShown = false;
                 var sessionSrvApi = {};
-                var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';
+                var isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
                 var userAuth = AuthService.getAuth();
                 var globalStorageProm = InfraConfigSrv.getGlobalStorage();
                 var sessionData = {};
 
-                $rootScope.$watch(function () { return sessionData; },
-                    function (newSessionData) {
+                $rootScope.$watch('sessionData', function (newSessionData) {
+                    if (newSessionData && !angular.equals(newSessionData, {})) {
                         activePanelCb(newSessionData);
                         if (newSessionData.status === SessionsStatusEnum.ENDED.enum) {
                             PopUpSrv.info('Live session has ended');
                         }
-                    }, true);
+                        if (newSessionData.status === SessionsStatusEnum.ACTIVE.enum && !isTeacher) {
+                            $log.debug('There is an active live session');
+                            PopUpSrv.info('You joined a live Session');
+                        }
+                    }
+                }, true);
 
                 sessionSrvApi.startSession = function (sessionSubject) {
                     sessionData = sessionInit(sessionSubject);
-                    currLiveSessionsGUID = { guid: sessionData.sessionGUID };
                     liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
                     checkSessionDuration();
                     saveSession().then(function (res) {
@@ -311,15 +317,15 @@
                 };
 
                 sessionSrvApi.getLiveSessionGUID = function () {
-                    var activeSessionPath  = isTeacherApp ? getLiveSessionPath('educator') : getLiveSessionPath('student');
+                    var activeSessionPath  = isTeacher ? getLiveSessionPath('educator') : getLiveSessionPath('student');
                     activeSessionPath += '/active';
                     return globalStorageProm.then(function (globalStorage) {
-                        return globalStorage.getAndBindToServer(activeSessionPath);
+                        return globalStorage.get(activeSessionPath);
                     });
                 };
 
                 sessionSrvApi.loadLiveSessionData = function () {
-                    $log.debug('Load Live Session Data, session GUID: ', currLiveSessionsGUID);
+                    $log.debug('Load Live Session Data, session GUID: ', sessionData.sessionGUID);
                     globalStorageProm.then(function (globalStorage) {
                         var sessionsPath = getLiveSessionPath('sessions');
                         globalStorage.getAndBindToServer(sessionsPath).then(function (currSessionData) {
@@ -331,20 +337,13 @@
 
                 sessionSrvApi.listenToLiveSessionsStatus = function () {
                     return sessionSrvApi.getLiveSessionGUID().then(function (sessionGUID) {
-                        currLiveSessionsGUID = sessionGUID;
-                        $rootScope.$watch(function () { return currLiveSessionsGUID; },
-                            function (newLiveSessionGUID) {
-                                liveSessionsStatus = newLiveSessionGUID.guid ?
-                                    SessionsStatusEnum.ACTIVE.enum : SessionsStatusEnum.ENDED.enum;
-                                var isSessionData = !(angular.equals(sessionData, {}));
-                                if (liveSessionsStatus === SessionsStatusEnum.ACTIVE.enum && !isSessionData) {
-                                    sessionSrvApi.loadLiveSessionData();
-                                }
-                                if (newLiveSessionGUID.guid && !isTeacherApp) {
-                                    $log.debug('There is an active live session');
-                                    PopUpSrv.info('You joined a live Session');
-                                }
-                            }, true);
+                        sessionData.sessionGUID = sessionGUID.guid;
+                        liveSessionsStatus = sessionGUID.guid ?
+                            SessionsStatusEnum.ACTIVE.enum : SessionsStatusEnum.ENDED.enum;
+                        var isSessionData = !(angular.equals(sessionData, {}));
+                        if (liveSessionsStatus === SessionsStatusEnum.ACTIVE.enum && !isSessionData) {
+                            sessionSrvApi.loadLiveSessionData();
+                        }
                     });
                 };
 

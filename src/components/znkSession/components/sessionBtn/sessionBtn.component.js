@@ -7,30 +7,33 @@
             templateUrl: 'components/znkSession/components/sessionBtn/sessionBtn.template.html',
             controllerAs: 'vm',
             controller: function ($log, $scope, $mdDialog, SessionSrv, StudentContextSrv,
-                                  PresenceService) {
+                                  PresenceService, ENV) {
                 'ngInject';
 
                 var vm = this;
-                var studentUid = StudentContextSrv.getCurrUid();
+                var isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
 
                 function trackStudentPresenceCB(userId, newStatus) {
                     vm.isOffline = newStatus === PresenceService.userStatus.OFFLINE;
                 }
 
                 this.$onInit = function() {
-                    vm.activeSessionGuid = {};
+                    vm.sessionData = {};
                     vm.isLiveSessionActive = false;
                     vm.endSession = SessionSrv.endSession;
                     vm.isOffline = true;
 
-                    PresenceService.startTrackUserPresence(studentUid, trackStudentPresenceCB.bind(null, studentUid));
+                    if (!isTeacher){
+                        var studentUid = StudentContextSrv.getCurrUid();
+                        PresenceService.startTrackUserPresence(studentUid, trackStudentPresenceCB.bind(null, studentUid));
+                    }
 
-                    SessionSrv.getLiveSessionGUID().then(function (currSessionGuid) {
-                        vm.activeSessionGuid = currSessionGuid;
+                    SessionSrv.loadLiveSessionData().then(function (currSessionData) {
+                        vm.sessionData = currSessionData;
                     });
 
-                    $scope.$watch('vm.activeSessionGuid', function (newLiveSessionGUID) {
-                        vm.isLiveSessionActive = newLiveSessionGUID.guid ? true : false;
+                    $scope.$watch('vm.sessionData', function (newSessionData) {
+                        vm.isLiveSessionActive = newSessionData.sessionGUID ? true : false;
                     }, true);
 
                     vm.showSessionModal = function () {
