@@ -132,8 +132,10 @@ describe('testing directive "znkExercisePagerDrv":', function () {
         'function that returns true so should have correct class', function () {
         setAnswersFormatValidtors({
             7: [
-                function (userAnswer) {
-                    return userAnswer === 2; // a function that returns true for valid answer
+                function ($log) {
+                    return function(userAnswer) {
+                         return userAnswer === 2; // a function that returns true for valid answer
+                    }
                 }
             ]
         });    
@@ -151,8 +153,10 @@ describe('testing directive "znkExercisePagerDrv":', function () {
         'function that returns false so should not have correct class', function () {
         setAnswersFormatValidtors({
             7: [
-                function (userAnswer) {
-                    return userAnswer > 9; // a function that returns false for valid answer
+                function ($log) {
+                    return function(userAnswer) {
+                        return userAnswer > 9; // a function that returns false for valid answer
+                    }
                 }
             ]
         });   
@@ -170,8 +174,10 @@ describe('testing directive "znkExercisePagerDrv":', function () {
         'function that returns false and second formmater that return true so should have correct class', function () {
         setAnswersFormatValidtors({
             7: [
-                function (userAnswer) {
-                    return userAnswer === 0; // a function that returns false for valid answer
+                function ($log) {
+                    return function(userAnswer) {
+                        return userAnswer === 0; // a function that returns false for valid answer
+                    }
                 },
                 /\d/g // a regex that returns true
             ]
@@ -190,8 +196,10 @@ describe('testing directive "znkExercisePagerDrv":', function () {
         'function that returns false and a second formmater that returns false so should not have correct class', function () {
         setAnswersFormatValidtors({
             7: [
-                function (userAnswer) {
-                    return userAnswer > 9; // a function that returns false for valid answer
+                function ($log) {
+                    return function(userAnswer) {
+                       return userAnswer > 9; // a function that returns false for valid answer
+                    }
                 },
                  /\D/g // a regex that returns false
             ]

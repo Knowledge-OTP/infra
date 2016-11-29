@@ -4100,7 +4100,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                         }
                         var allScoresPerSubject = {};
                         angular.forEach(allScoresOrScoreForSubject, function (scoresForSubject, subjectId) {
-                            allScoresPerSubject[subjectId] = scoresForSubject.length ? scoresForSubject.map(convertObjScoreToRoundScore) : {};
+                            allScoresPerSubject[subjectId] = scoresForSubject.length ? scoresForSubject.map(convertObjScoreToRoundScore) : [];
                         });
 
                         return allScoresPerSubject;
@@ -12205,8 +12205,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
         };
 
         this.$get = [
-            '$log','$q',
-            function ($log, $q) {
+            '$log', '$q', '$injector',
+            function ($log, $q, $injector) {
                 var QuestionTypesSrv = {};
 
                 QuestionTypesSrv.getQuestionHtmlTemplate = function getQuestionHtmlTemplate(question) {
@@ -12241,12 +12241,17 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                     var answersFormaterArrLength = answersFormaterArr.length;
 
-                    var answerValueBool, currentFormatter;                     
+                    var answerValueBool, currentFormatter, functionGetter;                     
                     for (var i = 0; i < answersFormaterArrLength; i++) {
                         currentFormatter = answersFormaterArr[i];
-
+                       
                         if (angular.isFunction(currentFormatter)) {
-                            answerValueBool = currentFormatter(userAnswer, question); // question is optional
+                            try {
+                                 functionGetter = $injector.invoke(currentFormatter);
+                            } catch (e) {
+                                 $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: $injector.invoke faild! e: ' + e);
+                            }
+                            answerValueBool = functionGetter(userAnswer, question); // question is optional
                         }
 
                         if (currentFormatter instanceof RegExp) { // currentFormatter should be a regex pattren
@@ -12376,6 +12381,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
  *  settings:
  *      allowedTimeForExercise: in milliseconds
  *      onDone
+ *      onExit: invoke when $destroy has been called
  *      onQuestionAnswered
  *      wrapperCls
  *      toolsToHide
@@ -12412,8 +12418,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExercise', [
-        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ZnkExerciseUtilitySrv',
-        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout, ZnkExerciseUtilitySrv) {
+        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ZnkExerciseUtilitySrv', 'QuestionTypesSrv',
+        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout, ZnkExerciseUtilitySrv, QuestionTypesSrv) {
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExerciseDrv.html',
                 restrict: 'E',
@@ -12438,6 +12444,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         pre: function (scope, element, attrs, ctrls) {
                             var defaultSettings = {
                                 onDone: angular.noop,
+                                onExit: angular.noop,
                                 onQuestionAnswered: angular.noop,
                                 viewMode: ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
                                 onSlideChange: angular.noop,
@@ -12656,7 +12663,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                     var questionCopy = angular.copy(question);
                                     var answer = answersMap[questionCopy.id] || {};
 
-                                    questionCopy.__questionStatus= answer;
+                                    questionCopy.__questionStatus = answer;
                                     questionCopy.__questionStatus.index = index;
 
                                     return questionCopy;
@@ -12697,15 +12704,19 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                     var currQuestion = getCurrentQuestion();
                                     var userAnswer = currQuestion.__questionStatus.userAnswer;
                                     currQuestion.__questionStatus.isAnsweredCorrectly = ZnkExerciseUtilitySrv.isAnswerCorrect(currQuestion,userAnswer);
+                                    
+                                    updateTimeSpentOnQuestion({
+                                        removeLastTimeStamp: true,
+                                        updateForce: true
+                                    });
 
-                                    updateTimeSpentOnQuestion(undefined,true);
                                     var afterAllowedTime = _isExceededAllowedTime();
                                     currQuestion.__questionStatus.afterAllowedTime = afterAllowedTime;
                                     setViewValue();
                                 }
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
                                 //skip 1 digest cycle before triggering question answered
-                                $timeout(function(){
+                                $timeout(function() {
                                     scope.settings.onQuestionAnswered(scope.vm.currentSlide);
                                 });
                             };
@@ -12717,25 +12728,58 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 setViewValue();
                             };
 
-                            function updateTimeSpentOnQuestion(questionNum, dontSetViewValue) {
-                                questionNum = angular.isDefined(questionNum) ? questionNum : scope.vm.currentSlide;
+                            function shouldUpdateTime(question, obj, cb) {
+                                var userAnswer = question.__questionStatus.userAnswer;
+                                var answerTypeId = question.answerTypeId;
+                                var updateTime = true;
+                                var doNotUpdateTime = false;
+
+                                if (angular.isUndefined(userAnswer)) {
+                                    cb(updateTime);
+                                }
+
+                                QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function () {
+                                    if (angular.isDefined(userAnswer) && !obj.updateForce) {
+                                        cb(doNotUpdateTime);
+                                    } else {
+                                        cb(updateTime);
+                                    }
+                                }, function () { 
+                                    cb(updateTime);
+                                }, question);
+                            }
+                            
+                            // example of obj { questionNum, removeLastTimeStamp, updateForce }
+                            function updateTimeSpentOnQuestion(obj) {
                                 if (scope.settings.viewMode === ZnkExerciseViewModeEnum.REVIEW.enum) {
                                     return;
                                 }
 
-                                if (!updateTimeSpentOnQuestion.lastTimeStamp) {
-                                    updateTimeSpentOnQuestion.lastTimeStamp = Date.now();
-                                    return;
-                                }
-                                var currTime = Date.now();
-                                var timePassed = currTime - updateTimeSpentOnQuestion.lastTimeStamp;
-                                updateTimeSpentOnQuestion.lastTimeStamp = currTime;
-                                var question = scope.vm.questionsWithAnswers[questionNum];
-                                question.__questionStatus.timeSpent = (question.__questionStatus.timeSpent || 0) + timePassed;
+                                obj = obj || {};
+                                var questionNum = angular.isDefined(obj.questionNum) ? obj.questionNum : scope.vm.currentSlide;
 
-                                if(!dontSetViewValue){
-                                    setViewValue();
-                                }
+                                var question = scope.vm.questionsWithAnswers[questionNum];
+
+                                shouldUpdateTime(question, obj, function (updateTime) {
+                                    var currTime = Date.now();
+
+                                    if (angular.isUndefined(question.__questionStatus.lastTimeStamp)) {
+                                        question.__questionStatus.lastTimeStamp = currTime;
+                                    }
+                                    
+                                    if (updateTime) {
+                                        var timePassed = currTime - question.__questionStatus.lastTimeStamp;
+                                        question.__questionStatus.timeSpent = (question.__questionStatus.timeSpent || 0) + timePassed;
+                                    }
+                                    
+                                    if (obj.removeLastTimeStamp) {
+                                        delete question.__questionStatus.lastTimeStamp;
+                                    } else {
+                                        question.__questionStatus.lastTimeStamp = currTime;
+                                    }
+
+                                    setViewValue(); 
+                                });
                             }
 
                             function _isExceededAllowedTime(){
@@ -12776,7 +12820,19 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 }
 
                                 znkExerciseDrvCtrl.isExerciseReady().then(function(){
-                                    updateTimeSpentOnQuestion(prevValue);
+                                
+                                    if (prevValue !== value) {
+                                        // update the question the user came from
+                                        updateTimeSpentOnQuestion({
+                                             questionNum: prevValue,
+                                             removeLastTimeStamp: true
+                                         }); 
+                                        // update the question the user comming to if the prev is diffrent then the new value
+                                         updateTimeSpentOnQuestion(); 
+                                    } else {
+                                         updateTimeSpentOnQuestion(); 
+                                    }
+
                                     var currQuestion = getCurrentQuestion();
                                     scope.settings.onSlideChange(currQuestion, value);
                                     scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value ,prevValue ,currQuestion);
@@ -12794,6 +12850,10 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 if (toolBoxModalInstance) {
                                     toolBoxModalInstance.close();
                                 }
+                                updateTimeSpentOnQuestion({
+                                    removeLastTimeStamp: true
+                                });
+                                scope.settings.onExit();
                             });
                         }
                     };
