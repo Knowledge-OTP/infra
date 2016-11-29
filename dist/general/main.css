@@ -286,17 +286,11 @@ $blueBG8: #75cbe8;
       vertical-align: top; }
     .timer-drv .timer-type1 .timer-view {
       font-size: 18px;
-      color: #757a83;
+      color: #ffffff;
       font-family: Lato;
       font-weight: 400;
       min-width: 15px;
       display: inline-block;
-      margin-left: 10px; }
-    .timer-drv .timer-type1 .timer-seconds-text {
-      font-size: 18px;
-      color: #757a83;
-      font-family: Quicksand;
-      font-weight: 400;
       margin-left: 10px; }
   .timer-drv .timer-type2 {
     text-align: center;

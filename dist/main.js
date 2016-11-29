@@ -6143,7 +6143,6 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
     "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +
     "        <svg-icon class=\"icon-wrapper\" name=\"general-clock-icon\"></svg-icon>\n" +
     "        <div class=\"timer-view\"></div>\n" +
-    "        <span class=\"timer-seconds-text\" translate=\"TIMER.SEC\"></span>\n" +
     "    </div>\n" +
     "    <div ng-switch-when=\"2\" class=\"timer-type2\">\n" +
     "        <div class=\"timer-display-wrapper\">\n" +
