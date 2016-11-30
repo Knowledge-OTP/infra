@@ -5,7 +5,7 @@
         function (znkChatSrv, $q, znkChatEventSrv, $timeout, PresenceService, ZNK_CHAT, MediaSrv) {
             'ngInject';
             var presenceActiveLiseners = {};
-
+            var soundPlaying = false;
             return {
                 templateUrl: 'components/znkChat/templates/chatter.template.html',
                 scope: {
@@ -18,6 +18,7 @@
                     var chatGuidProm;
                     var offEvent = {};
                     var soundPath = ZNK_CHAT.SOUND_PATH + 'sound.mp3';
+                    var sound;
 
                     scope.d = {};
                     scope.d.userStatus = PresenceService.userStatus;
@@ -87,11 +88,16 @@
                             } else {
                                 scope.chatterObj.messagesNotSeen++;
                                 scope.chatterObj.messagesNotSeen = scope.chatterObj.messagesNotSeen < ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES ? scope.chatterObj.messagesNotSeen :  ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
-                                var sound =  MediaSrv.loadSound(soundPath);
-                                sound.play();
-                                sound.onEnded().then(function(){
-                                    sound.release();
-                                });
+
+                                if(!soundPlaying){
+                                    soundPlaying = true;
+                                    sound =  MediaSrv.loadSound(soundPath);
+                                    sound.play();
+                                    sound.onEnded().then(function(){
+                                        soundPlaying = false;
+                                        sound.release();
+                                    });
+                                }
                             }
                         }
 
