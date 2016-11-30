@@ -297,6 +297,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     "                            <div translate=\".OPINION\"></div>\n" +
     "                        </div>\n" +
     "                        <md-button\n" +
+    "                                aria-label=\"{{'REPORT_POPUP.DONE' | translate}}\"\n" +
     "                                class=\"success success-green drop-shadow\"\n" +
     "                                ng-click=\"vm.cancel();\">\n" +
     "                            <span translate=\".DONE\"></span>\n" +
