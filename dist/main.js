@@ -74,9 +74,10 @@
     'use strict';
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "ScreenSharingSrv", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", "$translate", "SessionSrv", "SessionsStatusEnum", "toggleAutoCallEnum", function ($q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
+        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "ScreenSharingSrv", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", "$translate", "SessionSrv", "SessionsStatusEnum", "toggleAutoCallEnum", "UserScreenSharingStateEnum", function ($q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
                                             PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document,
-                                            $translate, SessionSrv, SessionsStatusEnum, toggleAutoCallEnum) {
+                                            $translate, SessionSrv, SessionsStatusEnum, toggleAutoCallEnum,
+                                            UserScreenSharingStateEnum) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
@@ -86,6 +87,9 @@
                         isTeacher,
                         durationToDisplay,
                         timerInterval,
+                        screenShareStatus = 0,
+                        // callStatus = 0,
+                        screenShareIsViewer,
                         liveSessionStatus = 0,
                         liveSessionDuration = 0,
                         timerSecondInterval = 1000,
@@ -187,6 +191,16 @@
                         destroyTimer();
                     });
 
+                    function screenShareMode(isScreenShareMode) {
+                        if (isScreenShareMode && screenShareIsViewer) {
+                            element.addClass('screen-share-mode');
+                            $log.debug('screenShareMode activate');
+                        } else {
+                            element.removeClass('screen-share-mode');
+                            $log.debug('screenShareMode remove');
+                        }
+                    }
+
                     function updateStatus() {
                         scope.d.currStatus = liveSessionStatus;
                         $log.debug('ActivePanel d.currStatus: ', scope.d.currStatus);
@@ -196,6 +210,7 @@
                                 $log.debug('ActivePanel State: NONE');
                                 bodyDomElem.removeClass(activePanelVisibleClassName);
                                 destroyTimer();
+                                screenShareMode(false);
                                 scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.DISABLE.enum;
                                 scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
                                 break;
@@ -230,6 +245,35 @@
                             updateStatus();
                         }
                     }
+
+                    // // Listen to status changes in Calls
+                    // var listenToCallsStatus = function (callsData) {
+                    //     if (callsData) {
+                    //         if (callsData.status === CallsStatusEnum.ACTIVE_CALL.enum) {
+                    //             callStatus = scope.d.states.CALL_ACTIVE;
+                    //         } else {
+                    //             callStatus = 0;
+                    //         }
+                    //         updateStatus();
+                    //     }
+                    // };
+
+                    // Listen to status changes in ScreenSharing
+                    var listenToScreenShareStatus = function (screenSharingStatus) {
+                        if (screenSharingStatus) {
+                            if (screenSharingStatus !== UserScreenSharingStateEnum.NONE.enum) {
+                                screenShareStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
+                                screenShareIsViewer = (screenSharingStatus === UserScreenSharingStateEnum.VIEWER.enum);
+                            } else {
+                                screenShareStatus = 0;
+                            }
+                            // updateStatus();
+                        }
+                    };
+
+                    ScreenSharingSrv.registerToCurrUserScreenSharingStateChanges(listenToScreenShareStatus);
+
+                    // CallsEventsSrv.registerToCurrUserCallStateChanges(listenToCallsStatus);
 
                     SessionSrv.registerToCurrUserLiveSessionStateChanges(listenToLiveSessionStatus);
 
@@ -15941,7 +15985,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                     vm.endSession = SessionSrv.endSession;
                     vm.isOffline = true;
 
-                    if (!isTeacher){
+                    if (isTeacher){
                         var studentUid = StudentContextSrv.getCurrUid();
                         PresenceService.startTrackUserPresence(studentUid, trackStudentPresenceCB.bind(null, studentUid));
                     }
@@ -15951,7 +15995,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                     });
 
                     $scope.$watch('vm.sessionData', function (newSessionData) {
-                        vm.isLiveSessionActive = newSessionData.sessionGUID ? true : false;
+                        vm.isLiveSessionActive = newSessionData.status;
                     }, true);
 
                     vm.showSessionModal = function () {
@@ -16210,24 +16254,28 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                 };
 
                 sessionSrvApi.loadLiveSessionData = function () {
-                    $log.debug('Load Live Session Data, session GUID: ', sessionData.sessionGUID);
-                    globalStorageProm.then(function (globalStorage) {
+                    return globalStorageProm.then(function (globalStorage) {
                         var sessionsPath = getLiveSessionPath('sessions');
-                        globalStorage.getAndBindToServer(sessionsPath).then(function (currSessionData) {
-                            sessionData = currSessionData;
-                            $log.debug('loadLiveSessionData, sessionData: ', sessionData);
-                        });
+                        return globalStorage.getAndBindToServer(sessionsPath);
                     });
                 };
 
                 sessionSrvApi.listenToLiveSessionsStatus = function () {
                     return sessionSrvApi.getLiveSessionGUID().then(function (sessionGUID) {
-                        sessionData.sessionGUID = sessionGUID.guid;
-                        liveSessionsStatus = sessionGUID.guid ?
-                            SessionsStatusEnum.ACTIVE.enum : SessionsStatusEnum.ENDED.enum;
+                        if (sessionGUID.guid) {
+                            sessionData.sessionGUID = sessionGUID.guid;
+                            $log.debug('Load Live Session GUID: ', sessionData.sessionGUID);
+                            liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
+                        } else {
+                            $log.debug('There isn\'t active live session ');
+                            liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
+                        }
                         var isSessionData = !(angular.equals(sessionData, {}));
-                        if (liveSessionsStatus === SessionsStatusEnum.ACTIVE.enum && !isSessionData) {
-                            sessionSrvApi.loadLiveSessionData();
+                        if (liveSessionsStatus && !isSessionData) {
+                            sessionSrvApi.loadLiveSessionData().then(function (currSessionData) {
+                                sessionData = currSessionData;
+                                $log.debug('loadLiveSessionData, sessionData: ', sessionData);
+                            });
                         }
                     });
                 };
