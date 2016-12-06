@@ -221,15 +221,14 @@
                         if (_exerciseResults && _exerciseResults[exercise.exerciseTypeId]) {
                             if (_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]){
                                 _summary.status =  _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].isComplete ? ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
+                                _summary.correctAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].correctAnswersNum || 0;
+                                _summary.wrongAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].wrongAnswersNum || 0;
+                                _summary.skippedAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].skippedAnswersNum || 0;
+                                _summary.duration = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].duration || 0;
+                                _summary.totalAnswered = _summary.correctAnswersNum + _summary.wrongAnswersNum;
                             } else {
                                 _summary.status = _summary.status ? _summary.status : ExerciseStatusEnum.NEW.enum;
                             }
-
-                            _summary.correctAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].correctAnswersNum || 0;
-                            _summary.wrongAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].wrongAnswersNum || 0;
-                            _summary.skippedAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].skippedAnswersNum || 0;
-                            _summary.duration = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].duration || 0;
-                            _summary.totalAnswered = _summary.correctAnswersNum + _summary.wrongAnswersNum;
                         }
 
                         if (!moduleSummary.overAll) {
