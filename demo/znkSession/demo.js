@@ -82,11 +82,14 @@
             };
             return $delegate;
         })
-        .controller('Main', function (SessionSrv, ActivePanelSrv) {
+        .run(function(SessionSrv, ActivePanelSrv){
+            'ngInject';
+            ActivePanelSrv.loadActivePanel();
+            SessionSrv.listenToLiveSessionsStatus();
+        })
+        .controller('Main', function () {
             'ngInject';
             var vm = this;
 
-            ActivePanelSrv.loadActivePanel();
-            SessionSrv.listenToLiveSessionsStatus();
         });
 })(angular);

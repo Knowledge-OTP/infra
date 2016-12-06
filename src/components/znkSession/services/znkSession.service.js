@@ -167,24 +167,28 @@
                 };
 
                 sessionSrvApi.loadLiveSessionData = function () {
-                    $log.debug('Load Live Session Data, session GUID: ', sessionData.sessionGUID);
-                    globalStorageProm.then(function (globalStorage) {
+                    return globalStorageProm.then(function (globalStorage) {
                         var sessionsPath = getLiveSessionPath('sessions');
-                        globalStorage.getAndBindToServer(sessionsPath).then(function (currSessionData) {
-                            sessionData = currSessionData;
-                            $log.debug('loadLiveSessionData, sessionData: ', sessionData);
-                        });
+                        return globalStorage.getAndBindToServer(sessionsPath);
                     });
                 };
 
                 sessionSrvApi.listenToLiveSessionsStatus = function () {
                     return sessionSrvApi.getLiveSessionGUID().then(function (sessionGUID) {
-                        sessionData.sessionGUID = sessionGUID.guid;
-                        liveSessionsStatus = sessionGUID.guid ?
-                            SessionsStatusEnum.ACTIVE.enum : SessionsStatusEnum.ENDED.enum;
+                        if (sessionGUID.guid) {
+                            sessionData.sessionGUID = sessionGUID.guid;
+                            $log.debug('Load Live Session GUID: ', sessionData.sessionGUID);
+                            liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
+                        } else {
+                            $log.debug('There isn\'t active live session ');
+                            liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
+                        }
                         var isSessionData = !(angular.equals(sessionData, {}));
-                        if (liveSessionsStatus === SessionsStatusEnum.ACTIVE.enum && !isSessionData) {
-                            sessionSrvApi.loadLiveSessionData();
+                        if (liveSessionsStatus && !isSessionData) {
+                            sessionSrvApi.loadLiveSessionData().then(function (currSessionData) {
+                                sessionData = currSessionData;
+                                $log.debug('loadLiveSessionData, sessionData: ', sessionData);
+                            });
                         }
                     });
                 };

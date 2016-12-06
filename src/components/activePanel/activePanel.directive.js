@@ -15,6 +15,9 @@
                         isTeacher,
                         durationToDisplay,
                         timerInterval,
+                        screenShareStatus = 0,
+                        callStatus = 0,
+                        screenShareIsViewer,
                         liveSessionStatus = 0,
                         liveSessionDuration = 0,
                         timerSecondInterval = 1000,
@@ -116,6 +119,16 @@
                         destroyTimer();
                     });
 
+                    function screenShareMode(isScreenShareMode) {
+                        if (isScreenShareMode && screenShareIsViewer) {
+                            element.addClass('screen-share-mode');
+                            $log.debug('screenShareMode activate');
+                        } else {
+                            element.removeClass('screen-share-mode');
+                            $log.debug('screenShareMode remove');
+                        }
+                    }
+
                     function updateStatus() {
                         scope.d.currStatus = liveSessionStatus;
                         $log.debug('ActivePanel d.currStatus: ', scope.d.currStatus);
@@ -125,6 +138,7 @@
                                 $log.debug('ActivePanel State: NONE');
                                 bodyDomElem.removeClass(activePanelVisibleClassName);
                                 destroyTimer();
+                                screenShareMode(false);
                                 scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.DISABLE.enum;
                                 scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
                                 break;
@@ -159,6 +173,35 @@
                             updateStatus();
                         }
                     }
+
+                    // Listen to status changes in Calls
+                    var listenToCallsStatus = function (callsData) {
+                        if (callsData) {
+                            if (callsData.status === CallsStatusEnum.ACTIVE_CALL.enum) {
+                                callStatus = scope.d.states.CALL_ACTIVE;
+                            } else {
+                                callStatus = 0;
+                            }
+                            updateStatus();
+                        }
+                    };
+
+                    // Listen to status changes in ScreenSharing
+                    var listenToScreenShareStatus = function (screenSharingStatus) {
+                        if (screenSharingStatus) {
+                            if (screenSharingStatus !== UserScreenSharingStateEnum.NONE.enum) {
+                                screenShareStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
+                                screenShareIsViewer = (screenSharingStatus === UserScreenSharingStateEnum.VIEWER.enum);
+                            } else {
+                                screenShareStatus = 0;
+                            }
+                            // updateStatus();
+                        }
+                    };
+
+                    ScreenSharingSrv.registerToCurrUserScreenSharingStateChanges(listenToScreenShareStatus);
+
+                    // CallsEventsSrv.registerToCurrUserCallStateChanges(listenToCallsStatus);
 
                     SessionSrv.registerToCurrUserLiveSessionStateChanges(listenToLiveSessionStatus);
 

@@ -23,7 +23,7 @@
                     vm.endSession = SessionSrv.endSession;
                     vm.isOffline = true;
 
-                    if (!isTeacher){
+                    if (isTeacher){
                         var studentUid = StudentContextSrv.getCurrUid();
                         PresenceService.startTrackUserPresence(studentUid, trackStudentPresenceCB.bind(null, studentUid));
                     }
@@ -33,7 +33,7 @@
                     });
 
                     $scope.$watch('vm.sessionData', function (newSessionData) {
-                        vm.isLiveSessionActive = newSessionData.sessionGUID ? true : false;
+                        vm.isLiveSessionActive = newSessionData.status;
                     }, true);
 
                     vm.showSessionModal = function () {
