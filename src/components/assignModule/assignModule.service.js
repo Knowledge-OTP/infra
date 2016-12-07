@@ -223,7 +223,6 @@
                         var _summary = moduleSummary[exercise.exerciseTypeId][exercise.exerciseId];
                         if (_exerciseResults && _exerciseResults[exercise.exerciseTypeId]) {
                             if (_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]){
-                                //_summary.status =  _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].isComplete ? ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
                                 _summary.status = userExerciseStatus[exercise.exerciseTypeId][exercise.exerciseId].status;
                                 _summary.correctAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].correctAnswersNum || 0;
                                 _summary.wrongAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].wrongAnswersNum || 0;
