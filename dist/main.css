@@ -6000,6 +6000,13 @@ znk-question-report .report-btn {
       visibility: hidden; }
     .report-dialog md-dialog.report-container md-dialog-content .base-form.ng-submitted .ng-invalid {
       border: solid thin #ff6766; }
+    .report-dialog md-dialog.report-container md-dialog-content .base-form .input-label {
+      font-size: 14px;
+      color: #757a83;
+      font-family: Lato;
+      font-weight: 400;
+      text-transform: Capitalize;
+      margin: 3px 0; }
     .report-dialog md-dialog.report-container md-dialog-content .base-form input,
     .report-dialog md-dialog.report-container md-dialog-content .base-form textarea {
       width: 100%;

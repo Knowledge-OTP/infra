@@ -83,6 +83,8 @@
         "OPINION"        : "We will improve this question.",
         "DONE"           : "Done",
         "USER_EMAIL"     : "email: {{userEmail}}",
-        "USER_ID"        : "uid: {{userId}}"
+        "USER_ID"        : "uid: {{userId}}",
+        "MESSAGE_LABEL"  : "message",
+        "EMAIL_LABEL"    : "email"
     }
 }

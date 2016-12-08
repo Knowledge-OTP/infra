@@ -84,7 +84,7 @@
         "DONE"           : "Done",
         "USER_EMAIL"     : "email: {{userEmail}}",
         "USER_ID"        : "uid: {{userId}}",
-        "MESSAGE_LABEL"  : "message:",
-        "EMAIL_LABEL"    : "email:"
+        "MESSAGE_LABEL"  : "message",
+        "EMAIL_LABEL"    : "email"
     }
 }
