@@ -886,7 +886,14 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                         var _summary = moduleSummary[exercise.exerciseTypeId][exercise.exerciseId];
                         if (_exerciseResults && _exerciseResults[exercise.exerciseTypeId]) {
                             if (_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]){
-                                _summary.status = userExerciseStatus[exercise.exerciseTypeId][exercise.exerciseId].status;
+                                if(userExerciseStatus && userExerciseStatus[exercise.exerciseTypeId] &&
+                                    userExerciseStatus[exercise.exerciseTypeId][exercise.exerciseId]) {
+                                    _summary.status = userExerciseStatus[exercise.exerciseTypeId][exercise.exerciseId].status;
+
+                                } else {
+                                    _summary.status = ExerciseStatusEnum.NEW.enum;
+
+                                }
                                 _summary.correctAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].correctAnswersNum || 0;
                                 _summary.wrongAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].wrongAnswersNum || 0;
                                 _summary.skippedAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].skippedAnswersNum || 0;
