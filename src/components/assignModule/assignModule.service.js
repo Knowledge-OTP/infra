@@ -228,7 +228,7 @@
                                     _summary.status = userExerciseStatus[exercise.exerciseTypeId][exercise.exerciseId].status;
 
                                 } else {
-                                    _summary.status = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].status || 0;
+                                    _summary.status = ExerciseStatusEnum.NEW.enum;
 
                                 }
                                 _summary.correctAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].correctAnswersNum || 0;
