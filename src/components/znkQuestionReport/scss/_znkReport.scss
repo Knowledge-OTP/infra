@@ -107,6 +107,10 @@ znk-question-report {
                     &.ng-submitted .ng-invalid {
                         border: solid thin $bgColor1;
                     }
+                    .input-label {
+                        @include text-style(14px, $fcColor9, Lato, $regularFontWeight, null, Capitalize);
+                        margin: 3px 0;
+                    }
                     input,
                     textarea {
                         width: 100%;

@@ -15875,7 +15875,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     "                    <section ng-switch-when=\"false\">\n" +
     "                        <div class=\"sub-title\" translate=\".SUB_TITLE\"></div>\n" +
     "                        <form novalidate name=\"vm.reportForm\" class=\"base-form\" ng-submit=\"vm.sendFrom();\">\n" +
-    "\n" +
+    "                            <div class=\"input-label\">{{'REPORT_POPUP.MESSAGE_LABEL' | translate}}:</div>\n" +
     "							<textarea\n" +
     "                                    required autofocus\n" +
     "                                    id=\"report-textarea\"\n" +
@@ -15890,6 +15890,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     "                                    translate=\".REQUIRED_FIELD\">\n" +
     "                            </label>\n" +
     "\n" +
+    "                            <div class=\"input-label\">{{'REPORT_POPUP.EMAIL_LABEL' | translate}}:</div>\n" +
     "                            <input\n" +
     "                                    required\n" +
     "                                    type=\"email\"\n" +
