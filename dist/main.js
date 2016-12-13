@@ -817,19 +817,21 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
             function getResultsByModuleId(userId, moduleId) {
                 return ExerciseResultSrv.getModuleResult(userId, moduleId, false, true).then(function (moduleResult) {
-                    if (moduleResult && !angular.equals(moduleResult, {})) {
-                        moduleResult.moduleSummary = getModuleSummary(moduleResult);
+                    return ExerciseResultSrv.getExercisesStatusMap().then(function (userExerciseStatus) {
+                        if (moduleResult && !angular.equals(moduleResult, {})) {
+                            moduleResult.moduleSummary = getModuleSummary(moduleResult, userExerciseStatus);
 
-                        InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
-                            angular.forEach(moduleResult.exerciseResults, function (exerciseTypeId) {
-                                angular.forEach(exerciseTypeId, function (exercise) {
-                                    var exerciseResultsPath = 'exerciseResults/' + exercise.guid;
-                                    studentStorage.getAndBindToServer(exerciseResultsPath);
+                            InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
+                                angular.forEach(moduleResult.exerciseResults, function (exerciseTypeId) {
+                                    angular.forEach(exerciseTypeId, function (exercise) {
+                                        var exerciseResultsPath = 'exerciseResults/' + exercise.guid;
+                                        studentStorage.getAndBindToServer(exerciseResultsPath);
+                                    });
                                 });
                             });
-                        });
-                    }
-                    return moduleResult;
+                        }
+                        return moduleResult;
+                    });
                 });
             }
 
@@ -848,7 +850,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
             }
 
-            function getModuleSummary(assignModule) {
+            function getModuleSummary(assignModule, userExerciseStatus) {
                 var moduleSummary = {};
                 var _exerciseResults = assignModule.exerciseResults;
 
@@ -871,50 +873,64 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     };
                 }
 
-                if (assignModule.exercises) {
 
-                    var exercises = assignModule.exercises.filter(function (exercise) {
-                        return exercise.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum;
-                    });
+                if (assignModule.exercises && assignModule.exercises.length) {
+                    var exCompletedCount = 0;
+                    var exLectureCount = 0;
+                    angular.forEach(assignModule.exercises, function (exercise) {
+                        if (!moduleSummary[exercise.exerciseTypeId]){
+                            moduleSummary[exercise.exerciseTypeId] = {};
+                        }
 
-                    if (exercises && exercises.length) {
-                        exercises.forEach(function (exercise) {
+                        if (!moduleSummary[exercise.exerciseTypeId][exercise.exerciseId]){
+                            moduleSummary[exercise.exerciseTypeId][exercise.exerciseId] = newSummary();
+                        }
 
-                            if (!moduleSummary[exercise.exerciseTypeId]){
-                                moduleSummary[exercise.exerciseTypeId] = {};
-                            }
+                        var _summary = moduleSummary[exercise.exerciseTypeId][exercise.exerciseId];
+                        if (_exerciseResults && _exerciseResults[exercise.exerciseTypeId]) {
+                            if (_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]){
+                                if(userExerciseStatus && userExerciseStatus[exercise.exerciseTypeId] &&
+                                    userExerciseStatus[exercise.exerciseTypeId][exercise.exerciseId]) {
+                                    _summary.status = userExerciseStatus[exercise.exerciseTypeId][exercise.exerciseId].status;
 
-                            if (!moduleSummary[exercise.exerciseTypeId][exercise.exerciseId]){
-                                moduleSummary[exercise.exerciseTypeId][exercise.exerciseId] = newSummary();
-                            }
-
-                            var _summary = moduleSummary[exercise.exerciseTypeId][exercise.exerciseId];
-                            if (_exerciseResults && _exerciseResults[exercise.exerciseTypeId]) {
-                                if (_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]){
-                                    _summary.status =  _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].isComplete ? ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
                                 } else {
-                                    _summary.status = _summary.status ? _summary.status : ExerciseStatusEnum.NEW.enum;
-                                }
+                                    _summary.status = ExerciseStatusEnum.NEW.enum;
 
+                                }
                                 _summary.correctAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].correctAnswersNum || 0;
                                 _summary.wrongAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].wrongAnswersNum || 0;
                                 _summary.skippedAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].skippedAnswersNum || 0;
                                 _summary.duration = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].duration || 0;
                                 _summary.totalAnswered = _summary.correctAnswersNum + _summary.wrongAnswersNum;
+                            } else {
+                                _summary.status = _summary.status ? _summary.status : ExerciseStatusEnum.NEW.enum;
                             }
-                            
-                            if (!moduleSummary.overAll) {
-                                moduleSummary.overAll = newOverAll();
-                            }
-                            var _overAll = moduleSummary.overAll;
-                            _overAll.status =  _overAll.status < _summary.status ? _summary.status : _overAll.status;
-                            _overAll.totalCorrectAnswers += _summary.correctAnswersNum;
-                            _overAll.totalWrongAnswers += _summary.wrongAnswersNum;
-                            _overAll.totalSkippedAnswers += _summary.skippedAnswersNum;
+                        }
 
-                        });
-                    }
+                        if (exercise.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum) {
+                            exLectureCount ++;
+                        }
+                        if (_summary.status === ExerciseStatusEnum.COMPLETED.enum) {
+                            exCompletedCount++;
+                        }
+
+                        if (!moduleSummary.overAll) {
+                            moduleSummary.overAll = newOverAll();
+                        }
+                        var _overAll = moduleSummary.overAll;
+                        if (exLectureCount === assignModule.exercises.length){
+                            _overAll.status = ExerciseStatusEnum.NEW.enum;
+                        } else if ((exLectureCount + exCompletedCount) === assignModule.exercises.length){
+                            _overAll.status = ExerciseStatusEnum.COMPLETED.enum;
+                        } else {
+                            _overAll.status = _exerciseResults ? ExerciseStatusEnum.ACTIVE.enum : ExerciseStatusEnum.NEW.enum;
+                        }
+                        _overAll.totalCorrectAnswers += _summary.correctAnswersNum;
+                        _overAll.totalWrongAnswers += _summary.wrongAnswersNum;
+                        _overAll.totalSkippedAnswers += _summary.skippedAnswersNum;
+                    });
                 }
+
                 return moduleSummary;
             }
 
@@ -922,7 +938,6 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
         }
     ]);
 })(angular);
-
 
 angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
 
@@ -6181,7 +6196,6 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
     "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +
     "        <svg-icon class=\"icon-wrapper\" name=\"general-clock-icon\"></svg-icon>\n" +
     "        <div class=\"timer-view\"></div>\n" +
-    "        <span class=\"timer-seconds-text\" translate=\"TIMER.SEC\"></span>\n" +
     "    </div>\n" +
     "    <div ng-switch-when=\"2\" class=\"timer-type2\">\n" +
     "        <div class=\"timer-display-wrapper\">\n" +
@@ -8749,6 +8763,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                     var cacheProm = false;
 
                     if (entity) {
+                        $log.debug('StorageSrv: data returned from cache, processedPath=' + processedPath);
                         getProm = $q.when(entity);
                     } else {
                         if (getEntityPromMap[processedPath]) {
@@ -10611,7 +10626,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
         ["znkChatSrv", "$q", "znkChatEventSrv", "$timeout", "PresenceService", "ZNK_CHAT", "MediaSrv", function (znkChatSrv, $q, znkChatEventSrv, $timeout, PresenceService, ZNK_CHAT, MediaSrv) {
             'ngInject';
             var presenceActiveLiseners = {};
-
+            var soundPlaying = false;
             return {
                 templateUrl: 'components/znkChat/templates/chatter.template.html',
                 scope: {
@@ -10624,6 +10639,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     var chatGuidProm;
                     var offEvent = {};
                     var soundPath = ZNK_CHAT.SOUND_PATH + 'sound.mp3';
+                    var sound;
 
                     scope.d = {};
                     scope.d.userStatus = PresenceService.userStatus;
@@ -10693,11 +10709,16 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                             } else {
                                 scope.chatterObj.messagesNotSeen++;
                                 scope.chatterObj.messagesNotSeen = scope.chatterObj.messagesNotSeen < ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES ? scope.chatterObj.messagesNotSeen :  ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
-                                var sound =  MediaSrv.loadSound(soundPath);
-                                sound.play();
-                                sound.onEnded().then(function(){
-                                    sound.release();
-                                });
+
+                                if(!soundPlaying){
+                                    soundPlaying = true;
+                                    sound =  MediaSrv.loadSound(soundPath);
+                                    sound.play();
+                                    sound.onEnded().then(function(){
+                                        soundPlaying = false;
+                                        sound.release();
+                                    });
+                                }
                             }
                         }
 
@@ -12438,6 +12459,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
  *  settings:
  *      allowedTimeForExercise: in milliseconds
  *      onDone
+ *      onExit: invoke when $destroy has been called
  *      onQuestionAnswered
  *      wrapperCls
  *      toolsToHide
@@ -12474,8 +12496,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExercise', [
-        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ZnkExerciseUtilitySrv',
-        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout, ZnkExerciseUtilitySrv) {
+        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ZnkExerciseUtilitySrv', 'QuestionTypesSrv',
+        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout, ZnkExerciseUtilitySrv, QuestionTypesSrv) {
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExerciseDrv.html',
                 restrict: 'E',
@@ -12500,6 +12522,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         pre: function (scope, element, attrs, ctrls) {
                             var defaultSettings = {
                                 onDone: angular.noop,
+                                onExit: angular.noop,
                                 onQuestionAnswered: angular.noop,
                                 viewMode: ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
                                 onSlideChange: angular.noop,
@@ -12718,7 +12741,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                     var questionCopy = angular.copy(question);
                                     var answer = answersMap[questionCopy.id] || {};
 
-                                    questionCopy.__questionStatus= answer;
+                                    questionCopy.__questionStatus = answer;
                                     questionCopy.__questionStatus.index = index;
 
                                     return questionCopy;
@@ -12759,15 +12782,19 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                     var currQuestion = getCurrentQuestion();
                                     var userAnswer = currQuestion.__questionStatus.userAnswer;
                                     currQuestion.__questionStatus.isAnsweredCorrectly = ZnkExerciseUtilitySrv.isAnswerCorrect(currQuestion,userAnswer);
+                                    
+                                    updateTimeSpentOnQuestion({
+                                        removeLastTimeStamp: true,
+                                        updateForce: true
+                                    });
 
-                                    updateTimeSpentOnQuestion(undefined,true);
                                     var afterAllowedTime = _isExceededAllowedTime();
                                     currQuestion.__questionStatus.afterAllowedTime = afterAllowedTime;
                                     setViewValue();
                                 }
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
                                 //skip 1 digest cycle before triggering question answered
-                                $timeout(function(){
+                                $timeout(function() {
                                     scope.settings.onQuestionAnswered(scope.vm.currentSlide);
                                 });
                             };
@@ -12779,25 +12806,58 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 setViewValue();
                             };
 
-                            function updateTimeSpentOnQuestion(questionNum, dontSetViewValue) {
-                                questionNum = angular.isDefined(questionNum) ? questionNum : scope.vm.currentSlide;
+                            function shouldUpdateTime(question, obj, cb) {
+                                var userAnswer = question.__questionStatus.userAnswer;
+                                var answerTypeId = question.answerTypeId;
+                                var updateTime = true;
+                                var doNotUpdateTime = false;
+
+                                if (angular.isUndefined(userAnswer)) {
+                                    cb(updateTime);
+                                }
+
+                                QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function () {
+                                    if (angular.isDefined(userAnswer) && !obj.updateForce) {
+                                        cb(doNotUpdateTime);
+                                    } else {
+                                        cb(updateTime);
+                                    }
+                                }, function () { 
+                                    cb(updateTime);
+                                }, question);
+                            }
+                            
+                            // example of obj { questionNum, removeLastTimeStamp, updateForce }
+                            function updateTimeSpentOnQuestion(obj) {
                                 if (scope.settings.viewMode === ZnkExerciseViewModeEnum.REVIEW.enum) {
                                     return;
                                 }
 
-                                if (!updateTimeSpentOnQuestion.lastTimeStamp) {
-                                    updateTimeSpentOnQuestion.lastTimeStamp = Date.now();
-                                    return;
-                                }
-                                var currTime = Date.now();
-                                var timePassed = currTime - updateTimeSpentOnQuestion.lastTimeStamp;
-                                updateTimeSpentOnQuestion.lastTimeStamp = currTime;
-                                var question = scope.vm.questionsWithAnswers[questionNum];
-                                question.__questionStatus.timeSpent = (question.__questionStatus.timeSpent || 0) + timePassed;
+                                obj = obj || {};
+                                var questionNum = angular.isDefined(obj.questionNum) ? obj.questionNum : scope.vm.currentSlide;
 
-                                if(!dontSetViewValue){
-                                    setViewValue();
-                                }
+                                var question = scope.vm.questionsWithAnswers[questionNum];
+
+                                shouldUpdateTime(question, obj, function (updateTime) {
+                                    var currTime = Date.now();
+
+                                    if (angular.isUndefined(question.__questionStatus.lastTimeStamp)) {
+                                        question.__questionStatus.lastTimeStamp = currTime;
+                                    }
+                                    
+                                    if (updateTime) {
+                                        var timePassed = currTime - question.__questionStatus.lastTimeStamp;
+                                        question.__questionStatus.timeSpent = (question.__questionStatus.timeSpent || 0) + timePassed;
+                                    }
+                                    
+                                    if (obj.removeLastTimeStamp) {
+                                        delete question.__questionStatus.lastTimeStamp;
+                                    } else {
+                                        question.__questionStatus.lastTimeStamp = currTime;
+                                    }
+
+                                    setViewValue(); 
+                                });
                             }
 
                             function _isExceededAllowedTime(){
@@ -12838,7 +12898,19 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 }
 
                                 znkExerciseDrvCtrl.isExerciseReady().then(function(){
-                                    updateTimeSpentOnQuestion(prevValue);
+                                
+                                    if (prevValue !== value) {
+                                        // update the question the user came from
+                                        updateTimeSpentOnQuestion({
+                                             questionNum: prevValue,
+                                             removeLastTimeStamp: true
+                                         }); 
+                                        // update the question the user comming to if the prev is diffrent then the new value
+                                         updateTimeSpentOnQuestion(); 
+                                    } else {
+                                         updateTimeSpentOnQuestion(); 
+                                    }
+
                                     var currQuestion = getCurrentQuestion();
                                     scope.settings.onSlideChange(currQuestion, value);
                                     scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value ,prevValue ,currQuestion);
@@ -12856,6 +12928,10 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 if (toolBoxModalInstance) {
                                     toolBoxModalInstance.close();
                                 }
+                                updateTimeSpentOnQuestion({
+                                    removeLastTimeStamp: true
+                                });
+                                scope.settings.onExit();
                             });
                         }
                     };
@@ -15864,7 +15940,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     "                    <section ng-switch-when=\"false\">\n" +
     "                        <div class=\"sub-title\" translate=\".SUB_TITLE\"></div>\n" +
     "                        <form novalidate name=\"vm.reportForm\" class=\"base-form\" ng-submit=\"vm.sendFrom();\">\n" +
-    "\n" +
+    "                            <div class=\"input-label\">{{'REPORT_POPUP.MESSAGE_LABEL' | translate}}:</div>\n" +
     "							<textarea\n" +
     "                                    required autofocus\n" +
     "                                    id=\"report-textarea\"\n" +
@@ -15879,6 +15955,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     "                                    translate=\".REQUIRED_FIELD\">\n" +
     "                            </label>\n" +
     "\n" +
+    "                            <div class=\"input-label\">{{'REPORT_POPUP.EMAIL_LABEL' | translate}}:</div>\n" +
     "                            <input\n" +
     "                                    required\n" +
     "                                    type=\"email\"\n" +
@@ -15914,6 +15991,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     "                            <div translate=\".OPINION\"></div>\n" +
     "                        </div>\n" +
     "                        <md-button\n" +
+    "                                aria-label=\"{{'REPORT_POPUP.DONE' | translate}}\"\n" +
     "                                class=\"success success-green drop-shadow\"\n" +
     "                                ng-click=\"vm.cancel();\">\n" +
     "                            <span translate=\".DONE\"></span>\n" +

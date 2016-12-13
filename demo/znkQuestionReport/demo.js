@@ -5,6 +5,20 @@
         'pascalprecht.translate',
         'znk.infra.znkQuestionReport'
         ])
+        .decorator('AuthService', function ($delegate) {
+            'ngInject';
+
+            $delegate.getAuth = function () {
+                return {
+                    auth: {
+                        uid:"c47f4f57-521c-4832-b505-c0093737ceff",
+                        email:"ofir+s1@zinkerz.com"
+                        },
+                    uid:"c47f4f57-521c-4832-b505-c0093737ceff"
+                    };
+            };
+            return $delegate;
+        })
         .controller('Main', function () {
             'ngInject';
             var vm = this;

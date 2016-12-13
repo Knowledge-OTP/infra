@@ -83,6 +83,9 @@
         "OPINION"        : "We will improve this question.",
         "DONE"           : "Done",
         "USER_EMAIL"     : "email: {{userEmail}}",
+        "USER_ID"        : "uid: {{userId}}",
+        "MESSAGE_LABEL"  : "message",
+        "EMAIL_LABEL"    : "email"
         "USER_ID"        : "uid: {{userId}}"
     },
     "ZNK_SESSION":{
