@@ -156,21 +156,19 @@
 
             function getResultsByModuleId(userId, moduleId) {
                 return ExerciseResultSrv.getModuleResult(userId, moduleId, false, true).then(function (moduleResult) {
-                    return ExerciseResultSrv.getExercisesStatusMap().then(function (userExerciseStatus) {
-                        if (moduleResult && !angular.equals(moduleResult, {})) {
-                            moduleResult.moduleSummary = getModuleSummary(moduleResult, userExerciseStatus);
+                    if (moduleResult && !angular.equals(moduleResult, {})) {
+                        moduleResult.moduleSummary = getModuleSummary(moduleResult);
 
-                            InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
-                                angular.forEach(moduleResult.exerciseResults, function (exerciseTypeId) {
-                                    angular.forEach(exerciseTypeId, function (exercise) {
-                                        var exerciseResultsPath = 'exerciseResults/' + exercise.guid;
-                                        studentStorage.getAndBindToServer(exerciseResultsPath);
-                                    });
+                        InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
+                            angular.forEach(moduleResult.exerciseResults, function (exerciseTypeId) {
+                                angular.forEach(exerciseTypeId, function (exercise) {
+                                    var exerciseResultsPath = 'exerciseResults/' + exercise.guid;
+                                    studentStorage.getAndBindToServer(exerciseResultsPath);
                                 });
                             });
-                        }
-                        return moduleResult;
-                    });
+                        });
+                    }
+                    return moduleResult;
                 });
             }
 
@@ -189,7 +187,7 @@
                 });
             }
 
-            function getModuleSummary(assignModule, userExerciseStatus) {
+            function getModuleSummary(assignModule) {
                 var moduleSummary = {};
                 var _exerciseResults = assignModule.exerciseResults;
 
@@ -228,10 +226,9 @@
                         var _summary = moduleSummary[exercise.exerciseTypeId][exercise.exerciseId];
                         if (_exerciseResults && _exerciseResults[exercise.exerciseTypeId]) {
                             if (_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]){
-                                if(userExerciseStatus && userExerciseStatus[exercise.exerciseTypeId] &&
-                                    userExerciseStatus[exercise.exerciseTypeId][exercise.exerciseId]) {
-                                    _summary.status = userExerciseStatus[exercise.exerciseTypeId][exercise.exerciseId].status;
-
+                                if(angular.isDefined(_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].isComplete)) {
+                                    _summary.status = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].isComplete ?
+                                        ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
                                 } else {
                                     _summary.status = ExerciseStatusEnum.NEW.enum;
 
