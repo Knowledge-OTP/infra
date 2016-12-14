@@ -35,7 +35,7 @@
                 });
             };
 
-            userAssignModuleService.registerExternalOnValueCB = function (userId, valueCB, changeCB) {
+            userAssignModuleService.registerExternalOnValueCB = function (userId, contentType, valueCB, changeCB) {
                 InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
                     if (!registerEvents[userId]) {
                         registerEvents[userId] = {};
@@ -54,8 +54,8 @@
                         guids: []
                     });
 
-
-                    studentStorage.onEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB);
+                    var assignContentPath =_getAssignContentPath(contentType);
+                    studentStorage.onEvent('value', 'users/' + userId + assignContentPath, onValueEventCB);
                 });
             };
 
@@ -111,17 +111,36 @@
                 });
             };
 
-            function onValueEventCB(moduleResultsGuids) {
+            function _getAssignContentPath(contentType){
+                switch(contentType){
+                    case 1:
+                        return '/assignHomework/homework';
+                    case 2:
+                        return '/moduleResults';
+                }
+            }
+
+            function _getContentTypeByPath(path){
+                switch(path){
+                    case 'moduleResults':
+                        return 1;
+                    case 'homework':
+                        return 2;
+                }
+            }
+
+            function onValueEventCB(moduleResultsGuids, path) {
                 if (angular.isUndefined(moduleResultsGuids) || !moduleResultsGuids) {
                     var userId = StudentContextSrv.getCurrUid();
                     userAssignModuleService.assignModules = {};
                     applyCB(registerEvents[userId].valueCB);
                     return;
                 }
-                buildResultsFromGuids(moduleResultsGuids);
+                var contentType = _getContentTypeByPath(path);
+                buildResultsFromGuids(moduleResultsGuids, contentType);
             }
 
-            function buildResultsFromGuids(moduleResultsGuids) {
+            function buildResultsFromGuids(moduleResultsGuids, contentType) {
                 InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
                     var moduleResults = {};
                     var getProm = $q.when();
@@ -129,7 +148,7 @@
                     var userId = StudentContextSrv.getCurrUid();
 
                     angular.forEach(moduleResultsGuids, function (resultGuid, moduleId) {
-                        getProm = getResultsByModuleId(userId, moduleId).then(function (moduleResult) {
+                        getProm = getResultsByModuleId(userId, moduleId, contentType).then(function (moduleResult) {
                             moduleResults[moduleResult.moduleId] = moduleResult;
 
                             angular.forEach(registerEvents[userId].changeCB, function (cbData) {
@@ -149,8 +168,8 @@
                 });
             }
 
-            function getResultsByModuleId(userId, moduleId) {
-                return ExerciseResultSrv.getModuleResult(userId, moduleId, false, true).then(function (moduleResult) {
+            function getResultsByModuleId(userId, moduleId, contentType) {
+                return ExerciseResultSrv.getModuleResult(userId, moduleId, false, true, contentType).then(function (moduleResult) {
                     if (moduleResult && !angular.equals(moduleResult, {})) {
                         moduleResult.moduleSummary = getModuleSummary(moduleResult);
 
@@ -210,35 +229,44 @@
                     var exCompletedCount = 0;
                     var exLectureCount = 0;
                     angular.forEach(assignModule.exercises, function (exercise) {
-                        if (!moduleSummary[exercise.exerciseTypeId]){
-                            moduleSummary[exercise.exerciseTypeId] = {};
+                        var exerciseTypeId, exerciseId;
+                        if(angular.isDefined(exercise.examId)){
+                            exerciseTypeId = ExerciseTypeEnum.SECTION.enum;
+                            exerciseId = exercise.id;
+                        } else {
+                            exerciseTypeId = exercise.exerciseTypeId;
+                            exerciseId = exercise.exerciseId;
                         }
 
-                        if (!moduleSummary[exercise.exerciseTypeId][exercise.exerciseId]){
-                            moduleSummary[exercise.exerciseTypeId][exercise.exerciseId] = newSummary();
+                        if (!moduleSummary[exerciseTypeId]){
+                            moduleSummary[exerciseTypeId] = {};
                         }
 
-                        var _summary = moduleSummary[exercise.exerciseTypeId][exercise.exerciseId];
-                        if (_exerciseResults && _exerciseResults[exercise.exerciseTypeId]) {
-                            if (_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]){
-                                if(angular.isDefined(_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].isComplete)) {
-                                    _summary.status = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].isComplete ?
+                        if (!moduleSummary[exerciseTypeId][exerciseId]){
+                            moduleSummary[exerciseTypeId][exerciseId] = newSummary();
+                        }
+
+                        var _summary = moduleSummary[exerciseTypeId][exerciseId];
+                        if (_exerciseResults && _exerciseResults[exerciseTypeId]) {
+                            if (_exerciseResults[exerciseTypeId][exerciseId]){
+                                if(angular.isDefined(_exerciseResults[exerciseTypeId][exerciseId].isComplete)) {
+                                    _summary.status = _exerciseResults[exerciseTypeId][exerciseId].isComplete ?
                                         ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
                                 } else {
                                     _summary.status = ExerciseStatusEnum.NEW.enum;
 
                                 }
-                                _summary.correctAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].correctAnswersNum || 0;
-                                _summary.wrongAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].wrongAnswersNum || 0;
-                                _summary.skippedAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].skippedAnswersNum || 0;
-                                _summary.duration = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].duration || 0;
+                                _summary.correctAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
+                                _summary.wrongAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
+                                _summary.skippedAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
+                                _summary.duration = _exerciseResults[exerciseTypeId][exerciseId].duration || 0;
                                 _summary.totalAnswered = _summary.correctAnswersNum + _summary.wrongAnswersNum;
                             } else {
                                 _summary.status = _summary.status ? _summary.status : ExerciseStatusEnum.NEW.enum;
                             }
                         }
 
-                        if (exercise.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum) {
+                        if (exerciseTypeId === ExerciseTypeEnum.LECTURE.enum) {
                             exLectureCount ++;
                         }
                         if (_summary.status === ExerciseStatusEnum.COMPLETED.enum) {
