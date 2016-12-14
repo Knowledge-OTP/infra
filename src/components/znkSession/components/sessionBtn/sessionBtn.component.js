@@ -18,7 +18,7 @@
                 }
 
                 this.$onInit = function() {
-                    vm.sessionData = {};
+                    var sessionGUID = {};
                     vm.isLiveSessionActive = false;
                     vm.endSession = SessionSrv.endSession;
                     vm.isOffline = true;
@@ -28,12 +28,14 @@
                         PresenceService.startTrackUserPresence(studentUid, trackStudentPresenceCB.bind(null, studentUid));
                     }
 
-                    SessionSrv.loadLiveSessionData().then(function (currSessionData) {
-                        vm.sessionData = currSessionData;
+                    SessionSrv.getLiveSessionGUID().then(function (currSessionGUID) {
+                        sessionGUID = currSessionGUID;
                     });
 
-                    $scope.$watch('vm.sessionData', function (newSessionData) {
-                        vm.isLiveSessionActive = newSessionData.status;
+                    $rootScope.$watch(function () {
+                        return sessionGUID;
+                    }, function (newSessionGUID) {
+                        vm.isLiveSessionActive = newSessionGUID && newSessionGUID.guid ? true : false;
                     }, true);
 
                     vm.showSessionModal = function () {
