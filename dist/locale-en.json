@@ -86,7 +86,6 @@
         "USER_ID"        : "uid: {{userId}}",
         "MESSAGE_LABEL"  : "message",
         "EMAIL_LABEL"    : "email"
-        "USER_ID"        : "uid: {{userId}}"
     },
     "ZNK_SESSION":{
         "START_SESSION":  "Start Session",
