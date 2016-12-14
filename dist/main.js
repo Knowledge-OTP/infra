@@ -74,10 +74,10 @@
     'use strict';
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "ScreenSharingSrv", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", "$translate", "SessionSrv", "SessionsStatusEnum", "toggleAutoCallEnum", "UserScreenSharingStateEnum", function ($q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
+        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "ScreenSharingSrv", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", "$translate", "SessionSrv", "SessionsStatusEnum", "toggleAutoCallEnum", "UserScreenSharingStateEnum", "ScreenSharingUiSrv", function ($q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
                                             PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document,
                                             $translate, SessionSrv, SessionsStatusEnum, toggleAutoCallEnum,
-                                            UserScreenSharingStateEnum) {
+                                            UserScreenSharingStateEnum, ScreenSharingUiSrv) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
@@ -88,7 +88,6 @@
                         durationToDisplay,
                         timerInterval,
                         screenShareStatus = 0,
-                        // callStatus = 0,
                         screenShareIsViewer,
                         liveSessionStatus = 0,
                         liveSessionDuration = 0,
@@ -213,6 +212,7 @@
                                 screenShareMode(false);
                                 scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.DISABLE.enum;
                                 scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
+                                ScreenSharingUiSrv.endScreenSharing();
                                 break;
                             case scope.d.states.LIVE_SESSION :
                                 bodyDomElem.addClass(activePanelVisibleClassName);
@@ -246,18 +246,6 @@
                         }
                     }
 
-                    // // Listen to status changes in Calls
-                    // var listenToCallsStatus = function (callsData) {
-                    //     if (callsData) {
-                    //         if (callsData.status === CallsStatusEnum.ACTIVE_CALL.enum) {
-                    //             callStatus = scope.d.states.CALL_ACTIVE;
-                    //         } else {
-                    //             callStatus = 0;
-                    //         }
-                    //         updateStatus();
-                    //     }
-                    // };
-
                     // Listen to status changes in ScreenSharing
                     var listenToScreenShareStatus = function (screenSharingStatus) {
                         if (screenSharingStatus) {
@@ -272,8 +260,6 @@
                     };
 
                     ScreenSharingSrv.registerToCurrUserScreenSharingStateChanges(listenToScreenShareStatus);
-
-                    // CallsEventsSrv.registerToCurrUserCallStateChanges(listenToCallsStatus);
 
                     SessionSrv.registerToCurrUserLiveSessionStateChanges(listenToLiveSessionStatus);
 
@@ -16043,7 +16029,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
             bindings: {},
             templateUrl: 'components/znkSession/components/sessionBtn/sessionBtn.template.html',
             controllerAs: 'vm',
-            controller: ["$log", "$scope", "$mdDialog", "SessionSrv", "StudentContextSrv", "PresenceService", "ENV", function ($log, $scope, $mdDialog, SessionSrv, StudentContextSrv,
+            controller: ["$rootScope", "$log", "$scope", "$mdDialog", "SessionSrv", "StudentContextSrv", "PresenceService", "ENV", function ($rootScope, $log, $scope, $mdDialog, SessionSrv, StudentContextSrv,
                                   PresenceService, ENV) {
                 'ngInject';
 
@@ -16055,7 +16041,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                 }
 
                 this.$onInit = function() {
-                    vm.sessionData = {};
+                    var sessionGUID = {};
                     vm.isLiveSessionActive = false;
                     vm.endSession = SessionSrv.endSession;
                     vm.isOffline = true;
@@ -16065,12 +16051,14 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                         PresenceService.startTrackUserPresence(studentUid, trackStudentPresenceCB.bind(null, studentUid));
                     }
 
-                    SessionSrv.loadLiveSessionData().then(function (currSessionData) {
-                        vm.sessionData = currSessionData;
+                    SessionSrv.getLiveSessionGUID().then(function (currSessionGUID) {
+                        sessionGUID = currSessionGUID;
                     });
 
-                    $scope.$watch('vm.sessionData', function (newSessionData) {
-                        vm.isLiveSessionActive = newSessionData.status;
+                    $rootScope.$watch(function () {
+                        return sessionGUID;
+                    }, function (newSessionGUID) {
+                        vm.isLiveSessionActive = newSessionGUID && newSessionGUID.guid ? true : false;
                     }, true);
 
                     vm.showSessionModal = function () {
@@ -16170,176 +16158,182 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                 subjects = _subjects;
             };
 
-            this.$get = ["$rootScope", "$log", "ENV", "AuthService", "InfraConfigSrv", "StudentContextSrv", "TeacherContextSrv", "UtilitySrv", "SessionSubjectEnumConst", "$mdDialog", "SessionsStatusEnum", "$window", "$timeout", "PopUpSrv", "$interval", function($rootScope, $log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
-                                 UtilitySrv, SessionSubjectEnumConst, $mdDialog, SessionsStatusEnum,
-                                 $window, $timeout, PopUpSrv, $interval) {
-                'ngInject';
+            this.$get = ["$rootScope", "$log", "ENV", "AuthService", "InfraConfigSrv", "StudentContextSrv", "TeacherContextSrv", "UtilitySrv", "SessionSubjectEnumConst", "$mdDialog", "SessionsStatusEnum", "$window", "$timeout", "PopUpSrv", "$interval",
+                function($rootScope, $log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
+                         UtilitySrv, SessionSubjectEnumConst, $mdDialog, SessionsStatusEnum,
+                         $window, $timeout, PopUpSrv, $interval) {
+                    'ngInject';
 
-                function getRoundTime() {
-                    return Math.floor(Date.now() / 1000) * 1000;
-                }
-                function sessionInit(sessionSubject) {
-                    return {
-                        appName: ENV.studentAppName.split('_')[0],
-                        sessionGUID: UtilitySrv.general.createGuid(),
-                        educatorUID: isTeacher ? userAuth.uid : TeacherContextSrv.getCurrUid(),
-                        studentUID: isTeacher ? StudentContextSrv.getCurrUid() : userAuth.uid,
-                        extendTime: 0,
-                        startTime: getRoundTime(),
-                        duration: null,
-                        sessionSubject: sessionSubject.id,
-                        status: SessionsStatusEnum.ACTIVE.enum  //(values: 1 = Active, 0 = Ended)
-                    };
-                }
-                function getLiveSessionPath(param) {
-                    if (!userAuth) {
-                        $log.error('Invalid user');
-                        return;
+                    function getRoundTime() {
+                        return Math.floor(Date.now() / 1000) * 1000;
                     }
-                    var path;
-                    var educatorUID = isTeacher ? userAuth.uid : TeacherContextSrv.getCurrUid();
-                    var studentUID = isTeacher ? StudentContextSrv.getCurrUid() : userAuth.uid;
-                    switch (param) {
-                        case 'sessions':
-                            path = ENV.studentAppName + '/liveSession/' + sessionData.sessionGUID;
-                            return path;
-                        case 'student':
-                            path = ENV.studentAppName + '/users/$$uid/liveSession';
-                            return path.replace('$$uid', '' + studentUID);
-                        case 'educator':
-                            path = ENV.dashboardAppName + '/users/$$uid/liveSession';
-                            return path.replace('$$uid', '' + educatorUID);
-                        default:
-                            return;
-                    }
-                }
-                function saveSession() {
-                    $log.debug('saveSession, sessionData: ', sessionData);
-                    var dataToSave = {};
-                    return globalStorageProm.then(function (globalStorage) {
-                        var studentPath = getLiveSessionPath('student') + '/active';
-                        var educatorPath = getLiveSessionPath('educator') + '/active';
-                        var sessionPath = getLiveSessionPath('sessions');
-                        dataToSave[sessionPath] = sessionData;
-                        dataToSave[studentPath] = dataToSave[educatorPath] ={ guid: sessionData.sessionGUID };
-                        return globalStorage.update(dataToSave);
-                    });
-                }
-                function updateSession() {
-                    $log.debug('updateSession, sessionData: ', sessionData);
-                    var dataToSave = {};
-                    return globalStorageProm.then(function (globalStorage) {
-                        var studentPath = getLiveSessionPath('student');
-                        var studentPathActive = studentPath + '/active';
-                        var studentPathArchive = studentPath + '/archive/' + sessionData.sessionGUID;
-                        var educatorPath = getLiveSessionPath('educator');
-                        var educatorPathActive = educatorPath + '/active';
-                        var educatorPathArchive = educatorPath + '/archive/' + sessionData.sessionGUID;
-                        var sessionPath = getLiveSessionPath('sessions');
-                        dataToSave[sessionPath] = sessionData;
-                        dataToSave[studentPathArchive] = dataToSave[educatorPathArchive] = false;
-                        dataToSave[studentPathActive] = dataToSave[educatorPathActive] = { guid: false };
-                        return globalStorage.update(dataToSave);
-                    });
-                }
-                function checkSessionDuration() {
-                    checkDurationInterval = $interval(function () {
-                        liveSessionDuration = (getRoundTime() - sessionData.startTime)  / 60000; // convert to minutes
-                        var sessionTimeWithExtension = ENV.liveSession.sessionLength + sessionData.extendTime;
-                        var EndAlertTimeWithExtension = ENV.liveSession.sessionEndAlertTime + sessionData.extendTime;
-
-                        if (liveSessionDuration >= sessionTimeWithExtension) {
-                            sessionSrvApi.endSession();
-                        } else if (liveSessionDuration >= EndAlertTimeWithExtension && !isSessionAlertShown) {
-                            sessionEndAlert();
-                        }
-
-                    }, 60000);
-                }
-                function sessionEndAlert() {
-                    var alertPopupTitle = 'Live session will end in ' + ENV.liveSession.sessionEndAlertTime + ' minutes.';
-                    var popUpInstance = PopUpSrv.warning(alertPopupTitle, null,'Extend Session Time', 'OK');
-                    return popUpInstance.promise.then(function(){
-                        sessionData.extendTime += ENV.liveSession.sessionExtendTime;
-                        $log.debug('Live session is extend by ' + ENV.liveSession.sessionExtendTime + ' minutes.');
-                    },function(){
-                        isSessionAlertShown = true;
-                        $log.debug('Live session is continued.');
-                    });
-                }
-                function destroyCheckDurationInterval() {
-                    $interval.cancel(checkDurationInterval);
-                }
-
-                var activePanelCb;
-                var checkDurationInterval;
-                var liveSessionDuration;
-                var liveSessionsStatus;
-                var isSessionAlertShown = false;
-                var sessionSrvApi = {};
-                var isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
-                var userAuth = AuthService.getAuth();
-                var globalStorageProm = InfraConfigSrv.getGlobalStorage();
-                var sessionData = {};
-
-                $rootScope.$watch('sessionData', function (newSessionData) {
-                    if (newSessionData && !angular.equals(newSessionData, {})) {
-                        activePanelCb(newSessionData);
-                        if (newSessionData.status === SessionsStatusEnum.ENDED.enum) {
-                            PopUpSrv.info('Live session has ended');
-                        }
-                        if (newSessionData.status === SessionsStatusEnum.ACTIVE.enum && !isTeacher) {
-                            $log.debug('There is an active live session');
-                            PopUpSrv.info('You joined a live Session');
-                        }
-                    }
-                }, true);
-
-                sessionSrvApi.startSession = function (sessionSubject) {
-                    sessionData = sessionInit(sessionSubject);
-                    liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
-                    checkSessionDuration();
-                    saveSession().then(function (res) {
-                        $log.debug('Live Session Saved: ', res);
-                    }).catch(function (err) {
-                        $log.error('Error saving live session to firebase: ', err);
-                    });
-                };
-
-                sessionSrvApi.getSessionSubjects = function() {
-                    if (!subjects) {
-                        subjects = [SessionSubjectEnumConst.MATH, SessionSubjectEnumConst.ENGLISH];
-                    }
-                    return subjects.map(function (subjectId) {
-                        var name = UtilitySrv.object.getKeyByValue(SessionSubjectEnumConst, subjectId).toLowerCase();
+                    function sessionInit(sessionSubject) {
                         return {
-                            id: subjectId,
-                            name: name,
-                            iconName: 'znkSession-' + name + '-icon'
+                            appName: ENV.studentAppName.split('_')[0],
+                            sessionGUID: UtilitySrv.general.createGuid(),
+                            educatorUID: isTeacher ? userAuth.uid : TeacherContextSrv.getCurrUid(),
+                            studentUID: isTeacher ? StudentContextSrv.getCurrUid() : userAuth.uid,
+                            extendTime: 0,
+                            startTime: getRoundTime(),
+                            endTime: null,
+                            duration: null,
+                            sessionSubject: sessionSubject.id,
+                            status: SessionsStatusEnum.ACTIVE.enum  //(values: 1 = Active, 0 = Ended)
                         };
-                    });
-                };
+                    }
+                    function getLiveSessionPath(param) {
+                        if (!userAuth) {
+                            $log.error('Invalid user');
+                            return;
+                        }
+                        var path;
+                        var educatorUID = isTeacher ? userAuth.uid : TeacherContextSrv.getCurrUid();
+                        var studentUID = isTeacher ? StudentContextSrv.getCurrUid() : userAuth.uid;
+                        switch (param) {
+                            case 'sessions':
+                                path = ENV.studentAppName + '/liveSession/' + currSessionGUID.guid;
+                                return path;
+                            case 'student':
+                                path = ENV.studentAppName + '/users/$$uid/liveSession';
+                                return path.replace('$$uid', '' + studentUID);
+                            case 'educator':
+                                path = ENV.dashboardAppName + '/users/$$uid/liveSession';
+                                return path.replace('$$uid', '' + educatorUID);
+                            default:
+                                return;
+                        }
+                    }
+                    function saveSession() {
+                        $log.debug('saveSession, sessionData: ', sessionData);
+                        var dataToSave = {};
+                        return globalStorageProm.then(function (globalStorage) {
+                            var studentPath = getLiveSessionPath('student') + '/active';
+                            var educatorPath = getLiveSessionPath('educator') + '/active';
+                            var sessionPath = getLiveSessionPath('sessions');
+                            dataToSave[sessionPath] = sessionData;
+                            dataToSave[studentPath] = dataToSave[educatorPath] ={ guid: sessionData.sessionGUID };
+                            return globalStorage.update(dataToSave);
+                        });
+                    }
+                    function updateSession() {
+                        $log.debug('updateSession, sessionData: ', sessionData);
+                        var dataToSave = {};
+                        return globalStorageProm.then(function (globalStorage) {
+                            var studentPath = getLiveSessionPath('student');
+                            var studentPathActive = studentPath + '/active';
+                            var studentPathArchive = studentPath + '/archive/' + sessionData.sessionGUID;
+                            var educatorPath = getLiveSessionPath('educator');
+                            var educatorPathActive = educatorPath + '/active';
+                            var educatorPathArchive = educatorPath + '/archive/' + sessionData.sessionGUID;
+                            var sessionPath = getLiveSessionPath('sessions');
+                            dataToSave[sessionPath] = sessionData;
+                            dataToSave[studentPathArchive] = dataToSave[educatorPathArchive] = false;
+                            dataToSave[studentPathActive] = dataToSave[educatorPathActive] = { guid: false };
+                            return globalStorage.update(dataToSave);
+                        });
+                    }
+                    function checkSessionDuration() {
+                        checkDurationInterval = $interval(function () {
+                            liveSessionDuration = (getRoundTime() - sessionData.startTime)  / 60000; // convert to minutes
+                            var sessionTimeWithExtension = ENV.liveSession.sessionLength + sessionData.extendTime;
+                            var EndAlertTimeWithExtension = ENV.liveSession.sessionEndAlertTime + sessionData.extendTime;
 
-                sessionSrvApi.getLiveSessionGUID = function () {
-                    var activeSessionPath  = isTeacher ? getLiveSessionPath('educator') : getLiveSessionPath('student');
-                    activeSessionPath += '/active';
-                    return globalStorageProm.then(function (globalStorage) {
-                        return globalStorage.get(activeSessionPath);
-                    });
-                };
+                            if (liveSessionDuration >= sessionTimeWithExtension) {
+                                sessionSrvApi.endSession();
+                            } else if (liveSessionDuration >= EndAlertTimeWithExtension && !isSessionAlertShown) {
+                                sessionEndAlert();
+                            }
 
-                sessionSrvApi.loadLiveSessionData = function () {
-                    return globalStorageProm.then(function (globalStorage) {
-                        var sessionsPath = getLiveSessionPath('sessions');
-                        return globalStorage.getAndBindToServer(sessionsPath);
-                    });
-                };
+                        }, 60000);
+                    }
+                    function sessionEndAlert() {
+                        var alertPopupTitle = 'Live session will end in ' + ENV.liveSession.sessionEndAlertTime + ' minutes.';
+                        var popUpInstance = PopUpSrv.warning(alertPopupTitle, null,'Extend Session Time', 'OK');
+                        return popUpInstance.promise.then(function(){
+                            sessionData.extendTime += ENV.liveSession.sessionExtendTime;
+                            $log.debug('Live session is extend by ' + ENV.liveSession.sessionExtendTime + ' minutes.');
+                        },function(){
+                            isSessionAlertShown = true;
+                            $log.debug('Live session is continued.');
+                        });
+                    }
+                    function destroyCheckDurationInterval() {
+                        $interval.cancel(checkDurationInterval);
+                    }
 
-                sessionSrvApi.listenToLiveSessionsStatus = function () {
-                    return sessionSrvApi.getLiveSessionGUID().then(function (sessionGUID) {
-                        if (sessionGUID.guid) {
-                            sessionData.sessionGUID = sessionGUID.guid;
-                            $log.debug('Load Live Session GUID: ', sessionData.sessionGUID);
+                    var activePanelCb;
+                    var checkDurationInterval;
+                    var liveSessionDuration;
+                    var liveSessionsStatus;
+                    var currSessionGUID;
+                    var isSessionAlertShown = false;
+                    var sessionSrvApi = {};
+                    var isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
+                    var userAuth = AuthService.getAuth();
+                    var globalStorageProm = InfraConfigSrv.getGlobalStorage();
+                    var sessionData = {};
+
+                    $rootScope.$watch(function () {
+                        return sessionData;
+                    }, function (newSessionData) {
+                        if (newSessionData && !angular.equals(newSessionData, {})) {
+                            activePanelCb(newSessionData);
+                            if (newSessionData.status === SessionsStatusEnum.ENDED.enum) {
+                                PopUpSrv.info('Live session has ended');
+                            }
+                            if (newSessionData.status === SessionsStatusEnum.ACTIVE.enum && !isTeacher) {
+                                $log.debug('There is an active live session');
+                                PopUpSrv.info('You joined a live Session');
+                            }
+                        }
+                    }, true);
+
+                    sessionSrvApi.startSession = function (sessionSubject) {
+                        sessionData = sessionInit(sessionSubject);
+                        currSessionGUID = { guid: sessionData.sessionGUID };
+                        liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
+                        checkSessionDuration();
+                        saveSession().then(function (res) {
+                            $log.debug('Live Session Saved: ', res);
+                        }).catch(function (err) {
+                            $log.error('Error saving live session to firebase: ', err);
+                        });
+                    };
+
+                    sessionSrvApi.getSessionSubjects = function() {
+                        if (!subjects) {
+                            subjects = [SessionSubjectEnumConst.MATH, SessionSubjectEnumConst.ENGLISH];
+                        }
+                        return subjects.map(function (subjectId) {
+                            var name = UtilitySrv.object.getKeyByValue(SessionSubjectEnumConst, subjectId).toLowerCase();
+                            return {
+                                id: subjectId,
+                                name: name,
+                                iconName: 'znkSession-' + name + '-icon'
+                            };
+                        });
+                    };
+
+                    sessionSrvApi.getLiveSessionGUID = function () {
+                        var activeSessionPath  = isTeacher ? getLiveSessionPath('educator') : getLiveSessionPath('student');
+                        activeSessionPath += '/active';
+                        return globalStorageProm.then(function (globalStorage) {
+                            return globalStorage.getAndBindToServer(activeSessionPath);
+                        });
+                    };
+
+                    sessionSrvApi.loadLiveSessionData = function () {
+                        return globalStorageProm.then(function (globalStorage) {
+                            var sessionsPath = getLiveSessionPath('sessions');
+                            return globalStorage.getAndBindToServer(sessionsPath);
+                        });
+                    };
+
+                    $rootScope.$watch(function () {
+                        return currSessionGUID;
+                    }, function (newSessionGUID) {
+                        if (newSessionGUID && newSessionGUID.guid) {
+                            $log.debug('Load Live Session GUID: ', newSessionGUID.guid);
                             liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
                         } else {
                             $log.debug('There isn\'t active live session ');
@@ -16352,30 +16346,36 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                                 $log.debug('loadLiveSessionData, sessionData: ', sessionData);
                             });
                         }
-                    });
-                };
+                    }, true);
 
-                sessionSrvApi.endSession = function () {
-                    $log.debug('Live session has ended.');
-                    var endTime = getRoundTime();
-                    sessionData.status = liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
-                    sessionData.duration = endTime - sessionData.startTime;
-                    destroyCheckDurationInterval();
-                    updateSession().then(function (res) {
-                        $log.debug('Live Session Updated in firebase: ', res);
-                    }).catch(function (err) {
-                        $log.error('Error updating live session to firebase: ', err);
-                    });
-                };
+                    sessionSrvApi.listenToLiveSessionsStatus = function () {
+                        return sessionSrvApi.getLiveSessionGUID().then(function (sessionGUID) {
+                            currSessionGUID = sessionGUID;
+                        });
+                    };
 
-                sessionSrvApi.registerToCurrUserLiveSessionStateChanges = function (cb) {
-                    if (angular.isFunction(cb)) {
-                        activePanelCb = cb;
-                    }
-                };
+                    sessionSrvApi.endSession = function () {
+                        $log.debug('Live session has ended.');
+                        currSessionGUID = { guid: false };
+                        sessionData.endTime = getRoundTime();
+                        sessionData.status = liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
+                        sessionData.duration = sessionData.endTime - sessionData.startTime;
+                        destroyCheckDurationInterval();
+                        updateSession().then(function (res) {
+                            $log.debug('Live Session Updated in firebase: ', res);
+                        }).catch(function (err) {
+                            $log.error('Error updating live session to firebase: ', err);
+                        });
+                    };
 
-                return sessionSrvApi;
-            }];
+                    sessionSrvApi.registerToCurrUserLiveSessionStateChanges = function (cb) {
+                        if (angular.isFunction(cb)) {
+                            activePanelCb = cb;
+                        }
+                    };
+
+                    return sessionSrvApi;
+                }];
         }
     );
 })(angular);
@@ -16384,6 +16384,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
 angular.module('znk.infra.znkSession').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkSession/components/sessionBtn/sessionBtn.template.html",
     "<md-button class=\"session-btn\" ng-disabled=\"vm.isOffline\"\n" +
+    "           aria-label=\"{{!vm.isLiveSessionActive ? 'ZNK_SESSION.START_SESSION' : 'ZNK_SESSION.END_SESSION' | translate}}\"\n" +
     "           ng-class=\"{'offline': vm.isOffline, 'end-session': vm.isLiveSessionActive}\"\n" +
     "           ng-click=\"!vm.isLiveSessionActive ? vm.showSessionModal() : vm.endSession()\">\n" +
     "    <span ng-if=\"!vm.isLiveSessionActive\">{{'ZNK_SESSION.START_SESSION' | translate}}</span>\n" +

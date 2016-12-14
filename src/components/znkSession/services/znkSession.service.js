@@ -140,9 +140,9 @@
 
                     sessionSrvApi.startSession = function (sessionSubject) {
                         sessionData = sessionInit(sessionSubject);
-                        currSessionGUID = { guid: sessionData.sessionGUID};
+                        currSessionGUID = { guid: sessionData.sessionGUID };
                         liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
-                        // checkSessionDuration();
+                        checkSessionDuration();
                         saveSession().then(function (res) {
                             $log.debug('Live Session Saved: ', res);
                         }).catch(function (err) {
@@ -206,11 +206,11 @@
 
                     sessionSrvApi.endSession = function () {
                         $log.debug('Live session has ended.');
-                        currSessionGUID = null;
+                        currSessionGUID = { guid: false };
                         sessionData.endTime = getRoundTime();
                         sessionData.status = liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
                         sessionData.duration = sessionData.endTime - sessionData.startTime;
-                        // destroyCheckDurationInterval();
+                        destroyCheckDurationInterval();
                         updateSession().then(function (res) {
                             $log.debug('Live Session Updated in firebase: ', res);
                         }).catch(function (err) {

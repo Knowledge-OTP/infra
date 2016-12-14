@@ -6,7 +6,7 @@
             bindings: {},
             templateUrl: 'components/znkSession/components/sessionBtn/sessionBtn.template.html',
             controllerAs: 'vm',
-            controller: function ($log, $scope, $mdDialog, SessionSrv, StudentContextSrv,
+            controller: function ($rootScope, $log, $scope, $mdDialog, SessionSrv, StudentContextSrv,
                                   PresenceService, ENV) {
                 'ngInject';
 

@@ -17,10 +17,10 @@
     'use strict';
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "ScreenSharingSrv", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", "$translate", "SessionSrv", "SessionsStatusEnum", "toggleAutoCallEnum", "UserScreenSharingStateEnum", function ($q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
+        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "ScreenSharingSrv", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", "$translate", "SessionSrv", "SessionsStatusEnum", "toggleAutoCallEnum", "UserScreenSharingStateEnum", "ScreenSharingUiSrv", function ($q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
                                             PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document,
                                             $translate, SessionSrv, SessionsStatusEnum, toggleAutoCallEnum,
-                                            UserScreenSharingStateEnum) {
+                                            UserScreenSharingStateEnum, ScreenSharingUiSrv) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
@@ -31,7 +31,6 @@
                         durationToDisplay,
                         timerInterval,
                         screenShareStatus = 0,
-                        // callStatus = 0,
                         screenShareIsViewer,
                         liveSessionStatus = 0,
                         liveSessionDuration = 0,
@@ -156,6 +155,7 @@
                                 screenShareMode(false);
                                 scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.DISABLE.enum;
                                 scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
+                                ScreenSharingUiSrv.endScreenSharing();
                                 break;
                             case scope.d.states.LIVE_SESSION :
                                 bodyDomElem.addClass(activePanelVisibleClassName);
@@ -189,18 +189,6 @@
                         }
                     }
 
-                    // // Listen to status changes in Calls
-                    // var listenToCallsStatus = function (callsData) {
-                    //     if (callsData) {
-                    //         if (callsData.status === CallsStatusEnum.ACTIVE_CALL.enum) {
-                    //             callStatus = scope.d.states.CALL_ACTIVE;
-                    //         } else {
-                    //             callStatus = 0;
-                    //         }
-                    //         updateStatus();
-                    //     }
-                    // };
-
                     // Listen to status changes in ScreenSharing
                     var listenToScreenShareStatus = function (screenSharingStatus) {
                         if (screenSharingStatus) {
@@ -215,8 +203,6 @@
                     };
 
                     ScreenSharingSrv.registerToCurrUserScreenSharingStateChanges(listenToScreenShareStatus);
-
-                    // CallsEventsSrv.registerToCurrUserCallStateChanges(listenToCallsStatus);
 
                     SessionSrv.registerToCurrUserLiveSessionStateChanges(listenToLiveSessionStatus);
 
