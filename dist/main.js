@@ -74,17 +74,16 @@
     'use strict';
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "ScreenSharingSrv", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", "$translate", "SessionSrv", "SessionsStatusEnum", "toggleAutoCallEnum", "UserScreenSharingStateEnum", "ScreenSharingUiSrv", function ($q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
-                                            PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document,
-                                            $translate, SessionSrv, SessionsStatusEnum, toggleAutoCallEnum,
-                                            UserScreenSharingStateEnum, ScreenSharingUiSrv) {
+        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "ScreenSharingSrv", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", "$translate", "SessionSrv", "SessionsStatusEnum", "toggleAutoCallEnum", "UserScreenSharingStateEnum", "ScreenSharingUiSrv", "$window", "$timeout", function ($q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
+                                                                                                                                                                                                                                                                                                                                                         PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document,
+                                                                                                                                                                                                                                                                                                                                                         $translate, SessionSrv, SessionsStatusEnum, toggleAutoCallEnum,
+                                                                                                                                                                                                                                                                                                                                                         UserScreenSharingStateEnum, ScreenSharingUiSrv, $window, $timeout) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
                 link: function(scope, element) {
                     var receiverId,
                         isOffline,
-                        isTeacher,
                         durationToDisplay,
                         timerInterval,
                         screenShareStatus = 0,
@@ -92,7 +91,9 @@
                         liveSessionStatus = 0,
                         liveSessionDuration = 0,
                         timerSecondInterval = 1000,
-                        activePanelVisibleClassName = 'activePanel-visible';
+                        activePanelVisibleClassName = 'activePanel-visible',
+                        isStudent = ENV.appContext.toLowerCase() === 'student',
+                        isTeacher = ENV.appContext.toLowerCase() === 'dashboard';
 
                     var bodyDomElem = angular.element($document).find('body');
 
@@ -135,11 +136,9 @@
                         $log.debug('student or teacher context changed: ', receiverId);
                     };
 
-                    if (ENV.appContext.toLowerCase() === 'dashboard') {
-                        isTeacher = true;
+                    if (isTeacher) {
                         StudentContextSrv.registerToStudentContextChange(listenToStudentOrTeacherContextChange);
-                    } else if (ENV.appContext.toLowerCase() === 'student') {
-                        isTeacher = false;
+                    } else if (isStudent) {
                         TeacherContextSrv.registerToTeacherContextChange(listenToStudentOrTeacherContextChange);
                     } else {
                         $log.error('appContext is not compatible with this component: ', ENV.appContext);
@@ -212,7 +211,8 @@
                                 screenShareMode(false);
                                 scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.DISABLE.enum;
                                 scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
-                                ScreenSharingUiSrv.endScreenSharing();
+                                closeScreenSharing();
+                                // ScreenSharingUiSrv.endScreenSharing();
                                 break;
                             case scope.d.states.LIVE_SESSION :
                                 bodyDomElem.addClass(activePanelVisibleClassName);
@@ -226,6 +226,16 @@
                         }
                     }
 
+                    function closeScreenSharing() {
+                        var screenSharingElm = $window.document.querySelector('screen-sharing');
+                        if (screenSharingElm) {
+                            $timeout(function () {
+                                screenSharingElm.querySelector('.close-icon-wrapper').click();
+                            });
+                        }
+
+                    }
+
                     function getRoundTime() {
                         return Math.floor(Date.now() / 1000) * 1000;
                     }
@@ -236,9 +246,6 @@
                             if (sessionData.status === SessionsStatusEnum.ACTIVE.enum) {
                                 liveSessionStatus = scope.d.states.LIVE_SESSION;
                                 liveSessionDuration = getRoundTime() - sessionData.startTime;
-
-                                var initialUid = isTeacher ? sessionData.studentUID : sessionData.educatorUID;
-                                listenToStudentOrTeacherContextChange(null, initialUid);
                             } else {
                                 liveSessionStatus = scope.d.states.NONE;
                             }
@@ -16288,6 +16295,25 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                         }
                     }, true);
 
+                    $rootScope.$watch(function () {
+                        return currSessionGUID;
+                    }, function (newSessionGUID) {
+                        if (newSessionGUID && newSessionGUID.guid) {
+                            $log.debug('Load Live Session GUID: ', newSessionGUID.guid);
+                            liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
+                        } else {
+                            $log.debug('There isn\'t active live session ');
+                            liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
+                        }
+                        var isSessionData = !(angular.equals(sessionData, {}));
+                        if (liveSessionsStatus && !isSessionData) {
+                            sessionSrvApi.loadLiveSessionData().then(function (currSessionData) {
+                                sessionData = currSessionData;
+                                $log.debug('loadLiveSessionData, sessionData: ', sessionData);
+                            });
+                        }
+                    }, true);
+
                     sessionSrvApi.startSession = function (sessionSubject) {
                         sessionData = sessionInit(sessionSubject);
                         currSessionGUID = { guid: sessionData.sessionGUID };
@@ -16329,25 +16355,6 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                         });
                     };
 
-                    $rootScope.$watch(function () {
-                        return currSessionGUID;
-                    }, function (newSessionGUID) {
-                        if (newSessionGUID && newSessionGUID.guid) {
-                            $log.debug('Load Live Session GUID: ', newSessionGUID.guid);
-                            liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
-                        } else {
-                            $log.debug('There isn\'t active live session ');
-                            liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
-                        }
-                        var isSessionData = !(angular.equals(sessionData, {}));
-                        if (liveSessionsStatus && !isSessionData) {
-                            sessionSrvApi.loadLiveSessionData().then(function (currSessionData) {
-                                sessionData = currSessionData;
-                                $log.debug('loadLiveSessionData, sessionData: ', sessionData);
-                            });
-                        }
-                    }, true);
-
                     sessionSrvApi.listenToLiveSessionsStatus = function () {
                         return sessionSrvApi.getLiveSessionGUID().then(function (sessionGUID) {
                             currSessionGUID = sessionGUID;
@@ -16356,12 +16363,12 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
 
                     sessionSrvApi.endSession = function () {
                         $log.debug('Live session has ended.');
-                        currSessionGUID = { guid: false };
                         sessionData.endTime = getRoundTime();
                         sessionData.status = liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
                         sessionData.duration = sessionData.endTime - sessionData.startTime;
                         destroyCheckDurationInterval();
                         updateSession().then(function (res) {
+                            currSessionGUID = { guid: false };
                             $log.debug('Live Session Updated in firebase: ', res);
                         }).catch(function (err) {
                             $log.error('Error updating live session to firebase: ', err);

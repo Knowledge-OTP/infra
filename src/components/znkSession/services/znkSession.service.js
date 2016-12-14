@@ -138,6 +138,25 @@
                         }
                     }, true);
 
+                    $rootScope.$watch(function () {
+                        return currSessionGUID;
+                    }, function (newSessionGUID) {
+                        if (newSessionGUID && newSessionGUID.guid) {
+                            $log.debug('Load Live Session GUID: ', newSessionGUID.guid);
+                            liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
+                        } else {
+                            $log.debug('There isn\'t active live session ');
+                            liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
+                        }
+                        var isSessionData = !(angular.equals(sessionData, {}));
+                        if (liveSessionsStatus && !isSessionData) {
+                            sessionSrvApi.loadLiveSessionData().then(function (currSessionData) {
+                                sessionData = currSessionData;
+                                $log.debug('loadLiveSessionData, sessionData: ', sessionData);
+                            });
+                        }
+                    }, true);
+
                     sessionSrvApi.startSession = function (sessionSubject) {
                         sessionData = sessionInit(sessionSubject);
                         currSessionGUID = { guid: sessionData.sessionGUID };
@@ -179,25 +198,6 @@
                         });
                     };
 
-                    $rootScope.$watch(function () {
-                        return currSessionGUID;
-                    }, function (newSessionGUID) {
-                        if (newSessionGUID && newSessionGUID.guid) {
-                            $log.debug('Load Live Session GUID: ', newSessionGUID.guid);
-                            liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
-                        } else {
-                            $log.debug('There isn\'t active live session ');
-                            liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
-                        }
-                        var isSessionData = !(angular.equals(sessionData, {}));
-                        if (liveSessionsStatus && !isSessionData) {
-                            sessionSrvApi.loadLiveSessionData().then(function (currSessionData) {
-                                sessionData = currSessionData;
-                                $log.debug('loadLiveSessionData, sessionData: ', sessionData);
-                            });
-                        }
-                    }, true);
-
                     sessionSrvApi.listenToLiveSessionsStatus = function () {
                         return sessionSrvApi.getLiveSessionGUID().then(function (sessionGUID) {
                             currSessionGUID = sessionGUID;
@@ -206,12 +206,12 @@
 
                     sessionSrvApi.endSession = function () {
                         $log.debug('Live session has ended.');
-                        currSessionGUID = { guid: false };
                         sessionData.endTime = getRoundTime();
                         sessionData.status = liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
                         sessionData.duration = sessionData.endTime - sessionData.startTime;
                         destroyCheckDurationInterval();
                         updateSession().then(function (res) {
+                            currSessionGUID = { guid: false };
                             $log.debug('Live Session Updated in firebase: ', res);
                         }).catch(function (err) {
                             $log.error('Error updating live session to firebase: ', err);
