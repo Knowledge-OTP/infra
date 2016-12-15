@@ -3,7 +3,8 @@
 '../../scss/imports/mixins';
 
 @import './scss/md-dialog';
-@import './components/sessionBtn/sessionBtn.scss';
+@import './scss/live-session-frame';
+@import './components/sessionBtn/sessionBtn';
 @import './components/startSessionModal/startSessionModal';
 
 md-dialog {

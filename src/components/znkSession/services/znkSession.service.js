@@ -8,10 +8,9 @@
                 subjects = _subjects;
             };
 
-            this.$get = ["$rootScope", "$log", "ENV", "AuthService", "InfraConfigSrv", "StudentContextSrv", "TeacherContextSrv", "UtilitySrv", "SessionSubjectEnumConst", "$mdDialog", "SessionsStatusEnum", "$window", "$timeout", "PopUpSrv", "$interval",
-                function($rootScope, $log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
+            this.$get = function($rootScope, $log, ENV, AuthService, InfraConfigSrv,  StudentContextSrv, TeacherContextSrv,
                          UtilitySrv, SessionSubjectEnumConst, $mdDialog, SessionsStatusEnum,
-                         $window, $timeout, PopUpSrv, $interval) {
+                         $window, $timeout, PopUpSrv, $interval, $animate, $compile) {
                     'ngInject';
 
                     function getRoundTime() {
@@ -110,7 +109,41 @@
                     function destroyCheckDurationInterval() {
                         $interval.cancel(checkDurationInterval);
                     }
+                    function loadSessionFrame() {
+                        var sessionFrameContainerTemplate =
+                            '<div class="frame-container">' +
+                                '<div class="square-side top"></div>' +
+                                '<div class="square-side right"></div>' +
+                                '<div class="square-side bottom"></div>' +
+                                '<div class="square-side left"></div>' +
+                            '</div>';
 
+                        var sessionFrameContainerElm = angular.element(sessionFrameContainerTemplate);
+                        liveSessionFrameElm.append(sessionFrameContainerElm);
+                        $animate.enter(sessionFrameContainerElm[0], liveSessionFrameElm[0]);
+                        $compile(sessionFrameContainerElm)(childScope);
+                    }
+
+                    function clearSessionFrame() {
+                        if(childScope){
+                            childScope.$destroy();
+                        }
+
+                        if(liveSessionFrameElm){
+                            var hasContents = !!liveSessionFrameElm.contents().length;
+                            if(hasContents){
+                                $animate.leave(liveSessionFrameElm.contents());
+                            }
+                        }
+                    }
+
+                    function _init() {
+                        var bodyElement = angular.element(document.body);
+                        liveSessionFrameElm = angular.element('<div class="live-session-frame"></div>');
+                        bodyElement.append(liveSessionFrameElm);
+                    }
+
+                    var liveSessionFrameElm;
                     var activePanelCb;
                     var checkDurationInterval;
                     var liveSessionDuration;
@@ -122,6 +155,7 @@
                     var userAuth = AuthService.getAuth();
                     var globalStorageProm = InfraConfigSrv.getGlobalStorage();
                     var sessionData = {};
+                    var childScope = $rootScope.$new(true);
 
                     $rootScope.$watch(function () {
                         return sessionData;
@@ -162,6 +196,7 @@
                         currSessionGUID = { guid: sessionData.sessionGUID };
                         liveSessionsStatus = SessionsStatusEnum.ACTIVE.enum;
                         checkSessionDuration();
+                        loadSessionFrame();
                         saveSession().then(function (res) {
                             $log.debug('Live Session Saved: ', res);
                         }).catch(function (err) {
@@ -210,6 +245,7 @@
                         sessionData.status = liveSessionsStatus = SessionsStatusEnum.ENDED.enum;
                         sessionData.duration = sessionData.endTime - sessionData.startTime;
                         destroyCheckDurationInterval();
+                        clearSessionFrame();
                         updateSession().then(function (res) {
                             currSessionGUID = { guid: false };
                             $log.debug('Live Session Updated in firebase: ', res);
@@ -224,8 +260,12 @@
                         }
                     };
 
+                    $timeout(function(){
+                        _init();
+                    });
+
                     return sessionSrvApi;
-                }];
+                };
         }
     );
 })(angular);

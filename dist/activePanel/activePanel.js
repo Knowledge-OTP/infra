@@ -17,10 +17,10 @@
     'use strict';
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "ScreenSharingSrv", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", "$translate", "SessionSrv", "SessionsStatusEnum", "toggleAutoCallEnum", "UserScreenSharingStateEnum", "ScreenSharingUiSrv", "$window", "$timeout", function ($q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
+        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "ScreenSharingSrv", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", "$translate", "SessionSrv", "SessionsStatusEnum", "toggleAutoCallEnum", "UserScreenSharingStateEnum", "ScreenSharingUiSrv", function ($q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
                                                                                                                                                                                                                                                                                                                                                          PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document,
                                                                                                                                                                                                                                                                                                                                                          $translate, SessionSrv, SessionsStatusEnum, toggleAutoCallEnum,
-                                                                                                                                                                                                                                                                                                                                                         UserScreenSharingStateEnum, ScreenSharingUiSrv, $window, $timeout) {
+                                                                                                                                                                                                                                                                                                                                                         UserScreenSharingStateEnum, ScreenSharingUiSrv) {
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
@@ -29,7 +29,6 @@
                         isOffline,
                         durationToDisplay,
                         timerInterval,
-                        screenShareStatus = 0,
                         screenShareIsViewer,
                         liveSessionStatus = 0,
                         liveSessionDuration = 0,
@@ -154,8 +153,8 @@
                                 screenShareMode(false);
                                 scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.DISABLE.enum;
                                 scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
-                                closeScreenSharing();
-                                // ScreenSharingUiSrv.endScreenSharing();
+                                // closeScreenSharing();
+                                ScreenSharingUiSrv.endScreenSharing();
                                 break;
                             case scope.d.states.LIVE_SESSION :
                                 bodyDomElem.addClass(activePanelVisibleClassName);
@@ -167,16 +166,6 @@
                             default :
                                 $log.error('currStatus is in an unknown state', scope.d.currStatus);
                         }
-                    }
-
-                    function closeScreenSharing() {
-                        var screenSharingElm = $window.document.querySelector('screen-sharing');
-                        if (screenSharingElm) {
-                            $timeout(function () {
-                                screenSharingElm.querySelector('.close-icon-wrapper').click();
-                            });
-                        }
-
                     }
 
                     function getRoundTime() {
@@ -196,23 +185,7 @@
                         }
                     }
 
-                    // Listen to status changes in ScreenSharing
-                    var listenToScreenShareStatus = function (screenSharingStatus) {
-                        if (screenSharingStatus) {
-                            if (screenSharingStatus !== UserScreenSharingStateEnum.NONE.enum) {
-                                screenShareStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
-                                screenShareIsViewer = (screenSharingStatus === UserScreenSharingStateEnum.VIEWER.enum);
-                            } else {
-                                screenShareStatus = 0;
-                            }
-                            // updateStatus();
-                        }
-                    };
-
-                    ScreenSharingSrv.registerToCurrUserScreenSharingStateChanges(listenToScreenShareStatus);
-
                     SessionSrv.registerToCurrUserLiveSessionStateChanges(listenToLiveSessionStatus);
-
                 }
             };
         }]);

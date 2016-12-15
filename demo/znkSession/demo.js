@@ -87,9 +87,13 @@
             ActivePanelSrv.loadActivePanel();
             SessionSrv.listenToLiveSessionsStatus();
         })
-        .controller('Main', function () {
+        .controller('Main', function ($timeout, TeacherContextSrv, StudentContextSrv) {
             'ngInject';
             var vm = this;
 
+            $timeout(function () {
+                StudentContextSrv.setCurrentUid('c47f4f57-521c-4832-b505-c0093737ceff');
+                TeacherContextSrv.setCurrentUid('56e66fe6-bc5e-4e60-8b1d-8e87f44e96d9');
+            }, 2000);
         });
 })(angular);

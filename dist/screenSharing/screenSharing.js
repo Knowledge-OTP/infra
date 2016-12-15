@@ -603,16 +603,16 @@
                         }
                     };
 
-                    var screenSharingHtmlTemplate =
-                        '<div class="show-hide-animation">' +
-                        '<screen-sharing user-sharing-state="d.userSharingState" ' +
-                        'on-close="d.onClose()">' +
-                        '</screen-sharing>' +
-                        '</div>';
-                    var screenSharingElement = angular.element(screenSharingHtmlTemplate);
-                    screenSharingPhElement.append(screenSharingElement);
-                    $animate.enter(screenSharingElement[0], screenSharingPhElement[0]);
-                    $compile(screenSharingElement)(childScope);
+                    // var screenSharingHtmlTemplate =
+                    //     '<div class="show-hide-animation">' +
+                    //     '<screen-sharing user-sharing-state="d.userSharingState" ' +
+                    //     'on-close="d.onClose()">' +
+                    //     '</screen-sharing>' +
+                    //     '</div>';
+                    // var screenSharingElement = angular.element(screenSharingHtmlTemplate);
+                    // screenSharingPhElement.append(screenSharingElement);
+                    // $animate.enter(screenSharingElement[0], screenSharingPhElement[0]);
+                    // $compile(screenSharingElement)(childScope);
                 });
 
                 return defer.promise;

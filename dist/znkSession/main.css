@@ -384,6 +384,29 @@ md-dialog.base {
       width: 14px;
       height: 19px; }
 
+.live-session-frame {
+  position: relative;
+  z-index: 10; }
+  .live-session-frame .frame-container .square-side {
+    background: #ff931e;
+    position: fixed; }
+    .live-session-frame .frame-container .square-side.top, .live-session-frame .frame-container .square-side.bottom {
+      height: 5px;
+      right: 0;
+      left: 0; }
+    .live-session-frame .frame-container .square-side.right, .live-session-frame .frame-container .square-side.left {
+      width: 5px;
+      top: 0;
+      bottom: 0; }
+    .live-session-frame .frame-container .square-side.top {
+      top: 0; }
+    .live-session-frame .frame-container .square-side.right {
+      right: 0; }
+    .live-session-frame .frame-container .square-side.bottom {
+      bottom: 0; }
+    .live-session-frame .frame-container .square-side.left {
+      left: 0; }
+
 znk-session .session-btn {
   font-size: 14px;
   color: #ffffff;
