@@ -17,11 +17,12 @@
     'use strict';
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "ScreenSharingSrv", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", "$translate", "SessionSrv", "SessionsStatusEnum", "toggleAutoCallEnum", "UserScreenSharingStateEnum", "ScreenSharingUiSrv", function ($q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
-                                                                                                                                                                                                                                                                                                                                                         PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document,
-                                                                                                                                                                                                                                                                                                                                                         $translate, SessionSrv, SessionsStatusEnum, toggleAutoCallEnum,
-                                                                                                                                                                                                                                                                                                                                                         UserScreenSharingStateEnum, ScreenSharingUiSrv) {
-            return {
+        .directive('activePanel',
+            ["$timeout", "$window", "$q", "$interval", "$filter", "$log", "CallsUiSrv", "ScreenSharingSrv", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$translate", "SessionSrv", "SessionsStatusEnum", "toggleAutoCallEnum", function ($timeout, $window, $q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
+                         PresenceService, StudentContextSrv, TeacherContextSrv, ENV,
+                         $translate, SessionSrv, SessionsStatusEnum, toggleAutoCallEnum) {
+                'ngInject';
+                return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
                 link: function(scope, element) {
@@ -29,7 +30,6 @@
                         isOffline,
                         durationToDisplay,
                         timerInterval,
-                        screenShareIsViewer,
                         liveSessionStatus = 0,
                         liveSessionDuration = 0,
                         timerSecondInterval = 1000,
@@ -37,7 +37,7 @@
                         isStudent = ENV.appContext.toLowerCase() === 'student',
                         isTeacher = ENV.appContext.toLowerCase() === 'dashboard';
 
-                    var bodyDomElem = angular.element($document).find('body');
+                    var bodyDomElem = angular.element($window.document.body);
 
                     var translateNamespace = 'ACTIVE_PANEL';
 
@@ -91,6 +91,7 @@
                             NONE: 0,
                             LIVE_SESSION: 1
                         },
+                        toggleAutoCall: {},
                         shareScreenBtnsEnable: true,
                         isTeacher: isTeacher,
                         presenceStatusMap: PresenceService.userStatus,
@@ -131,14 +132,11 @@
                         destroyTimer();
                     });
 
-                    function screenShareMode(isScreenShareMode) {
-                        if (isScreenShareMode && screenShareIsViewer) {
-                            element.addClass('screen-share-mode');
-                            $log.debug('screenShareMode activate');
-                        } else {
-                            element.removeClass('screen-share-mode');
-                            $log.debug('screenShareMode remove');
-                        }
+                    function endScreenSharing(){
+                        // ScreenSharingUiSrv.endScreenSharing();
+                        $timeout(function () {
+                            $window.document.querySelector('.close-icon-wrapper').click();
+                        });
                     }
 
                     function updateStatus() {
@@ -150,15 +148,15 @@
                                 $log.debug('ActivePanel State: NONE');
                                 bodyDomElem.removeClass(activePanelVisibleClassName);
                                 destroyTimer();
-                                screenShareMode(false);
                                 scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.DISABLE.enum;
                                 scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
-                                // closeScreenSharing();
-                                ScreenSharingUiSrv.endScreenSharing();
+                                endScreenSharing();
+                                SessionSrv.clearSessionFrame();
                                 break;
                             case scope.d.states.LIVE_SESSION :
                                 bodyDomElem.addClass(activePanelVisibleClassName);
                                 startTimer();
+                                SessionSrv.loadSessionFrame();
                                 scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.ACTIVATE.enum;
                                 scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
                                 $log.debug('ActivePanel State: LIVE_SESSION');
