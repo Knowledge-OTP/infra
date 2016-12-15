@@ -164,7 +164,7 @@
 
                 function failFnMain(e) {
                     var errMsg = 'MediaSrv: fail to load sound, src: '+src;
-                    $log.debug(errMsg, e);
+                    $log.error(errMsg, e);
                     if(angular.isDefined($window.atatus) && angular.isFunction($window.atatus.notify)) {
                         $window.atatus.notify(errMsg);
                     }
