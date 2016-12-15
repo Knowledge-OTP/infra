@@ -41,15 +41,19 @@
                         registerEvents[userId] = {};
                     }
 
-                    if (!registerEvents[userId].valueCB) {
-                        registerEvents[userId].valueCB = [];
+                    if(!registerEvents[userId][contentType]){
+                        registerEvents[userId][contentType] = {};
                     }
-                    registerEvents[userId].valueCB.push(valueCB);
 
-                    if (!registerEvents[userId].changeCB) {
-                        registerEvents[userId].changeCB = [];
+                    if (!registerEvents[userId][contentType].valueCB) {
+                        registerEvents[userId][contentType].valueCB = [];
                     }
-                    registerEvents[userId].changeCB.push({
+                    registerEvents[userId][contentType].valueCB.push(valueCB);
+
+                    if (!registerEvents[userId][contentType].changeCB) {
+                        registerEvents[userId][contentType].changeCB = [];
+                    }
+                    registerEvents[userId][contentType].changeCB.push({
                         cb: changeCB,
                         guids: []
                     });
@@ -163,7 +167,7 @@
 
                     $q.all(getPromArr).then(function () {
                         userAssignModuleService.assignModules = moduleResults;
-                        applyCB(registerEvents[userId].valueCB);
+                        applyCB(registerEvents[userId][contentType].valueCB, contentType);
                     });
                 });
             }
@@ -193,10 +197,12 @@
                 });
             }
 
-            function applyCB(cbArr) {
+            function applyCB(cbArr, contentType) {
                 angular.forEach(cbArr, function (valueCB) {
                     if (angular.isFunction(valueCB)) {
-                        valueCB(userAssignModuleService.assignModules);
+                        if(valueCB.type === contentType){
+                            valueCB(userAssignModuleService.assignModules);
+                        }
                     }
                 });
             }
