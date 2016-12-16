@@ -381,7 +381,7 @@
             };
 
             /* Module Results Functions */
-            this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId) {
+            this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId, assignContentType) {
 
                 return $q.all([
                     this.getExerciseResult(exerciseTypeId, exerciseId, null, null, true),
@@ -395,7 +395,9 @@
                         exerciseResult.$$path = EXERCISE_RESULTS_PATH + '/' + exerciseResult.guid;
                     }
                     exerciseResult.moduleId = moduleId;
-                    exerciseResult.$save = moduleExerciseSaveFn;
+                    exerciseResult.$save = function(){
+                        return moduleExerciseSaveFn.bind(this, assignContentType);
+                    };
                     return exerciseResult;
                 });
             };
@@ -434,7 +436,7 @@
                                 angular.forEach(moduleResult.exerciseResults, function (exerciseResult, exerciseTypeId) {
                                     angular.forEach(exerciseResult, function (exerciseResultGuid, exerciseId) {
                                         getExerciseResultsProm = getExerciseResultsProm.then(function () {
-                                            return ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId).then(function (exerciseResults) {
+                                            return ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType).then(function (exerciseResults) {
                                                 if (exerciseResults) {
                                                     moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResults;
                                                 }
@@ -501,7 +503,7 @@
                 });
             };
 
-            function moduleExerciseSaveFn() {
+            function moduleExerciseSaveFn(assignContentType) {
 
                 /* jshint validthis: true */
                 return _calcExerciseResultFields(this).then(function (response) {
@@ -520,7 +522,7 @@
                         exerciseResultsGuids[exerciseTypeId][exerciseId] = exerciseResult.guid;
                         dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
 
-                        return ExerciseResultSrv.getModuleResult(exerciseResult.uid, exerciseResult.moduleId).then(function (moduleResult) {
+                        return ExerciseResultSrv.getModuleResult(exerciseResult.uid, exerciseResult.moduleId, undefined,undefined,assignContentType).then(function (moduleResult) {
                             if (!moduleResult.exerciseResults) {
                                 moduleResult.exerciseResults = {};
                             }
