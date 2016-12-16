@@ -678,23 +678,29 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
             userAssignModuleService.offExternalOnValue = function (userId, valueCB, changeCB) {
                 InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
-                    studentStorage.offEvent('value', 'users/' + userId + '/moduleResults', onValueEventCB);
-                    angular.forEach(registerEvents[userId].valueCB, function (cb, index) {
-                        if (cb === valueCB) {
-                            registerEvents[userId].valueCB.splice(index, 1);
-                        }
-                    });
-
-                    if (registerEvents[userId].changeCB) {
-                        angular.forEach(registerEvents[userId].changeCB, function (cbData, index) {
-                            if (cbData.cb === changeCB) {
-                                angular.forEach(cbData.guids, function (resultGuid) {
-                                    studentStorage.offEvent('child_changed', 'moduleResults/' + resultGuid, onModuleResultChangedCB);
-                                });
-                                registerEvents[userId].changeCB.splice(index, 1);
+                    var assignContentPath = _getAssignContentPath(valueCB.type);
+                    studentStorage.offEvent('value', 'users/' + userId + '/' + assignContentPath, onValueEventCB);
+                    angular.forEach(registerEvents[userId], function (cbArr, contentType) {
+                        angular.forEach(registerEvents[userId][contentType].valueCB, function (cb, index) {
+                            if (cb === valueCB) {
+                                registerEvents[userId][contentType].valueCB.splice(index, 1);
                             }
                         });
-                    }
+                    });
+
+                    angular.forEach(registerEvents[userId], function (cbArr, contentType) {
+                        if (registerEvents[userId][contentType].changeCB) {
+                            angular.forEach(registerEvents[userId][contentType].changeCB, function (cbData, index) {
+                                if (cbData.cb === changeCB) {
+                                    angular.forEach(cbData.guids, function (resultGuid) {
+                                        var assignContentPath = _getAssignContentPath(changeCB.type);
+                                        studentStorage.offEvent('child_changed', assignContentPath + '/'+ resultGuid, onModuleResultChangedCB);
+                                    });
+                                    registerEvents[userId][contentType].changeCB.splice(index, 1);
+                                }
+                            });
+                        }
+                    });
                 });
             };
 
@@ -722,7 +728,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     });
 
                     var assignContentPath = _getAssignContentPath(contentType);
-                    studentStorage.onEvent('value', 'users/' + userId + assignContentPath, onValueEventCB);
+                    studentStorage.onEvent('value', 'users/' + userId + '/' + assignContentPath, onValueEventCB);
                 });
             };
 
@@ -781,9 +787,9 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             function _getAssignContentPath(contentType) {
                 switch (contentType) {
                     case 1:
-                        return '/moduleResults';
+                        return 'moduleResults';
                     case 2:
-                        return '/assignHomework/homework';
+                        return 'assignHomework/homework';
                 }
             }
 
