@@ -22,7 +22,9 @@
 
                     var newChatterHandler = function (newChatter) {
                         if (newChatter.email === ZNK_CHAT.SUPPORT_EMAIL) {
-                            scope.d.chatData.support = newChatter;
+                            if(angular.isUndefined(scope.d.chatData.support)) { // todo - temporary fix (for some reason the callback called twice)
+                                scope.d.chatData.support = newChatter;
+                            }
                         } else {
                             scope.d.chatData.chatParticipantsArr.push(newChatter);
                         }

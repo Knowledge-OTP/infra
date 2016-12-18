@@ -10586,7 +10586,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 
                     var newChatterHandler = function (newChatter) {
                         if (newChatter.email === ZNK_CHAT.SUPPORT_EMAIL) {
-                            scope.d.chatData.support = newChatter;
+                            if(angular.isUndefined(scope.d.chatData.support)) { // todo - temporary fix (for some reason the callback called twice)
+                                scope.d.chatData.support = newChatter;
+                            }
                         } else {
                             scope.d.chatData.chatParticipantsArr.push(newChatter);
                         }
@@ -11095,7 +11097,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     chatGuid = chatsRef.push(newChatObj).key();
 
                     var localUserPath = localUser.isTeacher ? znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';
-                    var secondUserPath = secondUser.isTeacher ?znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';
+                    var secondUserPath = secondUser.isTeacher ? znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';
 
                     localUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', localUser.uid);
                     secondUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', secondUser.uid);
@@ -11110,7 +11112,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     var secondUserWriteChatGuidsProm = chatterRef.update(userNewChatGuid);
                     return $q.all([localUserWriteChatGuidsProm, secondUserWriteChatGuidsProm]).then(function () {
                         return chatGuid;
-                    },function(error){
+                    }, function (error) {
                         $log.error('znkChat: error while creating new chat: ' + error);
                     });
                 });
@@ -15317,8 +15319,8 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     'use strict';
 
     angular.module('znk.infra.znkMedia').factory('MediaSrv', [
-        'ENV', '$q', '$window',
-        function (ENV, $q, $window) {
+        'ENV', '$q', '$window', '$log',
+        function (ENV, $q, $window, $log) {
 
             var isRunningOnDevice = !!$window.cordova;
 
@@ -15327,7 +15329,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
                 var audioEndedProm = $q.defer();
 
                 if (typeof $window.Audio !== 'function' && typeof $window.Audio !== 'object') {
-                    console.warn('HTML5 Audio is not supported in this browser');
+                    $log.debug('HTML5 Audio is not supported in this browser');
                 }
                 sound.src = src;
 
@@ -15346,7 +15348,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
                 sound.addEventListener('ended', endedHandler, false);
 
                 function canplayHandler(){
-                    console.log('Html5 audio load end ' + src);
+                    $log.debug('Html5 audio load end ' + src);
                     if (mediaStatus) {
                         mediaStatus($window.Media.MEDIA_STARTING);
                     }
@@ -15354,7 +15356,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
                 sound.addEventListener('canplay',canplayHandler, false);
 
                 function canplaythroughHandler(){
-                    console.log('Html5 audio load fully ended ' + src);
+                    $log.debug('Html5 audio load fully ended ' + src);
                     if (!playingHandler.wasInvoked) {
                         mediaStatus($window.Media.MEDIA_STARTING);
                     }
@@ -15369,7 +15371,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
                 }
                 sound.addEventListener('playing',playingHandler,false);
 
-                console.log('starting Html5 audio load ' + src);
+                $log.debug('starting Html5 audio load ' + src);
                 sound.load();
 
                 return {
@@ -15400,7 +15402,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
                         sound.removeEventListener('playing',playingHandler);
                         sound.removeEventListener('canplaythrough',canplaythroughHandler);
                         sound.src = '';
-                        console.log('Html5 Audio object was destroyed ' + src);
+                        $log.debug('Html5 Audio object was destroyed ' + src);
                     },
                     // Moves the position within the audio file.
                     seekTo: function (milliseconds) {
@@ -15479,7 +15481,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
 
                 function failFnMain(e) {
                     var errMsg = 'MediaSrv: fail to load sound, src: '+src;
-                    console.error(errMsg, e);
+                    $log.error(errMsg, e);
                     if(angular.isDefined($window.atatus) && angular.isFunction($window.atatus.notify)) {
                         $window.atatus.notify(errMsg);
                     }
