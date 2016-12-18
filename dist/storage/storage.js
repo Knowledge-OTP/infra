@@ -214,13 +214,8 @@
                             newEventCbArr.push(_cb);
                         }
                     });
-                    
-                    if(newEventCbArr.length > 0){
-                        this.__registeredEvents[type][path] = newEventCbArr;
-                        this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
-                    } else {
-                        delete this.__registeredEvents[type][path];
-                    }
+                    this.__registeredEvents[type][path] = newEventCbArr;
+                    this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
                 }
             };
             StorageFirebaseAdapter.prototype = storageFirebaseAdapterPrototype;
