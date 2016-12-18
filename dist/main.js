@@ -4856,7 +4856,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                     }
                     exerciseResult.moduleId = moduleId;
                     exerciseResult.$save = function () {
-                        return moduleExerciseSaveFn.bind(this, assignContentType);
+                        return moduleExerciseSaveFn.call(this, assignContentType);
                     };
                     return exerciseResult;
                 });
@@ -8576,8 +8576,13 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                             newEventCbArr.push(_cb);
                         }
                     });
-                    this.__registeredEvents[type][path] = newEventCbArr;
-                    this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
+
+                    if(newEventCbArr.length > 0){
+                        this.__registeredEvents[type][path] = newEventCbArr;
+                        this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
+                    } else {
+                        delete this.__registeredEvents[type][path];
+                    }
                 }
             };
             StorageFirebaseAdapter.prototype = storageFirebaseAdapterPrototype;

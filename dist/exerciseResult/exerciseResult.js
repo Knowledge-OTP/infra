@@ -396,7 +396,7 @@
                     }
                     exerciseResult.moduleId = moduleId;
                     exerciseResult.$save = function () {
-                        return moduleExerciseSaveFn.bind(this, assignContentType);
+                        return moduleExerciseSaveFn.call(this, assignContentType);
                     };
                     return exerciseResult;
                 });
