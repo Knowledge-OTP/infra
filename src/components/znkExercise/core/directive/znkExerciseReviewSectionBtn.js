@@ -2,8 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseReviewBtnSection', [
-        'ZnkExerciseViewModeEnum',
-        function (ZnkExerciseViewModeEnum) {
+        'ZnkExerciseViewModeEnum', 'SessionSrv',
+        function (ZnkExerciseViewModeEnum, SessionSrv) {
             return {
                 restrict: 'E',
                 scope: {
@@ -18,11 +18,14 @@
                 templateUrl: "components/znkExercise/core/template/znkExerciseReviewSectionBtnTemplate.html",
                 link: {
                     pre: function (scope, element, attrs, znkExerciseDrvCtrl) {
-                        function _isReviewMode() {
-                            return viewMode === ZnkExerciseViewModeEnum.REVIEW.enum;
-                        }
-                        var viewMode = znkExerciseDrvCtrl.getViewMode();
-                        scope.showBtn = _isReviewMode();
+                        SessionSrv.getLiveSessionGUID().then(function (res) {
+                            function _isReviewMode() {
+                                return viewMode === ZnkExerciseViewModeEnum.REVIEW.enum;
+                            }
+                            var viewMode = znkExerciseDrvCtrl.getViewMode();
+                            scope.showBtn = !!(res.guid) || (_isReviewMode());
+                            console.log(scope.showBtn);
+                        });
                     }
                 }
                 // link: {
