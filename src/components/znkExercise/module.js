@@ -12,7 +12,8 @@
         'znk.infra.analytics',
         'znk.infra.popUp',
         'znk.infra.user',
-        'znk.infra.utility'
+        'znk.infra.utility',
+        'znk.infra.znkSession'
     ])
     .config([
         'SvgIconSrvProvider',
