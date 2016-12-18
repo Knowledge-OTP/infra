@@ -1,0 +1,32 @@
+.live-session-ph{
+    position: relative;
+    z-index: 10;
+
+    live-session{
+        .close-icon-wrapper{
+            @include dimension(40px);
+            position: fixed;
+            top: 0;
+            right: 0;
+            border-bottom-left-radius: 15px;
+            text-align: center;
+            line-height: 42px;
+            cursor: pointer;
+        }
+
+        .active-state{
+            .close-icon-wrapper{
+                background: $bgColor19;
+            }
+        }
+
+        .active-state-container{
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            border: 5px solid $bgColor19;
+        }
+    }
+}

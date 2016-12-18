@@ -1,0 +1,26 @@
+<div class="live-session-subject-modal">
+    <div class="base base-border-radius session-container" translate-namespace="LIVE_SESSION">
+        <div class="popup-header">
+            <div class="top-icon-wrap">
+                <div class="top-icon">
+                    <div class="round-icon-wrap">
+                        <svg-icon name="liveSession-start-lesson-popup-icon"></svg-icon>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="popup-content">
+            <div class="main-title" translate=".START_SESSION"></div>
+            <div class="sub-title" translate=".SESSION_SUBJECT"></div>
+            <div class="subjects-btns">
+                <button class="subject-icon-wrap"
+                        ng-repeat="subject in ::vm.sessionSubjects"
+                        ng-class="subject.name"
+                        ng-click="vm.startSession(subject); vm.closeModal();">
+                    <svg-icon name={{subject.iconName}}></svg-icon>
+                    <span>{{subject.name}}</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
