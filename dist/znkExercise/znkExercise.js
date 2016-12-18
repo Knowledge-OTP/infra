@@ -960,9 +960,14 @@
             questionTypeGetterFn = typeGetterFn;
         };
 
+        var answersFormaterObjMap = {};        
+        this.setAnswersFormatValidtors = function (_answersFormaterObjMap) {
+            answersFormaterObjMap = _answersFormaterObjMap;
+        };
+
         this.$get = [
-            '$log','$q',
-            function ($log, $q) {
+            '$log', '$q', '$injector',
+            function ($log, $q, $injector) {
                 var QuestionTypesSrv = {};
 
                 QuestionTypesSrv.getQuestionHtmlTemplate = function getQuestionHtmlTemplate(question) {
@@ -977,6 +982,55 @@
 
                 QuestionTypesSrv.getQuestionType = function getQuestionType(question) {
                     return questionTypeGetterFn(question);
+                };
+
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {   
+                    if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
+                        $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
+                        return;
+                    }
+
+                   var answersFormaterArr = answersFormaterObjMap[answerTypeId];
+
+                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
+                   if (angular.isUndefined(userAnswer) ||
+                       !angular.isArray(answersFormaterArr) ||
+                       !answersFormaterArr.length) {
+                        callbackValidAnswer();
+                        return;
+                    }
+
+                    var answersFormaterArrLength = answersFormaterArr.length;
+
+                    var answerValueBool, currentFormatter, functionGetter;                     
+                    for (var i = 0; i < answersFormaterArrLength; i++) {
+                        currentFormatter = answersFormaterArr[i];
+                       
+                        if (angular.isFunction(currentFormatter)) {
+                            try {
+                                 functionGetter = $injector.invoke(currentFormatter);
+                            } catch (e) {
+                                 $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: $injector.invoke faild! e: ' + e);
+                            }
+                            answerValueBool = functionGetter(userAnswer, question); // question is optional
+                        }
+
+                        if (currentFormatter instanceof RegExp) { // currentFormatter should be a regex pattren
+                           answerValueBool = currentFormatter.test(userAnswer);
+                        }
+
+                        // break loop if userAnswer is a valid answer
+                        if (typeof answerValueBool === "boolean" && answerValueBool) {
+                            callbackValidAnswer();
+                            break;
+                        }
+                        // if last iteration, then answer is un valid, invoke callbackUnValidAnswer if exist
+                        if (i === answersFormaterArrLength - 1) {
+                            if (callbackUnValidAnswer) {
+                                callbackUnValidAnswer();
+                            }
+                        }
+                    }
                 };
 
                 return QuestionTypesSrv;
@@ -1088,6 +1142,7 @@
  *  settings:
  *      allowedTimeForExercise: in milliseconds
  *      onDone
+ *      onExit: invoke when $destroy has been called
  *      onQuestionAnswered
  *      wrapperCls
  *      toolsToHide
@@ -1124,8 +1179,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExercise', [
-        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ZnkExerciseUtilitySrv',
-        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout, ZnkExerciseUtilitySrv) {
+        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ZnkExerciseUtilitySrv', 'QuestionTypesSrv',
+        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout, ZnkExerciseUtilitySrv, QuestionTypesSrv) {
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExerciseDrv.html',
                 restrict: 'E',
@@ -1150,6 +1205,7 @@
                         pre: function (scope, element, attrs, ctrls) {
                             var defaultSettings = {
                                 onDone: angular.noop,
+                                onExit: angular.noop,
                                 onQuestionAnswered: angular.noop,
                                 viewMode: ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum,
                                 onSlideChange: angular.noop,
@@ -1368,7 +1424,7 @@
                                     var questionCopy = angular.copy(question);
                                     var answer = answersMap[questionCopy.id] || {};
 
-                                    questionCopy.__questionStatus= answer;
+                                    questionCopy.__questionStatus = answer;
                                     questionCopy.__questionStatus.index = index;
 
                                     return questionCopy;
@@ -1409,15 +1465,19 @@
                                     var currQuestion = getCurrentQuestion();
                                     var userAnswer = currQuestion.__questionStatus.userAnswer;
                                     currQuestion.__questionStatus.isAnsweredCorrectly = ZnkExerciseUtilitySrv.isAnswerCorrect(currQuestion,userAnswer);
+                                    
+                                    updateTimeSpentOnQuestion({
+                                        removeLastTimeStamp: true,
+                                        updateForce: true
+                                    });
 
-                                    updateTimeSpentOnQuestion(undefined,true);
                                     var afterAllowedTime = _isExceededAllowedTime();
                                     currQuestion.__questionStatus.afterAllowedTime = afterAllowedTime;
                                     setViewValue();
                                 }
                                 scope.$broadcast(ZnkExerciseEvents.QUESTION_ANSWERED, getCurrentQuestion());
                                 //skip 1 digest cycle before triggering question answered
-                                $timeout(function(){
+                                $timeout(function() {
                                     scope.settings.onQuestionAnswered(scope.vm.currentSlide);
                                 });
                             };
@@ -1429,25 +1489,58 @@
                                 setViewValue();
                             };
 
-                            function updateTimeSpentOnQuestion(questionNum, dontSetViewValue) {
-                                questionNum = angular.isDefined(questionNum) ? questionNum : scope.vm.currentSlide;
+                            function shouldUpdateTime(question, obj, cb) {
+                                var userAnswer = question.__questionStatus.userAnswer;
+                                var answerTypeId = question.answerTypeId;
+                                var updateTime = true;
+                                var doNotUpdateTime = false;
+
+                                if (angular.isUndefined(userAnswer)) {
+                                    cb(updateTime);
+                                }
+
+                                QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function () {
+                                    if (angular.isDefined(userAnswer) && !obj.updateForce) {
+                                        cb(doNotUpdateTime);
+                                    } else {
+                                        cb(updateTime);
+                                    }
+                                }, function () { 
+                                    cb(updateTime);
+                                }, question);
+                            }
+                            
+                            // example of obj { questionNum, removeLastTimeStamp, updateForce }
+                            function updateTimeSpentOnQuestion(obj) {
                                 if (scope.settings.viewMode === ZnkExerciseViewModeEnum.REVIEW.enum) {
                                     return;
                                 }
 
-                                if (!updateTimeSpentOnQuestion.lastTimeStamp) {
-                                    updateTimeSpentOnQuestion.lastTimeStamp = Date.now();
-                                    return;
-                                }
-                                var currTime = Date.now();
-                                var timePassed = currTime - updateTimeSpentOnQuestion.lastTimeStamp;
-                                updateTimeSpentOnQuestion.lastTimeStamp = currTime;
-                                var question = scope.vm.questionsWithAnswers[questionNum];
-                                question.__questionStatus.timeSpent = (question.__questionStatus.timeSpent || 0) + timePassed;
+                                obj = obj || {};
+                                var questionNum = angular.isDefined(obj.questionNum) ? obj.questionNum : scope.vm.currentSlide;
 
-                                if(!dontSetViewValue){
-                                    setViewValue();
-                                }
+                                var question = scope.vm.questionsWithAnswers[questionNum];
+
+                                shouldUpdateTime(question, obj, function (updateTime) {
+                                    var currTime = Date.now();
+
+                                    if (angular.isUndefined(question.__questionStatus.lastTimeStamp)) {
+                                        question.__questionStatus.lastTimeStamp = currTime;
+                                    }
+                                    
+                                    if (updateTime) {
+                                        var timePassed = currTime - question.__questionStatus.lastTimeStamp;
+                                        question.__questionStatus.timeSpent = (question.__questionStatus.timeSpent || 0) + timePassed;
+                                    }
+                                    
+                                    if (obj.removeLastTimeStamp) {
+                                        delete question.__questionStatus.lastTimeStamp;
+                                    } else {
+                                        question.__questionStatus.lastTimeStamp = currTime;
+                                    }
+
+                                    setViewValue(); 
+                                });
                             }
 
                             function _isExceededAllowedTime(){
@@ -1488,7 +1581,19 @@
                                 }
 
                                 znkExerciseDrvCtrl.isExerciseReady().then(function(){
-                                    updateTimeSpentOnQuestion(prevValue);
+                                
+                                    if (prevValue !== value) {
+                                        // update the question the user came from
+                                        updateTimeSpentOnQuestion({
+                                             questionNum: prevValue,
+                                             removeLastTimeStamp: true
+                                         }); 
+                                        // update the question the user comming to if the prev is diffrent then the new value
+                                         updateTimeSpentOnQuestion(); 
+                                    } else {
+                                         updateTimeSpentOnQuestion(); 
+                                    }
+
                                     var currQuestion = getCurrentQuestion();
                                     scope.settings.onSlideChange(currQuestion, value);
                                     scope.$broadcast(ZnkExerciseEvents.QUESTION_CHANGED,value ,prevValue ,currQuestion);
@@ -1506,6 +1611,10 @@
                                 if (toolBoxModalInstance) {
                                     toolBoxModalInstance.close();
                                 }
+                                updateTimeSpentOnQuestion({
+                                    removeLastTimeStamp: true
+                                });
+                                scope.settings.onExit();
                             });
                         }
                     };
@@ -1798,8 +1907,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExercisePager', [
-        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum',
-        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum) {
+        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum', 'QuestionTypesSrv',
+        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum, QuestionTypesSrv) {
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExercisePagerDrv.html',
                 restrict: 'E',
@@ -1822,6 +1931,10 @@
                             znkExerciseCtrl.setCurrentIndex(newIndex);
                         };
 
+                        function getPagerItemByIndex(index) {
+                            return angular.element(domElement.querySelectorAll('.pager-item')[index]);
+                        }
+
                         function setPagerItemBookmarkStatus(index, status) {
                             var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
                             if (status) {
@@ -1831,8 +1944,21 @@
                             }
                         }
 
+                        function setPagerItemAnswerClassValidAnswerWrapper(question, index) {
+                            var userAnswer = question.__questionStatus.userAnswer;
+                            var answerTypeId = question.answerTypeId;
+                            var currIndex = index || question.__questionStatus.index;
+                            
+                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function() {               
+                                setPagerItemAnswerClass(currIndex, question); 
+                            }, function() {
+                                 var pagerItemElement = getPagerItemByIndex(currIndex);
+                                 pagerItemElement.removeClass('neutral correct wrong');  
+                            }, question);
+                        }
+
                         function setPagerItemAnswerClass(index, question) {
-                            var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
+                            var pagerItemElement = getPagerItemByIndex(index);
 
                             if (angular.isUndefined(question.__questionStatus.userAnswer)) {
                                 pagerItemElement.removeClass('neutral correct wrong');
@@ -1870,7 +1996,7 @@
                                 for (i in scope.questions) {
                                     var question = scope.questions[i];
                                     setPagerItemBookmarkStatus(i, question.__questionStatus.bookmark);
-                                    setPagerItemAnswerClass(i, question);
+                                    setPagerItemAnswerClassValidAnswerWrapper(question, i);
                                 }
                             });
                         };
@@ -1880,7 +2006,7 @@
                         });
 
                         scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function (evt, question) {
-                            setPagerItemAnswerClass(question.__questionStatus.index, question);
+                            setPagerItemAnswerClassValidAnswerWrapper(question);
                         });
 
                         function init() {

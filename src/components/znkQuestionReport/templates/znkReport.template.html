@@ -19,7 +19,7 @@
                     <section ng-switch-when="false">
                         <div class="sub-title" translate=".SUB_TITLE"></div>
                         <form novalidate name="vm.reportForm" class="base-form" ng-submit="vm.sendFrom();">
-
+                            <div class="input-label">{{'REPORT_POPUP.MESSAGE_LABEL' | translate}}:</div>
 							<textarea
                                     required autofocus
                                     id="report-textarea"
@@ -34,6 +34,7 @@
                                     translate=".REQUIRED_FIELD">
                             </label>
 
+                            <div class="input-label">{{'REPORT_POPUP.EMAIL_LABEL' | translate}}:</div>
                             <input
                                     required
                                     type="email"
@@ -69,6 +70,7 @@
                             <div translate=".OPINION"></div>
                         </div>
                         <md-button
+                                aria-label="{{'REPORT_POPUP.DONE' | translate}}"
                                 class="success success-green drop-shadow"
                                 ng-click="vm.cancel();">
                             <span translate=".DONE"></span>

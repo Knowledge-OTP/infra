@@ -172,6 +172,7 @@
                     var cacheProm = false;
 
                     if (entity) {
+                        $log.debug('StorageSrv: data returned from cache, processedPath=' + processedPath);
                         getProm = $q.when(entity);
                     } else {
                         if (getEntityPromMap[processedPath]) {

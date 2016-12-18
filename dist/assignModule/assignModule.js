@@ -210,50 +210,62 @@
                     };
                 }
 
-                if (assignModule.exercises) {
 
-                    var exercises = assignModule.exercises.filter(function (exercise) {
-                        return exercise.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum;
-                    });
+                if (assignModule.exercises && assignModule.exercises.length) {
+                    var exCompletedCount = 0;
+                    var exLectureCount = 0;
+                    angular.forEach(assignModule.exercises, function (exercise) {
+                        if (!moduleSummary[exercise.exerciseTypeId]){
+                            moduleSummary[exercise.exerciseTypeId] = {};
+                        }
 
-                    if (exercises && exercises.length) {
-                        exercises.forEach(function (exercise) {
+                        if (!moduleSummary[exercise.exerciseTypeId][exercise.exerciseId]){
+                            moduleSummary[exercise.exerciseTypeId][exercise.exerciseId] = newSummary();
+                        }
 
-                            if (!moduleSummary[exercise.exerciseTypeId]){
-                                moduleSummary[exercise.exerciseTypeId] = {};
-                            }
-
-                            if (!moduleSummary[exercise.exerciseTypeId][exercise.exerciseId]){
-                                moduleSummary[exercise.exerciseTypeId][exercise.exerciseId] = newSummary();
-                            }
-
-                            var _summary = moduleSummary[exercise.exerciseTypeId][exercise.exerciseId];
-                            if (_exerciseResults && _exerciseResults[exercise.exerciseTypeId]) {
-                                if (_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]){
-                                    _summary.status =  _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].isComplete ? ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
+                        var _summary = moduleSummary[exercise.exerciseTypeId][exercise.exerciseId];
+                        if (_exerciseResults && _exerciseResults[exercise.exerciseTypeId]) {
+                            if (_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]){
+                                if (_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].status) {
+                                    _summary.status = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].status;
                                 } else {
-                                    _summary.status = _summary.status ? _summary.status : ExerciseStatusEnum.NEW.enum;
+                                    if(angular.isDefined(_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].isComplete)) {
+                                        _summary.status = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].isComplete ?
+                                            ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
+                                    }
                                 }
-
                                 _summary.correctAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].correctAnswersNum || 0;
                                 _summary.wrongAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].wrongAnswersNum || 0;
                                 _summary.skippedAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].skippedAnswersNum || 0;
                                 _summary.duration = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].duration || 0;
                                 _summary.totalAnswered = _summary.correctAnswersNum + _summary.wrongAnswersNum;
                             }
-                            
-                            if (!moduleSummary.overAll) {
-                                moduleSummary.overAll = newOverAll();
-                            }
-                            var _overAll = moduleSummary.overAll;
-                            _overAll.status =  _overAll.status < _summary.status ? _summary.status : _overAll.status;
-                            _overAll.totalCorrectAnswers += _summary.correctAnswersNum;
-                            _overAll.totalWrongAnswers += _summary.wrongAnswersNum;
-                            _overAll.totalSkippedAnswers += _summary.skippedAnswersNum;
+                        }
 
-                        });
-                    }
+                        if (exercise.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum) {
+                            exLectureCount ++;
+                        }
+                        if (_summary.status === ExerciseStatusEnum.COMPLETED.enum) {
+                            exCompletedCount++;
+                        }
+
+                        if (!moduleSummary.overAll) {
+                            moduleSummary.overAll = newOverAll();
+                        }
+                        var _overAll = moduleSummary.overAll;
+                        if (exLectureCount === assignModule.exercises.length){
+                            _overAll.status = ExerciseStatusEnum.NEW.enum;
+                        } else if ((exLectureCount + exCompletedCount) === assignModule.exercises.length){
+                            _overAll.status = ExerciseStatusEnum.COMPLETED.enum;
+                        } else {
+                            _overAll.status = _exerciseResults ? ExerciseStatusEnum.ACTIVE.enum : ExerciseStatusEnum.NEW.enum;
+                        }
+                        _overAll.totalCorrectAnswers += _summary.correctAnswersNum;
+                        _overAll.totalWrongAnswers += _summary.wrongAnswersNum;
+                        _overAll.totalSkippedAnswers += _summary.skippedAnswersNum;
+                    });
                 }
+
                 return moduleSummary;
             }
 
@@ -261,7 +273,6 @@
         }
     ]);
 })(angular);
-
 
 angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
 

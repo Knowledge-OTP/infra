@@ -173,7 +173,9 @@
 
                     var newChatterHandler = function (newChatter) {
                         if (newChatter.email === ZNK_CHAT.SUPPORT_EMAIL) {
-                            scope.d.chatData.support = newChatter;
+                            if(angular.isUndefined(scope.d.chatData.support)) { // todo - temporary fix (for some reason the callback called twice)
+                                scope.d.chatData.support = newChatter;
+                            }
                         } else {
                             scope.d.chatData.chatParticipantsArr.push(newChatter);
                         }
@@ -197,7 +199,7 @@
         ["znkChatSrv", "$q", "znkChatEventSrv", "$timeout", "PresenceService", "ZNK_CHAT", "MediaSrv", function (znkChatSrv, $q, znkChatEventSrv, $timeout, PresenceService, ZNK_CHAT, MediaSrv) {
             'ngInject';
             var presenceActiveLiseners = {};
-
+            var soundPlaying = false;
             return {
                 templateUrl: 'components/znkChat/templates/chatter.template.html',
                 scope: {
@@ -210,7 +212,7 @@
                     var chatGuidProm;
                     var offEvent = {};
                     var soundPath = ZNK_CHAT.SOUND_PATH + 'sound.mp3';
-                    var sound =  MediaSrv.loadSound(soundPath);
+                    var sound;
 
                     scope.d = {};
                     scope.d.userStatus = PresenceService.userStatus;
@@ -280,7 +282,16 @@
                             } else {
                                 scope.chatterObj.messagesNotSeen++;
                                 scope.chatterObj.messagesNotSeen = scope.chatterObj.messagesNotSeen < ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES ? scope.chatterObj.messagesNotSeen :  ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
-                                sound.play();
+
+                                if(!soundPlaying){
+                                    soundPlaying = true;
+                                    sound =  MediaSrv.loadSound(soundPath);
+                                    sound.play();
+                                    sound.onEnded().then(function(){
+                                        soundPlaying = false;
+                                        sound.release();
+                                    });
+                                }
                             }
                         }
 
@@ -673,7 +684,7 @@
                     chatGuid = chatsRef.push(newChatObj).key();
 
                     var localUserPath = localUser.isTeacher ? znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';
-                    var secondUserPath = secondUser.isTeacher ?znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';
+                    var secondUserPath = secondUser.isTeacher ? znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';
 
                     localUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', localUser.uid);
                     secondUserPath += znkChatPaths.chatsUsersGuids.replace('$$uid', secondUser.uid);
@@ -688,7 +699,7 @@
                     var secondUserWriteChatGuidsProm = chatterRef.update(userNewChatGuid);
                     return $q.all([localUserWriteChatGuidsProm, secondUserWriteChatGuidsProm]).then(function () {
                         return chatGuid;
-                    },function(error){
+                    }, function (error) {
                         $log.error('znkChat: error while creating new chat: ' + error);
                     });
                 });

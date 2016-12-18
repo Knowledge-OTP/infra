@@ -7,8 +7,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExercisePager', [
-        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum',
-        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum) {
+        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum', 'QuestionTypesSrv',
+        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum, QuestionTypesSrv) {
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExercisePagerDrv.html',
                 restrict: 'E',
@@ -31,6 +31,10 @@
                             znkExerciseCtrl.setCurrentIndex(newIndex);
                         };
 
+                        function getPagerItemByIndex(index) {
+                            return angular.element(domElement.querySelectorAll('.pager-item')[index]);
+                        }
+
                         function setPagerItemBookmarkStatus(index, status) {
                             var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
                             if (status) {
@@ -40,8 +44,21 @@
                             }
                         }
 
+                        function setPagerItemAnswerClassValidAnswerWrapper(question, index) {
+                            var userAnswer = question.__questionStatus.userAnswer;
+                            var answerTypeId = question.answerTypeId;
+                            var currIndex = index || question.__questionStatus.index;
+                            
+                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function() {               
+                                setPagerItemAnswerClass(currIndex, question); 
+                            }, function() {
+                                 var pagerItemElement = getPagerItemByIndex(currIndex);
+                                 pagerItemElement.removeClass('neutral correct wrong');  
+                            }, question);
+                        }
+
                         function setPagerItemAnswerClass(index, question) {
-                            var pagerItemElement = angular.element(domElement.querySelectorAll('.pager-item')[index]);
+                            var pagerItemElement = getPagerItemByIndex(index);
 
                             if (angular.isUndefined(question.__questionStatus.userAnswer)) {
                                 pagerItemElement.removeClass('neutral correct wrong');
@@ -79,7 +96,7 @@
                                 for (i in scope.questions) {
                                     var question = scope.questions[i];
                                     setPagerItemBookmarkStatus(i, question.__questionStatus.bookmark);
-                                    setPagerItemAnswerClass(i, question);
+                                    setPagerItemAnswerClassValidAnswerWrapper(question, i);
                                 }
                             });
                         };
@@ -89,7 +106,7 @@
                         });
 
                         scope.$on(ZnkExerciseEvents.QUESTION_ANSWERED, function (evt, question) {
-                            setPagerItemAnswerClass(question.__questionStatus.index, question);
+                            setPagerItemAnswerClassValidAnswerWrapper(question);
                         });
 
                         function init() {
