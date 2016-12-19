@@ -20,6 +20,5 @@
                     $compile(canvasContainerElement)(self.scope);
                 }
             };
-
         });
 })(angular);

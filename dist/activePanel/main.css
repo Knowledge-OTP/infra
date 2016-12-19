@@ -385,7 +385,7 @@ active-panel .active-panel {
       active-panel .active-panel .flex-col.call-controls call-btn svg-icon.etutoring-phone-icon {
         width: 28px;
         height: 28px; }
-  active-panel .active-panel .call-duration {
+  active-panel .active-panel .live-session-duration {
     font-size: 12px;
     color: #979797;
     font-family: Lato;

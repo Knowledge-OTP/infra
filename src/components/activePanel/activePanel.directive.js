@@ -1,28 +1,32 @@
-'use strict';
 
 (function (angular) {
+    'use strict';
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', function ($q, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum, UserProfileService, PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document, $translate) {
-            return {
+        .directive('activePanel',
+            function ($timeout, $window, $q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
+                         PresenceService, StudentContextSrv, TeacherContextSrv, ENV,
+                         $translate, SessionSrv, SessionsStatusEnum, toggleAutoCallEnum) {
+                'ngInject';
+                return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
                 link: function(scope, element) {
                     var receiverId,
                         isOffline,
-                        isTeacher,
-                        callDuration = 0,
                         durationToDisplay,
                         timerInterval,
-                        screenShareStatus = 0,
-                        callStatus = 0,
-                        screenShareIsViewer,
+                        liveSessionStatus = 0,
+                        liveSessionDuration = 0,
                         timerSecondInterval = 1000,
-                        activePanelVisibleClassName = 'activePanel-visible';
+                        activePanelVisibleClassName = 'activePanel-visible',
+                        isStudent = ENV.appContext.toLowerCase() === 'student',
+                        isTeacher = ENV.appContext.toLowerCase() === 'dashboard';
 
-                    var bodyDomElem = angular.element($document).find('body');
+                    var bodyDomElem = angular.element($window.document.body);
 
                     var translateNamespace = 'ACTIVE_PANEL';
+
                     $translate([
                         translateNamespace + '.' + 'SHOW_STUDENT_SCREEN',
                         translateNamespace + '.' + 'SHOW_TEACHER_SCREEN',
@@ -39,9 +43,11 @@
 
                     var listenToStudentOrTeacherContextChange = function (prevUid, uid) {
                         receiverId = uid;
+                        var currentUserStatus = PresenceService.getCurrentUserStatus(receiverId);
+                        var CalleeName = CallsUiSrv.getCalleeName(receiverId);
                         var promsArr = [
-                            PresenceService.getCurrentUserStatus(receiverId),
-                            CallsUiSrv.getCalleeName(uid)
+                            currentUserStatus,
+                            CalleeName
                         ];
                         $q.all(promsArr).then(function (res) {
                             scope.d.currentUserPresenceStatus = res[0];
@@ -49,7 +55,8 @@
                             scope.d.calleeName = (res[1]) ? (res[1]) : '';
                             scope.d.callBtnModel = {
                                 isOffline: isOffline,
-                                receiverId: uid
+                                receiverId: uid,
+                                toggleAutoCall: toggleAutoCallEnum.DISABLE.enum
                             };
                         }).catch(function (err) {
                             $log.debug('error caught at listenToStudentOrTeacherContextChange', err);
@@ -57,17 +64,9 @@
                         $log.debug('student or teacher context changed: ', receiverId);
                     };
 
-
-                    var initialUid = StudentContextSrv.getCurrUid();
-                    if (initialUid) {
-                        listenToStudentOrTeacherContextChange(null, initialUid);
-                    }
-
-                    if (ENV.appContext.toLowerCase() === 'dashboard') {
-                        isTeacher = true;
+                    if (isTeacher) {
                         StudentContextSrv.registerToStudentContextChange(listenToStudentOrTeacherContextChange);
-                    } else if (ENV.appContext.toLowerCase() === 'student') {
-                        isTeacher = false;
+                    } else if (isStudent) {
                         TeacherContextSrv.registerToTeacherContextChange(listenToStudentOrTeacherContextChange);
                     } else {
                         $log.error('appContext is not compatible with this component: ', ENV.appContext);
@@ -76,10 +75,9 @@
                     scope.d = {
                         states: {
                             NONE: 0,
-                            CALL_ACTIVE: 1,
-                            SCREEN_SHARE_ACTIVE: 10,
-                            BOTH_ACTIVE: 11
+                            LIVE_SESSION: 1
                         },
+                        toggleAutoCall: {},
                         shareScreenBtnsEnable: true,
                         isTeacher: isTeacher,
                         presenceStatusMap: PresenceService.userStatus,
@@ -101,74 +99,18 @@
                         }
                     };
 
-                    var actions = {
-                        startTimer: function () {
-                            $log.debug('call timer started');
-                            if (callDuration !== 0) {
-                                return;
-                            }
-                            timerInterval = $interval(function () {
-                                callDuration += timerSecondInterval;
-                                durationToDisplay = $filter('formatDuration')(callDuration / 1000, 'hh:MM:SS', true);
-                                angular.element(element[0].querySelector('.call-duration')).text(durationToDisplay);
-                            }, 1000, 0, false);
-                        },
-                        stopTimer: function () {
-                            destroyTimer();
-                        },
-                        screenShareMode: function (isScreenShareMode) {
-                            if (isScreenShareMode && screenShareIsViewer) {
-                                element.addClass('screen-share-mode');
-                                $log.debug('screenShareMode activate');
-                            } else {
-                                element.removeClass('screen-share-mode');
-                                $log.debug('screenShareMode remove');
-                            }
-                        }
-                    };
-
-                    function updateStatus() {
-                        scope.d.currStatus = screenShareStatus + callStatus;
-                        $log.debug('ActivePanel d.currStatus: ', scope.d.currStatus);
-
-                        switch (scope.d.currStatus) {
-                            case scope.d.states.NONE :
-                                $log.debug('ActivePanel State: NONE');
-                                bodyDomElem.removeClass(activePanelVisibleClassName);
-                                actions.stopTimer();
-                                actions.screenShareMode(false);
-                                scope.d.shareScreenBtnsEnable = true;
-                                break;
-                            case scope.d.states.CALL_ACTIVE :
-                                bodyDomElem.addClass(activePanelVisibleClassName);
-                                actions.startTimer();
-                                scope.d.shareScreenBtnsEnable = true;
-                                actions.screenShareMode(false);
-                                $log.debug('ActivePanel State: CALL_ACTIVE');
-                                break;
-                            case scope.d.states.SCREEN_SHARE_ACTIVE :
-                                bodyDomElem.addClass(activePanelVisibleClassName);
-                                actions.stopTimer();
-                                actions.screenShareMode(true);
-                                scope.d.shareScreenBtnsEnable = false;
-                                $log.debug('ActivePanel State: SCREEN_SHARE_ACTIVE');
-                                break;
-                            case scope.d.states.BOTH_ACTIVE :
-                                bodyDomElem.addClass(activePanelVisibleClassName);
-                                $log.debug('ActivePanel State: BOTH_ACTIVE');
-                                actions.startTimer();
-                                scope.d.shareScreenBtnsEnable = false;
-                                actions.screenShareMode(true);
-                                break;
-
-                            default :
-                                $log.error('currStatus is in an unknown state', scope.d.currStatus);
-                        }
+                    function startTimer() {
+                        $log.debug('call timer started');
+                        timerInterval = $interval(function () {
+                            liveSessionDuration += timerSecondInterval;
+                            durationToDisplay = $filter('formatDuration')(liveSessionDuration / 1000, 'hh:MM:SS', true);
+                            angular.element(element[0].querySelector('.live-session-duration')).text(durationToDisplay);
+                        }, 1000, 0, false);
                     }
 
                     function destroyTimer() {
                         $interval.cancel(timerInterval);
-                        callDuration = 0;
+                        liveSessionDuration = 0;
                         durationToDisplay = 0;
                     }
 
@@ -176,35 +118,58 @@
                         destroyTimer();
                     });
 
-                    // Listen to status changes in Calls
-                    var listenToCallsStatus = function (callsData) {
-                        if (callsData) {
-                            if (callsData.status === CallsStatusEnum.ACTIVE_CALL.enum) {
-                                callStatus = scope.d.states.CALL_ACTIVE;
+                    function endScreenSharing(){
+                        // ScreenSharingUiSrv.endScreenSharing();
+                        $timeout(function () {
+                            $window.document.querySelector('.close-icon-wrapper').click();
+                        });
+                    }
+
+                    function updateStatus() {
+                        scope.d.currStatus = liveSessionStatus;
+                        $log.debug('ActivePanel d.currStatus: ', scope.d.currStatus);
+
+                        switch (scope.d.currStatus) {
+                            case scope.d.states.NONE :
+                                $log.debug('ActivePanel State: NONE');
+                                bodyDomElem.removeClass(activePanelVisibleClassName);
+                                destroyTimer();
+                                scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.DISABLE.enum;
+                                scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
+                                endScreenSharing();
+                                SessionSrv.clearSessionFrame();
+                                break;
+                            case scope.d.states.LIVE_SESSION :
+                                bodyDomElem.addClass(activePanelVisibleClassName);
+                                startTimer();
+                                SessionSrv.loadSessionFrame();
+                                scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.ACTIVATE.enum;
+                                scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
+                                $log.debug('ActivePanel State: LIVE_SESSION');
+                                break;
+                            default :
+                                $log.error('currStatus is in an unknown state', scope.d.currStatus);
+                        }
+                    }
+
+                    function getRoundTime() {
+                        return Math.floor(Date.now() / 1000) * 1000;
+                    }
+
+                    // Listen to status changes in Live session
+                    function listenToLiveSessionStatus(sessionData) {
+                        if (sessionData) {
+                            if (sessionData.status === SessionsStatusEnum.ACTIVE.enum) {
+                                liveSessionStatus = scope.d.states.LIVE_SESSION;
+                                liveSessionDuration = getRoundTime() - sessionData.startTime;
                             } else {
-                                callStatus = 0;
+                                liveSessionStatus = scope.d.states.NONE;
                             }
                             updateStatus();
                         }
-                    };
+                    }
 
-                    // Listen to status changes in ScreenSharing
-                    var listenToScreenShareStatus = function (screenSharingStatus) {
-                        if (screenSharingStatus) {
-                            if (screenSharingStatus !== UserScreenSharingStateEnum.NONE.enum) {
-                                screenShareStatus = scope.d.states.SCREEN_SHARE_ACTIVE;
-                                screenShareIsViewer = (screenSharingStatus === UserScreenSharingStateEnum.VIEWER.enum);
-                            } else {
-                                screenShareStatus = 0;
-                            }
-                            updateStatus();
-                        }
-                    };
-
-                    ScreenSharingSrv.registerToCurrUserScreenSharingStateChanges(listenToScreenShareStatus);
-
-                    CallsEventsSrv.registerToCurrUserCallStateChanges(listenToCallsStatus);
-
+                    SessionSrv.registerToCurrUserLiveSessionStateChanges(listenToLiveSessionStatus);
                 }
             };
         });

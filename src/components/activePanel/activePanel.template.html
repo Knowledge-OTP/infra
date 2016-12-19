@@ -1,5 +1,5 @@
 <div class="active-panel ng-hide"
-     ng-show="d.currStatus !== d.states.NONE"
+     ng-show="d.currStatus === d.states.LIVE_SESSION"
      translate-namespace="ACTIVE_PANEL">
     <div class="flex-container">
         <div class="callee-status flex-col">
@@ -13,7 +13,7 @@
         </div>
         <div class="callee-name flex-col">
             {{d.calleeName}}
-            <div class="call-duration">&nbsp;</div>
+            <div class="live-session-duration">&nbsp;</div>
         </div>
         <div class="call-controls flex-col">
             <div ng-click="d.viewOtherUserScreen()"

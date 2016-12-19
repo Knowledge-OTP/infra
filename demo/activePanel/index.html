@@ -14,11 +14,12 @@
         }
     </style>
 </head>
-<body ng-app="demo">
+<body ng-app="demo" ng-controller="demoCtrl as vm">
 
-<div ng-controller="demoCtrl">
+<div>
     <h2>Active Call Box</h2>
     <!-- Active Call Directive is injected by activePanel.service.js -->
+    <button ng-click="vm.showActivePanel()">Show Active Panel</button>
 </div>
 
 <!-- bower:js -->
