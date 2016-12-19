@@ -381,10 +381,10 @@
             };
 
             /* Module Results Functions */
-            this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId, assignContentType) {
+            this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId, assignContentType, examId) {
 
                 return $q.all([
-                    this.getExerciseResult(exerciseTypeId, exerciseId, null, null, true),
+                    this.getExerciseResult(exerciseTypeId, exerciseId, examId, null, true),
                     _getInitExerciseResult(exerciseTypeId, exerciseId, UtilitySrv.general.createGuid())
                 ]).then(function (results) {
                     var exerciseResult = results[0];
@@ -433,7 +433,7 @@
                                 if (moduleResult.exerciseResults && withExerciseResults) {
                                     angular.forEach(moduleResult.exerciseResults, function (exerciseResult, exerciseTypeId) {
                                             angular.forEach(exerciseResult, function (exerciseResultGuid, exerciseId) {
-                                                var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType).then(function (exerciseResults) {
+                                                var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, moduleResult.examId).then(function (exerciseResults) {
                                                     if (exerciseResults) {
                                                         moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResults;
                                                     }
@@ -538,22 +538,39 @@
                                 dataToSave[exerciseResultsPath].status = exerciseStatuses[exerciseTypeId][exerciseId].status;
                             }
 
+                            var getSectionAggregatedDataProm = $q.when();   // todo - duplicate code. make as a function.
+                            if (exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
+                                getSectionAggregatedDataProm = ExerciseResultSrv.getExamResult(exerciseResult.examId).then(function (examResult) {
+                                    var sectionsAggregatedData = _getExamAggregatedSectionsData(examResult, exerciseStatuses);
+
+                                    examResult.duration = sectionsAggregatedData.sectionsDuration;
+
+                                    if (sectionsAggregatedData.allSectionsCompleted) {
+                                        examResult.isComplete = true;
+                                        examResult.endedTime = Date.now();
+                                        var examResultPath = _getExamResultPath(examResult.guid);
+                                        dataToSave[examResultPath] = examResult;
+                                    }
+                                });
+                            }
+
                             moduleResult.lastUpdate = Date.now();
                             var modulePath = _getModuleResultPath(moduleResult.guid);
                             dataToSave[modulePath] = moduleResult;
 
-                            return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
-                                return StudentStorageSrv.update(dataToSave);
+                            getSectionAggregatedDataProm.then(function(){
+                                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                                    return StudentStorageSrv.update(dataToSave);
+                                });
                             });
+
                         });
                     });
                 });
             }
         }
-    ])
-    ;
-})
-(angular);
+    ]);
+})(angular);
 
 angular.module('znk.infra.exerciseResult').run(['$templateCache', function($templateCache) {
 
