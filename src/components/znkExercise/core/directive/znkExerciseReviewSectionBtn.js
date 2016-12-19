@@ -28,11 +28,11 @@
                                 getQuestionsProm,
                                 getCurrentQuestionIndexProm
                             ]).then(function (res) {
-                                var isInLiveSession = !!res[0].guid;
-                                var questionsArr = res[1];
+                                // var isInLiveSession = !!res[0].guid;
+                                // var questionsArr = res[1];
                                 var currIndex = res[2];
                                 currIndex = newIndex ? newIndex : currIndex;
-                                var maxQuestionNum = questionsArr.length - 1;
+                                // var maxQuestionNum = questionsArr.length - 1;
                                 // console.log(currIndex, 'currIndex');
                                 // console.log(maxQuestionNum);
                                 // console.log(isInLiveSession);

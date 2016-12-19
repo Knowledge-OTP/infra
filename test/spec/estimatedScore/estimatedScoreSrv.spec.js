@@ -1,17 +1,22 @@
 describe('testing service "EstimatedScoreSrv":', function () {
     'use strict';
 
-    beforeEach(module('znk.infra.estimatedScore', 'htmlTemplates', 'testUtility', 'storage.mock', 'estimatedScore.mock'));
+    beforeEach(module('znk.infra.estimatedScore', 'htmlTemplates', 'testUtility', 'storage.mock', 'estimatedScore.mock', 'znk.infra.presence', 'env.mock', 'user.mock'));
 
     var actions, TestUtilitySrv, $rootScope, StudentStorage, EstimatedScoreSrv, InfraConfigSrv;
 
-    beforeEach(module(function (EstimatedScoreSrvProvider, EstimatedScoreEventsHandlerSrvProvider, exerciseTypeConst, $provide) {
+    beforeEach(module(function (EstimatedScoreSrvProvider, EstimatedScoreEventsHandlerSrvProvider, exerciseTypeConst, $provide, CallsEventsSrvProvider, PresenceServiceProvider) {
 
         $provide.service('EstimatedScoreHelperSrv', function($q) {
             this.getEstimatedScoreData = function() {
                 return $q.when(StudentStorage.adapter.__db.users.$$uid.estimatedScore);
             };
         });
+
+        CallsEventsSrvProvider.enabled=true;
+
+        PresenceServiceProvider.setAuthServiceName('AuthService');
+    
     }));
 
     var notRoundEstimatedScoreMock = {
