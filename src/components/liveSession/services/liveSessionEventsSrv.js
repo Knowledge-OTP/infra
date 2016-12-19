@@ -15,7 +15,7 @@
             var LiveSessionEventsSrv = {};
 
             function _listenToLiveSessionData(guid) {
-                var liveSessionDataPath = ENV.firebaseAppScopeName + 'liveSession/' + guid;
+                var liveSessionDataPath = ENV.studentAppName + '/liveSession/' + guid;
 
                 function _cb(liveSessionData) {
                     if (!liveSessionData) {
@@ -77,7 +77,7 @@
             function _startListening() {
                 UserProfileService.getCurrUserId().then(function (currUid) {
                     InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
-                        var appName = ENV.firebaseAppScopeName;
+                        var appName = ENV.dashboardAppName;
                         var userLiveSessionPath = appName + '/users/' + currUid + '/liveSession/active';
                         globalStorage.onEvent(StorageSrv.EVENTS.VALUE, userLiveSessionPath, function (userLiveSessionGuids) {
                             if (userLiveSessionGuids) {

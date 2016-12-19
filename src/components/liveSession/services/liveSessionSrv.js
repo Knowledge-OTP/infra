@@ -106,7 +106,6 @@
                             studentPath: studentPath,
                             educatorPath: educatorPath,
                             appName: ENV.firebaseAppScopeName.split('_')[0],
-                            sessionGUID: UtilitySrv.general.createGuid(),
                             extendTime: 0,
                             startTime: startTime,
                             endTime: null,
@@ -118,10 +117,11 @@
                         dataToSave[data.newLiveSessionData.$$path] = data.newLiveSessionData;
                         //educator live session requests object update
                         data.currUserLiveSessionRequests[newLiveSessionGuid] = true;
-                        dataToSave[educatorPath] = data.currUserLiveSessionRequests;
+                        var educatorLiveSessionDataGuidPath = educatorPath + '/active';
+                        dataToSave[educatorLiveSessionDataGuidPath] = data.currUserLiveSessionRequests;
                         //student live session requests object update
-                        var studentLiveSessionDataGuidPath = studentPath + '/' + newLiveSessionGuid;
-                        dataToSave[studentLiveSessionDataGuidPath] = true;
+                        var studentLiveSessionDataGuidPath = studentPath + '/active';
+                        dataToSave[studentLiveSessionDataGuidPath] = data.currUserLiveSessionRequests;
 
                         return _getStorage().then(function (StudentStorage) {
                             return StudentStorage.update(dataToSave);
@@ -162,16 +162,6 @@
                     return _initiateLiveSession(educatorData, studentData, UserLiveSessionStateEnum.EDUCATOR.enum);
                 });
             };
-
-            // this.viewOtherUserScreen = function (sharerData) {
-            //     return UserProfileService.getCurrUserId().then(function (currUserId) {
-            //         var viewerData = {
-            //             uid: currUserId,
-            //             isTeacher: isTeacherApp
-            //         };
-            //         return _initiateLiveSession(sharerData, viewerData, UserLiveSessionStateEnum.VIEWER.enum);
-            //     });
-            // };
 
             this.confirmLiveSession = function (liveSessionGuid) {
                 if (currUserLiveSessionState !== UserLiveSessionStateEnum.NONE.enum) {

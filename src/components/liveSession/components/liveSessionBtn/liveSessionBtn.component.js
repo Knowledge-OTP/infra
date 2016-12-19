@@ -19,13 +19,18 @@
                     vm.isOffline = newStatus === PresenceService.userStatus.OFFLINE;
                 }
                 function liveSessionStateChanged(newLiveSessionData) {
-                    vm.isLiveSessionActive = newLiveSessionData &&
-                        (newLiveSessionData.status === LiveSessionStatusEnum.CONFIRMED.enum);
+                    vm.isLiveSessionActive = newLiveSessionData === LiveSessionStatusEnum.CONFIRMED.enum;
+                }
+
+                function endSession() {
+                    LiveSessionSrv.getActiveLiveSessionData().then(function (liveSessionData) {
+                        LiveSessionSrv.endLiveSession(liveSessionData.guid);
+                    });
                 }
 
                 this.$onInit = function() {
                     vm.isLiveSessionActive = false;
-                    vm.endSession = LiveSessionSrv.endLiveSession;
+                    vm.endSession = endSession;
                     vm.isOffline = true;
 
                     if (isTeacher){

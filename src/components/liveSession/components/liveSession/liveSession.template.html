@@ -1,7 +1,9 @@
 <div ng-if="vm.userLiveSessionState"
      ng-class="vm.liveSessionCls">
-    <div class="active-state-container"></div>
-    <div class="close-icon-wrapper" ng-click="vm.onClose()">
-        <svg-icon name="live-session-close"></svg-icon>
+    <div class="active-state-container">
+        <div class="square-side top"></div>
+        <div class="square-side right"></div>
+        <div class="square-side bottom"></div>
+        <div class="square-side left"></div>
     </div>
 </div>

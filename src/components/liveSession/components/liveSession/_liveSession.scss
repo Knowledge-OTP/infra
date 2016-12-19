@@ -1,6 +1,6 @@
 .live-session-ph{
     position: relative;
-    z-index: 10;
+    z-index: 0;
 
     live-session{
         .close-icon-wrapper{
@@ -21,12 +21,38 @@
         }
 
         .active-state-container{
-            position: fixed;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            border: 5px solid $bgColor19;
+            .square-side{
+                background: $bgColor19;
+                position: fixed;
+
+                &.top, &.bottom{
+                    height: 5px;
+                    right: 0;
+                    left: 0;
+                }
+
+                &.right, &.left{
+                    width: 5px;
+                    top: 0;
+                    bottom: 0;
+                }
+
+                &.top{
+                    top: 0;
+                }
+
+                &.right{
+                    right: 0;
+                }
+
+                &.bottom{
+                    bottom: 0;
+                }
+
+                &.left{
+                    left: 0;
+                }
+            }
         }
     }
 }

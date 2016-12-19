@@ -10,14 +10,14 @@
             }
 
             this.getLiveSessionDataPath = function (guid) {
-                var LIVE_SESSION_ROOT_PATH = ENV.firebaseAppScopeName + '/liveSession/';
+                var LIVE_SESSION_ROOT_PATH = ENV.studentAppName + '/liveSession/';
                 return LIVE_SESSION_ROOT_PATH + guid;
             };
 
             this.getUserLiveSessionRequestsPath  = function (userData) {
                 var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
                 var USER_DATA_PATH = appName  + '/users/' + userData.uid;
-                return USER_DATA_PATH + '/liveSession/active';
+                return USER_DATA_PATH + '/liveSession';
             };
 
             this.getLiveSessionData = function (liveSessionGuid) {

@@ -8,6 +8,7 @@
         'pascalprecht.translate',
         'znk.infra.screenSharing',
         'znk.infra.presence',
-        'znk.infra.znkSession'
+        'znk.infra.znkSession',
+        'znk.infra.liveSession'
     ]);
 })(angular);

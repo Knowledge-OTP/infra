@@ -166,7 +166,7 @@
                             } else {
                                 liveSessionStatus = scope.d.states.NONE;
                             }
-                            updateStatus();
+                            // updateStatus();
                         }
                     }
 
@@ -175,10 +175,11 @@
                             if (liveSessionState === LiveSessionStatusEnum.CONFIRMED.enum) {
                                 liveSessionStatus = scope.d.states.LIVE_SESSION;
                                 // liveSessionDuration = getRoundTime() - sessionData.startTime;
+                                updateStatus();
                             } else {
                                 liveSessionStatus = scope.d.states.NONE;
                             }
-                            updateStatus();
+                            // updateStatus();
                         }
                     }
 

@@ -42,7 +42,7 @@
         .decorator('ENV', function ($delegate) {
             'ngInject';
 
-            $delegate.firebaseAppScopeName = 'act_app';
+            $delegate.firebaseAppScopeName = 'act_dashboard';
             $delegate.fbDataEndPoint = '//act-dev.firebaseio.com/';
             $delegate.appContext = 'dashboard';
             $delegate.studentAppName = 'act_app';
