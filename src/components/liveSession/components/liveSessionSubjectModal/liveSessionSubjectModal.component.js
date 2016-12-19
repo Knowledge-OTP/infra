@@ -27,8 +27,7 @@
                     };
                     LiveSessionSrv.startLiveSession(studentData, sessionSubject);
 
-                }
-
+                };
             }
         });
 })(angular);

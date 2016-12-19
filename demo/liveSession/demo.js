@@ -7,8 +7,8 @@
         ])
         .config(function () {
             // Replace storageConfig parameters through localStorage
-            localStorage.setItem('email', 'actTech100@zinkerz.com');
-            localStorage.setItem('password', '123456');
+            localStorage.setItem('email', 'ofir+actEdu@zinkerz.com');
+            localStorage.setItem('password', '123123');
             localStorage.setItem('dataDbPath', 'https://act-dev.firebaseio.com/');
             localStorage.setItem('studentPath', '/act_app');
             localStorage.setItem('teacherPath', '/act_dashboard');
@@ -78,7 +78,7 @@
             'ngInject';
 
             $delegate.getAuth = function () {
-                return { uid: '56e66fe6-bc5e-4e60-8b1d-8e87f44e96d9' };
+                return { uid: 'cf656635-b44c-4fcc-82ef-72fe566d5540' };
             };
             return $delegate;
         })
@@ -95,7 +95,7 @@
 
             $timeout(function () {
                 StudentContextSrv.setCurrentUid('c47f4f57-521c-4832-b505-c0093737ceff');
-                TeacherContextSrv.setCurrentUid('56e66fe6-bc5e-4e60-8b1d-8e87f44e96d9');
+                TeacherContextSrv.setCurrentUid('cf656635-b44c-4fcc-82ef-72fe566d5540');
             }, 2000);
         });
 })(angular);

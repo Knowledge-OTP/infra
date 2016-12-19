@@ -18,6 +18,10 @@
                 function trackStudentPresenceCB(userId, newStatus) {
                     vm.isOffline = newStatus === PresenceService.userStatus.OFFLINE;
                 }
+                function liveSessionStateChanged(newLiveSessionData) {
+                    vm.isLiveSessionActive = newLiveSessionData &&
+                        (newLiveSessionData.status === LiveSessionStatusEnum.CONFIRMED.enum);
+                }
 
                 this.$onInit = function() {
                     vm.isLiveSessionActive = false;
@@ -30,12 +34,7 @@
                         PresenceService.startTrackUserPresence(studentUid, trackStudentPresenceCB.bind(null, vm.student.uid));
                     }
 
-                    LiveSessionSrv.registerToActiveLiveSessionDataChanges(liveSessionStateChanged);
-
-                    function liveSessionStateChanged(newLiveSessionData) {
-                        vm.isLiveSessionActive = newLiveSessionData &&
-                            (newLiveSessionData.status === LiveSessionStatusEnum.CONFIRMED.enum);
-                    }
+                    LiveSessionSrv.registerToCurrUserLiveSessionStateChanges(liveSessionStateChanged);
 
                     vm.showSessionModal = function () {
                         $mdDialog.show({

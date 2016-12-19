@@ -6,7 +6,8 @@
         .directive('activePanel',
             function ($timeout, $window, $q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
                          PresenceService, StudentContextSrv, TeacherContextSrv, ENV,
-                         $translate, SessionSrv, SessionsStatusEnum, toggleAutoCallEnum) {
+                         $translate, SessionSrv, SessionsStatusEnum, toggleAutoCallEnum, LiveSessionStatusEnum,
+                         LiveSessionSrv) {
                 'ngInject';
                 return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
@@ -169,7 +170,21 @@
                         }
                     }
 
+                    function listenToLiveSessionStatus2(liveSessionState) {
+                        if (liveSessionState) {
+                            if (liveSessionState === LiveSessionStatusEnum.CONFIRMED.enum) {
+                                liveSessionStatus = scope.d.states.LIVE_SESSION;
+                                // liveSessionDuration = getRoundTime() - sessionData.startTime;
+                            } else {
+                                liveSessionStatus = scope.d.states.NONE;
+                            }
+                            updateStatus();
+                        }
+                    }
+
                     SessionSrv.registerToCurrUserLiveSessionStateChanges(listenToLiveSessionStatus);
+
+                    LiveSessionSrv.registerToCurrUserLiveSessionStateChanges(listenToLiveSessionStatus2);
                 }
             };
         });

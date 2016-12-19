@@ -65,7 +65,7 @@
                                 $log.error('LiveSessionEventsSrv: invalid status was received ' + liveSessionData.status);
                         }
 
-                        LiveSessionsSrv._liveSessionDataChanged(liveSessionData);
+                        LiveSessionSrv._liveSessionDataChanged(liveSessionData);
                     });
                 }
 

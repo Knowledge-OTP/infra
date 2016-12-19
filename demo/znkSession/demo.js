@@ -78,7 +78,7 @@
             'ngInject';
 
             $delegate.getAuth = function () {
-                return { uid: '56e66fe6-bc5e-4e60-8b1d-8e87f44e96d9' };
+                return { uid: 'cf656635-b44c-4fcc-82ef-72fe566d5540' };
             };
             return $delegate;
         })
@@ -93,7 +93,7 @@
 
             $timeout(function () {
                 StudentContextSrv.setCurrentUid('c47f4f57-521c-4832-b505-c0093737ceff');
-                TeacherContextSrv.setCurrentUid('56e66fe6-bc5e-4e60-8b1d-8e87f44e96d9');
+                TeacherContextSrv.setCurrentUid('cf656635-b44c-4fcc-82ef-72fe566d5540');
             }, 2000);
         });
 })(angular);

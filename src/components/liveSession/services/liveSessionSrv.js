@@ -3,7 +3,7 @@
 
     angular.module('znk.infra.liveSession').service('LiveSessionSrv',
         function (UserProfileService, InfraConfigSrv, $q, UtilitySrv, LiveSessionDataGetterSrv, LiveSessionStatusEnum,
-                  ENV, $log, UserLiveSessionStateEnum) {
+                  ENV, $log, UserLiveSessionStateEnum, LiveSessionUiSrv) {
             'ngInject';
 
             var _this = this;
