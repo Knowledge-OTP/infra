@@ -189,16 +189,23 @@
                     dataToSave [data.liveSessionData.$$path] = data.liveSessionData;
 
                     data.currUidLiveSessionRequests[data.liveSessionData.guid] = false;
-                    dataToSave[data.currUidLiveSessionRequests.$$path] = data.currUidLiveSessionRequests;
+                    var activePath = data.currUidLiveSessionRequests.$$path;
+                    dataToSave[activePath] = {};
+                    var archivePath = activePath.replace('/active', '/archive');
+                    archivePath += liveSessionGuid;
+                    dataToSave[archivePath] = false;
 
                     var otherUserLiveSessionRequestPath;
-                    if (data.liveSessionData.viewerId !== data.currUid) {
+                    if (data.liveSessionData.studentId !== data.currUid) {
                         otherUserLiveSessionRequestPath = data.liveSessionData.studentPath;
                     } else {
                         otherUserLiveSessionRequestPath = data.liveSessionData.teacherPath;
                     }
-                    otherUserLiveSessionRequestPath += '/' + data.liveSessionData.guid;
-                    dataToSave[otherUserLiveSessionRequestPath] = false;
+                    var otherUserActivePath = otherUserLiveSessionRequestPath + '/active';
+                    dataToSave[otherUserActivePath] = {};
+                    var otherUserArchivePath = otherUserLiveSessionRequestPath + '/archive';
+                    otherUserArchivePath += liveSessionGuid;
+                    dataToSave[otherUserArchivePath] = false;
 
                     return data.storage.update(dataToSave);
                 });

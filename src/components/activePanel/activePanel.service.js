@@ -17,7 +17,7 @@
                 if (!angular.element(body[0].querySelector('active-panel')).length) {
                     self.scope = $rootScope.$new(true);
                     body.append(canvasContainerElement);
-                    $compile(canvasContainerElement)(self.scope);
+                    $compile(canvasContainerElement.contents())(self.scope);
                 }
             };
         });

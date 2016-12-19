@@ -32,7 +32,7 @@
                                 LiveSessionUiSrv.showStudentLiveSessionPopUp().then(function () {
                                     LiveSessionSrv.confirmLiveSession(liveSessionData.guid);
                                 }, function () {
-                                    LiveSessionSrv.endSharing(liveSessionData.guid);
+                                    LiveSessionSrv.endLiveSession(liveSessionData.guid);
                                 });
                                 break;
                             case LiveSessionStatusEnum.PENDING_EDUCATOR.enum:
@@ -77,7 +77,7 @@
             function _startListening() {
                 UserProfileService.getCurrUserId().then(function (currUid) {
                     InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
-                        var appName = ENV.dashboardAppName;
+                        var appName = ENV.firebaseAppScopeName;
                         var userLiveSessionPath = appName + '/users/' + currUid + '/liveSession/active';
                         globalStorage.onEvent(StorageSrv.EVENTS.VALUE, userLiveSessionPath, function (userLiveSessionGuids) {
                             if (userLiveSessionGuids) {

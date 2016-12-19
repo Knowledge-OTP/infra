@@ -195,7 +195,10 @@
                     function endScreenSharing(){
                         // ScreenSharingUiSrv.endScreenSharing();
                         $timeout(function () {
-                            $window.document.querySelector('.close-icon-wrapper').click();
+                            var shareScreenCloseElm = $window.document.querySelector('.close-icon-wrapper');
+                            if (shareScreenCloseElm) {
+                                shareScreenCloseElm.click();
+                            }
                         });
                     }
 
@@ -208,18 +211,20 @@
                                 $log.debug('ActivePanel State: NONE');
                                 bodyDomElem.removeClass(activePanelVisibleClassName);
                                 destroyTimer();
-                                scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.DISABLE.enum;
-                                scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
+                                if (scope.d.callBtnModel) {
+                                    scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.DISABLE.enum;
+                                    scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
+                                }
                                 endScreenSharing();
-                                SessionSrv.clearSessionFrame();
                                 break;
                             case scope.d.states.LIVE_SESSION :
+                                $log.debug('ActivePanel State: LIVE_SESSION');
                                 bodyDomElem.addClass(activePanelVisibleClassName);
                                 startTimer();
-                                SessionSrv.loadSessionFrame();
-                                scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.ACTIVATE.enum;
-                                scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
-                                $log.debug('ActivePanel State: LIVE_SESSION');
+                                if (scope.d.callBtnModel) {
+                                    scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.ACTIVATE.enum;
+                                    scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
+                                }
                                 break;
                             default :
                                 $log.error('currStatus is in an unknown state', scope.d.currStatus);
@@ -230,35 +235,26 @@
                         return Math.floor(Date.now() / 1000) * 1000;
                     }
 
-                    // Listen to status changes in Live session
-                    function listenToLiveSessionStatus(sessionData) {
-                        if (sessionData) {
-                            if (sessionData.status === SessionsStatusEnum.ACTIVE.enum) {
-                                liveSessionStatus = scope.d.states.LIVE_SESSION;
-                                liveSessionDuration = getRoundTime() - sessionData.startTime;
-                            } else {
-                                liveSessionStatus = scope.d.states.NONE;
-                            }
-                            // updateStatus();
-                        }
-                    }
+                    function listenToLiveSessionStatus(liveSessionState) {
+                        var isSessionConfirmed = liveSessionState === LiveSessionStatusEnum.CONFIRMED.enum;
+                        var isSessionEnded = liveSessionState === LiveSessionStatusEnum.ENDED.enum;
 
-                    function listenToLiveSessionStatus2(liveSessionState) {
-                        if (liveSessionState) {
-                            if (liveSessionState === LiveSessionStatusEnum.CONFIRMED.enum) {
-                                liveSessionStatus = scope.d.states.LIVE_SESSION;
-                                // liveSessionDuration = getRoundTime() - sessionData.startTime;
+                        if (isSessionConfirmed || isSessionEnded){
+                            LiveSessionSrv.getActiveLiveSessionData().then(function (liveSessionData) {
+                                console.log('liveSessionData: ', liveSessionData);
+                                if (liveSessionData.status === LiveSessionStatusEnum.CONFIRMED.enum) {
+                                    liveSessionStatus = scope.d.states.LIVE_SESSION;
+                                    liveSessionDuration = getRoundTime() - liveSessionData.startTime;
+                                } else {
+                                    liveSessionStatus = scope.d.states.NONE;
+                                }
                                 updateStatus();
-                            } else {
-                                liveSessionStatus = scope.d.states.NONE;
-                            }
-                            // updateStatus();
+                            });
                         }
                     }
 
-                    SessionSrv.registerToCurrUserLiveSessionStateChanges(listenToLiveSessionStatus);
 
-                    LiveSessionSrv.registerToCurrUserLiveSessionStateChanges(listenToLiveSessionStatus2);
+                    LiveSessionSrv.registerToCurrUserLiveSessionStateChanges(listenToLiveSessionStatus);
                 }
             };
         }]);
@@ -283,7 +279,7 @@
                 if (!angular.element(body[0].querySelector('active-panel')).length) {
                     self.scope = $rootScope.$new(true);
                     body.append(canvasContainerElement);
-                    $compile(canvasContainerElement)(self.scope);
+                    $compile(canvasContainerElement.contents())(self.scope);
                 }
             };
         }]);
@@ -6612,7 +6608,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                                 LiveSessionUiSrv.showStudentLiveSessionPopUp().then(function () {
                                     LiveSessionSrv.confirmLiveSession(liveSessionData.guid);
                                 }, function () {
-                                    LiveSessionSrv.endSharing(liveSessionData.guid);
+                                    LiveSessionSrv.endLiveSession(liveSessionData.guid);
                                 });
                                 break;
                             case LiveSessionStatusEnum.PENDING_EDUCATOR.enum:
@@ -6657,7 +6653,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
             function _startListening() {
                 UserProfileService.getCurrUserId().then(function (currUid) {
                     InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
-                        var appName = ENV.dashboardAppName;
+                        var appName = ENV.firebaseAppScopeName;
                         var userLiveSessionPath = appName + '/users/' + currUid + '/liveSession/active';
                         globalStorage.onEvent(StorageSrv.EVENTS.VALUE, userLiveSessionPath, function (userLiveSessionGuids) {
                             if (userLiveSessionGuids) {
@@ -6874,16 +6870,23 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                     dataToSave [data.liveSessionData.$$path] = data.liveSessionData;
 
                     data.currUidLiveSessionRequests[data.liveSessionData.guid] = false;
-                    dataToSave[data.currUidLiveSessionRequests.$$path] = data.currUidLiveSessionRequests;
+                    var activePath = data.currUidLiveSessionRequests.$$path;
+                    dataToSave[activePath] = {};
+                    var archivePath = activePath.replace('/active', '/archive');
+                    archivePath += liveSessionGuid;
+                    dataToSave[archivePath] = false;
 
                     var otherUserLiveSessionRequestPath;
-                    if (data.liveSessionData.viewerId !== data.currUid) {
+                    if (data.liveSessionData.studentId !== data.currUid) {
                         otherUserLiveSessionRequestPath = data.liveSessionData.studentPath;
                     } else {
                         otherUserLiveSessionRequestPath = data.liveSessionData.teacherPath;
                     }
-                    otherUserLiveSessionRequestPath += '/' + data.liveSessionData.guid;
-                    dataToSave[otherUserLiveSessionRequestPath] = false;
+                    var otherUserActivePath = otherUserLiveSessionRequestPath + '/active';
+                    dataToSave[otherUserActivePath] = {};
+                    var otherUserArchivePath = otherUserLiveSessionRequestPath + '/archive';
+                    otherUserArchivePath += liveSessionGuid;
+                    dataToSave[otherUserArchivePath] = false;
 
                     return data.storage.update(dataToSave);
                 });
@@ -8706,9 +8709,9 @@ angular.module('znk.infra.screenSharing').run(['$templateCache', function($templ
     "            <!--<svg-icon name=\"screen-sharing-eye\"></svg-icon>-->\n" +
     "        <!--</div>-->\n" +
     "    </div>\n" +
-    "    <div class=\"close-icon-wrapper\" ng-click=\"$ctrl.onClose()\">\n" +
-    "        <svg-icon name=\"screen-sharing-close\"></svg-icon>\n" +
-    "    </div>\n" +
+    "    <!--<div class=\"close-icon-wrapper\" ng-click=\"$ctrl.onClose()\">-->\n" +
+    "        <!--<svg-icon name=\"screen-sharing-close\"></svg-icon>-->\n" +
+    "    <!--</div>-->\n" +
     "</div>\n" +
     "");
   $templateCache.put("components/screenSharing/svg/close-icon.svg",

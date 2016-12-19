@@ -82,10 +82,9 @@
             };
             return $delegate;
         })
-        .run(function(LiveSessionEventsSrv, ActivePanelSrv){
+        .run(function(ActivePanelSrv){
             'ngInject';
             ActivePanelSrv.loadActivePanel();
-            LiveSessionEventsSrv.activate();
         })
         .controller('Main', function ($timeout, TeacherContextSrv, StudentContextSrv) {
             'ngInject';
