@@ -193,12 +193,8 @@
                     });
 
                     function endScreenSharing(){
-                        // ScreenSharingUiSrv.endScreenSharing();
-                        $timeout(function () {
-                            var shareScreenCloseElm = $window.document.querySelector('.close-icon-wrapper');
-                            if (shareScreenCloseElm) {
-                                shareScreenCloseElm.click();
-                            }
+                        ScreenSharingSrv.getActiveScreenSharingData().then(function (screenSharingData) {
+                            ScreenSharingSrv.endScreenSharing(screenSharingData.guid);
                         });
                     }
 
@@ -6445,7 +6441,6 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                         uid: currStudent.uid
                     };
                     LiveSessionSrv.startLiveSession(studentData, sessionSubject);
-
                 };
             }]
         });
@@ -6873,7 +6868,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                     var activePath = data.currUidLiveSessionRequests.$$path;
                     dataToSave[activePath] = {};
                     var archivePath = activePath.replace('/active', '/archive');
-                    archivePath += liveSessionGuid;
+                    archivePath += '/' + liveSessionGuid;
                     dataToSave[archivePath] = false;
 
                     var otherUserLiveSessionRequestPath;
@@ -6885,7 +6880,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                     var otherUserActivePath = otherUserLiveSessionRequestPath + '/active';
                     dataToSave[otherUserActivePath] = {};
                     var otherUserArchivePath = otherUserLiveSessionRequestPath + '/archive';
-                    otherUserArchivePath += liveSessionGuid;
+                    otherUserArchivePath += '/' + liveSessionGuid;
                     dataToSave[otherUserArchivePath] = false;
 
                     return data.storage.update(dataToSave);
@@ -6969,22 +6964,19 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.liveSession').provider('LiveSessionSubjectSrv', function () {
-        var subjects;
+    angular.module('znk.infra.liveSession').provider('LiveSessionSubjectSrv', ["SessionSubjectEnumConst", function (SessionSubjectEnumConst) {
+        var subjects = [SessionSubjectEnumConst.MATH, SessionSubjectEnumConst.ENGLISH];
 
         this.setLiveSessionSubjects = function(_subjects) {
             subjects = _subjects;
         };
 
-        this.$get = ["SessionSubjectEnumConst", "UtilitySrv", function (SessionSubjectEnumConst, UtilitySrv) {
+        this.$get = ["UtilitySrv", function (UtilitySrv) {
             'ngInject';
 
             var LiveSessionSubjectSrv = {};
 
             function _getLiveSessionSubjects() {
-                if (!subjects) {
-                    subjects = [SessionSubjectEnumConst.MATH, SessionSubjectEnumConst.ENGLISH];
-                }
                 return subjects.map(function (subjectEnum) {
                     var subjectName = UtilitySrv.object.getKeyByValue(SessionSubjectEnumConst, subjectEnum).toLowerCase();
                     return {
@@ -6999,7 +6991,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
 
             return LiveSessionSubjectSrv;
         }];
-    });
+    }]);
 })(angular);
 
 (function (angular) {
@@ -11691,6 +11683,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                         }
 
                         $timeout(function () {
+                            if (!scope.chatterObj.chatMessages) { return; }
                             newData.id = messageId;
                             scope.chatterObj.chatMessages.push(newData);
                         });

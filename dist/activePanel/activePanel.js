@@ -135,12 +135,8 @@
                     });
 
                     function endScreenSharing(){
-                        // ScreenSharingUiSrv.endScreenSharing();
-                        $timeout(function () {
-                            var shareScreenCloseElm = $window.document.querySelector('.close-icon-wrapper');
-                            if (shareScreenCloseElm) {
-                                shareScreenCloseElm.click();
-                            }
+                        ScreenSharingSrv.getActiveScreenSharingData().then(function (screenSharingData) {
+                            ScreenSharingSrv.endScreenSharing(screenSharingData.guid);
                         });
                     }
 

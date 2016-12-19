@@ -192,7 +192,7 @@
                     var activePath = data.currUidLiveSessionRequests.$$path;
                     dataToSave[activePath] = {};
                     var archivePath = activePath.replace('/active', '/archive');
-                    archivePath += liveSessionGuid;
+                    archivePath += '/' + liveSessionGuid;
                     dataToSave[archivePath] = false;
 
                     var otherUserLiveSessionRequestPath;
@@ -204,7 +204,7 @@
                     var otherUserActivePath = otherUserLiveSessionRequestPath + '/active';
                     dataToSave[otherUserActivePath] = {};
                     var otherUserArchivePath = otherUserLiveSessionRequestPath + '/archive';
-                    otherUserArchivePath += liveSessionGuid;
+                    otherUserArchivePath += '/' + liveSessionGuid;
                     dataToSave[otherUserArchivePath] = false;
 
                     return data.storage.update(dataToSave);

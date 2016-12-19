@@ -26,7 +26,6 @@
                         uid: currStudent.uid
                     };
                     LiveSessionSrv.startLiveSession(studentData, sessionSubject);
-
                 };
             }
         });

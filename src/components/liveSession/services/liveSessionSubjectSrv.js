@@ -1,22 +1,19 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.liveSession').provider('LiveSessionSubjectSrv', function () {
-        var subjects;
+    angular.module('znk.infra.liveSession').provider('LiveSessionSubjectSrv', function (SessionSubjectEnumConst) {
+        var subjects = [SessionSubjectEnumConst.MATH, SessionSubjectEnumConst.ENGLISH];
 
         this.setLiveSessionSubjects = function(_subjects) {
             subjects = _subjects;
         };
 
-        this.$get = function (SessionSubjectEnumConst, UtilitySrv) {
+        this.$get = function (UtilitySrv) {
             'ngInject';
 
             var LiveSessionSubjectSrv = {};
 
             function _getLiveSessionSubjects() {
-                if (!subjects) {
-                    subjects = [SessionSubjectEnumConst.MATH, SessionSubjectEnumConst.ENGLISH];
-                }
                 return subjects.map(function (subjectEnum) {
                     var subjectName = UtilitySrv.object.getKeyByValue(SessionSubjectEnumConst, subjectEnum).toLowerCase();
                     return {

@@ -688,9 +688,9 @@ angular.module('znk.infra.screenSharing').run(['$templateCache', function($templ
     "            <!--<svg-icon name=\"screen-sharing-eye\"></svg-icon>-->\n" +
     "        <!--</div>-->\n" +
     "    </div>\n" +
-    "    <div class=\"close-icon-wrapper\" ng-click=\"$ctrl.onClose()\">\n" +
-    "        <svg-icon name=\"screen-sharing-close\"></svg-icon>\n" +
-    "    </div>\n" +
+    "    <!--<div class=\"close-icon-wrapper\" ng-click=\"$ctrl.onClose()\">-->\n" +
+    "        <!--<svg-icon name=\"screen-sharing-close\"></svg-icon>-->\n" +
+    "    <!--</div>-->\n" +
     "</div>\n" +
     "");
   $templateCache.put("components/screenSharing/svg/close-icon.svg",
