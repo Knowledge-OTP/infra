@@ -13,7 +13,7 @@
             var registeredCbToActiveLiveSessionDataChanges = [];
             var registeredCbToCurrUserLiveSessionStateChange = [];
 
-            var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
+            var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';
 
             function _getRoundTime() {
                 return Math.floor(Date.now() / 1000) * 1000;
@@ -212,8 +212,8 @@
             };
 
             this.registerToActiveLiveSessionDataChanges = function (cb) {
+                registeredCbToActiveLiveSessionDataChanges.push(cb);
                 if (activeLiveSessionDataFromAdapter) {
-                    registeredCbToActiveLiveSessionDataChanges.push(cb);
                     cb(activeLiveSessionDataFromAdapter);
                 }
             };
@@ -228,6 +228,7 @@
             };
 
             this.unregisterFromCurrUserLiveSessionStateChanges = function (cb) {
+                _cleanRegisteredCbToActiveLiveSessionData();
                 registeredCbToCurrUserLiveSessionStateChange = _removeCbFromCbArr(registeredCbToCurrUserLiveSessionStateChange,cb);
             };
 
@@ -266,7 +267,6 @@
                         _this.endLiveSession(liveSessionData.guid);
                     });
                 } else {
-                    _cleanRegisteredCbToActiveLiveSessionData();
                     LiveSessionUiSrv.endLiveSession();
                 }
 
