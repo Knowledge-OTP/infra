@@ -66,7 +66,6 @@
         'pascalprecht.translate',
         'znk.infra.screenSharing',
         'znk.infra.presence',
-        'znk.infra.znkSession',
         'znk.infra.liveSession'
     ]);
 })(angular);
@@ -77,10 +76,9 @@
 
     angular.module('znk.infra.activePanel')
         .directive('activePanel',
-            ["$timeout", "$window", "$q", "$interval", "$filter", "$log", "CallsUiSrv", "ScreenSharingSrv", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$translate", "SessionSrv", "SessionsStatusEnum", "toggleAutoCallEnum", "LiveSessionStatusEnum", "LiveSessionSrv", function ($timeout, $window, $q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
+            ["$window", "$q", "$interval", "$filter", "$log", "CallsUiSrv", "ScreenSharingSrv", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$translate", "toggleAutoCallEnum", "LiveSessionSrv", "LiveSessionStatusEnum", function ($window, $q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
                          PresenceService, StudentContextSrv, TeacherContextSrv, ENV,
-                         $translate, SessionSrv, SessionsStatusEnum, toggleAutoCallEnum, LiveSessionStatusEnum,
-                         LiveSessionSrv) {
+                         $translate, toggleAutoCallEnum, LiveSessionSrv, LiveSessionStatusEnum) {
                 'ngInject';
                 return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
@@ -90,6 +88,7 @@
                         isOffline,
                         durationToDisplay,
                         timerInterval,
+                        liveSessionData,
                         liveSessionStatus = 0,
                         liveSessionDuration = 0,
                         timerSecondInterval = 1000,
@@ -194,7 +193,9 @@
 
                     function endScreenSharing(){
                         ScreenSharingSrv.getActiveScreenSharingData().then(function (screenSharingData) {
-                            ScreenSharingSrv.endScreenSharing(screenSharingData.guid);
+                            if (screenSharingData) {
+                                ScreenSharingSrv.endScreenSharing(screenSharingData.guid);
+                            }
                         });
                     }
 
@@ -212,6 +213,7 @@
                                     scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
                                 }
                                 endScreenSharing();
+                                LiveSessionSrv.unregisterFromActiveLiveSessionDataChanges(listenToLiveSessionStatus);
                                 break;
                             case scope.d.states.LIVE_SESSION :
                                 $log.debug('ActivePanel State: LIVE_SESSION');
@@ -231,26 +233,25 @@
                         return Math.floor(Date.now() / 1000) * 1000;
                     }
 
-                    function listenToLiveSessionStatus(liveSessionState) {
-                        var isSessionConfirmed = liveSessionState === LiveSessionStatusEnum.CONFIRMED.enum;
-                        var isSessionEnded = liveSessionState === LiveSessionStatusEnum.ENDED.enum;
+                    function listenToLiveSessionStatus(newLiveSessionData) {
+                        if (!liveSessionData || !angular.equals(liveSessionData, newLiveSessionData)) {
+                            liveSessionData = newLiveSessionData;
+                        }
+                        var isEnded = liveSessionData.status === LiveSessionStatusEnum.ENDED.enum;
+                        var isConfirmed = liveSessionData.status === LiveSessionStatusEnum.CONFIRMED.enum;
 
-                        if (isSessionConfirmed || isSessionEnded){
-                            LiveSessionSrv.getActiveLiveSessionData().then(function (liveSessionData) {
-                                console.log('liveSessionData: ', liveSessionData);
-                                if (liveSessionData.status === LiveSessionStatusEnum.CONFIRMED.enum) {
-                                    liveSessionStatus = scope.d.states.LIVE_SESSION;
-                                    liveSessionDuration = getRoundTime() - liveSessionData.startTime;
-                                } else {
-                                    liveSessionStatus = scope.d.states.NONE;
-                                }
-                                updateStatus();
-                            });
+                        if (isEnded || isConfirmed) {
+                            if (isConfirmed) {
+                                liveSessionStatus = scope.d.states.LIVE_SESSION;
+                                liveSessionDuration = getRoundTime() - liveSessionData.startTime;
+                            } else {
+                                liveSessionStatus = scope.d.states.NONE;
+                            }
+                            updateStatus();
                         }
                     }
 
-
-                    LiveSessionSrv.registerToCurrUserLiveSessionStateChanges(listenToLiveSessionStatus);
+                    LiveSessionSrv.registerToActiveLiveSessionDataChanges(listenToLiveSessionStatus);
                 }
             };
         }]);
@@ -6689,7 +6690,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
             var registeredCbToActiveLiveSessionDataChanges = [];
             var registeredCbToCurrUserLiveSessionStateChange = [];
 
-            var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
+            var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';
 
             function _getRoundTime() {
                 return Math.floor(Date.now() / 1000) * 1000;
@@ -6888,8 +6889,8 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
             };
 
             this.registerToActiveLiveSessionDataChanges = function (cb) {
+                registeredCbToActiveLiveSessionDataChanges.push(cb);
                 if (activeLiveSessionDataFromAdapter) {
-                    registeredCbToActiveLiveSessionDataChanges.push(cb);
                     cb(activeLiveSessionDataFromAdapter);
                 }
             };
@@ -6904,6 +6905,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
             };
 
             this.unregisterFromCurrUserLiveSessionStateChanges = function (cb) {
+                _cleanRegisteredCbToActiveLiveSessionData();
                 registeredCbToCurrUserLiveSessionStateChange = _removeCbFromCbArr(registeredCbToCurrUserLiveSessionStateChange,cb);
             };
 
@@ -6942,7 +6944,6 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                         _this.endLiveSession(liveSessionData.guid);
                     });
                 } else {
-                    _cleanRegisteredCbToActiveLiveSessionData();
                     LiveSessionUiSrv.endLiveSession();
                 }
 
@@ -6964,14 +6965,14 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.liveSession').provider('LiveSessionSubjectSrv', ["SessionSubjectEnumConst", function (SessionSubjectEnumConst) {
-        var subjects = [SessionSubjectEnumConst.MATH, SessionSubjectEnumConst.ENGLISH];
+    angular.module('znk.infra.liveSession').provider('LiveSessionSubjectSrv', function () {
+        var subjects = [0, 5];
 
         this.setLiveSessionSubjects = function(_subjects) {
             subjects = _subjects;
         };
 
-        this.$get = ["UtilitySrv", function (UtilitySrv) {
+        this.$get = ["UtilitySrv", "SessionSubjectEnumConst", function (UtilitySrv, SessionSubjectEnumConst) {
             'ngInject';
 
             var LiveSessionSubjectSrv = {};
@@ -6991,7 +6992,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
 
             return LiveSessionSubjectSrv;
         }];
-    }]);
+    });
 })(angular);
 
 (function (angular) {

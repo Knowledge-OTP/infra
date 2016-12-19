@@ -8,7 +8,6 @@
         'pascalprecht.translate',
         'znk.infra.screenSharing',
         'znk.infra.presence',
-        'znk.infra.znkSession',
         'znk.infra.liveSession'
     ]);
 })(angular);
@@ -19,10 +18,9 @@
 
     angular.module('znk.infra.activePanel')
         .directive('activePanel',
-            ["$timeout", "$window", "$q", "$interval", "$filter", "$log", "CallsUiSrv", "ScreenSharingSrv", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$translate", "SessionSrv", "SessionsStatusEnum", "toggleAutoCallEnum", "LiveSessionStatusEnum", "LiveSessionSrv", function ($timeout, $window, $q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
+            ["$window", "$q", "$interval", "$filter", "$log", "CallsUiSrv", "ScreenSharingSrv", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$translate", "toggleAutoCallEnum", "LiveSessionSrv", "LiveSessionStatusEnum", function ($window, $q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
                          PresenceService, StudentContextSrv, TeacherContextSrv, ENV,
-                         $translate, SessionSrv, SessionsStatusEnum, toggleAutoCallEnum, LiveSessionStatusEnum,
-                         LiveSessionSrv) {
+                         $translate, toggleAutoCallEnum, LiveSessionSrv, LiveSessionStatusEnum) {
                 'ngInject';
                 return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
@@ -32,6 +30,7 @@
                         isOffline,
                         durationToDisplay,
                         timerInterval,
+                        liveSessionData,
                         liveSessionStatus = 0,
                         liveSessionDuration = 0,
                         timerSecondInterval = 1000,
@@ -136,7 +135,9 @@
 
                     function endScreenSharing(){
                         ScreenSharingSrv.getActiveScreenSharingData().then(function (screenSharingData) {
-                            ScreenSharingSrv.endScreenSharing(screenSharingData.guid);
+                            if (screenSharingData) {
+                                ScreenSharingSrv.endScreenSharing(screenSharingData.guid);
+                            }
                         });
                     }
 
@@ -154,6 +155,7 @@
                                     scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
                                 }
                                 endScreenSharing();
+                                LiveSessionSrv.unregisterFromActiveLiveSessionDataChanges(listenToLiveSessionStatus);
                                 break;
                             case scope.d.states.LIVE_SESSION :
                                 $log.debug('ActivePanel State: LIVE_SESSION');
@@ -173,26 +175,25 @@
                         return Math.floor(Date.now() / 1000) * 1000;
                     }
 
-                    function listenToLiveSessionStatus(liveSessionState) {
-                        var isSessionConfirmed = liveSessionState === LiveSessionStatusEnum.CONFIRMED.enum;
-                        var isSessionEnded = liveSessionState === LiveSessionStatusEnum.ENDED.enum;
+                    function listenToLiveSessionStatus(newLiveSessionData) {
+                        if (!liveSessionData || !angular.equals(liveSessionData, newLiveSessionData)) {
+                            liveSessionData = newLiveSessionData;
+                        }
+                        var isEnded = liveSessionData.status === LiveSessionStatusEnum.ENDED.enum;
+                        var isConfirmed = liveSessionData.status === LiveSessionStatusEnum.CONFIRMED.enum;
 
-                        if (isSessionConfirmed || isSessionEnded){
-                            LiveSessionSrv.getActiveLiveSessionData().then(function (liveSessionData) {
-                                console.log('liveSessionData: ', liveSessionData);
-                                if (liveSessionData.status === LiveSessionStatusEnum.CONFIRMED.enum) {
-                                    liveSessionStatus = scope.d.states.LIVE_SESSION;
-                                    liveSessionDuration = getRoundTime() - liveSessionData.startTime;
-                                } else {
-                                    liveSessionStatus = scope.d.states.NONE;
-                                }
-                                updateStatus();
-                            });
+                        if (isEnded || isConfirmed) {
+                            if (isConfirmed) {
+                                liveSessionStatus = scope.d.states.LIVE_SESSION;
+                                liveSessionDuration = getRoundTime() - liveSessionData.startTime;
+                            } else {
+                                liveSessionStatus = scope.d.states.NONE;
+                            }
+                            updateStatus();
                         }
                     }
 
-
-                    LiveSessionSrv.registerToCurrUserLiveSessionStateChanges(listenToLiveSessionStatus);
+                    LiveSessionSrv.registerToActiveLiveSessionDataChanges(listenToLiveSessionStatus);
                 }
             };
         }]);

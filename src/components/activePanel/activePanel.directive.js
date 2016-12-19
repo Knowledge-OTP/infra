@@ -4,10 +4,9 @@
 
     angular.module('znk.infra.activePanel')
         .directive('activePanel',
-            function ($timeout, $window, $q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
+            function ($window, $q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
                          PresenceService, StudentContextSrv, TeacherContextSrv, ENV,
-                         $translate, SessionSrv, SessionsStatusEnum, toggleAutoCallEnum, UserLiveSessionStateEnum,
-                         LiveSessionSrv, LiveSessionStatusEnum) {
+                         $translate, toggleAutoCallEnum, LiveSessionSrv, LiveSessionStatusEnum) {
                 'ngInject';
                 return {
                 templateUrl: 'components/activePanel/activePanel.template.html',

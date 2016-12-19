@@ -1,14 +1,14 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.liveSession').provider('LiveSessionSubjectSrv', function (SessionSubjectEnumConst) {
-        var subjects = [SessionSubjectEnumConst.MATH, SessionSubjectEnumConst.ENGLISH];
+    angular.module('znk.infra.liveSession').provider('LiveSessionSubjectSrv', function () {
+        var subjects = [0, 5];
 
         this.setLiveSessionSubjects = function(_subjects) {
             subjects = _subjects;
         };
 
-        this.$get = function (UtilitySrv) {
+        this.$get = function (UtilitySrv, SessionSubjectEnumConst) {
             'ngInject';
 
             var LiveSessionSubjectSrv = {};
