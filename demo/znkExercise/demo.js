@@ -15,18 +15,6 @@
 
             PresenceServiceProvider.setAuthServiceName('AuthService');
 
-            SessionSrvProvider.setSessionSubjects( [0, 5] );
-
-            znkAnalyticsSrvProvider.setEventsHandler(function () {
-                return {
-                    eventTrack: angular.noop,
-                    timeTrack: angular.noop,
-                    pageTrack: angular.noop,
-                    setUsername: angular.noop,
-                    setUserProperties: angular.noop
-                };
-            });
-
             var calleeNameFunc = function ($q) {
                 'ngInject';
                 return function () {
