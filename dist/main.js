@@ -4903,7 +4903,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                                 if (moduleResult.exerciseResults && withExerciseResults) {
                                     angular.forEach(moduleResult.exerciseResults, function (exerciseResult, exerciseTypeId) {
                                             angular.forEach(exerciseResult, function (exerciseResultGuid, exerciseId) {
-                                                var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, moduleResult.examId).then(function (exerciseResults) {
+                                                var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, moduleResult.moduleId).then(function (exerciseResults) {
                                                     if (exerciseResults) {
                                                         moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResults;
                                                     }
