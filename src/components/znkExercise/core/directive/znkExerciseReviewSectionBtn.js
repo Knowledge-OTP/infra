@@ -39,6 +39,7 @@
                                     return viewMode === ZnkExerciseViewModeEnum.REVIEW.enum;
                                 }
 
+
                                 function _determineIfShowButton () {
                                     return isInLiveSession && isLastQuestion || (_isReviewMode() && isLastQuestion);
                                 }
