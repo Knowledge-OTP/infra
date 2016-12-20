@@ -42,65 +42,17 @@
                         $log.debug('Could not fetch translation', err);
                     });
 
-                    var listenToStudentOrTeacherContextChange = function (prevUid, uid) {
-                        receiverId = uid;
-                        var currentUserStatus = PresenceService.getCurrentUserStatus(receiverId);
-                        var CalleeName = CallsUiSrv.getCalleeName(receiverId);
-                        var promsArr = [
-                            currentUserStatus,
-                            CalleeName
-                        ];
-                        $q.all(promsArr).then(function (res) {
-                            scope.d.currentUserPresenceStatus = res[0];
-                            isOffline = scope.d.currentUserPresenceStatus === PresenceService.userStatus.OFFLINE;
-                            scope.d.calleeName = (res[1]) ? (res[1]) : '';
-                            scope.d.callBtnModel = {
-                                isOffline: isOffline,
-                                receiverId: uid,
-                                toggleAutoCall: toggleAutoCallEnum.DISABLE.enum
-                            };
-                        }).catch(function (err) {
-                            $log.debug('error caught at listenToStudentOrTeacherContextChange', err);
-                        });
-                        $log.debug('student or teacher context changed: ', receiverId);
-                    };
-
-                    if (isTeacher) {
-                        StudentContextSrv.registerToStudentContextChange(listenToStudentOrTeacherContextChange);
-                    } else if (isStudent) {
-                        TeacherContextSrv.registerToTeacherContextChange(listenToStudentOrTeacherContextChange);
-                    } else {
-                        $log.error('appContext is not compatible with this component: ', ENV.appContext);
-                    }
-
-                    scope.d = {
-                        states: {
-                            NONE: 0,
-                            LIVE_SESSION: 1
-                        },
-                        toggleAutoCall: {},
-                        shareScreenBtnsEnable: true,
-                        isTeacher: isTeacher,
-                        presenceStatusMap: PresenceService.userStatus,
-                        viewOtherUserScreen: function () {
-                            scope.d.shareScreenBtnsEnable = false;
-                            var userData = {
-                                isTeacher: !scope.d.isTeacher,
-                                uid: receiverId
-                            };
-                            $log.debug('viewOtherUserScreen: ', userData);
-                            ScreenSharingSrv.viewOtherUserScreen(userData);
-                        },
-                        shareMyScreen: function () {
-                            scope.d.shareScreenBtnsEnable = false;
-                            var userData = {
-                                isTeacher: !scope.d.isTeacher,
-                                uid: receiverId
-                            };
-                            $log.debug('shareMyScreen: ', userData);
-                            ScreenSharingSrv.shareMyScreen(userData);
+                    function endLiveSession() {
+                        if (liveSessionData) {
+                            LiveSessionSrv.endLiveSession(liveSessionData.guid);
+                        } else {
+                            LiveSessionSrv.getActiveLiveSessionData().then(function (liveSessionData) {
+                                if (liveSessionData) {
+                                    LiveSessionSrv.endLiveSession(liveSessionData.guid);
+                                }
+                            });
                         }
-                    };
+                    }
 
                     function startTimer() {
                         $log.debug('call timer started');
@@ -116,10 +68,6 @@
                         liveSessionDuration = 0;
                         durationToDisplay = 0;
                     }
-
-                    element.on('$destroy', function() {
-                        destroyTimer();
-                    });
 
                     function endScreenSharing(){
                         ScreenSharingSrv.getActiveScreenSharingData().then(function (screenSharingData) {
@@ -181,6 +129,71 @@
                             updateStatus();
                         }
                     }
+
+                    function listenToStudentOrTeacherContextChange(prevUid, uid) {
+                        receiverId = uid;
+                        var currentUserStatus = PresenceService.getCurrentUserStatus(receiverId);
+                        var CalleeName = CallsUiSrv.getCalleeName(receiverId);
+                        var promsArr = [
+                            currentUserStatus,
+                            CalleeName
+                        ];
+                        $q.all(promsArr).then(function (res) {
+                            scope.d.currentUserPresenceStatus = res[0];
+                            isOffline = scope.d.currentUserPresenceStatus === PresenceService.userStatus.OFFLINE;
+                            scope.d.calleeName = (res[1]) ? (res[1]) : '';
+                            scope.d.callBtnModel = {
+                                isOffline: isOffline,
+                                receiverId: uid,
+                                toggleAutoCall: toggleAutoCallEnum.DISABLE.enum
+                            };
+                        }).catch(function (err) {
+                            $log.debug('error caught at listenToStudentOrTeacherContextChange', err);
+                        });
+                        $log.debug('student or teacher context changed: ', receiverId);
+                    }
+
+                    if (isTeacher) {
+                        StudentContextSrv.registerToStudentContextChange(listenToStudentOrTeacherContextChange);
+                    } else if (isStudent) {
+                        TeacherContextSrv.registerToTeacherContextChange(listenToStudentOrTeacherContextChange);
+                    } else {
+                        $log.error('appContext is not compatible with this component: ', ENV.appContext);
+                    }
+
+                    scope.d = {
+                        states: {
+                            NONE: 0,
+                            LIVE_SESSION: 1
+                        },
+                        toggleAutoCall: {},
+                        shareScreenBtnsEnable: true,
+                        isTeacher: isTeacher,
+                        presenceStatusMap: PresenceService.userStatus,
+                        endSession: endLiveSession,
+                        viewOtherUserScreen: function () {
+                            scope.d.shareScreenBtnsEnable = false;
+                            var userData = {
+                                isTeacher: !scope.d.isTeacher,
+                                uid: receiverId
+                            };
+                            $log.debug('viewOtherUserScreen: ', userData);
+                            ScreenSharingSrv.viewOtherUserScreen(userData);
+                        },
+                        shareMyScreen: function () {
+                            scope.d.shareScreenBtnsEnable = false;
+                            var userData = {
+                                isTeacher: !scope.d.isTeacher,
+                                uid: receiverId
+                            };
+                            $log.debug('shareMyScreen: ', userData);
+                            ScreenSharingSrv.shareMyScreen(userData);
+                        }
+                    };
+
+                    element.on('$destroy', function() {
+                        destroyTimer();
+                    });
 
                     LiveSessionSrv.registerToActiveLiveSessionDataChanges(listenToLiveSessionStatus);
                 }

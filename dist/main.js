@@ -114,65 +114,17 @@
                         $log.debug('Could not fetch translation', err);
                     });
 
-                    var listenToStudentOrTeacherContextChange = function (prevUid, uid) {
-                        receiverId = uid;
-                        var currentUserStatus = PresenceService.getCurrentUserStatus(receiverId);
-                        var CalleeName = CallsUiSrv.getCalleeName(receiverId);
-                        var promsArr = [
-                            currentUserStatus,
-                            CalleeName
-                        ];
-                        $q.all(promsArr).then(function (res) {
-                            scope.d.currentUserPresenceStatus = res[0];
-                            isOffline = scope.d.currentUserPresenceStatus === PresenceService.userStatus.OFFLINE;
-                            scope.d.calleeName = (res[1]) ? (res[1]) : '';
-                            scope.d.callBtnModel = {
-                                isOffline: isOffline,
-                                receiverId: uid,
-                                toggleAutoCall: toggleAutoCallEnum.DISABLE.enum
-                            };
-                        }).catch(function (err) {
-                            $log.debug('error caught at listenToStudentOrTeacherContextChange', err);
-                        });
-                        $log.debug('student or teacher context changed: ', receiverId);
-                    };
-
-                    if (isTeacher) {
-                        StudentContextSrv.registerToStudentContextChange(listenToStudentOrTeacherContextChange);
-                    } else if (isStudent) {
-                        TeacherContextSrv.registerToTeacherContextChange(listenToStudentOrTeacherContextChange);
-                    } else {
-                        $log.error('appContext is not compatible with this component: ', ENV.appContext);
-                    }
-
-                    scope.d = {
-                        states: {
-                            NONE: 0,
-                            LIVE_SESSION: 1
-                        },
-                        toggleAutoCall: {},
-                        shareScreenBtnsEnable: true,
-                        isTeacher: isTeacher,
-                        presenceStatusMap: PresenceService.userStatus,
-                        viewOtherUserScreen: function () {
-                            scope.d.shareScreenBtnsEnable = false;
-                            var userData = {
-                                isTeacher: !scope.d.isTeacher,
-                                uid: receiverId
-                            };
-                            $log.debug('viewOtherUserScreen: ', userData);
-                            ScreenSharingSrv.viewOtherUserScreen(userData);
-                        },
-                        shareMyScreen: function () {
-                            scope.d.shareScreenBtnsEnable = false;
-                            var userData = {
-                                isTeacher: !scope.d.isTeacher,
-                                uid: receiverId
-                            };
-                            $log.debug('shareMyScreen: ', userData);
-                            ScreenSharingSrv.shareMyScreen(userData);
+                    function endLiveSession() {
+                        if (liveSessionData) {
+                            LiveSessionSrv.endLiveSession(liveSessionData.guid);
+                        } else {
+                            LiveSessionSrv.getActiveLiveSessionData().then(function (liveSessionData) {
+                                if (liveSessionData) {
+                                    LiveSessionSrv.endLiveSession(liveSessionData.guid);
+                                }
+                            });
                         }
-                    };
+                    }
 
                     function startTimer() {
                         $log.debug('call timer started');
@@ -188,10 +140,6 @@
                         liveSessionDuration = 0;
                         durationToDisplay = 0;
                     }
-
-                    element.on('$destroy', function() {
-                        destroyTimer();
-                    });
 
                     function endScreenSharing(){
                         ScreenSharingSrv.getActiveScreenSharingData().then(function (screenSharingData) {
@@ -253,6 +201,71 @@
                             updateStatus();
                         }
                     }
+
+                    function listenToStudentOrTeacherContextChange(prevUid, uid) {
+                        receiverId = uid;
+                        var currentUserStatus = PresenceService.getCurrentUserStatus(receiverId);
+                        var CalleeName = CallsUiSrv.getCalleeName(receiverId);
+                        var promsArr = [
+                            currentUserStatus,
+                            CalleeName
+                        ];
+                        $q.all(promsArr).then(function (res) {
+                            scope.d.currentUserPresenceStatus = res[0];
+                            isOffline = scope.d.currentUserPresenceStatus === PresenceService.userStatus.OFFLINE;
+                            scope.d.calleeName = (res[1]) ? (res[1]) : '';
+                            scope.d.callBtnModel = {
+                                isOffline: isOffline,
+                                receiverId: uid,
+                                toggleAutoCall: toggleAutoCallEnum.DISABLE.enum
+                            };
+                        }).catch(function (err) {
+                            $log.debug('error caught at listenToStudentOrTeacherContextChange', err);
+                        });
+                        $log.debug('student or teacher context changed: ', receiverId);
+                    }
+
+                    if (isTeacher) {
+                        StudentContextSrv.registerToStudentContextChange(listenToStudentOrTeacherContextChange);
+                    } else if (isStudent) {
+                        TeacherContextSrv.registerToTeacherContextChange(listenToStudentOrTeacherContextChange);
+                    } else {
+                        $log.error('appContext is not compatible with this component: ', ENV.appContext);
+                    }
+
+                    scope.d = {
+                        states: {
+                            NONE: 0,
+                            LIVE_SESSION: 1
+                        },
+                        toggleAutoCall: {},
+                        shareScreenBtnsEnable: true,
+                        isTeacher: isTeacher,
+                        presenceStatusMap: PresenceService.userStatus,
+                        endSession: endLiveSession,
+                        viewOtherUserScreen: function () {
+                            scope.d.shareScreenBtnsEnable = false;
+                            var userData = {
+                                isTeacher: !scope.d.isTeacher,
+                                uid: receiverId
+                            };
+                            $log.debug('viewOtherUserScreen: ', userData);
+                            ScreenSharingSrv.viewOtherUserScreen(userData);
+                        },
+                        shareMyScreen: function () {
+                            scope.d.shareScreenBtnsEnable = false;
+                            var userData = {
+                                isTeacher: !scope.d.isTeacher,
+                                uid: receiverId
+                            };
+                            $log.debug('shareMyScreen: ', userData);
+                            ScreenSharingSrv.shareMyScreen(userData);
+                        }
+                    };
+
+                    element.on('$destroy', function() {
+                        destroyTimer();
+                    });
 
                     LiveSessionSrv.registerToActiveLiveSessionDataChanges(listenToLiveSessionStatus);
                 }
@@ -318,7 +331,7 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "            </div>\n" +
     "        </div>\n" +
     "        <div class=\"callee-name flex-col\">\n" +
-    "            {{d.calleeName}}\n" +
+    "            {{d.calleeName ? d.calleeName : 'Student'}}\n" +
     "            <div class=\"live-session-duration\">&nbsp;</div>\n" +
     "        </div>\n" +
     "        <div class=\"call-controls flex-col\">\n" +
@@ -338,15 +351,23 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "                </ng-switch>\n" +
     "            </div>\n" +
     "\n" +
-    "            <svg-icon disable-click-drv=\"d.shareScreenBtnsEnable\"\n" +
-    "                      ng-class=\"{disabled: !d.shareScreenBtnsEnable}\"\n" +
-    "                      ng-click=\"d.shareMyScreen()\"\n" +
-    "                      name=\"active-panel-share-screen-icon\"\n" +
-    "                      class=\"share-my-screen\"\n" +
-    "                      title=\"{{d.translatedStrings.SHARE_MY_SCREEN}}\">\n" +
-    "            </svg-icon>\n" +
+    "            <div><svg-icon disable-click-drv=\"d.shareScreenBtnsEnable\"\n" +
+    "                          ng-class=\"{disabled: !d.shareScreenBtnsEnable}\"\n" +
+    "                          ng-click=\"d.shareMyScreen()\"\n" +
+    "                          name=\"active-panel-share-screen-icon\"\n" +
+    "                          class=\"share-my-screen\"\n" +
+    "                          title=\"{{d.translatedStrings.SHARE_MY_SCREEN}}\">\n" +
+    "                </svg-icon></div>\n" +
     "\n" +
-    "            <call-btn ng-model=\"d.callBtnModel\"></call-btn>\n" +
+    "            <div><call-btn ng-model=\"d.callBtnModel\"></call-btn></div>\n" +
+    "\n" +
+    "            <div class=\"seperator\"></div>\n" +
+    "\n" +
+    "            <div><md-button class=\"end-session-btn\"\n" +
+    "                            aria-label=\"{{'ACTIVE_PANEL.END_SESSION' | translate}}\"\n" +
+    "                            ng-click=\"d.endSession()\">\n" +
+    "                <span>{{'ACTIVE_PANEL.END_SESSION' | translate}}</span>\n" +
+    "            </md-button></div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>\n" +
@@ -6682,8 +6703,8 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
     'use strict';
 
     angular.module('znk.infra.liveSession').service('LiveSessionSrv',
-        ["UserProfileService", "InfraConfigSrv", "$q", "UtilitySrv", "LiveSessionDataGetterSrv", "LiveSessionStatusEnum", "ENV", "$log", "UserLiveSessionStateEnum", "LiveSessionUiSrv", function (UserProfileService, InfraConfigSrv, $q, UtilitySrv, LiveSessionDataGetterSrv, LiveSessionStatusEnum,
-                  ENV, $log, UserLiveSessionStateEnum, LiveSessionUiSrv) {
+        ["UserProfileService", "InfraConfigSrv", "$q", "UtilitySrv", "LiveSessionDataGetterSrv", "LiveSessionStatusEnum", "ENV", "$log", "UserLiveSessionStateEnum", "LiveSessionUiSrv", "$interval", function (UserProfileService, InfraConfigSrv, $q, UtilitySrv, LiveSessionDataGetterSrv, LiveSessionStatusEnum,
+                  ENV, $log, UserLiveSessionStateEnum, LiveSessionUiSrv, $interval) {
             'ngInject';
 
             var _this = this;
@@ -6692,6 +6713,10 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
             var currUserLiveSessionState = UserLiveSessionStateEnum.NONE.enum;
             var registeredCbToActiveLiveSessionDataChanges = [];
             var registeredCbToCurrUserLiveSessionStateChange = [];
+            var liveSessionInterval = {
+                interval: null,
+                isSessionAlertShown: false
+            };
 
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';
 
@@ -6792,6 +6817,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                             duration: null,
                             sessionSubject: educatorData.sessionSubject.id
                         };
+                        _checkSessionDuration(newLiveSessionData);
                         angular.extend(data.newLiveSessionData, newLiveSessionData);
 
                         dataToSave[data.newLiveSessionData.$$path] = data.newLiveSessionData;
@@ -6832,6 +6858,38 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                 });
             }
 
+            function _checkSessionDuration(liveSessionData) {
+                liveSessionInterval.interval = $interval(function () {
+                    var liveSessionDuration = (_getRoundTime() - liveSessionData.startTime)  / 60000; // convert to minutes
+                    var extendTimeMin = liveSessionData.extendTime / 60000;
+                    var maxSessionDuration = ENV.liveSession.sessionLength + extendTimeMin;
+                    var sessionTimeWithExtension = liveSessionDuration + extendTimeMin;
+                    var EndAlertTime = maxSessionDuration - ENV.liveSession.sessionEndAlertTime;
+
+                    if (sessionTimeWithExtension >= maxSessionDuration) {
+                        _this.endLiveSession(liveSessionData.guid);
+                    } else if (sessionTimeWithExtension >= EndAlertTime && !liveSessionInterval.isSessionAlertShown) {
+                        LiveSessionUiSrv.showSessionEndAlertPopup().then(function () {
+                            confirmExtendSession(liveSessionData);
+                        }, function updateIntervalAlertShown() {
+                            liveSessionInterval.isSessionAlertShown = true;
+                            $log.debug('Live session is continued without extend time.');
+                        });
+                    }
+                }, 60000);
+            }
+
+            function confirmExtendSession(liveSessionData) {
+                liveSessionData.extendTime += ENV.liveSession.sessionExtendTime;
+                _this._liveSessionDataChanged(liveSessionData);
+                $log.debug('Live session is extend by ' + ENV.liveSession.sessionExtendTime + ' minutes.');
+            }
+
+            function _destroyCheckDurationInterval() {
+                $interval.cancel(liveSessionInterval.interval);
+                liveSessionInterval.isSessionAlertShown = false;
+            }
+
             this.startLiveSession = function (studentData, sessionSubject) {
                 return UserProfileService.getCurrUserId().then(function (currUserId) {
                     var educatorData = {
@@ -6866,7 +6924,10 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                     var dataToSave = {};
 
                     data.liveSessionData.status = LiveSessionStatusEnum.ENDED.enum;
+                    data.liveSessionData.endTime = _getRoundTime();
+                    data.liveSessionData.duration = data.liveSessionData.endTime - data.liveSessionData.startTime;
                     dataToSave [data.liveSessionData.$$path] = data.liveSessionData;
+                    _destroyCheckDurationInterval();
 
                     data.currUidLiveSessionRequests[data.liveSessionData.guid] = false;
                     var activePath = data.currUidLiveSessionRequests.$$path;
@@ -7005,7 +7066,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
 
     angular.module('znk.infra.liveSession').provider('LiveSessionUiSrv',function(){
 
-        this.$get = ["$rootScope", "$timeout", "$compile", "$animate", "PopUpSrv", "$translate", "$q", "$log", function ($rootScope, $timeout, $compile, $animate, PopUpSrv, $translate, $q, $log) {
+        this.$get = ["$rootScope", "$timeout", "$compile", "$animate", "PopUpSrv", "$translate", "$q", "$log", "ENV", function ($rootScope, $timeout, $compile, $animate, PopUpSrv, $translate, $q, $log, ENV) {
             'ngInject';
 
             var childScope, liveSessionPhElement, readyProm;
@@ -7073,6 +7134,30 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                 var translationsPromMap = {};
                 translationsPromMap.title = $translate('LIVE_SESSION.LIVE_SESSION_REQUEST');
                 translationsPromMap.content= $translate('LIVE_SESSION.WANT_TO_JOIN');
+                translationsPromMap.acceptBtnTitle = $translate('LIVE_SESSION.REJECT');
+                translationsPromMap.cancelBtnTitle = $translate('LIVE_SESSION.ACCEPT');
+                return $q.all(translationsPromMap).then(function(translations){
+                    var popUpInstance = PopUpSrv.warning(
+                        translations.title,
+                        translations.content,
+                        translations.acceptBtnTitle,
+                        translations.cancelBtnTitle
+                    );
+                    return popUpInstance.promise.then(function(res){
+                        return $q.reject(res);
+                    },function(res){
+                        return $q.resolve(res);
+                    });
+                },function(err){
+                    $log.error('LiveSessionUiSrv: translate failure' + err);
+                    return $q.reject(err);
+                });
+            };
+
+            LiveSessionUiSrv.showSessionEndAlertPopup = function () {
+                var translationsPromMap = {};
+                translationsPromMap.title = $translate('LIVE_SESSION.END_ALERT', { endAlertTime: ENV.liveSession.sessionEndAlertTime });
+                translationsPromMap.content= $translate('LIVE_SESSION.EXTEND_SESSION', { extendTime: ENV.liveSession.sessionExtendTime });
                 translationsPromMap.acceptBtnTitle = $translate('LIVE_SESSION.REJECT');
                 translationsPromMap.cancelBtnTitle = $translate('LIVE_SESSION.ACCEPT');
                 return $q.all(translationsPromMap).then(function(translations){
