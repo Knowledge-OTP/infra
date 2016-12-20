@@ -5,7 +5,7 @@ describe('testing service "EstimatedScoreSrv":', function () {
 
     var actions, TestUtilitySrv, $rootScope, StudentStorage, EstimatedScoreSrv, InfraConfigSrv;
 
-    beforeEach(module(function (EstimatedScoreSrvProvider, EstimatedScoreEventsHandlerSrvProvider, exerciseTypeConst, $provide, CallsEventsSrvProvider, PresenceServiceProvider) {
+    beforeEach(module(function (EstimatedScoreSrvProvider, EstimatedScoreEventsHandlerSrvProvider, exerciseTypeConst, $provide, PresenceServiceProvider) {
 
         $provide.service('EstimatedScoreHelperSrv', function($q) {
             this.getEstimatedScoreData = function() {
@@ -13,7 +13,7 @@ describe('testing service "EstimatedScoreSrv":', function () {
             };
         });
 
-        CallsEventsSrvProvider.enabled=true;
+        // CallsEventsSrvProvider.enabled=true;
 
         PresenceServiceProvider.setAuthServiceName('AuthService');
     
