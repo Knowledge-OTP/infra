@@ -803,13 +803,13 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             }
 
             function onValueEventCB(moduleResultsGuids, path) {
+                var contentType = _getContentTypeByPath(path);
                 if (angular.isUndefined(moduleResultsGuids) || !moduleResultsGuids) {
                     var userId = StudentContextSrv.getCurrUid();
                     userAssignModuleService.assignModules = {};
-                    applyCB(registerEvents[userId].valueCB);
+                    applyCB(registerEvents[userId][contentType].valueCB, contentType);
                     return;
                 }
-                var contentType = _getContentTypeByPath(path);
                 buildResultsFromGuids(moduleResultsGuids, contentType);
             }
 
