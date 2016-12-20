@@ -7,14 +7,15 @@
 
             this.setSessionSubjects = function (sessionSubjectsGetter) {
                 _sessionSubjectsGetter = sessionSubjectsGetter;
-            }
+            };
 
-            this.$get = function ($log, $injector, $q, InfraConfigSrv, ENV, StudentContextSrv, TeacherContextSrv, AuthService) {
+            this.$get = function ($log, $injector, $q, InfraConfigSrv, ENV, StudentContextSrv, TeacherContextSrv, AuthService, $rootScope) {
                 'ngInject';
                 var znkSessionDataSrv = {};
                 var globalStorageProm = InfraConfigSrv.getGlobalStorage();
                 var isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
                 var userAuth = AuthService.getAuth();
+                var currSessionGUID;
 
                 znkSessionDataSrv.getSessionSubjects = function () {
                     if (!_sessionSubjectsGetter) {
@@ -23,7 +24,11 @@
                         return $q.reject(errMsg);
                     }
                     return $q.when($injector.invoke(_sessionSubjectsGetter));
-                }
+                };
+
+                $rootScope.$watch(function () {
+                    return currSessionGUID;
+                });
 
                 function getLiveSessionPath(param) {
                     if (!userAuth) {
@@ -63,7 +68,7 @@
                 };
 
                 return znkSessionDataSrv;
-            }
+            };
 
         });
 })(angular);
