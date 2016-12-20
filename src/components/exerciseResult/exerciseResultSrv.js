@@ -549,7 +549,7 @@
                             var modulePath = _getModuleResultPath(moduleResult.guid);
                             dataToSave[modulePath] = moduleResult;
 
-                            getSectionAggregatedDataProm.then(function(){
+                            return getSectionAggregatedDataProm.then(function(){
                                 return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                                     return StudentStorageSrv.update(dataToSave);
                                 });

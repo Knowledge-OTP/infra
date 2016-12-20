@@ -903,34 +903,44 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     var exCompletedCount = 0;
                     var exLectureCount = 0;
                     angular.forEach(assignModule.exercises, function (exercise) {
-                        if (!moduleSummary[exercise.exerciseTypeId]){
-                            moduleSummary[exercise.exerciseTypeId] = {};
+                        var exerciseTypeId, exerciseId;
+
+                        if (angular.isDefined(exercise.examId)) {
+                            exerciseTypeId = ExerciseTypeEnum.SECTION.enum;
+                            exerciseId = exercise.id;
+                        } else {
+                            exerciseTypeId = exercise.exerciseTypeId;
+                            exerciseId = exercise.exerciseId;
                         }
 
-                        if (!moduleSummary[exercise.exerciseTypeId][exercise.exerciseId]){
-                            moduleSummary[exercise.exerciseTypeId][exercise.exerciseId] = newSummary();
+                        if (!moduleSummary[exerciseTypeId]){
+                            moduleSummary[exerciseTypeId] = {};
                         }
 
-                        var _summary = moduleSummary[exercise.exerciseTypeId][exercise.exerciseId];
-                        if (_exerciseResults && _exerciseResults[exercise.exerciseTypeId]) {
-                            if (_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId]){
-                                if (_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].status) {
-                                    _summary.status = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].status;
+                        if (!moduleSummary[exerciseTypeId][exerciseId]){
+                            moduleSummary[exerciseTypeId][exerciseId] = newSummary();
+                        }
+
+                        var _summary = moduleSummary[exerciseTypeId][exerciseId];
+                        if (_exerciseResults && _exerciseResults[exerciseTypeId]) {
+                            if (_exerciseResults[exerciseTypeId][exerciseId]){
+                                if (_exerciseResults[exerciseTypeId][exerciseId].status) {
+                                    _summary.status = _exerciseResults[exerciseTypeId][exerciseId].status;
                                 } else {
-                                    if(angular.isDefined(_exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].isComplete)) {
-                                        _summary.status = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].isComplete ?
+                                    if(angular.isDefined(_exerciseResults[exerciseTypeId][exerciseId].isComplete)) {
+                                        _summary.status = _exerciseResults[exerciseTypeId][exerciseId].isComplete ?
                                             ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
                                     }
                                 }
-                                _summary.correctAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].correctAnswersNum || 0;
-                                _summary.wrongAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].wrongAnswersNum || 0;
-                                _summary.skippedAnswersNum = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].skippedAnswersNum || 0;
-                                _summary.duration = _exerciseResults[exercise.exerciseTypeId][exercise.exerciseId].duration || 0;
+                                _summary.correctAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
+                                _summary.wrongAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
+                                _summary.skippedAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
+                                _summary.duration = _exerciseResults[exerciseTypeId][exerciseId].duration || 0;
                                 _summary.totalAnswered = _summary.correctAnswersNum + _summary.wrongAnswersNum;
                             }
                         }
 
-                        if (exercise.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum) {
+                        if (exerciseTypeId === ExerciseTypeEnum.LECTURE.enum) {
                             exLectureCount ++;
                         }
                         if (_summary.status === ExerciseStatusEnum.COMPLETED.enum) {
@@ -5018,7 +5028,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                             var modulePath = _getModuleResultPath(moduleResult.guid);
                             dataToSave[modulePath] = moduleResult;
 
-                            getSectionAggregatedDataProm.then(function(){
+                            return getSectionAggregatedDataProm.then(function(){
                                 return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                                     return StudentStorageSrv.update(dataToSave);
                                 });
