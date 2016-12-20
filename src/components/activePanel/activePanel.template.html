@@ -12,7 +12,7 @@
             </div>
         </div>
         <div class="callee-name flex-col">
-            {{d.calleeName ? d.calleeName : 'Student'}}
+            {{d.calleeName ? d.calleeName : d.isTeacher ? 'Educator' : 'Student'}}
             <div class="live-session-duration">&nbsp;</div>
         </div>
         <div class="call-controls flex-col">

@@ -273,7 +273,7 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "            </div>\n" +
     "        </div>\n" +
     "        <div class=\"callee-name flex-col\">\n" +
-    "            {{d.calleeName ? d.calleeName : 'Student'}}\n" +
+    "            {{d.calleeName ? d.calleeName : d.isTeacher ? 'Educator' : 'Student'}}\n" +
     "            <div class=\"live-session-duration\">&nbsp;</div>\n" +
     "        </div>\n" +
     "        <div class=\"call-controls flex-col\">\n" +
