@@ -540,7 +540,7 @@
 
                             var getSectionAggregatedDataProm = $q.when();   // todo - duplicate code. make as a function.
                             if (exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
-                                getSectionAggregatedDataProm = ExerciseResultSrv.getExamResult(exerciseResult.examId).then(function (examResult) {
+                                getSectionAggregatedDataProm = ExerciseResultSrv.getExamResult(exerciseResult.moduleId).then(function (examResult) {
                                     var sectionsAggregatedData = _getExamAggregatedSectionsData(examResult, exerciseStatuses);
 
                                     examResult.duration = sectionsAggregatedData.sectionsDuration;
