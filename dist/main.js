@@ -676,6 +676,17 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 ['COMPLETED', ExerciseStatusEnum.COMPLETED.enum, 'completed']
             ]);
 
+            userAssignModuleService.assignType = {
+                module: {
+                    id: 1,
+                    fbPath: 'moduleResults'
+                },
+                homework: {
+                    id: 1,
+                    fbPath: 'assignHomework/homework'
+              }
+            };
+
             userAssignModuleService.offExternalOnValue = function (userId, valueCB, changeCB) {
                 InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
                     var assignContentPath = _getAssignContentPath(valueCB.type);
