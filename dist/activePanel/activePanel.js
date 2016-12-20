@@ -97,6 +97,7 @@
                         isTeacher: isTeacher,
                         presenceStatusMap: PresenceService.userStatus,
                         viewOtherUserScreen: function () {
+                            scope.d.shareScreenBtnsEnable = false;
                             var userData = {
                                 isTeacher: !scope.d.isTeacher,
                                 uid: receiverId
@@ -105,6 +106,7 @@
                             ScreenSharingSrv.viewOtherUserScreen(userData);
                         },
                         shareMyScreen: function () {
+                            scope.d.shareScreenBtnsEnable = false;
                             var userData = {
                                 isTeacher: !scope.d.isTeacher,
                                 uid: receiverId
@@ -136,7 +138,7 @@
                     function endScreenSharing(){
                         ScreenSharingSrv.getActiveScreenSharingData().then(function (screenSharingData) {
                             if (screenSharingData) {
-                                ScreenSharingSrv.endScreenSharing(screenSharingData.guid);
+                                ScreenSharingSrv.endSharing(screenSharingData.guid);
                             }
                         });
                     }
@@ -149,6 +151,7 @@
                             case scope.d.states.NONE :
                                 $log.debug('ActivePanel State: NONE');
                                 bodyDomElem.removeClass(activePanelVisibleClassName);
+                                scope.d.shareScreenBtnsEnable = true;
                                 destroyTimer();
                                 if (scope.d.callBtnModel) {
                                     scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.DISABLE.enum;

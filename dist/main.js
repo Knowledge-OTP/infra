@@ -155,6 +155,7 @@
                         isTeacher: isTeacher,
                         presenceStatusMap: PresenceService.userStatus,
                         viewOtherUserScreen: function () {
+                            scope.d.shareScreenBtnsEnable = false;
                             var userData = {
                                 isTeacher: !scope.d.isTeacher,
                                 uid: receiverId
@@ -163,6 +164,7 @@
                             ScreenSharingSrv.viewOtherUserScreen(userData);
                         },
                         shareMyScreen: function () {
+                            scope.d.shareScreenBtnsEnable = false;
                             var userData = {
                                 isTeacher: !scope.d.isTeacher,
                                 uid: receiverId
@@ -194,7 +196,7 @@
                     function endScreenSharing(){
                         ScreenSharingSrv.getActiveScreenSharingData().then(function (screenSharingData) {
                             if (screenSharingData) {
-                                ScreenSharingSrv.endScreenSharing(screenSharingData.guid);
+                                ScreenSharingSrv.endSharing(screenSharingData.guid);
                             }
                         });
                     }
@@ -207,6 +209,7 @@
                             case scope.d.states.NONE :
                                 $log.debug('ActivePanel State: NONE');
                                 bodyDomElem.removeClass(activePanelVisibleClassName);
+                                scope.d.shareScreenBtnsEnable = true;
                                 destroyTimer();
                                 if (scope.d.callBtnModel) {
                                     scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.DISABLE.enum;
@@ -6965,21 +6968,23 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.liveSession').provider('LiveSessionSubjectSrv', function () {
-        var subjects = [0, 5];
+    angular.module('znk.infra.liveSession').provider('LiveSessionSubjectSrv', ["LiveSessionSubjectEnumConst", function (LiveSessionSubjectEnumConst) {
+        var subjects = [LiveSessionSubjectEnumConst.MATH, LiveSessionSubjectEnumConst.ENGLISH];
 
         this.setLiveSessionSubjects = function(_subjects) {
-            subjects = _subjects;
+            if (angular.isArray(_subjects) && _subjects.length) {
+                subjects = _subjects;
+            }
         };
 
-        this.$get = ["UtilitySrv", "SessionSubjectEnumConst", function (UtilitySrv, SessionSubjectEnumConst) {
+        this.$get = ["UtilitySrv", function (UtilitySrv) {
             'ngInject';
 
             var LiveSessionSubjectSrv = {};
 
             function _getLiveSessionSubjects() {
                 return subjects.map(function (subjectEnum) {
-                    var subjectName = UtilitySrv.object.getKeyByValue(SessionSubjectEnumConst, subjectEnum).toLowerCase();
+                    var subjectName = UtilitySrv.object.getKeyByValue(LiveSessionSubjectEnumConst, subjectEnum).toLowerCase();
                     return {
                         id: subjectEnum,
                         name: subjectName,
@@ -6992,7 +6997,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
 
             return LiveSessionSubjectSrv;
         }];
-    });
+    }]);
 })(angular);
 
 (function (angular) {
