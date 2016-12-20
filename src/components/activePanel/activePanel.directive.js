@@ -3,11 +3,12 @@
     'use strict';
 
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', function ($q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
-                                                                                                                                                                                                                                                                                                                                                         PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document,
-                                                                                                                                                                                                                                                                                                                                                         $translate, SessionSrv, SessionsStatusEnum, toggleAutoCallEnum,
-                                                                                                                                                                                                                                                                                                                                                         UserScreenSharingStateEnum, ScreenSharingUiSrv) {
-            return {
+        .directive('activePanel',
+            function ($window, $q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
+                         PresenceService, StudentContextSrv, TeacherContextSrv, ENV,
+                         $translate, toggleAutoCallEnum, LiveSessionSrv, LiveSessionStatusEnum) {
+                'ngInject';
+                return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
                 link: function(scope, element) {
@@ -15,7 +16,7 @@
                         isOffline,
                         durationToDisplay,
                         timerInterval,
-                        screenShareIsViewer,
+                        liveSessionData,
                         liveSessionStatus = 0,
                         liveSessionDuration = 0,
                         timerSecondInterval = 1000,
@@ -23,7 +24,7 @@
                         isStudent = ENV.appContext.toLowerCase() === 'student',
                         isTeacher = ENV.appContext.toLowerCase() === 'dashboard';
 
-                    var bodyDomElem = angular.element($document).find('body');
+                    var bodyDomElem = angular.element($window.document.body);
 
                     var translateNamespace = 'ACTIVE_PANEL';
 
@@ -77,10 +78,12 @@
                             NONE: 0,
                             LIVE_SESSION: 1
                         },
+                        toggleAutoCall: {},
                         shareScreenBtnsEnable: true,
                         isTeacher: isTeacher,
                         presenceStatusMap: PresenceService.userStatus,
                         viewOtherUserScreen: function () {
+                            scope.d.shareScreenBtnsEnable = false;
                             var userData = {
                                 isTeacher: !scope.d.isTeacher,
                                 uid: receiverId
@@ -89,6 +92,7 @@
                             ScreenSharingSrv.viewOtherUserScreen(userData);
                         },
                         shareMyScreen: function () {
+                            scope.d.shareScreenBtnsEnable = false;
                             var userData = {
                                 isTeacher: !scope.d.isTeacher,
                                 uid: receiverId
@@ -117,14 +121,12 @@
                         destroyTimer();
                     });
 
-                    function screenShareMode(isScreenShareMode) {
-                        if (isScreenShareMode && screenShareIsViewer) {
-                            element.addClass('screen-share-mode');
-                            $log.debug('screenShareMode activate');
-                        } else {
-                            element.removeClass('screen-share-mode');
-                            $log.debug('screenShareMode remove');
-                        }
+                    function endScreenSharing(){
+                        ScreenSharingSrv.getActiveScreenSharingData().then(function (screenSharingData) {
+                            if (screenSharingData) {
+                                ScreenSharingSrv.endSharing(screenSharingData.guid);
+                            }
+                        });
                     }
 
                     function updateStatus() {
@@ -135,19 +137,23 @@
                             case scope.d.states.NONE :
                                 $log.debug('ActivePanel State: NONE');
                                 bodyDomElem.removeClass(activePanelVisibleClassName);
+                                scope.d.shareScreenBtnsEnable = true;
                                 destroyTimer();
-                                screenShareMode(false);
-                                scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.DISABLE.enum;
-                                scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
-                                // closeScreenSharing();
-                                ScreenSharingUiSrv.endScreenSharing();
+                                if (scope.d.callBtnModel) {
+                                    scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.DISABLE.enum;
+                                    scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
+                                }
+                                endScreenSharing();
+                                LiveSessionSrv.unregisterFromActiveLiveSessionDataChanges(listenToLiveSessionStatus);
                                 break;
                             case scope.d.states.LIVE_SESSION :
+                                $log.debug('ActivePanel State: LIVE_SESSION');
                                 bodyDomElem.addClass(activePanelVisibleClassName);
                                 startTimer();
-                                scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.ACTIVATE.enum;
-                                scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
-                                $log.debug('ActivePanel State: LIVE_SESSION');
+                                if (scope.d.callBtnModel) {
+                                    scope.d.callBtnModel.toggleAutoCall = toggleAutoCallEnum.ACTIVATE.enum;
+                                    scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
+                                }
                                 break;
                             default :
                                 $log.error('currStatus is in an unknown state', scope.d.currStatus);
@@ -158,12 +164,17 @@
                         return Math.floor(Date.now() / 1000) * 1000;
                     }
 
-                    // Listen to status changes in Live session
-                    function listenToLiveSessionStatus(sessionData) {
-                        if (sessionData) {
-                            if (sessionData.status === SessionsStatusEnum.ACTIVE.enum) {
+                    function listenToLiveSessionStatus(newLiveSessionData) {
+                        if (!liveSessionData || !angular.equals(liveSessionData, newLiveSessionData)) {
+                            liveSessionData = newLiveSessionData;
+                        }
+                        var isEnded = liveSessionData.status === LiveSessionStatusEnum.ENDED.enum;
+                        var isConfirmed = liveSessionData.status === LiveSessionStatusEnum.CONFIRMED.enum;
+
+                        if (isEnded || isConfirmed) {
+                            if (isConfirmed) {
                                 liveSessionStatus = scope.d.states.LIVE_SESSION;
-                                liveSessionDuration = getRoundTime() - sessionData.startTime;
+                                liveSessionDuration = getRoundTime() - liveSessionData.startTime;
                             } else {
                                 liveSessionStatus = scope.d.states.NONE;
                             }
@@ -171,7 +182,7 @@
                         }
                     }
 
-                    SessionSrv.registerToCurrUserLiveSessionStateChanges(listenToLiveSessionStatus);
+                    LiveSessionSrv.registerToActiveLiveSessionDataChanges(listenToLiveSessionStatus);
                 }
             };
         });

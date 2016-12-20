@@ -94,5 +94,16 @@
         "MATH": "math",
         "ENGLISH": "english",
         "HAVE_ACTIVE_SESSION": "You have active Session"
+    },
+    "LIVE_SESSION":{
+        "START_SESSION":  "Start Session",
+        "END_SESSION": "End Session",
+        "SESSION_SUBJECT": "Select session subject.",
+        "MATH": "math",
+        "ENGLISH": "english",
+        "LIVE_SESSION_REQUEST": "Live Session Request",
+        "WANT_TO_JOIN": "Join the live session.",
+        "REJECT": "REJECT",
+        "ACCEPT": "ACCEPT"
     }
 }

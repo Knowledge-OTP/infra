@@ -603,16 +603,16 @@
                         }
                     };
 
-                    // var screenSharingHtmlTemplate =
-                    //     '<div class="show-hide-animation">' +
-                    //     '<screen-sharing user-sharing-state="d.userSharingState" ' +
-                    //     'on-close="d.onClose()">' +
-                    //     '</screen-sharing>' +
-                    //     '</div>';
-                    // var screenSharingElement = angular.element(screenSharingHtmlTemplate);
-                    // screenSharingPhElement.append(screenSharingElement);
-                    // $animate.enter(screenSharingElement[0], screenSharingPhElement[0]);
-                    // $compile(screenSharingElement)(childScope);
+                    var screenSharingHtmlTemplate =
+                        '<div class="show-hide-animation">' +
+                        '<screen-sharing user-sharing-state="d.userSharingState" ' +
+                        'on-close="d.onClose()">' +
+                        '</screen-sharing>' +
+                        '</div>';
+                    var screenSharingElement = angular.element(screenSharingHtmlTemplate);
+                    screenSharingPhElement.append(screenSharingElement);
+                    $animate.enter(screenSharingElement[0], screenSharingPhElement[0]);
+                    $compile(screenSharingElement)(childScope);
                 });
 
                 return defer.promise;
@@ -680,17 +680,17 @@ angular.module('znk.infra.screenSharing').run(['$templateCache', function($templ
     "    </div>\n" +
     "    <div ng-switch-when=\"3\"\n" +
     "         class=\"sharer-state-container\">\n" +
-    "        <div class=\"square-side top\"></div>\n" +
-    "        <div class=\"square-side right\"></div>\n" +
-    "        <div class=\"square-side bottom\"></div>\n" +
-    "        <div class=\"square-side left\"></div>\n" +
-    "        <div class=\"eye-wrapper\">\n" +
-    "            <svg-icon name=\"screen-sharing-eye\"></svg-icon>\n" +
-    "        </div>\n" +
+    "        <!--<div class=\"square-side top\"></div>-->\n" +
+    "        <!--<div class=\"square-side right\"></div>-->\n" +
+    "        <!--<div class=\"square-side bottom\"></div>-->\n" +
+    "        <!--<div class=\"square-side left\"></div>-->\n" +
+    "        <!--<div class=\"eye-wrapper\">-->\n" +
+    "            <!--<svg-icon name=\"screen-sharing-eye\"></svg-icon>-->\n" +
+    "        <!--</div>-->\n" +
     "    </div>\n" +
-    "    <div class=\"close-icon-wrapper\" ng-click=\"$ctrl.onClose()\">\n" +
-    "        <svg-icon name=\"screen-sharing-close\"></svg-icon>\n" +
-    "    </div>\n" +
+    "    <!--<div class=\"close-icon-wrapper\" ng-click=\"$ctrl.onClose()\">-->\n" +
+    "        <!--<svg-icon name=\"screen-sharing-close\"></svg-icon>-->\n" +
+    "    <!--</div>-->\n" +
     "</div>\n" +
     "");
   $templateCache.put("components/screenSharing/svg/close-icon.svg",

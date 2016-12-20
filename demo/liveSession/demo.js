@@ -3,21 +3,21 @@
     angular.module('demo', [
         'demoEnv',
         'pascalprecht.translate',
-        'znk.infra.znkSession'
+        'znk.infra.liveSession'
         ])
         .config(function () {
             // Replace storageConfig parameters through localStorage
-            localStorage.setItem('email', 'actTech100@zinkerz.com');
-            localStorage.setItem('password', '123456');
+            localStorage.setItem('email', 'ofir+actEdu@zinkerz.com');
+            localStorage.setItem('password', '123123');
             localStorage.setItem('dataDbPath', 'https://act-dev.firebaseio.com/');
             localStorage.setItem('studentPath', '/act_app');
             localStorage.setItem('teacherPath', '/act_dashboard');
         })
-        .config(function (PresenceServiceProvider, SessionSrvProvider, znkAnalyticsSrvProvider, CallsUiSrvProvider) {
+        .config(function (PresenceServiceProvider, LiveSessionSubjectSrvProvider, znkAnalyticsSrvProvider, CallsUiSrvProvider) {
 
             PresenceServiceProvider.setAuthServiceName('AuthService');
 
-            SessionSrvProvider.setSessionSubjects( [0, 5] );
+            LiveSessionSubjectSrvProvider.setLiveSessionSubjects( [0, 5] );
 
             znkAnalyticsSrvProvider.setEventsHandler(function () {
                 return {
@@ -42,7 +42,7 @@
         .decorator('ENV', function ($delegate) {
             'ngInject';
 
-            $delegate.firebaseAppScopeName = 'act_app';
+            $delegate.firebaseAppScopeName = 'act_dashboard';
             $delegate.fbDataEndPoint = '//act-dev.firebaseio.com/';
             $delegate.appContext = 'dashboard';
             $delegate.studentAppName = 'act_app';
@@ -82,14 +82,15 @@
             };
             return $delegate;
         })
-        .run(function(SessionSrv, ActivePanelSrv){
+        .run(function(ActivePanelSrv){
             'ngInject';
             ActivePanelSrv.loadActivePanel();
-            SessionSrv.listenToLiveSessionsStatus();
         })
         .controller('Main', function ($timeout, TeacherContextSrv, StudentContextSrv) {
             'ngInject';
             var vm = this;
+
+            vm.student = { uid: 'c47f4f57-521c-4832-b505-c0093737ceff' };
 
             $timeout(function () {
                 StudentContextSrv.setCurrentUid('c47f4f57-521c-4832-b505-c0093737ceff');

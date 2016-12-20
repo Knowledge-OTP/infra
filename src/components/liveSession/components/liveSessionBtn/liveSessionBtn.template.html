@@ -1,0 +1,8 @@
+<md-button class="session-btn" ng-disabled="vm.isOffline"
+           aria-label="{{!vm.isLiveSessionActive ? 'LIVE_SESSION.START_SESSION' : 'LIVE_SESSION.END_SESSION' | translate}}"
+           ng-class="{'offline': vm.isOffline, 'end-session': vm.isLiveSessionActive}"
+           ng-click="!vm.isLiveSessionActive ? vm.showSessionModal() : vm.endSession()">
+    <span ng-if="!vm.isLiveSessionActive">{{'LIVE_SESSION.START_SESSION' | translate}}</span>
+    <span ng-if="vm.isLiveSessionActive">{{'LIVE_SESSION.END_SESSION' | translate}}</span>
+</md-button>
+
