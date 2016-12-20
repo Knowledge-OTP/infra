@@ -11,20 +11,21 @@
             'znk.infra.analytics',
             'znk.infra.popUp',
             'demoEnv'
-        ]).config(function (PresenceServiceProvider, SessionSrvProvider, znkAnalyticsSrvProvider, CallsUiSrvProvider) {
+        ])
+        // .config(function (PresenceServiceProvider, SessionSrvProvider, znkAnalyticsSrvProvider, CallsUiSrvProvider) {
 
-            PresenceServiceProvider.setAuthServiceName('AuthService');
+        //     PresenceServiceProvider.setAuthServiceName('AuthService');
 
-            var calleeNameFunc = function ($q) {
-                'ngInject';
-                return function () {
-                    return $q.when('Ofir Student');
+        //     var calleeNameFunc = function ($q) {
+        //         'ngInject';
+        //         return function () {
+        //             return $q.when('Ofir Student');
 
-                }
-            };
+        //         }
+        //     };
 
-            CallsUiSrvProvider.setCalleeNameFnGetter(calleeNameFunc);
-        })
+        //     CallsUiSrvProvider.setCalleeNameFnGetter(calleeNameFunc);
+        // })
         .controller('Main', function ($scope, $timeout, ContentSrv, ZnkExerciseUtilitySrv, ExerciseResultSrv, $controller ) {
 
             var resultsData;

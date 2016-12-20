@@ -9,17 +9,59 @@
                 _sessionSubjectsGetter = sessionSubjectsGetter;
             }
 
-            this.$get = function ($log, $injector, $q) {
+            this.$get = function ($log, $injector, $q, InfraConfigSrv, ENV, StudentContextSrv, TeacherContextSrv, AuthService) {
                 'ngInject';
                 var znkSessionDataSrv = {};
+                var globalStorageProm = InfraConfigSrv.getGlobalStorage();
+                var isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
+                var userAuth = AuthService.getAuth();
+
                 znkSessionDataSrv.getSessionSubjects = function () {
-                    if(!_sessionSubjectsGetter) {
+                    if (!_sessionSubjectsGetter) {
                         var errMsg = 'znkSessionDataSrv: sessionSubjectsGetter was not set';
                         $log.error(errMsg);
                         return $q.reject(errMsg);
                     }
                     return $q.when($injector.invoke(_sessionSubjectsGetter));
                 }
+
+                function getLiveSessionPath(param) {
+                    if (!userAuth) {
+                        $log.error('Invalid user');
+                        return;
+                    }
+                    var path;
+                    var educatorUID = isTeacher ? userAuth.uid : TeacherContextSrv.getCurrUid();
+                    var studentUID = isTeacher ? StudentContextSrv.getCurrUid() : userAuth.uid;
+                    switch (param) {
+                        case 'sessions':
+                            path = ENV.studentAppName + '/liveSession/' + currSessionGUID.guid;
+                            return path;
+                        case 'student':
+                            path = ENV.studentAppName + '/users/$$uid/liveSession';
+                            return path.replace('$$uid', '' + studentUID);
+                        case 'educator':
+                            path = ENV.dashboardAppName + '/users/$$uid/liveSession';
+                            return path.replace('$$uid', '' + educatorUID);
+                        default:
+                            return;
+                    }
+                }
+
+                znkSessionDataSrv.getLiveSessionGuid = function () {
+                    var activeSessionPath = isTeacher ? getLiveSessionPath('educator') : getLiveSessionPath('student');
+                    activeSessionPath += '/active';
+                    return globalStorageProm.then(function (globalStorage) {
+                        return globalStorage.getAndBindToServer(activeSessionPath);
+                    });
+                };
+
+                znkSessionDataSrv.isInLiveSession = function () {
+                    return znkSessionDataSrv.getLiveSessionGuid().then(function (res) {
+                        return !!(res.guid);
+                    });
+                };
+
                 return znkSessionDataSrv;
             }
 

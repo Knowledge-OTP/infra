@@ -10,5 +10,4 @@
             }
             znkSessionDataSrvProvider.setSessionSubjects(sessionSubjectsToIndexMap);
         })
-    );
 })(angular);

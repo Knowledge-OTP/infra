@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseReviewBtnSection',
-        function (ZnkExerciseViewModeEnum, $q, ZnkExerciseEvents, SessionSrv) {
+        function (ZnkExerciseViewModeEnum, $q, ZnkExerciseEvents, znkSessionDataSrv) {
             'ngInject';
             return {
                 restrict: 'E',
@@ -18,7 +18,7 @@
                 templateUrl: "components/znkExercise/core/template/znkExerciseReviewSectionBtnTemplate.html",
                 link: {
                     pre: function (scope, element, attrs, znkExerciseDrvCtrl) {
-                         var liveSessionGuidProm = SessionSrv.getLiveSessionGUID();
+                        var liveSessionGuidProm = znkSessionDataSrv.isInLiveSession();
                         var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
                         var getCurrentQuestionIndexProm = znkExerciseDrvCtrl.getCurrentIndex();
 
@@ -28,14 +28,14 @@
                                 getQuestionsProm,
                                 getCurrentQuestionIndexProm
                             ]).then(function (res) {
-                                // var isInLiveSession = !!res[0].guid;
-                                // var questionsArr = res[1];
+                                var isInLiveSession = !!res[0].guid;
+                                var questionsArr = res[1];
                                 var currIndex = res[2];
                                 currIndex = newIndex ? newIndex : currIndex;
-                                // var maxQuestionNum = questionsArr.length - 1;
-                                // console.log(currIndex, 'currIndex');
-                                // console.log(maxQuestionNum);
-                                // console.log(isInLiveSession);
+                                var maxQuestionNum = questionsArr.length - 1;
+                                console.log(currIndex, 'currIndex');
+                                console.log(maxQuestionNum);
+                                console.log(isInLiveSession);
 
                                 function _isReviewMode() {
                                     return ZnkExerciseViewModeEnum.REVIEW.enum;
