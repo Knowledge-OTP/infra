@@ -7,7 +7,6 @@
             return {
                 restrict: 'E',
                 scope: {
-                    showBtn: '='
                         // prevQuestion: '&?',
                         // nextQuestion: '&?',
                         // onDone: '&',
@@ -21,6 +20,7 @@
                         var liveSessionGuidProm = znkSessionDataSrv.isInLiveSession();
                         var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
                         var getCurrentQuestionIndexProm = znkExerciseDrvCtrl.getCurrentIndex();
+                        var viewMode = znkExerciseDrvCtrl.getViewMode();
 
                         scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex) {
                             $q.all([
@@ -28,26 +28,22 @@
                                 getQuestionsProm,
                                 getCurrentQuestionIndexProm
                             ]).then(function (res) {
-                                var isInLiveSession = !!res[0].guid;
+                                var isInLiveSession = res[0];
                                 var questionsArr = res[1];
                                 var currIndex = res[2];
                                 currIndex = newIndex ? newIndex : currIndex;
                                 var maxQuestionNum = questionsArr.length - 1;
-                                console.log(currIndex, 'currIndex');
-                                console.log(maxQuestionNum);
-                                console.log(isInLiveSession);
+                                var isLastQuestion = maxQuestionNum === currIndex ? true : false;
 
                                 function _isReviewMode() {
-                                    return ZnkExerciseViewModeEnum.REVIEW.enum;
+                                    return viewMode === ZnkExerciseViewModeEnum.REVIEW.enum;
                                 }
 
                                 function _determineIfShowButton () {
-                                    return _isReviewMode();
+                                    return isInLiveSession && isLastQuestion || (_isReviewMode() && isLastQuestion);
                                 }
-                                // var viewMode = znkExerciseDrvCtrl.getViewMode();
-                                // scope.showBtn = isInLiveSession || (_isReviewMode());
+
                                 scope.showBtn = _determineIfShowButton();
-                                console.log(scope.showBtn);
                             });
                         });
                     }
