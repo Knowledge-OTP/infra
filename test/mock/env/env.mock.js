@@ -45,7 +45,7 @@
                 "dashboardFeatureEnabled": true,
                 "version": "1.0.0",
                 "appContext": "student",
-                "studentAppName": "sat_app",
+                "studentAppName": "test_app",
                 "dashboardAppName": "sat_dashboard",
                 "userIdleTime": 300,
                 "idleTimeout": 0,

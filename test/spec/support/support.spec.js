@@ -9,7 +9,7 @@ describe('testing service "SupportSrv":', function () {
     var supportUrl;
 
     var resultObject = {
-        receiverAppName: 'test_app',
+        receiverAppName: 'sat_app',
         receiverEmail: 'fake@Email.com',
         receiverName: 'fake@Email.com',
         receiverUid: '123456Fake',
