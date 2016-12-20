@@ -58,6 +58,8 @@
             };
 
             userAssignModuleService.registerExternalOnValueCB = function (userId, contentType, valueCB, changeCB) {
+                valueCB.type = contentType;
+                changeCB.type = contentType;
                 InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
                     if (!registerEvents[userId]) {
                         registerEvents[userId] = {};
