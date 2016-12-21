@@ -274,3 +274,13 @@ $blueBG8: #75cbe8;
 
 */
 /* full background image with retina */
+.screen-sharing-ph {
+  position: relative;
+  z-index: 10; }
+  .screen-sharing-ph screen-sharing .viewer-state-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(15, 15, 15, 0.85); }

@@ -345,45 +345,69 @@ active-panel {
           justify-content: center;
       -ms-flex-align: center;
           align-items: center; }
-      active-panel .active-panel .flex-col.call-controls .show-other-screen.disabled svg-icon.active-panel-track-student-icon,
-      active-panel .active-panel .flex-col.call-controls .show-other-screen.disabled svg-icon.active-panel-track-teacher-icon {
-        background-color: #8abec4; }
-      active-panel .active-panel .flex-col.call-controls .show-other-screen,
-      active-panel .active-panel .flex-col.call-controls svg-icon.share-my-screen {
-        outline: none;
-        margin-left: 10px; }
-        active-panel .active-panel .flex-col.call-controls .show-other-screen.disabled,
-        active-panel .active-panel .flex-col.call-controls .show-other-screen.disabled svg-icon,
-        active-panel .active-panel .flex-col.call-controls svg-icon.share-my-screen.disabled,
-        active-panel .active-panel .flex-col.call-controls svg-icon.share-my-screen.disabled svg-icon {
-          cursor: default;
-          transition: 1.5s; }
-      active-panel .active-panel .flex-col.call-controls svg-icon.share-my-screen {
-        cursor: pointer;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        background-color: #ff931e;
-        margin-left: 10px; }
-        active-panel .active-panel .flex-col.call-controls svg-icon.share-my-screen.disabled {
-          background-color: #e1b688; }
-        active-panel .active-panel .flex-col.call-controls svg-icon.share-my-screen svg {
-          width: 44%; }
-          active-panel .active-panel .flex-col.call-controls svg-icon.share-my-screen svg path {
-            fill: #fff; }
-      active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-track-student-icon,
-      active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-track-teacher-icon {
-        cursor: pointer;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        background-color: #0a9bad; }
-        active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-track-student-icon svg,
-        active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-track-teacher-icon svg {
-          width: 44%; }
-          active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-track-student-icon svg path,
-          active-panel .active-panel .flex-col.call-controls svg-icon.active-panel-track-teacher-icon svg path {
-            fill: #fff; }
+      active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap {
+        display: -ms-flexbox;
+        display: flex; }
+        active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen {
+          display: -ms-flexbox;
+          display: flex; }
+          active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen .show-other-screen.disabled svg-icon.active-panel-track-student-icon,
+          active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen .show-other-screen.disabled svg-icon.active-panel-track-teacher-icon {
+            background-color: #8abec4; }
+          active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen .show-other-screen,
+          active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen svg-icon.share-my-screen,
+          active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen svg-icon.active-panel-stop-sharing-icon {
+            outline: none;
+            margin-left: 10px; }
+            active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen .show-other-screen.disabled,
+            active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen .show-other-screen.disabled svg-icon,
+            active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen svg-icon.share-my-screen.disabled,
+            active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen svg-icon.share-my-screen.disabled svg-icon,
+            active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen svg-icon.active-panel-stop-sharing-icon.disabled,
+            active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen svg-icon.active-panel-stop-sharing-icon.disabled svg-icon {
+              cursor: default;
+              transition: 1.5s; }
+          active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen svg-icon.share-my-screen {
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: #ff931e;
+            margin-left: 10px; }
+            active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen svg-icon.share-my-screen.disabled {
+              background-color: #e1b688; }
+            active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen svg-icon.share-my-screen svg {
+              width: 44%; }
+              active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen svg-icon.share-my-screen svg path {
+                fill: #fff; }
+          active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen svg-icon.active-panel-track-student-icon,
+          active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen svg-icon.active-panel-track-teacher-icon {
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: #0a9bad; }
+            active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen svg-icon.active-panel-track-student-icon svg,
+            active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen svg-icon.active-panel-track-teacher-icon svg {
+              width: 44%; }
+              active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen svg-icon.active-panel-track-student-icon svg path,
+              active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .active-share-screen svg-icon.active-panel-track-teacher-icon svg path {
+                fill: #fff; }
+        active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .end-share-screen {
+          cursor: pointer;
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          margin-left: 10px;
+          background-color: #fff; }
+          active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .end-share-screen svg {
+            width: 100%; }
+            active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .end-share-screen svg .st1 {
+              fill: #ff931e; }
+          active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .end-share-screen.isViewer svg {
+            width: 100%; }
+            active-panel .active-panel .flex-col.call-controls .share-screen-icon-wrap .end-share-screen.isViewer svg .st1 {
+              fill: #0a9bad; }
       active-panel .active-panel .flex-col.call-controls call-btn {
         margin-left: 10px; }
         active-panel .active-panel .flex-col.call-controls call-btn svg-icon.etutoring-phone-icon {
@@ -2769,6 +2793,16 @@ $blueBG8: #75cbe8;
 
 */
 /* full background image with retina */
+.screen-sharing-ph {
+  position: relative;
+  z-index: 10; }
+  .screen-sharing-ph screen-sharing .viewer-state-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: rgba(15, 15, 15, 0.85); }
 
 /* paths*/
 /* fonts size */
