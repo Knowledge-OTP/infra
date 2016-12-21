@@ -9573,7 +9573,7 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
                 return map;
             };
 
-            UtilitySrv.array.sortByField = function(arrA, arrB, sortField){
+            UtilitySrv.array.sortByField = function(sortField){
                 return function (arrA, arrB) {
                     if (arrA[sortField] > arrB[sortField]) {
                         return -1;
