@@ -4878,7 +4878,13 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                         exerciseResult = initResults;
                         exerciseResult.$$path = EXERCISE_RESULTS_PATH + '/' + exerciseResult.guid;
                     }
+
+                    if(exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
+                        exerciseResult.examId = examId;
+                    }
+
                     exerciseResult.moduleId = moduleId;
+
                     exerciseResult.$save = function () {
                         return moduleExerciseSaveFn.call(this, assignContentType);
                     };
@@ -4928,15 +4934,15 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                                             exerciseId = exerciseData.exerciseId;
                                         }
 
-                                            var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, moduleResult.examId).then(function (exerciseResults) {
-                                                if (exerciseResults) {
-                                                    if(!moduleResult.exerciseResults[exerciseData.exerciseTypeId]){
-                                                        moduleResult.exerciseResults[exerciseData.exerciseTypeId] = {};
-                                                    }
-                                                    moduleResult.exerciseResults[exerciseData.exerciseTypeId][exerciseData.exerciseId] = exerciseResults;
+                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, moduleResult.examId).then(function (exerciseResults) {
+                                            if (exerciseResults) {
+                                                if(!moduleResult.exerciseResults[exerciseData.exerciseTypeId]){
+                                                    moduleResult.exerciseResults[exerciseData.exerciseTypeId] = {};
                                                 }
-                                            });
-                                            promArray.push(prom);
+                                                moduleResult.exerciseResults[exerciseData.exerciseTypeId][exerciseData.exerciseId] = exerciseResults;
+                                            }
+                                        });
+                                        promArray.push(prom);
                                         }
                                     );
                                 }
@@ -5040,7 +5046,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
                             var getSectionAggregatedDataProm = $q.when();   // todo - duplicate code. make as a function.
                             if (exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
-                                getSectionAggregatedDataProm = ExerciseResultSrv.getExamResult(exerciseResult.moduleId).then(function (examResult) {
+                                getSectionAggregatedDataProm = ExerciseResultSrv.getExamResult(exerciseResult.examId).then(function (examResult) {
                                     var sectionsAggregatedData = _getExamAggregatedSectionsData(examResult, exerciseStatuses);
 
                                     examResult.duration = sectionsAggregatedData.sectionsDuration;
