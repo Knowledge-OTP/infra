@@ -24,7 +24,7 @@
                     fbPath: 'moduleResults'
                 },
                 homework: {
-                    id: 1,
+                    id: 2,
                     fbPath: 'assignHomework/homework'
               }
             };
