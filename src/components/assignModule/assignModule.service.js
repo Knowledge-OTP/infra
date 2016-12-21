@@ -274,14 +274,16 @@
                         if (_exerciseResults && _exerciseResults[exerciseTypeId]) {
                             if (_exerciseResults[exerciseTypeId][exerciseId]){
 
-                                currentExerciseRes.status = _exerciseResults[exerciseTypeId][exerciseId].isComplete ?
-                                    ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
+                                if (_exerciseResults.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum) {
+                                    currentExerciseRes.status = _exerciseResults[exerciseTypeId][exerciseId].isComplete ?
+                                        ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
 
-                                currentExerciseRes.correctAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
-                                currentExerciseRes.wrongAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
-                                currentExerciseRes.skippedAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
+                                    currentExerciseRes.correctAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
+                                    currentExerciseRes.wrongAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
+                                    currentExerciseRes.skippedAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
+                                    currentExerciseRes.totalAnswered = currentExerciseRes.correctAnswersNum + currentExerciseRes.wrongAnswersNum;
+                                }
                                 currentExerciseRes.duration = _exerciseResults[exerciseTypeId][exerciseId].duration || 0;
-                                currentExerciseRes.totalAnswered = currentExerciseRes.correctAnswersNum + currentExerciseRes.wrongAnswersNum;
                             }
                         }
 
