@@ -51,6 +51,7 @@
 "znk.infra.znkModule",
 "znk.infra.znkProgressBar",
 "znk.infra.znkQuestionReport",
+"znk.infra.znkSessionData",
 "znk.infra.znkTimeline"
     ]);
 })(angular);
@@ -12396,7 +12397,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
         'znk.infra.analytics',
         'znk.infra.popUp',
         'znk.infra.user',
-        'znk.infra.utility'
+        'znk.infra.utility',
+        'znk.infra.znkSessionData'
     ])
     .config([
         'SvgIconSrvProvider',
@@ -13218,6 +13220,57 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 })(angular);
 
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('znkExerciseReviewBtnSection',
+        ["ZnkExerciseViewModeEnum", "$q", "ZnkExerciseEvents", "znkSessionDataSrv", function (ZnkExerciseViewModeEnum, $q, ZnkExerciseEvents, znkSessionDataSrv) {
+            'ngInject';
+            return {
+                restrict: 'E',
+                scope: {
+                },
+                require: '^znkExercise',
+                templateUrl: "components/znkExercise/core/template/znkExerciseReviewSectionBtnTemplate.html",
+                link: {
+                    pre: function (scope, element, attrs, znkExerciseDrvCtrl) {
+                        var liveSessionGuidProm = znkSessionDataSrv.isInLiveSession();
+                        var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
+                        var getCurrentQuestionIndexProm = znkExerciseDrvCtrl.getCurrentIndex();
+                        var viewMode = znkExerciseDrvCtrl.getViewMode();
+
+                        scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex) {
+                            $q.all([
+                                liveSessionGuidProm,
+                                getQuestionsProm,
+                                getCurrentQuestionIndexProm
+                            ]).then(function (res) {
+                                var isInLiveSession = res[0];
+                                var questionsArr = res[1];
+                                var currIndex = res[2];
+                                currIndex = newIndex ? newIndex : currIndex;
+                                var maxQuestionNum = questionsArr.length - 1;
+                                var isLastQuestion = maxQuestionNum === currIndex ? true : false;
+
+                                function _isReviewMode() {
+                                    return viewMode === ZnkExerciseViewModeEnum.REVIEW.enum;
+                                }
+
+
+                                function _determineIfShowButton () {
+                                    return isInLiveSession && isLastQuestion || (_isReviewMode() && isLastQuestion);
+                                }
+
+                                scope.showBtn = _determineIfShowButton();
+                            });
+                        });
+                    }
+                }
+            };
+        }]
+    );
+})(angular);
+
 /**
  * attrs:
  *
@@ -13849,7 +13902,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                     var currQuestion = getCurrentQuestion();
                                     var userAnswer = currQuestion.__questionStatus.userAnswer;
                                     currQuestion.__questionStatus.isAnsweredCorrectly = ZnkExerciseUtilitySrv.isAnswerCorrect(currQuestion,userAnswer);
-                                    
+
                                     updateTimeSpentOnQuestion({
                                         removeLastTimeStamp: true,
                                         updateForce: true
@@ -13889,11 +13942,11 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                     } else {
                                         cb(updateTime);
                                     }
-                                }, function () { 
+                                }, function () {
                                     cb(updateTime);
                                 }, question);
                             }
-                            
+
                             // example of obj { questionNum, removeLastTimeStamp, updateForce }
                             function updateTimeSpentOnQuestion(obj) {
                                 if (scope.settings.viewMode === ZnkExerciseViewModeEnum.REVIEW.enum) {
@@ -13911,19 +13964,19 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                     if (angular.isUndefined(question.__questionStatus.lastTimeStamp)) {
                                         question.__questionStatus.lastTimeStamp = currTime;
                                     }
-                                    
+
                                     if (updateTime) {
                                         var timePassed = currTime - question.__questionStatus.lastTimeStamp;
                                         question.__questionStatus.timeSpent = (question.__questionStatus.timeSpent || 0) + timePassed;
                                     }
-                                    
+
                                     if (obj.removeLastTimeStamp) {
                                         delete question.__questionStatus.lastTimeStamp;
                                     } else {
                                         question.__questionStatus.lastTimeStamp = currTime;
                                     }
 
-                                    setViewValue(); 
+                                    setViewValue();
                                 });
                             }
 
@@ -13965,17 +14018,17 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 }
 
                                 znkExerciseDrvCtrl.isExerciseReady().then(function(){
-                                
+
                                     if (prevValue !== value) {
                                         // update the question the user came from
                                         updateTimeSpentOnQuestion({
                                              questionNum: prevValue,
                                              removeLastTimeStamp: true
-                                         }); 
+                                         });
                                         // update the question the user comming to if the prev is diffrent then the new value
-                                         updateTimeSpentOnQuestion(); 
+                                         updateTimeSpentOnQuestion();
                                     } else {
-                                         updateTimeSpentOnQuestion(); 
+                                         updateTimeSpentOnQuestion();
                                     }
 
                                     var currQuestion = getCurrentQuestion();
@@ -16055,6 +16108,9 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "                          on-done=\"settings.onDone()\"\n" +
     "                          actions=\"vm.btnSectionActions\">\n" +
     "</znk-exercise-btn-section>\n" +
+    "<znk-exercise-review-btn-section>\n" +
+    "\n" +
+    "</znk-exercise-review-btn-section>\n" +
     "<znk-exercise-pager class=\"ng-hide show-opacity-animate\"\n" +
     "                    ng-show=\"vm.showPager\"\n" +
     "                    questions=\"vm.questionsWithAnswers\"\n" +
@@ -16078,6 +16134,13 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "        </div>\n" +
     "    </div>\n" +
     "</znk-scroll>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/znkExerciseReviewSectionBtnTemplate.html",
+    "<div class=\"btn-section\" ng-if=\"showBtn\">\n" +
+    "    <div class=\"review-btn-wrap show-opacity-animate ng-scope\">\n" +
+    "        <button class=\"review-btn\">REVIEW</button>\n" +
+    "    </div>\n" +
+    "</div>\n" +
     "");
   $templateCache.put("components/znkExercise/core/template/znkSwiperTemplate.html",
     "<div class=\"swiper-container\">\n" +
@@ -17078,6 +17141,148 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     "    </md-dialog>\n" +
     "</div>\n" +
     "");
+}]);
+
+(function () {
+    'use strict';
+
+    angular.module('znk.infra.znkSessionData', [
+        'znk.infra.enum',
+        'znk.infra.userContext'
+    ]);
+})();
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkSessionData').factory('SessionBtnStatusEnum',
+        ["EnumSrv", function (EnumSrv) {
+            'ngInject';
+
+            return new EnumSrv.BaseEnum([
+                ['OFFLINE_BTN', 1, 'offline btn'],
+                ['START_BTN', 2, 'start btn'],
+                ['ENDED_BTN', 3, 'ended btn']
+            ]);
+        }]
+    );
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkSessionData').factory('SessionsStatusEnum',
+        ["EnumSrv", function (EnumSrv) {
+            'ngInject';
+
+            return new EnumSrv.BaseEnum([
+                ['ENDED', 0, 'ended Session'],
+                ['ACTIVE', 1, 'active Session']
+            ]);
+        }]
+    );
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
+    var subjectEnum = {
+        MATH: 0,
+        ENGLISH: 5
+    };
+
+    angular.module('znk.infra.znkSessionData').constant('SessionSubjectEnumConst', subjectEnum);
+
+    angular.module('znk.infra.znkSessionData').factory('SessionSubjectEnum', [
+        'EnumSrv',
+        function (EnumSrv) {
+
+            return new EnumSrv.BaseEnum([
+                ['MATH', subjectEnum.MATH, 'math'],
+                ['ENGLISH', subjectEnum.ENGLISH, 'english']
+            ]);
+        }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkSessionData').provider('znkSessionDataSrv',
+        function () {
+            var _sessionSubjectsGetter;
+
+            this.setSessionSubjects = function (sessionSubjectsGetter) {
+                _sessionSubjectsGetter = sessionSubjectsGetter;
+            };
+
+            this.$get = ["$log", "$injector", "$q", "InfraConfigSrv", "ENV", "StudentContextSrv", "TeacherContextSrv", "AuthService", "$rootScope", function ($log, $injector, $q, InfraConfigSrv, ENV, StudentContextSrv, TeacherContextSrv, AuthService, $rootScope) {
+                'ngInject';
+                var znkSessionDataSrv = {};
+                var globalStorageProm = InfraConfigSrv.getGlobalStorage();
+                var isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
+                var userAuth = AuthService.getAuth();
+                var currSessionGUID;
+
+                znkSessionDataSrv.getSessionSubjects = function () {
+                    if (!_sessionSubjectsGetter) {
+                        var errMsg = 'znkSessionDataSrv: sessionSubjectsGetter was not set';
+                        $log.error(errMsg);
+                        return $q.reject(errMsg);
+                    }
+                    return $q.when($injector.invoke(_sessionSubjectsGetter));
+                };
+
+                $rootScope.$watch(function () {
+                    return currSessionGUID;
+                });
+
+                function getLiveSessionPath(param) {
+                    if (!userAuth) {
+                        $log.error('Invalid user');
+                        return;
+                    }
+                    var path;
+                    var educatorUID = isTeacher ? userAuth.uid : TeacherContextSrv.getCurrUid();
+                    var studentUID = isTeacher ? StudentContextSrv.getCurrUid() : userAuth.uid;
+                    switch (param) {
+                        case 'sessions':
+                            path = ENV.studentAppName + '/liveSession/' + currSessionGUID.guid;
+                            return path;
+                        case 'student':
+                            path = ENV.studentAppName + '/users/$$uid/liveSession';
+                            return path.replace('$$uid', '' + studentUID);
+                        case 'educator':
+                            path = ENV.dashboardAppName + '/users/$$uid/liveSession';
+                            return path.replace('$$uid', '' + educatorUID);
+                        default:
+                            return;
+                    }
+                }
+
+                znkSessionDataSrv.getLiveSessionGuid = function () {
+                    var activeSessionPath = isTeacher ? getLiveSessionPath('educator') : getLiveSessionPath('student');
+                    activeSessionPath += '/active';
+                    return globalStorageProm.then(function (globalStorage) {
+                        return globalStorage.getAndBindToServer(activeSessionPath);
+                    });
+                };
+
+                znkSessionDataSrv.isInLiveSession = function () {
+                    return znkSessionDataSrv.getLiveSessionGuid().then(function (res) {
+                        return !!(res.guid);
+                    });
+                };
+
+                return znkSessionDataSrv;
+            }];
+
+        });
+})(angular);
+
+angular.module('znk.infra.znkSessionData').run(['$templateCache', function($templateCache) {
+
 }]);
 
 (function (angular) {
