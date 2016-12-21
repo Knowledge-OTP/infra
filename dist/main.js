@@ -103,7 +103,8 @@
                     $translate([
                         translateNamespace + '.' + 'SHOW_STUDENT_SCREEN',
                         translateNamespace + '.' + 'SHOW_TEACHER_SCREEN',
-                        translateNamespace + '.' + 'SHARE_MY_SCREEN'
+                        translateNamespace + '.' + 'SHARE_MY_SCREEN',
+                        translateNamespace + '.' + 'END_SCREEN_SHARING'
                     ]).then(function (translation) {
                         scope.d.translatedStrings = {
                             SHOW_STUDENT_SCREEN: translation[translateNamespace + '.' + 'SHOW_STUDENT_SCREEN'],
