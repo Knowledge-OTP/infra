@@ -964,7 +964,13 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                         } else if ((exLectureCount + exCompletedCount) === assignModule.exercises.length){
                             _overAll.status = ExerciseStatusEnum.COMPLETED.enum;
                         } else {
-                            _overAll.status = _exerciseResults ? ExerciseStatusEnum.ACTIVE.enum : ExerciseStatusEnum.COMPLETED.enum;
+                            if (exCompletedCount === 0 && (currentExerciseRes.status === ExerciseStatusEnum.ACTIVE.enum)) {
+                                _overAll.status = ExerciseStatusEnum.ACTIVE.enum;
+                            } else {
+                                _overAll.status = ExerciseStatusEnum.NEW.enum;
+                            }
+
+                            //_overAll.status = _exerciseResults ? ExerciseStatusEnum.ACTIVE.enum : ExerciseStatusEnum.COMPLETED.enum;
                         }
                         _overAll.totalCorrectAnswers += currentExerciseRes.correctAnswersNum;
                         _overAll.totalWrongAnswers += currentExerciseRes.wrongAnswersNum;
@@ -4990,6 +4996,9 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
             function moduleExerciseSaveFn(assignContentType) {
 
                 /* jshint validthis: true */
+                if (!assignContentType) {
+                    assignContentType = 1;
+                }
                 return _calcExerciseResultFields(this).then(function (response) {
                     var exerciseResult = response.exerciseResult;
                     var dataToSave = response.dataToSave;

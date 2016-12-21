@@ -510,6 +510,9 @@
             function moduleExerciseSaveFn(assignContentType) {
 
                 /* jshint validthis: true */
+                if (!assignContentType) {
+                    assignContentType = 1;
+                }
                 return _calcExerciseResultFields(this).then(function (response) {
                     var exerciseResult = response.exerciseResult;
                     var dataToSave = response.dataToSave;
