@@ -426,6 +426,10 @@
                                     angular.forEach(moduleResult.exercises, function (exerciseData) {
                                             var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseData.exerciseTypeId, exerciseData.exerciseId, assignContentType, moduleResult.moduleId).then(function (exerciseResults) {
                                                 if (exerciseResults) {
+                                                    if(!moduleResult.exerciseResults[exerciseData.exerciseTypeId]){
+                                                        moduleResult.exerciseResults[exerciseData.exerciseTypeId] = {};
+                                                    }
+
                                                     moduleResult.exerciseResults[exerciseData.exerciseTypeId][exerciseData.exerciseId] = exerciseResults;
                                                 }
                                             });
