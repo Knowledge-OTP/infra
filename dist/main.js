@@ -4914,10 +4914,21 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                             var resultPath = MODULE_RESULTS_PATH + '/' + moduleResultGuid;
                             return StudentStorageSrv.get(resultPath).then(function (moduleResult) {
                                 var promArray = [];
+                                var exerciseTypeId, exerciseId;
+
                                 if (moduleResult.exercises && withExerciseResults) {
                                     moduleResult.exerciseResults = [];
                                     angular.forEach(moduleResult.exercises, function (exerciseData) {
-                                            var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseData.exerciseTypeId, exerciseData.exerciseId, assignContentType, moduleResult.moduleId).then(function (exerciseResults) {
+
+                                        if (angular.isDefined(exerciseData.examId)) {
+                                            exerciseTypeId = ExerciseTypeEnum.SECTION.enum;
+                                            exerciseId = exerciseData.id;
+                                        } else {
+                                            exerciseTypeId = exerciseData.exerciseTypeId;
+                                            exerciseId = exerciseData.exerciseId;
+                                        }
+
+                                            var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, moduleResult.examId).then(function (exerciseResults) {
                                                 if (exerciseResults) {
                                                     if(!moduleResult.exerciseResults[exerciseData.exerciseTypeId]){
                                                         moduleResult.exerciseResults[exerciseData.exerciseTypeId] = {};
