@@ -6516,8 +6516,10 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function($templat
             var PopUpSrv = {};
 
             var $body = angular.element($document[0].body);
-            var popUpsPlaceHolderElement = angular.element('<div class="znk-popup"></div>');
-            $body.append(popUpsPlaceHolderElement);
+            if (!angular.element($body[0].querySelector('.znk-popup')).length) {
+                var popUpsPlaceHolderElement = angular.element('<div class="znk-popup"></div>');
+                $body.append(popUpsPlaceHolderElement);
+            }
 
             var popupInstance,
                 popupDefer;
