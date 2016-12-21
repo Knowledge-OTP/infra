@@ -372,7 +372,7 @@
             };
 
             /* Module Results Functions */
-            this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId, assignContentType, examId) {
+            this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId, assignContentType, examId, dontInit) {
 
                 return $q.all([
                     this.getExerciseResult(exerciseTypeId, exerciseId, examId, null, true),
@@ -382,6 +382,9 @@
                     var initResults = results[1];
 
                     if (!exerciseResult) {
+                        if (dontInit) {
+                            return;
+                        }
                         exerciseResult = initResults;
                         exerciseResult.$$path = EXERCISE_RESULTS_PATH + '/' + exerciseResult.guid;
                     }
@@ -429,7 +432,6 @@
                                                     if(!moduleResult.exerciseResults[exerciseData.exerciseTypeId]){
                                                         moduleResult.exerciseResults[exerciseData.exerciseTypeId] = {};
                                                     }
-
                                                     moduleResult.exerciseResults[exerciseData.exerciseTypeId][exerciseData.exerciseId] = exerciseResults;
                                                 }
                                             });
