@@ -4913,16 +4913,15 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                             var resultPath = MODULE_RESULTS_PATH + '/' + moduleResultGuid;
                             return StudentStorageSrv.get(resultPath).then(function (moduleResult) {
                                 var promArray = [];
-                                if (moduleResult.exercise && withExerciseResults) {
-                                    angular.forEach(moduleResult.exercise, function (exerciseData) {
-                                            //angular.forEach(exerciseResult, function (exerciseResultGuid, exerciseId) {
-                                                var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseData.exerciseTypeId, exerciseData.exerciseId, assignContentType, moduleResult.moduleId).then(function (exerciseResults) {
-                                                    if (exerciseResults) {
-                                                        moduleResult.exerciseResults[exerciseData.exerciseTypeId][exerciseData.exerciseId] = exerciseResults;
-                                                    }
-                                                });
-                                                promArray.push(prom);
-                                            //});
+                                if (moduleResult.exercises && withExerciseResults) {
+                                    moduleResult.exerciseResults = [];
+                                    angular.forEach(moduleResult.exercises, function (exerciseData) {
+                                            var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseData.exerciseTypeId, exerciseData.exerciseId, assignContentType, moduleResult.moduleId).then(function (exerciseResults) {
+                                                if (exerciseResults) {
+                                                    moduleResult.exerciseResults[exerciseData.exerciseTypeId][exerciseData.exerciseId] = exerciseResults;
+                                                }
+                                            });
+                                            promArray.push(prom);
                                         }
                                     );
                                 }
