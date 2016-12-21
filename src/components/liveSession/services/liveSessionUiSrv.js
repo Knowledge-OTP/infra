@@ -3,7 +3,7 @@
 
     angular.module('znk.infra.liveSession').provider('LiveSessionUiSrv',function(){
 
-        this.$get = function ($rootScope, $timeout, $compile, $animate, PopUpSrv, $translate, $q, $log) {
+        this.$get = function ($rootScope, $timeout, $compile, $animate, PopUpSrv, $translate, $q, $log, ENV) {
             'ngInject';
 
             var childScope, liveSessionPhElement, readyProm;
@@ -71,6 +71,30 @@
                 var translationsPromMap = {};
                 translationsPromMap.title = $translate('LIVE_SESSION.LIVE_SESSION_REQUEST');
                 translationsPromMap.content= $translate('LIVE_SESSION.WANT_TO_JOIN');
+                translationsPromMap.acceptBtnTitle = $translate('LIVE_SESSION.REJECT');
+                translationsPromMap.cancelBtnTitle = $translate('LIVE_SESSION.ACCEPT');
+                return $q.all(translationsPromMap).then(function(translations){
+                    var popUpInstance = PopUpSrv.warning(
+                        translations.title,
+                        translations.content,
+                        translations.acceptBtnTitle,
+                        translations.cancelBtnTitle
+                    );
+                    return popUpInstance.promise.then(function(res){
+                        return $q.reject(res);
+                    },function(res){
+                        return $q.resolve(res);
+                    });
+                },function(err){
+                    $log.error('LiveSessionUiSrv: translate failure' + err);
+                    return $q.reject(err);
+                });
+            };
+
+            LiveSessionUiSrv.showSessionEndAlertPopup = function () {
+                var translationsPromMap = {};
+                translationsPromMap.title = $translate('LIVE_SESSION.END_ALERT', { endAlertTime: ENV.liveSession.sessionEndAlertTime });
+                translationsPromMap.content= $translate('LIVE_SESSION.EXTEND_SESSION', { extendTime: ENV.liveSession.sessionExtendTime });
                 translationsPromMap.acceptBtnTitle = $translate('LIVE_SESSION.REJECT');
                 translationsPromMap.cancelBtnTitle = $translate('LIVE_SESSION.ACCEPT');
                 return $q.all(translationsPromMap).then(function(translations){

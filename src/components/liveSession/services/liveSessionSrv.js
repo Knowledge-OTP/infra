@@ -3,7 +3,7 @@
 
     angular.module('znk.infra.liveSession').service('LiveSessionSrv',
         function (UserProfileService, InfraConfigSrv, $q, UtilitySrv, LiveSessionDataGetterSrv, LiveSessionStatusEnum,
-                  ENV, $log, UserLiveSessionStateEnum, LiveSessionUiSrv) {
+                  ENV, $log, UserLiveSessionStateEnum, LiveSessionUiSrv, $interval) {
             'ngInject';
 
             var _this = this;
@@ -12,6 +12,10 @@
             var currUserLiveSessionState = UserLiveSessionStateEnum.NONE.enum;
             var registeredCbToActiveLiveSessionDataChanges = [];
             var registeredCbToCurrUserLiveSessionStateChange = [];
+            var liveSessionInterval = {
+                interval: null,
+                isSessionAlertShown: false
+            };
 
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';
 
@@ -112,6 +116,7 @@
                             duration: null,
                             sessionSubject: educatorData.sessionSubject.id
                         };
+                        _checkSessionDuration(newLiveSessionData);
                         angular.extend(data.newLiveSessionData, newLiveSessionData);
 
                         dataToSave[data.newLiveSessionData.$$path] = data.newLiveSessionData;
@@ -152,6 +157,38 @@
                 });
             }
 
+            function _checkSessionDuration(liveSessionData) {
+                liveSessionInterval.interval = $interval(function () {
+                    var liveSessionDuration = (_getRoundTime() - liveSessionData.startTime)  / 60000; // convert to minutes
+                    var extendTimeMin = liveSessionData.extendTime / 60000;
+                    var maxSessionDuration = ENV.liveSession.sessionLength + extendTimeMin;
+                    var sessionTimeWithExtension = liveSessionDuration + extendTimeMin;
+                    var EndAlertTime = maxSessionDuration - ENV.liveSession.sessionEndAlertTime;
+
+                    if (sessionTimeWithExtension >= maxSessionDuration) {
+                        _this.endLiveSession(liveSessionData.guid);
+                    } else if (sessionTimeWithExtension >= EndAlertTime && !liveSessionInterval.isSessionAlertShown) {
+                        LiveSessionUiSrv.showSessionEndAlertPopup().then(function () {
+                            confirmExtendSession(liveSessionData);
+                        }, function updateIntervalAlertShown() {
+                            liveSessionInterval.isSessionAlertShown = true;
+                            $log.debug('Live session is continued without extend time.');
+                        });
+                    }
+                }, 60000);
+            }
+
+            function confirmExtendSession(liveSessionData) {
+                liveSessionData.extendTime += ENV.liveSession.sessionExtendTime;
+                _this._liveSessionDataChanged(liveSessionData);
+                $log.debug('Live session is extend by ' + ENV.liveSession.sessionExtendTime + ' minutes.');
+            }
+
+            function _destroyCheckDurationInterval() {
+                $interval.cancel(liveSessionInterval.interval);
+                liveSessionInterval.isSessionAlertShown = false;
+            }
+
             this.startLiveSession = function (studentData, sessionSubject) {
                 return UserProfileService.getCurrUserId().then(function (currUserId) {
                     var educatorData = {
@@ -186,7 +223,10 @@
                     var dataToSave = {};
 
                     data.liveSessionData.status = LiveSessionStatusEnum.ENDED.enum;
+                    data.liveSessionData.endTime = _getRoundTime();
+                    data.liveSessionData.duration = data.liveSessionData.endTime - data.liveSessionData.startTime;
                     dataToSave [data.liveSessionData.$$path] = data.liveSessionData;
+                    _destroyCheckDurationInterval();
 
                     data.currUidLiveSessionRequests[data.liveSessionData.guid] = false;
                     var activePath = data.currUidLiveSessionRequests.$$path;

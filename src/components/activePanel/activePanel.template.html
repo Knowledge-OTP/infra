@@ -12,7 +12,7 @@
             </div>
         </div>
         <div class="callee-name flex-col">
-            {{d.calleeName}}
+            {{d.calleeName ? d.calleeName : d.isTeacher ? 'Educator' : 'Student'}}
             <div class="live-session-duration">&nbsp;</div>
         </div>
         <div class="call-controls flex-col">
@@ -32,15 +32,23 @@
                 </ng-switch>
             </div>
 
-            <svg-icon disable-click-drv="d.shareScreenBtnsEnable"
-                      ng-class="{disabled: !d.shareScreenBtnsEnable}"
-                      ng-click="d.shareMyScreen()"
-                      name="active-panel-share-screen-icon"
-                      class="share-my-screen"
-                      title="{{d.translatedStrings.SHARE_MY_SCREEN}}">
-            </svg-icon>
+            <div><svg-icon disable-click-drv="d.shareScreenBtnsEnable"
+                          ng-class="{disabled: !d.shareScreenBtnsEnable}"
+                          ng-click="d.shareMyScreen()"
+                          name="active-panel-share-screen-icon"
+                          class="share-my-screen"
+                          title="{{d.translatedStrings.SHARE_MY_SCREEN}}">
+                </svg-icon></div>
 
-            <call-btn ng-model="d.callBtnModel"></call-btn>
+            <div><call-btn ng-model="d.callBtnModel"></call-btn></div>
+
+            <div class="seperator"></div>
+
+            <div><md-button class="end-session-btn"
+                            aria-label="{{'ACTIVE_PANEL.END_SESSION' | translate}}"
+                            ng-click="d.endSession()">
+                <span>{{'ACTIVE_PANEL.END_SESSION' | translate}}</span>
+            </md-button></div>
         </div>
     </div>
 </div>

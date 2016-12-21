@@ -384,30 +384,42 @@ md-dialog.base {
       width: 14px;
       height: 19px; }
 
-.live-session-frame {
+.live-session-ph {
   position: relative;
-  z-index: 10; }
-  .live-session-frame .frame-container .square-side {
+  z-index: 0; }
+  .live-session-ph live-session .close-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    position: fixed;
+    top: 0;
+    right: 0;
+    border-bottom-left-radius: 15px;
+    text-align: center;
+    line-height: 42px;
+    cursor: pointer; }
+  .live-session-ph live-session .active-state .close-icon-wrapper {
+    background: #ff931e; }
+  .live-session-ph live-session .active-state-container .square-side {
     background: #ff931e;
     position: fixed; }
-    .live-session-frame .frame-container .square-side.top, .live-session-frame .frame-container .square-side.bottom {
+    .live-session-ph live-session .active-state-container .square-side.top, .live-session-ph live-session .active-state-container .square-side.bottom {
       height: 5px;
       right: 0;
       left: 0; }
-    .live-session-frame .frame-container .square-side.right, .live-session-frame .frame-container .square-side.left {
+    .live-session-ph live-session .active-state-container .square-side.right, .live-session-ph live-session .active-state-container .square-side.left {
       width: 5px;
       top: 0;
       bottom: 0; }
-    .live-session-frame .frame-container .square-side.top {
+    .live-session-ph live-session .active-state-container .square-side.top {
       top: 0; }
-    .live-session-frame .frame-container .square-side.right {
+    .live-session-ph live-session .active-state-container .square-side.right {
       right: 0; }
-    .live-session-frame .frame-container .square-side.bottom {
+    .live-session-ph live-session .active-state-container .square-side.bottom {
       bottom: 0; }
-    .live-session-frame .frame-container .square-side.left {
+    .live-session-ph live-session .active-state-container .square-side.left {
       left: 0; }
 
-znk-session .session-btn {
+live-session-btn .session-btn {
   font-size: 14px;
   color: #ffffff;
   font-family: Lato;
@@ -421,37 +433,37 @@ znk-session .session-btn {
   line-height: 28px;
   border-radius: 15px;
   outline: none; }
-  znk-session .session-btn:not([disabled]):hover {
+  live-session-btn .session-btn:not([disabled]):hover {
     background-color: #ff931e;
     border: 1px solid #b7b7b7; }
 
-znk-session .end-session {
+live-session-btn .end-session {
   background-color: #ff6766; }
-  znk-session .end-session:not([disabled]):hover {
+  live-session-btn .end-session:not([disabled]):hover {
     background-color: #ff6766; }
 
-znk-session .offline {
+live-session-btn .offline {
   border: 1px solid #b7b7b7; }
 
-start-session-modal .start-session-modal {
+live-session-subject-modal .live-session-subject-modal {
   width: 400px;
   min-height: 265px; }
-  start-session-modal .start-session-modal .popup-header {
+  live-session-subject-modal .live-session-subject-modal .popup-header {
     height: 40px;
     background-color: #0a9bad;
     border-top-left-radius: 15px;
     border-top-right-radius: 15px; }
-    start-session-modal .start-session-modal .popup-header .top-icon-wrap {
+    live-session-subject-modal .live-session-subject-modal .popup-header .top-icon-wrap {
       position: fixed;
       top: 0;
       width: 100%;
       height: 40px; }
-      start-session-modal .start-session-modal .popup-header .top-icon-wrap .top-icon {
+      live-session-subject-modal .live-session-subject-modal .popup-header .top-icon-wrap .top-icon {
         display: -ms-flexbox;
         display: flex;
         -ms-flex-pack: center;
             justify-content: center; }
-        start-session-modal .start-session-modal .popup-header .top-icon-wrap .top-icon .round-icon-wrap {
+        live-session-subject-modal .live-session-subject-modal .popup-header .top-icon-wrap .top-icon .round-icon-wrap {
           width: 76px;
           height: 76px;
           border-radius: 38px;
@@ -465,9 +477,9 @@ start-session-modal .start-session-modal {
           -ms-flex-align: center;
               align-items: center;
           text-align: center; }
-          start-session-modal .start-session-modal .popup-header .top-icon-wrap .top-icon .round-icon-wrap svg-icon {
+          live-session-subject-modal .live-session-subject-modal .popup-header .top-icon-wrap .top-icon .round-icon-wrap svg-icon {
             width: 40px; }
-  start-session-modal .start-session-modal .popup-content {
+  live-session-subject-modal .live-session-subject-modal .popup-content {
     background-color: #fff;
     padding: 30px 0;
     min-height: 150px;
@@ -477,25 +489,25 @@ start-session-modal .start-session-modal {
         flex-direction: column;
     -ms-flex-pack: distribute;
         justify-content: space-around; }
-    start-session-modal .start-session-modal .popup-content .main-title {
+    live-session-subject-modal .live-session-subject-modal .popup-content .main-title {
       font-size: 30px;
       color: #4f4d4d;
       font-family: Quicksand;
       font-weight: 600;
       text-align: center;
       margin-top: 0; }
-    start-session-modal .start-session-modal .popup-content .sub-title {
+    live-session-subject-modal .live-session-subject-modal .popup-content .sub-title {
       font-size: 16px;
       color: #757a83;
       font-family: Lato;
       font-weight: 400;
       text-align: center; }
-    start-session-modal .start-session-modal .popup-content .subjects-btns {
+    live-session-subject-modal .live-session-subject-modal .popup-content .subjects-btns {
       display: -ms-flexbox;
       display: flex;
       -ms-flex-pack: center;
           justify-content: center; }
-      start-session-modal .start-session-modal .popup-content .subjects-btns .subject-icon-wrap {
+      live-session-subject-modal .live-session-subject-modal .popup-content .subjects-btns .subject-icon-wrap {
         width: 155px;
         height: 35px;
         border-radius: 30px;
@@ -508,17 +520,17 @@ start-session-modal .start-session-modal {
         outline: none;
         cursor: pointer;
         border-style: none; }
-        start-session-modal .start-session-modal .popup-content .subjects-btns .subject-icon-wrap svg-icon path {
+        live-session-subject-modal .live-session-subject-modal .popup-content .subjects-btns .subject-icon-wrap svg-icon path {
           fill: #ffffff; }
-        start-session-modal .start-session-modal .popup-content .subjects-btns .subject-icon-wrap.math {
+        live-session-subject-modal .live-session-subject-modal .popup-content .subjects-btns .subject-icon-wrap.math {
           background-color: #AF89D2; }
-        start-session-modal .start-session-modal .popup-content .subjects-btns .subject-icon-wrap.english {
+        live-session-subject-modal .live-session-subject-modal .popup-content .subjects-btns .subject-icon-wrap.english {
           background-color: #F3CF19; }
-        start-session-modal .start-session-modal .popup-content .subjects-btns .subject-icon-wrap svg-icon {
+        live-session-subject-modal .live-session-subject-modal .popup-content .subjects-btns .subject-icon-wrap svg-icon {
           width: 25px;
           height: 25px;
           margin: auto 15px; }
-        start-session-modal .start-session-modal .popup-content .subjects-btns .subject-icon-wrap span {
+        live-session-subject-modal .live-session-subject-modal .popup-content .subjects-btns .subject-icon-wrap span {
           text-transform: uppercase; }
 
 md-dialog {
