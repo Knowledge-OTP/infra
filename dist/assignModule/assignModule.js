@@ -255,8 +255,6 @@
 
 
                 if (assignModule.exercises && assignModule.exercises.length) {
-                    var exCompletedCount = 0;
-                    var exLectureCount = 0;
                     angular.forEach(assignModule.exercises, function (exercise) {
                         var exerciseTypeId, exerciseId;
 
@@ -279,9 +277,10 @@
                         if (_exerciseResults && _exerciseResults[exerciseTypeId]) {
                             if (_exerciseResults[exerciseTypeId][exerciseId]){
 
-                                if (_exerciseResults.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum) {
+                                if (exercise.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum) {
                                     currentExerciseRes.status = _exerciseResults[exerciseTypeId][exerciseId].isComplete ?
-                                        ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
+                                        ExerciseStatusEnum.COMPLETED.enum :
+                                        (_exerciseResults[exerciseTypeId][exerciseId].questionResults.length ? ExerciseStatusEnum.ACTIVE.enum : ExerciseStatusEnum.NEW.enum);
 
                                     currentExerciseRes.correctAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
                                     currentExerciseRes.wrongAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
@@ -292,35 +291,11 @@
                             }
                         }
 
-                        if (exerciseTypeId === ExerciseTypeEnum.LECTURE.enum) {
-                            exLectureCount ++;
-                        }
-                        if (currentExerciseRes.status === ExerciseStatusEnum.COMPLETED.enum) {
-                            exCompletedCount++;
-                        }
-
-
                         if (!moduleSummary.overAll) {
                             moduleSummary.overAll = newOverAll();
                         }
 
                         var _overAll = moduleSummary.overAll;
-                        /*
-                        if (exLectureCount === assignModule.exercises.length){
-                            _overAll.status = ExerciseStatusEnum.NEW.enum;
-                        } else if ((exLectureCount + exCompletedCount) === assignModule.exercises.length){
-                            _overAll.status = ExerciseStatusEnum.COMPLETED.enum;
-                        } else {
-                            if (exCompletedCount === 0 && (currentExerciseRes.status == ExerciseStatusEnum.ACTIVE.enum)) {
-                                _overAll.status = ExerciseStatusEnum.ACTIVE.enum;
-                            } else {
-                                _overAll.status = ExerciseStatusEnum.ACTIVE.enum;
-                            }
-
-                            //_overAll.status = _exerciseResults ? ExerciseStatusEnum.ACTIVE.enum : ExerciseStatusEnum.COMPLETED.enum;
-                        }
-                        */
-
                         _overAll.totalCorrectAnswers += currentExerciseRes.correctAnswersNum;
                         _overAll.totalWrongAnswers += currentExerciseRes.wrongAnswersNum;
                         _overAll.totalSkippedAnswers += currentExerciseRes.skippedAnswersNum;
