@@ -421,16 +421,16 @@
                             var resultPath = MODULE_RESULTS_PATH + '/' + moduleResultGuid;
                             return StudentStorageSrv.get(resultPath).then(function (moduleResult) {
                                 var promArray = [];
-                                if (moduleResult.exerciseResults && withExerciseResults) {
-                                    angular.forEach(moduleResult.exerciseResults, function (exerciseResult, exerciseTypeId) {
-                                            angular.forEach(exerciseResult, function (exerciseResultGuid, exerciseId) {
-                                                var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, moduleResult.moduleId).then(function (exerciseResults) {
+                                if (moduleResult.exercise && withExerciseResults) {
+                                    angular.forEach(moduleResult.exercise, function (exerciseData) {
+                                            //angular.forEach(exerciseResult, function (exerciseResultGuid, exerciseId) {
+                                                var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseData.exerciseTypeId, exerciseData.exerciseId, assignContentType, moduleResult.moduleId).then(function (exerciseResults) {
                                                     if (exerciseResults) {
-                                                        moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResults;
+                                                        moduleResult.exerciseResults[exerciseData.exerciseTypeId][exerciseData.exerciseId] = exerciseResults;
                                                     }
                                                 });
                                                 promArray.push(prom);
-                                            });
+                                            //});
                                         }
                                     );
                                 }
