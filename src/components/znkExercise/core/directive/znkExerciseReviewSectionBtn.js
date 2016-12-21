@@ -7,6 +7,8 @@
             return {
                 restrict: 'E',
                 scope: {
+                    onReview: '&',
+                    settings: '<'
                 },
                 require: '^znkExercise',
                 templateUrl: "components/znkExercise/core/template/znkExerciseReviewSectionBtnTemplate.html",
