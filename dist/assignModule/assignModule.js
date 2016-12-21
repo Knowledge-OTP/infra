@@ -271,34 +271,29 @@
                         if (!moduleSummary[exerciseTypeId]){
                             moduleSummary[exerciseTypeId] = {};
                         }
-
+                        var currentExerciseRes;
                         if (!moduleSummary[exerciseTypeId][exerciseId]){
-                            moduleSummary[exerciseTypeId][exerciseId] = newSummary();
+                            currentExerciseRes = newSummary();
                         }
 
-                        var _summary = moduleSummary[exerciseTypeId][exerciseId];
                         if (_exerciseResults && _exerciseResults[exerciseTypeId]) {
                             if (_exerciseResults[exerciseTypeId][exerciseId]){
-                                if (_exerciseResults[exerciseTypeId][exerciseId].status) {
-                                    _summary.status = _exerciseResults[exerciseTypeId][exerciseId].status;
-                                } else {
-                                    if(angular.isDefined(_exerciseResults[exerciseTypeId][exerciseId].isComplete)) {
-                                        _summary.status = _exerciseResults[exerciseTypeId][exerciseId].isComplete ?
-                                            ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
-                                    }
-                                }
-                                _summary.correctAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
-                                _summary.wrongAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
-                                _summary.skippedAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
-                                _summary.duration = _exerciseResults[exerciseTypeId][exerciseId].duration || 0;
-                                _summary.totalAnswered = _summary.correctAnswersNum + _summary.wrongAnswersNum;
+
+                                currentExerciseRes.status = _exerciseResults[exerciseTypeId][exerciseId].isComplete ?
+                                    ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
+
+                                currentExerciseRes.correctAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
+                                currentExerciseRes.wrongAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
+                                currentExerciseRes.skippedAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
+                                currentExerciseRes.duration = _exerciseResults[exerciseTypeId][exerciseId].duration || 0;
+                                currentExerciseRes.totalAnswered = currentExerciseRes.correctAnswersNum + currentExerciseRes.wrongAnswersNum;
                             }
                         }
 
                         if (exerciseTypeId === ExerciseTypeEnum.LECTURE.enum) {
                             exLectureCount ++;
                         }
-                        if (_summary.status === ExerciseStatusEnum.COMPLETED.enum) {
+                        if (currentExerciseRes.status === ExerciseStatusEnum.COMPLETED.enum) {
                             exCompletedCount++;
                         }
 
@@ -313,9 +308,11 @@
                         } else {
                             _overAll.status = _exerciseResults ? ExerciseStatusEnum.ACTIVE.enum : ExerciseStatusEnum.NEW.enum;
                         }
-                        _overAll.totalCorrectAnswers += _summary.correctAnswersNum;
-                        _overAll.totalWrongAnswers += _summary.wrongAnswersNum;
-                        _overAll.totalSkippedAnswers += _summary.skippedAnswersNum;
+                        _overAll.totalCorrectAnswers += currentExerciseRes.correctAnswersNum;
+                        _overAll.totalWrongAnswers += currentExerciseRes.wrongAnswersNum;
+                        _overAll.totalSkippedAnswers += currentExerciseRes.skippedAnswersNum;
+
+                        moduleSummary[exerciseTypeId][exerciseId] = currentExerciseRes;
                     });
                 }
 
