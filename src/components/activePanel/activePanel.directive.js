@@ -6,7 +6,8 @@
         .directive('activePanel',
             function ($window, $q, $interval, $filter, $log, CallsUiSrv, ScreenSharingSrv,
                          PresenceService, StudentContextSrv, TeacherContextSrv, ENV,
-                         $translate, toggleAutoCallEnum, LiveSessionSrv, LiveSessionStatusEnum) {
+                         $translate, toggleAutoCallEnum, LiveSessionSrv, LiveSessionStatusEnum,
+                        UserScreenSharingStateEnum) {
                 'ngInject';
                 return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
@@ -36,7 +37,8 @@
                         scope.d.translatedStrings = {
                             SHOW_STUDENT_SCREEN: translation[translateNamespace + '.' + 'SHOW_STUDENT_SCREEN'],
                             SHOW_TEACHER_SCREEN: translation[translateNamespace + '.' + 'SHOW_TEACHER_SCREEN'],
-                            SHARE_MY_SCREEN: translation[translateNamespace + '.' + 'SHARE_MY_SCREEN']
+                            SHARE_MY_SCREEN: translation[translateNamespace + '.' + 'SHARE_MY_SCREEN'],
+                            END_SCREEN_SHARING: translation[translateNamespace + '.' + 'END_SCREEN_SHARING']
                         };
                     }).catch(function (err) {
                         $log.debug('Could not fetch translation', err);
@@ -70,11 +72,13 @@
                     }
 
                     function endScreenSharing(){
-                        ScreenSharingSrv.getActiveScreenSharingData().then(function (screenSharingData) {
-                            if (screenSharingData) {
-                                ScreenSharingSrv.endSharing(screenSharingData.guid);
-                            }
-                        });
+                        if (scope.d.screenShareStatus !== UserScreenSharingStateEnum.NONE.enum) {
+                            ScreenSharingSrv.getActiveScreenSharingData().then(function (screenSharingData) {
+                                if (screenSharingData) {
+                                    ScreenSharingSrv.endSharing(screenSharingData.guid);
+                                }
+                            });
+                        }
                     }
 
                     function updateStatus() {
@@ -130,6 +134,20 @@
                         }
                     }
 
+                    // Listen to status changes in ScreenSharing
+                    function listenToScreenShareStatus(screenSharingStatus) {
+                        if (screenSharingStatus) {
+                            if (screenSharingStatus !== UserScreenSharingStateEnum.NONE.enum) {
+                                scope.d.screenShareStatus = screenSharingStatus;
+                                scope.d.shareScreenBtnsEnable = false;
+                                scope.d.shareScreenViewer = (screenSharingStatus === UserScreenSharingStateEnum.VIEWER.enum);
+                            } else {
+                                scope.d.screenShareStatus = UserScreenSharingStateEnum.NONE.enum;
+                                scope.d.shareScreenBtnsEnable = true;
+                            }
+                        }
+                    }
+
                     function listenToStudentOrTeacherContextChange(prevUid, uid) {
                         receiverId = uid;
                         var currentUserStatus = PresenceService.getCurrentUserStatus(receiverId);
@@ -153,6 +171,25 @@
                         $log.debug('student or teacher context changed: ', receiverId);
                     }
 
+                    function viewOtherUserScreen() {
+                        var userData = {
+                            isTeacher: !scope.d.isTeacher,
+                            uid: receiverId
+                        };
+                        $log.debug('viewOtherUserScreen: ', userData);
+                        ScreenSharingSrv.viewOtherUserScreen(userData);
+                    }
+
+                    function shareMyScreen() {
+                        var userData = {
+                            isTeacher: !scope.d.isTeacher,
+                            uid: receiverId
+                        };
+                        $log.debug('shareMyScreen: ', userData);
+                        ScreenSharingSrv.shareMyScreen(userData);
+                    }
+
+
                     if (isTeacher) {
                         StudentContextSrv.registerToStudentContextChange(listenToStudentOrTeacherContextChange);
                     } else if (isStudent) {
@@ -170,30 +207,17 @@
                         shareScreenBtnsEnable: true,
                         isTeacher: isTeacher,
                         presenceStatusMap: PresenceService.userStatus,
+                        endScreenSharing: endScreenSharing,
                         endSession: endLiveSession,
-                        viewOtherUserScreen: function () {
-                            scope.d.shareScreenBtnsEnable = false;
-                            var userData = {
-                                isTeacher: !scope.d.isTeacher,
-                                uid: receiverId
-                            };
-                            $log.debug('viewOtherUserScreen: ', userData);
-                            ScreenSharingSrv.viewOtherUserScreen(userData);
-                        },
-                        shareMyScreen: function () {
-                            scope.d.shareScreenBtnsEnable = false;
-                            var userData = {
-                                isTeacher: !scope.d.isTeacher,
-                                uid: receiverId
-                            };
-                            $log.debug('shareMyScreen: ', userData);
-                            ScreenSharingSrv.shareMyScreen(userData);
-                        }
+                        viewOtherUserScreen: viewOtherUserScreen,
+                        shareMyScreen: shareMyScreen
                     };
 
                     element.on('$destroy', function() {
                         destroyTimer();
                     });
+
+                    ScreenSharingSrv.registerToCurrUserScreenSharingStateChanges(listenToScreenShareStatus);
 
                     LiveSessionSrv.registerToActiveLiveSessionDataChanges(listenToLiveSessionStatus);
                 }

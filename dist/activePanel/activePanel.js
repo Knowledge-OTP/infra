@@ -303,13 +303,14 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "\n" +
     "            <div><call-btn ng-model=\"d.callBtnModel\"></call-btn></div>\n" +
     "\n" +
-    "            <div class=\"seperator\"></div>\n" +
-    "\n" +
-    "            <div><md-button class=\"end-session-btn\"\n" +
+    "            <div class=\"end-session-wrap\" ng-if=\"d.isTeacher\">\n" +
+    "                <div class=\"seperator\"></div>\n" +
+    "                <md-button class=\"end-session-btn\"\n" +
     "                            aria-label=\"{{'ACTIVE_PANEL.END_SESSION' | translate}}\"\n" +
     "                            ng-click=\"d.endSession()\">\n" +
     "                <span>{{'ACTIVE_PANEL.END_SESSION' | translate}}</span>\n" +
-    "            </md-button></div>\n" +
+    "                </md-button>\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>\n" +

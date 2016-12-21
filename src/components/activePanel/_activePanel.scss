@@ -1,4 +1,5 @@
 active-panel {
+    outline: none;
     &.screen-share-mode {
         .active-panel {
             background-color: $bgColor26;
@@ -11,11 +12,11 @@ active-panel {
     }
     .active-panel {
         z-index: 9999;
-        width: 300px;
         height: 40px;
         background-color: $bgColor21;
         border: 1px solid $bcColor11;
         border-radius: 20px;
+        outline: none;
         // override transition delay when showing / hiding the widget
         &.ng-animate {
             transition:0s none;
@@ -36,9 +37,8 @@ active-panel {
         }
         .flex-col {
             &.callee-status {
-                flex-basis: 5%;
                 align-self: center;
-                margin: 0 3px;
+                margin: 0 5px;
                 .online-indicator {
                     display: inline-block;
                     background: $bgColor2;
@@ -57,74 +57,105 @@ active-panel {
                 }
             }
             &.callee-name {
-                flex-basis: 45%;
                 @include text-style(14px, $fcColor6, Quicksand, $boldFontWeight);
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 text-align: left;
+                margin-right: 20px;
             }
             &.call-controls {
-                flex-basis: 50%;
                 display: flex;
                 justify-content: center;
                 align-items: center;
 
-                div {
-                    margin: 0 2px;
-                }
+                .share-screen-icon-wrap {
+                    display: flex;
 
-                .show-other-screen {
-                    &.disabled {
+                    .active-share-screen{
+                        display: flex;
+
+                        .show-other-screen {
+                            &.disabled {
+                                svg-icon.active-panel-track-student-icon,
+                                svg-icon.active-panel-track-teacher-icon {
+                                    background-color: $bgColor28;
+                                }
+                            }
+                        }
+
+                        .show-other-screen,
+                        svg-icon.share-my-screen,
+                        svg-icon.active-panel-stop-sharing-icon {
+                            outline: none;
+                            margin-left: 10px;
+                            &.disabled,
+                            &.disabled svg-icon {
+                                cursor: default;
+                                transition: 1.5s;
+                            }
+                        }
+
+                        svg-icon.share-my-screen {
+                            cursor: pointer;
+                            width: 28px;
+                            height: 28px;
+                            border-radius: 50%;
+                            background-color: $bgColor19;
+                            margin-left: 10px;
+                            &.disabled {
+                                background-color: $bgColor29;
+                            }
+                            svg {
+                                width: 44%;
+                                path {
+                                    fill: $bgColor6;
+                                }
+                            }
+                        }
+
                         svg-icon.active-panel-track-student-icon,
                         svg-icon.active-panel-track-teacher-icon {
-                            background-color: $bgColor28;
+                            cursor: pointer;
+                            width: 28px;
+                            height: 28px;
+                            border-radius: 50%;
+                            background-color: $bgColor3;
+                            svg {
+                                width: 44%;
+                                path {
+                                    fill: $bgColor6;
+                                }
+                            }
                         }
                     }
-                }
 
-                .show-other-screen,
-                svg-icon.share-my-screen {
-                    outline: none;
-                    &.disabled,
-                    &.disabled svg-icon {
-                        cursor: default;
-                        transition: 1.5s;
-                    }
-                }
-                svg-icon.share-my-screen {
-                    cursor: pointer;
-                    width: 28px;
-                    height: 28px;
-                    border-radius: 50%;
-                    background-color: $bgColor19;
-                    &.disabled {
-                        background-color: $bgColor29;
-                    }
-                    svg {
-                        width: 44%;
-                        path {
-                            fill: $bgColor6;
+                    .end-share-screen {
+                        cursor: pointer;
+                        width: 28px;
+                        height: 28px;
+                        border-radius: 50%;
+                        margin-left: 10px;
+                        background-color: $bgColor6;
+                        svg {
+                            width: 100%;
+                            .st1 {
+                                fill : $bgColor19;
+                            }
                         }
-                    }
-                }
-
-                svg-icon.active-panel-track-student-icon,
-                svg-icon.active-panel-track-teacher-icon {
-                    cursor: pointer;
-                    width: 28px;
-                    height: 28px;
-                    border-radius: 50%;
-                    background-color: $bgColor3;
-                    svg {
-                        width: 44%;
-                        path {
-                            fill: $bgColor6;
+                        &.isViewer {
+                            svg {
+                                width: 100%;
+                                .st1 {
+                                    fill : $bgColor3;
+                                }
+                            }
                         }
                     }
                 }
 
                 call-btn {
+                    margin-left: 10px;
                     svg-icon {
                         &.etutoring-phone-icon {
                             width: 28px;
@@ -133,31 +164,38 @@ active-panel {
                     }
                 }
 
-                .seperator{
-                    width: 2px;
-                    height: 28px;
-                    background: $bcColor15;
+                .end-session-wrap{
+                    display: flex;
+                    .seperator{
+                        width: 2px;
+                        height: 28px;
+                        background: $bcColor15;
+                        margin: 0 10px;
+                    }
+
+                    .end-session-btn {
+                        @include text-style(14px, $fcColor2, Lato, $regularFontWeight, null, none);
+                        background-color: $bgColor1;
+                        padding: 0;
+                        margin: 0;
+                        width: 60px;
+                        height: 30px;
+                        min-height: 30px;
+                        min-width: 60px;
+                        line-height: 28px;
+                        border-radius: 15px;
+                        outline: none;
+                        cursor: pointer;
+                        &:not([disabled]):hover {
+                            background-color: $bgColor1;
+                            border: 1px solid $bcColor8;
+                        }
+                        span {
+                            text-transform: uppercase;
+                        }
+                    }
                 }
 
-                .end-session-btn {
-                    @include text-style(14px, $fcColor2, Lato, $regularFontWeight, null, none);
-                    background-color: $bgColor1;
-                    padding: 0;
-                    margin: 0;
-                    min-height: 30px;
-                    min-width: 60px;
-                    line-height: 28px;
-                    border-radius: 15px;
-                    outline: none;
-                    cursor: pointer;
-                    &:not([disabled]):hover {
-                        background-color: $bgColor1;
-                        border: 1px solid $bcColor8;
-                    }
-                    span {
-                        text-transform: uppercase;
-                    }
-                }
             }
         }
         .live-session-duration {

@@ -82,10 +82,6 @@
             };
             return $delegate;
         })
-        .run(function(ActivePanelSrv){
-            'ngInject';
-            ActivePanelSrv.loadActivePanel();
-        })
         .controller('Main', function ($timeout, TeacherContextSrv, StudentContextSrv) {
             'ngInject';
             var vm = this;

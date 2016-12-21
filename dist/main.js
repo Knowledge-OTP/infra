@@ -360,13 +360,14 @@ angular.module('znk.infra.activePanel').run(['$templateCache', function($templat
     "\n" +
     "            <div><call-btn ng-model=\"d.callBtnModel\"></call-btn></div>\n" +
     "\n" +
-    "            <div class=\"seperator\"></div>\n" +
-    "\n" +
-    "            <div><md-button class=\"end-session-btn\"\n" +
+    "            <div class=\"end-session-wrap\" ng-if=\"d.isTeacher\">\n" +
+    "                <div class=\"seperator\"></div>\n" +
+    "                <md-button class=\"end-session-btn\"\n" +
     "                            aria-label=\"{{'ACTIVE_PANEL.END_SESSION' | translate}}\"\n" +
     "                            ng-click=\"d.endSession()\">\n" +
     "                <span>{{'ACTIVE_PANEL.END_SESSION' | translate}}</span>\n" +
-    "            </md-button></div>\n" +
+    "                </md-button>\n" +
+    "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
     "</div>\n" +
@@ -6530,8 +6531,9 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
     'use strict';
 
     angular.module('znk.infra.liveSession').run(
-        ["LiveSessionEventsSrv", function(LiveSessionEventsSrv){
+        ["ActivePanelSrv", "LiveSessionEventsSrv", function(ActivePanelSrv, LiveSessionEventsSrv){
             'ngInject';
+            ActivePanelSrv.loadActivePanel();
             LiveSessionEventsSrv.activate();
         }]
     );
@@ -7330,6 +7332,33 @@ angular.module('znk.infra.liveSession').run(['$templateCache', function($templat
     "		c31.4,0,62.6,0,94.2,0c0,41.8,0,83.5,0,125.6c-31.3,0-62.6,0-94.3,0c0-2.7,0-5.3,0-8.5C104.3,117.4,132.7,117.4,161.5,117.4z\"/>\n" +
     "	<path d=\"M6.6,25.3C6.6,11,17.9-0.2,32,0c13.7,0.2,25.1,11.7,25.1,25.4c0,13.9-11.7,25.5-25.6,25.3C17.8,50.6,6.6,39.2,6.6,25.3z\"/>\n" +
     "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/liveSession/svg/liveSession-stop-sharing-icon.svg",
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+    "<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n" +
+    "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"0 0 208.9 208.9\" style=\"enable-background:new 0 0 208.9 208.9;\" xml:space=\"preserve\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.st0{fill:#FFFFFF;}\n" +
+    "	.st1{fill:#231F20;}\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<circle class=\"st0\" cx=\"104.4\" cy=\"104.4\" r=\"101.9\"/>\n" +
+    "	<path class=\"st1\" d=\"M104.4,208.9C46.8,208.9,0,162,0,104.4C0,46.8,46.8,0,104.4,0s104.4,46.8,104.4,104.4\n" +
+    "		C208.9,162,162,208.9,104.4,208.9z M104.4,5C49.6,5,5,49.6,5,104.4s44.6,99.4,99.4,99.4s99.4-44.6,99.4-99.4S159.3,5,104.4,5z\"/>\n" +
+    "</g>\n" +
+    "<g id=\"RKT7w7.tif_1_\">\n" +
+    "	<g>\n" +
+    "		<path d=\"M199.6,104.6c-10.1,10.2-21.1,18.6-33.1,25.8c-21.1,12.7-43.5,20.5-68.6,19c-13.8-0.9-26.8-4.7-39.3-10.4\n" +
+    "			c-17.4-8-32.9-18.8-46.8-31.9c-0.8-0.8-1.5-1.7-2.5-2.8c10-10.1,21.1-18.6,33.1-25.8c21.2-12.8,43.9-20.7,69.1-19\n" +
+    "			c13.8,0.9,26.8,4.8,39.2,10.6c16.8,7.7,31.7,18.1,45.3,30.7C197.1,101.9,198.2,103.1,199.6,104.6z M104.4,72\n" +
+    "			C86.2,72,71.9,86.4,72,104.7c0.1,17.9,14.4,32.1,32.5,32.1c17.9,0,32.4-14.4,32.6-32.2C137.2,86.7,122.5,72,104.4,72z\"/>\n" +
+    "		<path d=\"M110.5,82.8c-2.2,4.7-2.4,9,1.6,12.5c4.2,3.6,8.5,2.9,12.6-0.4c5,8.6,2.7,20.1-5.5,27.1c-8.5,7.3-21,7.3-29.7,0\n" +
+    "			c-8.4-7-10.4-19.4-5-29C89.5,84.2,101.7,79,110.5,82.8z\"/>\n" +
+    "	</g>\n" +
+    "</g>\n" +
+    "<rect x=\"3.6\" y=\"102.1\" transform=\"matrix(0.7454 0.6666 -0.6666 0.7454 96.4389 -43.3856)\" class=\"st1\" width=\"202.8\" height=\"5\"/>\n" +
     "</svg>\n" +
     "");
   $templateCache.put("components/liveSession/svg/liveSession-verbal-icon.svg",
