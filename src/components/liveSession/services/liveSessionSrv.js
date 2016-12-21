@@ -179,7 +179,7 @@
             }
 
             function confirmExtendSession(liveSessionData) {
-                liveSessionData.extendTime += ENV.liveSession.sessionExtendTime;
+                liveSessionData.extendTime += ENV.liveSession.sessionExtendTime * 60000;  // minutes to milliseconds
                 _this._liveSessionDataChanged(liveSessionData);
                 $log.debug('Live session is extend by ' + ENV.liveSession.sessionExtendTime + ' minutes.');
             }
@@ -319,6 +319,7 @@
                 }
 
                 activeLiveSessionDataFromAdapter = newLiveSessionData;
+                _checkSessionDuration(newLiveSessionData);
                 _invokeCbs(registeredCbToActiveLiveSessionDataChanges, [activeLiveSessionDataFromAdapter]);
             };
         }

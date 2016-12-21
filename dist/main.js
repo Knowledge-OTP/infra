@@ -188,6 +188,7 @@
                     }
 
                     function listenToLiveSessionStatus(newLiveSessionData) {
+                        var prevLiveSessionStatus = liveSessionStatus;
                         if (!liveSessionData || !angular.equals(liveSessionData, newLiveSessionData)) {
                             liveSessionData = newLiveSessionData;
                         }
@@ -201,7 +202,9 @@
                             } else {
                                 liveSessionStatus = scope.d.states.NONE;
                             }
-                            updateStatus();
+                            if (prevLiveSessionStatus !== liveSessionStatus) {
+                                updateStatus();
+                            }
                         }
                     }
 
@@ -6943,7 +6946,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
             }
 
             function confirmExtendSession(liveSessionData) {
-                liveSessionData.extendTime += ENV.liveSession.sessionExtendTime;
+                liveSessionData.extendTime += ENV.liveSession.sessionExtendTime * 60000;  // minutes to milliseconds
                 _this._liveSessionDataChanged(liveSessionData);
                 $log.debug('Live session is extend by ' + ENV.liveSession.sessionExtendTime + ' minutes.');
             }
@@ -7083,6 +7086,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
                 }
 
                 activeLiveSessionDataFromAdapter = newLiveSessionData;
+                _checkSessionDuration(newLiveSessionData);
                 _invokeCbs(registeredCbToActiveLiveSessionDataChanges, [activeLiveSessionDataFromAdapter]);
             };
         }]

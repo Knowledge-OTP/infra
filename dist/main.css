@@ -413,6 +413,8 @@ active-panel {
         active-panel .active-panel .flex-col.call-controls call-btn svg-icon.etutoring-phone-icon {
           width: 28px;
           height: 28px; }
+          active-panel .active-panel .flex-col.call-controls call-btn svg-icon.etutoring-phone-icon svg {
+            width: 46%; }
       active-panel .active-panel .flex-col.call-controls .end-session-wrap {
         display: -ms-flexbox;
         display: flex; }

@@ -89,14 +89,6 @@
         "MESSAGE_LABEL"  : "message",
         "EMAIL_LABEL"    : "email"
     },
-    "ZNK_SESSION":{
-        "START_SESSION":  "Start Session",
-        "END_SESSION": "End Session",
-        "SESSION_SUBJECT": "Select session subject.",
-        "MATH": "math",
-        "ENGLISH": "english",
-        "HAVE_ACTIVE_SESSION": "You have active Session"
-    },
     "LIVE_SESSION":{
         "START_SESSION":  "Start Session",
         "END_SESSION": "End Session",

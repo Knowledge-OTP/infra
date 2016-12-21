@@ -160,6 +160,9 @@ active-panel {
                         &.etutoring-phone-icon {
                             width: 28px;
                             height: 28px;
+                            svg {
+                                width: 46%;
+                            }
                         }
                     }
                 }

@@ -131,6 +131,7 @@
                     }
 
                     function listenToLiveSessionStatus(newLiveSessionData) {
+                        var prevLiveSessionStatus = liveSessionStatus;
                         if (!liveSessionData || !angular.equals(liveSessionData, newLiveSessionData)) {
                             liveSessionData = newLiveSessionData;
                         }
@@ -144,7 +145,9 @@
                             } else {
                                 liveSessionStatus = scope.d.states.NONE;
                             }
-                            updateStatus();
+                            if (prevLiveSessionStatus !== liveSessionStatus) {
+                                updateStatus();
+                            }
                         }
                     }
 
