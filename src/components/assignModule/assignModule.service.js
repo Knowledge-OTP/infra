@@ -275,7 +275,7 @@
                             if (_exerciseResults[exerciseTypeId][exerciseId]){
 
                                 currentExerciseRes.status = _exerciseResults[exerciseTypeId][exerciseId].isComplete ?
-                                    ExerciseStatusEnum.COMPLETED.enum : ExerciseStatusEnum.ACTIVE.enum;
+                                    ExerciseStatusEnum.COMPLETED.enum : (_exerciseResults[exerciseTypeId][exerciseId].length ? ExerciseStatusEnum.ACTIVE.enum : ExerciseStatusEnum.NEW.enum);
 
                                 currentExerciseRes.correctAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
                                 currentExerciseRes.wrongAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
