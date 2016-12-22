@@ -29,8 +29,7 @@
                                     return;
                                 }
 
-                                LiveSessionUiSrv.showLiveSessionToast('success', 'baba');
-                                LiveSessionSrv.confirmLiveSession(liveSessionData.guid);
+                                // LiveSessionSrv.confirmLiveSession(liveSessionData.guid);
 
                             // .then(function () {
                             //         LiveSessionSrv.confirmLiveSession(liveSessionData.guid);
@@ -42,8 +41,8 @@
                                 if (liveSessionData.educatorId !== currUid) {
                                     return;
                                 }
-
-                                LiveSessionSrv.confirmLiveSession(liveSessionData.guid);
+                                LiveSessionUiSrv.showLiveSessionToast('success', 'teacher Name');
+                                // LiveSessionSrv.confirmLiveSession(liveSessionData.guid);
                                 break;
                             case LiveSessionStatusEnum.CONFIRMED.enum:
                                 var userLiveSessionState = UserLiveSessionStateEnum.NONE.enum;
@@ -100,6 +99,8 @@
                     _startListening();
                 }
             };
+
+            LiveSessionUiSrv.showLiveSessionToast('success', 'student Name');
 
             return LiveSessionEventsSrv;
         };

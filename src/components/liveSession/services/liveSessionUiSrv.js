@@ -117,7 +117,7 @@
 
             LiveSessionUiSrv.showLiveSessionToast = function (type, msg) {
                 $mdToast.show({
-                    template: '<live-session-toast type='+ type +' msg='+ msg +'></live-session-toast>',
+                    template: '<live-session-toast type="success" msg="studentName"></live-session-toast>',
                     position: 'top right',
                     hideDelay: false
                 });
