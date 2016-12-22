@@ -432,6 +432,18 @@
                 });
             };
 
+            this.getModuleResultByGuid = function (guid) {
+                var moduleResultPath = _getModuleResultPath(guid);
+                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                    return StudentStorageSrv.get(moduleResultPath);
+                });
+                
+                return _getExerciseResultByGuid(guid).then(function (exerciseResult) {
+                    exerciseResult.$save = exerciseSaveFn;
+                    return exerciseResult;
+                });
+            };
+
             this.getUserModuleResultsGuids = function (userId) {
                 var userResultsPath = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
                 return InfraConfigSrv.getStudentStorage().then(function (storage) {
@@ -474,7 +486,7 @@
                     });
                 });
             };
-
+            
             this.getExerciseResultByGuid = function (guid) {
                 return _getExerciseResultByGuid(guid).then(function (exerciseResult) {
                     exerciseResult.$save = exerciseSaveFn;
