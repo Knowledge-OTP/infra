@@ -99,7 +99,6 @@
                                     scope.d.callBtnModel = angular.copy(scope.d.callBtnModel);
                                 }
                                 endScreenSharing();
-                                LiveSessionSrv.unregisterFromCurrUserLiveSessionStateChanges(listenToLiveSessionStatus);
                                 break;
                             case scope.d.states.LIVE_SESSION :
                                 $log.debug('ActivePanel State: LIVE_SESSION');
