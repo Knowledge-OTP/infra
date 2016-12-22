@@ -1,0 +1,18 @@
+<md-toast ng-cloak
+          ng-class="{'toast-wrap': vm.type === 'success',
+                     'toast-wrap-error': vm.type === 'error'}">
+    <div class="icon-wrap">
+        <svg-icon name="znkToast-completed-v-icon" ng-if="vm.type === 'success'"></svg-icon>
+        <svg-icon name="znkToast-error-red-icon" ng-if="vm.type === 'error'"></svg-icon>
+    </div>
+
+    <div class="md-toast-content">
+        <div class="md-toast-text" flex>{{vm.msg | translate}}</div>
+    </div>
+
+    <md-button aria-label="close popup"
+               class="close-toast-wrap" ng-click="vm.closeToast()">
+        <svg-icon name="znkToast-close-popup"></svg-icon>
+    </md-button>
+
+</md-toast>

@@ -70,7 +70,7 @@
             'ngInject';
 
             $delegate.getCurrUid = function () {
-                return 'c47f4f57-521c-4832-b505-c0093737ceff';
+                return 'e6a83840-01cc-4e15-af9b-26d9dbbd87d7';
             };
             return $delegate;
         })
@@ -86,10 +86,10 @@
             'ngInject';
             var vm = this;
 
-            vm.student = { uid: 'c47f4f57-521c-4832-b505-c0093737ceff' };
+            vm.student = { uid: 'e6a83840-01cc-4e15-af9b-26d9dbbd87d7' };
 
             $timeout(function () {
-                StudentContextSrv.setCurrentUid('c47f4f57-521c-4832-b505-c0093737ceff');
+                StudentContextSrv.setCurrentUid('e6a83840-01cc-4e15-af9b-26d9dbbd87d7');
                 TeacherContextSrv.setCurrentUid('cf656635-b44c-4fcc-82ef-72fe566d5540');
             }, 2000);
         });

@@ -3,7 +3,7 @@
 
     angular.module('znk.infra.liveSession').provider('LiveSessionUiSrv',function(){
 
-        this.$get = function ($rootScope, $timeout, $compile, $animate, PopUpSrv, $translate, $q, $log, ENV) {
+        this.$get = function ($rootScope, $timeout, $compile, $animate, PopUpSrv, $translate, $q, $log, ENV, $mdToast) {
             'ngInject';
 
             var childScope, liveSessionPhElement, readyProm;
@@ -112,6 +112,14 @@
                 },function(err){
                     $log.error('LiveSessionUiSrv: translate failure' + err);
                     return $q.reject(err);
+                });
+            };
+
+            LiveSessionUiSrv.showLiveSessionToast = function (type, msg) {
+                $mdToast.show({
+                    template: '<live-session-toast type='+ type +' msg='+ msg +'></live-session-toast>',
+                    position: 'top right',
+                    hideDelay: false
                 });
             };
 

@@ -2085,6 +2085,55 @@ live-session-subject-modal .live-session-subject-modal {
         live-session-subject-modal .live-session-subject-modal .popup-content .subjects-btns .subject-icon-wrap span {
           text-transform: uppercase; }
 
+md-toast.toast-wrap, md-toast.toast-wrap-error {
+  width: 400px;
+  height: 60px;
+  display: -ms-flexbox;
+  display: flex;
+  background-color: #fff;
+  border: 2px solid #87ca4d;
+  border-radius: 10px; }
+  md-toast.toast-wrap .icon-wrap, md-toast.toast-wrap-error .icon-wrap {
+    width: 60px;
+    margin: -8px;
+    padding: 8px;
+    background: #87ca4d;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-pack: center;
+        justify-content: center;
+    -ms-flex-align: center;
+        align-items: center; }
+    md-toast.toast-wrap .icon-wrap svg-icon, md-toast.toast-wrap-error .icon-wrap svg-icon {
+      width: 40px;
+      height: 40px; }
+      md-toast.toast-wrap .icon-wrap svg-icon .complete-v-icon-svg *, md-toast.toast-wrap-error .icon-wrap svg-icon .complete-v-icon-svg * {
+        fill: #87ca4d; }
+  md-toast.toast-wrap .md-toast-content, md-toast.toast-wrap-error .md-toast-content {
+    background: #fff;
+    box-shadow: none;
+    color: #4f4d4d;
+    margin-left: 10px; }
+  md-toast.toast-wrap .close-toast-wrap, md-toast.toast-wrap-error .close-toast-wrap {
+    position: absolute;
+    right: 3px;
+    top: -15px;
+    width: 20px; }
+    md-toast.toast-wrap .close-toast-wrap .close-pop-svg, md-toast.toast-wrap-error .close-toast-wrap .close-pop-svg {
+      width: 10px; }
+      md-toast.toast-wrap .close-toast-wrap .close-pop-svg .st1, md-toast.toast-wrap-error .close-toast-wrap .close-pop-svg .st1 {
+        stroke: #4f4d4d; }
+
+md-toast.toast-wrap-error {
+  border: 2px solid #ff6766; }
+  md-toast.toast-wrap-error .icon-wrap {
+    background: #ff6766; }
+    md-toast.toast-wrap-error .icon-wrap svg-icon {
+      width: 25px;
+      height: 25px; }
+      md-toast.toast-wrap-error .icon-wrap svg-icon .close-pop-svg * {
+        stroke: rgba(0, 0, 0, 0.7); }
+
 md-dialog {
   border-radius: 15px; }
   md-dialog md-backdrop.md-opaque {

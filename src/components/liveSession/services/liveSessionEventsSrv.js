@@ -29,11 +29,14 @@
                                     return;
                                 }
 
-                                LiveSessionUiSrv.showStudentLiveSessionPopUp().then(function () {
-                                    LiveSessionSrv.confirmLiveSession(liveSessionData.guid);
-                                }, function () {
-                                    LiveSessionSrv.endLiveSession(liveSessionData.guid);
-                                });
+                                LiveSessionUiSrv.showLiveSessionToast('success', 'baba');
+                                LiveSessionSrv.confirmLiveSession(liveSessionData.guid);
+
+                            // .then(function () {
+                            //         LiveSessionSrv.confirmLiveSession(liveSessionData.guid);
+                            //     }, function () {
+                            //         LiveSessionSrv.endLiveSession(liveSessionData.guid);
+                            //     });
                                 break;
                             case LiveSessionStatusEnum.PENDING_EDUCATOR.enum:
                                 if (liveSessionData.educatorId !== currUid) {

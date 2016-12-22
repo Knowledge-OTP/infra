@@ -151,6 +151,29 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.liveSession')
+        .component('liveSessionToast', {
+            bindings: {
+                type: '=',
+                msg: '='
+            },
+            templateUrl: 'components/liveSession/components/liveSessionToast/liveSessionToast.template.html',
+            controllerAs: 'vm',
+            controller: ["$mdToast", function ($mdToast) {
+                'ngInject';
+
+                var vm = this;
+
+                vm.closeToast = function () {
+                    $mdToast.hide();
+                };
+            }]
+        });
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.liveSession').factory('LiveSessionStatusEnum',
         ["EnumSrv", function (EnumSrv) {
             'ngInject';
@@ -303,11 +326,14 @@
                                     return;
                                 }
 
-                                LiveSessionUiSrv.showStudentLiveSessionPopUp().then(function () {
-                                    LiveSessionSrv.confirmLiveSession(liveSessionData.guid);
-                                }, function () {
-                                    LiveSessionSrv.endLiveSession(liveSessionData.guid);
-                                });
+                                LiveSessionUiSrv.showLiveSessionToast('success', 'baba');
+                                LiveSessionSrv.confirmLiveSession(liveSessionData.guid);
+
+                            // .then(function () {
+                            //         LiveSessionSrv.confirmLiveSession(liveSessionData.guid);
+                            //     }, function () {
+                            //         LiveSessionSrv.endLiveSession(liveSessionData.guid);
+                            //     });
                                 break;
                             case LiveSessionStatusEnum.PENDING_EDUCATOR.enum:
                                 if (liveSessionData.educatorId !== currUid) {
@@ -742,7 +768,7 @@
 
     angular.module('znk.infra.liveSession').provider('LiveSessionUiSrv',function(){
 
-        this.$get = ["$rootScope", "$timeout", "$compile", "$animate", "PopUpSrv", "$translate", "$q", "$log", "ENV", function ($rootScope, $timeout, $compile, $animate, PopUpSrv, $translate, $q, $log, ENV) {
+        this.$get = ["$rootScope", "$timeout", "$compile", "$animate", "PopUpSrv", "$translate", "$q", "$log", "ENV", "$mdToast", function ($rootScope, $timeout, $compile, $animate, PopUpSrv, $translate, $q, $log, ENV, $mdToast) {
             'ngInject';
 
             var childScope, liveSessionPhElement, readyProm;
@@ -854,6 +880,14 @@
                 });
             };
 
+            LiveSessionUiSrv.showLiveSessionToast = function (type, msg) {
+                $mdToast.show({
+                    template: '<live-session-toast type='+ type +' msg='+ msg +'></live-session-toast>',
+                    position: 'top right',
+                    hideDelay: false
+                });
+            };
+
             //was wrapped with timeout since angular will compile the dom after this service initialization
             readyProm = $timeout(function(){
                 _init();
@@ -913,6 +947,26 @@ angular.module('znk.infra.liveSession').run(['$templateCache', function($templat
     "        </div>\n" +
     "    </div>\n" +
     "</div>\n" +
+    "");
+  $templateCache.put("components/liveSession/components/liveSessionToast/liveSessionToast.template.html",
+    "<md-toast ng-cloak\n" +
+    "          ng-class=\"{'toast-wrap': vm.type === 'success',\n" +
+    "                     'toast-wrap-error': vm.type === 'error'}\">\n" +
+    "    <div class=\"icon-wrap\">\n" +
+    "        <svg-icon name=\"znkToast-completed-v-icon\" ng-if=\"vm.type === 'success'\"></svg-icon>\n" +
+    "        <svg-icon name=\"znkToast-error-red-icon\" ng-if=\"vm.type === 'error'\"></svg-icon>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"md-toast-content\">\n" +
+    "        <div class=\"md-toast-text\" flex>{{vm.msg | translate}}</div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <md-button aria-label=\"close popup\"\n" +
+    "               class=\"close-toast-wrap\" ng-click=\"vm.closeToast()\">\n" +
+    "        <svg-icon name=\"znkToast-close-popup\"></svg-icon>\n" +
+    "    </md-button>\n" +
+    "\n" +
+    "</md-toast>\n" +
     "");
   $templateCache.put("components/liveSession/svg/liveSession-english-icon.svg",
     "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\"\n" +
