@@ -12,10 +12,7 @@
             var currUserLiveSessionState = UserLiveSessionStateEnum.NONE.enum;
             var registeredCbToActiveLiveSessionDataChanges = [];
             var registeredCbToCurrUserLiveSessionStateChange = [];
-            var liveSessionInterval = {
-                interval: null,
-                isSessionAlertShown: false
-            };
+            var liveSessionInterval = {};
 
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';
 
@@ -186,7 +183,7 @@
 
             function _destroyCheckDurationInterval() {
                 $interval.cancel(liveSessionInterval.interval);
-                liveSessionInterval.isSessionAlertShown = false;
+                liveSessionInterval = {};
             }
 
             this.startLiveSession = function (studentData, sessionSubject) {
