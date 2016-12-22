@@ -128,11 +128,7 @@
                 };
 
                 znkSessionDataSrv.isActiveLiveSession().then(function (liveSessionGuid) {
-                    if (!angular.equals(liveSessionGuid, {})) {
-                        console.log('Do what ever you wont: ', liveSessionGuid);
-                    } else {
-                        console.log('Do something else.');
-                    }
+                    return !angular.equals(liveSessionGuid, {});
                 });
 
                 znkSessionDataSrv.getLiveSessionGuid = function () {
