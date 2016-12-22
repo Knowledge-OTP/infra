@@ -437,11 +437,6 @@
                 return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                     return StudentStorageSrv.get(moduleResultPath);
                 });
-                
-                return _getExerciseResultByGuid(guid).then(function (exerciseResult) {
-                    exerciseResult.$save = exerciseSaveFn;
-                    return exerciseResult;
-                });
             };
 
             this.getUserModuleResultsGuids = function (userId) {
@@ -486,7 +481,7 @@
                     });
                 });
             };
-            
+
             this.getExerciseResultByGuid = function (guid) {
                 return _getExerciseResultByGuid(guid).then(function (exerciseResult) {
                     exerciseResult.$save = exerciseSaveFn;
