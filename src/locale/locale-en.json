@@ -62,7 +62,9 @@
     "ACTIVE_PANEL":{
         "SHOW_STUDENT_SCREEN": "Show Teacher Screen",
         "SHOW_TEACHER_SCREEN": "Show Student Screen",
-        "SHARE_MY_SCREEN": "Share my screen"
+        "END_SCREEN_SHARING": "End Screen Sharing",
+        "SHARE_MY_SCREEN": "Share my screen",
+        "END_SESSION": "END"
     },
     "SCREEN_SHARING":{
         "SHARE_SCREEN_REQUEST": "Share Screen Request",
@@ -86,5 +88,18 @@
         "USER_ID"        : "uid: {{userId}}",
         "MESSAGE_LABEL"  : "message",
         "EMAIL_LABEL"    : "email"
+    },
+    "LIVE_SESSION":{
+        "START_SESSION":  "Start Session",
+        "END_SESSION": "End Session",
+        "SESSION_SUBJECT": "Select session subject.",
+        "MATH": "math",
+        "ENGLISH": "english",
+        "LIVE_SESSION_REQUEST": "Live Session Request",
+        "WANT_TO_JOIN": "Join the live session.",
+        "END_ALERT": "Session will end in {{endAlertTime}} minutes.",
+        "EXTEND_SESSION": "Want to extend the Session in {{extendTime}} minutes.",
+        "REJECT": "REJECT",
+        "ACCEPT": "ACCEPT"
     }
 }

@@ -1,0 +1,20 @@
+@import '../../scss/imports/colors',
+'../../scss/imports/variables',
+'../../scss/imports/mixins';
+
+@import './scss/md-dialog';
+@import './components/liveSession/liveSession';
+@import './components/liveSessionBtn/liveSessionBtn';
+@import './components/liveSessionSubjectModal/liveSessionSubjectModal';
+@import './components/liveSessionToast/liveSessionToast';
+
+md-dialog {
+    border-radius: 15px;
+    md-backdrop {
+        &.md-opaque {
+            background-color: $bgColor35;
+            opacity: .76;
+        }
+    }
+}
+

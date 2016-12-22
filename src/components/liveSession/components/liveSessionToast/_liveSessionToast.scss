@@ -1,0 +1,61 @@
+md-toast.toast-wrap{
+    width: 400px;
+    height: 60px;
+    display: flex;
+    background-color: $bgColor6;
+    border: 2px solid $bgColor2;
+    border-radius: 10px;
+
+    .icon-wrap{
+        width: 60px;
+        margin: -8px;
+        padding: 8px;
+        background: $bgColor2;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        svg-icon{
+            width: 40px;
+            height: 40px;
+            .complete-v-icon-svg *{
+                fill: $bgColor2;
+            }
+        }
+    }
+
+    .md-toast-content{
+        background: $bgColor6;
+        box-shadow: none;
+        color: $bcColor13;
+        margin-left: 10px;
+    }
+
+    .close-toast-wrap{
+        position: absolute;
+        right: 3px;
+        top: -15px;
+        width: 20px;
+        .close-pop-svg{
+            width: 10px;
+            .st1 {
+                stroke: $bcColor13;
+            }
+        }
+    }
+}
+
+md-toast.toast-wrap-error{
+    @extend md-toast.toast-wrap;
+    border: 2px solid $bgColor1;
+    .icon-wrap{
+        background: $bgColor1;
+        svg-icon{
+            width: 25px;
+            height: 25px;
+            .close-pop-svg *{
+                stroke: $tbgColor1;
+            }
+        }
+
+    }
+}

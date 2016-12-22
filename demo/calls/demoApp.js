@@ -1,6 +1,8 @@
 (function (angular) {
     'use strict';
 
+    var isTeacher = localStorage.getItem('isTeacher');
+
     angular.module('demo', [
         'demoEnv',
         'znk.infra.calls',
@@ -8,14 +10,15 @@
         'ngMaterial',
         'pascalprecht.translate',
         'znk.infra.filters',
-        'znk.infra.userContext'
+        'znk.infra.userContext',
+        'znk.infra.activePanel'
     ])
-        .config(function (CallsModalServiceProvider, CallsUiSrvProvider) {
+        .config(function (PresenceServiceProvider, CallsModalServiceProvider, CallsUiSrvProvider) {
             'ngInject';
 
-            CallsModalServiceProvider.setBaseTemplatePath('components/calls/modals/templates/baseCallsModal.template.html');
+            PresenceServiceProvider.setAuthServiceName('AuthService');
 
-            var isTeacher = localStorage.getItem('isTeacher');
+            CallsModalServiceProvider.setBaseTemplatePath('components/calls/modals/templates/baseCallsModal.template.html');
 
             localStorage.setItem('znkData', 'https://act-dev.firebaseio.com/');
             localStorage.setItem('znkStudentPath', '/act_app');
@@ -46,14 +49,13 @@
             'ngInject';
 
             $rootScope.offline = { isOffline: true, receiverId: 1 };
-
             $rootScope.call = { isOffline: false, receiverId: '21794e2b-3051-4016-8491-b3fe70e8212d' };
             $rootScope.called = { isOffline: false, receiverId: 'eebe2b53-08b7-4296-bcfd-62b69b531473' };
         })
         .controller('demoCtrl', function ($scope, CallsUiSrv, $rootScope, ActivePanelSrv) {
             'ngInject';
 
-            ActivePanelSrv.init();
+            ActivePanelSrv.loadActivePanel();
 
             $scope.openIncomingCallModal = function() {
                 var scope = $rootScope.$new();

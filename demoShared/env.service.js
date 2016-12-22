@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demoEnv',[]).constant('ENV', {
+    angular.module('demoEnv',[]).value('ENV', {
         firebaseAppScopeName: "sat_app",
         fbDataEndPoint: "https://sat-dev.firebaseio.com/",
         appContext: 'student',

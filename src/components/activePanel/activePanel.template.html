@@ -1,5 +1,5 @@
 <div class="active-panel ng-hide"
-     ng-show="d.currStatus !== d.states.NONE"
+     ng-show="d.currStatus === d.states.LIVE_SESSION"
      translate-namespace="ACTIVE_PANEL">
     <div class="flex-container">
         <div class="callee-status flex-col">
@@ -12,35 +12,56 @@
             </div>
         </div>
         <div class="callee-name flex-col">
-            {{d.calleeName}}
-            <div class="call-duration">&nbsp;</div>
+            {{d.calleeName ? d.calleeName : d.isTeacher ? 'Educator' : 'Student'}}
+            <div class="live-session-duration">&nbsp;</div>
         </div>
         <div class="call-controls flex-col">
-            <div ng-click="d.viewOtherUserScreen()"
-                 class="show-other-screen"
-                 disable-click-drv="d.shareScreenBtnsEnable"
-                 ng-class="{disabled: !d.shareScreenBtnsEnable}">
-                <ng-switch on="d.isTeacher">
-                    <svg-icon ng-switch-when="true"
-                              name="active-panel-track-student-icon"
-                              title="{{d.translatedStrings.SHOW_STUDENT_SCREEN}}">
-                    </svg-icon>
-                    <svg-icon ng-switch-default
-                              name="active-panel-track-teacher-icon"
-                              title="{{d.translatedStrings.SHOW_TEACHER_SCREEN}}">
-                    </svg-icon>
-                </ng-switch>
-            </div>
+            <ng-switch class="share-screen-icon-wrap" on="d.shareScreenBtnsEnable">
+                <div class="active-share-screen" ng-switch-default>
+                    <div ng-click="d.viewOtherUserScreen()"
+                         class="show-other-screen"
+                         disable-click-drv="d.shareScreenBtnsEnable"
+                         ng-class="{disabled: !d.shareScreenBtnsEnable}">
+                        <ng-switch on="d.isTeacher">
+                            <svg-icon ng-switch-when="true"
+                                      name="active-panel-track-student-icon"
+                                      title="{{d.translatedStrings.SHOW_STUDENT_SCREEN}}">
+                            </svg-icon>
+                            <svg-icon ng-switch-default
+                                      name="active-panel-track-teacher-icon"
+                                      title="{{d.translatedStrings.SHOW_TEACHER_SCREEN}}">
+                            </svg-icon>
+                        </ng-switch>
+                    </div>
 
-            <svg-icon disable-click-drv="d.shareScreenBtnsEnable"
-                      ng-class="{disabled: !d.shareScreenBtnsEnable}"
-                      ng-click="d.shareMyScreen()"
-                      name="active-panel-share-screen-icon"
-                      class="share-my-screen"
-                      title="{{d.translatedStrings.SHARE_MY_SCREEN}}">
-            </svg-icon>
+                    <svg-icon disable-click-drv="d.shareScreenBtnsEnable"
+                              ng-class="{disabled: !d.shareScreenBtnsEnable}"
+                              ng-click="d.shareMyScreen()"
+                              name="active-panel-share-screen-icon"
+                              class="share-my-screen"
+                              title="{{d.translatedStrings.SHARE_MY_SCREEN}}">
+                    </svg-icon>
+                </div>
+
+                <svg-icon ng-switch-when="false"
+                          class="end-share-screen"
+                          ng-class="{ 'isViewer' : d.shareScreenViewer }"
+                          ng-click="d.endScreenSharing()"
+                          name="active-panel-stop-sharing-icon"
+                          title="{{d.translatedStrings.END_SCREEN_SHARING}}">
+                </svg-icon>
+            </ng-switch>
 
             <call-btn ng-model="d.callBtnModel"></call-btn>
+
+            <div class="end-session-wrap" ng-if="d.isTeacher">
+                <div class="seperator"></div>
+                <md-button class="end-session-btn"
+                            aria-label="{{'ACTIVE_PANEL.END_SESSION' | translate}}"
+                            ng-click="d.endSession()">
+                <span>{{'ACTIVE_PANEL.END_SESSION' | translate}}</span>
+                </md-button>
+            </div>
         </div>
     </div>
 </div>
