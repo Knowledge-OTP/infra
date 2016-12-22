@@ -16111,7 +16111,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "                          actions=\"vm.btnSectionActions\">\n" +
     "</znk-exercise-btn-section>\n" +
     "<znk-exercise-review-btn-section\n" +
-    "                        setting=\"settings\"\n" +
+    "                        settings=\"settings\"\n" +
     "                        on-review=\"settings.onReview()\">\n" +
     "</znk-exercise-review-btn-section>\n" +
     "<znk-exercise-pager class=\"ng-hide show-opacity-animate\"\n" +
