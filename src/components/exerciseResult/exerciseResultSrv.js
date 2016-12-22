@@ -373,9 +373,9 @@
 
             /* Module Results Functions */
             this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId, assignContentType, examId, dontInit) {
-
+                var dontIntExerciseRes = exerciseTypeId !== ExerciseTypeEnum.SECTION.enum;  // todo - check if it's ok.
                 return $q.all([
-                    this.getExerciseResult(exerciseTypeId, exerciseId, examId, null, true),
+                    this.getExerciseResult(exerciseTypeId, exerciseId, examId, null, dontIntExerciseRes),
                     _getInitExerciseResult(exerciseTypeId, exerciseId, UtilitySrv.general.createGuid())
                 ]).then(function (results) {
                     var exerciseResult = results[0];
