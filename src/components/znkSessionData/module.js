@@ -3,6 +3,7 @@
 
     angular.module('znk.infra.znkSessionData', [
         'znk.infra.enum',
-        'znk.infra.userContext'
+        'znk.infra.userContext',
+        'znk.infra.user'
     ]);
 })();

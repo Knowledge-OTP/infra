@@ -3,7 +3,8 @@
 
     angular.module('znk.infra.znkSessionData', [
         'znk.infra.enum',
-        'znk.infra.userContext'
+        'znk.infra.userContext',
+        'znk.infra.user'
     ]);
 })();
 
@@ -72,7 +73,7 @@
                 _sessionSubjectsGetter = sessionSubjectsGetter;
             };
 
-            this.$get = ["$log", "$injector", "$q", "InfraConfigSrv", "ENV", "StudentContextSrv", "TeacherContextSrv", "AuthService", "$rootScope", function ($log, $injector, $q, InfraConfigSrv, ENV, StudentContextSrv, TeacherContextSrv, AuthService, $rootScope) {
+            this.$get = ["$log", "$injector", "$q", "InfraConfigSrv", "ENV", "StudentContextSrv", "TeacherContextSrv", "AuthService", "$rootScope", "UserProfileService", function ($log, $injector, $q, InfraConfigSrv, ENV, StudentContextSrv, TeacherContextSrv, AuthService, $rootScope, UserProfileService) {
                 'ngInject';
                 var znkSessionDataSrv = {};
                 var globalStorageProm = InfraConfigSrv.getGlobalStorage();
@@ -115,6 +116,24 @@
                             return;
                     }
                 }
+
+                znkSessionDataSrv.isActiveLiveSession = function () {
+                    return UserProfileService.getCurrUserId().then(function (currUid) {
+                        return InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
+                            var appName = ENV.firebaseAppScopeName;
+                            var userLiveSessionPath = appName + '/users/' + currUid + '/liveSession/active';
+                            return globalStorage.get(userLiveSessionPath);
+                        });
+                    });
+                };
+
+                znkSessionDataSrv.isActiveLiveSession().then(function (liveSessionGuid) {
+                    if (!angular.equals(liveSessionGuid, {})) {
+                        console.log('Do what ever you wont: ', liveSessionGuid);
+                    } else {
+                        console.log('Do something else.');
+                    }
+                });
 
                 znkSessionDataSrv.getLiveSessionGuid = function () {
                     var activeSessionPath = isTeacher ? getLiveSessionPath('educator') : getLiveSessionPath('student');

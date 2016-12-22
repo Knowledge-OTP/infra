@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseReviewBtnSection',
-        function (ZnkExerciseViewModeEnum, $q, ZnkExerciseEvents, znkSessionDataSrv) {
+        function (ZnkExerciseViewModeEnum, $q, ZnkExerciseEvents, znkSessionDataSrv, ExerciseReviewStatusEnum) {
             'ngInject';
             return {
                 restrict: 'E',
@@ -18,6 +18,7 @@
                         var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
                         var getCurrentQuestionIndexProm = znkExerciseDrvCtrl.getCurrentIndex();
                         var viewMode = znkExerciseDrvCtrl.getViewMode();
+                        var exerciseReviewStatus = scope.settings.exerciseReviewStatus;
 
                         scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex) {
                             $q.all([
@@ -38,7 +39,7 @@
 
 
                                 function _determineIfShowButton () {
-                                    return isInLiveSession && isLastQuestion || (_isReviewMode() && isLastQuestion);
+                                    return isInLiveSession && isLastQuestion && exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum || (_isReviewMode() && isLastQuestion && exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum);
                                 }
 
                                 scope.showBtn = _determineIfShowButton();

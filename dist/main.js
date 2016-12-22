@@ -13224,7 +13224,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseReviewBtnSection',
-        ["ZnkExerciseViewModeEnum", "$q", "ZnkExerciseEvents", "znkSessionDataSrv", function (ZnkExerciseViewModeEnum, $q, ZnkExerciseEvents, znkSessionDataSrv) {
+        ["ZnkExerciseViewModeEnum", "$q", "ZnkExerciseEvents", "znkSessionDataSrv", "ExerciseReviewStatusEnum", function (ZnkExerciseViewModeEnum, $q, ZnkExerciseEvents, znkSessionDataSrv, ExerciseReviewStatusEnum) {
             'ngInject';
             return {
                 restrict: 'E',
@@ -13240,6 +13240,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
                         var getCurrentQuestionIndexProm = znkExerciseDrvCtrl.getCurrentIndex();
                         var viewMode = znkExerciseDrvCtrl.getViewMode();
+                        var exerciseReviewStatus = scope.settings.exerciseReviewStatus;
 
                         scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex) {
                             $q.all([
@@ -13260,7 +13261,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
 
                                 function _determineIfShowButton () {
-                                    return isInLiveSession && isLastQuestion || (_isReviewMode() && isLastQuestion);
+                                    return isInLiveSession && isLastQuestion && exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum || (_isReviewMode() && isLastQuestion && exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum);
                                 }
 
                                 scope.showBtn = _determineIfShowButton();
@@ -17151,7 +17152,8 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
 
     angular.module('znk.infra.znkSessionData', [
         'znk.infra.enum',
-        'znk.infra.userContext'
+        'znk.infra.userContext',
+        'znk.infra.user'
     ]);
 })();
 
@@ -17220,7 +17222,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                 _sessionSubjectsGetter = sessionSubjectsGetter;
             };
 
-            this.$get = ["$log", "$injector", "$q", "InfraConfigSrv", "ENV", "StudentContextSrv", "TeacherContextSrv", "AuthService", "$rootScope", function ($log, $injector, $q, InfraConfigSrv, ENV, StudentContextSrv, TeacherContextSrv, AuthService, $rootScope) {
+            this.$get = ["$log", "$injector", "$q", "InfraConfigSrv", "ENV", "StudentContextSrv", "TeacherContextSrv", "AuthService", "$rootScope", "UserProfileService", function ($log, $injector, $q, InfraConfigSrv, ENV, StudentContextSrv, TeacherContextSrv, AuthService, $rootScope, UserProfileService) {
                 'ngInject';
                 var znkSessionDataSrv = {};
                 var globalStorageProm = InfraConfigSrv.getGlobalStorage();
@@ -17263,6 +17265,24 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                             return;
                     }
                 }
+
+                znkSessionDataSrv.isActiveLiveSession = function () {
+                    return UserProfileService.getCurrUserId().then(function (currUid) {
+                        return InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
+                            var appName = ENV.firebaseAppScopeName;
+                            var userLiveSessionPath = appName + '/users/' + currUid + '/liveSession/active';
+                            return globalStorage.get(userLiveSessionPath);
+                        });
+                    });
+                };
+
+                znkSessionDataSrv.isActiveLiveSession().then(function (liveSessionGuid) {
+                    if (!angular.equals(liveSessionGuid, {})) {
+                        console.log('Do what ever you wont: ', liveSessionGuid);
+                    } else {
+                        console.log('Do something else.');
+                    }
+                });
 
                 znkSessionDataSrv.getLiveSessionGuid = function () {
                     var activeSessionPath = isTeacher ? getLiveSessionPath('educator') : getLiveSessionPath('student');
