@@ -13229,6 +13229,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             return {
                 restrict: 'E',
                 scope: {
+                    onReview: '&',
+                    settings: '<'
                 },
                 require: '^znkExercise',
                 templateUrl: "components/znkExercise/core/template/znkExerciseReviewSectionBtnTemplate.html",
@@ -16108,8 +16110,9 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "                          on-done=\"settings.onDone()\"\n" +
     "                          actions=\"vm.btnSectionActions\">\n" +
     "</znk-exercise-btn-section>\n" +
-    "<znk-exercise-review-btn-section>\n" +
-    "\n" +
+    "<znk-exercise-review-btn-section\n" +
+    "                        setting=\"settings\"\n" +
+    "                        on-review=\"settings.onReview()\">\n" +
     "</znk-exercise-review-btn-section>\n" +
     "<znk-exercise-pager class=\"ng-hide show-opacity-animate\"\n" +
     "                    ng-show=\"vm.showPager\"\n" +
@@ -16138,7 +16141,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
   $templateCache.put("components/znkExercise/core/template/znkExerciseReviewSectionBtnTemplate.html",
     "<div class=\"btn-section\" ng-if=\"showBtn\">\n" +
     "    <div class=\"review-btn-wrap show-opacity-animate ng-scope\">\n" +
-    "        <button class=\"review-btn\">REVIEW</button>\n" +
+    "        <button class=\"review-btn\" ng-click=\"onReview()\">REVIEW</button>\n" +
     "    </div>\n" +
     "</div>\n" +
     "");
