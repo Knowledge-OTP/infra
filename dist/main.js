@@ -13259,7 +13259,6 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                     return viewMode === ZnkExerciseViewModeEnum.REVIEW.enum;
                                 }
 
-
                                 function _determineIfShowButton () {
                                     return isInLiveSession && isLastQuestion && exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum || (_isReviewMode() && isLastQuestion && exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum);
                                 }
