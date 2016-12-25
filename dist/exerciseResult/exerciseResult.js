@@ -453,7 +453,7 @@
                                             exerciseId = exerciseData.exerciseId;
                                         }
 
-                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, moduleResult.examId).then(function (exerciseResults) {
+                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, exerciseData.examId).then(function (exerciseResults) {
                                             if (exerciseResults) {
                                                 if(!moduleResult.exerciseResults[exerciseData.exerciseTypeId]){
                                                     moduleResult.exerciseResults[exerciseData.exerciseTypeId] = {};
@@ -502,11 +502,11 @@
                 };
             };
 
-            this.setModuleResult = function (newResult, moduleId) {
+            this.setModuleResult = function (newResult, moduleId, contentType) {
                 return this.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
                     var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
                     if (userGuidLists[moduleId]) {
-                        return ExerciseResultSrv.getModuleResult(newResult.uid, newResult.moduleId).then(function (moduleResult) {
+                        return ExerciseResultSrv.getModuleResult(newResult.uid, newResult.moduleId, false, false, contentType).then(function (moduleResult) {
                             angular.extend(moduleResult, newResult);
                             return InfraConfigSrv.getStudentStorage().then(function (storage) {
                                 return storage.set(moduleResultPath, moduleResult);

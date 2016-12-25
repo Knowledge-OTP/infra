@@ -25,7 +25,9 @@
                 },
                 homework: {
                     id: 2,
-                    fbPath: 'assignments/assignmentResults'
+                    fbPath: 'assignHomework/homework',
+                    shortFbPath: 'homework'
+                }
               }
             };
 
@@ -87,7 +89,7 @@
                 });
             };
 
-            userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId) {
+            userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId, contentType) {
                 if (!angular.isArray(moduleIds)) {
                     var errMSg = 'UserAssignModuleService: 1st argument should be array of module ids';
                     $log.error(errMSg);
@@ -97,7 +99,7 @@
                 var getProm = $q.when();
                 angular.forEach(moduleIds, function (moduleId) {
                     getProm = getProm.then(function () {
-                        return ExerciseResultSrv.getModuleResult(userId, moduleId, false, false).then(function (moduleResult) {
+                        return ExerciseResultSrv.getModuleResult(userId, moduleId, false, false, contentType).then(function (moduleResult) {
                             moduleResults[moduleId] = moduleResult;
                             return moduleResults;
                         });
@@ -132,28 +134,34 @@
                 });
             };
 
-            userAssignModuleService.setAssignContent = function (userId, moduleId) {
-                return ExerciseResultSrv.getModuleResult(userId, moduleId).then(function (moduleResult) {
+            userAssignModuleService.setAssignContent = function (userId, moduleId, contentType) {
+                return ExerciseResultSrv.getModuleResult(userId, moduleId,  false, false, contentType).then(function (moduleResult) {
                     moduleResult.contentAssign = true;
-                    return ExerciseResultSrv.setModuleResult(moduleResult, moduleId);
+                    return ExerciseResultSrv.setModuleResult(moduleResult, moduleId, contentType);
                 });
             };
 
             function _getAssignContentPath(contentType) {
                 switch (contentType) {
-                    case 1:
-                        return 'moduleResults';
-                    case 2:
-                        return 'assignHomework/homework';
+                    case userAssignModuleService.assignType.module.id:
+                        return userAssignModuleService.assignType.module.fbPath;
+                    case userAssignModuleService.assignType.homework.id:
+                        return userAssignModuleService.assignType.homework.fbPath;
                 }
             }
 
             function _getContentTypeByPath(path) {
-                switch (path) {
-                    case 'moduleResults':
-                        return 1;
-                    case 'homework':
-                        return 2;
+                var newPath = path;
+                if(path.indexOf('/') > -1) {
+                    newPath = path.substr(path.lastIndexOf('/')+1);
+                }
+                switch (newPath) {
+                    case userAssignModuleService.assignType.module.fbPath:
+                        return userAssignModuleService.assignType.module.id;
+                    case userAssignModuleService.assignType.homework.fbPath:
+                        return userAssignModuleService.assignType.homework.id;
+                    case userAssignModuleService.assignType.homework.shortFbPath:
+                        return userAssignModuleService.assignType.homework.id;
                 }
             }
 

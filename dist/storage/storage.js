@@ -175,7 +175,7 @@
                                         cb(newVal[key], key);
                                     });
                                 } else {
-                                    cb(newVal);
+                                    cb(newVal, path);
                                 }
                             });
                         }

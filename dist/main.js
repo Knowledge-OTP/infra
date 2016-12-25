@@ -683,8 +683,9 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 },
                 homework: {
                     id: 2,
-                    fbPath: 'assignHomework/homework'
-              }
+                    fbPath: 'assignHomework/homework',
+                    shortFbPath: 'homework'
+                }
             };
 
             userAssignModuleService.offExternalOnValue = function (userId, valueCB, changeCB) {
@@ -745,7 +746,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
             };
 
-            userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId) {
+            userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId, contentType) {
                 if (!angular.isArray(moduleIds)) {
                     var errMSg = 'UserAssignModuleService: 1st argument should be array of module ids';
                     $log.error(errMSg);
@@ -755,7 +756,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 var getProm = $q.when();
                 angular.forEach(moduleIds, function (moduleId) {
                     getProm = getProm.then(function () {
-                        return ExerciseResultSrv.getModuleResult(userId, moduleId, false, false).then(function (moduleResult) {
+                        return ExerciseResultSrv.getModuleResult(userId, moduleId, false, false, contentType).then(function (moduleResult) {
                             moduleResults[moduleId] = moduleResult;
                             return moduleResults;
                         });
@@ -790,28 +791,34 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
             };
 
-            userAssignModuleService.setAssignContent = function (userId, moduleId) {
-                return ExerciseResultSrv.getModuleResult(userId, moduleId).then(function (moduleResult) {
+            userAssignModuleService.setAssignContent = function (userId, moduleId, contentType) {
+                return ExerciseResultSrv.getModuleResult(userId, moduleId,  false, false, contentType).then(function (moduleResult) {
                     moduleResult.contentAssign = true;
-                    return ExerciseResultSrv.setModuleResult(moduleResult, moduleId);
+                    return ExerciseResultSrv.setModuleResult(moduleResult, moduleId, contentType);
                 });
             };
 
             function _getAssignContentPath(contentType) {
                 switch (contentType) {
-                    case 1:
-                        return 'moduleResults';
-                    case 2:
-                        return 'assignHomework/homework';
+                    case userAssignModuleService.assignType.module.id:
+                        return userAssignModuleService.assignType.module.fbPath;
+                    case userAssignModuleService.assignType.homework.id:
+                        return userAssignModuleService.assignType.homework.fbPath;
                 }
             }
 
             function _getContentTypeByPath(path) {
-                switch (path) {
-                    case 'moduleResults':
-                        return 1;
-                    case 'homework':
-                        return 2;
+                var newPath = path;
+                if(path.indexOf('/') > -1) {
+                    newPath = path.substr(path.lastIndexOf('/')+1);
+                }
+                switch (newPath) {
+                    case userAssignModuleService.assignType.module.fbPath:
+                        return userAssignModuleService.assignType.module.id;
+                    case userAssignModuleService.assignType.homework.fbPath:
+                        return userAssignModuleService.assignType.homework.id;
+                    case userAssignModuleService.assignType.homework.shortFbPath:
+                        return userAssignModuleService.assignType.homework.id;
                 }
             }
 
@@ -4934,7 +4941,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                                             exerciseId = exerciseData.exerciseId;
                                         }
 
-                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, moduleResult.examId).then(function (exerciseResults) {
+                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, exerciseData.examId).then(function (exerciseResults) {
                                             if (exerciseResults) {
                                                 if(!moduleResult.exerciseResults[exerciseData.exerciseTypeId]){
                                                     moduleResult.exerciseResults[exerciseData.exerciseTypeId] = {};
@@ -4983,11 +4990,11 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 };
             };
 
-            this.setModuleResult = function (newResult, moduleId) {
+            this.setModuleResult = function (newResult, moduleId, contentType) {
                 return this.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
                     var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
                     if (userGuidLists[moduleId]) {
-                        return ExerciseResultSrv.getModuleResult(newResult.uid, newResult.moduleId).then(function (moduleResult) {
+                        return ExerciseResultSrv.getModuleResult(newResult.uid, newResult.moduleId, false, false, contentType).then(function (moduleResult) {
                             angular.extend(moduleResult, newResult);
                             return InfraConfigSrv.getStudentStorage().then(function (storage) {
                                 return storage.set(moduleResultPath, moduleResult);
@@ -8607,7 +8614,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                                         cb(newVal[key], key);
                                     });
                                 } else {
-                                    cb(newVal);
+                                    cb(newVal, path);
                                 }
                             });
                         }
