@@ -791,7 +791,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             };
 
             userAssignModuleService.setAssignContent = function (userId, moduleId, contentType) {
-                return ExerciseResultSrv.getModuleResult(userId, moduleId, contentType).then(function (moduleResult) {
+                return ExerciseResultSrv.getModuleResult(userId, moduleId,  false, false, contentType).then(function (moduleResult) {
                     moduleResult.contentAssign = true;
                     return ExerciseResultSrv.setModuleResult(moduleResult, moduleId);
                 });
