@@ -14,7 +14,7 @@
                 templateUrl: "components/znkExercise/core/template/znkExerciseReviewSectionBtnTemplate.html",
                 link: {
                     pre: function (scope, element, attrs, znkExerciseDrvCtrl) {
-                        var liveSessionGuidProm = znkSessionDataSrv.isInLiveSession();
+                        var liveSessionGuidProm = znkSessionDataSrv.isActiveLiveSession();
                         var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
                         var getCurrentQuestionIndexProm = znkExerciseDrvCtrl.getCurrentIndex();
                         var viewMode = znkExerciseDrvCtrl.getViewMode();

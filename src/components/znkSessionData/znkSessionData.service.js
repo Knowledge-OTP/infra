@@ -9,7 +9,7 @@
                 _sessionSubjectsGetter = sessionSubjectsGetter;
             };
 
-            this.$get = function ($log, $injector, $q, InfraConfigSrv, ENV, StudentContextSrv, TeacherContextSrv, AuthService, $rootScope, UserProfileService) {
+            this.$get = function ($log, $injector, $q, InfraConfigSrv, ENV, UserProfileService) {
                 'ngInject';
                 var znkSessionDataSrv = {};
 
