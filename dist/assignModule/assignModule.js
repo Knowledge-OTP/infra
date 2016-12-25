@@ -25,7 +25,7 @@
                 },
                 homework: {
                     id: 2,
-                    fbPath: 'assignHomework/homework'
+                    fbPath: 'assignments/assignmentResults'
               }
             };
 

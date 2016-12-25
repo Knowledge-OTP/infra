@@ -139,7 +139,7 @@
                     case 1:
                         return 'moduleResults';
                     case 2:
-                        return 'assignHomework/homework';
+                        return 'assignments/assignmentsR';
                 }
             }
 
