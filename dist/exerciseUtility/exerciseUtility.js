@@ -77,6 +77,12 @@
 
 (function (angular) {
     'use strict';
+    var exerciseParentTypeConst = {
+        WORKOUT: 1,
+        TUTORIAL: 2,
+        EXAM: 3,
+        MODULE: 4
+    };
 
     angular.module('znk.infra.exerciseUtility').factory('ExerciseParentEnum', [
         'EnumSrv',
@@ -88,7 +94,9 @@
                 ['MODULE', 4, 'module']
             ]);
         }
-    ]);
+    ])
+    .constant('exerciseParentTypeConst', exerciseParentTypeConst);
+
 })(angular);
 
 (function (angular) {

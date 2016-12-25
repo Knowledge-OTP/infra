@@ -1,10 +1,12 @@
 (function (angular) {
     'use strict';
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv', 'StudentContextSrv',
-        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, StudentContextSrv) {
+        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv', 'StudentContextSrv', 'StorageSrv',
+        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, StudentContextSrv, StorageSrv) {
             var userAssignModuleService = {};
             var registerEvents = {};
+            var USER_ASSIGNMENTS_PATH = StorageSrv.variables.appUserSpacePath + '/assignments';
+
             userAssignModuleService.assignModules = {};
 
             userAssignModuleService.assignModuleStatus = new EnumSrv.BaseEnum([
@@ -132,6 +134,14 @@
                 return ExerciseResultSrv.getModuleResult(userId, moduleId,  false, false, contentType).then(function (moduleResult) {
                     moduleResult.contentAssign = true;
                     return ExerciseResultSrv.setModuleResult(moduleResult, moduleId, contentType);
+                });
+            };
+
+
+            userAssignModuleService.assignHomework = function(lastAssignmentType){
+                return InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
+                    var homeworkObj = _buildHomeworkObj(lastAssignmentType);
+                    studentStorage.set(USER_ASSIGNMENTS_PATH,homeworkObj);
                 });
             };
 
@@ -315,11 +325,18 @@
                             }
                         });
                     }
-
-
                 }
 
                 return moduleSummary;
+            }
+
+            function _buildHomeworkObj(lastAssignmentType){
+                return {
+                    assignmentStartDate:  StorageSrv.variables.currTimeStamp,
+                    lastAssignmentType : lastAssignmentType,
+                    assignmentResults: {}
+                };
+
             }
 
             return userAssignModuleService;
