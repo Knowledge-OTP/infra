@@ -4510,7 +4510,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
             var USER_EXAM_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/examResults';
             var USER_EXERCISES_STATUS_PATH = StorageSrv.variables.appUserSpacePath + '/exercisesStatus';
             var USER_MODULE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
-            var USER_HOMEWORK_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/assignHomework/homework';
+            var USER_HOMEWORK_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/assignments/assignmentsResults';
 
             function _getExerciseResultPath(guid) {
                 return EXERCISE_RESULTS_PATH + '/' + guid;

@@ -28,7 +28,6 @@
                     fbPath: 'assignHomework/homework',
                     shortFbPath: 'homework'
                 }
-              }
             };
 
             userAssignModuleService.offExternalOnValue = function (userId, valueCB, changeCB) {
