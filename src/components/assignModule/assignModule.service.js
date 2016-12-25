@@ -20,7 +20,8 @@
                 },
                 homework: {
                     id: 2,
-                    fbPath: 'assignHomework/homework'
+                    fbPath: 'assignHomework/homework',
+                    shortFbPath: 'homework'
                 }
             };
 
@@ -152,6 +153,8 @@
                     case userAssignModuleService.assignType.module.fbPath:
                         return userAssignModuleService.assignType.module.id;
                     case userAssignModuleService.assignType.homework.fbPath:
+                        return userAssignModuleService.assignType.homework.id;
+                    case userAssignModuleService.assignType.homework.shortFbPath:
                         return userAssignModuleService.assignType.homework.id;
                 }
             }
