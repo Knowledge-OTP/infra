@@ -684,7 +684,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 homework: {
                     id: 2,
                     fbPath: 'assignHomework/homework'
-              }
+                }
             };
 
             userAssignModuleService.offExternalOnValue = function (userId, valueCB, changeCB) {
@@ -799,19 +799,23 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
             function _getAssignContentPath(contentType) {
                 switch (contentType) {
-                    case 1:
-                        return 'moduleResults';
-                    case 2:
-                        return 'assignHomework/homework';
+                    case userAssignModuleService.assignType.module.id:
+                        return userAssignModuleService.assignType.module.fbPath;
+                    case userAssignModuleService.assignType.homework.id:
+                        return userAssignModuleService.assignType.homework.fbPath;
                 }
             }
 
             function _getContentTypeByPath(path) {
-                switch (path) {
-                    case 'moduleResults':
-                        return 1;
-                    case 'homework':
-                        return 2;
+                var newPath = path;
+                if(path.indexOf('/') > -1) {
+                    newPath = path.substr(path.lastIndexOf('/')+1);
+                }
+                switch (newPath) {
+                    case userAssignModuleService.assignType.module.fbPath:
+                        return userAssignModuleService.assignType.module.id;
+                    case userAssignModuleService.assignType.homework.fbPath:
+                        return userAssignModuleService.assignType.homework.id;
                 }
             }
 
@@ -8600,7 +8604,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                                         cb(newVal[key], key);
                                     });
                                 } else {
-                                    cb(newVal);
+                                    cb(newVal, path);
                                 }
                             });
                         }
