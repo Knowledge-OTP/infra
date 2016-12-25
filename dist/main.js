@@ -793,7 +793,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             userAssignModuleService.setAssignContent = function (userId, moduleId, contentType) {
                 return ExerciseResultSrv.getModuleResult(userId, moduleId,  false, false, contentType).then(function (moduleResult) {
                     moduleResult.contentAssign = true;
-                    return ExerciseResultSrv.setModuleResult(moduleResult, moduleId);
+                    return ExerciseResultSrv.setModuleResult(moduleResult, moduleId, contentType);
                 });
             };
 
@@ -4980,11 +4980,11 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 };
             };
 
-            this.setModuleResult = function (newResult, moduleId) {
+            this.setModuleResult = function (newResult, moduleId, contentType) {
                 return this.getUserModuleResultsGuids(newResult.uid).then(function (userGuidLists) {
                     var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
                     if (userGuidLists[moduleId]) {
-                        return ExerciseResultSrv.getModuleResult(newResult.uid, newResult.moduleId).then(function (moduleResult) {
+                        return ExerciseResultSrv.getModuleResult(newResult.uid, newResult.moduleId, false, false, contentType).then(function (moduleResult) {
                             angular.extend(moduleResult, newResult);
                             return InfraConfigSrv.getStudentStorage().then(function (storage) {
                                 return storage.set(moduleResultPath, moduleResult);
