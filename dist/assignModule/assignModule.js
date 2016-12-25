@@ -87,7 +87,7 @@
                 });
             };
 
-            userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId) {
+            userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId, contentType) {
                 if (!angular.isArray(moduleIds)) {
                     var errMSg = 'UserAssignModuleService: 1st argument should be array of module ids';
                     $log.error(errMSg);
@@ -97,7 +97,7 @@
                 var getProm = $q.when();
                 angular.forEach(moduleIds, function (moduleId) {
                     getProm = getProm.then(function () {
-                        return ExerciseResultSrv.getModuleResult(userId, moduleId, false, false).then(function (moduleResult) {
+                        return ExerciseResultSrv.getModuleResult(userId, moduleId, false, false, contentType).then(function (moduleResult) {
                             moduleResults[moduleId] = moduleResult;
                             return moduleResults;
                         });
@@ -132,8 +132,8 @@
                 });
             };
 
-            userAssignModuleService.setAssignContent = function (userId, moduleId) {
-                return ExerciseResultSrv.getModuleResult(userId, moduleId).then(function (moduleResult) {
+            userAssignModuleService.setAssignContent = function (userId, moduleId, contentType) {
+                return ExerciseResultSrv.getModuleResult(userId, moduleId, contentType).then(function (moduleResult) {
                     moduleResult.contentAssign = true;
                     return ExerciseResultSrv.setModuleResult(moduleResult, moduleId);
                 });
