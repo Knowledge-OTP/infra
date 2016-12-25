@@ -20,8 +20,8 @@
                 },
                 homework: {
                     id: 2,
-                    fbPath: 'assignHomework/homework',
-                    shortFbPath: 'homework'
+                    fbPath: 'assignments/assignmentResults',
+                    shortFbPath: 'assignmentResults'
                 }
             };
 

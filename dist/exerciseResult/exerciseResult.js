@@ -22,7 +22,7 @@
             var USER_EXAM_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/examResults';
             var USER_EXERCISES_STATUS_PATH = StorageSrv.variables.appUserSpacePath + '/exercisesStatus';
             var USER_MODULE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
-            var USER_HOMEWORK_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/assignments/assignmentsResults';
+            var USER_HOMEWORK_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/assignments/assignmentResults';
 
             function _getExerciseResultPath(guid) {
                 return EXERCISE_RESULTS_PATH + '/' + guid;
@@ -455,10 +455,10 @@
 
                                         var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, exerciseData.examId).then(function (exerciseResults) {
                                             if (exerciseResults) {
-                                                if(!moduleResult.exerciseResults[exerciseData.exerciseTypeId]){
-                                                    moduleResult.exerciseResults[exerciseData.exerciseTypeId] = {};
+                                                if(!moduleResult.exerciseResults[exerciseTypeId]){
+                                                    moduleResult.exerciseResults[exerciseTypeId] = {};
                                                 }
-                                                moduleResult.exerciseResults[exerciseData.exerciseTypeId][exerciseData.exerciseId] = exerciseResults;
+                                                moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResults;
                                             }
                                         });
                                         promArray.push(prom);
