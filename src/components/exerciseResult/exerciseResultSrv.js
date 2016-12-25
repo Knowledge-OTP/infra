@@ -13,6 +13,7 @@
             var USER_EXAM_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/examResults';
             var USER_EXERCISES_STATUS_PATH = StorageSrv.variables.appUserSpacePath + '/exercisesStatus';
             var USER_MODULE_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/moduleResults';
+            var USER_HOMEWORK_RESULTS_PATH = StorageSrv.variables.appUserSpacePath + '/assignHomework/homework';
 
             function _getExerciseResultPath(guid) {
                 return EXERCISE_RESULTS_PATH + '/' + guid;
@@ -371,66 +372,100 @@
             };
 
             /* Module Results Functions */
-            this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId) {
-
+            this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId, assignContentType, examId, dontInit) {
+                var dontIntExerciseRes = exerciseTypeId !== ExerciseTypeEnum.SECTION.enum;  // todo - check if it's ok.
                 return $q.all([
-                    this.getExerciseResult(exerciseTypeId, exerciseId, null, null, true),
+                    this.getExerciseResult(exerciseTypeId, exerciseId, examId, null, dontIntExerciseRes),
                     _getInitExerciseResult(exerciseTypeId, exerciseId, UtilitySrv.general.createGuid())
                 ]).then(function (results) {
                     var exerciseResult = results[0];
                     var initResults = results[1];
 
                     if (!exerciseResult) {
+                        if (dontInit) {
+                            return;
+                        }
                         exerciseResult = initResults;
                         exerciseResult.$$path = EXERCISE_RESULTS_PATH + '/' + exerciseResult.guid;
                     }
+
+                    if(exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
+                        exerciseResult.examId = examId;
+                    }
+
                     exerciseResult.moduleId = moduleId;
-                    exerciseResult.$save = moduleExerciseSaveFn;
+
+                    exerciseResult.$save = function () {
+                        return moduleExerciseSaveFn.call(this, assignContentType);
+                    };
                     return exerciseResult;
                 });
             };
 
-            this.getModuleResult = function (userId, moduleId, withDefaultResult, withExerciseResults) {
+            function _getAssignContentUserPath(userId, assignContentType) {
+                switch (assignContentType) {
+                    case 1:
+                        return USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
+                    case 2:
+                        return USER_HOMEWORK_RESULTS_PATH.replace('$$uid', userId);
+                }
+            }
+
+            this.getModuleResult = function (userId, moduleId, withDefaultResult, withExerciseResults, assignContentType) {
                 return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
-                    var userResultsPath = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
+                    var userResultsPath = _getAssignContentUserPath(userId, assignContentType);
                     return StudentStorageSrv.get(userResultsPath).then(function (moduleResultsGuids) {
-                        var defaultResult = {};
-                        var moduleResultGuid = moduleResultsGuids[moduleId];
+                            var defaultResult = {};
+                            var moduleResultGuid = moduleResultsGuids[moduleId];
 
-                        if (!moduleResultGuid) {
-                            if (!withDefaultResult) {
-                                return null;
-                            } else {
-                                defaultResult = ExerciseResultSrv.getDefaultModuleResult(moduleId, userId);
-                                moduleResultGuid = defaultResult.guid;
+                            if (!moduleResultGuid) {
+                                if (!withDefaultResult) {
+                                    return null;
+                                } else {
+                                    defaultResult = ExerciseResultSrv.getDefaultModuleResult(moduleId, userId);
+                                    moduleResultGuid = defaultResult.guid;
+                                }
                             }
-                        }
 
-                        var resultPath = MODULE_RESULTS_PATH + '/' + moduleResultGuid;
-                        return StudentStorageSrv.get(resultPath).then(function (moduleResult) {
+                            var resultPath = MODULE_RESULTS_PATH + '/' + moduleResultGuid;
+                            return StudentStorageSrv.get(resultPath).then(function (moduleResult) {
+                                var promArray = [];
+                                var exerciseTypeId, exerciseId;
 
-                            var getExerciseResultsProm = $q.when();
+                                if (moduleResult.exercises && withExerciseResults) {
+                                    moduleResult.exerciseResults = [];
+                                    angular.forEach(moduleResult.exercises, function (exerciseData) {
 
-                            if (moduleResult.exerciseResults && withExerciseResults) {
-                                angular.forEach(moduleResult.exerciseResults, function (exerciseResult, exerciseTypeId) {
-                                    angular.forEach(exerciseResult, function (exerciseResultGuid, exerciseId) {
-                                        getExerciseResultsProm = getExerciseResultsProm.then(function () {
-                                            return ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId).then(function (exerciseResults) {
-                                                if (exerciseResults) {
-                                                    moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResults;
+                                        if (angular.isDefined(exerciseData.examId)) {
+                                            exerciseTypeId = ExerciseTypeEnum.SECTION.enum;
+                                            exerciseId = exerciseData.id;
+                                        } else {
+                                            exerciseTypeId = exerciseData.exerciseTypeId;
+                                            exerciseId = exerciseData.exerciseId;
+                                        }
+
+                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, moduleResult.examId).then(function (exerciseResults) {
+                                            if (exerciseResults) {
+                                                if(!moduleResult.exerciseResults[exerciseData.exerciseTypeId]){
+                                                    moduleResult.exerciseResults[exerciseData.exerciseTypeId] = {};
                                                 }
-                                            });
+                                                moduleResult.exerciseResults[exerciseData.exerciseTypeId][exerciseData.exerciseId] = exerciseResults;
+                                            }
                                         });
-                                    });
+                                        promArray.push(prom);
+                                        }
+                                    );
+                                }
+
+                                return $q.all(promArray).then(function () {
+                                    return moduleResult;
                                 });
-                            }
-                            return getExerciseResultsProm.then(function () {
-                                return moduleResult;
                             });
-                        });
-                    });
+                        }
+                    );
                 });
-            };
+            }
+            ;
 
             this.getUserModuleResultsGuids = function (userId) {
                 var userResultsPath = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
@@ -482,9 +517,12 @@
                 });
             };
 
-            function moduleExerciseSaveFn() {
+            function moduleExerciseSaveFn(assignContentType) {
 
                 /* jshint validthis: true */
+                if (!assignContentType) {
+                    assignContentType = 1;
+                }
                 return _calcExerciseResultFields(this).then(function (response) {
                     var exerciseResult = response.exerciseResult;
                     var dataToSave = response.dataToSave;
@@ -501,7 +539,7 @@
                         exerciseResultsGuids[exerciseTypeId][exerciseId] = exerciseResult.guid;
                         dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
 
-                        return ExerciseResultSrv.getModuleResult(exerciseResult.uid, exerciseResult.moduleId).then(function (moduleResult) {
+                        return ExerciseResultSrv.getModuleResult(exerciseResult.uid, exerciseResult.moduleId, undefined, undefined, assignContentType).then(function (moduleResult) {
                             if (!moduleResult.exerciseResults) {
                                 moduleResult.exerciseResults = {};
                             }
@@ -516,13 +554,32 @@
                                 dataToSave[exerciseResultsPath].status = exerciseStatuses[exerciseTypeId][exerciseId].status;
                             }
 
+                            var getSectionAggregatedDataProm = $q.when();   // todo - duplicate code. make as a function.
+                            if (exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
+                                getSectionAggregatedDataProm = ExerciseResultSrv.getExamResult(exerciseResult.examId).then(function (examResult) {
+                                    var sectionsAggregatedData = _getExamAggregatedSectionsData(examResult, exerciseStatuses);
+
+                                    examResult.duration = sectionsAggregatedData.sectionsDuration;
+
+                                    if (sectionsAggregatedData.allSectionsCompleted) {
+                                        examResult.isComplete = true;
+                                        examResult.endedTime = Date.now();
+                                        var examResultPath = _getExamResultPath(examResult.guid);
+                                        dataToSave[examResultPath] = examResult;
+                                    }
+                                });
+                            }
+
                             moduleResult.lastUpdate = Date.now();
                             var modulePath = _getModuleResultPath(moduleResult.guid);
                             dataToSave[modulePath] = moduleResult;
 
-                            return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
-                                return StudentStorageSrv.update(dataToSave);
+                            return getSectionAggregatedDataProm.then(function(){
+                                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                                    return StudentStorageSrv.update(dataToSave);
+                                });
                             });
+
                         });
                     });
                 });
