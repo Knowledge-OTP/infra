@@ -1,5 +1,6 @@
 (function (angular) {
-
+    'use strict';
+    
     angular.module('znk.infra.activePanel')
         .directive('activePanel', function ($q, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum, UserProfileService, PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document, $translate, AuthService) {
             'ngInject';

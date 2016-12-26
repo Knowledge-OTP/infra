@@ -6,16 +6,17 @@
         'znk.infra.calls',
         'pascalprecht.translate',
         'znk.infra.screenSharing',
-        'znk.infra.presence'
+        'znk.infra.presence',
+        'znk.infra.auth'
     ]);
 })(angular);
 
-'use strict';
-
 (function (angular) {
-
+    'use strict';
+    
     angular.module('znk.infra.activePanel')
-        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "CallsEventsSrv", "CallsStatusEnum", "ScreenSharingSrv", "UserScreenSharingStateEnum", "UserProfileService", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", "$translate", function ($q, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum, UserProfileService, PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document, $translate) {
+        .directive('activePanel', ["$q", "$interval", "$filter", "$log", "CallsUiSrv", "CallsEventsSrv", "CallsStatusEnum", "ScreenSharingSrv", "UserScreenSharingStateEnum", "UserProfileService", "PresenceService", "StudentContextSrv", "TeacherContextSrv", "ENV", "$document", "$translate", "AuthService", function ($q, $interval, $filter, $log, CallsUiSrv, CallsEventsSrv, CallsStatusEnum, ScreenSharingSrv, UserScreenSharingStateEnum, UserProfileService, PresenceService, StudentContextSrv, TeacherContextSrv, ENV, $document, $translate, AuthService) {
+            'ngInject';
             return {
                 templateUrl: 'components/activePanel/activePanel.template.html',
                 scope: {},
@@ -33,7 +34,11 @@
                         activePanelVisibleClassName = 'activePanel-visible';
 
                     var bodyDomElem = angular.element($document).find('body');
-
+                    var auth = AuthService.getAuth();
+                    var authUid = auth.uid;
+                    var isDashBoard = ENV.appContext.toLowerCase() === 'dashboard';
+                    var isStudent = ENV.appContext.toLowerCase() === 'student';
+                    
                     var translateNamespace = 'ACTIVE_PANEL';
                     $translate([
                         translateNamespace + '.' + 'SHOW_STUDENT_SCREEN',
@@ -69,16 +74,10 @@
                         $log.debug('student or teacher context changed: ', receiverId);
                     };
 
-
-                    var initialUid = StudentContextSrv.getCurrUid();
-                    if (initialUid) {
-                        listenToStudentOrTeacherContextChange(null, initialUid);
-                    }
-
-                    if (ENV.appContext.toLowerCase() === 'dashboard') {
+                    if (isDashBoard) {
                         isTeacher = true;
                         StudentContextSrv.registerToStudentContextChange(listenToStudentOrTeacherContextChange);
-                    } else if (ENV.appContext.toLowerCase() === 'student') {
+                    } else if (isStudent) {
                         isTeacher = false;
                         TeacherContextSrv.registerToTeacherContextChange(listenToStudentOrTeacherContextChange);
                     } else {
@@ -184,6 +183,15 @@
                         durationToDisplay = 0;
                     }
 
+                    function updateTeacher(callsData) {  
+                        var tecUid;
+
+                        if (isStudent) {
+                            tecUid = callsData.callerId === authUid ? callsData.receiverId : callsData.callerId;
+                            TeacherContextSrv.setCurrentUid(tecUid);
+                        } 
+                    }
+
                     element.on('$destroy', function() {
                         destroyTimer();
                     });
@@ -192,6 +200,7 @@
                     var listenToCallsStatus = function (callsData) {
                         if (callsData) {
                             if (callsData.status === CallsStatusEnum.ACTIVE_CALL.enum) {
+                                updateTeacher(callsData);
                                 callStatus = scope.d.states.CALL_ACTIVE;
                             } else {
                                 callStatus = 0;
@@ -221,7 +230,6 @@
             };
         }]);
 })(angular);
-
 (function (angular) {
     'use strict';
 
