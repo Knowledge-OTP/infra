@@ -11,7 +11,8 @@
                 'studentAppName': 'test_app',
                 'dashboardAppName': 'test_dashboard',
                 'supportEmail':'support@zinkerz.com',
-                "backendEndpoint": "https://test/"
+                'fbDataEndPoint': 'https://sat-dev.firebaseio.com',
+                'fbGlobalEndPoint' : 'https://znk-dev.firebaseio.com'
             };
         });
 })(angular);

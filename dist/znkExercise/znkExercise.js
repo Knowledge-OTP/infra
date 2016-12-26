@@ -12,7 +12,8 @@
         'znk.infra.analytics',
         'znk.infra.popUp',
         'znk.infra.user',
-        'znk.infra.utility'
+        'znk.infra.utility',
+        'znk.infra.znkSessionData'
     ])
     .config([
         'SvgIconSrvProvider',
@@ -834,6 +835,59 @@
 })(angular);
 
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').directive('znkExerciseReviewBtnSection',
+        ["ZnkExerciseViewModeEnum", "$q", "ZnkExerciseEvents", "znkSessionDataSrv", "ExerciseReviewStatusEnum", function (ZnkExerciseViewModeEnum, $q, ZnkExerciseEvents, znkSessionDataSrv, ExerciseReviewStatusEnum) {
+            'ngInject';
+            return {
+                restrict: 'E',
+                scope: {
+                    onReview: '&',
+                    settings: '<'
+                },
+                require: '^znkExercise',
+                templateUrl: "components/znkExercise/core/template/znkExerciseReviewSectionBtnTemplate.html",
+                link: {
+                    pre: function (scope, element, attrs, znkExerciseDrvCtrl) {
+                        var liveSessionGuidProm = znkSessionDataSrv.isActiveLiveSession();
+                        var getQuestionsProm = znkExerciseDrvCtrl.getQuestions();
+                        var getCurrentQuestionIndexProm = znkExerciseDrvCtrl.getCurrentIndex();
+                        var viewMode = znkExerciseDrvCtrl.getViewMode();
+                        var exerciseReviewStatus = scope.settings.exerciseReviewStatus;
+
+                        scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex) {
+                            $q.all([
+                                liveSessionGuidProm,
+                                getQuestionsProm,
+                                getCurrentQuestionIndexProm
+                            ]).then(function (res) {
+                                var isInLiveSession = res[0];
+                                var questionsArr = res[1];
+                                var currIndex = res[2];
+                                currIndex = newIndex ? newIndex : currIndex;
+                                var maxQuestionNum = questionsArr.length - 1;
+                                var isLastQuestion = maxQuestionNum === currIndex ? true : false;
+
+                                function _isReviewMode() {
+                                    return viewMode === ZnkExerciseViewModeEnum.REVIEW.enum;
+                                }
+
+                                function _determineIfShowButton () {
+                                    return isInLiveSession && isLastQuestion && exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum || (_isReviewMode() && isLastQuestion && exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum);
+                                }
+
+                                scope.showBtn = _determineIfShowButton();
+                            });
+                        });
+                    }
+                }
+            };
+        }]
+    );
+})(angular);
+
 /**
  * attrs:
  *
@@ -1465,7 +1519,7 @@
                                     var currQuestion = getCurrentQuestion();
                                     var userAnswer = currQuestion.__questionStatus.userAnswer;
                                     currQuestion.__questionStatus.isAnsweredCorrectly = ZnkExerciseUtilitySrv.isAnswerCorrect(currQuestion,userAnswer);
-                                    
+
                                     updateTimeSpentOnQuestion({
                                         removeLastTimeStamp: true,
                                         updateForce: true
@@ -1505,11 +1559,11 @@
                                     } else {
                                         cb(updateTime);
                                     }
-                                }, function () { 
+                                }, function () {
                                     cb(updateTime);
                                 }, question);
                             }
-                            
+
                             // example of obj { questionNum, removeLastTimeStamp, updateForce }
                             function updateTimeSpentOnQuestion(obj) {
                                 if (scope.settings.viewMode === ZnkExerciseViewModeEnum.REVIEW.enum) {
@@ -1527,19 +1581,19 @@
                                     if (angular.isUndefined(question.__questionStatus.lastTimeStamp)) {
                                         question.__questionStatus.lastTimeStamp = currTime;
                                     }
-                                    
+
                                     if (updateTime) {
                                         var timePassed = currTime - question.__questionStatus.lastTimeStamp;
                                         question.__questionStatus.timeSpent = (question.__questionStatus.timeSpent || 0) + timePassed;
                                     }
-                                    
+
                                     if (obj.removeLastTimeStamp) {
                                         delete question.__questionStatus.lastTimeStamp;
                                     } else {
                                         question.__questionStatus.lastTimeStamp = currTime;
                                     }
 
-                                    setViewValue(); 
+                                    setViewValue();
                                 });
                             }
 
@@ -1581,17 +1635,17 @@
                                 }
 
                                 znkExerciseDrvCtrl.isExerciseReady().then(function(){
-                                
+
                                     if (prevValue !== value) {
                                         // update the question the user came from
                                         updateTimeSpentOnQuestion({
                                              questionNum: prevValue,
                                              removeLastTimeStamp: true
-                                         }); 
+                                         });
                                         // update the question the user comming to if the prev is diffrent then the new value
-                                         updateTimeSpentOnQuestion(); 
+                                         updateTimeSpentOnQuestion();
                                     } else {
-                                         updateTimeSpentOnQuestion(); 
+                                         updateTimeSpentOnQuestion();
                                     }
 
                                     var currQuestion = getCurrentQuestion();
@@ -3671,6 +3725,10 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "                          on-done=\"settings.onDone()\"\n" +
     "                          actions=\"vm.btnSectionActions\">\n" +
     "</znk-exercise-btn-section>\n" +
+    "<znk-exercise-review-btn-section\n" +
+    "                        settings=\"settings\"\n" +
+    "                        on-review=\"settings.onReview()\">\n" +
+    "</znk-exercise-review-btn-section>\n" +
     "<znk-exercise-pager class=\"ng-hide show-opacity-animate\"\n" +
     "                    ng-show=\"vm.showPager\"\n" +
     "                    questions=\"vm.questionsWithAnswers\"\n" +
@@ -3694,6 +3752,13 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "        </div>\n" +
     "    </div>\n" +
     "</znk-scroll>\n" +
+    "");
+  $templateCache.put("components/znkExercise/core/template/znkExerciseReviewSectionBtnTemplate.html",
+    "<div class=\"btn-section\" ng-if=\"showBtn\">\n" +
+    "    <div class=\"review-btn-wrap show-opacity-animate ng-scope\">\n" +
+    "        <button class=\"review-btn\" ng-click=\"onReview()\">REVIEW</button>\n" +
+    "    </div>\n" +
+    "</div>\n" +
     "");
   $templateCache.put("components/znkExercise/core/template/znkSwiperTemplate.html",
     "<div class=\"swiper-container\">\n" +

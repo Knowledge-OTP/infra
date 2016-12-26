@@ -4504,14 +4504,14 @@ znk-exercise.desktop {
       cursor: pointer; }
       znk-exercise.desktop .btn-section .btn-container button:focus {
         outline: none; }
-  znk-exercise.desktop .btn-section .done-btn-wrap {
+  znk-exercise.desktop .btn-section .done-btn-wrap, znk-exercise.desktop .btn-section .review-btn-wrap {
     z-index: 3;
     width: 160px;
     position: absolute;
     right: 12px;
     bottom: 10px;
     height: 37px; }
-    znk-exercise.desktop .btn-section .done-btn-wrap .done-btn {
+    znk-exercise.desktop .btn-section .done-btn-wrap .done-btn, znk-exercise.desktop .btn-section .done-btn-wrap .review-btn, znk-exercise.desktop .btn-section .review-btn-wrap .done-btn, znk-exercise.desktop .btn-section .review-btn-wrap .review-btn {
       width: 100%;
       height: 100%;
       background: #ff931e;
