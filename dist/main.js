@@ -914,7 +914,8 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                         status: ExerciseStatusEnum.NEW.enum,
                         totalCorrectAnswers: 0,
                         totalWrongAnswers: 0,
-                        totalSkippedAnswers: 0
+                        totalSkippedAnswers: 0,
+                        totalDuration: 0
                     };
                 }
 
@@ -972,10 +973,13 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
                         moduleSummary.overAll.status = ExerciseStatusEnum.COMPLETED.enum;
 
-                        var inProgressCount = 0;
+                        var inProgressCount = 0, totalDuration=0;
 
                         angular.forEach(assignModule.exerciseResults, function (exerciseType) {
                             angular.forEach(exerciseType, function (exerciseResults) {
+                                if (exerciseResults.duration) {
+                                    totalDuration += (exerciseResults.duration || 0);
+                                }
                                 if(exerciseResults.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum) {
                                     if (!exerciseResults.isComplete && exerciseResults.questionResults.length > 0) {
                                         inProgressCount++;
@@ -983,6 +987,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                                 }
                             });
                         });
+                        moduleSummary.overAll.totalDuration = totalDuration;
 
                         if (inProgressCount === 0){
                             moduleSummary.overAll.status = ExerciseStatusEnum.NEW.enum;
