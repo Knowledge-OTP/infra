@@ -239,6 +239,7 @@
 
                         angular.extend(pathValue, serverValue);
                     });
+
                     self.__addPathBindedToServer(path);
                     return pathValue;
                 });

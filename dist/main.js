@@ -8258,6 +8258,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
 
                         var ref = this.getRef(path);
                         ref.on(type, function (snapshot) {
+                            if (!self.__registeredEvents[type][path]) { self.__registeredEvents[type][path] = []; }
                             self.__registeredEvents[type][path].firstOnWasInvoked = true;
                             var newVal = snapshot.val();
                             var key = snapshot.key();
@@ -8567,6 +8568,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
 
                         angular.extend(pathValue, serverValue);
                     });
+
                     self.__addPathBindedToServer(path);
                     return pathValue;
                 });
