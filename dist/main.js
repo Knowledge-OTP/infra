@@ -974,12 +974,14 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
                         var inProgressCount = 0;
 
-                        angular.forEach(assignModule.exerciseResults, function (exerciseResults) {
-                            if(exerciseResults.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum) {
-                                if (!exerciseResults.isComplete && exerciseResults.questionResults.length > 0) {
-                                    inProgressCount++;
+                        angular.forEach(assignModule.exerciseResults, function (exerciseType) {
+                            angular.forEach(exerciseType, function (exerciseResults) {
+                                if(exerciseResults.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum) {
+                                    if (!exerciseResults.isComplete && exerciseResults.questionResults.length > 0) {
+                                        inProgressCount++;
+                                    }
                                 }
-                            }
+                            });
                         });
 
                         if (inProgressCount === 0){
