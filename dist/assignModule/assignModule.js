@@ -287,7 +287,7 @@
                                 if (exercise.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum) {
                                     currentExerciseRes.status = _exerciseResults[exerciseTypeId][exerciseId].isComplete ?
                                         ExerciseStatusEnum.COMPLETED.enum :
-                                        (_exerciseResults[exerciseTypeId][exerciseId].questionResults.length ? ExerciseStatusEnum.ACTIVE.enum : ExerciseStatusEnum.NEW.enum);
+                                        (_exerciseResults[exerciseTypeId][exerciseId].questionResults.length > 0 ? ExerciseStatusEnum.ACTIVE.enum : ExerciseStatusEnum.NEW.enum);
 
                                     currentExerciseRes.correctAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
                                     currentExerciseRes.wrongAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
