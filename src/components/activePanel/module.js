@@ -6,6 +6,7 @@
         'znk.infra.calls',
         'pascalprecht.translate',
         'znk.infra.screenSharing',
-        'znk.infra.presence'
+        'znk.infra.presence',
+        'znk.infra.auth'
     ]);
 })(angular);
