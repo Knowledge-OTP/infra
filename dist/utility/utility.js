@@ -95,7 +95,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.utility').service('UtilitySrv', [function () {
+    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
         this.isDueDatePass = function (dueDate) {
             const daysInMs = 86400000;
 
