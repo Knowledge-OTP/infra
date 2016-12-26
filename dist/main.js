@@ -11934,7 +11934,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 getQuestionsProm,
                                 getCurrentQuestionIndexProm
                             ]).then(function (res) {
-                                var isInLiveSession = res[0];
+                                var isInLiveSession = !angular.equals(res[0], {});
                                 var questionsArr = res[1];
                                 var currIndex = res[2];
                                 currIndex = newIndex ? newIndex : currIndex;
