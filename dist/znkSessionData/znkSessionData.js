@@ -91,7 +91,7 @@
                         return InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
                             var appName = ENV.firebaseAppScopeName;
                             var userLiveSessionPath = appName + '/users/' + currUid + '/liveSession/active';
-                            return !angular.equals(globalStorage.get(userLiveSessionPath), {});
+                            return globalStorage.get(userLiveSessionPath);
                         });
                     });
                 };
