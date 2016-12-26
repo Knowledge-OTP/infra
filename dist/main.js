@@ -463,6 +463,8 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     $q.all(getPromArr).then(function () {
                         userAssignModuleService.assignModules = moduleResults;
                         applyCB(registerEvents[userId][contentType].valueCB, contentType);
+                    }).catch(function (err) {
+                        $log('buildResultsFromGuids: Error ' , err);
                     });
                 });
             }
@@ -907,11 +909,11 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls')
-        .config(["WebcallSrvProvider", function (WebcallSrvProvider) {
+        .config(["ENV", "WebcallSrvProvider", function (ENV, WebcallSrvProvider) {
             'ngInject';
             WebcallSrvProvider.setCallCred({
-            username: 'ZinkerzDev160731091034',     // ENV.plivoUsername,
-            password: 'zinkerz$9999'     // ENV.plivoPassword
+            username: ENV.plivoUsername,
+            password: ENV.plivoPassword
             });
         }]);
 })(angular);
@@ -981,22 +983,21 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                 var curBtnStatus = modelValue.isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
                                 receiverId = modelValue.receiverId;
                                 _changeBtnState(curBtnStatus);
-                                _initializeBtnStatus(receiverId).then(function() {
+                                _initializeBtnStatus(receiverId).then(function(status) {
                                     if (angular.isDefined(modelValue.toggleAutoCall) && isTeacher) {
-                                        CallsSrv.isUserInActiveCall().then(function (isInActiveCall) {
-                                            switch (modelValue.toggleAutoCall) {
-                                                case autoCallStatusEnum.ACTIVATE.enum:
-                                                    if (!isInActiveCall) {
-                                                        vm.clickBtn();
-                                                    }
-                                                    break;
-                                                case autoCallStatusEnum.DISABLE.enum:
-                                                    if (isInActiveCall) {
-                                                        vm.clickBtn();
-                                                    }
-                                                    break;
-                                            }
-                                        });
+                                        var isInActiveCall = status === CallsBtnStatusEnum.CALLED_BTN.enum;
+                                        switch (modelValue.toggleAutoCall) {
+                                            case autoCallStatusEnum.ACTIVATE.enum:
+                                                if (!isInActiveCall) {
+                                                    vm.clickBtn();
+                                                }
+                                                break;
+                                            case autoCallStatusEnum.DISABLE.enum:
+                                                if (isInActiveCall) {
+                                                    vm.clickBtn();
+                                                }
+                                                break;
+                                        }
                                     }
                                 });
                             }
@@ -6514,14 +6515,14 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
         'ngIdle',
         'znk.infra.auth'
     ])
-        .config(["IdleProvider", "KeepaliveProvider", function (IdleProvider, KeepaliveProvider) {
+        .config(["ENV", "IdleProvider", "KeepaliveProvider", function (ENV, IdleProvider, KeepaliveProvider) {
             // userIdleTime: how many sec until user is 'IDLE'
             // idleTimeout: how many sec after idle to stop track the user, 0: keep track
             // idleKeepalive: keepalive interval in sec
 
-            IdleProvider.idle(30);
-            IdleProvider.timeout(0);
-            KeepaliveProvider.interval(2);
+            IdleProvider.idle(ENV.userIdleTime || 30);
+            IdleProvider.timeout(ENV.idleTimeout || 0);
+            KeepaliveProvider.interval(ENV.idleKeepalive || 2);
         }])
         .run(["PresenceService", "Idle", function (PresenceService, Idle) {
             'ngInject';

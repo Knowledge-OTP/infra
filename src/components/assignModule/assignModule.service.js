@@ -190,6 +190,8 @@
                     $q.all(getPromArr).then(function () {
                         userAssignModuleService.assignModules = moduleResults;
                         applyCB(registerEvents[userId][contentType].valueCB, contentType);
+                    }).catch(function (err) {
+                        $log('buildResultsFromGuids: Error ' , err);
                     });
                 });
             }

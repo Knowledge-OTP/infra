@@ -63,22 +63,21 @@
                                 var curBtnStatus = modelValue.isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
                                 receiverId = modelValue.receiverId;
                                 _changeBtnState(curBtnStatus);
-                                _initializeBtnStatus(receiverId).then(function() {
+                                _initializeBtnStatus(receiverId).then(function(status) {
                                     if (angular.isDefined(modelValue.toggleAutoCall) && isTeacher) {
-                                        CallsSrv.isUserInActiveCall().then(function (isInActiveCall) {
-                                            switch (modelValue.toggleAutoCall) {
-                                                case autoCallStatusEnum.ACTIVATE.enum:
-                                                    if (!isInActiveCall) {
-                                                        vm.clickBtn();
-                                                    }
-                                                    break;
-                                                case autoCallStatusEnum.DISABLE.enum:
-                                                    if (isInActiveCall) {
-                                                        vm.clickBtn();
-                                                    }
-                                                    break;
-                                            }
-                                        });
+                                        var isInActiveCall = status === CallsBtnStatusEnum.CALLED_BTN.enum;
+                                        switch (modelValue.toggleAutoCall) {
+                                            case autoCallStatusEnum.ACTIVATE.enum:
+                                                if (!isInActiveCall) {
+                                                    vm.clickBtn();
+                                                }
+                                                break;
+                                            case autoCallStatusEnum.DISABLE.enum:
+                                                if (isInActiveCall) {
+                                                    vm.clickBtn();
+                                                }
+                                                break;
+                                        }
                                     }
                                 });
                             }
