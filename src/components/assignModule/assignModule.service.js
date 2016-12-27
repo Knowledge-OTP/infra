@@ -261,7 +261,8 @@
                         status: ExerciseStatusEnum.NEW.enum,
                         totalCorrectAnswers: 0,
                         totalWrongAnswers: 0,
-                        totalSkippedAnswers: 0
+                        totalSkippedAnswers: 0,
+                        totalDuration: 0
                     };
                 }
 
@@ -292,7 +293,7 @@
                                 if (exercise.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum) {
                                     currentExerciseRes.status = _exerciseResults[exerciseTypeId][exerciseId].isComplete ?
                                         ExerciseStatusEnum.COMPLETED.enum :
-                                        (_exerciseResults[exerciseTypeId][exerciseId].questionResults.length ? ExerciseStatusEnum.ACTIVE.enum : ExerciseStatusEnum.NEW.enum);
+                                        (_exerciseResults[exerciseTypeId][exerciseId].questionResults.length > 0 ? ExerciseStatusEnum.ACTIVE.enum : ExerciseStatusEnum.NEW.enum);
 
                                     currentExerciseRes.correctAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
                                     currentExerciseRes.wrongAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
@@ -319,11 +320,27 @@
 
                         moduleSummary.overAll.status = ExerciseStatusEnum.COMPLETED.enum;
 
-                        angular.forEach(assignModule.exerciseResults, function (exerciseResults) {
-                            if (!exerciseResults.isComplete && exerciseResults.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum) {
-                                moduleSummary.overAll.status = ExerciseStatusEnum.ACTIVE.enum;
-                            }
+                        var inProgressCount = 0, totalDuration=0;
+
+                        angular.forEach(assignModule.exerciseResults, function (exerciseType) {
+                            angular.forEach(exerciseType, function (exerciseResults) {
+                                if (exerciseResults.duration) {
+                                    totalDuration += (exerciseResults.duration || 0);
+                                }
+                                if(exerciseResults.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum) {
+                                    if (!exerciseResults.isComplete && exerciseResults.questionResults.length > 0) {
+                                        inProgressCount++;
+                                    }
+                                }
+                            });
                         });
+                        moduleSummary.overAll.totalDuration = totalDuration;
+
+                        if (inProgressCount === 0){
+                            moduleSummary.overAll.status = ExerciseStatusEnum.NEW.enum;
+                        } else if (inProgressCount < assignModule.exerciseResults.length) {
+                            moduleSummary.overAll.status = ExerciseStatusEnum.ACTIVE.enum;
+                        }
                     }
                 }
 
