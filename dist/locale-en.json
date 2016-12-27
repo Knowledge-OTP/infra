@@ -62,7 +62,9 @@
     "ACTIVE_PANEL":{
         "SHOW_STUDENT_SCREEN": "Show Teacher Screen",
         "SHOW_TEACHER_SCREEN": "Show Student Screen",
-        "SHARE_MY_SCREEN": "Share my screen"
+        "END_SCREEN_SHARING": "End Screen Sharing",
+        "SHARE_MY_SCREEN": "Share my screen",
+        "END_SESSION": "END"
     },
     "SCREEN_SHARING":{
         "SHARE_SCREEN_REQUEST": "Share Screen Request",
