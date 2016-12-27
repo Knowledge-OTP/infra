@@ -51,7 +51,7 @@
             }
 
             function _updateAssignmentResult(guid) {
-                var path = 'users/$$uid/assignments/assignmentResult/' + guid + '/isComplete';
+                var path = 'users/$$uid/assignments/assignmentResults/' + guid + '/isComplete';
                 return _getStudentStorage().then(function (userStorage) {
                     userStorage.update(path, true);
                 });
