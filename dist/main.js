@@ -9690,17 +9690,17 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
     angular.module('znk.infra.utility').service('DueDateSrv', [function () {
         this.isDueDatePass = function (dueDate) {
             const daysInMs = 86400000;
-
-            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
-                dueDate = 0;
-            }
-
-            var dateDiff = Math.abs(parseInt((Date.now() - dueDate) / daysInMs, 0));
             var res = {
-                dateDiff: dateDiff,
-                passDue: (dateDiff > 0)
+                dateDiff: 0,
+                passDue: true
             };
 
+            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
+                return res;
+            }
+
+            res.dateDiff = Math.abs(parseInt((Date.now() - dueDate) / daysInMs, 0));
+            res.passDue = (res.dateDiff > 0);
             return res;
         };
     }
