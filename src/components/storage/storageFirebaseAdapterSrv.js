@@ -126,6 +126,7 @@
 
                         var ref = this.getRef(path);
                         ref.on(type, function (snapshot) {
+                            if (!self.__registeredEvents[type][path]) { self.__registeredEvents[type][path] = []; }
                             self.__registeredEvents[type][path].firstOnWasInvoked = true;
                             var newVal = snapshot.val();
                             var key = snapshot.key();
@@ -140,7 +141,7 @@
                                         cb(newVal[key], key);
                                     });
                                 } else {
-                                    cb(newVal);
+                                    cb(newVal, path);
                                 }
                             });
                         }
@@ -179,8 +180,13 @@
                             newEventCbArr.push(_cb);
                         }
                     });
-                    this.__registeredEvents[type][path] = newEventCbArr;
-                    this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
+
+                    if(newEventCbArr.length > 0){
+                        this.__registeredEvents[type][path] = newEventCbArr;
+                        this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
+                    } else {
+                        delete this.__registeredEvents[type][path];
+                    }
                 }
             };
             StorageFirebaseAdapter.prototype = storageFirebaseAdapterPrototype;
