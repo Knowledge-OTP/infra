@@ -36,6 +36,16 @@
                 return arr;
             };
 
+            UtilitySrv.object.getKeyByValue = function(obj, value) {
+                for( var prop in obj ) {
+                    if( obj.hasOwnProperty( prop ) ) {
+                        if( obj[ prop ] === value ) {
+                            return prop;
+                        }
+                    }
+                }
+            };
+
             //array utility srv
             UtilitySrv.array = {};
 

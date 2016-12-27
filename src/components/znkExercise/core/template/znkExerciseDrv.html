@@ -13,6 +13,10 @@
                           on-done="settings.onDone()"
                           actions="vm.btnSectionActions">
 </znk-exercise-btn-section>
+<znk-exercise-review-btn-section
+                        settings="settings"
+                        on-review="settings.onReview()">
+</znk-exercise-review-btn-section>
 <znk-exercise-pager class="ng-hide show-opacity-animate"
                     ng-show="vm.showPager"
                     questions="vm.questionsWithAnswers"
