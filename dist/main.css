@@ -397,6 +397,9 @@ active-panel.screen-share-mode .active-panel {
   active-panel.screen-share-mode .active-panel .callee-name {
     color: #fff; }
 
+.znk-popup .base-popup.homework-popup.warning-popup .znk-popup-wrapper {
+  width: 450px; }
+
 /* paths*/
 /* fonts size */
 /*

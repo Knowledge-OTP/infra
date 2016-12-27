@@ -1027,6 +1027,75 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
     ]);
 })(angular);
 
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.assignModule').service('HomeworkSrv',
+        ["$q", "$log", "InfraConfigSrv", "PopUpSrv", "$state", "ExamSrv", function ($q, $log, InfraConfigSrv, PopUpSrv, $state, ExamSrv) {
+            'ngInject';
+
+            var self = this;
+            var studentStorage = InfraConfigSrv.getStudentStorage();
+            // todo - translate!!!
+            var popupTitle = 'An assignment is available';
+            var popContent = 'You have an assignment pending. Click below to complete your assignment.';
+            var goToAssignmentText = 'GO TO ASSIGNMENT';
+            var closeText = 'CLOSE';
+            var homeworkPath = 'users/$$uid/assignments/assignmentResults';
+
+            function _navigateToHomework() {
+                $state.go('app.eTutoring');
+            }
+
+            function _getStudentStorage() {
+                return studentStorage;
+            }
+
+            var completeAssignmentBtn = {
+                text: goToAssignmentText,
+                resolveVal: _navigateToHomework
+            };
+
+            var closeBtn = {
+                text: closeText
+            };
+
+            function _notCompletedHomeworkHandler(homeworkObj) {
+                ExamSrv.getExam(homeworkObj.examId).then(function (examObj) {
+                    if (!examObj.isCompleted) {
+                        PopUpSrv.basePopup('warning-popup homework-popup', 'popup-exclamation-mark', popupTitle, popContent, [closeBtn, completeAssignmentBtn]);
+                    } else {
+                        _updateAssignmentResult(homeworkObj.guid);
+                    }
+                });
+            }
+
+            function _homeworkHandler(homework) {
+                var keys = Object.keys(homework);
+                for (var i = 0; i < keys.length; i++) {
+                    if (!homework[keys[i]].isComplete) {
+                        _notCompletedHomeworkHandler(homework[keys[i]]);
+                        return;
+                    }
+                }
+            }
+
+            function _updateAssignmentResult(guid) {
+                var path = 'users/$$uid/assignments/assignmentResult/' + guid + '/isComplete';
+                return _getStudentStorage().then(function (userStorage) {
+                    userStorage.update(path, true);
+                });
+            }
+
+            self.homeworkPopUpReminder = function (uid) {
+                homeworkPath = homeworkPath.replace('$$uid', uid);
+                return _getStudentStorage().then(function (userStorage) {
+                    userStorage.onEvent('value', homeworkPath, _homeworkHandler);
+                });
+            };
+        }]
+    );
+})(angular);
+
 angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
 
 }]);
@@ -6818,7 +6887,11 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function($templat
                             var action = reject ? 'reject' : 'resolve';
                             reason = reason || 'close';
                             if(popupDefer[action]){
-                                popupDefer[action](reason);
+                                popupDefer[action](reason);  // todo - for some reason this function(reason) never executed.
+                                if(angular.isFunction(reason)){ //this works good.
+                                    reason();
+                                }
+
                             }
                             popupDefer = null;
                         }
@@ -6865,6 +6938,8 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function($templat
 
                 return btn;
             }
+
+            PopUpSrv.basePopup = basePopup;
 
             PopUpSrv.error = function error(title,content){
                 var btn = new BaseButton('OK',null,'ok', undefined, true);
