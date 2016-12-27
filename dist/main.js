@@ -9692,7 +9692,7 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
             const daysInMs = 86400000;
             var res = {
                 dateDiff: 0,
-                passDue: true
+                passDue: false
             };
 
             if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {

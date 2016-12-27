@@ -6,7 +6,7 @@
             const daysInMs = 86400000;
             var res = {
                 dateDiff: 0,
-                passDue: true
+                passDue: false
             };
 
             if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
