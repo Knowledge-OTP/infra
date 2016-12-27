@@ -435,35 +435,37 @@
 
                             var resultPath = MODULE_RESULTS_PATH + '/' + moduleResultGuid;
                             return StudentStorageSrv.get(resultPath).then(function (moduleResult) {
-                                var promArray = [];
                                 var exerciseTypeId, exerciseId;
+                                var getModuleExerciseProm = $q.when();
 
                                 if (moduleResult.exercises && withExerciseResults) {
                                     moduleResult.exerciseResults = [];
+
                                     angular.forEach(moduleResult.exercises, function (exerciseData) {
-
-                                        if (angular.isDefined(exerciseData.examId)) {
-                                            exerciseTypeId = ExerciseTypeEnum.SECTION.enum;
-                                            exerciseId = exerciseData.id;
-                                        } else {
-                                            exerciseTypeId = exerciseData.exerciseTypeId;
-                                            exerciseId = exerciseData.exerciseId;
-                                        }
-
-                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, exerciseData.examId).then(function (exerciseResults) {
-                                            if (exerciseResults) {
-                                                if(!moduleResult.exerciseResults[exerciseTypeId]){
-                                                    moduleResult.exerciseResults[exerciseTypeId] = {};
-                                                }
-                                                moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResults;
+                                            if (angular.isDefined(exerciseData.examId)) {
+                                                exerciseTypeId = ExerciseTypeEnum.SECTION.enum;
+                                                exerciseId = exerciseData.id;
+                                            } else {
+                                                exerciseTypeId = exerciseData.exerciseTypeId;
+                                                exerciseId = exerciseData.exerciseId;
                                             }
-                                        });
-                                        promArray.push(prom);
-                                        }
-                                    );
-                                }
 
-                                return $q.all(promArray).then(function () {
+                                            getModuleExerciseProm = getModuleExerciseProm.then(function () {
+                                                return ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, exerciseData.examId).then(function (exerciseResults) {
+                                                    if (exerciseResults) {
+                                                        if(!moduleResult.exerciseResults[exerciseTypeId]){
+                                                            moduleResult.exerciseResults[exerciseTypeId] = {};
+                                                        }
+                                                        moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResults;
+                                                    }
+                                                });
+                                            });
+
+
+
+                                        });
+                                }
+                                return getModuleExerciseProm.then(function () {
                                     return moduleResult;
                                 });
                             });
