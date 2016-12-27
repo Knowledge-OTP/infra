@@ -4929,8 +4929,14 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                     var userResultsPath = _getAssignContentUserPath(userId, assignContentType);
                     return StudentStorageSrv.get(userResultsPath).then(function (moduleResultsGuids) {
-                            var defaultResult = {};
-                            var moduleResultGuid = moduleResultsGuids[moduleId];
+                            var moduleResultGuid, defaultResult = {};
+
+                            if(assignContentType === 2) { //todo -make enum
+                                moduleResultGuid = moduleId;
+                            } else {
+                                moduleResultGuid = moduleResultsGuids[moduleId];
+                            }
+
 
                             if (!moduleResultGuid) {
                                 if (!withDefaultResult) {
