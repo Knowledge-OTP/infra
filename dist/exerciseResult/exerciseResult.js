@@ -453,7 +453,6 @@
                                     moduleResult.exerciseResults = [];
                                     angular.forEach(moduleResult.exercises, function (exerciseData) {
                                         var exerciseTypeId, exerciseId;
-
                                         if (angular.isDefined(exerciseData.examId)) {
                                             exerciseTypeId = ExerciseTypeEnum.SECTION.enum;
                                             exerciseId = exerciseData.id;
@@ -462,12 +461,12 @@
                                             exerciseId = exerciseData.exerciseId;
                                         }
 
-                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, exerciseData.examId).then(function (exerciseResults) {
+                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, moduleResult.examId).then(function (exerciseResults) {
                                             if (exerciseResults) {
-                                                if(!moduleResult.exerciseResults[exerciseTypeId]){
-                                                    moduleResult.exerciseResults[exerciseTypeId] = {};
+                                                if(!moduleResult.exerciseResults[exerciseData.exerciseTypeId]){
+                                                    moduleResult.exerciseResults[exerciseData.exerciseTypeId] = {};
                                                 }
-                                                moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResults;
+                                                moduleResult.exerciseResults[exerciseData.exerciseTypeId][exerciseData.exerciseId] = exerciseResults;
                                             }
                                         });
                                         promArray.push(prom);
@@ -481,14 +480,6 @@
                             });
                         }
                     );
-                });
-            }
-            ;
-
-            this.getModuleResultByGuid = function (guid) {
-                var moduleResultPath = _getModuleResultPath(guid);
-                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
-                    return StudentStorageSrv.get(moduleResultPath);
                 });
             };
 
