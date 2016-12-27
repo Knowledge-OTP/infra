@@ -453,6 +453,7 @@
                                     moduleResult.exerciseResults = [];
                                     angular.forEach(moduleResult.exercises, function (exerciseData) {
                                         var exerciseTypeId, exerciseId;
+
                                         if (angular.isDefined(exerciseData.examId)) {
                                             exerciseTypeId = ExerciseTypeEnum.SECTION.enum;
                                             exerciseId = exerciseData.id;
