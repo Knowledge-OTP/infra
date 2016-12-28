@@ -1,16 +1,21 @@
 (function (angular) {
     'use strict';
     angular.module('znk.infra.assignModule').service('HomeworkSrv',
-        function ($q, $log, InfraConfigSrv, PopUpSrv, $state, ExamSrv) {
+        function ($q, $log, InfraConfigSrv, PopUpSrv, $state, ExamSrv, DueDateSrv, $translate) {
             'ngInject';
-
             var self = this;
             var studentStorage = InfraConfigSrv.getStudentStorage();
-            // todo - translate!!!
-            var popupTitle = 'An assignment is available';
-            var popContent = 'You have an assignment pending. Click below to complete your assignment.';
-            var goToAssignmentText = 'GO TO ASSIGNMENT';
-            var closeText = 'CLOSE';
+            var ONE_WEEK_IN_MILLISECONDS = 604800000;
+
+            var popupTitle = 'ASSIGN_MODULE.ASSIGNMENT_AVAILABLE';
+            var popupContent = 'ASSIGN_MODULE.ASSIGNMENT_PENDING';
+
+            var latePopupTitle = 'ASSIGN_MODULE.YOUR_ASSIGNMENT_IS_LATE';
+            var latePopupContent = 'ASSIGN_MODULE.PlEASE_COMPLETE_ASSIGNMENT';
+
+            var goToAssignmentText = 'ASSIGN_MODULE.GO_TO_ASSIGNMENT';
+            var closeText = 'ASSIGN_MODULE.CLOSE';
+
             var homeworkPath = 'users/$$uid/assignments/assignmentResults';
 
             function _navigateToHomework() {
@@ -22,18 +27,31 @@
             }
 
             var completeAssignmentBtn = {
-                text: goToAssignmentText,
                 resolveVal: _navigateToHomework
             };
 
-            var closeBtn = {
-                text: closeText
-            };
+            var closeBtn = {};
 
             function _notCompletedHomeworkHandler(homeworkObj) {
                 ExamSrv.getExam(homeworkObj.examId).then(function (examObj) {
                     if (!examObj.isCompleted) {
-                        PopUpSrv.basePopup('warning-popup homework-popup', 'popup-exclamation-mark', popupTitle, popContent, [closeBtn, completeAssignmentBtn]);
+                        if(isHomeworkIsLate(homeworkObj)){
+                            $translate([latePopupTitle, latePopupContent, goToAssignmentText, closeText]).then(function(res){
+                                var title = res[latePopupTitle];
+                                var content = res[latePopupContent];
+                                completeAssignmentBtn.text = res[goToAssignmentText];
+                                closeBtn.text = res[closeText];
+                                PopUpSrv.basePopup('error-popup homework-popup', 'popup-exclamation-mark', title, content, [closeBtn, completeAssignmentBtn]);
+                            });
+                        } else {
+                            $translate([popupTitle, popupContent, goToAssignmentText, closeText]).then(function(res){
+                                var title = res[popupTitle];
+                                var content = res[popupContent];
+                                completeAssignmentBtn.text = res[goToAssignmentText];
+                                closeBtn.text = res[closeText];
+                                PopUpSrv.basePopup('warning-popup homework-popup', 'popup-exclamation-mark', title, content, [closeBtn, completeAssignmentBtn]);
+                            });
+                        }
                     } else {
                         _updateAssignmentResult(homeworkObj.guid);
                     }
@@ -41,11 +59,17 @@
             }
 
             function _homeworkHandler(homework) {
+                var notCompletedHomework = getNotCompletedHomework(homework);
+                if (notCompletedHomework) {
+                    _notCompletedHomeworkHandler(notCompletedHomework);
+                }
+            }
+
+            function getNotCompletedHomework(homework) {
                 var keys = Object.keys(homework);
                 for (var i = 0; i < keys.length; i++) {
                     if (!homework[keys[i]].isComplete) {
-                        _notCompletedHomeworkHandler(homework[keys[i]]);
-                        return;
+                        return homework[keys[i]];
                     }
                 }
             }
@@ -61,6 +85,29 @@
                 homeworkPath = homeworkPath.replace('$$uid', uid);
                 return _getStudentStorage().then(function (userStorage) {
                     userStorage.onEvent('value', homeworkPath, _homeworkHandler);
+                });
+            };
+
+            function isHomeworkIsLate(homeworkObj) {
+                var dueDate = homeworkObj.date + ONE_WEEK_IN_MILLISECONDS;
+                var isDueDateObj = DueDateSrv.isDueDatePass(dueDate);
+                if(isDueDateObj.passDue) {
+                    return true;
+                }
+                return false;
+            }
+
+            self.hasLatePractice = function () {
+                var path = 'users/$$uid/assignments/assignmentResults';
+                return _getStudentStorage().then(function (userStorage) {
+                    return userStorage.get(path).then(function (homework) {
+                        var notCompletedHomework = getNotCompletedHomework(homework);
+                        if (angular.isDefined(notCompletedHomework)) {
+                            return isHomeworkIsLate(notCompletedHomework);
+                        } else {
+                            return false;
+                        }
+                    });
                 });
             };
         }
