@@ -273,9 +273,25 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
 (function (angular) {
     'use strict';
+
+    angular.module('znk.infra.assignModule').factory('AssignContentEnum',
+        ["EnumSrv", function (EnumSrv) {
+            'ngInject';
+
+            return new EnumSrv.BaseEnum([
+                ['LESSON', 1, 'lesson'],
+                ['PRACTICE', 2, 'practice']
+            ]);
+        }]
+    );
+})(angular);
+
+
+(function (angular) {
+    'use strict';
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv', 'StudentContextSrv', 'StorageSrv',
-        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, StudentContextSrv, StorageSrv) {
+        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv', 'StudentContextSrv', 'StorageSrv', 'AssignContentEnum',
+        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, StudentContextSrv, StorageSrv, AssignContentEnum) {
             var userAssignModuleService = {};
             var registerEvents = {};
             var USER_ASSIGNMENTS_PATH = StorageSrv.variables.appUserSpacePath + '/assignments';
@@ -290,11 +306,11 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
             userAssignModuleService.assignType = {
                 module: {
-                    id: 1,
+                    id: AssignContentEnum.LESSON.enum,
                     fbPath: 'moduleResults'
                 },
                 homework: {
-                    id: 2,
+                    id: AssignContentEnum.PRACTICE.enum,
                     fbPath: 'assignments/assignmentResults',
                     shortFbPath: 'assignmentResults'
                 }
@@ -704,6 +720,9 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             }
 
             function getNotCompletedHomework(homework) {
+                if(angular.isUndefined(homework) || homework === null){
+                    return;
+                }
                 var keys = Object.keys(homework);
                 for (var i = 0; i < keys.length; i++) {
                     if (!homework[keys[i]].isComplete) {
@@ -4289,7 +4308,8 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
     angular.module('znk.infra.exerciseResult', [
         'znk.infra.config','znk.infra.utility',
-        'znk.infra.exerciseUtility'
+        'znk.infra.exerciseUtility',
+        'znk.infra.assignModule'
     ]);
 })(angular);
 
@@ -4297,8 +4317,8 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
     'use strict';
 
     angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum',
-        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum) {
+        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum','AssignContentEnum',
+        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum, AssignContentEnum) {
             var ExerciseResultSrv = this;
 
             var EXERCISE_RESULTS_PATH = 'exerciseResults';
@@ -4699,9 +4719,9 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
             function _getAssignContentUserPath(userId, assignContentType) {
                 switch (assignContentType) {
-                    case 1:
+                    case AssignContentEnum.LESSON.enum:
                         return USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
-                    case 2:
+                    case AssignContentEnum.PRACTICE.enum:
                         return USER_HOMEWORK_RESULTS_PATH.replace('$$uid', userId);
                 }
             }
@@ -4712,7 +4732,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                     return StudentStorageSrv.get(userResultsPath).then(function (moduleResultsGuids) {
                             var moduleResultGuid, defaultResult = {};
 
-                            if(assignContentType === 2) { //todo -make enum
+                            if(assignContentType === AssignContentEnum.PRACTICE.enum) { //in practice (homework) the module id is moduleResultGuid
                                 moduleResultGuid = moduleId;
                             } else {
                                 moduleResultGuid = moduleResultsGuids[moduleId];
@@ -4825,7 +4845,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
                 /* jshint validthis: true */
                 if (!assignContentType) {
-                    assignContentType = 1;
+                    assignContentType = assignContentType === AssignContentEnum.LESSON.enum;
                 }
                 return _calcExerciseResultFields(this).then(function (response) {
                     var exerciseResult = response.exerciseResult;
