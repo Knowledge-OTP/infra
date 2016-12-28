@@ -273,25 +273,9 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
 (function (angular) {
     'use strict';
-
-    angular.module('znk.infra.assignModule').factory('AssignContentEnum',
-        ["EnumSrv", function (EnumSrv) {
-            'ngInject';
-
-            return new EnumSrv.BaseEnum([
-                ['LESSON', 1, 'lesson'],
-                ['PRACTICE', 2, 'practice']
-            ]);
-        }]
-    );
-})(angular);
-
-
-(function (angular) {
-    'use strict';
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv', 'StudentContextSrv', 'StorageSrv', 'AssignContentEnum',
-        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, StudentContextSrv, StorageSrv, AssignContentEnum) {
+        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv', 'StudentContextSrv', 'StorageSrv',
+        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, StudentContextSrv, StorageSrv) {
             var userAssignModuleService = {};
             var registerEvents = {};
             var USER_ASSIGNMENTS_PATH = StorageSrv.variables.appUserSpacePath + '/assignments';
@@ -306,11 +290,11 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
             userAssignModuleService.assignType = {
                 module: {
-                    id: AssignContentEnum.LESSON.enum,
+                    id: 1,
                     fbPath: 'moduleResults'
                 },
                 homework: {
-                    id: AssignContentEnum.PRACTICE.enum,
+                    id: 2,
                     fbPath: 'assignments/assignmentResults',
                     shortFbPath: 'assignmentResults'
                 }
@@ -720,9 +704,6 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             }
 
             function getNotCompletedHomework(homework) {
-                if(angular.isUndefined(homework) || homework === null){
-                    return;
-                }
                 var keys = Object.keys(homework);
                 for (var i = 0; i < keys.length; i++) {
                     if (!homework[keys[i]].isComplete) {
@@ -1056,7 +1037,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         'znk.infra.enum',
         'ngMaterial',
         'znk.infra.svgIcon',
-        'znk.infra.callsModals'
+        'znk.infra.callsModals',
+        'znk.infra.utility'
     ]);
 })(angular);
 
@@ -1074,19 +1056,6 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 'calls-etutoring-phone-icon': 'components/calls/svg/etutoring-phone-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
-        }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.calls')
-        .config(["ENV", "WebcallSrvProvider", function (ENV, WebcallSrvProvider) {
-            'ngInject';
-            WebcallSrvProvider.setCallCred({
-            username: ENV.plivoUsername,
-            password: ENV.plivoPassword
-            });
         }]);
 })(angular);
 
@@ -1486,6 +1455,20 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         }]
     );
 })();
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.calls')
+        .run(["ENV", "WebcallSrv", function (ENV, WebcallSrv) {
+            'ngInject';
+            WebcallSrv.setCallCredRunTime({
+                username: ENV.plivoUsername,
+                password: ENV.plivoPassword
+            });
+            WebcallSrv.activate();
+        }]);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -4306,8 +4289,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
     angular.module('znk.infra.exerciseResult', [
         'znk.infra.config','znk.infra.utility',
-        'znk.infra.exerciseUtility',
-        'znk.infra.assignModule'
+        'znk.infra.exerciseUtility'
     ]);
 })(angular);
 
@@ -4315,8 +4297,8 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
     'use strict';
 
     angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum','AssignContentEnum',
-        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum, AssignContentEnum) {
+        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum',
+        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum) {
             var ExerciseResultSrv = this;
 
             var EXERCISE_RESULTS_PATH = 'exerciseResults';
@@ -4717,9 +4699,9 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
             function _getAssignContentUserPath(userId, assignContentType) {
                 switch (assignContentType) {
-                    case AssignContentEnum.LESSON.enum:
+                    case 1:
                         return USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
-                    case AssignContentEnum.PRACTICE.enum:
+                    case 2:
                         return USER_HOMEWORK_RESULTS_PATH.replace('$$uid', userId);
                 }
             }
@@ -4730,7 +4712,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                     return StudentStorageSrv.get(userResultsPath).then(function (moduleResultsGuids) {
                             var moduleResultGuid, defaultResult = {};
 
-                            if(assignContentType === AssignContentEnum.PRACTICE.enum) { //in practice (homework) the module id is moduleResultGuid
+                            if(assignContentType === 2) { //todo -make enum
                                 moduleResultGuid = moduleId;
                             } else {
                                 moduleResultGuid = moduleResultsGuids[moduleId];
@@ -4843,7 +4825,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
 
                 /* jshint validthis: true */
                 if (!assignContentType) {
-                    assignContentType = assignContentType === AssignContentEnum.LESSON.enum;
+                    assignContentType = 1;
                 }
                 return _calcExerciseResultFields(this).then(function (response) {
                     var exerciseResult = response.exerciseResult;
@@ -9573,13 +9555,18 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 
             var _notSupportedMsg = 'webcall feature is not available';
 
-            if (angular.isUndefined(_credentials)) {
-                $log.error('credentials were not supplied');
-            } else {
-                var _username = _credentials.username;
-                var _password = _credentials.password;
-            }
+            var _username,
+                _password;
 
+            function _activate() {
+                if (angular.isUndefined(_credentials)) {
+                    $log.error('credentials were not supplied');
+                } else {
+                    _username = _credentials.username;
+                    _password = _credentials.password;
+                }
+
+            }
 
             function _webrtcNotSupportedAlert() {
                 $log.error(_notSupportedMsg);
@@ -9701,6 +9688,20 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                 }
 
                 return deferredMap.hang.promise;
+            };
+
+            WebcallSrv.setCallCredRunTime = function(credentials, useForce) {
+                if (angular.isDefined(_credentials) && !useForce) {
+                    $log.error('WebcallSrv setCallCredRunTime: _credentials already set! ' +
+                        'if you wish to force it add true as a second param! credentials: ' + credentials);
+                    return;
+                }
+
+                _credentials = credentials;
+            };
+
+            WebcallSrv.activate = function () {
+                _activate();
             };
 
             return WebcallSrv;
