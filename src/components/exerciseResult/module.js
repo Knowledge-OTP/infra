@@ -3,6 +3,7 @@
 
     angular.module('znk.infra.exerciseResult', [
         'znk.infra.config','znk.infra.utility',
-        'znk.infra.exerciseUtility'
+        'znk.infra.exerciseUtility',
+        'znk.infra.assignModule'
     ]);
 })(angular);

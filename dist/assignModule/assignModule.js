@@ -6,7 +6,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.assignModule').factory('assignContentEnum',
+    angular.module('znk.infra.assignModule').factory('AssignContentEnum',
         ["EnumSrv", function (EnumSrv) {
             'ngInject';
 
@@ -22,8 +22,8 @@
 (function (angular) {
     'use strict';
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv', 'StudentContextSrv', 'StorageSrv',
-        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, StudentContextSrv, StorageSrv) {
+        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv', 'StudentContextSrv', 'StorageSrv', 'AssignContentEnum',
+        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, StudentContextSrv, StorageSrv, AssignContentEnum) {
             var userAssignModuleService = {};
             var registerEvents = {};
             var USER_ASSIGNMENTS_PATH = StorageSrv.variables.appUserSpacePath + '/assignments';
@@ -38,11 +38,11 @@
 
             userAssignModuleService.assignType = {
                 module: {
-                    id: 1,
+                    id: AssignContentEnum.LESSON.enum,
                     fbPath: 'moduleResults'
                 },
                 homework: {
-                    id: 2,
+                    id: AssignContentEnum.PRACTICE.enum,
                     fbPath: 'assignments/assignmentResults',
                     shortFbPath: 'assignmentResults'
                 }
