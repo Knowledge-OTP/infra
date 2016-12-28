@@ -884,7 +884,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         'znk.infra.enum',
         'ngMaterial',
         'znk.infra.svgIcon',
-        'znk.infra.callsModals'
+        'znk.infra.callsModals',
+        'znk.infra.utility'
     ]);
 })(angular);
 
@@ -902,19 +903,6 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 'calls-etutoring-phone-icon': 'components/calls/svg/etutoring-phone-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
-        }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.calls')
-        .config(["ENV", "WebcallSrvProvider", function (ENV, WebcallSrvProvider) {
-            'ngInject';
-            WebcallSrvProvider.setCallCred({
-            username: ENV.plivoUsername,
-            password: ENV.plivoPassword
-            });
         }]);
 })(angular);
 
@@ -1314,6 +1302,20 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         }]
     );
 })();
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.calls')
+        .run(["ENV", "WebcallSrv", function (ENV, WebcallSrv) {
+            'ngInject';
+            WebcallSrv.setCallCredRunTime({
+                username: ENV.plivoUsername,
+                password: ENV.plivoPassword
+            });
+            WebcallSrv.activate();
+        }]);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -9353,13 +9355,18 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 
             var _notSupportedMsg = 'webcall feature is not available';
 
-            if (angular.isUndefined(_credentials)) {
-                $log.error('credentials were not supplied');
-            } else {
-                var _username = _credentials.username;
-                var _password = _credentials.password;
-            }
+            var _username,
+                _password;
 
+            function _activate() {
+                if (angular.isUndefined(_credentials)) {
+                    $log.error('credentials were not supplied');
+                } else {
+                    _username = _credentials.username;
+                    _password = _credentials.password;
+                }
+
+            }
 
             function _webrtcNotSupportedAlert() {
                 $log.error(_notSupportedMsg);
@@ -9481,6 +9488,20 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                 }
 
                 return deferredMap.hang.promise;
+            };
+
+            WebcallSrv.setCallCredRunTime = function(credentials, useForce) {
+                if (angular.isDefined(_credentials) && !useForce) {
+                    $log.error('WebcallSrv setCallCredRunTime: _credentials already set! ' +
+                        'if you wish to force it add true as a second param! credentials: ' + credentials);
+                    return;
+                }
+
+                _credentials = credentials;
+            };
+
+            WebcallSrv.activate = function () {
+                _activate();
             };
 
             return WebcallSrv;

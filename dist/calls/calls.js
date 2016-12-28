@@ -8,7 +8,8 @@
         'znk.infra.enum',
         'ngMaterial',
         'znk.infra.svgIcon',
-        'znk.infra.callsModals'
+        'znk.infra.callsModals',
+        'znk.infra.utility'
     ]);
 })(angular);
 
@@ -26,19 +27,6 @@
                 'calls-etutoring-phone-icon': 'components/calls/svg/etutoring-phone-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
-        }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.calls')
-        .config(["ENV", "WebcallSrvProvider", function (ENV, WebcallSrvProvider) {
-            'ngInject';
-            WebcallSrvProvider.setCallCred({
-            username: ENV.plivoUsername,
-            password: ENV.plivoPassword
-            });
         }]);
 })(angular);
 
@@ -438,6 +426,20 @@
         }]
     );
 })();
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.calls')
+        .run(["ENV", "WebcallSrv", function (ENV, WebcallSrv) {
+            'ngInject';
+            WebcallSrv.setCallCredRunTime({
+                username: ENV.plivoUsername,
+                password: ENV.plivoPassword
+            });
+            WebcallSrv.activate();
+        }]);
+})(angular);
 
 (function (angular) {
     'use strict';

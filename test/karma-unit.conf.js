@@ -35,6 +35,7 @@ module.exports = function (config) {
             'bower_components/angulartics/src/angulartics.js',
             'bower_components/angular-translate/angular-translate.js',
             'bower_components/angular-translate-loader-static-files/angular-translate-loader-static-files.js',
+            'bower_components/angular-translate-loader-partial/angular-translate-loader-partial.js',
             'bower_components/plivo/dist/plivo.min.js',
             'bower_components/angular-messages/angular-messages.js',
             'bower_components/angular-material/angular-material.js',
