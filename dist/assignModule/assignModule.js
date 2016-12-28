@@ -6,10 +6,12 @@
 (function (angular) {
     'use strict';
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv', 'StudentContextSrv',
-        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, StudentContextSrv) {
+        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv', 'StudentContextSrv', 'StorageSrv',
+        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, StudentContextSrv, StorageSrv) {
             var userAssignModuleService = {};
             var registerEvents = {};
+            var USER_ASSIGNMENTS_PATH = StorageSrv.variables.appUserSpacePath + '/assignments';
+
             userAssignModuleService.assignModules = {};
 
             userAssignModuleService.assignModuleStatus = new EnumSrv.BaseEnum([
@@ -25,7 +27,8 @@
                 },
                 homework: {
                     id: 2,
-                    fbPath: 'assignHomework/homework'
+                    fbPath: 'assignments/assignmentResults',
+                    shortFbPath: 'assignmentResults'
                 }
             };
 
@@ -87,7 +90,7 @@
                 });
             };
 
-            userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId) {
+            userAssignModuleService.setUserAssignModules = function (moduleIds, userId, tutorId, contentType) {
                 if (!angular.isArray(moduleIds)) {
                     var errMSg = 'UserAssignModuleService: 1st argument should be array of module ids';
                     $log.error(errMSg);
@@ -97,7 +100,7 @@
                 var getProm = $q.when();
                 angular.forEach(moduleIds, function (moduleId) {
                     getProm = getProm.then(function () {
-                        return ExerciseResultSrv.getModuleResult(userId, moduleId, false, false).then(function (moduleResult) {
+                        return ExerciseResultSrv.getModuleResult(userId, moduleId, false, false, contentType).then(function (moduleResult) {
                             moduleResults[moduleId] = moduleResult;
                             return moduleResults;
                         });
@@ -132,10 +135,18 @@
                 });
             };
 
-            userAssignModuleService.setAssignContent = function (userId, moduleId) {
-                return ExerciseResultSrv.getModuleResult(userId, moduleId).then(function (moduleResult) {
+            userAssignModuleService.setAssignContent = function (userId, moduleId, contentType) {
+                return ExerciseResultSrv.getModuleResult(userId, moduleId,  false, false, contentType).then(function (moduleResult) {
                     moduleResult.contentAssign = true;
-                    return ExerciseResultSrv.setModuleResult(moduleResult, moduleId);
+                    return ExerciseResultSrv.setModuleResult(moduleResult, moduleId, contentType);
+                });
+            };
+
+
+            userAssignModuleService.assignHomework = function(lastAssignmentType){
+                return InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
+                    var homeworkObj = _buildHomeworkObj(lastAssignmentType);
+                    studentStorage.set(USER_ASSIGNMENTS_PATH,homeworkObj);
                 });
             };
 
@@ -157,6 +168,8 @@
                     case userAssignModuleService.assignType.module.fbPath:
                         return userAssignModuleService.assignType.module.id;
                     case userAssignModuleService.assignType.homework.fbPath:
+                        return userAssignModuleService.assignType.homework.id;
+                    case userAssignModuleService.assignType.homework.shortFbPath:
                         return userAssignModuleService.assignType.homework.id;
                 }
             }
@@ -255,7 +268,8 @@
                         status: ExerciseStatusEnum.NEW.enum,
                         totalCorrectAnswers: 0,
                         totalWrongAnswers: 0,
-                        totalSkippedAnswers: 0
+                        totalSkippedAnswers: 0,
+                        totalDuration: 0
                     };
                 }
 
@@ -286,7 +300,7 @@
                                 if (exercise.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum) {
                                     currentExerciseRes.status = _exerciseResults[exerciseTypeId][exerciseId].isComplete ?
                                         ExerciseStatusEnum.COMPLETED.enum :
-                                        (_exerciseResults[exerciseTypeId][exerciseId].questionResults.length ? ExerciseStatusEnum.ACTIVE.enum : ExerciseStatusEnum.NEW.enum);
+                                        (_exerciseResults[exerciseTypeId][exerciseId].questionResults.length > 0 ? ExerciseStatusEnum.ACTIVE.enum : ExerciseStatusEnum.NEW.enum);
 
                                     currentExerciseRes.correctAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
                                     currentExerciseRes.wrongAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
@@ -313,17 +327,40 @@
 
                         moduleSummary.overAll.status = ExerciseStatusEnum.COMPLETED.enum;
 
-                        angular.forEach(assignModule.exerciseResults, function (exerciseResults) {
-                            if (!exerciseResults.isComplete && exerciseResults.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum) {
-                                moduleSummary.overAll.status = ExerciseStatusEnum.ACTIVE.enum;
-                            }
+                        var inProgressCount = 0, totalDuration=0;
+
+                        angular.forEach(assignModule.exerciseResults, function (exerciseType) {
+                            angular.forEach(exerciseType, function (exerciseResults) {
+                                if (exerciseResults.duration) {
+                                    totalDuration += (exerciseResults.duration || 0);
+                                }
+                                if(exerciseResults.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum) {
+                                    if (!exerciseResults.isComplete && exerciseResults.questionResults.length > 0) {
+                                        inProgressCount++;
+                                    }
+                                }
+                            });
                         });
+                        moduleSummary.overAll.totalDuration = totalDuration;
+
+                        if (inProgressCount === 0){
+                            moduleSummary.overAll.status = ExerciseStatusEnum.NEW.enum;
+                        } else if (inProgressCount < assignModule.exerciseResults.length) {
+                            moduleSummary.overAll.status = ExerciseStatusEnum.ACTIVE.enum;
+                        }
                     }
-
-
                 }
 
                 return moduleSummary;
+            }
+
+            function _buildHomeworkObj(lastAssignmentType){
+                return {
+                    assignmentStartDate:  StorageSrv.variables.currTimeStamp,
+                    lastAssignmentType : lastAssignmentType,
+                    assignmentResults: {}
+                };
+
             }
 
             return userAssignModuleService;
