@@ -720,6 +720,9 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             }
 
             function getNotCompletedHomework(homework) {
+                if(angular.isUndefined(homework) || homework === null){
+                    return;
+                }
                 var keys = Object.keys(homework);
                 for (var i = 0; i < keys.length; i++) {
                     if (!homework[keys[i]].isComplete) {
