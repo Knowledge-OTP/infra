@@ -454,15 +454,10 @@
                                     angular.forEach(moduleResult.exercises, function (exerciseData) {
                                         var exerciseTypeId, exerciseId;
 
-                                        if (angular.isDefined(exerciseData.examId)) {
-                                            exerciseTypeId = ExerciseTypeEnum.SECTION.enum;
-                                            exerciseId = exerciseData.id;
-                                        } else {
-                                            exerciseTypeId = exerciseData.exerciseTypeId;
-                                            exerciseId = exerciseData.exerciseId;
-                                        }
+                                        exerciseTypeId = exerciseData.exerciseTypeId;
+                                        exerciseId = exerciseData.exerciseId;
 
-                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, moduleResult.examId).then(function (exerciseResults) {
+                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, moduleResult.examId, true).then(function (exerciseResults) {
                                             if (exerciseResults) {
                                                 if(!moduleResult.exerciseResults[exerciseData.exerciseTypeId]){
                                                     moduleResult.exerciseResults[exerciseData.exerciseTypeId] = {};

@@ -543,16 +543,14 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
 
                 if (assignModule.exercises && assignModule.exercises.length) {
+
+                    var moduleExerciseNum = 0;
+
                     angular.forEach(assignModule.exercises, function (exercise) {
                         var exerciseTypeId, exerciseId;
 
-                        if (angular.isDefined(exercise.examId)) {
-                            exerciseTypeId = ExerciseTypeEnum.SECTION.enum;
-                            exerciseId = exercise.id;
-                        } else {
-                            exerciseTypeId = exercise.exerciseTypeId;
-                            exerciseId = exercise.exerciseId;
-                        }
+                        exerciseTypeId = exercise.exerciseTypeId;
+                        exerciseId = exercise.exerciseId;
 
                         if (!moduleSummary[exerciseTypeId]){
                             moduleSummary[exerciseTypeId] = {};
@@ -560,6 +558,10 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                         var currentExerciseRes;
                         if (!moduleSummary[exerciseTypeId][exerciseId]){
                             currentExerciseRes = newSummary();
+                        }
+
+                        if (exercise.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum) {
+                            moduleExerciseNum++;
                         }
 
                         if (_exerciseResults && _exerciseResults[exerciseTypeId]) {
@@ -593,9 +595,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
                     if (assignModule.exerciseResults.length) {
 
-                        moduleSummary.overAll.status = ExerciseStatusEnum.COMPLETED.enum;
-
-                        var inProgressCount = 0, totalDuration=0;
+                        var completedExercises = 0, totalDuration=0;
 
                         angular.forEach(assignModule.exerciseResults, function (exerciseType) {
                             angular.forEach(exerciseType, function (exerciseResults) {
@@ -603,18 +603,18 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                                     totalDuration += (exerciseResults.duration || 0);
                                 }
                                 if(exerciseResults.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum) {
-                                    if (!exerciseResults.isComplete && exerciseResults.questionResults.length > 0) {
-                                        inProgressCount++;
+                                    if (exerciseResults.isComplete) {
+                                        completedExercises++;
                                     }
                                 }
                             });
                         });
                         moduleSummary.overAll.totalDuration = totalDuration;
 
-                        if (inProgressCount === 0){
-                            moduleSummary.overAll.status = ExerciseStatusEnum.NEW.enum;
-                        } else if (inProgressCount < assignModule.exerciseResults.length) {
+                        if (moduleExerciseNum !== completedExercises) {
                             moduleSummary.overAll.status = ExerciseStatusEnum.ACTIVE.enum;
+                        } else if (moduleExerciseNum === completedExercises) {
+                            moduleSummary.overAll.status = ExerciseStatusEnum.COMPLETED.enum;
                         }
                     }
                 }
@@ -4740,15 +4740,10 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                                     angular.forEach(moduleResult.exercises, function (exerciseData) {
                                         var exerciseTypeId, exerciseId;
 
-                                        if (angular.isDefined(exerciseData.examId)) {
-                                            exerciseTypeId = ExerciseTypeEnum.SECTION.enum;
-                                            exerciseId = exerciseData.id;
-                                        } else {
-                                            exerciseTypeId = exerciseData.exerciseTypeId;
-                                            exerciseId = exerciseData.exerciseId;
-                                        }
+                                        exerciseTypeId = exerciseData.exerciseTypeId;
+                                        exerciseId = exerciseData.exerciseId;
 
-                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, moduleResult.examId).then(function (exerciseResults) {
+                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, moduleResult.examId, true).then(function (exerciseResults) {
                                             if (exerciseResults) {
                                                 if(!moduleResult.exerciseResults[exerciseData.exerciseTypeId]){
                                                     moduleResult.exerciseResults[exerciseData.exerciseTypeId] = {};
