@@ -2,8 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum',
-        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum) {
+        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum','AssignContentEnum',
+        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum, AssignContentEnum) {
             var ExerciseResultSrv = this;
 
             var EXERCISE_RESULTS_PATH = 'exerciseResults';
@@ -404,9 +404,9 @@
 
             function _getAssignContentUserPath(userId, assignContentType) {
                 switch (assignContentType) {
-                    case 1:
+                    case AssignContentEnum.LESSON.enum:
                         return USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
-                    case 2:
+                    case AssignContentEnum.PRACTICE.enum:
                         return USER_HOMEWORK_RESULTS_PATH.replace('$$uid', userId);
                 }
             }
@@ -417,7 +417,7 @@
                     return StudentStorageSrv.get(userResultsPath).then(function (moduleResultsGuids) {
                             var moduleResultGuid, defaultResult = {};
 
-                            if(assignContentType === 2) { //todo -make enum
+                            if(assignContentType === AssignContentEnum.PRACTICE.enum) { //in practice (homework) the module id is moduleResultGuid
                                 moduleResultGuid = moduleId;
                             } else {
                                 moduleResultGuid = moduleResultsGuids[moduleId];
@@ -530,7 +530,7 @@
 
                 /* jshint validthis: true */
                 if (!assignContentType) {
-                    assignContentType = 1;
+                    assignContentType = assignContentType === AssignContentEnum.LESSON.enum;
                 }
                 return _calcExerciseResultFields(this).then(function (response) {
                     var exerciseResult = response.exerciseResult;
