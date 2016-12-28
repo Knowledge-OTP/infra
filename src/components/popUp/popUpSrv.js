@@ -90,7 +90,11 @@
                             var action = reject ? 'reject' : 'resolve';
                             reason = reason || 'close';
                             if(popupDefer[action]){
-                                popupDefer[action](reason);
+                                popupDefer[action](reason);  // todo - for some reason this function(reason) never executed.
+                                if(angular.isFunction(reason)){ //this works good.
+                                    reason();
+                                }
+
                             }
                             popupDefer = null;
                         }
@@ -137,6 +141,8 @@
 
                 return btn;
             }
+
+            PopUpSrv.basePopup = basePopup;
 
             PopUpSrv.error = function error(title,content){
                 var btn = new BaseButton('OK',null,'ok', undefined, true);
