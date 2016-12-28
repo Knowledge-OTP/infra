@@ -9380,7 +9380,7 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 
     angular.module('znk.infra.utility').service('DueDateSrv', [function () {
         this.isDueDatePass = function (dueDate) {
-            const daysInMs = 86400000;
+            var daysInMs = 86400000;
             var res = {
                 dateDiff: 0,
                 passDue: false
