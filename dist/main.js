@@ -13473,10 +13473,14 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             };
 
             self.areAllQuestionsAnswered = function() {
-                var answeredCount = self.answeredCount;
-                return self.getQuestions().then(function(questions) {
-                    return answeredCount === questions.length;
+                var asnwerCount = 0;
+                angular.forEach(self.questionsWithAnswers, function (question) {
+                    if (angular.isDefined(question.__questionStatus.userAnswer)) {
+                        asnwerCount++;
+                    }
                 });
+
+                return asnwerCount === self.questionsWithAnswers.length;
             };
 
             self.getElement = function(){
