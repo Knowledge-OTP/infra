@@ -4788,8 +4788,14 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                         }
                     );
                 });
-            }
-            ;
+            };
+
+            this.getModuleResultByGuid = function (guid) {
+                var moduleResultPath = _getModuleResultPath(guid);
+                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                    return StudentStorageSrv.get(moduleResultPath);
+                });
+            };
 
             this.getUserModuleResultsGuids = function (userId) {
                 var userResultsPath = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
@@ -9523,11 +9529,14 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
     'use strict';
 
     angular.module('znk.infra.utility').service('DueDateSrv', [function () {
+        var daysInMs = 86400000;
+
+        this.SEVEN_DAYS_IN_MS = daysInMs*7;
+
         this.isDueDatePass = function (dueDate) {
-            var daysInMs = 86400000;
             var res = {
                 dateDiff: 0,
-                passDue: false
+                passDue: false,
             };
 
             if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
