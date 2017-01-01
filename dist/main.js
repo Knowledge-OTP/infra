@@ -4726,7 +4726,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 }
             }
 
-            this.getModuleResult = function (userId, moduleId, withDefaultResult, withExerciseResults, assignContentType, newModuleResultRef) {
+            this.getModuleResult = function (userId, moduleId, withDefaultResult, withExerciseResults, assignContentType) {
                 return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                     var userResultsPath = _getAssignContentUserPath(userId, assignContentType);
                     return StudentStorageSrv.get(userResultsPath).then(function (moduleResultsGuids) {
@@ -4751,24 +4751,24 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                             var resultPath = MODULE_RESULTS_PATH + '/' + moduleResultGuid;
                             return StudentStorageSrv.get(resultPath).then(function (moduleResult) {
                                 var promArray = [];
-                                if(newModuleResultRef){
+                               /* if(newModuleResultRef){
                                     moduleResult = angular.copy(moduleResult);
-                                }
+                                }*/
 
                                 if (moduleResult.exercises && withExerciseResults) {
                                     moduleResult.exerciseResults = [];
                                     angular.forEach(moduleResult.exercises, function (exerciseData) {
-                                        var exerciseTypeId, exerciseId;
+                                        // var exerciseTypeId, exerciseId;
+                                        //
+                                        // exerciseTypeId = exerciseData.exerciseTypeId;
+                                        // exerciseId = exerciseData.exerciseId;
 
-                                        exerciseTypeId = exerciseData.exerciseTypeId;
-                                        exerciseId = exerciseData.exerciseId;
-
-                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, moduleResult.examId, true).then(function (exerciseResults) {
+                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseData.exerciseTypeId, exerciseData.exerciseId, assignContentType, moduleResult.examId, true).then(function (exerciseResults) {
                                             if (exerciseResults) {
-                                                if(!moduleResult.exerciseResults[exerciseData.exerciseTypeId]){
-                                                    moduleResult.exerciseResults[exerciseData.exerciseTypeId] = {};
+                                                if(!moduleResult.exerciseResults[exerciseResults.exerciseTypeId]){
+                                                    moduleResult.exerciseResults[exerciseResults.exerciseTypeId] = {};
                                                 }
-                                                moduleResult.exerciseResults[exerciseData.exerciseTypeId][exerciseData.exerciseId] = exerciseResults;
+                                                moduleResult.exerciseResults[exerciseResults.exerciseTypeId][exerciseResults.exerciseId] = exerciseResults;
                                             }
                                         });
                                         promArray.push(prom);
@@ -4858,8 +4858,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                         exerciseResultsGuids[exerciseTypeId][exerciseId] = exerciseResult.guid;
                         dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
 
-                        var newModuleResRef = true;
-                        return ExerciseResultSrv.getModuleResult(exerciseResult.uid, exerciseResult.moduleId, undefined, undefined, assignContentType, newModuleResRef).then(function (moduleResult) {
+                        return ExerciseResultSrv.getModuleResult(exerciseResult.uid, exerciseResult.moduleId, undefined, undefined, assignContentType).then(function (moduleResult) {
                             if (!moduleResult.exerciseResults) {
                                 moduleResult.exerciseResults = {};
                             }
