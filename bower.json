@@ -6,7 +6,7 @@
   ],
   "dependencies": {
     "angular": "1.5.8",
-    "all-envs-config": "https://github.com/Knowledge-OTP/all-envs-config.git#zinkerz/dev",
+    "all-envs-config": "https://github.com/Knowledge-OTP/all-envs-config.git#~v0.0.10",
     "angular-animate": "1.5.8",
     "angular-aria": "1.5.8",
     "angular-sanitize": "1.5.8",
