@@ -3,8 +3,7 @@
 
     angular.module('znk.infra', [
         //all modules will be injected here
-        "znk.infra.activePanel",
-"znk.infra.analytics",
+        "znk.infra.analytics",
 "znk.infra.assignModule",
 "znk.infra.auth",
 "znk.infra.autofocus",
@@ -54,10 +53,6 @@
 "znk.infra.znkTimeline"
     ]);
 })(angular);
-
-angular.module('znk.infra.activePanel').run(['$templateCache', function($templateCache) {
-
-}]);
 
 (function (angular) {
     'use strict';
