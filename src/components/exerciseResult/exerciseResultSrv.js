@@ -19,10 +19,6 @@
                 return EXERCISE_RESULTS_PATH + '/' + guid;
             }
 
-            function _getModuleResultPath(guid) {
-                return MODULE_RESULTS_PATH + '/' + guid;
-            }
-
             function _getInitExerciseResult(exerciseTypeId, exerciseId, guid) {
 
                 var userProm = InfraConfigSrv.getUserData();
