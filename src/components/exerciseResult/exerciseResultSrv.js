@@ -373,9 +373,9 @@
 
             /* Module Results Functions */
             this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId, assignContentType, examId, dontInit) {
-                var dontIntExerciseRes = exerciseTypeId !== ExerciseTypeEnum.SECTION.enum;  // todo - check if it's ok.
+
                 return $q.all([
-                    this.getExerciseResult(exerciseTypeId, exerciseId, examId, null, dontIntExerciseRes),
+                    this.getExerciseResult(exerciseTypeId, exerciseId, examId, null, dontInit),
                     _getInitExerciseResult(exerciseTypeId, exerciseId, UtilitySrv.general.createGuid())
                 ]).then(function (results) {
                     var exerciseResult = results[0];
@@ -383,7 +383,7 @@
 
                     if (!exerciseResult) {
                         if (dontInit) {
-                            return;
+                           return;
                         }
                         exerciseResult = initResults;
                         exerciseResult.$$path = EXERCISE_RESULTS_PATH + '/' + exerciseResult.guid;
@@ -395,9 +395,8 @@
 
                     exerciseResult.moduleId = moduleId;
 
-                    exerciseResult.$save = function () {
-                        return moduleExerciseSaveFn.call(this, assignContentType);
-                    };
+                    exerciseResult.$save = exerciseSaveFn;
+
                     return exerciseResult;
                 });
             };
@@ -533,7 +532,7 @@
                     var exerciseStatuses = response.exercisesStatus || {};
 
                     return _getExerciseResultsGuids().then(function (exerciseResultsGuids) {
-                        var exerciseTypeId = exerciseResult.exerciseTypeId;
+                       /* var exerciseTypeId = exerciseResult.exerciseTypeId;
                         var exerciseId = exerciseResult.exerciseId;
 
                         if (!exerciseResultsGuids[exerciseTypeId]) {
@@ -541,10 +540,10 @@
                         }
 
                         exerciseResultsGuids[exerciseTypeId][exerciseId] = exerciseResult.guid;
-                        dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;
+                        dataToSave[USER_EXERCISE_RESULTS_PATH] = exerciseResultsGuids;*/
 
                         return ExerciseResultSrv.getModuleResult(exerciseResult.uid, exerciseResult.moduleId, undefined, undefined, assignContentType).then(function (moduleResult) {
-                            if (!moduleResult.exerciseResults) {
+                           /* if (!moduleResult.exerciseResults) {
                                 moduleResult.exerciseResults = {};
                             }
                             if (!moduleResult.exerciseResults[exerciseTypeId]) {
@@ -552,11 +551,11 @@
                             }
 
                             moduleResult.exerciseResults[exerciseTypeId][exerciseId] = exerciseResult.guid;
-
-                            if (exerciseStatuses[exerciseTypeId] && exerciseStatuses[exerciseTypeId][exerciseId]) {
+*/
+                           /* if (exerciseStatuses[exerciseTypeId] && exerciseStatuses[exerciseTypeId][exerciseId]) {
                                 var exerciseResultsPath = _getExerciseResultPath(exerciseResult.guid);
                                 dataToSave[exerciseResultsPath].status = exerciseStatuses[exerciseTypeId][exerciseId].status;
-                            }
+                            }*/
 
                             var getSectionAggregatedDataProm = $q.when();   // todo - duplicate code. make as a function.
                             if (exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum) {
@@ -580,7 +579,8 @@
 
                             return getSectionAggregatedDataProm.then(function(){
                                 return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
-                                    return StudentStorageSrv.update(dataToSave);
+                                    StudentStorageSrv.update(dataToSave);
+                                    return exerciseResult;
                                 });
                             });
 
