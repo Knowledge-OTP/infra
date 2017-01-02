@@ -456,8 +456,7 @@
                         }
                     );
                 });
-            }
-            ;
+            };
 
             this.getUserModuleResultsGuids = function (userId) {
                 var userResultsPath = USER_MODULE_RESULTS_PATH.replace('$$uid', userId);
@@ -506,6 +505,15 @@
                 return _getExerciseResultByGuid(guid).then(function (exerciseResult) {
                     exerciseResult.$save = exerciseSaveFn;
                     return exerciseResult;
+                });
+            };
+
+            this.getModuleResultByGuid = function (moduleResultGuid) {
+                var resultPath = MODULE_RESULTS_PATH + '/' + moduleResultGuid;
+                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                    return StudentStorageSrv.get(resultPath).then(function (moduleResult) {
+                        return moduleResult;
+                    });
                 });
             };
 
