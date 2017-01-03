@@ -9453,7 +9453,7 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
         this.isDueDatePass = function (dueDate) {
             var res = {
                 dateDiff: 0,
-                passDue: false,
+                passDue: false
             };
 
             if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
