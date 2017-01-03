@@ -475,9 +475,10 @@
                            still the canvas is empty, because there's no holding ground for when it will be ok to draw,
                            the solution for now it's to wait 1 sec and then register callbacks and try drawing.
                         */
-
+                        var self = this;
+                        
                         $timeout(function () {
-                            _registerFbListeners(questionId);
+                            _registerFbListeners.call(self, questionId);
                         }, 1000);
                     };
 
