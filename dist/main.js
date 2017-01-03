@@ -4687,17 +4687,16 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
             };
 
             /* Module Results Functions */
-            this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId, assignContentType, examId, dontInit) {
-                var dontIntExerciseRes = exerciseTypeId !== ExerciseTypeEnum.SECTION.enum;  // todo - check if it's ok.
+            this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId, assignContentType, examId, dontInitModuleRes, dontInitExerciseRes) {
                 return $q.all([
-                    this.getExerciseResult(exerciseTypeId, exerciseId, examId, null, dontIntExerciseRes),
+                    this.getExerciseResult(exerciseTypeId, exerciseId, examId, null, dontInitExerciseRes),
                     _getInitExerciseResult(exerciseTypeId, exerciseId, UtilitySrv.general.createGuid())
                 ]).then(function (results) {
                     var exerciseResult = results[0];
                     var initResults = results[1];
 
                     if (!exerciseResult) {
-                        if (dontInit) {
+                        if (dontInitModuleRes) {
                             return;
                         }
                         exerciseResult = initResults;
@@ -4768,7 +4767,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                                             exerciseId = exerciseData.exerciseId;
                                         }
 
-                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, moduleResult.examId).then(function (exerciseResults) {
+                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseTypeId, exerciseId, assignContentType, moduleResult.examId, undefined, true).then(function (exerciseResults) {
                                             if (exerciseResults) {
                                                 if(!moduleResult.exerciseResults[exerciseData.exerciseTypeId]){
                                                     moduleResult.exerciseResults[exerciseData.exerciseTypeId] = {};
