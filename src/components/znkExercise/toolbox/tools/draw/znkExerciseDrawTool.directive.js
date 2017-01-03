@@ -435,7 +435,7 @@
                         }
                     };
 
-                    var _registerFbListeners = function(questionId) {
+                    var _registerFbListeners = function (questionId) {
                         if (angular.isUndefined(questionId)) {
                             $log.error('znkExerciseDrawTool:registerFbListeners: questionId was not provided');
                             return;
@@ -465,7 +465,7 @@
                         });
 
                         self._fbLastRegisteredQuestionId = questionId;
-                    }
+                    };
 
                     EventsManager.prototype.registerFbListeners = function (questionId) {
                         /* this wrapper was made because of a bug that occurred sometimes when user have entered
