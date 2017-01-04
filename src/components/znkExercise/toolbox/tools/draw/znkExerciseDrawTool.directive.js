@@ -37,7 +37,8 @@
                         drawer,
                         eventsManager,
                         serverDrawingUpdater,
-                        currQuestion;
+                        currQuestion,
+                        registerFbListenersInDelayOnce;
 
                     var PIXEL_SIZE = 2;
                     var SERVER_UPDATED_FLUSH_TIME = 0;
@@ -469,17 +470,23 @@
 
                     EventsManager.prototype.registerFbListeners = function (questionId) {
                         /* this wrapper was made because of a bug that occurred sometimes when user have entered
-                           the first question in exercise which has a drawing, and the canvas is empty.
-                           as it seems, the problem is that the callback from firebase is invoked to soon, before the 
-                           canvas has fully loaded (even tho it seems that the canvas alreay appended and compiled), 
-                           still the canvas is empty, because there's no holding ground for when it will be ok to draw,
-                           the solution for now it's to wait 1 sec and then register callbacks and try drawing.
+                           to an exercise which has a drawing, and the canvas is empty. as it seems, the problem is 
+                           the callback from firebase is invoked to soon, before the canvas has fully loaded
+                           (even tho it seems that the canvas alreay appended and compiled), still the canvas is empty.
+                           because there's no holding ground for when it will be ok to draw, the solution for now it's
+                           to wait 1 sec only for first time entrance and then register callbacks and try drawing.
                         */
                         var self = this;
                         
-                        $timeout(function () {
-                            _registerFbListeners.call(self, questionId);
-                        }, 1000);
+                        if (!registerFbListenersInDelayOnce) {
+
+                            $timeout(function () {
+                              _registerFbListeners.call(self, questionId);
+                            }, 1000);
+
+                        } else {
+                             _registerFbListeners.call(self, questionId);
+                        }
                     };
 
 
@@ -528,6 +535,11 @@
                         if (scope.d.drawMode === DRAWING_MODES.NONE) {
                             return;
                         }
+                        
+                        // clear the canvas each before it will try to reload the new drawing
+                        // because if you move fast between questions, it can draw to the wrong one.
+                        drawer.clean();
+
                         eventsManager.registerFbListeners(currQuestion.id);
                     }
 
@@ -674,6 +686,11 @@
                         }
 
                         currQuestion = _currQuestion;
+
+                        // if newIndex not equel oldIndex, it meens not the first entrance, change flag to true
+                        if (newIndex !== oldIndex) {
+                           registerFbListenersInDelayOnce = true;
+                        }
 
                         if (serverDrawingUpdater) {
                             serverDrawingUpdater.flush();
