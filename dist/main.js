@@ -12113,7 +12113,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 }
 
                                 function _determineIfShowButton () {
-                                    return isInLiveSession && isLastQuestion && exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum || (_isReviewMode() && isLastQuestion && exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum);
+                                    return (isInLiveSession && isLastQuestion && (exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum || angular.isUndefined(exerciseReviewStatus))) || 
+                                    (_isReviewMode() && isLastQuestion && (exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum || angular.isUndefined(exerciseReviewStatus)));
                                 }
 
                                 scope.showBtn = _determineIfShowButton();
