@@ -10,7 +10,9 @@
         ENGLISH: 5,
         SCIENCE: 6,
         VERBAL: 7,
-        ESSAY: 8
+        ESSAY: 8,
+        MATHLVL1: 9,
+        MATHLVL2: 10
     };
 
     angular.module('znk.infra.exerciseUtility').constant('SubjectEnumConst', subjectEnum);
@@ -28,7 +30,9 @@
                 ['ENGLISH', subjectEnum.ENGLISH, 'english'],
                 ['SCIENCE', subjectEnum.SCIENCE, 'science'],
                 ['VERBAL', subjectEnum.VERBAL, 'verbal'],
-                ['ESSAY', subjectEnum.ESSAY, 'essay']
+                ['ESSAY', subjectEnum.ESSAY, 'essay'],
+                ['MATHLVL1', subjectEnum.MATHLVL1, 'mathlvl1'],
+                ['MATHLVL2', subjectEnum.MATHLVL2, 'mathlvl2']
             ]);
 
             return SubjectEnum;
