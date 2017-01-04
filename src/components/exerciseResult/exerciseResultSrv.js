@@ -179,12 +179,15 @@
                         });
                     }
 
+                    _updateHomeworkModuleResultsStatus();
+
                     return getSectionAggregatedDataProm.then(function () {
                         return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                             StudentStorageSrv.update(dataToSave);
                             return exerciseResult;
                         });
                     });
+
                 });
             }
 

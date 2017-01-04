@@ -113,6 +113,27 @@
                     });
                 });
             };
+
+            self.getAllHomeworkModuleResult = function(){
+                var assignmentsResPath = 'users/$$uid/assignmentResults';
+                var moduleResPath = 'moduleResults/';
+                return _getStudentStorage().then(function(studentStorage){
+                    var promArr = [];
+                    var moduleResArr = [];
+                    studentStorage.get(assignmentsResPath).then(function(hwModuleResultsGuids){
+                        angular.forEach(hwModuleResultsGuids,function(moduleGuid){
+                            var prom = studentStorage.get(moduleResPath + moduleGuid).then(function(moduleRes){
+                                moduleResArr.push(moduleRes);
+                            });
+                            promArr.push(prom);
+                        })
+                    });
+
+                    return $q.all(promArr).then(function(){
+                        return promArr;
+                    })
+                })
+            }
         }
     );
 })(angular);
