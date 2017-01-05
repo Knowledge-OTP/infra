@@ -5045,7 +5045,9 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
         ENGLISH: 5,
         SCIENCE: 6,
         VERBAL: 7,
-        ESSAY: 8
+        ESSAY: 8,
+        MATHLVL1: 9,
+        MATHLVL2: 10
     };
 
     angular.module('znk.infra.exerciseUtility').constant('SubjectEnumConst', subjectEnum);
@@ -5063,7 +5065,9 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
                 ['ENGLISH', subjectEnum.ENGLISH, 'english'],
                 ['SCIENCE', subjectEnum.SCIENCE, 'science'],
                 ['VERBAL', subjectEnum.VERBAL, 'verbal'],
-                ['ESSAY', subjectEnum.ESSAY, 'essay']
+                ['ESSAY', subjectEnum.ESSAY, 'essay'],
+                ['MATHLVL1', subjectEnum.MATHLVL1, 'mathlvl1'],
+                ['MATHLVL2', subjectEnum.MATHLVL2, 'mathlvl2']
             ]);
 
             return SubjectEnum;
@@ -9347,6 +9351,32 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
+        var daysInMs = 86400000;
+
+        this.SEVEN_DAYS_IN_MS = daysInMs*7;
+
+        this.isDueDatePass = function (dueDate) {
+            var res = {
+                dateDiff: 0,
+                passDue: false
+            };
+
+            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
+                return res;
+            }
+
+            res.dateDiff = Math.abs(parseInt((Date.now() - dueDate) / daysInMs, 0));
+            res.passDue =  dueDate - Date.now() < 0;
+            return res;
+        };
+    }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.utility').factory('UtilitySrv', [
         '$q',
         function ($q) {
@@ -9439,32 +9469,6 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 
             return UtilitySrv;
         }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
-        var daysInMs = 86400000;
-
-        this.SEVEN_DAYS_IN_MS = daysInMs*7;
-
-        this.isDueDatePass = function (dueDate) {
-            var res = {
-                dateDiff: 0,
-                passDue: false
-            };
-
-            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
-                return res;
-            }
-
-            res.dateDiff = Math.abs(parseInt((Date.now() - dueDate) / daysInMs, 0));
-            res.passDue =  dueDate - Date.now() < 0;
-            return res;
-        };
-    }
     ]);
 })(angular);
 
@@ -12114,7 +12118,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                                 function _determineIfShowButton () {
                                     return (isInLiveSession && isLastQuestion && (exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum || angular.isUndefined(exerciseReviewStatus))) || 
-                                    (_isReviewMode() && isLastQuestion && (exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum || angular.isUndefined(exerciseReviewStatus)));
+                                    (isInLiveSession && _isReviewMode() && isLastQuestion && (exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum || angular.isUndefined(exerciseReviewStatus)));
                                 }
 
                                 scope.showBtn = _determineIfShowButton();
