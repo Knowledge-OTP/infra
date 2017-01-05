@@ -670,7 +670,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             var goToAssignmentText = 'ASSIGN_MODULE.GO_TO_ASSIGNMENT';
             var closeText = 'ASSIGN_MODULE.CLOSE';
 
-            var homeworkPath = 'users/$$uid/assignments/assignmentResults';
+            var homeworkPath = 'users/$$uid/assignmentResults';
 
             function _navigateToHomework() {
                 $state.go('app.eTutoring');
@@ -732,7 +732,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             }
 
             function _updateAssignmentResult(guid) {
-                var path = 'users/$$uid/assignments/assignmentResults/' + guid + '/isComplete';
+                var path = 'users/$$uid/assignmentResults/' + guid + '/isComplete';
                 return _getStudentStorage().then(function (userStorage) {
                     userStorage.update(path, true);
                 });
@@ -755,7 +755,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             }
 
             self.hasLatePractice = function () {
-                var path = 'users/$$uid/assignments/assignmentResults';
+                var path = 'users/$$uid/assignmentResults';
                 return _getStudentStorage().then(function (userStorage) {
                     return userStorage.get(path).then(function (homework) {
                         var notCompletedHomework = getNotCompletedHomework(homework);
@@ -764,6 +764,28 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                         } else {
                             return false;
                         }
+                    });
+                });
+            };
+
+            self.getAllHomeworkModuleResult = function(){
+                var assignmentsResPath = 'users/$$uid/assignmentResults';
+                var moduleResPath = 'moduleResults/';
+
+                return _getStudentStorage().then(function(studentStorage){
+                    var promArr = [];
+                    var moduleResArr = [];
+                    studentStorage.get(assignmentsResPath).then(function(hwModuleResultsGuids){
+                        angular.forEach(hwModuleResultsGuids,function(moduleGuid){
+                            var prom = studentStorage.get(moduleResPath + moduleGuid).then(function(moduleRes){
+                                moduleResArr.push(moduleRes);
+                            });
+                            promArr.push(prom);
+                        });
+                    });
+
+                    return $q.all(promArr).then(function(){
+                        return promArr;
                     });
                 });
             };
@@ -5045,7 +5067,9 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
         ENGLISH: 5,
         SCIENCE: 6,
         VERBAL: 7,
-        ESSAY: 8
+        ESSAY: 8,
+        MATHLVL1: 9,
+        MATHLVL2: 10
     };
 
     angular.module('znk.infra.exerciseUtility').constant('SubjectEnumConst', subjectEnum);
@@ -5063,7 +5087,9 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
                 ['ENGLISH', subjectEnum.ENGLISH, 'english'],
                 ['SCIENCE', subjectEnum.SCIENCE, 'science'],
                 ['VERBAL', subjectEnum.VERBAL, 'verbal'],
-                ['ESSAY', subjectEnum.ESSAY, 'essay']
+                ['ESSAY', subjectEnum.ESSAY, 'essay'],
+                ['MATHLVL1', subjectEnum.MATHLVL1, 'mathlvl1'],
+                ['MATHLVL2', subjectEnum.MATHLVL2, 'mathlvl2']
             ]);
 
             return SubjectEnum;

@@ -402,7 +402,7 @@
             var goToAssignmentText = 'ASSIGN_MODULE.GO_TO_ASSIGNMENT';
             var closeText = 'ASSIGN_MODULE.CLOSE';
 
-            var homeworkPath = 'users/$$uid/assignments/assignmentResults';
+            var homeworkPath = 'users/$$uid/assignmentResults';
 
             function _navigateToHomework() {
                 $state.go('app.eTutoring');
@@ -464,7 +464,7 @@
             }
 
             function _updateAssignmentResult(guid) {
-                var path = 'users/$$uid/assignments/assignmentResults/' + guid + '/isComplete';
+                var path = 'users/$$uid/assignmentResults/' + guid + '/isComplete';
                 return _getStudentStorage().then(function (userStorage) {
                     userStorage.update(path, true);
                 });
@@ -487,7 +487,7 @@
             }
 
             self.hasLatePractice = function () {
-                var path = 'users/$$uid/assignments/assignmentResults';
+                var path = 'users/$$uid/assignmentResults';
                 return _getStudentStorage().then(function (userStorage) {
                     return userStorage.get(path).then(function (homework) {
                         var notCompletedHomework = getNotCompletedHomework(homework);
@@ -496,6 +496,28 @@
                         } else {
                             return false;
                         }
+                    });
+                });
+            };
+
+            self.getAllHomeworkModuleResult = function(){
+                var assignmentsResPath = 'users/$$uid/assignmentResults';
+                var moduleResPath = 'moduleResults/';
+
+                return _getStudentStorage().then(function(studentStorage){
+                    var promArr = [];
+                    var moduleResArr = [];
+                    studentStorage.get(assignmentsResPath).then(function(hwModuleResultsGuids){
+                        angular.forEach(hwModuleResultsGuids,function(moduleGuid){
+                            var prom = studentStorage.get(moduleResPath + moduleGuid).then(function(moduleRes){
+                                moduleResArr.push(moduleRes);
+                            });
+                            promArr.push(prom);
+                        });
+                    });
+
+                    return $q.all(promArr).then(function(){
+                        return promArr;
                     });
                 });
             };

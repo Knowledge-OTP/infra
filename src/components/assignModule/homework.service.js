@@ -16,7 +16,7 @@
             var goToAssignmentText = 'ASSIGN_MODULE.GO_TO_ASSIGNMENT';
             var closeText = 'ASSIGN_MODULE.CLOSE';
 
-            var homeworkPath = 'users/$$uid/assignments/assignmentResults';
+            var homeworkPath = 'users/$$uid/assignmentResults';
 
             function _navigateToHomework() {
                 $state.go('app.eTutoring');
@@ -65,20 +65,18 @@
                 }
             }
 
-            function getNotCompletedHomework(homework) {
-                if(angular.isUndefined(homework) || homework === null){
-                    return;
-                }
-                var keys = Object.keys(homework);
-                for (var i = 0; i < keys.length; i++) {
-                    if (!homework[keys[i]].isComplete) {
-                        return homework[keys[i]];
+            function getNotCompletedHomework() {
+                _getAllHomeworkModuleResult().then(function(allHomeworkModulesResults){
+                    for(var i = 0; i < allHomeworkModulesResults.length; i++) {
+                        if(!allHomeworkModulesResults[i].isComplete) {
+                            return allHomeworkModulesResults[i];
+                        }
                     }
-                }
+                });
             }
 
             function _updateAssignmentResult(guid) {
-                var path = 'users/$$uid/assignments/assignmentResults/' + guid + '/isComplete';
+                var path = 'users/$$uid/assignmentResults/' + guid + '/isComplete';
                 return _getStudentStorage().then(function (userStorage) {
                     userStorage.update(path, true);
                 });
@@ -101,39 +99,86 @@
             }
 
             self.hasLatePractice = function () {
-                var path = 'users/$$uid/assignments/assignmentResults';
-                return _getStudentStorage().then(function (userStorage) {
-                    return userStorage.get(path).then(function (homework) {
-                        var notCompletedHomework = getNotCompletedHomework(homework);
-                        if (angular.isDefined(notCompletedHomework)) {
-                            return isHomeworkIsLate(notCompletedHomework);
-                        } else {
-                            return false;
-                        }
-                    });
-                });
+                var notCompletedHomework = getNotCompletedHomework();
+                if (angular.isDefined(notCompletedHomework)) {
+                    return isHomeworkIsLate(notCompletedHomework);
+                } else {
+                    return false;
+                }
             };
 
-            self.getAllHomeworkModuleResult = function(){
+            function _getAllHomeworkModuleResult () {
                 var assignmentsResPath = 'users/$$uid/assignmentResults';
                 var moduleResPath = 'moduleResults/';
+
                 return _getStudentStorage().then(function(studentStorage){
                     var promArr = [];
                     var moduleResArr = [];
-                    studentStorage.get(assignmentsResPath).then(function(hwModuleResultsGuids){
+                    return studentStorage.get(assignmentsResPath).then(function(hwModuleResultsGuids){
                         angular.forEach(hwModuleResultsGuids,function(moduleGuid){
                             var prom = studentStorage.get(moduleResPath + moduleGuid).then(function(moduleRes){
                                 moduleResArr.push(moduleRes);
                             });
                             promArr.push(prom);
-                        })
-                    });
+                        });
 
-                    return $q.all(promArr).then(function(){
-                        return promArr;
-                    })
+                        return $q.all(promArr).then(function(){
+                            return moduleResArr
+                        });
+                    });
+                });
+            };
+
+            function _updateModuleResultAsComplete(homeworkModuleResultGuid){
+                var path = 'moduleResults/' + homeworkModuleResultGuid + '/isComplete';
+                return _getStudentStorage().then(function(studentStorage){
+                    studentStorage.update(path, true);
+                });
+            }
+
+            function _updateHomeworkStatus(homeworkModuleResult, currentExerciseResult, getExerciseResult){
+                var promoArr = [];
+                var exercisesReultsArr = [];
+                var dontInit = true;
+                angular.forEach(homeworkModuleResult.exercises, function(exercise){
+                    var prom = getExerciseResult(exercise.exerciseTypeId, exercise.exerciseId, exercise.examId, null, dontInit).then(function(exerciseRes){
+                        if(exerciseRes && exerciseRes.guid === currentExerciseResult.guid){
+                            exercisesReultsArr.push(currentExerciseResult);
+                        } else {
+                            if(exerciseRes){
+                                exercisesReultsArr.push(exerciseRes);
+                            }
+                        }
+
+                    });
+                    promoArr.push(prom);
+                });
+
+                $q.all(promoArr).then(function(){
+                    _updateModuleResultAsComplete(homeworkModuleResult.guid)
+
+                    if(homeworkModuleResult.exercises.length !== exercisesReultsArr.length) {
+                        return;
+                    }
+                    for (var i = 0; i < exercisesReultsArr.length; i++) {
+                        if (!exercisesReultsArr[i].isComplete) {
+                            return;
+                        }
+                    }
+                    _updateModuleResultAsComplete(homeworkModuleResult.guid)
                 })
             }
+
+            self.updateAllHomeworkStatus = function(currentExerciseResult, getExerciseResult){
+                _getAllHomeworkModuleResult().then(function(allHomeworkModulesResults){
+                    for(var i = 0 ; i < allHomeworkModulesResults.length; i++){
+                        if(!allHomeworkModulesResults[i].isComplete){
+                            _updateHomeworkStatus(allHomeworkModulesResults[i],currentExerciseResult, getExerciseResult);
+                        }
+                    }
+                });
+            };
+
         }
     );
 })(angular);
