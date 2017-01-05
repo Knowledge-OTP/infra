@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
     angular.module('znk.infra.assignModule').service('HomeworkSrv',
-        function ($q, $log, InfraConfigSrv, PopUpSrv, $state, ExamSrv, DueDateSrv, $translate) {
+        function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate) {
             'ngInject';
             var self = this;
             var studentStorage = InfraConfigSrv.getStudentStorage();
@@ -18,44 +18,35 @@
 
             var homeworkPath = 'users/$$uid/assignmentResults';
 
-            function _navigateToHomework() {
-                $state.go('app.eTutoring');
-            }
-
             function _getStudentStorage() {
                 return studentStorage;
             }
 
             var completeAssignmentBtn = {
-                resolveVal: _navigateToHomework
+                resolveVal: ''
             };
 
             var closeBtn = {};
 
             function _notCompletedHomeworkHandler(homeworkObj) {
-                ExamSrv.getExam(homeworkObj.examId).then(function (examObj) {
-                    if (!examObj.isCompleted) {
-                        if(isHomeworkIsLate(homeworkObj)){
-                            $translate([latePopupTitle, latePopupContent, goToAssignmentText, closeText]).then(function(res){
-                                var title = res[latePopupTitle];
-                                var content = res[latePopupContent];
-                                completeAssignmentBtn.text = res[goToAssignmentText];
-                                closeBtn.text = res[closeText];
-                                PopUpSrv.basePopup('error-popup homework-popup', 'popup-exclamation-mark', title, content, [closeBtn, completeAssignmentBtn]);
-                            });
-                        } else {
-                            $translate([popupTitle, popupContent, goToAssignmentText, closeText]).then(function(res){
-                                var title = res[popupTitle];
-                                var content = res[popupContent];
-                                completeAssignmentBtn.text = res[goToAssignmentText];
-                                closeBtn.text = res[closeText];
-                                PopUpSrv.basePopup('warning-popup homework-popup', 'popup-exclamation-mark', title, content, [closeBtn, completeAssignmentBtn]);
-                            });
-                        }
-                    } else {
-                        _updateAssignmentResult(homeworkObj.guid);
-                    }
-                });
+                if(isHomeworkIsLate(homeworkObj)){
+                    $translate([latePopupTitle, latePopupContent, goToAssignmentText, closeText]).then(function(res){
+                        var title = res[latePopupTitle];
+                        var content = res[latePopupContent];
+                        completeAssignmentBtn.text = res[goToAssignmentText];
+                        closeBtn.text = res[closeText];
+                        PopUpSrv.basePopup('error-popup homework-popup', 'popup-exclamation-mark', title, content, [closeBtn, completeAssignmentBtn]);
+                    });
+                } else {
+                    $translate([popupTitle, popupContent, goToAssignmentText, closeText]).then(function(res){
+                        var title = res[popupTitle];
+                        var content = res[popupContent];
+                        completeAssignmentBtn.text = res[goToAssignmentText];
+                        closeBtn.text = res[closeText];
+                        PopUpSrv.basePopup('warning-popup homework-popup', 'popup-exclamation-mark', title, content, [closeBtn, completeAssignmentBtn]);
+                    });
+                }
+
             }
 
             function _homeworkHandler(homework) {
@@ -65,6 +56,28 @@
                 }
             }
 
+            function _getAllHomeworkModuleResult () {
+                var assignmentsResPath = 'users/$$uid/assignmentResults';
+                var moduleResPath = 'moduleResults/';
+
+                return _getStudentStorage().then(function(studentStorage){
+                    var promArr = [];
+                    var moduleResArr = [];
+                    return studentStorage.get(assignmentsResPath).then(function(hwModuleResultsGuids){
+                        angular.forEach(hwModuleResultsGuids,function(moduleGuid){
+                            var prom = studentStorage.get(moduleResPath + moduleGuid).then(function(moduleRes){
+                                moduleResArr.push(moduleRes);
+                            });
+                            promArr.push(prom);
+                        });
+
+                        return $q.all(promArr).then(function(){
+                            return moduleResArr;
+                        });
+                    });
+                });
+            }
+
             function getNotCompletedHomework() {
                 _getAllHomeworkModuleResult().then(function(allHomeworkModulesResults){
                     for(var i = 0; i < allHomeworkModulesResults.length; i++) {
@@ -72,13 +85,6 @@
                             return allHomeworkModulesResults[i];
                         }
                     }
-                });
-            }
-
-            function _updateAssignmentResult(guid) {
-                var path = 'users/$$uid/assignmentResults/' + guid + '/isComplete';
-                return _getStudentStorage().then(function (userStorage) {
-                    userStorage.update(path, true);
                 });
             }
 
@@ -106,79 +112,6 @@
                     return false;
                 }
             };
-
-            function _getAllHomeworkModuleResult () {
-                var assignmentsResPath = 'users/$$uid/assignmentResults';
-                var moduleResPath = 'moduleResults/';
-
-                return _getStudentStorage().then(function(studentStorage){
-                    var promArr = [];
-                    var moduleResArr = [];
-                    return studentStorage.get(assignmentsResPath).then(function(hwModuleResultsGuids){
-                        angular.forEach(hwModuleResultsGuids,function(moduleGuid){
-                            var prom = studentStorage.get(moduleResPath + moduleGuid).then(function(moduleRes){
-                                moduleResArr.push(moduleRes);
-                            });
-                            promArr.push(prom);
-                        });
-
-                        return $q.all(promArr).then(function(){
-                            return moduleResArr
-                        });
-                    });
-                });
-            };
-
-            function _updateModuleResultAsComplete(homeworkModuleResultGuid){
-                var path = 'moduleResults/' + homeworkModuleResultGuid + '/isComplete';
-                return _getStudentStorage().then(function(studentStorage){
-                    studentStorage.update(path, true);
-                });
-            }
-
-            function _updateHomeworkStatus(homeworkModuleResult, currentExerciseResult, getExerciseResult){
-                var promoArr = [];
-                var exercisesReultsArr = [];
-                var dontInit = true;
-                angular.forEach(homeworkModuleResult.exercises, function(exercise){
-                    var prom = getExerciseResult(exercise.exerciseTypeId, exercise.exerciseId, exercise.examId, null, dontInit).then(function(exerciseRes){
-                        if(exerciseRes && exerciseRes.guid === currentExerciseResult.guid){
-                            exercisesReultsArr.push(currentExerciseResult);
-                        } else {
-                            if(exerciseRes){
-                                exercisesReultsArr.push(exerciseRes);
-                            }
-                        }
-
-                    });
-                    promoArr.push(prom);
-                });
-
-                $q.all(promoArr).then(function(){
-                    _updateModuleResultAsComplete(homeworkModuleResult.guid)
-
-                    if(homeworkModuleResult.exercises.length !== exercisesReultsArr.length) {
-                        return;
-                    }
-                    for (var i = 0; i < exercisesReultsArr.length; i++) {
-                        if (!exercisesReultsArr[i].isComplete) {
-                            return;
-                        }
-                    }
-                    _updateModuleResultAsComplete(homeworkModuleResult.guid)
-                })
-            }
-
-            self.updateAllHomeworkStatus = function(currentExerciseResult, getExerciseResult){
-                _getAllHomeworkModuleResult().then(function(allHomeworkModulesResults){
-                    for(var i = 0 ; i < allHomeworkModulesResults.length; i++){
-                        if(!allHomeworkModulesResults[i].isComplete){
-                            _updateHomeworkStatus(allHomeworkModulesResults[i],currentExerciseResult, getExerciseResult);
-                        }
-                    }
-                });
-            };
-
         }
     );
 })(angular);

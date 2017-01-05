@@ -286,6 +286,10 @@
                 return this.adapter.offEvent.apply(this.adapter, arguments);
             };
 
+            StorageSrv.prototype.query = function(){
+                return this.adapter.offEvent.apply(this.adapter, arguments);
+            }
+
             StorageSrv.variables = {
                 currTimeStamp: '%currTimeStamp%',
                 uid: '$$uid',

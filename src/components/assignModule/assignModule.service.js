@@ -1,8 +1,8 @@
 (function (angular) {
     'use strict';
     angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv', 'StudentContextSrv', 'StorageSrv', 'AssignContentEnum',
-        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, StudentContextSrv, StorageSrv, AssignContentEnum) {
+        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv', 'StudentContextSrv', 'StorageSrv', 'AssignContentEnum','$rootScope', 'exerciseEventsConst',
+        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, StudentContextSrv, StorageSrv, AssignContentEnum, $rootScope, exerciseEventsConst) {
             var userAssignModuleService = {};
             var registerEvents = {};
             var USER_ASSIGNMENTS_PATH = StorageSrv.variables.appUserSpacePath + '/assignments';
@@ -357,6 +357,83 @@
                 };
 
             }
+
+            function _getAllHomeworkModuleResult () {
+                var assignmentsResPath = 'users/$$uid/assignmentResults';
+                var moduleResPath = 'moduleResults/';
+
+                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                    var promArr = [];
+                    var moduleResArr = [];
+                    return StudentStorageSrv.get(assignmentsResPath).then(function(hwModuleResultsGuids){
+                        angular.forEach(hwModuleResultsGuids,function(moduleGuid){
+                            var prom = StudentStorageSrv.get(moduleResPath + moduleGuid).then(function(moduleRes){
+                                moduleResArr.push(moduleRes);
+                            });
+                            promArr.push(prom);
+                        });
+
+                        return $q.all(promArr).then(function(){
+                            return moduleResArr;
+                        });
+                    });
+                });
+            }
+
+            function _updateModuleResultAsComplete(homeworkModuleResultGuid){
+                var path = 'moduleResults/' + homeworkModuleResultGuid + '/isComplete';
+                return InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
+                    studentStorage.update(path, true);
+                });
+            }
+
+            function _updateHomeworkStatus(homeworkModuleResult, currentExerciseResult){
+                var promoArr = [];
+                var exercisesReultsArr = [];
+                var dontInit = true;
+                angular.forEach(homeworkModuleResult.exercises, function(exercise){
+                    var prom = ExerciseResultSrv.getExerciseResult(exercise.exerciseTypeId, exercise.exerciseId, exercise.examId, null, dontInit).then(function(exerciseRes){
+                        if(exerciseRes && exerciseRes.guid === currentExerciseResult.guid){
+                            exercisesReultsArr.push(currentExerciseResult);
+                        } else {
+                            if(exerciseRes){
+                                exercisesReultsArr.push(exerciseRes);
+                            }
+                        }
+                    });
+                    promoArr.push(prom);
+                });
+
+                $q.all(promoArr).then(function(){
+                    if(homeworkModuleResult.exercises.length !== exercisesReultsArr.length) {
+                        return;
+                    }
+                    for (var i = 0; i < exercisesReultsArr.length; i++) {
+                        if (!exercisesReultsArr[i].isComplete) {
+                            return;
+                        }
+                    }
+                    _updateModuleResultAsComplete(homeworkModuleResult.guid);
+                });
+            }
+
+            function updateAllHomeworkStatus (currentExerciseResult) {
+                _getAllHomeworkModuleResult().then(function(allHomeworkModulesResults){
+                    for(var i = 0 ; i < allHomeworkModulesResults.length; i++){
+                        if(!allHomeworkModulesResults[i].isComplete){
+                            _updateHomeworkStatus(allHomeworkModulesResults[i],currentExerciseResult);
+                        }
+                    }
+                });
+            }
+
+            userAssignModuleService.registerToFinishExerciseEvents = function() {
+                angular.forEach(exerciseEventsConst,function(eventTypeNameObj){
+                    $rootScope.$on(eventTypeNameObj.FINISH, function(res){
+                        updateAllHomeworkStatus(res);
+                    });
+                });
+            };
 
             return userAssignModuleService;
         }

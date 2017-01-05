@@ -179,10 +179,6 @@
                         });
                     }
 
-                    if(exerciseResult.isComplete || true){
-                        HomeworkSrv.updateAllHomeworkStatus(exerciseResult, getExerciseResult);
-                    }
-
                     return getSectionAggregatedDataProm.then(function () {
                         return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                             StudentStorageSrv.update(dataToSave);
