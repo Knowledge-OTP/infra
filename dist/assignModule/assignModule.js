@@ -384,20 +384,32 @@
 
             }
 
-            function _getAllHomeworkModuleResult () {
-                var assignmentsResPath = 'users/$$uid/assignmentResults';
+            function __getModuleResultByGuidsAndAddToArr(studentStorageSrv, moduleResGuids, moduleResultsArr, promArr){
                 var moduleResPath = 'moduleResults/';
+                angular.forEach(moduleResGuids,function(moduleGuid){
+                    var prom = studentStorageSrv.get(moduleResPath + moduleGuid).then(function(moduleRes){
+                        moduleResultsArr.push(moduleRes);
+                    });
+                    promArr.push(prom);
+                });
+            }
+
+            function _getAllModulesTypesResults () {
+                var assignmentsResPath = 'users/$$uid/assignmentResults';
+                var modulesResultsPath = 'users/$$uid/moduleResults';
 
                 return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
-                    var promArr = [];
-                    var moduleResArr = [];
-                    return StudentStorageSrv.get(assignmentsResPath).then(function(hwModuleResultsGuids){
-                        angular.forEach(hwModuleResultsGuids,function(moduleGuid){
-                            var prom = StudentStorageSrv.get(moduleResPath + moduleGuid).then(function(moduleRes){
-                                moduleResArr.push(moduleRes);
-                            });
-                            promArr.push(prom);
-                        });
+                    return $q.all([
+                        StudentStorageSrv.get(assignmentsResPath),
+                        StudentStorageSrv.get(modulesResultsPath)
+                    ]).then(function(res){
+                        var promArr = [];
+                        var moduleResArr = [];
+                        var assignmentsResGuids = res[0];
+                        var moduleResultsGuids = res[1];
+
+                        __getModuleResultByGuidsAndAddToArr(StudentStorageSrv, assignmentsResGuids, moduleResArr, promArr);
+                        __getModuleResultByGuidsAndAddToArr(StudentStorageSrv, moduleResultsGuids, moduleResArr, promArr);
 
                         return $q.all(promArr).then(function(){
                             return moduleResArr;
@@ -443,20 +455,29 @@
                 });
             }
 
-            function updateAllHomeworkStatus (currentExerciseResult){
-                _getAllHomeworkModuleResult().then(function(allHomeworkModulesResults){
-                    for(var i = 0 ; i < allHomeworkModulesResults.length; i++){
-                        if(!allHomeworkModulesResults[i].isComplete){
-                            _updateHomeworkStatus(allHomeworkModulesResults[i],currentExerciseResult);
+            function updateAllHomeworkStatus (currentExerciseResult) {
+                _getAllModulesTypesResults().then(function(allModulesTypesResults){
+                    for(var i = 0 ; i < allModulesTypesResults.length; i++){
+                        if(!allModulesTypesResults[i].isComplete && _isExerciseInExercisesArray(allModulesTypesResults[i].exercises, currentExerciseResult)){
+                            _updateHomeworkStatus(allModulesTypesResults[i],currentExerciseResult);
                         }
                     }
                 });
             }
 
-            this.registerToFinishExerciseEvents = function(){
+            function _isExerciseInExercisesArray(exercisesArr, exercises){
+                for(var i = 0 ; i < exercisesArr.length; i++){
+                    if(exercisesArr[i].exerciseId === exercises.exerciseId){
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            userAssignModuleService.registerToFinishExerciseEvents = function() {
                 angular.forEach(exerciseEventsConst,function(eventTypeNameObj){
-                    $rootScope.$on(eventTypeNameObj.FINISH, function(res){
-                        updateAllHomeworkStatus(res);
+                    $rootScope.$on(eventTypeNameObj.FINISH, function(eventData, exerciseContent, currentExerciseResult){
+                        updateAllHomeworkStatus(currentExerciseResult);
                     });
                 });
             };
