@@ -2646,7 +2646,8 @@
                         drawer,
                         eventsManager,
                         serverDrawingUpdater,
-                        currQuestion;
+                        currQuestion,
+                        registerFbListenersInDelayOnce;
 
                     var PIXEL_SIZE = 2;
                     var SERVER_UPDATED_FLUSH_TIME = 0;
@@ -2855,8 +2856,8 @@
                             var yCoord = parseInt(coords[1]);
                             var width = 10 * PIXEL_SIZE;
                             var height = 10 * PIXEL_SIZE;
-                            var xOffset = width/2;
-                            var yOffset = height/2;
+                            var xOffset = width / 2;
+                            var yOffset = height / 2;
                             canvasToChange.clearRect(xCoord - xOffset, yCoord - yOffset, width, height);
                         });
                     };
@@ -2983,11 +2984,11 @@
                             this._hoveredElements = [];
                         }
 
-                        this._hoveredElements.push({'hoveredElement' : elementToHoverOn, 'onHoverCb' : onHoverCb});
+                        this._hoveredElements.push({ 'hoveredElement': elementToHoverOn, 'onHoverCb': onHoverCb });
                     };
 
 
-                    EventsManager.prototype.killHoverEvents = function() {
+                    EventsManager.prototype.killHoverEvents = function () {
                         angular.forEach(this._hoveredElements, function (elementAndCbPair) {
                             var domHoveredElement = elementAndCbPair.hoveredElement[0];
                             domHoveredElement.removeEventListener("mouseenter", elementAndCbPair.onHoverCb);
@@ -3012,10 +3013,10 @@
                         this._mouseEventsRegistered = null;
                     };
 
-                    var _fbChildCallbackWrapper = function(canvasContextName, fbCallbackNum) {
+                    var _fbChildCallbackWrapper = function (canvasContextName, fbCallbackNum) {
 
                         function _fbChildChanged(snapShot) {
-                            var canvasToChange = _getCanvasContextByContextName(canvasContextName); 
+                            var canvasToChange = _getCanvasContextByContextName(canvasContextName);
                             var coordsStr = snapShot.key();
                             var color = snapShot.val();
 
@@ -3034,17 +3035,17 @@
                         }
 
                         switch (fbCallbackNum) {
-                                case eventsManager._fbCallbackEnum.CHILD_CHANGED:
-                                    return _fbChildChanged;
-                                case eventsManager._fbCallbackEnum.CHILD_REMOVED:
-                                    return _fbChildRemoved;
-                                default:
-                                    $log.error('znkExerciseDrawTool:_fbChildCallbackWrapper: wrong fbCallbackNum received!');
-                                    return;
+                            case eventsManager._fbCallbackEnum.CHILD_CHANGED:
+                                return _fbChildChanged;
+                            case eventsManager._fbCallbackEnum.CHILD_REMOVED:
+                                return _fbChildRemoved;
+                            default:
+                                $log.error('znkExerciseDrawTool:_fbChildCallbackWrapper: wrong fbCallbackNum received!');
+                                return;
                         }
                     };
 
-                    EventsManager.prototype.registerFbListeners = function (questionId) {
+                    var _registerFbListeners = function (questionId) {
                         if (angular.isUndefined(questionId)) {
                             $log.error('znkExerciseDrawTool:registerFbListeners: questionId was not provided');
                             return;
@@ -3072,12 +3073,34 @@
                             });
 
                         });
+
                         self._fbLastRegisteredQuestionId = questionId;
+                    };
+
+                    EventsManager.prototype.registerFbListeners = function (questionId) {
+                        /* this wrapper was made because of a bug that occurred sometimes when user have entered
+                           to an exercise which has a drawing, and the canvas is empty. as it seems, the problem is 
+                           the callback from firebase is invoked to soon, before the canvas has fully loaded
+                           (even tho it seems that the canvas alreay appended and compiled), still the canvas is empty.
+                           because there's no holding ground for when it will be ok to draw, the solution for now it's
+                           to wait 1 sec only for first time entrance and then register callbacks and try drawing.
+                        */
+                        var self = this;
+                        
+                        if (!registerFbListenersInDelayOnce) {
+
+                            $timeout(function () {
+                              _registerFbListeners.call(self, questionId);
+                            }, 1000);
+
+                        } else {
+                             _registerFbListeners.call(self, questionId);
+                        }
                     };
 
 
                     EventsManager.prototype.killFbListeners = function () {
-                        
+
                         var self = this;
 
                         var canvasContextNames = _getCanvasContextNamesOfQuestion(self._fbLastRegisteredQuestionId);
@@ -3096,24 +3119,24 @@
                     EventsManager.prototype.cleanQuestionListeners = function () {
                         this.killMouseEvents();
                         this.killFbListeners();
-                        this.killHoverEvents(); 
+                        this.killHoverEvents();
                     };
 
-                    EventsManager.prototype.registerDimensionsListener = function(dimensionsRef, onValueCb) {
+                    EventsManager.prototype.registerDimensionsListener = function (dimensionsRef, onValueCb) {
                         if (!this._dimensionsRefPairs) {
                             this._dimensionsRefPairs = [];
                         }
                         dimensionsRef.on('value', onValueCb);
-                        this._dimensionsRefPairs.push({dimensionsRef : dimensionsRef, onValueCb: onValueCb});
+                        this._dimensionsRefPairs.push({ dimensionsRef: dimensionsRef, onValueCb: onValueCb });
                     };
 
-                    EventsManager.prototype.killDimensionsListener = function() {
+                    EventsManager.prototype.killDimensionsListener = function () {
                         angular.forEach(this._dimensionsRefPairs, function (refAndCbPair) {
-                            refAndCbPair.dimensionsRef.off("value",refAndCbPair.onValueCb);
+                            refAndCbPair.dimensionsRef.off("value", refAndCbPair.onValueCb);
                         });
                     };
 
-                    EventsManager.prototype.cleanGlobalListeners = function() {
+                    EventsManager.prototype.cleanGlobalListeners = function () {
                         this.killDimensionsListener();
                     };
 
@@ -3121,19 +3144,24 @@
                         if (scope.d.drawMode === DRAWING_MODES.NONE) {
                             return;
                         }
+                        
+                        // clear the canvas each before it will try to reload the new drawing
+                        // because if you move fast between questions, it can draw to the wrong one.
+                        drawer.clean();
+
                         eventsManager.registerFbListeners(currQuestion.id);
                     }
 
                     function _init() {
                         canvasContainerElementInitial = angular.element(
                             '<div class="draw-tool-container" ' +
-                                'ng-show="d.drawMode !== d.DRAWING_MODES.NONE" ' +
-                                'ng-class="{' +
-                                '\'no-pointer-events\': d.drawMode === d.DRAWING_MODES.VIEW,' +
-                                '\'crosshair-cursor\': d.drawMode !== d.DRAWING_MODES.NONE && d.drawMode !== d.DRAWING_MODES.VIEW' +
-                                '}">' +
-                                '<canvas></canvas>' +
-                                '</div>'
+                            'ng-show="d.drawMode !== d.DRAWING_MODES.NONE" ' +
+                            'ng-class="{' +
+                            '\'no-pointer-events\': d.drawMode === d.DRAWING_MODES.VIEW,' +
+                            '\'crosshair-cursor\': d.drawMode !== d.DRAWING_MODES.NONE && d.drawMode !== d.DRAWING_MODES.VIEW' +
+                            '}">' +
+                            '<canvas></canvas>' +
+                            '</div>'
                         );
 
                         drawer = new Drawer();
@@ -3141,7 +3169,7 @@
                     }
 
                     function _setContextOnHover(elementToHoverOn, canvasOfElement, canvasContextName) {
-                        
+
                         var onHoverCb = function () {
                             if (currQuestion) {
                                 drawer.stopDrawing();
@@ -3165,7 +3193,7 @@
 
                             // get the height and the width of the wrapper element
                             function _getDimensionsByElementSize() {
-                                var height,width;
+                                var height, width;
                                 if (elementToCoverDomElement.scrollHeight) {
                                     height = elementToCoverDomElement.scrollHeight;
                                 }
@@ -3178,22 +3206,22 @@
                                 else {
                                     width = elementToCoverDomElement.offsetWidth;
                                 }
-                                return {height: height, width: width};
+                                return { height: height, width: width };
                             }
 
                             // return the larger dimensions out of the element's dimensions and the saved FB dimensions
                             function _compareFbDimensionsWithElementDimensions(fbDimensions) {
                                 var elementDimensions = _getDimensionsByElementSize();
                                 var finalDimensions = {
-                                    height : Math.max(elementDimensions.height, fbDimensions.height),
-                                    width : Math.max(elementDimensions.width, fbDimensions.width)
+                                    height: Math.max(elementDimensions.height, fbDimensions.height),
+                                    width: Math.max(elementDimensions.width, fbDimensions.width)
                                 };
                                 exerciseDrawingRefProm.child('maxDimensions').update(finalDimensions);
                                 return finalDimensions;
                             }
 
                             // set the canvas dimensions to the larger dimensions between the two ^
-                            var setDimensionsCb = function(data) {
+                            var setDimensionsCb = function (data) {
                                 // DOM dimensions
                                 var elementDimensions = _getDimensionsByElementSize();
                                 // FB dimensions
@@ -3207,7 +3235,7 @@
                                 }
                                 // compare them and set the canvas dimensions to be the larger between the two
                                 // also save the new maxDimensions to FB
-                                var finalDimensions = _compareFbDimensionsWithElementDimensions(maxDimensions);            
+                                var finalDimensions = _compareFbDimensionsWithElementDimensions(maxDimensions);
                                 canvasDomContainerElement[0].setAttribute('height', finalDimensions.height);
                                 canvasDomContainerElement[0].setAttribute('width', finalDimensions.width);
                                 canvasDomContainerElement.css('position', 'absolute');
@@ -3215,7 +3243,7 @@
                             };
 
                             // this piece of code fetches the previously calculated maxDimensions from firebase, and then kickstart all the functions we just went by above ^
-                            _getFbRef(questionId, canvasContextName).then(function(ref) {
+                            _getFbRef(questionId, canvasContextName).then(function (ref) {
                                 exerciseDrawingRefProm = ref;
                                 eventsManager.registerDimensionsListener(exerciseDrawingRefProm.child('maxDimensions'), setDimensionsCb);
                             });
@@ -3236,7 +3264,7 @@
                         var canvasDomContainerElement = canvasContainerElement.children();
                         canvasDomElement = canvasDomContainerElement[0];
 
-                        canvasContext = canvasDomElement.getContext("2d"); 
+                        canvasContext = canvasDomElement.getContext("2d");
 
                         // this is the attribute name passed to znkExerciseDrawContainer directive
                         var canvasContextName = elementToCover.attr('canvas-name');
@@ -3245,7 +3273,7 @@
                         _setContextOnHover(elementToCover, canvasDomElement, canvasContextName);
 
                         _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement, canvasContextName, question.id);
-                        
+
 
                         elementToCover.append(canvasContainerElement);
                         $compile(canvasContainerElement)(scope);
@@ -3259,7 +3287,7 @@
                     }
 
 
-                    
+
 
                     scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex, oldIndex, _currQuestion) {
                         if (angular.isUndefined(scope.d.drawMode)) {
@@ -3267,6 +3295,11 @@
                         }
 
                         currQuestion = _currQuestion;
+
+                        // if newIndex not equel oldIndex, it meens not the first entrance, change flag to true
+                        if (newIndex !== oldIndex) {
+                           registerFbListenersInDelayOnce = true;
+                        }
 
                         if (serverDrawingUpdater) {
                             serverDrawingUpdater.flush();
