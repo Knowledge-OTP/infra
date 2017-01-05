@@ -876,7 +876,7 @@
 
                                 function _determineIfShowButton () {
                                     return (isInLiveSession && isLastQuestion && (exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum || angular.isUndefined(exerciseReviewStatus))) || 
-                                    (_isReviewMode() && isLastQuestion && (exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum || angular.isUndefined(exerciseReviewStatus)));
+                                    (isInLiveSession && _isReviewMode() && isLastQuestion && (exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum || angular.isUndefined(exerciseReviewStatus)));
                                 }
 
                                 scope.showBtn = _determineIfShowButton();
