@@ -1,11 +1,17 @@
 (function (angular) {
     'use strict';
     angular.module('znk.infra.assignModule').service('HomeworkSrv',
-        function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate) {
+        function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv,
+         ExerciseResultSrv, ExamTypeConst, StorageSrv, ExerciseTypeEnum) {
             'ngInject';
+
             var self = this;
             var studentStorage = InfraConfigSrv.getStudentStorage();
             var ONE_WEEK_IN_MILLISECONDS = 604800000;
+            var MINI_TEST_HOMEWORK_TYPE = 2;
+            var ASSIGNMENTS_DATA_PATH = 'users/$$uid/assignments';
+            var ASSIGNMENT_RES_PATH = 'users/$$uid/assignmentResults';
+            var MODULE_RES_PATH = 'moduleResults/';
 
             var popupTitle = 'ASSIGN_MODULE.ASSIGNMENT_AVAILABLE';
             var popupContent = 'ASSIGN_MODULE.ASSIGNMENT_PENDING';
@@ -57,15 +63,12 @@
             }
 
             function _getAllHomeworkModuleResult () {
-                var assignmentsResPath = 'users/$$uid/assignmentResults';
-                var moduleResPath = 'moduleResults/';
-
                 return _getStudentStorage().then(function(studentStorage){
                     var promArr = [];
                     var moduleResArr = [];
-                    return studentStorage.get(assignmentsResPath).then(function(hwModuleResultsGuids){
+                    return studentStorage.get(ASSIGNMENT_RES_PATH).then(function(hwModuleResultsGuids){
                         angular.forEach(hwModuleResultsGuids,function(moduleGuid){
-                            var prom = studentStorage.get(moduleResPath + moduleGuid).then(function(moduleRes){
+                            var prom = studentStorage.get(MODULE_RES_PATH + moduleGuid).then(function(moduleRes){
                                 moduleResArr.push(moduleRes);
                             });
                             promArr.push(prom);
@@ -112,6 +115,52 @@
                     return false;
                 }
             };
+
+            self.assignHomework = function(){
+                return _getStudentStorage().then(function (studentStorage) {
+                    return studentStorage.get(ASSIGNMENTS_DATA_PATH).then(function(assignment){
+                        if(angular.equals({}, assignment) || angular.isUndefined(assignment) || assignment === null){
+                            $rootScope.$on(exerciseEventsConst.section.FINISH, _finishedSectionHandler);
+                        }
+                    });
+                });
+            };
+
+            function _finishedSectionHandler(eventData, exerciseContent, currentExerciseResult){
+                return ExamSrv.getExam(currentExerciseResult.examId).then(function (exam) {
+                    var sectionsResults = [];
+                    var promArr = [];
+                    var dontInit = true;
+                    if(exam.typeId !== ExamTypeConst.MINI){
+                        return;
+                    }
+                    angular.forEach(exam.sections, function (section) {
+                        var prom = ExerciseResultSrv.getExerciseResult(ExerciseTypeEnum.SECTION.enum, section.id, section.examId, null, dontInit).then(function(sectionResult){
+                            if(currentExerciseResult.exerciseId === section.id){
+                                sectionsResults.push(currentExerciseResult);
+                            } else{
+                                sectionsResults.push(sectionResult);
+                            }
+                        });
+                        promArr.push(prom);
+                    });
+
+                    $q.all(promArr).then(function(){
+                        for(var i = 0 ; i < sectionsResults.length; i++){
+                            if(sectionsResults[i] === null || !sectionsResults[i].isComplete){
+                                return;
+                            }
+                        }
+                        _getStudentStorage().then(function () {
+                            var homeworkObj = {
+                                assignmentStartDate:  StorageSrv.variables.currTimeStamp,
+                                lastAssignmentType : MINI_TEST_HOMEWORK_TYPE
+                            };
+                            studentStorage.set(ASSIGNMENTS_DATA_PATH, homeworkObj);
+                        });
+                    });
+                });
+            }
         }
     );
 })(angular);
