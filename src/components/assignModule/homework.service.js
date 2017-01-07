@@ -9,24 +9,10 @@
             var studentStorage = InfraConfigSrv.getStudentStorage();
             var ONE_WEEK_IN_MILLISECONDS = 604800000;
             var MINI_TEST_HOMEWORK_TYPE = 2;
+
             var ASSIGNMENTS_DATA_PATH = 'users/$$uid/assignments';
             var ASSIGNMENT_RES_PATH = 'users/$$uid/assignmentResults';
             var MODULE_RES_PATH = 'moduleResults/';
-
-            var popupTitle = 'ASSIGN_MODULE.ASSIGNMENT_AVAILABLE';
-            var popupContent = 'ASSIGN_MODULE.ASSIGNMENT_PENDING';
-
-            var latePopupTitle = 'ASSIGN_MODULE.YOUR_ASSIGNMENT_IS_LATE';
-            var latePopupContent = 'ASSIGN_MODULE.PlEASE_COMPLETE_ASSIGNMENT';
-
-            var goToAssignmentText = 'ASSIGN_MODULE.GO_TO_ASSIGNMENT';
-            var closeText = 'ASSIGN_MODULE.CLOSE';
-
-            var homeworkPath = 'users/$$uid/assignmentResults';
-
-            function _getStudentStorage() {
-                return studentStorage;
-            }
 
             var completeAssignmentBtn = {
                 resolveVal: ''
@@ -34,7 +20,20 @@
 
             var closeBtn = {};
 
+            function _getStudentStorage() {
+                return studentStorage;
+            }
+
             function _notCompletedHomeworkHandler(homeworkObj) {
+                var popupTitle = 'ASSIGN_MODULE.ASSIGNMENT_AVAILABLE';
+                var popupContent = 'ASSIGN_MODULE.ASSIGNMENT_PENDING';
+
+                var latePopupTitle = 'ASSIGN_MODULE.YOUR_ASSIGNMENT_IS_LATE';
+                var latePopupContent = 'ASSIGN_MODULE.PlEASE_COMPLETE_ASSIGNMENT';
+
+                var goToAssignmentText = 'ASSIGN_MODULE.GO_TO_ASSIGNMENT';
+                var closeText = 'ASSIGN_MODULE.CLOSE';
+
                 if(isHomeworkIsLate(homeworkObj)){
                     $translate([latePopupTitle, latePopupContent, goToAssignmentText, closeText]).then(function(res){
                         var title = res[latePopupTitle];
@@ -91,41 +90,6 @@
                 });
             }
 
-            self.homeworkPopUpReminder = function (uid) {
-                homeworkPath = homeworkPath.replace('$$uid', uid);
-                return _getStudentStorage().then(function (userStorage) {
-                    userStorage.onEvent('value', homeworkPath, _homeworkHandler);
-                });
-            };
-
-            function isHomeworkIsLate(homeworkObj) {
-                var dueDate = homeworkObj.date + ONE_WEEK_IN_MILLISECONDS;
-                var isDueDateObj = DueDateSrv.isDueDatePass(dueDate);
-                if(isDueDateObj.passDue) {
-                    return true;
-                }
-                return false;
-            }
-
-            self.hasLatePractice = function () {
-                var notCompletedHomework = getNotCompletedHomework();
-                if (angular.isDefined(notCompletedHomework)) {
-                    return isHomeworkIsLate(notCompletedHomework);
-                } else {
-                    return false;
-                }
-            };
-
-            self.assignHomework = function(){
-                return _getStudentStorage().then(function (studentStorage) {
-                    return studentStorage.get(ASSIGNMENTS_DATA_PATH).then(function(assignment){
-                        if(angular.equals({}, assignment) || angular.isUndefined(assignment) || assignment === null){
-                            $rootScope.$on(exerciseEventsConst.section.FINISH, _finishedSectionHandler);
-                        }
-                    });
-                });
-            };
-
             function _finishedSectionHandler(eventData, exerciseContent, currentExerciseResult){
                 return ExamSrv.getExam(currentExerciseResult.examId).then(function (exam) {
                     var sectionsResults = [];
@@ -161,6 +125,42 @@
                     });
                 });
             }
+
+            function isHomeworkIsLate(homeworkObj) {
+                var dueDate = homeworkObj.date + ONE_WEEK_IN_MILLISECONDS;
+                var isDueDateObj = DueDateSrv.isDueDatePass(dueDate);
+                if(isDueDateObj.passDue) {
+                    return true;
+                }
+                return false;
+            }
+
+            self.homeworkPopUpReminder = function (uid) {
+                var homeworkPath = 'users/$$uid/assignmentResults';
+                homeworkPath = homeworkPath.replace('$$uid', uid);
+                return _getStudentStorage().then(function (userStorage) {
+                    userStorage.onEvent('value', homeworkPath, _homeworkHandler);
+                });
+            };
+
+            self.hasLatePractice = function () {
+                var notCompletedHomework = getNotCompletedHomework();
+                if (angular.isDefined(notCompletedHomework)) {
+                    return isHomeworkIsLate(notCompletedHomework);
+                } else {
+                    return false;
+                }
+            };
+
+            self.assignHomework = function(){
+                return _getStudentStorage().then(function (studentStorage) {
+                    return studentStorage.get(ASSIGNMENTS_DATA_PATH).then(function(assignment){
+                        if(angular.equals({}, assignment) || angular.isUndefined(assignment) || assignment === null){
+                            $rootScope.$on(exerciseEventsConst.section.FINISH, _finishedSectionHandler);
+                        }
+                    });
+                });
+            };
         }
     );
 })(angular);
