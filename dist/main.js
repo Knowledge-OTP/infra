@@ -299,7 +299,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
         function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, StudentContextSrv, StorageSrv, AssignContentEnum, $rootScope, exerciseEventsConst) {
             var userAssignModuleService = {};
             var registerEvents = {};
-            var USER_ASSIGNMENTS_PATH = StorageSrv.variables.appUserSpacePath + '/assignments';
+            var USER_ASSIGNMENTS_DATA_PATH = StorageSrv.variables.appUserSpacePath + '/assignmentsData';
 
             userAssignModuleService.assignModules = {};
 
@@ -435,7 +435,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             userAssignModuleService.assignHomework = function(lastAssignmentType){
                 return InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
                     var homeworkObj = _buildHomeworkObj(lastAssignmentType);
-                    studentStorage.set(USER_ASSIGNMENTS_PATH,homeworkObj);
+                    studentStorage.set(USER_ASSIGNMENTS_DATA_PATH,homeworkObj);
                 });
             };
 
@@ -735,7 +735,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
             function _isExerciseInExercisesArray(exercisesArr, exercises){
                 for(var i = 0 ; i < exercisesArr.length; i++){
-                    if(exercisesArr[i].exerciseId === exercises.exerciseId){
+                    if(exercisesArr[i].exerciseId === exercises.exerciseId && exercisesArr[i].exerciseTypeId === exercises.exerciseTypeId){
                         return true;
                     }
                 }
