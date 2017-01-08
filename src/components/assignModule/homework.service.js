@@ -2,7 +2,7 @@
     'use strict';
     angular.module('znk.infra.assignModule').service('HomeworkSrv',
         function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv,
-         ExerciseResultSrv, ExamTypeConst, StorageSrv, ExerciseTypeEnum) {
+         ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum) {
             'ngInject';
 
             var self = this;
@@ -96,7 +96,7 @@
                     var sectionsResults = [];
                     var promArr = [];
                     var dontInit = true;
-                    if(exam.typeId !== ExamTypeConst.MINI){
+                    if(exam.typeId !== ExamTypeEnum.MINI.enum){
                         return;
                     }
                     angular.forEach(exam.sections, function (section) {

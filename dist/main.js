@@ -323,8 +323,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 },
                 homework: {
                     id: AssignContentEnum.PRACTICE.enum,
-                    fbPath: 'assignments/assignmentResults',
-                    shortFbPath: 'assignmentResults'
+                    fbPath: 'assignmentResults',
                 }
             };
 
@@ -758,8 +757,8 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 (function (angular) {
     'use strict';
     angular.module('znk.infra.assignModule').service('HomeworkSrv',
-        ["$q", "$log", "InfraConfigSrv", "PopUpSrv", "DueDateSrv", "$translate", "$rootScope", "exerciseEventsConst", "ExamSrv", "ExerciseResultSrv", "ExamTypeConst", "StorageSrv", "ExerciseTypeEnum", function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv,
-         ExerciseResultSrv, ExamTypeConst, StorageSrv, ExerciseTypeEnum) {
+        ["$q", "$log", "InfraConfigSrv", "PopUpSrv", "DueDateSrv", "$translate", "$rootScope", "exerciseEventsConst", "ExamSrv", "ExerciseResultSrv", "ExamTypeEnum", "StorageSrv", "ExerciseTypeEnum", function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv,
+         ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum) {
             'ngInject';
 
             var self = this;
@@ -853,7 +852,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     var sectionsResults = [];
                     var promArr = [];
                     var dontInit = true;
-                    if(exam.typeId !== ExamTypeConst.MINI){
+                    if(exam.typeId !== ExamTypeEnum.MINI.enum){
                         return;
                     }
                     angular.forEach(exam.sections, function (section) {

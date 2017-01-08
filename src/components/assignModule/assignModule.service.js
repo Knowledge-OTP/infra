@@ -29,8 +29,7 @@
                 },
                 homework: {
                     id: AssignContentEnum.PRACTICE.enum,
-                    fbPath: 'assignments/assignmentResults',
-                    shortFbPath: 'assignmentResults'
+                    fbPath: 'assignmentResults',
                 }
             };
 
