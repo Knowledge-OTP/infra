@@ -3794,7 +3794,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
   $templateCache.put("components/znkExercise/core/template/znkExerciseReviewSectionBtnTemplate.html",
     "<div class=\"btn-section\" ng-if=\"showBtn\">\n" +
     "    <div class=\"review-btn-wrap show-opacity-animate ng-scope\">\n" +
-    "        <button class=\"review-btn\" ng-click=\"onReview()\">REVIEW</button>\n" +
+    "        <button class=\"review-btn\" ng-click=\"onReview()\">CONFIRM REVIEW</button>\n" +
     "    </div>\n" +
     "</div>\n" +
     "");

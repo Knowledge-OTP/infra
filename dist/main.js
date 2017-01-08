@@ -5013,6 +5013,20 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.exerciseUtility').factory('LiveSessionSubjectEnum', [
+        'EnumSrv',
+        function (EnumSrv, subjectEnum) {
+            return new EnumSrv.BaseEnum([
+                ['MATH', subjectEnum.MATH.enum, 'math'],
+                ['ENGLISH', subjectEnum.ENGLISH.enum, 'english']
+            ]);
+        }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.exerciseUtility').factory('QuestionFormatEnum', [
         'EnumSrv',
         function (EnumSrv) {
@@ -15036,7 +15050,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
   $templateCache.put("components/znkExercise/core/template/znkExerciseReviewSectionBtnTemplate.html",
     "<div class=\"btn-section\" ng-if=\"showBtn\">\n" +
     "    <div class=\"review-btn-wrap show-opacity-animate ng-scope\">\n" +
-    "        <button class=\"review-btn\" ng-click=\"onReview()\">REVIEW</button>\n" +
+    "        <button class=\"review-btn\" ng-click=\"onReview()\">CONFIRM REVIEW</button>\n" +
     "    </div>\n" +
     "</div>\n" +
     "");
