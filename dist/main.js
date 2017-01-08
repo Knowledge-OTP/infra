@@ -5164,10 +5164,10 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
 
     angular.module('znk.infra.exerciseUtility').factory('LiveSessionSubjectEnum', [
         'EnumSrv',
-        function (EnumSrv, subjectEnum) {
+        function (EnumSrv) {
             return new EnumSrv.BaseEnum([
-                ['MATH', subjectEnum.MATH.enum, 'math'],
-                ['ENGLISH', subjectEnum.ENGLISH.enum, 'english']
+                ['MATH', 1, 'math'],
+                ['ENGLISH', 2, 'english']
             ]);
         }
     ]);
