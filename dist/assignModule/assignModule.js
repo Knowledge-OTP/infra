@@ -489,8 +489,8 @@
 (function (angular) {
     'use strict';
     angular.module('znk.infra.assignModule').service('HomeworkSrv',
-        ["$q", "$log", "InfraConfigSrv", "PopUpSrv", "DueDateSrv", "$translate", "$rootScope", "exerciseEventsConst", "ExamSrv", "ExerciseResultSrv", "ExamTypeEnum", "StorageSrv", "ExerciseTypeEnum", function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv,
-         ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum) {
+        ["$q", "$log", "InfraConfigSrv", "PopUpSrv", "DueDateSrv", "$translate", "$rootScope", "exerciseEventsConst", "ExamSrv", "ExerciseResultSrv", "ExamTypeConst", "StorageSrv", "ExerciseTypeEnum", function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv,
+         ExerciseResultSrv, ExamTypeConst, StorageSrv, ExerciseTypeEnum) {
             'ngInject';
 
             var self = this;
@@ -550,68 +550,29 @@
                 });
             }
 
-            function _getAllHomeworkModuleResult () {
-                return _getStudentStorage().then(function(studentStorage){
-                    var promArr = [];
-                    var moduleResArr = [];
-                    return studentStorage.get(ASSIGNMENT_RES_PATH).then(function(hwModuleResultsGuids){
-                        angular.forEach(hwModuleResultsGuids,function(moduleGuid){
-                            var prom = studentStorage.get(MODULE_RES_PATH + moduleGuid).then(function(moduleRes){
-                                moduleResArr.push(moduleRes);
-                            });
-                            promArr.push(prom);
-                        });
+            function getNotCompletedHomework(homework) {
+                if(angular.isUndefined(homework) || homework === null){
+                    return;
+                }
+                var keys = Object.keys(homework);
+                for (var i = 0; i < keys.length; i++) {
+                    if (!homework[keys[i]].isComplete) {
+                        return homework[keys[i]];
+                    }
+                }
+            }
 
-                        return $q.all(promArr).then(function(){
-                            return moduleResArr;
-                        });
-                    });
+            function _updateAssignmentResult(guid) {
+                var path = 'users/$$uid/assignments/assignmentResults/' + guid + '/isComplete';
+                return _getStudentStorage().then(function (userStorage) {
+                    userStorage.update(path, true);
                 });
             }
 
-            function getNotCompletedHomework() {
-                return _getAllHomeworkModuleResult().then(function(allHomeworkModulesResults){
-                    for(var i = 0; i < allHomeworkModulesResults.length; i++) {
-                        if(!allHomeworkModulesResults[i].isComplete) {
-                            return allHomeworkModulesResults[i];
-                        }
-                    }
-                });
-            }
-
-            function _finishedSectionHandler(eventData, exerciseContent, currentExerciseResult){
-                return ExamSrv.getExam(currentExerciseResult.examId).then(function (exam) {
-                    var sectionsResults = [];
-                    var promArr = [];
-                    var dontInit = true;
-                    if(exam.typeId !== ExamTypeEnum.MINI.enum){
-                        return;
-                    }
-                    angular.forEach(exam.sections, function (section) {
-                        var prom = ExerciseResultSrv.getExerciseResult(ExerciseTypeEnum.SECTION.enum, section.id, section.examId, null, dontInit).then(function(sectionResult){
-                            if(currentExerciseResult.exerciseId === section.id){
-                                sectionsResults.push(currentExerciseResult);
-                            } else{
-                                sectionsResults.push(sectionResult);
-                            }
-                        });
-                        promArr.push(prom);
-                    });
-
-                    $q.all(promArr).then(function(){
-                        for(var i = 0 ; i < sectionsResults.length; i++){
-                            if(sectionsResults[i] === null || !sectionsResults[i].isComplete){
-                                return;
-                            }
-                        }
-                        _getStudentStorage().then(function (studentStorage) {
-                            var homeworkObj = {
-                                assignmentStartDate:  StorageSrv.variables.currTimeStamp,
-                                lastAssignmentType : MINI_TEST_HOMEWORK_TYPE
-                            };
-                            studentStorage.set(ASSIGNMENTS_DATA_PATH, homeworkObj);
-                        });
-                    });
+            self.homeworkPopUpReminder = function (uid) {
+                homeworkPath = homeworkPath.replace('$$uid', uid);
+                return _getStudentStorage().then(function (userStorage) {
+                    userStorage.onEvent('value', homeworkPath, _homeworkHandler);
                 });
             }
 
