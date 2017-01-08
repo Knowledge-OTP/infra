@@ -852,7 +852,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     var sectionsResults = [];
                     var promArr = [];
                     var dontInit = true;
-                    if(exam.typeId !== ExamTypeEnum.MINI.enum){
+                    if(exam.typeId !== ExamTypeEnum.MINI_TEST.enum){
                         return;
                     }
                     angular.forEach(exam.sections, function (section) {
