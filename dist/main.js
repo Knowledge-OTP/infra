@@ -1270,6 +1270,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                         if (status) {
                             _changeBtnState(status);
                         }
+
+                        return status;
                     });
                 }
 
