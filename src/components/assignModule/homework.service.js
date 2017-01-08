@@ -10,7 +10,7 @@
             var ONE_WEEK_IN_MILLISECONDS = 604800000;
             var MINI_TEST_HOMEWORK_TYPE = 2;
 
-            var ASSIGNMENTS_DATA_PATH = 'users/$$uid/assignments';
+            var ASSIGNMENTS_DATA_PATH = 'users/$$uid/assignmentsData';
             var ASSIGNMENT_RES_PATH = 'users/$$uid/assignmentResults';
             var MODULE_RES_PATH = 'moduleResults/';
 
@@ -55,10 +55,11 @@
             }
 
             function _homeworkHandler(homework) {
-                var notCompletedHomework = getNotCompletedHomework(homework);
-                if (notCompletedHomework) {
-                    _notCompletedHomeworkHandler(notCompletedHomework);
-                }
+                getNotCompletedHomework(homework).then(function(notCompletedHomework){
+                    if (notCompletedHomework) {
+                        _notCompletedHomeworkHandler(notCompletedHomework);
+                    }
+                });
             }
 
             function _getAllHomeworkModuleResult () {
@@ -81,7 +82,7 @@
             }
 
             function getNotCompletedHomework() {
-                _getAllHomeworkModuleResult().then(function(allHomeworkModulesResults){
+                return _getAllHomeworkModuleResult().then(function(allHomeworkModulesResults){
                     for(var i = 0; i < allHomeworkModulesResults.length; i++) {
                         if(!allHomeworkModulesResults[i].isComplete) {
                             return allHomeworkModulesResults[i];
@@ -115,7 +116,7 @@
                                 return;
                             }
                         }
-                        _getStudentStorage().then(function () {
+                        _getStudentStorage().then(function (studentStorage) {
                             var homeworkObj = {
                                 assignmentStartDate:  StorageSrv.variables.currTimeStamp,
                                 lastAssignmentType : MINI_TEST_HOMEWORK_TYPE
