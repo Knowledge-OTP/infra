@@ -1,11 +1,18 @@
 (function (angular) {
     'use strict';
-    angular.module('znk.infra.assignModule').service('UserAssignModuleService', [
-        'ZnkModuleService', '$q', 'SubjectEnum', 'ExerciseResultSrv', 'ExerciseStatusEnum', 'ExerciseTypeEnum', 'EnumSrv', '$log', 'InfraConfigSrv', 'StudentContextSrv', 'StorageSrv', 'AssignContentEnum',
-        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv, $log, InfraConfigSrv, StudentContextSrv, StorageSrv, AssignContentEnum) {
+    angular.module('znk.infra.assignModule').service('UserAssignModuleService',
+        function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv,
+                  $log, InfraConfigSrv, StudentContextSrv, StorageSrv, AssignContentEnum, $rootScope,
+                  exerciseEventsConst, UtilitySrv) {
+            'ngInject';
+
             var userAssignModuleService = {};
             var registerEvents = {};
-            var USER_ASSIGNMENTS_PATH = StorageSrv.variables.appUserSpacePath + '/assignments';
+
+            var USER_ASSIGNMENTS_DATA_PATH = 'users/$$uid/assignmentsData';
+            var USER_ASSIGNMENT_RES_PATH = 'users/$$uid/assignmentResults';
+            var USER_MODULE_RES_PATH = 'users/$$uid/moduleResults';
+            var MODULE_RES_PATH = 'moduleResults/';
 
             userAssignModuleService.assignModules = {};
 
@@ -141,7 +148,7 @@
             userAssignModuleService.assignHomework = function(lastAssignmentType){
                 return InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
                     var homeworkObj = _buildHomeworkObj(lastAssignmentType);
-                    studentStorage.set(USER_ASSIGNMENTS_PATH,homeworkObj);
+                    studentStorage.set(USER_ASSIGNMENTS_DATA_PATH,homeworkObj);
                 });
             };
 
@@ -358,7 +365,98 @@
 
             }
 
+            function _getAllModulesTypesResults () {
+                return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                    return $q.all([
+                        StudentStorageSrv.get(USER_ASSIGNMENT_RES_PATH),
+                        StudentStorageSrv.get(USER_MODULE_RES_PATH)
+                    ]).then(function(res){
+                        var promArr = [];
+                        var moduleResultsArr = [];
+
+                        var assignmentsResGuids = UtilitySrv.object.convertToArray(res[0]);
+                        var moduleResultsGuids = UtilitySrv.object.convertToArray(res[1]);
+                        var allModuleResultsGuids = moduleResultsGuids.concat(assignmentsResGuids);
+
+                        angular.forEach(allModuleResultsGuids,function(moduleGuid){
+                            var prom = StudentStorageSrv.get(MODULE_RES_PATH + moduleGuid).then(function(moduleRes){
+                                moduleResultsArr.push(moduleRes);
+                            });
+                            promArr.push(prom);
+                        });
+
+                        return $q.all(promArr).then(function(){
+                            return moduleResultsArr;
+                        });
+                    });
+                });
+            }
+
+            function _updateModuleResultToCompleted(moduleResultGuid){
+                var path = MODULE_RES_PATH + moduleResultGuid + '/isComplete';
+                return InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
+                    studentStorage.update(path, true);
+                });
+            }
+
+            function _updateHomeworkStatus(moduleResult, currentExerciseResult){
+                var promoArr = [];
+                var exercisesReultsArr = [];
+                var dontInit = true;
+                angular.forEach(moduleResult.exercises, function(exercise){
+                    var prom = ExerciseResultSrv.getExerciseResult(exercise.exerciseTypeId, exercise.exerciseId, exercise.examId, null, dontInit).then(function(exerciseRes){
+                        if(exerciseRes && exerciseRes.guid === currentExerciseResult.guid){
+                            exercisesReultsArr.push(currentExerciseResult);
+                        } else {
+                            if(exerciseRes){
+                                exercisesReultsArr.push(exerciseRes);
+                            }
+                        }
+                    });
+                    promoArr.push(prom);
+                });
+
+                $q.all(promoArr).then(function(){
+                    if(moduleResult.exercises.length !== exercisesReultsArr.length) {
+                        return;
+                    }
+                    for (var i = 0; i < exercisesReultsArr.length; i++) {
+                        if (!exercisesReultsArr[i].isComplete) {
+                            return;
+                        }
+                    }
+                    _updateModuleResultToCompleted(moduleResult.guid);  // all module's exercises completed
+                });
+            }
+
+            function updateAllHomeworkStatus (currentExerciseResult) {
+                _getAllModulesTypesResults().then(function(allModulesTypesResults){
+                    for(var i = 0 ; i < allModulesTypesResults.length; i++){
+                        if(!allModulesTypesResults[i].isComplete && _isExerciseInExercisesArray(allModulesTypesResults[i].exercises, currentExerciseResult)){
+                            _updateHomeworkStatus(allModulesTypesResults[i],currentExerciseResult);
+                        }
+                    }
+                });
+            }
+
+            function _isExerciseInExercisesArray(exercisesArr, exercises){
+                for(var i = 0 ; i < exercisesArr.length; i++){
+                    if(exercisesArr[i].exerciseId === exercises.exerciseId && exercisesArr[i].exerciseTypeId === exercises.exerciseTypeId){
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            userAssignModuleService.registerToFinishExerciseEvents = function() {
+                angular.forEach(exerciseEventsConst,function(eventTypeNameObj){
+                    $rootScope.$on(eventTypeNameObj.FINISH, function(eventData, exerciseContent, currentExerciseResult){
+                        updateAllHomeworkStatus(currentExerciseResult);
+                    });
+                });
+            };
+
             return userAssignModuleService;
         }
-    ]);
+    );
 })(angular);
