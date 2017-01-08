@@ -70,6 +70,8 @@
                         if (status) {
                             _changeBtnState(status);
                         }
+
+                        return status;
                     });
                 }
 
