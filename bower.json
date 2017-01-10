@@ -6,7 +6,7 @@
   ],
   "dependencies": {
     "angular": "1.5.8",
-    "all-envs-config": "https://443652e0ead234894187f351c61bbe15af527410:x-oauth-basic@github.com/Knowledge-OTP/all-envs-config.git#~v0.0.10",
+    "all-envs-config": "https://443652e0ead234894187f351c61bbe15af527410:x-oauth-basic@github.com/Knowledge-OTP/all-envs-config.git#~v0.0.14",
     "angular-animate": "1.5.8",
     "angular-aria": "1.5.8",
     "angular-sanitize": "1.5.8",
