@@ -2,7 +2,7 @@
   "name": "infra",
   "version": "v5.0.65",
   "authors": [
-    "Zinkerz1"
+    "Zinkerz"
   ],
   "dependencies": {
     "angular": "1.5.8",
