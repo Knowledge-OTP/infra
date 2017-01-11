@@ -12244,7 +12244,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseReviewBtnSection',
-        ["ZnkExerciseViewModeEnum", "$q", "ZnkExerciseEvents", "znkSessionDataSrv", "ExerciseReviewStatusEnum", function (ZnkExerciseViewModeEnum, $q, ZnkExerciseEvents, znkSessionDataSrv, ExerciseReviewStatusEnum) {
+        ["ZnkExerciseViewModeEnum", "$q", "ZnkExerciseEvents", "znkSessionDataSrv", "ExerciseReviewStatusEnum", "ENV", function (ZnkExerciseViewModeEnum, $q, ZnkExerciseEvents, znkSessionDataSrv, ExerciseReviewStatusEnum, ENV) {
             'ngInject';
             return {
                 restrict: 'E',
@@ -12261,6 +12261,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         var getCurrentQuestionIndexProm = znkExerciseDrvCtrl.getCurrentIndex();
                         var viewMode = znkExerciseDrvCtrl.getViewMode();
                         var exerciseReviewStatus = scope.settings.exerciseReviewStatus;
+                        var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';
+                        
 
                         scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex) {
                             $q.all([
@@ -12280,8 +12282,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 }
 
                                 function _determineIfShowButton () {
-                                    return (isInLiveSession && isLastQuestion && (exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum || angular.isUndefined(exerciseReviewStatus))) || 
-                                    (isInLiveSession && _isReviewMode() && isLastQuestion && (exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum || angular.isUndefined(exerciseReviewStatus)));
+                                    return (isInLiveSession && isTeacherApp && isLastQuestion && (exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum || angular.isUndefined(exerciseReviewStatus))) || 
+                                    (isInLiveSession && isTeacherApp && _isReviewMode() && isLastQuestion && (exerciseReviewStatus === ExerciseReviewStatusEnum.NO.enum || angular.isUndefined(exerciseReviewStatus)));
                                 }
 
                                 scope.showBtn = _determineIfShowButton();
