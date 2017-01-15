@@ -236,7 +236,7 @@
                         userAssignModuleService.assignModules = moduleResults;
                         applyCB(registerEvents[userId][contentType].valueCB, contentType);
                     }).catch(function (err) {
-                        $log.debug('buildResultsFromGuids: Error ' , err);
+                        $log.error('buildResultsFromGuids: Error ' , err);
                     });
                 });
             }
@@ -503,6 +503,12 @@
                 popupResolveFn = fn;
             };
 
+            var topicsArray;
+
+            this.setTopicsArray = function (_topicsArray) {
+                topicsArray = _topicsArray;
+            };
+
             this.$get = ["$q", "$log", "InfraConfigSrv", "PopUpSrv", "DueDateSrv", "$translate", "$rootScope", "exerciseEventsConst", "ExamSrv", "ExerciseResultSrv", "ExamTypeEnum", "StorageSrv", "ExerciseTypeEnum", "$injector", function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv,
                                   ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum, $injector) {
                 'ngInject';
@@ -618,9 +624,16 @@
                                 }
                             }
                             _getStudentStorage().then(function (studentStorage) {
-                                var homeworkObj = {
-                                    assignmentStartDate: StorageSrv.variables.currTimeStamp,
-                                };
+                                if (!angular.isArray(topicsArray)) {
+                                    $log.error('HomeworkSrv: topics must be array!');
+                                }
+
+                                var homeworkObj = {};
+                                angular.forEach(topicsArray, function (topicId) {
+                                    homeworkObj[topicId] = {
+                                        assignmentStartDate: StorageSrv.variables.currTimeStamp
+                                    };
+                                });
                                 studentStorage.set(ASSIGNMENTS_DATA_PATH, homeworkObj);
                             });
                         });

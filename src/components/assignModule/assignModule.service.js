@@ -210,7 +210,7 @@
                         userAssignModuleService.assignModules = moduleResults;
                         applyCB(registerEvents[userId][contentType].valueCB, contentType);
                     }).catch(function (err) {
-                        $log.debug('buildResultsFromGuids: Error ' , err);
+                        $log.error('buildResultsFromGuids: Error ' , err);
                     });
                 });
             }
