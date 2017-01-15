@@ -1681,15 +1681,15 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 
              this.getBtnStatus = function _getBtnStatus(callStatus) {
                  var status;
-
+                 
                 switch(callStatus) {
                     case CallsStatusEnum.ACTIVE_CALL.enum:
                         status = CallsBtnStatusEnum.CALLED_BTN.enum;
                         break;
                     default:
-                        status = CallsBtnStatusEnum.CALL_BTN.enum;
+                        status = CallsBtnStatusEnum.CALL_BTN.enum;    
                 }
-
+                 
                 return status;
             };
 
@@ -5190,12 +5190,19 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
+    var LiveSessionSubject = {
+        MATH: 1,
+        ENGLISH: 2
+    };
+
+    angular.module('znk.infra.exerciseUtility').constant('LiveSessionSubjectConst', LiveSessionSubject);
+
     angular.module('znk.infra.exerciseUtility').factory('LiveSessionSubjectEnum', [
         'EnumSrv',
         function (EnumSrv) {
             return new EnumSrv.BaseEnum([
-                ['MATH', 1, 'math'],
-                ['ENGLISH', 2, 'english']
+                ['MATH', LiveSessionSubject.MATH, 'math'],
+                ['ENGLISH', LiveSessionSubject.ENGLISH, 'english']
             ]);
         }
     ]);
@@ -5272,7 +5279,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
     angular.module('znk.infra.exerciseUtility').factory('ExerciseUtilitySrv',
         function () {
             'ngInject';
-
+            
             var ExerciseUtilitySrv = {};
 
             return ExerciseUtilitySrv;
@@ -5299,7 +5306,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
                 if(!angular.isString(str) || !str.length){
                     return '';
                 }
-
+                
                 return str[0].toUpperCase() + str.substr(1);
             };
         }
@@ -6417,7 +6424,7 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function($template
 
 (function (angular) {
     'use strict';
-
+    
     angular.module('znk.infra.personalization')
         .service('PersonalizationSrv',
             ["StorageRevSrv", "$log", "$q", function (StorageRevSrv, $log, $q) {
@@ -7207,7 +7214,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
 (function(){
     'use strict';
-
+    
     angular.module('znk.infra.screenSharing').run(
         ["ScreenSharingEventsSrv", function(ScreenSharingEventsSrv){
             'ngInject';
@@ -9207,7 +9214,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.teachers', [
-
+        
     ]);
 })(angular);
 
@@ -9542,32 +9549,6 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
-        var daysInMs = 86400000;
-
-        this.SEVEN_DAYS_IN_MS = daysInMs*7;
-
-        this.isDueDatePass = function (dueDate) {
-            var res = {
-                dateDiff: 0,
-                passDue: false
-            };
-
-            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
-                return res;
-            }
-
-            res.dateDiff = Math.abs(parseInt((Date.now() - dueDate) / daysInMs, 0));
-            res.passDue =  dueDate - Date.now() < 0;
-            return res;
-        };
-    }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.utility').factory('UtilitySrv', [
         '$q',
         function ($q) {
@@ -9660,6 +9641,32 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 
             return UtilitySrv;
         }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
+        var daysInMs = 86400000;
+
+        this.SEVEN_DAYS_IN_MS = daysInMs*7;
+
+        this.isDueDatePass = function (dueDate) {
+            var res = {
+                dateDiff: 0,
+                passDue: false
+            };
+
+            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
+                return res;
+            }
+
+            res.dateDiff = Math.abs(parseInt((Date.now() - dueDate) / daysInMs, 0));
+            res.passDue =  dueDate - Date.now() < 0;
+            return res;
+        };
+    }
     ]);
 })(angular);
 
@@ -12290,7 +12297,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         var exerciseReviewStatus = scope.settings.exerciseReviewStatus;
                         var isExerciseComplete = scope.settings.isComplete;
                         var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';
-
+                        
 
                         scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex) {
                             $q.all([
@@ -12445,7 +12452,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             questionTypeGetterFn = typeGetterFn;
         };
 
-        var answersFormaterObjMap = {};
+        var answersFormaterObjMap = {};        
         this.setAnswersFormatValidtors = function (_answersFormaterObjMap) {
             answersFormaterObjMap = _answersFormaterObjMap;
         };
@@ -12469,7 +12476,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     return questionTypeGetterFn(question);
                 };
 
-                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {   
                     if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
                         $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
                         return;
@@ -12477,7 +12484,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                    var answersFormaterArr = answersFormaterObjMap[answerTypeId];
 
-                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer
+                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
                    if (angular.isUndefined(userAnswer) ||
                        !angular.isArray(answersFormaterArr) ||
                        !answersFormaterArr.length) {
@@ -12487,10 +12494,10 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                     var answersFormaterArrLength = answersFormaterArr.length;
 
-                    var answerValueBool, currentFormatter, functionGetter;
+                    var answerValueBool, currentFormatter, functionGetter;                     
                     for (var i = 0; i < answersFormaterArrLength; i++) {
                         currentFormatter = answersFormaterArr[i];
-
+                       
                         if (angular.isFunction(currentFormatter)) {
                             try {
                                  functionGetter = $injector.invoke(currentFormatter);
@@ -13437,12 +13444,12 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             var userAnswer = question.__questionStatus.userAnswer;
                             var answerTypeId = question.answerTypeId;
                             var currIndex = index || question.__questionStatus.index;
-
-                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function() {
-                                setPagerItemAnswerClass(currIndex, question);
+                            
+                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function() {               
+                                setPagerItemAnswerClass(currIndex, question); 
                             }, function() {
                                  var pagerItemElement = getPagerItemByIndex(currIndex);
-                                 pagerItemElement.removeClass('neutral correct wrong');
+                                 pagerItemElement.removeClass('neutral correct wrong');  
                             }, question);
                         }
 
@@ -13585,7 +13592,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     angular.module('znk.infra.znkExercise').service('ZnkExerciseDrawSrv',
         function () {
             //'ngInject';
-
+            
             var self = this;
 
             /** example of self.canvasContextManager
@@ -13598,7 +13605,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
              *                question: CanvasContextObject,
              *                answer: CanvasContextObject
              *             }
-             *  }
+             *  } 
              *
              *  the names (such as 'question' or 'answer') are set according to the attribute name 'canvas-name' of znkExerciseDrawContainer directive
              */
@@ -14509,14 +14516,14 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                     EventsManager.prototype.registerFbListeners = function (questionId) {
                         /* this wrapper was made because of a bug that occurred sometimes when user have entered
-                           to an exercise which has a drawing, and the canvas is empty. as it seems, the problem is
+                           to an exercise which has a drawing, and the canvas is empty. as it seems, the problem is 
                            the callback from firebase is invoked to soon, before the canvas has fully loaded
                            (even tho it seems that the canvas alreay appended and compiled), still the canvas is empty.
                            because there's no holding ground for when it will be ok to draw, the solution for now it's
                            to wait 1 sec only for first time entrance and then register callbacks and try drawing.
                         */
                         var self = this;
-
+                        
                         if (!registerFbListenersInDelayOnce) {
 
                             $timeout(function () {
@@ -14574,7 +14581,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         if (scope.d.drawMode === DRAWING_MODES.NONE) {
                             return;
                         }
-
+                        
                         // clear the canvas each before it will try to reload the new drawing
                         // because if you move fast between questions, it can draw to the wrong one.
                         drawer.clean();
