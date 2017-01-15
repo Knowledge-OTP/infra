@@ -85,7 +85,13 @@
                                 case CallsStatusEnum.ENDED_CALL.enum:
                                     $log.debug('call ended');
                                     // disconnect other user from call
-                                    getCallsSrv().disconnectCall();
+                                    if (callsData.isDisconnect && callsData.status !==CallsStatusEnum.ENDED_CALL.enum){
+                                        CallsDataGetterSrv.getUserCallActionStatus(callsData.callerId, callsData.receiverId).then(function (userCallData) {
+                                            getCallsSrv().forceDisconnect(userCallData);
+                                        });
+                                    } else {
+                                        getCallsSrv().disconnectCall();
+                                    }
                                     break;
                             }
                             _invokeCbs(registeredCbToCurrUserCallStateChange, [callsData]);
