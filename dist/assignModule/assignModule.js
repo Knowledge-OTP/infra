@@ -641,7 +641,7 @@
                 }
 
                 function isHomeworkIsLate(homeworkObj) {
-                    var dueDate = homeworkObj.date + ONE_WEEK_IN_MILLISECONDS;
+                    var dueDate = homeworkObj.assignDate + ONE_WEEK_IN_MILLISECONDS;
                     var isDueDateObj = DueDateSrv.isDueDatePass(dueDate);
                     if (isDueDateObj.passDue) {
                         return true;
@@ -658,12 +658,13 @@
                 };
 
                 HomeworkSrv.hasLatePractice = function () {
-                    var notCompletedHomework = getNotCompletedHomework();
-                    if (angular.isDefined(notCompletedHomework)) {
-                        return isHomeworkIsLate(notCompletedHomework);
-                    } else {
-                        return false;
-                    }
+                    return getNotCompletedHomework().then(function(notCompletedHomework){
+                        if (angular.isDefined(notCompletedHomework)) {
+                            return isHomeworkIsLate(notCompletedHomework);
+                        } else {
+                            return false;
+                        }
+                    });
                 };
 
                 HomeworkSrv.assignHomework = function () {

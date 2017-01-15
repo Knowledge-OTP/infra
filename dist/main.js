@@ -909,7 +909,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 }
 
                 function isHomeworkIsLate(homeworkObj) {
-                    var dueDate = homeworkObj.date + ONE_WEEK_IN_MILLISECONDS;
+                    var dueDate = homeworkObj.assignDate + ONE_WEEK_IN_MILLISECONDS;
                     var isDueDateObj = DueDateSrv.isDueDatePass(dueDate);
                     if (isDueDateObj.passDue) {
                         return true;
@@ -926,12 +926,13 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 };
 
                 HomeworkSrv.hasLatePractice = function () {
-                    var notCompletedHomework = getNotCompletedHomework();
-                    if (angular.isDefined(notCompletedHomework)) {
-                        return isHomeworkIsLate(notCompletedHomework);
-                    } else {
-                        return false;
-                    }
+                    return getNotCompletedHomework().then(function(notCompletedHomework){
+                        if (angular.isDefined(notCompletedHomework)) {
+                            return isHomeworkIsLate(notCompletedHomework);
+                        } else {
+                            return false;
+                        }
+                    });
                 };
 
                 HomeworkSrv.assignHomework = function () {
@@ -9648,9 +9649,9 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
     'use strict';
 
     angular.module('znk.infra.utility').service('DueDateSrv', [function () {
-        var daysInMs = 86400000;
+        var dayInMs = 86400000;
 
-        this.SEVEN_DAYS_IN_MS = daysInMs*7;
+        this.SEVEN_DAYS_IN_MS = dayInMs*7;
 
         this.isDueDatePass = function (dueDate) {
             var res = {
@@ -9662,7 +9663,7 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
                 return res;
             }
 
-            res.dateDiff = Math.abs(parseInt((Date.now() - dueDate) / daysInMs, 0));
+            res.dateDiff = Math.abs(parseInt((Date.now() - dueDate) / dayInMs, 0));
             res.passDue =  dueDate - Date.now() < 0;
             return res;
         };
