@@ -8,7 +8,6 @@
             var self = this;
             var studentStorage = InfraConfigSrv.getStudentStorage();
             var ONE_WEEK_IN_MILLISECONDS = 604800000;
-            var MINI_TEST_HOMEWORK_TYPE = 2;
 
             var ASSIGNMENTS_DATA_PATH = 'users/$$uid/assignmentsData';
             var ASSIGNMENT_RES_PATH = 'users/$$uid/assignmentResults';
@@ -119,7 +118,6 @@
                         _getStudentStorage().then(function (studentStorage) {
                             var homeworkObj = {
                                 assignmentStartDate:  StorageSrv.variables.currTimeStamp,
-                                lastAssignmentType : MINI_TEST_HOMEWORK_TYPE
                             };
                             studentStorage.set(ASSIGNMENTS_DATA_PATH, homeworkObj);
                         });

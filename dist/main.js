@@ -504,7 +504,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                         userAssignModuleService.assignModules = moduleResults;
                         applyCB(registerEvents[userId][contentType].valueCB, contentType);
                     }).catch(function (err) {
-                        $log('buildResultsFromGuids: Error ' , err);
+                        $log.debug('buildResultsFromGuids: Error ' , err);
                     });
                 });
             }
@@ -764,7 +764,6 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             var self = this;
             var studentStorage = InfraConfigSrv.getStudentStorage();
             var ONE_WEEK_IN_MILLISECONDS = 604800000;
-            var MINI_TEST_HOMEWORK_TYPE = 2;
 
             var ASSIGNMENTS_DATA_PATH = 'users/$$uid/assignmentsData';
             var ASSIGNMENT_RES_PATH = 'users/$$uid/assignmentResults';
@@ -875,7 +874,6 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                         _getStudentStorage().then(function (studentStorage) {
                             var homeworkObj = {
                                 assignmentStartDate:  StorageSrv.variables.currTimeStamp,
-                                lastAssignmentType : MINI_TEST_HOMEWORK_TYPE
                             };
                             studentStorage.set(ASSIGNMENTS_DATA_PATH, homeworkObj);
                         });
@@ -4898,7 +4896,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                                     moduleResult.exerciseResults = [];
                                     angular.forEach(moduleResult.exercises, function (exerciseData) {
 
-                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseData.exerciseTypeId, exerciseData.exerciseId, assignContentType, moduleResult.examId, true).then(function (exerciseResults) {
+                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseData.exerciseTypeId, exerciseData.exerciseId, assignContentType, exerciseData.examId, true).then(function (exerciseResults) {
                                             if (exerciseResults) {
                                                 if(!moduleResult.exerciseResults[exerciseResults.exerciseTypeId]){
                                                     moduleResult.exerciseResults[exerciseResults.exerciseTypeId] = {};
