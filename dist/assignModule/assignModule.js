@@ -598,24 +598,24 @@
                     });
                 }
 
-                function _finishedSectionHandler(eventData, exerciseContent, currentExerciseResult) {
-                    return ExamSrv.getExam(currentExerciseResult.examId).then(function (exam) {
-                        var sectionsResults = [];
-                        var promArr = [];
-                        var dontInit = true;
-                        if (exam.typeId !== ExamTypeEnum.MINI_TEST.enum) {
-                            return;
-                        }
-                        angular.forEach(exam.sections, function (section) {
-                            var prom = ExerciseResultSrv.getExerciseResult(ExerciseTypeEnum.SECTION.enum, section.id, section.examId, null, dontInit).then(function (sectionResult) {
-                                if (currentExerciseResult.exerciseId === section.id) {
-                                    sectionsResults.push(currentExerciseResult);
-                                } else {
-                                    sectionsResults.push(sectionResult);
-                                }
-                            });
-                            promArr.push(prom);
+            function _finishedSectionHandler(eventData, exerciseContent, currentExerciseResult){
+                return ExamSrv.getExam(currentExerciseResult.examId).then(function (exam) {
+                    var sectionsResults = [];
+                    var promArr = [];
+                    var dontInit = true;
+                    if(exam.typeId !== ExamTypeEnum.MINI_TEST.enum){
+                        return;
+                    }
+                    angular.forEach(exam.sections, function (section) {
+                        var prom = ExerciseResultSrv.getExerciseResult(ExerciseTypeEnum.SECTION.enum, section.id, section.examId, null, dontInit).then(function(sectionResult){
+                            if(currentExerciseResult.exerciseId === section.id){
+                                sectionsResults.push(currentExerciseResult);
+                            } else{
+                                sectionsResults.push(sectionResult);
+                            }
                         });
+                        promArr.push(prom);
+                    });
 
                         $q.all(promArr).then(function () {
                             for (var i = 0; i < sectionsResults.length; i++) {
