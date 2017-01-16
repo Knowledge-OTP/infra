@@ -11,7 +11,8 @@
                 isEnabled = _isEnabled;
             };
 
-            this.$get = function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, $q, CALL_UPDATE) {
+            this.$get = function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log,
+                                  $rootScope, $injector, $q, CALL_UPDATE) {
                 'ngInject';
                 var registeredCbToCurrUserCallStateChange = [];
                 var currUserCallState;
@@ -81,14 +82,26 @@
                                         // close the modal, show the ActiveCallDRV
                                         // CallsUiSrv.closeModal();
                                     }
+                                    InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
+                                        var callPath = 'calls/' + callsData.guid;
+                                        var adapterRef = globalStorage.adapter.getRef(callPath);
+                                        adapterRef.onDisconnect().update({
+                                            status: CallsStatusEnum.ENDED_CALL.enum,
+                                            isDisconnect: true
+                                        });
+                                    });
                                     break;
                                 case CallsStatusEnum.ENDED_CALL.enum:
                                     $log.debug('call ended');
                                     // disconnect other user from call
-                                    if (callsData.isDisconnect && callsData.status !==CallsStatusEnum.ENDED_CALL.enum){
-                                        CallsDataGetterSrv.getUserCallActionStatus(callsData.callerId, callsData.receiverId).then(function (userCallData) {
-                                            getCallsSrv().forceDisconnect(userCallData);
-                                        });
+                                    if (callsData.isDisconnect){
+                                        var userCallData = {
+                                            action: 1,
+                                            callerId: callsData.callerId,
+                                            newReceiverId: callsData.receiverId,
+                                            newCallGuid: callsData.guid
+                                        };
+                                        getCallsSrv().forceDisconnect(userCallData);
                                     } else {
                                         getCallsSrv().disconnectCall();
                                     }

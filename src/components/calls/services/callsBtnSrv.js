@@ -9,14 +9,15 @@
 
              this.getBtnStatus = function _getBtnStatus(callStatus) {
                  var status;
-                 
-                switch(callStatus) {
-                    case CallsStatusEnum.ACTIVE_CALL.enum:
-                        status = CallsBtnStatusEnum.CALLED_BTN.enum;
-                        break;
-                    default:
-                        status = CallsBtnStatusEnum.CALL_BTN.enum;    
-                }
+                 if (callStatus) {
+                     switch(callStatus) {
+                         case CallsStatusEnum.ACTIVE_CALL.enum:
+                             status = CallsBtnStatusEnum.CALLED_BTN.enum;
+                             break;
+                         default:
+                             status = CallsBtnStatusEnum.CALL_BTN.enum;
+                     }
+                 }
                  
                 return status;
             };

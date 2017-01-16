@@ -1245,15 +1245,12 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 var isPendingClick = false;
                 var autoCallStatusEnum = toggleAutoCallEnum;
                 var isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
+                var isOffline;
 
                 vm.callBtnEnum = CallsBtnStatusEnum;
 
                 function _changeBtnState(state) {
                     vm.callBtnState = state;
-                }
-
-                function _isStateNotOffline() {
-                    return vm.callBtnState !== CallsBtnStatusEnum.OFFLINE_BTN.enum;
                 }
 
                 function _isNoPendingClick() {
@@ -1266,7 +1263,9 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 
                 function _initializeBtnStatus(receiverId) {
                     return CallsBtnSrv.initializeBtnStatus(receiverId).then(function (status) {
-                        if (status) {
+                        if (isOffline) {
+                            _changeBtnState(CallsBtnStatusEnum.OFFLINE_BTN.enum);
+                        } else if (status) {
                             _changeBtnState(status);
                         }
 
@@ -1277,7 +1276,9 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 $scope.$on(CALL_UPDATE, function (e, callsData) {
                     if (callsData.status) {
                         CallsBtnSrv.updateBtnStatus(receiverId, callsData).then(function (status) {
-                            if (status) {
+                            if (isOffline) {
+                                _changeBtnState(CallsBtnStatusEnum.OFFLINE_BTN.enum);
+                            } else if (status) {
                                 _changeBtnState(status);
                             }
                         });
@@ -1293,33 +1294,46 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                         ngModelCtrl.$render = function() {
                             var modelValue = ngModelCtrl.$modelValue;
                             if (modelValue && angular.isDefined(modelValue.isOffline) && modelValue.receiverId) {
-                                var curBtnStatus = modelValue.isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
+                                isOffline = modelValue.isOffline;
+                                var curBtnStatus = isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
                                 receiverId = modelValue.receiverId;
+                                hangCall(modelValue.isOffline);
                                 _changeBtnState(curBtnStatus);
-                                _initializeBtnStatus(receiverId).then(function(status) {
-                                    if (angular.isDefined(modelValue.toggleAutoCall) && isTeacher) {
-                                        var isInActiveCall = status === CallsBtnStatusEnum.CALLED_BTN.enum;
-                                        switch (modelValue.toggleAutoCall) {
-                                            case autoCallStatusEnum.ACTIVATE.enum:
-                                                if (!isInActiveCall) {
-                                                    vm.clickBtn();
-                                                }
-                                                break;
-                                            case autoCallStatusEnum.DISABLE.enum:
-                                                if (isInActiveCall) {
-                                                    vm.clickBtn();
-                                                }
-                                                break;
+                                if (curBtnStatus !== CallsBtnStatusEnum.OFFLINE_BTN.enum) {
+                                    _initializeBtnStatus(receiverId).then(function(status) {
+                                        if (angular.isDefined(modelValue.toggleAutoCall) && isTeacher) {
+                                            var isInActiveCall = status === CallsBtnStatusEnum.CALLED_BTN.enum;
+                                            switch (modelValue.toggleAutoCall) {
+                                                case autoCallStatusEnum.ACTIVATE.enum:
+                                                    if (!isInActiveCall) {
+                                                        vm.clickBtn();
+                                                    }
+                                                    break;
+                                                case autoCallStatusEnum.DISABLE.enum:
+                                                    if (isInActiveCall) {
+                                                        vm.clickBtn();
+                                                    }
+                                                    break;
+                                            }
                                         }
-                                    }
-                                });
+                                    });
+                                }
                             }
                         };
                     }
                 };
 
+                function hangCall(isOffline) {
+                    if (isOffline && vm.callBtnState === CallsBtnStatusEnum.CALLED_BTN.enum) {
+                        CallsSrv.callsStateChanged(receiverId).then(function (data) {
+                            _clickStatusSetter(false);
+                            $log.debug('callBtn: success in callsStateChanged, data: ', data);
+                        });
+                    }
+                }
+
                 vm.clickBtn = function() {
-                    if (_isStateNotOffline() && _isNoPendingClick()) {
+                    if (!isOffline && _isNoPendingClick()) {
                         _clickStatusSetter(true);
 
                         CallsSrv.callsStateChanged(receiverId).then(function (data) {
@@ -1653,14 +1667,15 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 
              this.getBtnStatus = function _getBtnStatus(callStatus) {
                  var status;
-                 
-                switch(callStatus) {
-                    case CallsStatusEnum.ACTIVE_CALL.enum:
-                        status = CallsBtnStatusEnum.CALLED_BTN.enum;
-                        break;
-                    default:
-                        status = CallsBtnStatusEnum.CALL_BTN.enum;    
-                }
+                 if (callStatus) {
+                     switch(callStatus) {
+                         case CallsStatusEnum.ACTIVE_CALL.enum:
+                             status = CallsBtnStatusEnum.CALLED_BTN.enum;
+                             break;
+                         default:
+                             status = CallsBtnStatusEnum.CALL_BTN.enum;
+                     }
+                 }
                  
                 return status;
             };
@@ -2049,7 +2064,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 isEnabled = _isEnabled;
             };
 
-            this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "$q", "CALL_UPDATE", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, $q, CALL_UPDATE) {
+            this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "$q", "CALL_UPDATE", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log,
+                                  $rootScope, $injector, $q, CALL_UPDATE) {
                 'ngInject';
                 var registeredCbToCurrUserCallStateChange = [];
                 var currUserCallState;
@@ -2119,11 +2135,29 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                         // close the modal, show the ActiveCallDRV
                                         // CallsUiSrv.closeModal();
                                     }
+                                    InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
+                                        var callPath = 'calls/' + callsData.guid;
+                                        var adapterRef = globalStorage.adapter.getRef(callPath);
+                                        adapterRef.onDisconnect().update({
+                                            status: CallsStatusEnum.ENDED_CALL.enum,
+                                            isDisconnect: true
+                                        });
+                                    });
                                     break;
                                 case CallsStatusEnum.ENDED_CALL.enum:
                                     $log.debug('call ended');
                                     // disconnect other user from call
-                                    getCallsSrv().disconnectCall();
+                                    if (callsData.isDisconnect){
+                                        var userCallData = {
+                                            action: 1,
+                                            callerId: callsData.callerId,
+                                            newReceiverId: callsData.receiverId,
+                                            newCallGuid: callsData.guid
+                                        };
+                                        getCallsSrv().forceDisconnect(userCallData);
+                                    } else {
+                                        getCallsSrv().disconnectCall();
+                                    }
                                     break;
                             }
                             _invokeCbs(registeredCbToCurrUserCallStateChange, [callsData]);
@@ -2450,6 +2484,11 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             };
 
             this.isUserInActiveCall = _isUserInActiveCall;
+
+            this.forceDisconnect = function (userCallData) {
+                _disconnectCall(userCallData);
+                _webCallHang();
+            };
         }]
     );
 })(angular);
@@ -9514,32 +9553,6 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
-        var daysInMs = 86400000;
-
-        this.SEVEN_DAYS_IN_MS = daysInMs*7;
-
-        this.isDueDatePass = function (dueDate) {
-            var res = {
-                dateDiff: 0,
-                passDue: false
-            };
-
-            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
-                return res;
-            }
-
-            res.dateDiff = Math.abs(parseInt((Date.now() - dueDate) / daysInMs, 0));
-            res.passDue =  dueDate - Date.now() < 0;
-            return res;
-        };
-    }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.utility').factory('UtilitySrv', [
         '$q',
         function ($q) {
@@ -9632,6 +9645,32 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 
             return UtilitySrv;
         }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
+        var daysInMs = 86400000;
+
+        this.SEVEN_DAYS_IN_MS = daysInMs*7;
+
+        this.isDueDatePass = function (dueDate) {
+            var res = {
+                dateDiff: 0,
+                passDue: false
+            };
+
+            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
+                return res;
+            }
+
+            res.dateDiff = Math.abs(parseInt((Date.now() - dueDate) / daysInMs, 0));
+            res.passDue =  dueDate - Date.now() < 0;
+            return res;
+        };
+    }
     ]);
 })(angular);
 
