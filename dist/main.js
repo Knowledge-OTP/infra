@@ -4718,7 +4718,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                 this.duration = duration;
             }
 
-            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum, dontInitialize) {
+            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum, dontInitialize, moduleId) {
 
                 if (!UtilitySrv.fn.isValidNumber(exerciseTypeId) || !UtilitySrv.fn.isValidNumber(exerciseId)) {
                     var errMSg = 'ExerciseResultSrv: exercise type id, exercise id should be number !!!';
@@ -4763,6 +4763,8 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                             var initResultProm = _getInitExerciseResult(exerciseTypeId, exerciseId, newGuid);
                             return initResultProm.then(function (initResult) {
                                 dataToSave[exerciseResultPath] = initResult;
+                                // Set the moduleId or undefined (as received in the moduleId parameter)
+                                initResult.moduleId = moduleId;
 
                                 var setProm;
                                 if (getExamResultProm) {
@@ -4861,35 +4863,6 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
             };
 
             /* Module Results Functions */
-            this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId, assignContentType, examId, dontInit) {
-
-                return $q.all([
-                    this.getExerciseResult(exerciseTypeId, exerciseId, examId, null, dontInit),
-                    _getInitExerciseResult(exerciseTypeId, exerciseId, UtilitySrv.general.createGuid())
-                ]).then(function (results) {
-                    var exerciseResult = results[0];
-                    var initResults = results[1];
-
-                    if (!exerciseResult) {
-                        if (dontInit) {
-                           return;
-                        }
-                        exerciseResult = initResults;
-                        exerciseResult.$$path = EXERCISE_RESULTS_PATH + '/' + exerciseResult.guid;
-                    }
-
-                    if(exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
-                        exerciseResult.examId = examId;
-                    }
-
-                    exerciseResult.moduleId = moduleId;
-
-                    exerciseResult.$save = exerciseSaveFn;
-
-                    return exerciseResult;
-                });
-            };
-
             function _getAssignContentUserPath(userId, assignContentType) {
                 switch (assignContentType) {
                     case AssignContentEnum.LESSON.enum:
@@ -4928,8 +4901,8 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
                                 if (moduleResult.exercises && withExerciseResults) {
                                     moduleResult.exerciseResults = [];
                                     angular.forEach(moduleResult.exercises, function (exerciseData) {
-
-                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseData.exerciseTypeId, exerciseData.exerciseId, assignContentType, exerciseData.examId, true).then(function (exerciseResults) {
+                                                                        
+                                        var prom = ExerciseResultSrv.getExerciseResult(exerciseData.exerciseTypeId, exerciseData.exerciseId, exerciseData.examId, null, true, moduleId).then(function (exerciseResults) {
                                             if (exerciseResults) {
                                                 if(!moduleResult.exerciseResults[exerciseResults.exerciseTypeId]){
                                                     moduleResult.exerciseResults[exerciseResults.exerciseTypeId] = {};
@@ -9550,6 +9523,32 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
+        var dayInMs = 86400000;
+
+        this.SEVEN_DAYS_IN_MS = dayInMs*7;
+
+        this.isDueDatePass = function (dueDate) {
+            var res = {
+                dateDiff: 0,
+                passDue: false
+            };
+
+            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
+                return res;
+            }
+
+            res.dateDiff = Math.abs(parseInt((Date.now() - dueDate) / dayInMs, 0));
+            res.passDue =  dueDate - Date.now() < 0;
+            return res;
+        };
+    }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.utility').factory('UtilitySrv', [
         '$q',
         function ($q) {
@@ -9642,32 +9641,6 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 
             return UtilitySrv;
         }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
-        var dayInMs = 86400000;
-
-        this.SEVEN_DAYS_IN_MS = dayInMs*7;
-
-        this.isDueDatePass = function (dueDate) {
-            var res = {
-                dateDiff: 0,
-                passDue: false
-            };
-
-            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
-                return res;
-            }
-
-            res.dateDiff = Math.abs(parseInt((Date.now() - dueDate) / dayInMs, 0));
-            res.passDue =  dueDate - Date.now() < 0;
-            return res;
-        };
-    }
     ]);
 })(angular);
 
