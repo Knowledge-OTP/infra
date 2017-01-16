@@ -225,7 +225,7 @@
                 this.duration = duration;
             }
 
-            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum, dontInitialize) {
+            this.getExerciseResult = function (exerciseTypeId, exerciseId, examId, examSectionsNum, dontInitialize, moduleId) {
 
                 if (!UtilitySrv.fn.isValidNumber(exerciseTypeId) || !UtilitySrv.fn.isValidNumber(exerciseId)) {
                     var errMSg = 'ExerciseResultSrv: exercise type id, exercise id should be number !!!';
@@ -270,6 +270,8 @@
                             var initResultProm = _getInitExerciseResult(exerciseTypeId, exerciseId, newGuid);
                             return initResultProm.then(function (initResult) {
                                 dataToSave[exerciseResultPath] = initResult;
+                                // Set the moduleId or undefined (as received in the moduleId parameter)
+                                initResult.moduleId = moduleId;
 
                                 var setProm;
                                 if (getExamResultProm) {
@@ -368,35 +370,6 @@
             };
 
             /* Module Results Functions */
-            this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId, assignContentType, examId, dontInit) {
-
-                return $q.all([
-                    this.getExerciseResult(exerciseTypeId, exerciseId, examId, null, dontInit),
-                    _getInitExerciseResult(exerciseTypeId, exerciseId, UtilitySrv.general.createGuid())
-                ]).then(function (results) {
-                    var exerciseResult = results[0];
-                    var initResults = results[1];
-
-                    if (!exerciseResult) {
-                        if (dontInit) {
-                           return;
-                        }
-                        exerciseResult = initResults;
-                        exerciseResult.$$path = EXERCISE_RESULTS_PATH + '/' + exerciseResult.guid;
-                    }
-
-                    if(exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
-                        exerciseResult.examId = examId;
-                    }
-
-                    exerciseResult.moduleId = moduleId;
-
-                    exerciseResult.$save = exerciseSaveFn;
-
-                    return exerciseResult;
-                });
-            };
-
             function _getAssignContentUserPath(userId, assignContentType) {
                 switch (assignContentType) {
                     case AssignContentEnum.LESSON.enum:
@@ -435,8 +408,8 @@
                                 if (moduleResult.exercises && withExerciseResults) {
                                     moduleResult.exerciseResults = [];
                                     angular.forEach(moduleResult.exercises, function (exerciseData) {
-
-                                        var prom = ExerciseResultSrv.getModuleExerciseResult(userId, moduleId, exerciseData.exerciseTypeId, exerciseData.exerciseId, assignContentType, moduleResult.examId, true).then(function (exerciseResults) {
+                                                                        
+                                        var prom = ExerciseResultSrv.getExerciseResult(exerciseData.exerciseTypeId, exerciseData.exerciseId, exerciseData.examId, null, true, moduleId).then(function (exerciseResults) {
                                             if (exerciseResults) {
                                                 if(!moduleResult.exerciseResults[exerciseResults.exerciseTypeId]){
                                                     moduleResult.exerciseResults[exerciseResults.exerciseTypeId] = {};
