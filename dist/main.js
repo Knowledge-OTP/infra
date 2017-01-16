@@ -4863,25 +4863,6 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
             };
 
             /* Module Results Functions */
-            this.getModuleExerciseResult = function (userId, moduleId, exerciseTypeId, exerciseId, assignContentType, examId, dontInit) {
-
-                return $q.all([
-                    this.getExerciseResult(exerciseTypeId, exerciseId, examId, null, dontInit)
-                ]).then(function (results) {
-                    var exerciseResult = results[0];
-
-                    if(exerciseResult.exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
-                        // exerciseResult.examId = examId;
-                    }
-
-                    exerciseResult.moduleId = moduleId;
-
-                    // exerciseResult.$save = exerciseSaveFn;
-
-                    return exerciseResult;
-                });
-            };
-
             function _getAssignContentUserPath(userId, assignContentType) {
                 switch (assignContentType) {
                     case AssignContentEnum.LESSON.enum:
