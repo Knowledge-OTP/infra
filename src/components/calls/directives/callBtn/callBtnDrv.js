@@ -14,15 +14,12 @@
                 var isPendingClick = false;
                 var autoCallStatusEnum = toggleAutoCallEnum;
                 var isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
+                var isOffline;
 
                 vm.callBtnEnum = CallsBtnStatusEnum;
 
                 function _changeBtnState(state) {
                     vm.callBtnState = state;
-                }
-
-                function _isStateNotOffline() {
-                    return vm.callBtnState !== CallsBtnStatusEnum.OFFLINE_BTN.enum;
                 }
 
                 function _isNoPendingClick() {
@@ -35,7 +32,9 @@
 
                 function _initializeBtnStatus(receiverId) {
                     return CallsBtnSrv.initializeBtnStatus(receiverId).then(function (status) {
-                        if (status) {
+                        if (isOffline) {
+                            _changeBtnState(CallsBtnStatusEnum.OFFLINE_BTN.enum);
+                        } else if (status) {
                             _changeBtnState(status);
                         }
 
@@ -46,7 +45,9 @@
                 $scope.$on(CALL_UPDATE, function (e, callsData) {
                     if (callsData.status) {
                         CallsBtnSrv.updateBtnStatus(receiverId, callsData).then(function (status) {
-                            if (status) {
+                            if (isOffline) {
+                                _changeBtnState(CallsBtnStatusEnum.OFFLINE_BTN.enum);
+                            } else if (status) {
                                 _changeBtnState(status);
                             }
                         });
@@ -62,33 +63,44 @@
                         ngModelCtrl.$render = function() {
                             var modelValue = ngModelCtrl.$modelValue;
                             if (modelValue && angular.isDefined(modelValue.isOffline) && modelValue.receiverId) {
-                                var curBtnStatus = modelValue.isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
+                                isOffline = modelValue.isOffline;
+                                var curBtnStatus = isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
                                 receiverId = modelValue.receiverId;
+                                hangCall(modelValue.isOffline);
                                 _changeBtnState(curBtnStatus);
-                                _initializeBtnStatus(receiverId).then(function(status) {
-                                    if (angular.isDefined(modelValue.toggleAutoCall) && isTeacher) {
-                                        var isInActiveCall = status === CallsBtnStatusEnum.CALLED_BTN.enum;
-                                        switch (modelValue.toggleAutoCall) {
-                                            case autoCallStatusEnum.ACTIVATE.enum:
-                                                if (!isInActiveCall) {
-                                                    vm.clickBtn();
-                                                }
-                                                break;
-                                            case autoCallStatusEnum.DISABLE.enum:
-                                                if (isInActiveCall) {
-                                                    vm.clickBtn();
-                                                }
-                                                break;
+                                if (curBtnStatus !== CallsBtnStatusEnum.OFFLINE_BTN.enum) {
+                                    _initializeBtnStatus(receiverId).then(function(status) {
+                                        if (angular.isDefined(modelValue.toggleAutoCall) && isTeacher) {
+                                            var isInActiveCall = status === CallsBtnStatusEnum.CALLED_BTN.enum;
+                                            switch (modelValue.toggleAutoCall) {
+                                                case autoCallStatusEnum.ACTIVATE.enum:
+                                                    if (!isInActiveCall) {
+                                                        vm.clickBtn();
+                                                    }
+                                                    break;
+                                                case autoCallStatusEnum.DISABLE.enum:
+                                                    if (isInActiveCall) {
+                                                        vm.clickBtn();
+                                                    }
+                                                    break;
+                                            }
                                         }
-                                    }
-                                });
+                                    });
+                                }
                             }
                         };
                     }
                 };
 
+                function hangCall(isOffline) {
+                    if (isOffline && vm.callBtnState === CallsBtnStatusEnum.CALLED_BTN.enum) {
+                        CallsSrv.disconnectCall();
+                        _changeBtnState(CallsBtnStatusEnum.OFFLINE_BTN.enum);
+                    }
+                }
+
                 vm.clickBtn = function() {
-                    if (_isStateNotOffline() && _isNoPendingClick()) {
+                    if (!isOffline && _isNoPendingClick()) {
                         _clickStatusSetter(true);
 
                         CallsSrv.callsStateChanged(receiverId).then(function (data) {

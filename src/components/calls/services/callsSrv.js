@@ -206,6 +206,11 @@
             };
 
             this.isUserInActiveCall = _isUserInActiveCall;
+
+            this.forceDisconnect = function (userCallData) {
+                _disconnectCall(userCallData);
+                _webCallHang();
+            };
         }
     );
 })(angular);

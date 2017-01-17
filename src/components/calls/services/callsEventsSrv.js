@@ -11,7 +11,8 @@
                 isEnabled = _isEnabled;
             };
 
-            this.$get = function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, $q, CALL_UPDATE) {
+            this.$get = function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log,
+                                  $rootScope, $injector, $q, CALL_UPDATE, CallsActionStatusEnum) {
                 'ngInject';
                 var registeredCbToCurrUserCallStateChange = [];
                 var currUserCallState;
@@ -74,7 +75,23 @@
                                     break;
                                 case CallsStatusEnum.ACTIVE_CALL.enum:
                                     $log.debug('call active');
-                                    if (!isCurrentUserInitiatedCall(currUid)) {
+                                    InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
+                                        var callPath = 'calls/' + callsData.guid;
+                                        var adapterRef = globalStorage.adapter.getRef(callPath);
+                                        adapterRef.onDisconnect().update({
+                                            isDisconnect: true
+                                        });
+                                    });
+                                    if (callsData.isDisconnect){
+                                        $log.debug('call disconnected');
+                                        var userCallData = {
+                                            action: CallsActionStatusEnum.DISCONNECT_ACTION.enum,
+                                            callerId: callsData.callerId,
+                                            newReceiverId: callsData.receiverId,
+                                            newCallGuid: callsData.guid
+                                        };
+                                        getCallsSrv().forceDisconnect(userCallData);
+                                    } else if (!isCurrentUserInitiatedCall(currUid)) {
                                         CallsUiSrv.closeModal();
                                         // show outgoing call modal WITH the ANSWERED TEXT, wait 2 seconds and close the modal, show the ActiveCallDRV
                                     } else {

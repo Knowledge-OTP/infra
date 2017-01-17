@@ -1274,15 +1274,12 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 var isPendingClick = false;
                 var autoCallStatusEnum = toggleAutoCallEnum;
                 var isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
+                var isOffline;
 
                 vm.callBtnEnum = CallsBtnStatusEnum;
 
                 function _changeBtnState(state) {
                     vm.callBtnState = state;
-                }
-
-                function _isStateNotOffline() {
-                    return vm.callBtnState !== CallsBtnStatusEnum.OFFLINE_BTN.enum;
                 }
 
                 function _isNoPendingClick() {
@@ -1295,7 +1292,9 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 
                 function _initializeBtnStatus(receiverId) {
                     return CallsBtnSrv.initializeBtnStatus(receiverId).then(function (status) {
-                        if (status) {
+                        if (isOffline) {
+                            _changeBtnState(CallsBtnStatusEnum.OFFLINE_BTN.enum);
+                        } else if (status) {
                             _changeBtnState(status);
                         }
 
@@ -1306,7 +1305,9 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 $scope.$on(CALL_UPDATE, function (e, callsData) {
                     if (callsData.status) {
                         CallsBtnSrv.updateBtnStatus(receiverId, callsData).then(function (status) {
-                            if (status) {
+                            if (isOffline) {
+                                _changeBtnState(CallsBtnStatusEnum.OFFLINE_BTN.enum);
+                            } else if (status) {
                                 _changeBtnState(status);
                             }
                         });
@@ -1322,33 +1323,44 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                         ngModelCtrl.$render = function() {
                             var modelValue = ngModelCtrl.$modelValue;
                             if (modelValue && angular.isDefined(modelValue.isOffline) && modelValue.receiverId) {
-                                var curBtnStatus = modelValue.isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
+                                isOffline = modelValue.isOffline;
+                                var curBtnStatus = isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
                                 receiverId = modelValue.receiverId;
+                                hangCall(modelValue.isOffline);
                                 _changeBtnState(curBtnStatus);
-                                _initializeBtnStatus(receiverId).then(function(status) {
-                                    if (angular.isDefined(modelValue.toggleAutoCall) && isTeacher) {
-                                        var isInActiveCall = status === CallsBtnStatusEnum.CALLED_BTN.enum;
-                                        switch (modelValue.toggleAutoCall) {
-                                            case autoCallStatusEnum.ACTIVATE.enum:
-                                                if (!isInActiveCall) {
-                                                    vm.clickBtn();
-                                                }
-                                                break;
-                                            case autoCallStatusEnum.DISABLE.enum:
-                                                if (isInActiveCall) {
-                                                    vm.clickBtn();
-                                                }
-                                                break;
+                                if (curBtnStatus !== CallsBtnStatusEnum.OFFLINE_BTN.enum) {
+                                    _initializeBtnStatus(receiverId).then(function(status) {
+                                        if (angular.isDefined(modelValue.toggleAutoCall) && isTeacher) {
+                                            var isInActiveCall = status === CallsBtnStatusEnum.CALLED_BTN.enum;
+                                            switch (modelValue.toggleAutoCall) {
+                                                case autoCallStatusEnum.ACTIVATE.enum:
+                                                    if (!isInActiveCall) {
+                                                        vm.clickBtn();
+                                                    }
+                                                    break;
+                                                case autoCallStatusEnum.DISABLE.enum:
+                                                    if (isInActiveCall) {
+                                                        vm.clickBtn();
+                                                    }
+                                                    break;
+                                            }
                                         }
-                                    }
-                                });
+                                    });
+                                }
                             }
                         };
                     }
                 };
 
+                function hangCall(isOffline) {
+                    if (isOffline && vm.callBtnState === CallsBtnStatusEnum.CALLED_BTN.enum) {
+                        CallsSrv.disconnectCall();
+                        _changeBtnState(CallsBtnStatusEnum.OFFLINE_BTN.enum);
+                    }
+                }
+
                 vm.clickBtn = function() {
-                    if (_isStateNotOffline() && _isNoPendingClick()) {
+                    if (!isOffline && _isNoPendingClick()) {
                         _clickStatusSetter(true);
 
                         CallsSrv.callsStateChanged(receiverId).then(function (data) {
@@ -1682,14 +1694,15 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 
              this.getBtnStatus = function _getBtnStatus(callStatus) {
                  var status;
-                 
-                switch(callStatus) {
-                    case CallsStatusEnum.ACTIVE_CALL.enum:
-                        status = CallsBtnStatusEnum.CALLED_BTN.enum;
-                        break;
-                    default:
-                        status = CallsBtnStatusEnum.CALL_BTN.enum;    
-                }
+                 if (callStatus) {
+                     switch(callStatus) {
+                         case CallsStatusEnum.ACTIVE_CALL.enum:
+                             status = CallsBtnStatusEnum.CALLED_BTN.enum;
+                             break;
+                         default:
+                             status = CallsBtnStatusEnum.CALL_BTN.enum;
+                     }
+                 }
                  
                 return status;
             };
@@ -2078,7 +2091,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 isEnabled = _isEnabled;
             };
 
-            this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "$q", "CALL_UPDATE", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, $q, CALL_UPDATE) {
+            this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "$q", "CALL_UPDATE", "CallsActionStatusEnum", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log,
+                                  $rootScope, $injector, $q, CALL_UPDATE, CallsActionStatusEnum) {
                 'ngInject';
                 var registeredCbToCurrUserCallStateChange = [];
                 var currUserCallState;
@@ -2141,7 +2155,23 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                     break;
                                 case CallsStatusEnum.ACTIVE_CALL.enum:
                                     $log.debug('call active');
-                                    if (!isCurrentUserInitiatedCall(currUid)) {
+                                    InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
+                                        var callPath = 'calls/' + callsData.guid;
+                                        var adapterRef = globalStorage.adapter.getRef(callPath);
+                                        adapterRef.onDisconnect().update({
+                                            isDisconnect: true
+                                        });
+                                    });
+                                    if (callsData.isDisconnect){
+                                        $log.debug('call disconnected');
+                                        var userCallData = {
+                                            action: CallsActionStatusEnum.DISCONNECT_ACTION.enum,
+                                            callerId: callsData.callerId,
+                                            newReceiverId: callsData.receiverId,
+                                            newCallGuid: callsData.guid
+                                        };
+                                        getCallsSrv().forceDisconnect(userCallData);
+                                    } else if (!isCurrentUserInitiatedCall(currUid)) {
                                         CallsUiSrv.closeModal();
                                         // show outgoing call modal WITH the ANSWERED TEXT, wait 2 seconds and close the modal, show the ActiveCallDRV
                                     } else {
@@ -2479,6 +2509,11 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
             };
 
             this.isUserInActiveCall = _isUserInActiveCall;
+
+            this.forceDisconnect = function (userCallData) {
+                _disconnectCall(userCallData);
+                _webCallHang();
+            };
         }]
     );
 })(angular);
