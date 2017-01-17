@@ -94,10 +94,8 @@
 
                 function hangCall(isOffline) {
                     if (isOffline && vm.callBtnState === CallsBtnStatusEnum.CALLED_BTN.enum) {
-                        CallsSrv.callsStateChanged(receiverId).then(function (data) {
-                            _clickStatusSetter(false);
-                            $log.debug('callBtn: success in callsStateChanged, data: ', data);
-                        });
+                        CallsSrv.disconnectCall();
+                        _changeBtnState(CallsBtnStatusEnum.OFFLINE_BTN.enum);
                     }
                 }
 
