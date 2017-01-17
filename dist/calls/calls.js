@@ -863,8 +863,8 @@
                 isEnabled = _isEnabled;
             };
 
-            this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "$q", "CALL_UPDATE", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log,
-                                  $rootScope, $injector, $q, CALL_UPDATE) {
+            this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "$q", "CALL_UPDATE", "CallsActionStatusEnum", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log,
+                                  $rootScope, $injector, $q, CALL_UPDATE, CallsActionStatusEnum) {
                 'ngInject';
                 var registeredCbToCurrUserCallStateChange = [];
                 var currUserCallState;
@@ -937,7 +937,7 @@
                                     if (callsData.isDisconnect){
                                         $log.debug('call disconnected');
                                         var userCallData = {
-                                            action: 1,
+                                            action: CallsActionStatusEnum.DISCONNECT_ACTION.enum,
                                             callerId: callsData.callerId,
                                             newReceiverId: callsData.receiverId,
                                             newCallGuid: callsData.guid
