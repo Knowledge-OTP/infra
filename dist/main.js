@@ -2162,29 +2162,11 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                         // close the modal, show the ActiveCallDRV
                                         // CallsUiSrv.closeModal();
                                     }
-                                    InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
-                                        var callPath = 'calls/' + callsData.guid;
-                                        var adapterRef = globalStorage.adapter.getRef(callPath);
-                                        adapterRef.onDisconnect().update({
-                                            status: CallsStatusEnum.ENDED_CALL.enum,
-                                            isDisconnect: true
-                                        });
-                                    });
                                     break;
                                 case CallsStatusEnum.ENDED_CALL.enum:
                                     $log.debug('call ended');
                                     // disconnect other user from call
-                                    if (callsData.isDisconnect){
-                                        var userCallData = {
-                                            action: 1,
-                                            callerId: callsData.callerId,
-                                            newReceiverId: callsData.receiverId,
-                                            newCallGuid: callsData.guid
-                                        };
-                                        getCallsSrv().forceDisconnect(userCallData);
-                                    } else {
-                                        getCallsSrv().disconnectCall();
-                                    }
+                                    getCallsSrv().disconnectCall();
                                     break;
                             }
                             _invokeCbs(registeredCbToCurrUserCallStateChange, [callsData]);
