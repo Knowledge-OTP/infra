@@ -62,7 +62,7 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         }
     ));
 
-    it('when section is completed in diagnostic test then score object should be calculated accordingly', function () {
+    xit('when section is completed in diagnostic test then score object should be calculated accordingly', function () {
         var exam = content.exam47;
         exam.typeId = 2;//diagnostic
         var sectionKey = 'section' + exam.sections[0].id;
@@ -96,7 +96,7 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         expect(scoresArr.length).toEqual(1);
     });
 
-    it('when writing section is completed in diagnostic test then raw score object should be calculated accordingly', function () {
+    xit('when writing section is completed in diagnostic test then raw score object should be calculated accordingly', function () {
         var exam = content.exam47;
         exam.typeId = 2;//diagnostic
         var sectionKey = 'section' + exam.sections[0].id;

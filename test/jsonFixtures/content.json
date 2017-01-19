@@ -9,6 +9,7 @@
                 "name": "Adaptive Diagnostic English",
                 "examId": 47,
                 "subjectId": 5,
+                "categoryId": 164,
                 "time": 0,
                 "order": 1,
                 "calculator": null,

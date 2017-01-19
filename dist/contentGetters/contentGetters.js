@@ -129,7 +129,21 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             });
         };
 
+        self.getCategoryLevel1ParentById = function (categoryId) {
+            return self.getCategoryMap().then(function (categories) {
+                var category = categories[categoryId];
+                if (categoryEnum.SUBJECT.enum === category.typeId) {
+                    return $q.when(categoryId);
+                }
+                return self.getCategoryLevel1Parent(category.parentId);
+            });
+        };
+
         self.getCategoryLevel1Parent = function (category) {
+            if (!category) {
+                return $q.when(null);
+            }
+
             if (category.typeId === categoryEnum.SUBJECT.enum) {
                 return $q.when(category.id);
             }

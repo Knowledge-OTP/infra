@@ -3545,7 +3545,21 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             });
         };
 
+        self.getCategoryLevel1ParentById = function (categoryId) {
+            return self.getCategoryMap().then(function (categories) {
+                var category = categories[categoryId];
+                if (categoryEnum.SUBJECT.enum === category.typeId) {
+                    return $q.when(categoryId);
+                }
+                return self.getCategoryLevel1Parent(category.parentId);
+            });
+        };
+
         self.getCategoryLevel1Parent = function (category) {
+            if (!category) {
+                return $q.when(null);
+            }
+
             if (category.typeId === categoryEnum.SUBJECT.enum) {
                 return $q.when(category.id);
             }
@@ -3804,6 +3818,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
     angular.module('znk.infra.estimatedScore', [
             'znk.infra.config',
             'znk.infra.znkExercise',
+            'znk.infra.contentGetters',
             'znk.infra.utility'
         ])
         .run([
@@ -3879,8 +3894,8 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
 
 
         this.$get = [
-            '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum', 'ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log', 'UtilitySrv', '$injector', '$q',
-            function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum, ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log, UtilitySrv, $injector, $q) {
+            '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum', 'ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log', 'UtilitySrv', '$injector', '$q', 'CategoryService',
+            function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum, ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log, UtilitySrv, $injector, $q, CategoryService) {
                 if (angular.equals({}, diagnosticScoring)) {
                     $log.error('EstimatedScoreEventsHandlerSrv: diagnosticScoring was not set !!!');
                 }
@@ -3912,23 +3927,49 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                 }
 
                 function _diagnosticSectionCompleteHandler(section, sectionResult) {
-                    var score = 0;
+                    var scores = {};
+                    var scoresPromises = [];
 
                     var questions = section.questions;
                     var questionsMap = UtilitySrv.array.convertToMap(questions);
 
                     sectionResult.questionResults.forEach(function (result, i) {
-                        var question = questionsMap[result.questionId];
-                        if (angular.isUndefined(question)) {
-                            $log.error('EstimatedScoreEventsHandler: question for result is missing',
-                                'section id: ', section.id,
-                                'result index: ', i
-                            );
-                        } else {
-                            score += _getDiagnosticQuestionPoints(question, result);
-                        }
+                        var scorePromise = $q(function(resolve,reject) {
+                            var question = questionsMap[result.questionId];
+                            if (angular.isUndefined(question)) {
+                                $log.error('EstimatedScoreEventsHandler: question for result is missing',
+                                    'section id: ', section.id,
+                                    'result index: ', i
+                                );
+                                reject();
+                            } else {
+                                var subjectId1Prom = CategoryService.getCategoryLevel1ParentById(question.categoryId);
+                                var subjectId2Prom = CategoryService.getCategoryLevel1ParentById(question.categoryId2);
+                                $q.all([
+                                    subjectId1Prom,
+                                    subjectId2Prom
+                                ]).then(function (subjectIds) {
+                                    angular.forEach(subjectIds, function(subjectId) {
+                                        if (subjectId) {
+                                            if (angular.isUndefined(scores[subjectId])) {
+                                                scores[subjectId] = 0;
+                                            }
+                                            scores[subjectId] += _getDiagnosticQuestionPoints(question, result);
+                                        }
+                                    }); // forEach(subjectIds
+                                    resolve();
+                                }); // then
+                            }
+                        });
+                        scoresPromises.push(scorePromise);
                     });
-                    EstimatedScoreSrv.setDiagnosticSectionScore(score, ExerciseTypeEnum.SECTION.enum, section.subjectId, section.id);
+
+                    $q.all(scoresPromises).then(function(){
+                        var subjectIds = Object.keys(scores);
+                        subjectIds.forEach(function(subjectId) {
+                            EstimatedScoreSrv.setDiagnosticSectionScore(scores[subjectId], ExerciseTypeEnum.SECTION.enum, subjectId, section.id);
+                        });
+                    });
                 }
 
                 function _getQuestionRawPoints(exerciseType, result) {
@@ -15039,18 +15080,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 };
             }; 
 
-            var broadCastExerciseContentFn = function() {
-                return function() {
-                    return false;
-                };
-            };
-
             this.setShouldBroadCastExerciseGetter = function(_broadCastExerciseFn) {
                 broadCastExerciseFn = _broadCastExerciseFn;
-            };
-
-            this.modifyBroadCastExerciseContent = function (_broadCastExerciseContentFn) {
-                broadCastExerciseContentFn = _broadCastExerciseContentFn;
             };
 
             this.$get = ["AnswerTypeEnum", "$log", "$q", "$injector", function(AnswerTypeEnum, $log, $q, $injector) {
@@ -15115,16 +15146,6 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         return $q.reject(e);
                     }
                 };
-
-                ZnkExerciseUtilitySrv.modifyBroadCastExerciseContentPromFnGetter = function() {
-                    try {
-                        return $q.when($injector.invoke(broadCastExerciseContentFn));
-                    } catch (e) {
-                        $log.error('ZnkExerciseUtilitySrv broadCastExerciseContent: failed in invoke broadCastExerciseContentFn');
-                        return $q.reject(e);
-                    }
-                };
-
                 return ZnkExerciseUtilitySrv;
             }];
         }
