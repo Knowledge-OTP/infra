@@ -130,12 +130,15 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         };
 
         self.getCategoryLevel1ParentById = function (categoryId) {
+            if (angular.isUndefined(categoryId) || categoryId === null) {
+                return $q.when(null);
+            }
             return self.getCategoryMap().then(function (categories) {
                 var category = categories[categoryId];
                 if (categoryEnum.SUBJECT.enum === category.typeId) {
                     return $q.when(categoryId);
                 }
-                return self.getCategoryLevel1Parent(category.parentId);
+                return self.getCategoryLevel1ParentById(category.parentId);
             });
         };
 
