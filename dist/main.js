@@ -9558,6 +9558,32 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
+        var dayInMs = 86400000;
+        var WEEK = 7;
+        this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
+
+        this.isDueDatePass = function (startDate) {
+            var res = {
+                dateDiff: 0,
+                passDue: false
+            };
+
+            if (angular.isUndefined(startDate) || startDate === null || startDate === '') {
+                return res;
+            }
+
+            res.dateDiff = Math.abs(parseInt((Date.now() - startDate) / dayInMs, 0));
+            res.passDue =  res.dateDiff > WEEK;
+            return res;
+        };
+    }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.utility').factory('UtilitySrv', [
         '$q',
         function ($q) {
@@ -9650,32 +9676,6 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 
             return UtilitySrv;
         }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
-        var dayInMs = 86400000;
-        var WEEK = 7;
-        this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
-
-        this.isDueDatePass = function (startDate) {
-            var res = {
-                dateDiff: 0,
-                passDue: false
-            };
-
-            if (angular.isUndefined(startDate) || startDate === null || startDate === '') {
-                return res;
-            }
-
-            res.dateDiff = Math.abs(parseInt((Date.now() - startDate) / dayInMs, 0));
-            res.passDue =  res.dateDiff > WEEK;
-            return res;
-        };
-    }
     ]);
 })(angular);
 
@@ -15037,10 +15037,20 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 return function() {
                     return true;
                 };
+            }; 
+
+            var broadCastExerciseContentFn = function() {
+                return function() {
+                    return false;
+                };
             };
 
             this.setShouldBroadCastExerciseGetter = function(_broadCastExerciseFn) {
                 broadCastExerciseFn = _broadCastExerciseFn;
+            };
+
+            this.modifyBroadCastExerciseContent = function (_broadCastExerciseContentFn) {
+                broadCastExerciseContentFn = _broadCastExerciseContentFn;
             };
 
             this.$get = ["AnswerTypeEnum", "$log", "$q", "$injector", function(AnswerTypeEnum, $log, $q, $injector) {
@@ -15102,6 +15112,15 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         return $q.when($injector.invoke(broadCastExerciseFn));
                     } catch (e) {
                         $log.error('ZnkExerciseUtilitySrv shouldBroadCastExercise: failed in invoke broadCastExerciseFn');
+                        return $q.reject(e);
+                    }
+                };
+
+                ZnkExerciseUtilitySrv.modifyBroadCastExerciseContentPromFnGetter = function() {
+                    try {
+                        return $q.when($injector.invoke(broadCastExerciseContentFn));
+                    } catch (e) {
+                        $log.error('ZnkExerciseUtilitySrv broadCastExerciseContent: failed in invoke broadCastExerciseContentFn');
                         return $q.reject(e);
                     }
                 };

@@ -3588,10 +3588,20 @@
                 return function() {
                     return true;
                 };
+            }; 
+
+            var broadCastExerciseContentFn = function() {
+                return function() {
+                    return false;
+                };
             };
 
             this.setShouldBroadCastExerciseGetter = function(_broadCastExerciseFn) {
                 broadCastExerciseFn = _broadCastExerciseFn;
+            };
+
+            this.modifyBroadCastExerciseContent = function (_broadCastExerciseContentFn) {
+                broadCastExerciseContentFn = _broadCastExerciseContentFn;
             };
 
             this.$get = ["AnswerTypeEnum", "$log", "$q", "$injector", function(AnswerTypeEnum, $log, $q, $injector) {
@@ -3653,6 +3663,15 @@
                         return $q.when($injector.invoke(broadCastExerciseFn));
                     } catch (e) {
                         $log.error('ZnkExerciseUtilitySrv shouldBroadCastExercise: failed in invoke broadCastExerciseFn');
+                        return $q.reject(e);
+                    }
+                };
+
+                ZnkExerciseUtilitySrv.modifyBroadCastExerciseContentPromFnGetter = function() {
+                    try {
+                        return $q.when($injector.invoke(broadCastExerciseContentFn));
+                    } catch (e) {
+                        $log.error('ZnkExerciseUtilitySrv broadCastExerciseContent: failed in invoke broadCastExerciseContentFn');
                         return $q.reject(e);
                     }
                 };
