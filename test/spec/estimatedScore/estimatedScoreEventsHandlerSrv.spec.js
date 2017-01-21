@@ -1,7 +1,7 @@
 describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
     'use strict';
 
-    beforeEach(module('znk.infra.estimatedScore', 'htmlTemplates', 'testUtility', 'storage.mock', 'estimatedScore.mock'));
+    beforeEach(module('znk.infra.estimatedScore', 'htmlTemplates', 'testUtility', 'storage.mock', 'estimatedScore.mock', 'content.mock'));
 
     var rawPointsForExerciseTypeMap = {
         4: {
@@ -62,7 +62,7 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         }
     ));
 
-    xit('when section is completed in diagnostic test then score object should be calculated accordingly', function () {
+    it('when section is completed in diagnostic test then score object should be calculated accordingly', function () {
         var exam = content.exam47;
         exam.typeId = 2;//diagnostic
         var sectionKey = 'section' + exam.sections[0].id;
