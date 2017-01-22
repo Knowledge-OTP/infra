@@ -3,10 +3,12 @@
     angular.module('znk.infra.assignModule').provider('HomeworkSrv',
         function () {
 
-            var popupResolveFn = function ($state) {
+            var popupResolveFn = function ($state, AssignContentEnum) {
                 'ngInject';
                 return function () {
-                    $state.go('app.eTutoring');
+                    $state.go('app.eTutoring', {
+                        viewId: AssignContentEnum.PRACTICE.enum
+                    });
                 };
             };
 
