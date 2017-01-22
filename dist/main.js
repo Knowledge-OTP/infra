@@ -762,9 +762,9 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             var popupResolveFn = function ($state, AssignContentEnum) {
                 'ngInject';
                 return function () {
-                    $state.go('app.eTutoring', {
-                        viewId: AssignContentEnum.PRACTICE.enum
-                    });
+                    $state.go('app.eTutoring',
+                        {viewId: AssignContentEnum.PRACTICE.enum},
+                        {reload: true});
                 };
             };
             popupResolveFn.$inject = ["$state", "AssignContentEnum"];
