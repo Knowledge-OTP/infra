@@ -17,7 +17,7 @@
                 return res;
             }
 
-            res.dateDiff = Math.abs(Math.floor((Date.now() - dueDate) / dayInMs));
+            res.dateDiff = Math.abs(Math.ceil((Date.now() - dueDate) / dayInMs));
             res.passDue = dueDate - Date.now() < 0;
             return res;
         };

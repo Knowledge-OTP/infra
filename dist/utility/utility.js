@@ -110,18 +110,19 @@
         var WEEK = 7;
         this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
 
-        this.isDueDatePass = function (startDate) {
+
+        this.isDueDatePass = function (dueDate) {
             var res = {
                 dateDiff: 0,
                 passDue: false
             };
 
-            if (angular.isUndefined(startDate) || startDate === null || startDate === '') {
+            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
                 return res;
             }
 
-            res.dateDiff = Math.abs(parseInt((Date.now() - startDate) / dayInMs, 0));
-            res.passDue =  res.dateDiff > WEEK;
+            res.dateDiff = Math.abs(Math.ceil((Date.now() - dueDate) / dayInMs));
+            res.passDue = dueDate - Date.now() < 0;
             return res;
         };
     }
