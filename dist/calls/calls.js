@@ -9,7 +9,8 @@
         'ngMaterial',
         'znk.infra.svgIcon',
         'znk.infra.callsModals',
-        'znk.infra.utility'
+        'znk.infra.utility',
+        'znk.infra.znkTooltip'
     ]);
 })(angular);
 
@@ -39,7 +40,7 @@
                 parent: '?^ngModel'
             },
             controllerAs: 'vm',
-            controller: ["CallsSrv", "CallsBtnSrv", "CallsErrorSrv", "CallsBtnStatusEnum", "$log", "$scope", "CALL_UPDATE", "toggleAutoCallEnum", "ENV", function (CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE,
+            controller: ["$translate", "CallsSrv", "CallsBtnSrv", "CallsErrorSrv", "CallsBtnStatusEnum", "$log", "$scope", "CALL_UPDATE", "toggleAutoCallEnum", "ENV", function ($translate, CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE,
                                   toggleAutoCallEnum, ENV) {
                 var vm = this;
                 var receiverId;
@@ -50,8 +51,42 @@
 
                 vm.callBtnEnum = CallsBtnStatusEnum;
 
+                var translateNamespace = 'AUDIO_CALLS';
+
+                var loadTranslations = $translate([
+                    translateNamespace + '.' + 'CALL_STUDENT',
+                    translateNamespace + '.' + 'CALL_TEACHER',
+                    translateNamespace + '.' + 'END_CALL',
+                    translateNamespace + '.' + 'OFFLINE'
+                ]);
+
+                function _changeTooltipTranslation(state) {
+                    return loadTranslations.then(function (translation) {
+                        var translatedStrings = {
+                            CALL_STUDENT: translation[translateNamespace + '.' + 'CALL_STUDENT'],
+                            CALL_TEACHER: translation[translateNamespace + '.' + 'CALL_TEACHER'],
+                            END_CALL: translation[translateNamespace + '.' + 'END_CALL'],
+                            OFFLINE: translation[translateNamespace + '.' + 'OFFLINE']
+                        };
+                        switch(state) {
+                            case CallsBtnStatusEnum.OFFLINE_BTN.enum:
+                                return translatedStrings.OFFLINE;
+                            case CallsBtnStatusEnum.CALL_BTN.enum:
+                                return isTeacher? translatedStrings.CALL_STUDENT : translatedStrings.CALL_TEACHER;
+                            case CallsBtnStatusEnum.CALLED_BTN.enum:
+                                return translatedStrings.END_CALL;
+                        }
+                    }).catch(function (err) {
+                        $log.debug('Could not fetch translation', err);
+                    });
+                }
+
                 function _changeBtnState(state) {
                     vm.callBtnState = state;
+                    _changeTooltipTranslation(state).then(function (tooltipText) {
+                        vm.tooltipTranslate = tooltipText;
+                    });
+
                 }
 
                 function _isNoPendingClick() {
@@ -1378,6 +1413,9 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "        class=\"etutoring-phone-icon\"\n" +
     "        name=\"calls-etutoring-phone-icon\">\n" +
     "    </svg-icon>\n" +
+    "    <md-tooltip znk-tooltip class=\"md-fab\">\n" +
+    "        {{vm.tooltipTranslate}}\n" +
+    "    </md-tooltip>\n" +
     "</button>\n" +
     "");
   $templateCache.put("components/calls/modals/templates/baseCallsModal.template.html",
