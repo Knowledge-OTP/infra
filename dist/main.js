@@ -759,13 +759,15 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
     angular.module('znk.infra.assignModule').provider('HomeworkSrv',
         function () {
 
-            var popupResolveFn = function ($state) {
+            var popupResolveFn = function ($state, AssignContentEnum) {
                 'ngInject';
                 return function () {
-                    $state.go('app.eTutoring');
+                    $state.go('app.eTutoring', {
+                        viewId: AssignContentEnum.PRACTICE.enum
+                    });
                 };
             };
-            popupResolveFn.$inject = ["$state"];
+            popupResolveFn.$inject = ["$state", "AssignContentEnum"];
 
             this.setPopupResolveFn = function (fn) {
                 popupResolveFn = fn;
