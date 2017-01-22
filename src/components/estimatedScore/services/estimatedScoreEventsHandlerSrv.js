@@ -57,7 +57,7 @@
             return 'Within';
         };
 
-        this.setAnswerTimeSpentTypeFn = function(fn){
+        this.setAnswerTimeSpentTypeFn = function (fn) {
             getAnswerTimeSpentType = fn;
         };
 
@@ -103,7 +103,7 @@
                     var questionsMap = UtilitySrv.array.convertToMap(questions);
 
                     sectionResult.questionResults.forEach(function (result, i) {
-                        var scorePromise = $q(function(resolve,reject) {
+                        var scorePromise = $q(function (resolve, reject) {
                             var question = questionsMap[result.questionId];
                             if (angular.isUndefined(question)) {
                                 $log.error('EstimatedScoreEventsHandler: question for result is missing',
@@ -118,7 +118,7 @@
                                     subjectId1Prom,
                                     subjectId2Prom
                                 ]).then(function (subjectIds) {
-                                    angular.forEach(subjectIds, function(subjectId) {
+                                    angular.forEach(subjectIds, function (subjectId) {
                                         if (subjectId) {
                                             if (angular.isUndefined(scores[subjectId])) {
                                                 scores[subjectId] = 0;
@@ -133,9 +133,9 @@
                         scoresPromises.push(scorePromise);
                     });
 
-                    $q.all(scoresPromises).then(function(){
+                    $q.all(scoresPromises).then(function () {
                         var subjectIds = Object.keys(scores);
-                        subjectIds.forEach(function(subjectId) {
+                        subjectIds.forEach(function (subjectId) {
                             EstimatedScoreSrv.setDiagnosticSectionScore(scores[subjectId], ExerciseTypeEnum.SECTION.enum, subjectId, section.id);
                         });
                     });
@@ -151,21 +151,98 @@
                 }
 
                 function _calculateRawScore(exerciseType, exerciseResult) {
-                    if (!exercisesRawScoring[exerciseType]) {
-                        $log.error('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: ' + exerciseType);
-                    }
+                    $q(function (resolve, reject) {
+                        if (!exercisesRawScoring[exerciseType]) {
+                            $log.error('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: ' + exerciseType);
+                        }
 
-                    var questionResults = exerciseResult.questionResults;
+                        // var rawScores = {};
+                        //     var rawScoresPromises = [];
+                        //     var questions = exercise.questions;
+                        //     var questionsMap = UtilitySrv.array.convertToMap(questions);
+                        //     exerciseResult.questionResults.forEach(function (questionResult, index) {
+                        //         var rawScorePromise = $q(function (resolve, reject) {
+                        //             var question = questionsMap[questionResult.questionId];
+                        //             if (angular.isUndefined(question)) {
+                        //                 $log.error('EstimatedScoreEventsHandler: question for result is missing',
+                        //                     'exercise id: ', exercise.id,
+                        //                     'result index: ', index
+                        //                 );
+                        //                 reject();
+                        //             } else {
+                        //                var subjectId1Prom = CategoryService.getCategoryLevel1ParentById(question.categoryId);
+                        //                var subjectId2Prom = CategoryService.getCategoryLevel1ParentById(question.categoryId2);
 
-                    var rawPoints = {
-                        total: questionResults.length * exercisesRawScoring[exerciseType].correctWithin,
-                        earned: 0
-                    };
+                        //                 $q.all([
+                        //                     subjectId1Prom,
+                        //                     subjectId2Prom
+                        //                 ]).then(function (subjectIds) {
+                        //                     subjectIds.forEach(function (subjectId) {
+                        //                         if (subjectId) {
+                        //                             if (angular.isUndefined(rawScores[subjectId])) {
+                        //                                 rawScores[subjectId] = 0;
+                        //                             }
+                        //                             rawScores[subjectId] += _calculateRawScore(exerciseType, exerciseResult);
+                        //                         }
+                        //                     });
+                        //                     resolve();
+                        //                 });
+                        //             }
+                        //         });
+                        //         rawScoresPromises.push(rawScorePromise);
+                        //     });
+                        //     $q.all(rawScoresPromises).then(function(){
+                        //         var subjectIds = Object.keys(rawScores);
+                        //         rawScores.forEach(function(subjectId){
+                        //            EstimatedScoreSrv.addRawScore(rawScore, exerciseType, exercise.subjectId, exercise.id); 
+                        //         })
+                        //     });
+                        // }
+                        var rawScores = {};
+                        var questionResults = exerciseResult.questionResults;
+                        var questionResultMap = UtilitySrv.array.convertToMap(questionResults, "questionId");
 
-                    questionResults.forEach(function (result) {
-                        rawPoints.earned += _getQuestionRawPoints(exerciseType, result);
-                    });
-                    return rawPoints;
+                        // var rawPoints = {
+                        //     total: questionResults.length * exercisesRawScoring[exerciseType].correctWithin,
+                        //     earned: 0
+                        // };
+
+                        questionResults.forEach(function (quesionResult, index) {
+                            var rawScorePromise = $q(function (resolve, reject) {
+                                if (angular.isUndefined(quesionResult)) {
+                                    $log.error('EstimatedScoreEventsHandler: question for result is missing',
+                                        'exercise id: ', exerciseResult.id,
+                                        'result index: ', index
+                                    );
+                                    reject();
+                                } else {
+                                    var subjectId1Prom = CategoryService.getCategoryLevel1ParentById(quesionResult.categoryId);
+                                    var subjectId2Prom = CategoryService.getCategoryLevel1ParentById(quesionResult.categoryId2);
+
+                                    $q.all([
+                                        subjectId1Prom,
+                                        subjectId2Prom
+                                    ]).then(function (subjectIds) {
+                                        subjectIds.forEach(function (subjectId) {
+                                            if (subjectId) {
+                                                if (angular.isUndefined(rawScores[subjectId])) {
+                                                    rawScores[subjectId] = {
+                                                        total: questionResults.length * exercisesRawScoring[exerciseType].correctWithin,
+                                                        earned: 0
+                                                    };
+                                                }
+                                                rawScores[subjectId].earned += _getQuestionRawPoints(exerciseType, quesionResult);
+                                            }
+                                        });
+                                    });
+                                }
+                            });
+                        });
+                        resolve(rawScores);
+                        // questionResults.forEach(function (result) {
+                        //     rawPoints.earned += _getQuestionRawPoints(exerciseType, result);
+                        // });
+                    })
                 }
 
                 function _shouldEventBeProcessed(exerciseType, exercise, exerciseResult) {
@@ -197,7 +274,50 @@
                 function _baseExerciseFinishHandler(exerciseType, evt, exercise, exerciseResult) {
                     _shouldEventBeProcessed(exerciseType, exercise, exerciseResult).then(function (shouldBeProcessed) {
                         if (shouldBeProcessed) {
+                            //     var rawScores = {};
+                            //     var rawScoresPromises = [];
+                            //     var questions = exercise.questions;
+                            //     var questionsMap = UtilitySrv.array.convertToMap(questions);
+                            //     exerciseResult.questionResults.forEach(function (questionResult, index) {
+                            //         var rawScorePromise = $q(function (resolve, reject) {
+                            //             var question = questionsMap[questionResult.questionId];
+                            //             if (angular.isUndefined(question)) {
+                            //                 $log.error('EstimatedScoreEventsHandler: question for result is missing',
+                            //                     'exercise id: ', exercise.id,
+                            //                     'result index: ', index
+                            //                 );
+                            //                 reject();
+                            //             } else {
+                            //                var subjectId1Prom = CategoryService.getCategoryLevel1ParentById(question.categoryId);
+                            //                var subjectId2Prom = CategoryService.getCategoryLevel1ParentById(question.categoryId2);
+
+                            //                 $q.all([
+                            //                     subjectId1Prom,
+                            //                     subjectId2Prom
+                            //                 ]).then(function (subjectIds) {
+                            //                     subjectIds.forEach(function (subjectId) {
+                            //                         if (subjectId) {
+                            //                             if (angular.isUndefined(rawScores[subjectId])) {
+                            //                                 rawScores[subjectId] = 0;
+                            //                             }
+                            //                             rawScores[subjectId] += _calculateRawScore(exerciseType, exerciseResult);
+                            //                         }
+                            //                     });
+                            //                     resolve();
+                            //                 });
+                            //             }
+                            //         });
+                            //         rawScoresPromises.push(rawScorePromise);
+                            //     });
+                            //     $q.all(rawScoresPromises).then(function(){
+                            //         var subjectIds = Object.keys(rawScores);
+                            //         rawScores.forEach(function(subjectId){
+                            //            EstimatedScoreSrv.addRawScore(rawScore, exerciseType, exercise.subjectId, exercise.id); 
+                            //         })
+                            //     });
+                            // }
                             var rawScore = _calculateRawScore(exerciseType, exerciseResult);
+
                             EstimatedScoreSrv.addRawScore(rawScore, exerciseType, exercise.subjectId, exercise.id);
                         }
                     });
