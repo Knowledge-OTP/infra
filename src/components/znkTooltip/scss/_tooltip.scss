@@ -1,0 +1,74 @@
+md-tooltip[znk-tooltip] {
+    overflow: visible;
+    height: auto;
+    box-sizing: border-box;
+    border-radius: 10px;
+
+    .md-content{
+        @include text-style(12px, $fcColor2, Lato, $regularFontWeight, null, none);
+        overflow: visible;
+        border-radius: 5px;
+        padding: 0 10px;
+    }
+
+    .arrow, .arrow:before{
+        position: relative;
+        z-index: 1;
+        width: 0;
+        height: 0;
+    }
+
+    &[md-direction=bottom] {
+        .md-content {
+            margin-top: 10px;
+        }
+        .arrow, .arrow:before{
+            left: calc(50% - 10px);
+            bottom: 28px;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 6px solid $bcColor17;
+        }
+    }
+
+    &[md-direction=top] {
+        .md-content {
+            margin-bottom: 10px;
+        }
+        .arrow, .arrow:before{
+            left: calc(50% - 10px);
+            bottom: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid $bcColor17;
+        }
+    }
+
+    &[md-direction=left] {
+        .md-content {
+            margin-right: 10px;
+        }
+        .arrow, .arrow:before{
+            left: calc(100% + 10px);
+            top: -17px;
+            border-top: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+            border-left: 6px solid $bcColor17;
+        }
+    }
+
+    &[md-direction=right] {
+        .md-content {
+            margin-left: 10px;
+        }
+        .arrow, .arrow:before{
+            left: calc(0% - 22px);
+            top: -17px;
+            border-top: 6px solid transparent;
+            border-right: 6px solid $bcColor17;
+            border-bottom: 6px solid transparent;
+            border-left: 6px solid transparent;
+        }
+    }
+}

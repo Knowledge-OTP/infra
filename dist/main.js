@@ -50,7 +50,8 @@
 "znk.infra.znkProgressBar",
 "znk.infra.znkQuestionReport",
 "znk.infra.znkSessionData",
-"znk.infra.znkTimeline"
+"znk.infra.znkTimeline",
+"znk.infra.znkTooltip"
     ]);
 })(angular);
 
@@ -16923,4 +16924,40 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templat
     "</g>\n" +
     "</svg>\n" +
     "");
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkTooltip', [
+        'ngMaterial',
+        'pascalprecht.translate',
+        'ngSanitize'
+    ]);
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkTooltip')
+        .directive('znkTooltip',
+            function () {
+                'ngInject';
+                return {
+                link: function() {
+
+                    var divElm = document.createElement('div');
+                    divElm.classList.add('arrow');
+
+                    var mdContent = angular.element(document.querySelector('.md-content'));
+
+                    mdContent.append(divElm);
+                }
+            };
+        });
+})(angular);
+
+angular.module('znk.infra.znkTooltip').run(['$templateCache', function($templateCache) {
+
 }]);
