@@ -1,238 +1,235 @@
 @import './src/scss/imports/variables',
-'./src/scss/imports/colors',
-'./src/scss/imports/mixins';
+        './src/scss/imports/colors',
+        './src/scss/imports/mixins';
 
-.znk-popup {
-  .base-popup {
-    z-index: 999999;
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: $tbgColor1;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+.znk-popup{
+    .base-popup{
+        z-index: 999999;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: $tbgColor1;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
 
-    .znk-popup-wrapper {
-      width: 390px;
-      margin: {
-        right: auto;
-        left: auto;
-      }
-
-      .znk-popup-header {
-        position: relative;
-        height: 33px;
-        border-radius: 15px 15px 0px 0px;
-
-        .icon-wrapper {
-          @include dimension(57px, 57px);
-          border-radius: 50%;
-          @include absolute-position(-12px, 50%);
-          margin-right: -28.5px;
-          @include flex-middle;
-
-          .exclamation-mark, .popup-exclamation-mark {
-            svg {
-              @include dimension(8px, auto);
-
-              path {
-                fill: $bgColor6;
-              }
+        .znk-popup-wrapper{
+            width: 390px;
+            margin:{
+                right: auto;
+                left: auto;
             }
-          }
 
-          .correct {
-            margin-top: 6px;
-            svg {
-              @include dimension(34px, 34px);
-              line {
-                stroke: $bgColor6;
-              }
+            .znk-popup-header{
+                position: relative;
+                height: 33px;
+                border-radius: 15px 15px 0px 0px;
+
+                .icon-wrapper{
+                    @include dimension(57px, 57px);
+                    border-radius: 50%;
+                    @include absolute-position(-12px, 50%);
+                    margin-right: -28.5px;
+                    @include flex-middle;
+
+                    .exclamation-mark, .popup-exclamation-mark {
+                        svg {
+                          @include dimension(8px, auto);
+                          path {
+                            fill: $bgColor6;
+                          }
+                      }
+                    }
+
+                    .correct{
+                        margin-top: 6px;
+                        svg{
+                           @include dimension(34px, 34px);
+                            line{
+                                stroke: $bgColor6;
+                            }
+                        }
+                    }
+                }
             }
-          }
-        }
-      }
 
-      .znk-popup-body {
-        background: $bgColor6;
-        padding: 40px 37px 32px 37px;
+            .znk-popup-body{
+                background: $bgColor6;
+                padding: 40px 37px 32px 37px;
 
-        .title {
-          @include text-style(27px, null, Quicksand, $boldFontWeight);
-          padding: {
-            right: 10px; //(igor) added to align the text , the chocolate raindrops text is not completely wrapped by its containing element
-          }
-        ;
-          line-height: 55px;
-        }
+                .title{
+                    @include text-style(27px, null, Quicksand, $boldFontWeight);
+                    padding:{
+                        right: 10px; //(igor) added to align the text , the chocolate raindrops text is not completely wrapped by its containing element
+                    };
+                    line-height: 55px;
+                }
 
-        .content {
-          @include text-style(16px, $fcColor6, Lato, $regularFontWeight);
-          margin: {
-            top: 6px;
-          }
-        ;
-        }
-      }
-
-      .znk-popup-buttons {
-        @include display-flex;
-        @include justify-content(center);
-        border-radius: 0px 0px 15px 15px;
-        background: $bgColor6;
-        padding: {
-          bottom: 50px;
-        }
-      ;
-
-        .button-wrapper {
-          &:nth-child(2) {
-            button.btn {
-              color: $fcColor2;
-              margin-left: 10px;
-              background-color: $bgColor3;
+                .content{
+                    @include text-style(16px, $fcColor6, Lato, $regularFontWeight);
+                    margin:{
+                        top: 6px;
+                    };
+                }
             }
-          }
 
-          button.btn {
-            cursor: pointer;
-            @include text-style(14px, $fcColor5, Lato, $regularFontWeight);
-            border: 1px solid $bgColor3;
-            border-radius: 20px;
-            @include flex-middle;
-            @include dimension(150px, 34px);
-            background: $bgColor6;
-            outline: none;
-          }
+            .znk-popup-buttons{
+                @include display-flex;
+                @include justify-content(center);
+                border-radius: 0px 0px 15px 15px;
+                background: $bgColor6;
+                padding:{
+                    bottom: 50px;
+                };
+
+                .button-wrapper{
+                    &:nth-child(2){
+                        button.btn{
+                            color: $fcColor2;
+                            margin-left: 10px;
+                            background-color: $bgColor3;
+                        }
+                    }
+
+                    button.btn{
+                        cursor: pointer;
+                        @include text-style(14px, $fcColor5, Lato, $regularFontWeight);
+                        border: 1px solid $bgColor3;
+                        border-radius: 20px;
+                        @include flex-middle;
+                        @include dimension(150px, 34px);
+                        background: $bgColor6;
+                        outline: none;
+                    }
+                }
+            }
         }
-      }
+        &.exercise-popup{
+            .znk-popup-wrapper{
+                width: 68%;
+                margin:{
+                    top: 240px;
+                }
+
+                .znk-popup-header{
+                    height: 37px;
+                }
+
+                .znk-popup-body{
+                    padding: 82px 45px 65px 45px;
+
+                    .title{
+                        font:{
+                            size: 86px;
+                        }
+                    ;
+                    }
+                }
+            }
+        }
     }
-    &.exercise-popup {
-      .znk-popup-wrapper {
-        width: 68%;
-        margin: {
-          top: 240px;
-        }
-
-        .znk-popup-header {
-          height: 37px;
-        }
-
-        .znk-popup-body {
-          padding: 82px 45px 65px 45px;
-
-          .title {
-            font: {
-              size: 86px;
-            }
-          ;
-          }
-        }
-      }
-    }
-  }
 }
 
 //popups style
-.znk-popup {
-  .error-popup {
-    .znk-popup-header {
-      background: $bgColor1;
+.znk-popup{
+    .error-popup{
+        .znk-popup-header{
+            background: $bgColor1;
 
-      .icon-wrapper {
-        background: $bgColor1;
-      }
-    }
-
-    .znk-popup-body {
-      .title {
-        color: $fcColor3;
-      }
-    }
-
-  }
-
-  .success-popup {
-    .znk-popup-wrapper {
-      .znk-popup-header {
-        background: $bgColor2;
-
-        .icon-wrapper {
-          background: $bgColor2;
-
-          .correct-answer-white {
-            @include dimension(37px, 24px);
-          }
-        }
-      }
-
-      .znk-popup-body {
-        .title {
-          color: $fcColor7;
-        }
-
-        .content {
-          margin: {
-            top: 0;
-          }
-        }
-      }
-    }
-
-    &.exercise-popup {
-      .znk-popup-wrapper {
-        .znk-popup-header {
-          .icon-wrapper {
-            .correct-answer-white {
-              @include dimension(47px, 32.5px);
+            .icon-wrapper{
+                background: $bgColor1;
             }
-          }
         }
-      }
-    }
-  }
 
-  .warning-popup {
-    .znk-popup-wrapper {
-      .znk-popup-header {
-        background: $bgColor3;
-
-        .icon-wrapper {
-          background: $bgColor3;
-
-          .warning-icon {
-            @include dimension(8.5px, 32px);
-          }
-        }
-      }
-
-      .znk-popup-body {
-        .title {
-          @include text-style(27px, $fcColor6, Quicksand, $boldFontWeight);
-
-        }
-      }
-
-      .znk-popup-buttons {
-        .button-wrapper {
-        }
-      }
-    }
-
-    &.exercise-popup {
-      .znk-popup-wrapper {
-        .znk-popup-header {
-          .icon-wrapper {
-            .warning-icon {
-              @include dimension(12px, 46px);
+        .znk-popup-body{
+            .title{
+                color: $fcColor3;
             }
-          }
         }
-      }
+
     }
-  }
+
+    .success-popup{
+        .znk-popup-wrapper{
+            .znk-popup-header{
+                background: $bgColor2;
+
+                .icon-wrapper{
+                    background: $bgColor2;
+
+                    .correct-answer-white{
+                        @include dimension(37px, 24px);
+                    }
+                }
+            }
+
+            .znk-popup-body{
+                .title{
+                    color: $fcColor7;
+                }
+
+                .content{
+                    margin:{
+                        top: 0;
+                    }
+                }
+            }
+        }
+
+        &.exercise-popup{
+            .znk-popup-wrapper{
+                .znk-popup-header{
+                    .icon-wrapper{
+                        .correct-answer-white{
+                            @include dimension(47px, 32.5px);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    .warning-popup{
+        .znk-popup-wrapper{
+            .znk-popup-header{
+                background: $bgColor3;
+
+                .icon-wrapper{
+                    background: $bgColor3;
+
+                    .warning-icon{
+                        @include dimension(8.5px, 32px);
+                    }
+                }
+            }
+
+            .znk-popup-body{
+                .title{
+                    @include text-style(27px, $fcColor6, Quicksand, $boldFontWeight);
+
+                }
+            }
+
+            .znk-popup-buttons{
+                .button-wrapper {
+                }
+            }
+        }
+
+        &.exercise-popup{
+            .znk-popup-wrapper{
+                .znk-popup-header{
+                    .icon-wrapper{
+                        .warning-icon{
+                            @include dimension(12px, 46px);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
