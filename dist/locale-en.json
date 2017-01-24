@@ -9,6 +9,10 @@
         "INCORRECT_EMAIL_AND_PASSWORD_COMBINATION": "Incorrect email and password combination."
     },
     "AUDIO_CALLS":{
+        "CALL_STUDENT": "Call Student",
+        "CALL_TEACHER": "Call Teacher",
+        "END_CALL": "End Call",
+        "OFFLINE": "Offline",
         "INCOMING_CALL": "Incoming Call",
         "OUTGOING_CALL": "Outgoing Call",
         "REJECT": "DECLINE",

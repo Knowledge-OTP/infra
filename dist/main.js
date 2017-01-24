@@ -50,7 +50,8 @@
 "znk.infra.znkProgressBar",
 "znk.infra.znkQuestionReport",
 "znk.infra.znkSessionData",
-"znk.infra.znkTimeline"
+"znk.infra.znkTimeline",
+"znk.infra.znkTooltip"
     ]);
 })(angular);
 
@@ -1239,7 +1240,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         'ngMaterial',
         'znk.infra.svgIcon',
         'znk.infra.callsModals',
-        'znk.infra.utility'
+        'znk.infra.utility',
+        'znk.infra.znkTooltip'
     ]);
 })(angular);
 
@@ -1269,7 +1271,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 parent: '?^ngModel'
             },
             controllerAs: 'vm',
-            controller: ["CallsSrv", "CallsBtnSrv", "CallsErrorSrv", "CallsBtnStatusEnum", "$log", "$scope", "CALL_UPDATE", "toggleAutoCallEnum", "ENV", function (CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE,
+            controller: ["$translate", "CallsSrv", "CallsBtnSrv", "CallsErrorSrv", "CallsBtnStatusEnum", "$log", "$scope", "CALL_UPDATE", "toggleAutoCallEnum", "ENV", function ($translate, CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE,
                                   toggleAutoCallEnum, ENV) {
                 var vm = this;
                 var receiverId;
@@ -1280,8 +1282,42 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 
                 vm.callBtnEnum = CallsBtnStatusEnum;
 
+                var translateNamespace = 'AUDIO_CALLS';
+
+                var loadTranslations = $translate([
+                    translateNamespace + '.' + 'CALL_STUDENT',
+                    translateNamespace + '.' + 'CALL_TEACHER',
+                    translateNamespace + '.' + 'END_CALL',
+                    translateNamespace + '.' + 'OFFLINE'
+                ]);
+
+                function _changeTooltipTranslation(state) {
+                    return loadTranslations.then(function (translation) {
+                        var translatedStrings = {
+                            CALL_STUDENT: translation[translateNamespace + '.' + 'CALL_STUDENT'],
+                            CALL_TEACHER: translation[translateNamespace + '.' + 'CALL_TEACHER'],
+                            END_CALL: translation[translateNamespace + '.' + 'END_CALL'],
+                            OFFLINE: translation[translateNamespace + '.' + 'OFFLINE']
+                        };
+                        switch(state) {
+                            case CallsBtnStatusEnum.OFFLINE_BTN.enum:
+                                return translatedStrings.OFFLINE;
+                            case CallsBtnStatusEnum.CALL_BTN.enum:
+                                return isTeacher? translatedStrings.CALL_STUDENT : translatedStrings.CALL_TEACHER;
+                            case CallsBtnStatusEnum.CALLED_BTN.enum:
+                                return translatedStrings.END_CALL;
+                        }
+                    }).catch(function (err) {
+                        $log.debug('Could not fetch translation', err);
+                    });
+                }
+
                 function _changeBtnState(state) {
                     vm.callBtnState = state;
+                    _changeTooltipTranslation(state).then(function (tooltipText) {
+                        vm.tooltipTranslate = tooltipText;
+                    });
+
                 }
 
                 function _isNoPendingClick() {
@@ -2608,6 +2644,9 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "        class=\"etutoring-phone-icon\"\n" +
     "        name=\"calls-etutoring-phone-icon\">\n" +
     "    </svg-icon>\n" +
+    "    <md-tooltip znk-tooltip class=\"md-fab\">\n" +
+    "        {{vm.tooltipTranslate}}\n" +
+    "    </md-tooltip>\n" +
     "</button>\n" +
     "");
   $templateCache.put("components/calls/modals/templates/baseCallsModal.template.html",
@@ -16923,4 +16962,40 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templat
     "</g>\n" +
     "</svg>\n" +
     "");
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkTooltip', [
+        'ngMaterial',
+        'pascalprecht.translate',
+        'ngSanitize'
+    ]);
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkTooltip')
+        .directive('znkTooltip',
+            function () {
+                'ngInject';
+                return {
+                link: function() {
+
+                    var divElm = document.createElement('div');
+                    divElm.classList.add('arrow');
+
+                    var mdContent = angular.element(document.querySelector('.md-content'));
+
+                    mdContent.append(divElm);
+                }
+            };
+        });
+})(angular);
+
+angular.module('znk.infra.znkTooltip').run(['$templateCache', function($templateCache) {
+
 }]);

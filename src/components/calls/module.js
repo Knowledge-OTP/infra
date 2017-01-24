@@ -9,6 +9,7 @@
         'ngMaterial',
         'znk.infra.svgIcon',
         'znk.infra.callsModals',
-        'znk.infra.utility'
+        'znk.infra.utility',
+        'znk.infra.znkTooltip'
     ]);
 })(angular);
