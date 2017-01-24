@@ -540,7 +540,7 @@
                     var latePopupTitle = 'ASSIGN_MODULE.YOUR_ASSIGNMENT_IS_LATE';
                     var latePopupContent = 'ASSIGN_MODULE.PlEASE_COMPLETE_ASSIGNMENT';
 
-                    var goToAssignmentText = 'ASSIGN_MODULE.GO_TO_ASSIGNMENT';
+                    var goToAssignmentText = 'ASSIGN_MODULE.ASSIGNMENT';
                     var closeText = 'ASSIGN_MODULE.CLOSE';
 
                     if (isHomeworkIsLate(homeworkObj)) {

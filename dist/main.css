@@ -1410,9 +1410,10 @@ $blueBG8: #75cbe8;
         -ms-flex-align: center;
             align-items: center;
         -webkit-align-items: center; }
-        .znk-popup .base-popup .znk-popup-wrapper .znk-popup-header .icon-wrapper .exclamation-mark svg {
-          width: 8px; }
-          .znk-popup .base-popup .znk-popup-wrapper .znk-popup-header .icon-wrapper .exclamation-mark svg path {
+        .znk-popup .base-popup .znk-popup-wrapper .znk-popup-header .icon-wrapper .exclamation-mark svg, .znk-popup .base-popup .znk-popup-wrapper .znk-popup-header .icon-wrapper .popup-exclamation-mark svg {
+          width: 8px;
+          height: auto; }
+          .znk-popup .base-popup .znk-popup-wrapper .znk-popup-header .icon-wrapper .exclamation-mark svg path, .znk-popup .base-popup .znk-popup-wrapper .znk-popup-header .icon-wrapper .popup-exclamation-mark svg path {
             fill: #fff; }
         .znk-popup .base-popup .znk-popup-wrapper .znk-popup-header .icon-wrapper .correct {
           margin-top: 6px; }
