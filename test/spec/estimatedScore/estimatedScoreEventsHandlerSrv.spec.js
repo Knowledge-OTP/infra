@@ -31,13 +31,14 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
     }));
 
     var exerciseEventsConst, actions, TestUtilitySrv, $rootScope, ExerciseTypeEnum, SubjectEnum, StudentStorage,
-        ExerciseAnswerStatusEnum, EstimatedScoreSrv;
+        ExerciseAnswerStatusEnum, EstimatedScoreSrv, EstimatedScoreEventsHandlerSrv;
     beforeEach(inject(
         function ($injector) {
             exerciseEventsConst = $injector.get('exerciseEventsConst');
             $rootScope = $injector.get('$rootScope');
             TestUtilitySrv = $injector.get('TestUtilitySrv');
             EstimatedScoreSrv = $injector.get('EstimatedScoreSrv');
+            EstimatedScoreEventsHandlerSrv = $injector.get('EstimatedScoreEventsHandlerSrv');
             ExerciseTypeEnum = $injector.get('ExerciseTypeEnum');
             SubjectEnum = $injector.get('SubjectEnum');
             var InfraConfigSrv = $injector.get('InfraConfigSrv');
@@ -47,6 +48,8 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
             TestUtilitySrv.general.printDebugLogs();
 
             actions = TestUtilitySrv.general.convertAllAsyncToSync(EstimatedScoreSrv);
+
+            // actions.calculateRawScore = TestUtilitySrv.general.convertAllAsyncToSync(EstimatedScoreEventsHandlerSrv);
 
             actions.getSectionsRawScoresFromDb = function (subjectId) {
                 return StudentStorage.adapter.__db.users.$$uid.estimatedScore.sectionsRawScores[subjectId];
@@ -64,7 +67,7 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
 
     it('when section is completed in diagnostic test then score object should be calculated accordingly', function () {
         var exam = content.exam47;
-        exam.typeId = 2;//diagnostic
+        exam.typeId = 2; //diagnostic
         var sectionKey = 'section' + exam.sections[0].id;
         var section = content[sectionKey];
 
@@ -73,8 +76,9 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
 
         var resultsMock = TestUtilitySrv.exercise.mockExerciseResult(section, CORRECT_NUM, UNANSWERED_NUM, true);
 
-        $rootScope.$broadcast(exerciseEventsConst.section.FINISH, section, resultsMock, exam);
-        $rootScope.$digest();
+        // $rootScope.$broadcast(exerciseEventsConst.section.FINISH, section, resultsMock, exam);
+        EstimatedScoreEventsHandlerSrv.calculateRawScore(exerciseEventsConst, section, resultsMock, exam);
+        // $rootScope.$digest();
 
         var scoresArr = actions.getEstimatedScoresFromDb(section.subjectId);
 
@@ -83,22 +87,23 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         var expectedResult = {
             exerciseType: ExerciseTypeEnum.SECTION.enum,
             exerciseId: section.id,
-            score: (0 * 90) + (1 * 100) + (2 * 120) + (1 * 140) + (1 * 150) +   //correct
-            (1 * 50) + (3 * 60) + (2 * 80) + (1 * 100) + (2 * 120)       //wrong
+            score: (0 * 90) + (1 * 100) + (2 * 120) + (1 * 140) + (1 * 150) + //correct
+                (1 * 50) + (3 * 60) + (2 * 80) + (1 * 100) + (2 * 120) //wrong
             //score: (/*3*/ 3 * 120) + (/*2*/ 1 * 100) + (/*4*/ 1 * 140) +
             //(/*1*/ 3 * 50) + (/*5*/ 2 * 120) + (/*4*/ 3 * 100) + (/*2*/ 2 * 60) + (/*3*/ 2 * 80)
         };
         expect(scoresArr[0]).toEqual(jasmine.objectContaining(expectedResult));
         //testing that same event will not be processed twice
-        $rootScope.$broadcast(exerciseEventsConst.section.FINISH, section, resultsMock, exam);
-        $rootScope.$digest();
+        // $rootScope.$broadcast(exerciseEventsConst.section.FINISH, section, resultsMock, exam);
+        EstimatedScoreEventsHandlerSrv.calculateRawScore(exerciseEventsConst, section, resultMock, exam);
+        // $rootScope.$digest();
         scoresArr = actions.getEstimatedScoresFromDb(section.subjectId);
         expect(scoresArr.length).toEqual(1);
     });
 
     xit('when writing section is completed in diagnostic test then raw score object should be calculated accordingly', function () {
         var exam = content.exam47;
-        exam.typeId = 2;//diagnostic
+        exam.typeId = 2; //diagnostic
         var sectionKey = 'section' + exam.sections[0].id;
         var section = content[sectionKey];
 
@@ -108,8 +113,9 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
 
         var resultsMock = TestUtilitySrv.exercise.mockExerciseResult(section, CORRECT_NUM, UNANSWERED_NUM, true);
 
-        $rootScope.$broadcast(exerciseEventsConst.section.FINISH, section, resultsMock, exam);
-        $rootScope.$digest();
+        // $rootScope.$broadcast(exerciseEventsConst.section.FINISH, section, resultsMock, exam);
+        EstimatedScoreEventsHandlerSrv.calculateRawScore(exerciseEventsConst, section, resultMock, exam);
+        // $rootScope.$digest();
         var sectionRawScore = actions.getSectionsRawScoresFromDb(section.subjectId);
         var sectionRawPointsMap = rawPointsForExerciseTypeMap[ExerciseTypeEnum.SECTION.enum];
         var expectedResult = {
@@ -122,8 +128,9 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         expect(sectionRawScore[0]).toEqual(jasmine.objectContaining(expectedResult));
 
         //testing that same event will not be processed twice
-        $rootScope.$broadcast(exerciseEventsConst.section.FINISH, section, resultsMock, exam);
-        $rootScope.$digest();
+        // $rootScope.$broadcast(exerciseEventsConst.section.FINISH, section, resultsMock, exam);
+        EstimatedScoreEventsHandlerSrv.calculateRawScore(exerciseEventsConst, section, resultMock, exam);
+        // $rootScope.$digest();
         sectionRawScore = actions.getSectionsRawScoresFromDb(section.subjectId);
         expect(sectionRawScore.length).toBe(1);
         expect(sectionRawScore[0]).toEqual(jasmine.objectContaining(expectedResult));
@@ -158,8 +165,9 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         var WRONG_NUM = CORRECT_NUM - UNANSWERED_NUM;
         var resultMock = TestUtilitySrv.exercise.mockExerciseResult(drillMock, CORRECT_NUM, UNANSWERED_NUM, true);
 
-        $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, drillMock, resultMock);
-        $rootScope.$digest();
+        // $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, drillMock, resultMock);
+        EstimatedScoreEventsHandlerSrv.calculateRawScore(exerciseEventsConst, drillMock, resultMock);
+        // $rootScope.$digest();
 
         var drillRawPointsMap = rawPointsForExerciseTypeMap[ExerciseTypeEnum.DRILL.enum];
         var expectedRawScore = {
@@ -167,8 +175,8 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
             exerciseId: drillMock.id,
             total: drillRawPointsMap.correctWithin * TOTAL_QUESTIONS,
             earned: CORRECT_NUM * drillRawPointsMap.correctWithin +
-            WRONG_NUM * drillRawPointsMap.wrongWithin +
-            UNANSWERED_NUM * drillRawPointsMap.unanswered
+                WRONG_NUM * drillRawPointsMap.wrongWithin +
+                UNANSWERED_NUM * drillRawPointsMap.unanswered
         };
         var exerciseRawScore = actions.getExercisesRawScoreFromDb(drillMock.subjectId);
         expect(exerciseRawScore).toEqual(jasmine.objectContaining(expectedRawScore));
@@ -183,8 +191,9 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         expect(estimatedScore[1]).toEqual(jasmine.objectContaining(expectedEstimatedScore));
 
         //testing that same event will not be processed twice
-        $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, drillMock, resultMock);
-        $rootScope.$digest();
+        // $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, drillMock, resultMock);
+        EstimatedScoreEventsHandlerSrv.calculateRawScore(exerciseEventsConst, drillMock, resultMock);
+        // $rootScope.$digest();
         estimatedScore = actions.getEstimatedScoresFromDb(drillMock.subjectId);
         expect(estimatedScore.length).toBe(2);
     });
@@ -232,8 +241,9 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         var UNANSWERED_NUM = 1;
         var resultMock = TestUtilitySrv.exercise.mockExerciseResult(sectionMock, CORRECT_NUM, UNANSWERED_NUM, true);
 
-        $rootScope.$broadcast(exerciseEventsConst.section.FINISH, sectionMock, resultMock, examMock);
-        $rootScope.$digest();
+        // $rootScope.$broadcast(exerciseEventsConst.section.FINISH, sectionMock, resultMock, examMock);
+        EstimatedScoreEventsHandlerSrv.calculateRawScore(exerciseEventsConst, sectionMock, resultMock, examMock);
+        // $rootScope.$digest();
 
         var estimatedScores = actions.getEstimatedScoresFromDb(sectionMock.subjectId);
         var expectedEstimatedScore = {
@@ -246,8 +256,9 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
 
 
         //testing that same event will not be processed twice
-        $rootScope.$broadcast(exerciseEventsConst.section.FINISH, sectionMock, resultMock, examMock);
-        $rootScope.$digest();
+        // $rootScope.$broadcast(exerciseEventsConst.section.FINISH, sectionMock, resultMock, examMock);
+        EstimatedScoreEventsHandlerSrv.calculateRawScore(exerciseEventsConst, sectionMock, resultMock, examMock);
+        // $rootScope.$digest();
         var estimatedScores = actions.getEstimatedScoresFromDb(sectionMock.subjectId);
         expect(estimatedScores.length).toBe(3);
         expect(estimatedScores[2]).toEqual(jasmine.objectContaining(expectedEstimatedScore));
@@ -266,8 +277,9 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         var UNANSWERED_NUM = 2;
         var resultMock = TestUtilitySrv.exercise.mockExerciseResult(drillMock, CORRECT_NUM, UNANSWERED_NUM, true);
 
-        $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, drillMock, resultMock);
-        $rootScope.$digest();
+        // $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, drillMock, resultMock);
+        EstimatedScoreEventsHandlerSrv.calculateRawScore(exerciseEventsConst, drillMock, resultMock);
+        // $rootScope.$digest();
 
         var estimatedScore = actions.getEstimatedScoresFromDb(drillMock.subjectId);
         var expectedEstimatedScore = {
@@ -290,12 +302,14 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         var UNANSWERED_NUM = 2;
         var resultMock = TestUtilitySrv.exercise.mockExerciseResult(drillMock, CORRECT_NUM, UNANSWERED_NUM, true);
 
-        $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, drillMock, resultMock);
-        $rootScope.$digest();
+        // $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, drillMock, resultMock);
+        EstimatedScoreEventsHandlerSrv.calculateRawScore(exerciseEventsConst, drillMock, resultMock);
+        // $rootScope.$digest();
 
         drillMock.id = 12;
-        $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, drillMock, resultMock);
-        $rootScope.$digest();
+        // $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, drillMock, resultMock);
+        EstimatedScoreEventsHandlerSrv.calculateRawScore(exerciseEventsConst, drillMock, resultMock);
+        // $rootScope.$digest();
 
         expect(EstimatedScoreSrv.addRawScore).toHaveBeenCalledTimes(1);
     });
