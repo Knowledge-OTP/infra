@@ -329,33 +329,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
             };
 
             userAssignModuleService.offExternalOnValue = function () {
-                /*InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
-                 var assignContentPath = _getAssignContentPath(valueCB.type);
-                 studentStorage.offEvent('value', 'users/' + userId + '/' + assignContentPath, onValueEventCB);
-                 angular.forEach(registerEvents[userId], function (cbArr, contentType) {
-                 angular.forEach(registerEvents[userId][contentType].valueCB, function (cb, index) {
-                 if (cb === valueCB) {
-                 registerEvents[userId][contentType].valueCB.splice(index, 1);
-                 }
-                 });
-                 });
-
-                 angular.forEach(registerEvents[userId], function (cbArr, contentType) {
-                 if (registerEvents[userId][contentType].changeCB) {
-                 angular.forEach(registerEvents[userId][contentType].changeCB, function (cbData, index) {
-                 if (cbData.cb === changeCB) {
-                 angular.forEach(cbData.guids, function (resultGuid) {
-                 var assignContentPath = _getAssignContentPath(changeCB.type);
-                 studentStorage.offEvent('child_changed', assignContentPath + '/'+ resultGuid, function () {
-                 // need to OFF inner callbackWrapper function (need to name the function)
-                 });
-                 });
-                 registerEvents[userId][contentType].changeCB.splice(index, 1);
-                 }
-                 });
-                 }
-                 });
-                 });*/
+                // todo: implement offEvent for registered events (registerEvents object), once the storage.offEvent will fixed
             };
 
             userAssignModuleService.registerExternalOnValueCB = function (userId, contentType, valueCB, changeCB) {
