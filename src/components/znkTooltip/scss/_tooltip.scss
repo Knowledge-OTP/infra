@@ -3,28 +3,30 @@ md-tooltip[znk-tooltip] {
     height: auto;
     box-sizing: border-box;
     border-radius: 10px;
+    background-color: transparent;
 
     .md-content{
+        position: relative;
         @include text-style(12px, $fcColor2, Lato, $regularFontWeight, null, none);
         overflow: visible;
         border-radius: 5px;
         padding: 0 10px;
+        background: $bcColor17;
     }
 
     .arrow, .arrow:before{
-        position: relative;
+        position: absolute;
         z-index: 1;
-        width: 0;
-        height: 0;
+        transform: translate(-50%, -50%);
     }
 
     &[md-direction=bottom] {
         .md-content {
-            margin-top: 10px;
+            margin-top: 5px;
         }
         .arrow, .arrow:before{
-            left: calc(50% - 10px);
-            bottom: 28px;
+            top: -3px;
+            left: 50%;
             border-left: 6px solid transparent;
             border-right: 6px solid transparent;
             border-bottom: 6px solid $bcColor17;
@@ -33,11 +35,11 @@ md-tooltip[znk-tooltip] {
 
     &[md-direction=top] {
         .md-content {
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
         .arrow, .arrow:before{
-            left: calc(50% - 10px);
-            bottom: 0;
+            left: 50%;
+            bottom: -9px;
             border-left: 6px solid transparent;
             border-right: 6px solid transparent;
             border-top: 6px solid $bcColor17;
@@ -46,11 +48,11 @@ md-tooltip[znk-tooltip] {
 
     &[md-direction=left] {
         .md-content {
-            margin-right: 10px;
+            margin-right: 5px;
         }
         .arrow, .arrow:before{
-            left: calc(100% + 10px);
-            top: -17px;
+            left: calc(50% + 56%);
+            top: 50%;
             border-top: 6px solid transparent;
             border-right: 6px solid transparent;
             border-bottom: 6px solid transparent;
@@ -60,11 +62,11 @@ md-tooltip[znk-tooltip] {
 
     &[md-direction=right] {
         .md-content {
-            margin-left: 10px;
+            margin-left: 5px;
         }
         .arrow, .arrow:before{
-            left: calc(0% - 22px);
-            top: -17px;
+            left: -6%;
+            top: 11px;
             border-top: 6px solid transparent;
             border-right: 6px solid $bcColor17;
             border-bottom: 6px solid transparent;
