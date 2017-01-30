@@ -1,0 +1,51 @@
+md-tooltip {
+    opacity: 0;
+    width: auto;
+    height: 87px;
+    background: #ffffff;
+    padding:0 5px;
+    .md-content {
+        height: auto;
+        text-align: center;
+        background: #ffffff;
+        white-space: normal;
+        // override and cancel .md-content transitions and transform
+        &.md-show {
+            opacity: 1;
+            transform: none;
+            transition: none;
+            pointer-events: auto;
+            will-change: auto;
+        }
+        &.md-show-remove {
+            transition: none;
+            &.md-show-remove-active {
+                transform: none;
+                opacity: 0;
+            }
+        }
+        .top-text {
+            margin: {
+                top: 22px;
+                bottom: 12px;
+            }
+            @include text-style(16px, #4f4d4d, Lato, 400);
+        }
+        .bottom-text {
+            line-height: 12px;
+            @include text-style(12px, #4f4d4d, Lato, 300);
+        }
+    }
+
+    &.md-hide {
+        transition: opacity 0.4s;
+        opacity: 0;
+    }
+
+    &.md-show {
+        opacity: 1;
+        transition: opacity 0.4s;
+        pointer-events: auto;
+        will-change: opacity;
+    }
+}
