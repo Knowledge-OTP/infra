@@ -567,10 +567,10 @@
                     });
                 }
 
-                function getNotCompletedHomework() {
+                function getNotCompletedHomework(topicId) {
                     return _getAllHomeworkModuleResult().then(function (allHomeworkModulesResults) {
                         for (var i = 0; i < allHomeworkModulesResults.length; i++) {
-                            if (!allHomeworkModulesResults[i].isComplete) {
+                            if (!allHomeworkModulesResults[i].isComplete && allHomeworkModulesResults[i].topicId === topicId) {
                                 return allHomeworkModulesResults[i];
                             }
                         }
@@ -636,8 +636,8 @@
                     });
                 };
 
-                HomeworkSrv.hasLatePractice = function () {
-                    return getNotCompletedHomework().then(function(notCompletedHomework){
+                HomeworkSrv.hasLatePractice = function (topicId) {
+                    return getNotCompletedHomework(topicId).then(function(notCompletedHomework){
                         if (angular.isDefined(notCompletedHomework)) {
                             return isHomeworkIsLate(notCompletedHomework);
                         } else {

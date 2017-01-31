@@ -836,10 +836,10 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     });
                 }
 
-                function getNotCompletedHomework() {
+                function getNotCompletedHomework(topicId) {
                     return _getAllHomeworkModuleResult().then(function (allHomeworkModulesResults) {
                         for (var i = 0; i < allHomeworkModulesResults.length; i++) {
-                            if (!allHomeworkModulesResults[i].isComplete) {
+                            if (!allHomeworkModulesResults[i].isComplete && allHomeworkModulesResults[i].topicId === topicId) {
                                 return allHomeworkModulesResults[i];
                             }
                         }
@@ -905,8 +905,8 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     });
                 };
 
-                HomeworkSrv.hasLatePractice = function () {
-                    return getNotCompletedHomework().then(function(notCompletedHomework){
+                HomeworkSrv.hasLatePractice = function (topicId) {
+                    return getNotCompletedHomework(topicId).then(function(notCompletedHomework){
                         if (angular.isDefined(notCompletedHomework)) {
                             return isHomeworkIsLate(notCompletedHomework);
                         } else {
@@ -9576,33 +9576,6 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
-        var dayInMs = 86400000;
-        var WEEK = 7;
-        this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
-
-
-        this.isDueDatePass = function (dueDate) {
-            var res = {
-                dateDiff: 0,
-                passDue: false
-            };
-
-            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
-                return res;
-            }
-
-            res.dateDiff = Math.abs(Math.ceil((Date.now() - dueDate) / dayInMs));
-            res.passDue = dueDate - Date.now() < 0;
-            return res;
-        };
-    }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.utility').factory('UtilitySrv', [
         '$q',
         function ($q) {
@@ -9695,6 +9668,33 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 
             return UtilitySrv;
         }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
+        var dayInMs = 86400000;
+        var WEEK = 7;
+        this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
+
+
+        this.isDueDatePass = function (dueDate) {
+            var res = {
+                dateDiff: 0,
+                passDue: false
+            };
+
+            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
+                return res;
+            }
+
+            res.dateDiff = Math.abs(Math.ceil((Date.now() - dueDate) / dayInMs));
+            res.passDue = dueDate - Date.now() < 0;
+            return res;
+        };
+    }
     ]);
 })(angular);
 
