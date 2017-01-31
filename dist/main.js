@@ -1253,7 +1253,6 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 var vm = this;
                 var receiverId;
                 var isPendingClick = false;
-                var autoCallStatusEnum = toggleAutoCallEnum;
                 var isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
                 var isOffline;
 
@@ -1344,23 +1343,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                 hangCall(modelValue.isOffline);
                                 _changeBtnState(curBtnStatus);
                                 if (curBtnStatus !== CallsBtnStatusEnum.OFFLINE_BTN.enum) {
-                                    _initializeBtnStatus(receiverId).then(function(status) {
-                                        if (angular.isDefined(modelValue.toggleAutoCall) && isTeacher) {
-                                            var isInActiveCall = status === CallsBtnStatusEnum.CALLED_BTN.enum;
-                                            switch (modelValue.toggleAutoCall) {
-                                                case autoCallStatusEnum.ACTIVATE.enum:
-                                                    if (!isInActiveCall) {
-                                                        vm.clickBtn();
-                                                    }
-                                                    break;
-                                                case autoCallStatusEnum.DISABLE.enum:
-                                                    if (isInActiveCall) {
-                                                        vm.clickBtn();
-                                                    }
-                                                    break;
-                                            }
-                                        }
-                                    });
+                                    _initializeBtnStatus(receiverId);
                                 }
                             }
                         };
@@ -2320,7 +2303,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsSrv',
-        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "CallsDataSetterSrv", "WebcallSrv", "CallsEventsSrv", "CallsStatusEnum", "CallsActionStatusEnum", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv, CallsEventsSrv, CallsStatusEnum, CallsActionStatusEnum) {
+        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "CallsDataSetterSrv", "WebcallSrv", "CallsEventsSrv", "CallsStatusEnum", "CallsActionStatusEnum", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv,
+                  CallsEventsSrv, CallsStatusEnum, CallsActionStatusEnum) {
             'ngInject';
 
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
