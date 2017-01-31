@@ -119,7 +119,7 @@
                                     subjectId2Prom
                                 ]).then(function (subjectIds) {
                                     angular.forEach(subjectIds, function (subjectId) {
-                                        if (subjectId) {
+                                        if (angular.isNumber(subjectId)) {
                                             if (angular.isUndefined(scores[subjectId])) {
                                                 scores[subjectId] = 0;
                                             }
@@ -176,7 +176,7 @@
                                         subjectId2Prom
                                     ]).then(function (subjectIds) {
                                         subjectIds.forEach(function (subjectId) {
-                                            if (subjectId) {
+                                            if (angular.isNumber(subjectId)) {
                                                 if (angular.isUndefined(rawScores[subjectId])) {
                                                     rawScores[subjectId] = {
                                                         total: questionResults.length * exercisesRawScoring[exerciseType].correctWithin,
@@ -224,29 +224,38 @@
                                 if (isDiagnostic) {
                                     _diagnosticSectionCompleteHandler(section, sectionResult);
                                 }
-
-                                _calculateRawScore(ExerciseTypeEnum.SECTION.enum, sectionResult).then(function (rawScores) {
-                                    var rawScoresKeys = Object.keys(rawScores);
-                                    rawScoresKeys.forEach(function (subjectId) {
-                                        var rawScore = rawScores[subjectId];
-                                        (function (rawScore) {
-                                            EstimatedScoreSrv.addRawScore(rawScore, ExerciseTypeEnum.SECTION.enum, subjectId, section.id, isDiagnostic);
-                                        })(rawScore);
-                                    });
-                                });
+                                _callCalculateRawScore(ExerciseTypeEnum.SECTION.enum, sectionResult, section.id, isDiagnostic);
+                                // _calculateRawScore(ExerciseTypeEnum.SECTION.enum, sectionResult).then(function (rawScores) {
+                                //     var rawScoresKeys = Object.keys(rawScores);
+                                //     rawScoresKeys.forEach(function (subjectId) {
+                                //         var rawScore = rawScores[subjectId];
+                                //         (function (rawScore) {
+                                //             EstimatedScoreSrv.addRawScore(rawScore, ExerciseTypeEnum.SECTION.enum, subjectId, section.id, isDiagnostic);
+                                //         })(rawScore);
+                                //     });
+                                // });
                             }
                         });
                 };
+                function _callCalculateRawScore(exerciseTypeEnum, sectionResult, id, isDiagnostic) {
+                    _calculateRawScore(exerciseTypeEnum, sectionResult).then(function (rawScores) {
+                        var rawScoresKeys = Object.keys(rawScores);
+                        rawScoresKeys.forEach(function (subjectId) {
+                            var rawScore = rawScores[subjectId];
+                            (function (rawScore) {
+                                EstimatedScoreSrv.addRawScore(rawScore, exerciseTypeEnum, subjectId, id, isDiagnostic);
+                            })(rawScore);
+                        });
+                    });
+                }
 
                 function _baseExerciseFinishHandler(exerciseType, evt, exercise, exerciseResult) {
                     _shouldEventBeProcessed(exerciseType, exercise, exerciseResult).then(function (shouldBeProcessed) {
                         if (shouldBeProcessed) {
-                            var rawScore = _calculateRawScore(exerciseType, exerciseResult);
-                            EstimatedScoreSrv.addRawScore(rawScore, exerciseType, exercise.subjectId, exercise.id);
+                            _callCalculateRawScore(exerciseType, exerciseResult, exercise.subjectId, exercise.id);
                         }
                     });
                 }
-
 
 
                 angular.forEach(ExerciseTypeEnum, function (enumObj, enumName) {
