@@ -133,7 +133,7 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         expect(sectionRawScore[0]).toEqual(jasmine.objectContaining(expectedResult));
     });
 
-    fit('when drill exercise is completed then raw score and estimated should be updated accordingly', function () {
+    it('when drill exercise is completed then raw score and estimated should be updated accordingly', function () {
         var drillMock = content.drill10;
         var diagnosticSectionRawScoreMock = {
             exerciseType: 4,
@@ -183,14 +183,14 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
             exerciseId: drillMock.id,
             score: 25.40625
         };
-        expect(estimatedScore.length).toBe(1);
-        expect(estimatedScore[0]).toEqual(jasmine.objectContaining(expectedEstimatedScore));
+        expect(estimatedScore.length).toBe(2);
+        expect(estimatedScore[1]).toEqual(jasmine.objectContaining(expectedEstimatedScore));
 
         //testing that same event will not be processed twice
         $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, drillMock, resultMock);
         $rootScope.$digest();
         estimatedScore = actions.getEstimatedScoresFromDb(drillMock.subjectId);
-        expect(estimatedScore.length).toBe(1);
+        expect(estimatedScore.length).toBe(2);
     });
 
     it('when section is completed then when calculating raw score then more weight should be given to latest finished sections', function () {
@@ -236,9 +236,8 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         var UNANSWERED_NUM = 1;
         var resultMock = TestUtilitySrv.exercise.mockExerciseResult(sectionMock, CORRECT_NUM, UNANSWERED_NUM, true);
 
-        // $rootScope.$broadcast(exerciseEventsConst.section.FINISH, sectionMock, resultMock, examMock);
         actions.estimatedScoreEventsHandlerSrv.calculateRawScore(exerciseEventsConst, sectionMock, resultMock, examMock);
-         $rootScope.$digest();
+        $rootScope.$digest();
 
         var estimatedScores = actions.getEstimatedScoresFromDb(sectionMock.subjectId);
         var expectedEstimatedScore = {
@@ -246,18 +245,18 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
             exerciseId: sectionMock.id,
             score: 179.08
         };
-        expect(estimatedScores.length).toBe(2);
-        expect(estimatedScores[1]).toEqual(jasmine.objectContaining(expectedEstimatedScore));
+        expect(estimatedScores.length).toBe(3);
+        expect(estimatedScores[2]).toEqual(jasmine.objectContaining(expectedEstimatedScore));
 
 
         //testing that same event will not be processed twice
-        // $rootScope.$broadcast(exerciseEventsConst.section.FINISH, sectionMock, resultMock, examMock);
         actions.estimatedScoreEventsHandlerSrv.calculateRawScore(exerciseEventsConst, sectionMock, resultMock, examMock);
-         $rootScope.$digest();
+        $rootScope.$digest();
         var estimatedScores = actions.getEstimatedScoresFromDb(sectionMock.subjectId);
         expect(estimatedScores.length).toBe(3);
         expect(estimatedScores[2]).toEqual(jasmine.objectContaining(expectedEstimatedScore));
     });
+
 
     it('when exercise is completed and no initial score is set then the received score should be set as the initial one', function () {
         var drillMock = content.drill10;

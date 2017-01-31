@@ -3891,7 +3891,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
             return 'Within';
         };
 
-        this.setAnswerTimeSpentTypeFn = function(fn){
+        this.setAnswerTimeSpentTypeFn = function (fn) {
             getAnswerTimeSpentType = fn;
         };
 
@@ -3937,7 +3937,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                     var questionsMap = UtilitySrv.array.convertToMap(questions);
 
                     sectionResult.questionResults.forEach(function (result, i) {
-                        var scorePromise = $q(function(resolve,reject) {
+                        var scorePromise = $q(function (resolve, reject) {
                             var question = questionsMap[result.questionId];
                             if (angular.isUndefined(question)) {
                                 $log.error('EstimatedScoreEventsHandler: question for result is missing',
@@ -3952,8 +3952,8 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                                     subjectId1Prom,
                                     subjectId2Prom
                                 ]).then(function (subjectIds) {
-                                    angular.forEach(subjectIds, function(subjectId) {
-                                        if (subjectId) {
+                                    angular.forEach(subjectIds, function (subjectId) {
+                                        if (angular.isNumber(subjectId)) {
                                             if (angular.isUndefined(scores[subjectId])) {
                                                 scores[subjectId] = 0;
                                             }
@@ -3967,9 +3967,9 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                         scoresPromises.push(scorePromise);
                     });
 
-                    $q.all(scoresPromises).then(function(){
+                    $q.all(scoresPromises).then(function () {
                         var subjectIds = Object.keys(scores);
-                        subjectIds.forEach(function(subjectId) {
+                        subjectIds.forEach(function (subjectId) {
                             EstimatedScoreSrv.setDiagnosticSectionScore(scores[subjectId], ExerciseTypeEnum.SECTION.enum, subjectId, section.id);
                         });
                     });
@@ -3985,21 +3985,53 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                 }
 
                 function _calculateRawScore(exerciseType, exerciseResult) {
-                    if (!exercisesRawScoring[exerciseType]) {
-                        $log.error('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: ' + exerciseType);
-                    }
+                    var scoresPromises = $q(function (resolve) {
+                        if (!exercisesRawScoring[exerciseType]) {
+                            $log.error('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: ' + exerciseType);
+                        }
+                        var rawScores = {};
+                        var questionResults = exerciseResult.questionResults;
+                        // var questionResultMap = UtilitySrv.array.convertToMap(questionResults, "questionId");
+                        var rawScoresProms = [];
+                        questionResults.forEach(function (quesionResult, index) {
+                            var rawScorePromise = $q(function (resolve, reject) {
+                                if (angular.isUndefined(quesionResult)) {
+                                    $log.error('EstimatedScoreEventsHandler: question for result is missing',
+                                        'exercise id: ', exerciseResult.id,
+                                        'result index: ', index
+                                    );
+                                    reject();
+                                } else {
+                                    var subjectId1Prom = CategoryService.getCategoryLevel1ParentById(quesionResult.categoryId);
+                                    var subjectId2Prom = CategoryService.getCategoryLevel1ParentById(quesionResult.categoryId2);
 
-                    var questionResults = exerciseResult.questionResults;
+                                    $q.all([
+                                        subjectId1Prom,
+                                        subjectId2Prom
+                                    ]).then(function (subjectIds) {
+                                        subjectIds.forEach(function (subjectId) {
+                                            if (angular.isNumber(subjectId)) {
+                                                if (angular.isUndefined(rawScores[subjectId])) {
+                                                    rawScores[subjectId] = {
+                                                        total: questionResults.length * exercisesRawScoring[exerciseType].correctWithin,
+                                                        earned: 0
+                                                    };
+                                                }
+                                                rawScores[subjectId].earned += _getQuestionRawPoints(exerciseType, quesionResult);
+                                            }
+                                        });
+                                        resolve();
+                                    });
+                                }
+                            });
+                            rawScoresProms.push(rawScorePromise);
+                        });
+                        $q.all(rawScoresProms).then(function () {
+                            resolve(rawScores);
+                        });
 
-                    var rawPoints = {
-                        total: questionResults.length * exercisesRawScoring[exerciseType].correctWithin,
-                        earned: 0
-                    };
-
-                    questionResults.forEach(function (result) {
-                        rawPoints.earned += _getQuestionRawPoints(exerciseType, result);
                     });
-                    return rawPoints;
+                    return scoresPromises;
                 }
 
                 function _shouldEventBeProcessed(exerciseType, exercise, exerciseResult) {
@@ -4015,27 +4047,30 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                 }
 
                 childScope.$on(exerciseEventsConst.section.FINISH, function (evt, section, sectionResult, exam) {
-                    _shouldEventBeProcessed(exerciseEventsConst.section.FINISH, section, sectionResult)
-                        .then(function (shouldBeProcessed) {
-                            if (shouldBeProcessed) {
-                                var isDiagnostic = exam.typeId === ExamTypeEnum.DIAGNOSTIC.enum;
-                                if (isDiagnostic) {
-                                    _diagnosticSectionCompleteHandler(section, sectionResult);
-                                }
-                                var rawScore = _calculateRawScore(ExerciseTypeEnum.SECTION.enum, sectionResult);
-                                EstimatedScoreSrv.addRawScore(rawScore, ExerciseTypeEnum.SECTION.enum, section.subjectId, section.id, isDiagnostic);
-                            }
-                        });
+                    EstimatedScoreEventsHandlerSrv.calculateRawScore(section, sectionResult, exam);
                 });
+
+
+                function _callCalculateAndSaveRawScore(exerciseTypeEnum, sectionResult, id, isDiagnostic) {
+                    _calculateRawScore(exerciseTypeEnum, sectionResult).then(function (rawScores) {
+                        var rawScoresKeys = Object.keys(rawScores);
+                        rawScoresKeys.forEach(function (subjectId) {
+                            var rawScore = rawScores[subjectId];
+                            (function (rawScore) {
+                                EstimatedScoreSrv.addRawScore(rawScore, exerciseTypeEnum, subjectId, id, isDiagnostic);
+                            })(rawScore);
+                        });
+                    });
+                }
 
                 function _baseExerciseFinishHandler(exerciseType, evt, exercise, exerciseResult) {
                     _shouldEventBeProcessed(exerciseType, exercise, exerciseResult).then(function (shouldBeProcessed) {
                         if (shouldBeProcessed) {
-                            var rawScore = _calculateRawScore(exerciseType, exerciseResult);
-                            EstimatedScoreSrv.addRawScore(rawScore, exerciseType, exercise.subjectId, exercise.id);
+                            _callCalculateAndSaveRawScore(exerciseType, exerciseResult, exercise.id);
                         }
                     });
                 }
+
 
                 angular.forEach(ExerciseTypeEnum, function (enumObj, enumName) {
                     if (enumName !== 'SECTION' && enumName !== 'LECTURE') {
@@ -4047,6 +4082,18 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
 
                 EstimatedScoreEventsHandlerSrv.init = angular.noop;
 
+                EstimatedScoreEventsHandlerSrv.calculateRawScore = function (exerciseEventsConst, section, sectionResult, exam) {
+                    _shouldEventBeProcessed(exerciseEventsConst.section.FINISH, section, sectionResult)
+                        .then(function (shouldBeProcessed) {
+                            if (shouldBeProcessed) {
+                                var isDiagnostic = exam.typeId === ExamTypeEnum.DIAGNOSTIC.enum;
+                                if (isDiagnostic) {
+                                    _diagnosticSectionCompleteHandler(section, sectionResult);
+                                }
+                                _callCalculateAndSaveRawScore(ExerciseTypeEnum.SECTION.enum, sectionResult, section.id, isDiagnostic);
+                            }
+                        });
+                };
                 return EstimatedScoreEventsHandlerSrv;
             }
         ];

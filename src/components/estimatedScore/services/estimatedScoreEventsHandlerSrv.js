@@ -216,28 +216,8 @@
                     EstimatedScoreEventsHandlerSrv.calculateRawScore(section, sectionResult, exam);
                 });
 
-                EstimatedScoreEventsHandlerSrv.calculateRawScore = function (exerciseEventsConst, section, sectionResult, exam) {
-                    _shouldEventBeProcessed(exerciseEventsConst.section.FINISH, section, sectionResult)
-                        .then(function (shouldBeProcessed) {
-                            if (shouldBeProcessed) {
-                                var isDiagnostic = exam.typeId === ExamTypeEnum.DIAGNOSTIC.enum;
-                                if (isDiagnostic) {
-                                    _diagnosticSectionCompleteHandler(section, sectionResult);
-                                }
-                                _callCalculateRawScore(ExerciseTypeEnum.SECTION.enum, sectionResult, section.id, isDiagnostic);
-                                // _calculateRawScore(ExerciseTypeEnum.SECTION.enum, sectionResult).then(function (rawScores) {
-                                //     var rawScoresKeys = Object.keys(rawScores);
-                                //     rawScoresKeys.forEach(function (subjectId) {
-                                //         var rawScore = rawScores[subjectId];
-                                //         (function (rawScore) {
-                                //             EstimatedScoreSrv.addRawScore(rawScore, ExerciseTypeEnum.SECTION.enum, subjectId, section.id, isDiagnostic);
-                                //         })(rawScore);
-                                //     });
-                                // });
-                            }
-                        });
-                };
-                function _callCalculateRawScore(exerciseTypeEnum, sectionResult, id, isDiagnostic) {
+
+                function _callCalculateAndSaveRawScore(exerciseTypeEnum, sectionResult, id, isDiagnostic) {
                     _calculateRawScore(exerciseTypeEnum, sectionResult).then(function (rawScores) {
                         var rawScoresKeys = Object.keys(rawScores);
                         rawScoresKeys.forEach(function (subjectId) {
@@ -252,7 +232,7 @@
                 function _baseExerciseFinishHandler(exerciseType, evt, exercise, exerciseResult) {
                     _shouldEventBeProcessed(exerciseType, exercise, exerciseResult).then(function (shouldBeProcessed) {
                         if (shouldBeProcessed) {
-                            _callCalculateRawScore(exerciseType, exerciseResult, exercise.subjectId, exercise.id);
+                            _callCalculateAndSaveRawScore(exerciseType, exerciseResult, exercise.id);
                         }
                     });
                 }
@@ -268,6 +248,18 @@
 
                 EstimatedScoreEventsHandlerSrv.init = angular.noop;
 
+                EstimatedScoreEventsHandlerSrv.calculateRawScore = function (exerciseEventsConst, section, sectionResult, exam) {
+                    _shouldEventBeProcessed(exerciseEventsConst.section.FINISH, section, sectionResult)
+                        .then(function (shouldBeProcessed) {
+                            if (shouldBeProcessed) {
+                                var isDiagnostic = exam.typeId === ExamTypeEnum.DIAGNOSTIC.enum;
+                                if (isDiagnostic) {
+                                    _diagnosticSectionCompleteHandler(section, sectionResult);
+                                }
+                                _callCalculateAndSaveRawScore(ExerciseTypeEnum.SECTION.enum, sectionResult, section.id, isDiagnostic);
+                            }
+                        });
+                };
                 return EstimatedScoreEventsHandlerSrv;
             }
         ];
