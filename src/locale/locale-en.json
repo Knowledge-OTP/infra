@@ -9,6 +9,10 @@
         "INCORRECT_EMAIL_AND_PASSWORD_COMBINATION": "Incorrect email and password combination."
     },
     "AUDIO_CALLS":{
+        "CALL_STUDENT": "Call Student",
+        "CALL_TEACHER": "Call Teacher",
+        "END_CALL": "End Call",
+        "OFFLINE": "Offline",
         "INCOMING_CALL": "Incoming Call",
         "OUTGOING_CALL": "Outgoing Call",
         "REJECT": "DECLINE",
@@ -92,7 +96,7 @@
     "ASSIGN_MODULE":{
         "ASSIGNMENT_AVAILABLE": "An assignment is available",
         "ASSIGNMENT_PENDING": "You have an assignment pending. Click below to complete your assignment.",
-        "GO_TO_ASSIGNMENT": "GO TO ASSIGNMENT",
+        "ASSIGNMENT": "Assignment",
         "CLOSE": "CLOSE",
         "PlEASE_COMPLETE_ASSIGNMENT": "Please complete this assignment before your next Zinkerz lesson",
         "YOUR_ASSIGNMENT_IS_LATE": "Your assignment is late"

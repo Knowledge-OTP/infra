@@ -7,7 +7,7 @@
                 parent: '?^ngModel'
             },
             controllerAs: 'vm',
-            controller: function (CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE,
+            controller: function ($translate, CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE,
                                   toggleAutoCallEnum, ENV) {
                 var vm = this;
                 var receiverId;
@@ -18,8 +18,42 @@
 
                 vm.callBtnEnum = CallsBtnStatusEnum;
 
+                var translateNamespace = 'AUDIO_CALLS';
+
+                var loadTranslations = $translate([
+                    translateNamespace + '.' + 'CALL_STUDENT',
+                    translateNamespace + '.' + 'CALL_TEACHER',
+                    translateNamespace + '.' + 'END_CALL',
+                    translateNamespace + '.' + 'OFFLINE'
+                ]);
+
+                function _changeTooltipTranslation(state) {
+                    return loadTranslations.then(function (translation) {
+                        var translatedStrings = {
+                            CALL_STUDENT: translation[translateNamespace + '.' + 'CALL_STUDENT'],
+                            CALL_TEACHER: translation[translateNamespace + '.' + 'CALL_TEACHER'],
+                            END_CALL: translation[translateNamespace + '.' + 'END_CALL'],
+                            OFFLINE: translation[translateNamespace + '.' + 'OFFLINE']
+                        };
+                        switch(state) {
+                            case CallsBtnStatusEnum.OFFLINE_BTN.enum:
+                                return translatedStrings.OFFLINE;
+                            case CallsBtnStatusEnum.CALL_BTN.enum:
+                                return isTeacher? translatedStrings.CALL_STUDENT : translatedStrings.CALL_TEACHER;
+                            case CallsBtnStatusEnum.CALLED_BTN.enum:
+                                return translatedStrings.END_CALL;
+                        }
+                    }).catch(function (err) {
+                        $log.debug('Could not fetch translation', err);
+                    });
+                }
+
                 function _changeBtnState(state) {
                     vm.callBtnState = state;
+                    _changeTooltipTranslation(state).then(function (tooltipText) {
+                        vm.tooltipTranslate = tooltipText;
+                    });
+
                 }
 
                 function _isNoPendingClick() {

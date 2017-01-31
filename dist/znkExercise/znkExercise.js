@@ -4099,13 +4099,13 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "<svg-icon name=\"znk-exercise-pencil\"\n" +
     "          ng-click=\"d.toolClicked(d.TOOLS.PENCIL)\"\n" +
     "          ng-class=\"{\n" +
-    "            active:d.drawMode === d.DRAWING_MODES.VIEW_DRAW\n" +
+    "            active:(d.drawMode === d.DRAWING_MODES.VIEW_DRAW) && (d.drawMode !== d.DRAWING_MODES.NONE)\n" +
     "          }\">\n" +
     "</svg-icon>\n" +
     "<svg-icon name=\"znk-exercise-eraser\"\n" +
     "          ng-click=\"d.toolClicked(d.TOOLS.ERASER)\"\n" +
     "          ng-class=\"{\n" +
-    "            active:d.drawMode === d.DRAWING_MODES.VIEW_ERASE\n" +
+    "            active:(d.drawMode === d.DRAWING_MODES.VIEW_ERASE) && (d.drawMode !== d.DRAWING_MODES.NONE)\n" +
     "          }\">\n" +
     "</svg-icon>\n" +
     "<svg-icon name=\"znk-exercise-remove\"\n" +

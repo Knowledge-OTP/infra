@@ -50,7 +50,8 @@
 "znk.infra.znkProgressBar",
 "znk.infra.znkQuestionReport",
 "znk.infra.znkSessionData",
-"znk.infra.znkTimeline"
+"znk.infra.znkTimeline",
+"znk.infra.znkTooltip"
     ]);
 })(angular);
 
@@ -327,32 +328,8 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 }
             };
 
-            userAssignModuleService.offExternalOnValue = function (userId, valueCB, changeCB) {
-                InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
-                    var assignContentPath = _getAssignContentPath(valueCB.type);
-                    studentStorage.offEvent('value', 'users/' + userId + '/' + assignContentPath, onValueEventCB);
-                    angular.forEach(registerEvents[userId], function (cbArr, contentType) {
-                        angular.forEach(registerEvents[userId][contentType].valueCB, function (cb, index) {
-                            if (cb === valueCB) {
-                                registerEvents[userId][contentType].valueCB.splice(index, 1);
-                            }
-                        });
-                    });
-
-                    angular.forEach(registerEvents[userId], function (cbArr, contentType) {
-                        if (registerEvents[userId][contentType].changeCB) {
-                            angular.forEach(registerEvents[userId][contentType].changeCB, function (cbData, index) {
-                                if (cbData.cb === changeCB) {
-                                    angular.forEach(cbData.guids, function (resultGuid) {
-                                        var assignContentPath = _getAssignContentPath(changeCB.type);
-                                        studentStorage.offEvent('child_changed', assignContentPath + '/'+ resultGuid, onModuleResultChangedCB);
-                                    });
-                                    registerEvents[userId][contentType].changeCB.splice(index, 1);
-                                }
-                            });
-                        }
-                    });
-                });
+            userAssignModuleService.offExternalOnValue = function () {
+                // todo: implement offEvent for registered events (registerEvents object), once the storage.offEvent will fixed
             };
 
             userAssignModuleService.registerExternalOnValueCB = function (userId, contentType, valueCB, changeCB) {
@@ -437,11 +414,18 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 });
             };
 
-
             userAssignModuleService.assignHomework = function(lastAssignmentType){
                 return InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
                     var homeworkObj = _buildHomeworkObj(lastAssignmentType);
                     studentStorage.set(USER_ASSIGNMENTS_DATA_PATH,homeworkObj);
+                });
+            };
+
+            userAssignModuleService.registerToFinishExerciseEvents = function() {
+                angular.forEach(exerciseEventsConst,function(eventTypeNameObj){
+                    $rootScope.$on(eventTypeNameObj.FINISH, function(eventData, exerciseContent, currentExerciseResult){
+                        updateAllHomeworkStatus(currentExerciseResult);
+                    });
                 });
             };
 
@@ -480,6 +464,15 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 buildResultsFromGuids(moduleResultsGuids, contentType);
             }
 
+            function callbackWrapper(contentType) {
+                return function () {
+                    var userId = StudentContextSrv.getCurrUid();
+                    ExerciseResultSrv.getUserModuleResultsGuids(userId).then(function (moduleResultsGuids) {
+                        buildResultsFromGuids(moduleResultsGuids, contentType);
+                    });
+                };
+            }
+
             function buildResultsFromGuids(moduleResultsGuids, contentType) {
                 InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
                     var moduleResults = {};
@@ -490,10 +483,10 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                         var getProm = getResultsByModuleId(userId, moduleId, contentType).then(function (moduleResult) {
                             moduleResults[moduleResult.moduleId] = moduleResult;
 
-                            angular.forEach(registerEvents[userId].changeCB, function (cbData) {
+                            angular.forEach(registerEvents[userId][contentType].changeCB, function (cbData) {
                                 if (cbData.guids.indexOf(moduleResult.guid) === -1) {
                                     cbData.guids.push(moduleResult.guid);
-                                    studentStorage.onEvent('child_changed', 'moduleResults/' + moduleResult.guid, onModuleResultChangedCB);
+                                    studentStorage.onEvent('child_changed', 'moduleResults/' + moduleResult.guid, callbackWrapper(contentType));
                                 }
                             });
                         });
@@ -524,13 +517,6 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                         });
                     }
                     return moduleResult;
-                });
-            }
-
-            function onModuleResultChangedCB() {
-                var userId = StudentContextSrv.getCurrUid();
-                ExerciseResultSrv.getUserModuleResultsGuids(userId).then(function (moduleResultsGuids) {
-                    buildResultsFromGuids(moduleResultsGuids);
                 });
             }
 
@@ -741,14 +727,6 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 return false;
             }
 
-            userAssignModuleService.registerToFinishExerciseEvents = function() {
-                angular.forEach(exerciseEventsConst,function(eventTypeNameObj){
-                    $rootScope.$on(eventTypeNameObj.FINISH, function(eventData, exerciseContent, currentExerciseResult){
-                        updateAllHomeworkStatus(currentExerciseResult);
-                    });
-                });
-            };
-
             return userAssignModuleService;
         }]
     );
@@ -759,13 +737,15 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
     angular.module('znk.infra.assignModule').provider('HomeworkSrv',
         function () {
 
-            var popupResolveFn = function ($state) {
+            var popupResolveFn = function ($state, AssignContentEnum) {
                 'ngInject';
                 return function () {
-                    $state.go('app.eTutoring');
+                    $state.go('app.eTutoring',
+                        {viewId: AssignContentEnum.PRACTICE.enum},
+                        {reload: true});
                 };
             };
-            popupResolveFn.$inject = ["$state"];
+            popupResolveFn.$inject = ["$state", "AssignContentEnum"];
 
             this.setPopupResolveFn = function (fn) {
                 popupResolveFn = fn;
@@ -777,8 +757,8 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 topicsArray = _topicsArray;
             };
 
-            this.$get = ["$q", "$log", "InfraConfigSrv", "PopUpSrv", "DueDateSrv", "$translate", "$rootScope", "exerciseEventsConst", "ExamSrv", "ExerciseResultSrv", "ExamTypeEnum", "StorageSrv", "ExerciseTypeEnum", "$injector", function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv,
-                                  ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum, $injector) {
+            this.$get = ["$q", "$log", "InfraConfigSrv", "PopUpSrv", "DueDateSrv", "$translate", "$rootScope", "exerciseEventsConst", "ExamSrv", "ExerciseResultSrv", "ExamTypeEnum", "StorageSrv", "ExerciseTypeEnum", "$injector", "LiveSessionSubjectEnum", function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv,
+                                  ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum, $injector, LiveSessionSubjectEnum) {
                 'ngInject';
 
                 var HomeworkSrv = {};
@@ -806,7 +786,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     var latePopupTitle = 'ASSIGN_MODULE.YOUR_ASSIGNMENT_IS_LATE';
                     var latePopupContent = 'ASSIGN_MODULE.PlEASE_COMPLETE_ASSIGNMENT';
 
-                    var goToAssignmentText = 'ASSIGN_MODULE.GO_TO_ASSIGNMENT';
+                    var goToAssignmentText = 'ASSIGN_MODULE.ASSIGNMENT';
                     var closeText = 'ASSIGN_MODULE.CLOSE';
 
                     if (isHomeworkIsLate(homeworkObj)) {
@@ -829,8 +809,13 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
                 }
 
-                function _homeworkHandler(homework) {
-                    getNotCompletedHomework(homework).then(function (notCompletedHomework) {
+                function _homeworkHandler() {
+                    var topicsIds =[];
+                    angular.forEach(LiveSessionSubjectEnum.getEnumArr(),function(topicObj){
+                        topicsIds.push(topicObj.enum);
+                    });
+
+                    _getNotCompletedHomeworkByTopicId(topicsIds).then(function (notCompletedHomework) {
                         if (notCompletedHomework) {
                             _notCompletedHomeworkHandler(notCompletedHomework);
                         }
@@ -856,10 +841,11 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     });
                 }
 
-                function getNotCompletedHomework() {
+                function _getNotCompletedHomeworkByTopicId(topicIds) {
                     return _getAllHomeworkModuleResult().then(function (allHomeworkModulesResults) {
                         for (var i = 0; i < allHomeworkModulesResults.length; i++) {
-                            if (!allHomeworkModulesResults[i].isComplete) {
+                            var topicIdsArr = angular.isArray(topicIds) ? topicIds : [topicIds];
+                            if (!allHomeworkModulesResults[i].isComplete && topicIdsArr.indexOf(allHomeworkModulesResults[i].topicId) !== -1) {
                                 return allHomeworkModulesResults[i];
                             }
                         }
@@ -925,8 +911,8 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     });
                 };
 
-                HomeworkSrv.hasLatePractice = function () {
-                    return getNotCompletedHomework().then(function(notCompletedHomework){
+                HomeworkSrv.hasLatePractice = function (topicId) {
+                    return _getNotCompletedHomeworkByTopicId(topicId).then(function(notCompletedHomework){
                         if (angular.isDefined(notCompletedHomework)) {
                             return isHomeworkIsLate(notCompletedHomework);
                         } else {
@@ -1237,7 +1223,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
         'ngMaterial',
         'znk.infra.svgIcon',
         'znk.infra.callsModals',
-        'znk.infra.utility'
+        'znk.infra.utility',
+        'znk.infra.znkTooltip'
     ]);
 })(angular);
 
@@ -1267,7 +1254,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 parent: '?^ngModel'
             },
             controllerAs: 'vm',
-            controller: ["CallsSrv", "CallsBtnSrv", "CallsErrorSrv", "CallsBtnStatusEnum", "$log", "$scope", "CALL_UPDATE", "toggleAutoCallEnum", "ENV", function (CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE,
+            controller: ["$translate", "CallsSrv", "CallsBtnSrv", "CallsErrorSrv", "CallsBtnStatusEnum", "$log", "$scope", "CALL_UPDATE", "toggleAutoCallEnum", "ENV", function ($translate, CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE,
                                   toggleAutoCallEnum, ENV) {
                 var vm = this;
                 var receiverId;
@@ -1278,8 +1265,42 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
 
                 vm.callBtnEnum = CallsBtnStatusEnum;
 
+                var translateNamespace = 'AUDIO_CALLS';
+
+                var loadTranslations = $translate([
+                    translateNamespace + '.' + 'CALL_STUDENT',
+                    translateNamespace + '.' + 'CALL_TEACHER',
+                    translateNamespace + '.' + 'END_CALL',
+                    translateNamespace + '.' + 'OFFLINE'
+                ]);
+
+                function _changeTooltipTranslation(state) {
+                    return loadTranslations.then(function (translation) {
+                        var translatedStrings = {
+                            CALL_STUDENT: translation[translateNamespace + '.' + 'CALL_STUDENT'],
+                            CALL_TEACHER: translation[translateNamespace + '.' + 'CALL_TEACHER'],
+                            END_CALL: translation[translateNamespace + '.' + 'END_CALL'],
+                            OFFLINE: translation[translateNamespace + '.' + 'OFFLINE']
+                        };
+                        switch(state) {
+                            case CallsBtnStatusEnum.OFFLINE_BTN.enum:
+                                return translatedStrings.OFFLINE;
+                            case CallsBtnStatusEnum.CALL_BTN.enum:
+                                return isTeacher? translatedStrings.CALL_STUDENT : translatedStrings.CALL_TEACHER;
+                            case CallsBtnStatusEnum.CALLED_BTN.enum:
+                                return translatedStrings.END_CALL;
+                        }
+                    }).catch(function (err) {
+                        $log.debug('Could not fetch translation', err);
+                    });
+                }
+
                 function _changeBtnState(state) {
                     vm.callBtnState = state;
+                    _changeTooltipTranslation(state).then(function (tooltipText) {
+                        vm.tooltipTranslate = tooltipText;
+                    });
+
                 }
 
                 function _isNoPendingClick() {
@@ -2606,6 +2627,9 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "        class=\"etutoring-phone-icon\"\n" +
     "        name=\"calls-etutoring-phone-icon\">\n" +
     "    </svg-icon>\n" +
+    "    <md-tooltip znk-tooltip class=\"md-fab\">\n" +
+    "        {{vm.tooltipTranslate}}\n" +
+    "    </md-tooltip>\n" +
     "</button>\n" +
     "");
   $templateCache.put("components/calls/modals/templates/baseCallsModal.template.html",
@@ -3545,24 +3569,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             });
         };
 
-        self.getCategoryLevel1ParentById = function (categoryId) {
-            if (angular.isUndefined(categoryId) || categoryId === null) {
-                return $q.when(null);
-            }
-            return self.getCategoryMap().then(function (categories) {
-                var category = categories[categoryId];
-                if (categoryEnum.SUBJECT.enum === category.typeId) {
-                    return $q.when(categoryId);
-                }
-                return self.getCategoryLevel1ParentById(category.parentId);
-            });
-        };
-
         self.getCategoryLevel1Parent = function (category) {
-            if (!category) {
-                return $q.when(null);
-            }
-
             if (category.typeId === categoryEnum.SUBJECT.enum) {
                 return $q.when(category.id);
             }
@@ -3821,7 +3828,6 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
     angular.module('znk.infra.estimatedScore', [
             'znk.infra.config',
             'znk.infra.znkExercise',
-            'znk.infra.contentGetters',
             'znk.infra.utility'
         ])
         .run([
@@ -3891,14 +3897,14 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
             return 'Within';
         };
 
-        this.setAnswerTimeSpentTypeFn = function (fn) {
+        this.setAnswerTimeSpentTypeFn = function(fn){
             getAnswerTimeSpentType = fn;
         };
 
 
         this.$get = [
-            '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum', 'ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log', 'UtilitySrv', '$injector', '$q', 'CategoryService',
-            function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum, ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log, UtilitySrv, $injector, $q, CategoryService) {
+            '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum', 'ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log', 'UtilitySrv', '$injector', '$q',
+            function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum, ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log, UtilitySrv, $injector, $q) {
                 if (angular.equals({}, diagnosticScoring)) {
                     $log.error('EstimatedScoreEventsHandlerSrv: diagnosticScoring was not set !!!');
                 }
@@ -3930,49 +3936,23 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                 }
 
                 function _diagnosticSectionCompleteHandler(section, sectionResult) {
-                    var scores = {};
-                    var scoresPromises = [];
+                    var score = 0;
 
                     var questions = section.questions;
                     var questionsMap = UtilitySrv.array.convertToMap(questions);
 
                     sectionResult.questionResults.forEach(function (result, i) {
-                        var scorePromise = $q(function (resolve, reject) {
-                            var question = questionsMap[result.questionId];
-                            if (angular.isUndefined(question)) {
-                                $log.error('EstimatedScoreEventsHandler: question for result is missing',
-                                    'section id: ', section.id,
-                                    'result index: ', i
-                                );
-                                reject();
-                            } else {
-                                var subjectId1Prom = CategoryService.getCategoryLevel1ParentById(question.categoryId);
-                                var subjectId2Prom = CategoryService.getCategoryLevel1ParentById(question.categoryId2);
-                                $q.all([
-                                    subjectId1Prom,
-                                    subjectId2Prom
-                                ]).then(function (subjectIds) {
-                                    angular.forEach(subjectIds, function (subjectId) {
-                                        if (angular.isNumber(subjectId)) {
-                                            if (angular.isUndefined(scores[subjectId])) {
-                                                scores[subjectId] = 0;
-                                            }
-                                            scores[subjectId] += _getDiagnosticQuestionPoints(question, result);
-                                        }
-                                    }); // forEach(subjectIds
-                                    resolve();
-                                }); // then
-                            }
-                        });
-                        scoresPromises.push(scorePromise);
+                        var question = questionsMap[result.questionId];
+                        if (angular.isUndefined(question)) {
+                            $log.error('EstimatedScoreEventsHandler: question for result is missing',
+                                'section id: ', section.id,
+                                'result index: ', i
+                            );
+                        } else {
+                            score += _getDiagnosticQuestionPoints(question, result);
+                        }
                     });
-
-                    $q.all(scoresPromises).then(function () {
-                        var subjectIds = Object.keys(scores);
-                        subjectIds.forEach(function (subjectId) {
-                            EstimatedScoreSrv.setDiagnosticSectionScore(scores[subjectId], ExerciseTypeEnum.SECTION.enum, subjectId, section.id);
-                        });
-                    });
+                    EstimatedScoreSrv.setDiagnosticSectionScore(score, ExerciseTypeEnum.SECTION.enum, section.subjectId, section.id);
                 }
 
                 function _getQuestionRawPoints(exerciseType, result) {
@@ -3985,53 +3965,21 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                 }
 
                 function _calculateRawScore(exerciseType, exerciseResult) {
-                    var scoresPromises = $q(function (resolve) {
-                        if (!exercisesRawScoring[exerciseType]) {
-                            $log.error('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: ' + exerciseType);
-                        }
-                        var rawScores = {};
-                        var questionResults = exerciseResult.questionResults;
-                        // var questionResultMap = UtilitySrv.array.convertToMap(questionResults, "questionId");
-                        var rawScoresProms = [];
-                        questionResults.forEach(function (quesionResult, index) {
-                            var rawScorePromise = $q(function (resolve, reject) {
-                                if (angular.isUndefined(quesionResult)) {
-                                    $log.error('EstimatedScoreEventsHandler: question for result is missing',
-                                        'exercise id: ', exerciseResult.id,
-                                        'result index: ', index
-                                    );
-                                    reject();
-                                } else {
-                                    var subjectId1Prom = CategoryService.getCategoryLevel1ParentById(quesionResult.categoryId);
-                                    var subjectId2Prom = CategoryService.getCategoryLevel1ParentById(quesionResult.categoryId2);
+                    if (!exercisesRawScoring[exerciseType]) {
+                        $log.error('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: ' + exerciseType);
+                    }
 
-                                    $q.all([
-                                        subjectId1Prom,
-                                        subjectId2Prom
-                                    ]).then(function (subjectIds) {
-                                        subjectIds.forEach(function (subjectId) {
-                                            if (angular.isNumber(subjectId)) {
-                                                if (angular.isUndefined(rawScores[subjectId])) {
-                                                    rawScores[subjectId] = {
-                                                        total: questionResults.length * exercisesRawScoring[exerciseType].correctWithin,
-                                                        earned: 0
-                                                    };
-                                                }
-                                                rawScores[subjectId].earned += _getQuestionRawPoints(exerciseType, quesionResult);
-                                            }
-                                        });
-                                        resolve();
-                                    });
-                                }
-                            });
-                            rawScoresProms.push(rawScorePromise);
-                        });
-                        $q.all(rawScoresProms).then(function () {
-                            resolve(rawScores);
-                        });
+                    var questionResults = exerciseResult.questionResults;
 
+                    var rawPoints = {
+                        total: questionResults.length * exercisesRawScoring[exerciseType].correctWithin,
+                        earned: 0
+                    };
+
+                    questionResults.forEach(function (result) {
+                        rawPoints.earned += _getQuestionRawPoints(exerciseType, result);
                     });
-                    return scoresPromises;
+                    return rawPoints;
                 }
 
                 function _shouldEventBeProcessed(exerciseType, exercise, exerciseResult) {
@@ -4047,30 +3995,27 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                 }
 
                 childScope.$on(exerciseEventsConst.section.FINISH, function (evt, section, sectionResult, exam) {
-                    EstimatedScoreEventsHandlerSrv.calculateRawScore(section, sectionResult, exam);
-                });
-
-
-                function _callCalculateAndSaveRawScore(exerciseTypeEnum, sectionResult, id, isDiagnostic) {
-                    _calculateRawScore(exerciseTypeEnum, sectionResult).then(function (rawScores) {
-                        var rawScoresKeys = Object.keys(rawScores);
-                        rawScoresKeys.forEach(function (subjectId) {
-                            var rawScore = rawScores[subjectId];
-                            (function (rawScore) {
-                                EstimatedScoreSrv.addRawScore(rawScore, exerciseTypeEnum, subjectId, id, isDiagnostic);
-                            })(rawScore);
+                    _shouldEventBeProcessed(exerciseEventsConst.section.FINISH, section, sectionResult)
+                        .then(function (shouldBeProcessed) {
+                            if (shouldBeProcessed) {
+                                var isDiagnostic = exam.typeId === ExamTypeEnum.DIAGNOSTIC.enum;
+                                if (isDiagnostic) {
+                                    _diagnosticSectionCompleteHandler(section, sectionResult);
+                                }
+                                var rawScore = _calculateRawScore(ExerciseTypeEnum.SECTION.enum, sectionResult);
+                                EstimatedScoreSrv.addRawScore(rawScore, ExerciseTypeEnum.SECTION.enum, section.subjectId, section.id, isDiagnostic);
+                            }
                         });
-                    });
-                }
+                });
 
                 function _baseExerciseFinishHandler(exerciseType, evt, exercise, exerciseResult) {
                     _shouldEventBeProcessed(exerciseType, exercise, exerciseResult).then(function (shouldBeProcessed) {
                         if (shouldBeProcessed) {
-                            _callCalculateAndSaveRawScore(exerciseType, exerciseResult, exercise.id);
+                            var rawScore = _calculateRawScore(exerciseType, exerciseResult);
+                            EstimatedScoreSrv.addRawScore(rawScore, exerciseType, exercise.subjectId, exercise.id);
                         }
                     });
                 }
-
 
                 angular.forEach(ExerciseTypeEnum, function (enumObj, enumName) {
                     if (enumName !== 'SECTION' && enumName !== 'LECTURE') {
@@ -4082,18 +4027,6 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
 
                 EstimatedScoreEventsHandlerSrv.init = angular.noop;
 
-                EstimatedScoreEventsHandlerSrv.calculateRawScore = function (exerciseEventsConst, section, sectionResult, exam) {
-                    _shouldEventBeProcessed(exerciseEventsConst.section.FINISH, section, sectionResult)
-                        .then(function (shouldBeProcessed) {
-                            if (shouldBeProcessed) {
-                                var isDiagnostic = exam.typeId === ExamTypeEnum.DIAGNOSTIC.enum;
-                                if (isDiagnostic) {
-                                    _diagnosticSectionCompleteHandler(section, sectionResult);
-                                }
-                                _callCalculateAndSaveRawScore(ExerciseTypeEnum.SECTION.enum, sectionResult, section.id, isDiagnostic);
-                            }
-                        });
-                };
                 return EstimatedScoreEventsHandlerSrv;
             }
         ];
@@ -9649,32 +9582,6 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
-        var dayInMs = 86400000;
-        var WEEK = 7;
-        this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
-
-        this.isDueDatePass = function (startDate) {
-            var res = {
-                dateDiff: 0,
-                passDue: false
-            };
-
-            if (angular.isUndefined(startDate) || startDate === null || startDate === '') {
-                return res;
-            }
-
-            res.dateDiff = Math.abs(parseInt((Date.now() - startDate) / dayInMs, 0));
-            res.passDue =  res.dateDiff > WEEK;
-            return res;
-        };
-    }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.utility').factory('UtilitySrv', [
         '$q',
         function ($q) {
@@ -9767,6 +9674,33 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 
             return UtilitySrv;
         }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
+        var dayInMs = 86400000;
+        var WEEK = 7;
+        this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
+
+
+        this.isDueDatePass = function (dueDate) {
+            var res = {
+                dateDiff: 0,
+                passDue: false
+            };
+
+            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
+                return res;
+            }
+
+            res.dateDiff = Math.abs(Math.ceil((Date.now() - dueDate) / dayInMs));
+            res.passDue = dueDate - Date.now() < 0;
+            return res;
+        };
+    }
     ]);
 })(angular);
 
@@ -15128,7 +15062,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 return function() {
                     return true;
                 };
-            }; 
+            };
 
             this.setShouldBroadCastExerciseGetter = function(_broadCastExerciseFn) {
                 broadCastExerciseFn = _broadCastExerciseFn;
@@ -15196,6 +15130,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         return $q.reject(e);
                     }
                 };
+
                 return ZnkExerciseUtilitySrv;
             }];
         }
@@ -15639,13 +15574,13 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "<svg-icon name=\"znk-exercise-pencil\"\n" +
     "          ng-click=\"d.toolClicked(d.TOOLS.PENCIL)\"\n" +
     "          ng-class=\"{\n" +
-    "            active:d.drawMode === d.DRAWING_MODES.VIEW_DRAW\n" +
+    "            active:(d.drawMode === d.DRAWING_MODES.VIEW_DRAW) && (d.drawMode !== d.DRAWING_MODES.NONE)\n" +
     "          }\">\n" +
     "</svg-icon>\n" +
     "<svg-icon name=\"znk-exercise-eraser\"\n" +
     "          ng-click=\"d.toolClicked(d.TOOLS.ERASER)\"\n" +
     "          ng-class=\"{\n" +
-    "            active:d.drawMode === d.DRAWING_MODES.VIEW_ERASE\n" +
+    "            active:(d.drawMode === d.DRAWING_MODES.VIEW_ERASE) && (d.drawMode !== d.DRAWING_MODES.NONE)\n" +
     "          }\">\n" +
     "</svg-icon>\n" +
     "<svg-icon name=\"znk-exercise-remove\"\n" +
@@ -17010,4 +16945,40 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templat
     "</g>\n" +
     "</svg>\n" +
     "");
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkTooltip', [
+        'ngMaterial',
+        'pascalprecht.translate',
+        'ngSanitize'
+    ]);
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkTooltip')
+        .directive('znkTooltip',
+            function () {
+                'ngInject';
+                return {
+                link: function() {
+
+                    var divElm = document.createElement('div');
+                    divElm.classList.add('arrow');
+
+                    var mdContent = angular.element(document.querySelector('.md-content'));
+
+                    mdContent.append(divElm);
+                }
+            };
+        });
+})(angular);
+
+angular.module('znk.infra.znkTooltip').run(['$templateCache', function($templateCache) {
+
 }]);
