@@ -809,16 +809,31 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
                 }
 
-                function _homeworkHandler() {
-                    var topicsIds =[];
-                    angular.forEach(LiveSessionSubjectEnum.getEnumArr(),function(topicObj){
-                        topicsIds.push(topicObj.enum);
+                function _homeworkHandler() {  //find the oldest not completed homework and show the relevant popup (late or regular hw)
+                    var promArr = [];
+                    var notCompletedHomeworkArr = [];
+                    angular.forEach(LiveSessionSubjectEnum.getEnumArr(), function (topicObj) {
+                        var prom = _getNotCompletedHomeworkByTopicId(topicObj.enum).then(function (notCompletedHomework) {
+                            if (notCompletedHomework) {
+                                notCompletedHomeworkArr.push(notCompletedHomework);
+                            }
+                        });
+                        promArr.push(prom);
                     });
 
-                    _getNotCompletedHomeworkByTopicId(topicsIds).then(function (notCompletedHomework) {
-                        if (notCompletedHomework) {
-                            _notCompletedHomeworkHandler(notCompletedHomework);
+                    $q.all(promArr).then(function () {
+                        if(notCompletedHomeworkArr.length === 0){
+                            promArr = [];
+                            return;
                         }
+
+                        var theOldestHomework;
+                        angular.forEach(notCompletedHomeworkArr, function (notCompletedHomework) {
+                            if (!theOldestHomework || notCompletedHomework.assignDate < theOldestHomework.assignDate) {
+                                theOldestHomework = notCompletedHomework;
+                            }
+                        });
+                        _notCompletedHomeworkHandler(theOldestHomework);
                     });
                 }
 
@@ -852,24 +867,24 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     });
                 }
 
-            function _finishedSectionHandler(eventData, exerciseContent, currentExerciseResult){
-                return ExamSrv.getExam(currentExerciseResult.examId).then(function (exam) {
-                    var sectionsResults = [];
-                    var promArr = [];
-                    var dontInit = true;
-                    if(exam.typeId !== ExamTypeEnum.MINI_TEST.enum){
-                        return;
-                    }
-                    angular.forEach(exam.sections, function (section) {
-                        var prom = ExerciseResultSrv.getExerciseResult(ExerciseTypeEnum.SECTION.enum, section.id, section.examId, null, dontInit).then(function(sectionResult){
-                            if(currentExerciseResult.exerciseId === section.id){
-                                sectionsResults.push(currentExerciseResult);
-                            } else{
-                                sectionsResults.push(sectionResult);
-                            }
+                function _finishedSectionHandler(eventData, exerciseContent, currentExerciseResult) {
+                    return ExamSrv.getExam(currentExerciseResult.examId).then(function (exam) {
+                        var sectionsResults = [];
+                        var promArr = [];
+                        var dontInit = true;
+                        if (exam.typeId !== ExamTypeEnum.MINI_TEST.enum) {
+                            return;
+                        }
+                        angular.forEach(exam.sections, function (section) {
+                            var prom = ExerciseResultSrv.getExerciseResult(ExerciseTypeEnum.SECTION.enum, section.id, section.examId, null, dontInit).then(function (sectionResult) {
+                                if (currentExerciseResult.exerciseId === section.id) {
+                                    sectionsResults.push(currentExerciseResult);
+                                } else {
+                                    sectionsResults.push(sectionResult);
+                                }
+                            });
+                            promArr.push(prom);
                         });
-                        promArr.push(prom);
-                    });
 
                         $q.all(promArr).then(function () {
                             for (var i = 0; i < sectionsResults.length; i++) {
@@ -912,7 +927,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 };
 
                 HomeworkSrv.hasLatePractice = function (topicId) {
-                    return _getNotCompletedHomeworkByTopicId(topicId).then(function(notCompletedHomework){
+                    return _getNotCompletedHomeworkByTopicId(topicId).then(function (notCompletedHomework) {
                         if (angular.isDefined(notCompletedHomework)) {
                             return isHomeworkIsLate(notCompletedHomework);
                         } else {
