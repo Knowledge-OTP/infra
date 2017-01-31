@@ -23,7 +23,7 @@
             };
 
             this.$get = function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv,
-                                  ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum, $injector) {
+                                  ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum, $injector, LiveSessionSubjectEnum) {
                 'ngInject';
 
                 var HomeworkSrv = {};
@@ -74,8 +74,13 @@
 
                 }
 
-                function _homeworkHandler(homework) {
-                    getNotCompletedHomework(homework).then(function (notCompletedHomework) {
+                function _homeworkHandler() {
+                    var topicsIds =[];
+                    angular.forEach(LiveSessionSubjectEnum.getEnumArr(),function(topicObj){
+                        topicsIds.push(topicObj.enum);
+                    });
+
+                    _getNotCompletedHomeworkByTopicId(topicsIds).then(function (notCompletedHomework) {
                         if (notCompletedHomework) {
                             _notCompletedHomeworkHandler(notCompletedHomework);
                         }
@@ -101,10 +106,11 @@
                     });
                 }
 
-                function getNotCompletedHomework(topicId) {
+                function _getNotCompletedHomeworkByTopicId(topicIds) {
                     return _getAllHomeworkModuleResult().then(function (allHomeworkModulesResults) {
                         for (var i = 0; i < allHomeworkModulesResults.length; i++) {
-                            if (!allHomeworkModulesResults[i].isComplete && allHomeworkModulesResults[i].topicId === topicId) {
+                            var topicIdsArr = angular.isArray(topicIds) ? topicIds : [topicIds];
+                            if (!allHomeworkModulesResults[i].isComplete && topicIdsArr.indexOf(allHomeworkModulesResults[i].topicId) !== -1) {
                                 return allHomeworkModulesResults[i];
                             }
                         }
@@ -171,7 +177,7 @@
                 };
 
                 HomeworkSrv.hasLatePractice = function (topicId) {
-                    return getNotCompletedHomework(topicId).then(function(notCompletedHomework){
+                    return _getNotCompletedHomeworkByTopicId(topicId).then(function(notCompletedHomework){
                         if (angular.isDefined(notCompletedHomework)) {
                             return isHomeworkIsLate(notCompletedHomework);
                         } else {
