@@ -33,32 +33,8 @@
                 }
             };
 
-            userAssignModuleService.offExternalOnValue = function (userId, valueCB, changeCB) {
-                InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
-                    var assignContentPath = _getAssignContentPath(valueCB.type);
-                    studentStorage.offEvent('value', 'users/' + userId + '/' + assignContentPath, onValueEventCB);
-                    angular.forEach(registerEvents[userId], function (cbArr, contentType) {
-                        angular.forEach(registerEvents[userId][contentType].valueCB, function (cb, index) {
-                            if (cb === valueCB) {
-                                registerEvents[userId][contentType].valueCB.splice(index, 1);
-                            }
-                        });
-                    });
-
-                    angular.forEach(registerEvents[userId], function (cbArr, contentType) {
-                        if (registerEvents[userId][contentType].changeCB) {
-                            angular.forEach(registerEvents[userId][contentType].changeCB, function (cbData, index) {
-                                if (cbData.cb === changeCB) {
-                                    angular.forEach(cbData.guids, function (resultGuid) {
-                                        var assignContentPath = _getAssignContentPath(changeCB.type);
-                                        studentStorage.offEvent('child_changed', assignContentPath + '/'+ resultGuid, onModuleResultChangedCB);
-                                    });
-                                    registerEvents[userId][contentType].changeCB.splice(index, 1);
-                                }
-                            });
-                        }
-                    });
-                });
+            userAssignModuleService.offExternalOnValue = function () {
+                // todo: implement offEvent for registered events (registerEvents object), once the storage.offEvent will fixed
             };
 
             userAssignModuleService.registerExternalOnValueCB = function (userId, contentType, valueCB, changeCB) {
@@ -143,11 +119,18 @@
                 });
             };
 
-
             userAssignModuleService.assignHomework = function(lastAssignmentType){
                 return InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
                     var homeworkObj = _buildHomeworkObj(lastAssignmentType);
                     studentStorage.set(USER_ASSIGNMENTS_DATA_PATH,homeworkObj);
+                });
+            };
+
+            userAssignModuleService.registerToFinishExerciseEvents = function() {
+                angular.forEach(exerciseEventsConst,function(eventTypeNameObj){
+                    $rootScope.$on(eventTypeNameObj.FINISH, function(eventData, exerciseContent, currentExerciseResult){
+                        updateAllHomeworkStatus(currentExerciseResult);
+                    });
                 });
             };
 
@@ -186,6 +169,15 @@
                 buildResultsFromGuids(moduleResultsGuids, contentType);
             }
 
+            function callbackWrapper(contentType) {
+                return function () {
+                    var userId = StudentContextSrv.getCurrUid();
+                    ExerciseResultSrv.getUserModuleResultsGuids(userId).then(function (moduleResultsGuids) {
+                        buildResultsFromGuids(moduleResultsGuids, contentType);
+                    });
+                };
+            }
+
             function buildResultsFromGuids(moduleResultsGuids, contentType) {
                 InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
                     var moduleResults = {};
@@ -196,10 +188,10 @@
                         var getProm = getResultsByModuleId(userId, moduleId, contentType).then(function (moduleResult) {
                             moduleResults[moduleResult.moduleId] = moduleResult;
 
-                            angular.forEach(registerEvents[userId].changeCB, function (cbData) {
+                            angular.forEach(registerEvents[userId][contentType].changeCB, function (cbData) {
                                 if (cbData.guids.indexOf(moduleResult.guid) === -1) {
                                     cbData.guids.push(moduleResult.guid);
-                                    studentStorage.onEvent('child_changed', 'moduleResults/' + moduleResult.guid, onModuleResultChangedCB);
+                                    studentStorage.onEvent('child_changed', 'moduleResults/' + moduleResult.guid, callbackWrapper(contentType));
                                 }
                             });
                         });
@@ -230,13 +222,6 @@
                         });
                     }
                     return moduleResult;
-                });
-            }
-
-            function onModuleResultChangedCB() {
-                var userId = StudentContextSrv.getCurrUid();
-                ExerciseResultSrv.getUserModuleResultsGuids(userId).then(function (moduleResultsGuids) {
-                    buildResultsFromGuids(moduleResultsGuids);
                 });
             }
 
@@ -446,14 +431,6 @@
                 }
                 return false;
             }
-
-            userAssignModuleService.registerToFinishExerciseEvents = function() {
-                angular.forEach(exerciseEventsConst,function(eventTypeNameObj){
-                    $rootScope.$on(eventTypeNameObj.FINISH, function(eventData, exerciseContent, currentExerciseResult){
-                        updateAllHomeworkStatus(currentExerciseResult);
-                    });
-                });
-            };
 
             return userAssignModuleService;
         }

@@ -3,10 +3,12 @@
     angular.module('znk.infra.assignModule').provider('HomeworkSrv',
         function () {
 
-            var popupResolveFn = function ($state) {
+            var popupResolveFn = function ($state, AssignContentEnum) {
                 'ngInject';
                 return function () {
-                    $state.go('app.eTutoring');
+                    $state.go('app.eTutoring',
+                        {viewId: AssignContentEnum.PRACTICE.enum},
+                        {reload: true});
                 };
             };
 
@@ -21,7 +23,7 @@
             };
 
             this.$get = function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv,
-                                  ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum, $injector) {
+                                  ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum, $injector, LiveSessionSubjectEnum) {
                 'ngInject';
 
                 var HomeworkSrv = {};
@@ -49,7 +51,7 @@
                     var latePopupTitle = 'ASSIGN_MODULE.YOUR_ASSIGNMENT_IS_LATE';
                     var latePopupContent = 'ASSIGN_MODULE.PlEASE_COMPLETE_ASSIGNMENT';
 
-                    var goToAssignmentText = 'ASSIGN_MODULE.GO_TO_ASSIGNMENT';
+                    var goToAssignmentText = 'ASSIGN_MODULE.ASSIGNMENT';
                     var closeText = 'ASSIGN_MODULE.CLOSE';
 
                     if (isHomeworkIsLate(homeworkObj)) {
@@ -72,11 +74,31 @@
 
                 }
 
-                function _homeworkHandler(homework) {
-                    getNotCompletedHomework(homework).then(function (notCompletedHomework) {
-                        if (notCompletedHomework) {
-                            _notCompletedHomeworkHandler(notCompletedHomework);
+                function _homeworkHandler() {  //find the oldest not completed homework and show the relevant popup (late or regular hw)
+                    var promArr = [];
+                    var notCompletedHomeworkArr = [];
+                    angular.forEach(LiveSessionSubjectEnum.getEnumArr(), function (topicObj) {
+                        var prom = _getNotCompletedHomeworkByTopicId(topicObj.enum).then(function (notCompletedHomework) {
+                            if (notCompletedHomework) {
+                                notCompletedHomeworkArr.push(notCompletedHomework);
+                            }
+                        });
+                        promArr.push(prom);
+                    });
+
+                    $q.all(promArr).then(function () {
+                        if(notCompletedHomeworkArr.length === 0){
+                            promArr = [];
+                            return;
                         }
+
+                        var theOldestHomework;
+                        angular.forEach(notCompletedHomeworkArr, function (notCompletedHomework) {
+                            if (!theOldestHomework || notCompletedHomework.assignDate < theOldestHomework.assignDate) {
+                                theOldestHomework = notCompletedHomework;
+                            }
+                        });
+                        _notCompletedHomeworkHandler(theOldestHomework);
                     });
                 }
 
@@ -99,34 +121,35 @@
                     });
                 }
 
-                function getNotCompletedHomework() {
+                function _getNotCompletedHomeworkByTopicId(topicIds) {
                     return _getAllHomeworkModuleResult().then(function (allHomeworkModulesResults) {
                         for (var i = 0; i < allHomeworkModulesResults.length; i++) {
-                            if (!allHomeworkModulesResults[i].isComplete) {
+                            var topicIdsArr = angular.isArray(topicIds) ? topicIds : [topicIds];
+                            if (!allHomeworkModulesResults[i].isComplete && topicIdsArr.indexOf(allHomeworkModulesResults[i].topicId) !== -1) {
                                 return allHomeworkModulesResults[i];
                             }
                         }
                     });
                 }
 
-            function _finishedSectionHandler(eventData, exerciseContent, currentExerciseResult){
-                return ExamSrv.getExam(currentExerciseResult.examId).then(function (exam) {
-                    var sectionsResults = [];
-                    var promArr = [];
-                    var dontInit = true;
-                    if(exam.typeId !== ExamTypeEnum.MINI_TEST.enum){
-                        return;
-                    }
-                    angular.forEach(exam.sections, function (section) {
-                        var prom = ExerciseResultSrv.getExerciseResult(ExerciseTypeEnum.SECTION.enum, section.id, section.examId, null, dontInit).then(function(sectionResult){
-                            if(currentExerciseResult.exerciseId === section.id){
-                                sectionsResults.push(currentExerciseResult);
-                            } else{
-                                sectionsResults.push(sectionResult);
-                            }
+                function _finishedSectionHandler(eventData, exerciseContent, currentExerciseResult) {
+                    return ExamSrv.getExam(currentExerciseResult.examId).then(function (exam) {
+                        var sectionsResults = [];
+                        var promArr = [];
+                        var dontInit = true;
+                        if (exam.typeId !== ExamTypeEnum.MINI_TEST.enum) {
+                            return;
+                        }
+                        angular.forEach(exam.sections, function (section) {
+                            var prom = ExerciseResultSrv.getExerciseResult(ExerciseTypeEnum.SECTION.enum, section.id, section.examId, null, dontInit).then(function (sectionResult) {
+                                if (currentExerciseResult.exerciseId === section.id) {
+                                    sectionsResults.push(currentExerciseResult);
+                                } else {
+                                    sectionsResults.push(sectionResult);
+                                }
+                            });
+                            promArr.push(prom);
                         });
-                        promArr.push(prom);
-                    });
 
                         $q.all(promArr).then(function () {
                             for (var i = 0; i < sectionsResults.length; i++) {
@@ -168,8 +191,8 @@
                     });
                 };
 
-                HomeworkSrv.hasLatePractice = function () {
-                    return getNotCompletedHomework().then(function(notCompletedHomework){
+                HomeworkSrv.hasLatePractice = function (topicId) {
+                    return _getNotCompletedHomeworkByTopicId(topicId).then(function (notCompletedHomework) {
                         if (angular.isDefined(notCompletedHomework)) {
                             return isHomeworkIsLate(notCompletedHomework);
                         } else {
