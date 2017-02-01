@@ -809,31 +809,16 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
                 }
 
-                function _homeworkHandler() {  //find the oldest not completed homework and show the relevant popup (late or regular hw)
-                    var promArr = [];
-                    var notCompletedHomeworkArr = [];
-                    angular.forEach(LiveSessionSubjectEnum.getEnumArr(), function (topicObj) {
-                        var prom = _getNotCompletedHomeworkByTopicId(topicObj.enum).then(function (notCompletedHomework) {
-                            if (notCompletedHomework) {
-                                notCompletedHomeworkArr.push(notCompletedHomework);
-                            }
-                        });
-                        promArr.push(prom);
+                function _homeworkHandler() {
+                    var topicsIds =[];
+                    angular.forEach(LiveSessionSubjectEnum.getEnumArr(),function(topicObj){
+                        topicsIds.push(topicObj.enum);
                     });
 
-                    $q.all(promArr).then(function () {
-                        if(notCompletedHomeworkArr.length === 0){
-                            promArr = [];
-                            return;
+                    _getNotCompletedHomeworkByTopicId(topicsIds).then(function (notCompletedHomework) {
+                        if (notCompletedHomework) {
+                            _notCompletedHomeworkHandler(notCompletedHomework);
                         }
-
-                        var theOldestHomework;
-                        angular.forEach(notCompletedHomeworkArr, function (notCompletedHomework) {
-                            if (!theOldestHomework || notCompletedHomework.assignDate < theOldestHomework.assignDate) {
-                                theOldestHomework = notCompletedHomework;
-                            }
-                        });
-                        _notCompletedHomeworkHandler(theOldestHomework);
                     });
                 }
 
@@ -867,24 +852,24 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     });
                 }
 
-                function _finishedSectionHandler(eventData, exerciseContent, currentExerciseResult) {
-                    return ExamSrv.getExam(currentExerciseResult.examId).then(function (exam) {
-                        var sectionsResults = [];
-                        var promArr = [];
-                        var dontInit = true;
-                        if (exam.typeId !== ExamTypeEnum.MINI_TEST.enum) {
-                            return;
-                        }
-                        angular.forEach(exam.sections, function (section) {
-                            var prom = ExerciseResultSrv.getExerciseResult(ExerciseTypeEnum.SECTION.enum, section.id, section.examId, null, dontInit).then(function (sectionResult) {
-                                if (currentExerciseResult.exerciseId === section.id) {
-                                    sectionsResults.push(currentExerciseResult);
-                                } else {
-                                    sectionsResults.push(sectionResult);
-                                }
-                            });
-                            promArr.push(prom);
+            function _finishedSectionHandler(eventData, exerciseContent, currentExerciseResult){
+                return ExamSrv.getExam(currentExerciseResult.examId).then(function (exam) {
+                    var sectionsResults = [];
+                    var promArr = [];
+                    var dontInit = true;
+                    if(exam.typeId !== ExamTypeEnum.MINI_TEST.enum){
+                        return;
+                    }
+                    angular.forEach(exam.sections, function (section) {
+                        var prom = ExerciseResultSrv.getExerciseResult(ExerciseTypeEnum.SECTION.enum, section.id, section.examId, null, dontInit).then(function(sectionResult){
+                            if(currentExerciseResult.exerciseId === section.id){
+                                sectionsResults.push(currentExerciseResult);
+                            } else{
+                                sectionsResults.push(sectionResult);
+                            }
                         });
+                        promArr.push(prom);
+                    });
 
                         $q.all(promArr).then(function () {
                             for (var i = 0; i < sectionsResults.length; i++) {
@@ -927,7 +912,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 };
 
                 HomeworkSrv.hasLatePractice = function (topicId) {
-                    return _getNotCompletedHomeworkByTopicId(topicId).then(function (notCompletedHomework) {
+                    return _getNotCompletedHomeworkByTopicId(topicId).then(function(notCompletedHomework){
                         if (angular.isDefined(notCompletedHomework)) {
                             return isHomeworkIsLate(notCompletedHomework);
                         } else {
@@ -1274,6 +1259,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 var vm = this;
                 var receiverId;
                 var isPendingClick = false;
+                var autoCallStatusEnum = toggleAutoCallEnum;
                 var isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
                 var isOffline;
 
@@ -1364,7 +1350,23 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                 hangCall(modelValue.isOffline);
                                 _changeBtnState(curBtnStatus);
                                 if (curBtnStatus !== CallsBtnStatusEnum.OFFLINE_BTN.enum) {
-                                    _initializeBtnStatus(receiverId);
+                                    _initializeBtnStatus(receiverId).then(function(status) {
+                                        if (angular.isDefined(modelValue.toggleAutoCall) && isTeacher) {
+                                            var isInActiveCall = status === CallsBtnStatusEnum.CALLED_BTN.enum;
+                                            switch (modelValue.toggleAutoCall) {
+                                                case autoCallStatusEnum.ACTIVATE.enum:
+                                                    if (!isInActiveCall) {
+                                                        vm.clickBtn();
+                                                    }
+                                                    break;
+                                                case autoCallStatusEnum.DISABLE.enum:
+                                                    if (isInActiveCall) {
+                                                        vm.clickBtn();
+                                                    }
+                                                    break;
+                                            }
+                                        }
+                                    });
                                 }
                             }
                         };
@@ -2324,8 +2326,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsSrv',
-        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "CallsDataSetterSrv", "WebcallSrv", "CallsEventsSrv", "CallsStatusEnum", "CallsActionStatusEnum", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv,
-                  CallsEventsSrv, CallsStatusEnum, CallsActionStatusEnum) {
+        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "CallsDataSetterSrv", "WebcallSrv", "CallsEventsSrv", "CallsStatusEnum", "CallsActionStatusEnum", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv, CallsEventsSrv, CallsStatusEnum, CallsActionStatusEnum) {
             'ngInject';
 
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
@@ -3568,7 +3569,24 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             });
         };
 
+        self.getCategoryLevel1ParentById = function (categoryId) {
+            if (angular.isUndefined(categoryId) || categoryId === null) {
+                return $q.when(null);
+            }
+            return self.getCategoryMap().then(function (categories) {
+                var category = categories[categoryId];
+                if (categoryEnum.SUBJECT.enum === category.typeId) {
+                    return $q.when(categoryId);
+                }
+                return self.getCategoryLevel1ParentById(category.parentId);
+            });
+        };
+
         self.getCategoryLevel1Parent = function (category) {
+            if (!category) {
+                return $q.when(null);
+            }
+
             if (category.typeId === categoryEnum.SUBJECT.enum) {
                 return $q.when(category.id);
             }
@@ -3827,6 +3845,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
     angular.module('znk.infra.estimatedScore', [
             'znk.infra.config',
             'znk.infra.znkExercise',
+            'znk.infra.contentGetters',
             'znk.infra.utility'
         ])
         .run([
@@ -3896,14 +3915,14 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
             return 'Within';
         };
 
-        this.setAnswerTimeSpentTypeFn = function(fn){
+        this.setAnswerTimeSpentTypeFn = function (fn) {
             getAnswerTimeSpentType = fn;
         };
 
 
         this.$get = [
-            '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum', 'ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log', 'UtilitySrv', '$injector', '$q',
-            function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum, ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log, UtilitySrv, $injector, $q) {
+            '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum', 'ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log', 'UtilitySrv', '$injector', '$q', 'CategoryService',
+            function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum, ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log, UtilitySrv, $injector, $q, CategoryService) {
                 if (angular.equals({}, diagnosticScoring)) {
                     $log.error('EstimatedScoreEventsHandlerSrv: diagnosticScoring was not set !!!');
                 }
@@ -3935,23 +3954,49 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                 }
 
                 function _diagnosticSectionCompleteHandler(section, sectionResult) {
-                    var score = 0;
+                    var scores = {};
+                    var scoresPromises = [];
 
                     var questions = section.questions;
                     var questionsMap = UtilitySrv.array.convertToMap(questions);
 
                     sectionResult.questionResults.forEach(function (result, i) {
-                        var question = questionsMap[result.questionId];
-                        if (angular.isUndefined(question)) {
-                            $log.error('EstimatedScoreEventsHandler: question for result is missing',
-                                'section id: ', section.id,
-                                'result index: ', i
-                            );
-                        } else {
-                            score += _getDiagnosticQuestionPoints(question, result);
-                        }
+                        var scorePromise = $q(function (resolve, reject) {
+                            var question = questionsMap[result.questionId];
+                            if (angular.isUndefined(question)) {
+                                $log.error('EstimatedScoreEventsHandler: question for result is missing',
+                                    'section id: ', section.id,
+                                    'result index: ', i
+                                );
+                                reject();
+                            } else {
+                                var subjectId1Prom = CategoryService.getCategoryLevel1ParentById(question.categoryId);
+                                var subjectId2Prom = CategoryService.getCategoryLevel1ParentById(question.categoryId2);
+                                $q.all([
+                                    subjectId1Prom,
+                                    subjectId2Prom
+                                ]).then(function (subjectIds) {
+                                    angular.forEach(subjectIds, function (subjectId) {
+                                        if (angular.isNumber(subjectId)) {
+                                            if (angular.isUndefined(scores[subjectId])) {
+                                                scores[subjectId] = 0;
+                                            }
+                                            scores[subjectId] += _getDiagnosticQuestionPoints(question, result);
+                                        }
+                                    }); // forEach(subjectIds
+                                    resolve();
+                                }); // then
+                            }
+                        });
+                        scoresPromises.push(scorePromise);
                     });
-                    EstimatedScoreSrv.setDiagnosticSectionScore(score, ExerciseTypeEnum.SECTION.enum, section.subjectId, section.id);
+
+                    $q.all(scoresPromises).then(function () {
+                        var subjectIds = Object.keys(scores);
+                        subjectIds.forEach(function (subjectId) {
+                            EstimatedScoreSrv.setDiagnosticSectionScore(scores[subjectId], ExerciseTypeEnum.SECTION.enum, subjectId, section.id);
+                        });
+                    });
                 }
 
                 function _getQuestionRawPoints(exerciseType, result) {
@@ -3964,21 +4009,53 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                 }
 
                 function _calculateRawScore(exerciseType, exerciseResult) {
-                    if (!exercisesRawScoring[exerciseType]) {
-                        $log.error('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: ' + exerciseType);
-                    }
+                    var scoresPromises = $q(function (resolve) {
+                        if (!exercisesRawScoring[exerciseType]) {
+                            $log.error('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: ' + exerciseType);
+                        }
+                        var rawScores = {};
+                        var questionResults = exerciseResult.questionResults;
+                        // var questionResultMap = UtilitySrv.array.convertToMap(questionResults, "questionId");
+                        var rawScoresProms = [];
+                        questionResults.forEach(function (quesionResult, index) {
+                            var rawScorePromise = $q(function (resolve, reject) {
+                                if (angular.isUndefined(quesionResult)) {
+                                    $log.error('EstimatedScoreEventsHandler: question for result is missing',
+                                        'exercise id: ', exerciseResult.id,
+                                        'result index: ', index
+                                    );
+                                    reject();
+                                } else {
+                                    var subjectId1Prom = CategoryService.getCategoryLevel1ParentById(quesionResult.categoryId);
+                                    var subjectId2Prom = CategoryService.getCategoryLevel1ParentById(quesionResult.categoryId2);
 
-                    var questionResults = exerciseResult.questionResults;
+                                    $q.all([
+                                        subjectId1Prom,
+                                        subjectId2Prom
+                                    ]).then(function (subjectIds) {
+                                        subjectIds.forEach(function (subjectId) {
+                                            if (angular.isNumber(subjectId)) {
+                                                if (angular.isUndefined(rawScores[subjectId])) {
+                                                    rawScores[subjectId] = {
+                                                        total: questionResults.length * exercisesRawScoring[exerciseType].correctWithin,
+                                                        earned: 0
+                                                    };
+                                                }
+                                                rawScores[subjectId].earned += _getQuestionRawPoints(exerciseType, quesionResult);
+                                            }
+                                        });
+                                        resolve();
+                                    });
+                                }
+                            });
+                            rawScoresProms.push(rawScorePromise);
+                        });
+                        $q.all(rawScoresProms).then(function () {
+                            resolve(rawScores);
+                        });
 
-                    var rawPoints = {
-                        total: questionResults.length * exercisesRawScoring[exerciseType].correctWithin,
-                        earned: 0
-                    };
-
-                    questionResults.forEach(function (result) {
-                        rawPoints.earned += _getQuestionRawPoints(exerciseType, result);
                     });
-                    return rawPoints;
+                    return scoresPromises;
                 }
 
                 function _shouldEventBeProcessed(exerciseType, exercise, exerciseResult) {
@@ -3994,27 +4071,30 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                 }
 
                 childScope.$on(exerciseEventsConst.section.FINISH, function (evt, section, sectionResult, exam) {
-                    _shouldEventBeProcessed(exerciseEventsConst.section.FINISH, section, sectionResult)
-                        .then(function (shouldBeProcessed) {
-                            if (shouldBeProcessed) {
-                                var isDiagnostic = exam.typeId === ExamTypeEnum.DIAGNOSTIC.enum;
-                                if (isDiagnostic) {
-                                    _diagnosticSectionCompleteHandler(section, sectionResult);
-                                }
-                                var rawScore = _calculateRawScore(ExerciseTypeEnum.SECTION.enum, sectionResult);
-                                EstimatedScoreSrv.addRawScore(rawScore, ExerciseTypeEnum.SECTION.enum, section.subjectId, section.id, isDiagnostic);
-                            }
-                        });
+                    EstimatedScoreEventsHandlerSrv.calculateRawScore(section, sectionResult, exam);
                 });
+
+
+                function _callCalculateAndSaveRawScore(exerciseTypeEnum, sectionResult, id, isDiagnostic) {
+                    _calculateRawScore(exerciseTypeEnum, sectionResult).then(function (rawScores) {
+                        var rawScoresKeys = Object.keys(rawScores);
+                        rawScoresKeys.forEach(function (subjectId) {
+                            var rawScore = rawScores[subjectId];
+                            (function (rawScore) {
+                                EstimatedScoreSrv.addRawScore(rawScore, exerciseTypeEnum, subjectId, id, isDiagnostic);
+                            })(rawScore);
+                        });
+                    });
+                }
 
                 function _baseExerciseFinishHandler(exerciseType, evt, exercise, exerciseResult) {
                     _shouldEventBeProcessed(exerciseType, exercise, exerciseResult).then(function (shouldBeProcessed) {
                         if (shouldBeProcessed) {
-                            var rawScore = _calculateRawScore(exerciseType, exerciseResult);
-                            EstimatedScoreSrv.addRawScore(rawScore, exerciseType, exercise.subjectId, exercise.id);
+                            _callCalculateAndSaveRawScore(exerciseType, exerciseResult, exercise.id);
                         }
                     });
                 }
+
 
                 angular.forEach(ExerciseTypeEnum, function (enumObj, enumName) {
                     if (enumName !== 'SECTION' && enumName !== 'LECTURE') {
@@ -4026,6 +4106,18 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
 
                 EstimatedScoreEventsHandlerSrv.init = angular.noop;
 
+                EstimatedScoreEventsHandlerSrv.calculateRawScore = function (exerciseEventsConst, section, sectionResult, exam) {
+                    _shouldEventBeProcessed(exerciseEventsConst.section.FINISH, section, sectionResult)
+                        .then(function (shouldBeProcessed) {
+                            if (shouldBeProcessed) {
+                                var isDiagnostic = exam.typeId === ExamTypeEnum.DIAGNOSTIC.enum;
+                                if (isDiagnostic) {
+                                    _diagnosticSectionCompleteHandler(section, sectionResult);
+                                }
+                                _callCalculateAndSaveRawScore(ExerciseTypeEnum.SECTION.enum, sectionResult, section.id, isDiagnostic);
+                            }
+                        });
+                };
                 return EstimatedScoreEventsHandlerSrv;
             }
         ];
@@ -9581,6 +9673,33 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
+        var dayInMs = 86400000;
+        var WEEK = 7;
+        this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
+
+
+        this.isDueDatePass = function (dueDate) {
+            var res = {
+                dateDiff: 0,
+                passDue: false
+            };
+
+            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
+                return res;
+            }
+
+            res.dateDiff = Math.abs(Math.ceil((Date.now() - dueDate) / dayInMs));
+            res.passDue = dueDate - Date.now() < 0;
+            return res;
+        };
+    }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.utility').factory('UtilitySrv', [
         '$q',
         function ($q) {
@@ -9673,33 +9792,6 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 
             return UtilitySrv;
         }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
-        var dayInMs = 86400000;
-        var WEEK = 7;
-        this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
-
-
-        this.isDueDatePass = function (dueDate) {
-            var res = {
-                dateDiff: 0,
-                passDue: false
-            };
-
-            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
-                return res;
-            }
-
-            res.dateDiff = Math.abs(Math.ceil((Date.now() - dueDate) / dayInMs));
-            res.passDue = dueDate - Date.now() < 0;
-            return res;
-        };
-    }
     ]);
 })(angular);
 
@@ -15061,7 +15153,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 return function() {
                     return true;
                 };
-            };
+            }; 
 
             this.setShouldBroadCastExerciseGetter = function(_broadCastExerciseFn) {
                 broadCastExerciseFn = _broadCastExerciseFn;
@@ -15129,7 +15221,6 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         return $q.reject(e);
                     }
                 };
-
                 return ZnkExerciseUtilitySrv;
             }];
         }
