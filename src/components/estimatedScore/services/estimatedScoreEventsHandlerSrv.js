@@ -213,7 +213,7 @@
                 }
 
                 childScope.$on(exerciseEventsConst.section.FINISH, function (evt, section, sectionResult, exam) {
-                    EstimatedScoreEventsHandlerSrv.calculateRawScore(section, sectionResult, exam);
+                    EstimatedScoreEventsHandlerSrv.calculateRawScore(exerciseEventsConst.section.FINISH, section, sectionResult, exam);
                 });
 
 
@@ -248,8 +248,8 @@
 
                 EstimatedScoreEventsHandlerSrv.init = angular.noop;
 
-                EstimatedScoreEventsHandlerSrv.calculateRawScore = function (exerciseEventsConst, section, sectionResult, exam) {
-                    _shouldEventBeProcessed(exerciseEventsConst.section.FINISH, section, sectionResult)
+                EstimatedScoreEventsHandlerSrv.calculateRawScore = function (exerciseEventsConstType, section, sectionResult, exam) {
+                    _shouldEventBeProcessed(exerciseEventsConstType, section, sectionResult)
                         .then(function (shouldBeProcessed) {
                             if (shouldBeProcessed) {
                                 var isDiagnostic = exam.typeId === ExamTypeEnum.DIAGNOSTIC.enum;
