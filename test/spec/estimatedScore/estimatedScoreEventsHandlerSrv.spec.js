@@ -98,7 +98,7 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         expect(scoresArr.length).toEqual(1);
     });
 
-    xit('when writing section is completed in diagnostic test then raw score object should be calculated accordingly', function () {
+    it('when writing section is completed in diagnostic test then raw score object should be calculated accordingly', function () {
         var exam = content.exam47;
         exam.typeId = 2; //diagnostic
         var sectionKey = 'section' + exam.sections[0].id;

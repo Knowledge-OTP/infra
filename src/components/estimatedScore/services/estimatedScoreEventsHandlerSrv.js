@@ -103,34 +103,33 @@
                     var questionsMap = UtilitySrv.array.convertToMap(questions);
 
                     sectionResult.questionResults.forEach(function (result, i) {
-                        var scorePromise = $q(function (resolve, reject) {
-                            var question = questionsMap[result.questionId];
-                            if (angular.isUndefined(question)) {
-                                $log.error('EstimatedScoreEventsHandler: question for result is missing',
-                                    'section id: ', section.id,
-                                    'result index: ', i
-                                );
-                                reject();
-                            } else {
-                                var subjectId1Prom = CategoryService.getCategoryLevel1ParentById(question.categoryId);
-                                var subjectId2Prom = CategoryService.getCategoryLevel1ParentById(question.categoryId2);
-                                $q.all([
-                                    subjectId1Prom,
-                                    subjectId2Prom
-                                ]).then(function (subjectIds) {
-                                    angular.forEach(subjectIds, function (subjectId) {
-                                        if (angular.isNumber(subjectId)) {
-                                            if (angular.isUndefined(scores[subjectId])) {
-                                                scores[subjectId] = 0;
-                                            }
-                                            scores[subjectId] += _getDiagnosticQuestionPoints(question, result);
+                        var scoreDeferred = $q.defer();
+                        var question = questionsMap[result.questionId];
+                        if (angular.isUndefined(question)) {
+                            $log.error('EstimatedScoreEventsHandler: question for result is missing',
+                                'section id: ', section.id,
+                                'result index: ', i
+                            );
+                            scoreDeferred.reject();
+                        } else {
+                            var subjectId1Prom = CategoryService.getCategoryLevel1ParentById(question.categoryId);
+                            var subjectId2Prom = CategoryService.getCategoryLevel1ParentById(question.categoryId2);
+                            $q.all([
+                                subjectId1Prom,
+                                subjectId2Prom
+                            ]).then(function (subjectIds) {
+                                angular.forEach(subjectIds, function (subjectId) {
+                                    if (angular.isNumber(subjectId)) {
+                                        if (angular.isUndefined(scores[subjectId])) {
+                                            scores[subjectId] = 0;
                                         }
-                                    }); // forEach(subjectIds
-                                    resolve();
-                                }); // then
-                            }
-                        });
-                        scoresPromises.push(scorePromise);
+                                        scores[subjectId] += _getDiagnosticQuestionPoints(question, result);
+                                    }
+                                }); // forEach(subjectIds
+                                scoreDeferred.resolve();
+                            }); // then
+                        }
+                        scoresPromises.push(scoreDeferred.promise);
                     });
 
                     $q.all(scoresPromises).then(function () {
@@ -151,53 +150,50 @@
                 }
 
                 function _calculateRawScore(exerciseType, exerciseResult) {
-                    var scoresPromises = $q(function (resolve) {
-                        if (!exercisesRawScoring[exerciseType]) {
-                            $log.error('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: ' + exerciseType);
-                        }
-                        var rawScores = {};
-                        var questionResults = exerciseResult.questionResults;
-                        // var questionResultMap = UtilitySrv.array.convertToMap(questionResults, "questionId");
-                        var rawScoresProms = [];
-                        questionResults.forEach(function (quesionResult, index) {
-                            var rawScorePromise = $q(function (resolve, reject) {
-                                if (angular.isUndefined(quesionResult)) {
-                                    $log.error('EstimatedScoreEventsHandler: question for result is missing',
-                                        'exercise id: ', exerciseResult.id,
-                                        'result index: ', index
-                                    );
-                                    reject();
-                                } else {
-                                    var subjectId1Prom = CategoryService.getCategoryLevel1ParentById(quesionResult.categoryId);
-                                    var subjectId2Prom = CategoryService.getCategoryLevel1ParentById(quesionResult.categoryId2);
+                    var scoresDeferred = $q.defer();
+                    if (!exercisesRawScoring[exerciseType]) {
+                        $log.error('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: ' + exerciseType);
+                    }
+                    var rawScores = {};
+                    var questionResults = exerciseResult.questionResults;
+                    var rawScoresProms = [];
+                    questionResults.forEach(function (questionResult, index) {
+                        var rawScoreDeferred = $q.defer();
+                        if (angular.isUndefined(questionResult)) {
+                            $log.error('EstimatedScoreEventsHandler: question for result is missing',
+                                'exercise id: ', exerciseResult.id,
+                                'result index: ', index
+                            );
+                            rawScoreDeferred.reject();
+                        } else {
+                            var subjectId1Prom = CategoryService.getCategoryLevel1ParentById(questionResult.categoryId);
+                            var subjectId2Prom = CategoryService.getCategoryLevel1ParentById(questionResult.categoryId2);
 
-                                    $q.all([
-                                        subjectId1Prom,
-                                        subjectId2Prom
-                                    ]).then(function (subjectIds) {
-                                        subjectIds.forEach(function (subjectId) {
-                                            if (angular.isNumber(subjectId)) {
-                                                if (angular.isUndefined(rawScores[subjectId])) {
-                                                    rawScores[subjectId] = {
-                                                        total: questionResults.length * exercisesRawScoring[exerciseType].correctWithin,
-                                                        earned: 0
-                                                    };
-                                                }
-                                                rawScores[subjectId].earned += _getQuestionRawPoints(exerciseType, quesionResult);
-                                            }
-                                        });
-                                        resolve();
-                                    });
-                                }
+                            $q.all([
+                                subjectId1Prom,
+                                subjectId2Prom
+                            ]).then(function (subjectIds) {
+                                subjectIds.forEach(function (subjectId) {
+                                    if (angular.isNumber(subjectId)) {
+                                        if (angular.isUndefined(rawScores[subjectId])) {
+                                            rawScores[subjectId] = {
+                                                total: questionResults.length * exercisesRawScoring[exerciseType].correctWithin,
+                                                earned: 0
+                                            };
+                                        }
+                                        rawScores[subjectId].earned += _getQuestionRawPoints(exerciseType, questionResult);
+                                    }
+                                });
+                                rawScoreDeferred.resolve();
                             });
-                            rawScoresProms.push(rawScorePromise);
-                        });
-                        $q.all(rawScoresProms).then(function () {
-                            resolve(rawScores);
-                        });
-
+                        }
+                        rawScoresProms.push(rawScoreDeferred.promise);
                     });
-                    return scoresPromises;
+                    $q.all(rawScoresProms).then(function () {
+                        scoresDeferred.resolve(rawScores);
+                    });
+
+                    return scoresDeferred.promise;
                 }
 
                 function _shouldEventBeProcessed(exerciseType, exercise, exerciseResult) {
@@ -213,7 +209,7 @@
                 }
 
                 childScope.$on(exerciseEventsConst.section.FINISH, function (evt, section, sectionResult, exam) {
-                    EstimatedScoreEventsHandlerSrv.calculateRawScore(section, sectionResult, exam);
+                    EstimatedScoreEventsHandlerSrv.calculateRawScore(exerciseEventsConst.section.FINISH, section, sectionResult, exam);
                 });
 
 
@@ -248,8 +244,8 @@
 
                 EstimatedScoreEventsHandlerSrv.init = angular.noop;
 
-                EstimatedScoreEventsHandlerSrv.calculateRawScore = function (exerciseEventsConst, section, sectionResult, exam) {
-                    _shouldEventBeProcessed(exerciseEventsConst.section.FINISH, section, sectionResult)
+                EstimatedScoreEventsHandlerSrv.calculateRawScore = function (exerciseEventsConstType, section, sectionResult, exam) {
+                    _shouldEventBeProcessed(exerciseEventsConstType, section, sectionResult)
                         .then(function (shouldBeProcessed) {
                             if (shouldBeProcessed) {
                                 var isDiagnostic = exam.typeId === ExamTypeEnum.DIAGNOSTIC.enum;
