@@ -4277,8 +4277,8 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                     });
                 }
 
-                function _isExerciseAlreadyProcessed(estimatedScoreData, exerciseType, exerciseId) {
-                    var exerciseKey = exerciseType + '_' + exerciseId;
+                function _isExerciseAlreadyProcessed(estimatedScoreData, exerciseType, exerciseId, subjectId) {
+                    var exerciseKey = exerciseType + '_' + exerciseId + '_' + subjectId;
                     if (estimatedScoreData.processedExercises.indexOf(exerciseKey) !== -1) {
                         return true;
                     }
@@ -4365,7 +4365,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                 EstimatedScoreSrv.addRawScore = function (rawScore, exerciseType, subjectId, exerciseId, isDiagnostic) {
                     processingData = processingData.then(function(){
                         return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScoreData) {
-                            if (_isExerciseAlreadyProcessed(estimatedScoreData, exerciseType, exerciseId)) {
+                            if (_isExerciseAlreadyProcessed(estimatedScoreData, exerciseType, exerciseId, subjectId)) {
                                 var errMsg = 'Exercise already processed ' + 'type ' + exerciseType + ' id ' + exerciseId;
                                 return $q.reject(errMsg);
                             }
