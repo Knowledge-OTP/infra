@@ -486,7 +486,9 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                             angular.forEach(registerEvents[userId][contentType].changeCB, function (cbData) {
                                 if (cbData.guids.indexOf(moduleResult.guid) === -1) {
                                     cbData.guids.push(moduleResult.guid);
-                                    studentStorage.onEvent('child_changed', 'moduleResults/' + moduleResult.guid, callbackWrapper(contentType));
+                                    if(contentType === AssignContentEnum.LESSON.enum) {
+                                        studentStorage.onEvent('child_changed', 'moduleResults/' + moduleResult.guid, callbackWrapper(contentType));
+                                    }
                                 }
                             });
                         });
@@ -809,16 +811,31 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
 
                 }
 
-                function _homeworkHandler() {
-                    var topicsIds =[];
-                    angular.forEach(LiveSessionSubjectEnum.getEnumArr(),function(topicObj){
-                        topicsIds.push(topicObj.enum);
+                function _homeworkHandler() {  //find the oldest not completed homework and show the relevant popup (late or regular hw)
+                    var promArr = [];
+                    var notCompletedHomeworkArr = [];
+                    angular.forEach(LiveSessionSubjectEnum.getEnumArr(), function (topicObj) {
+                        var prom = _getNotCompletedHomeworkByTopicId(topicObj.enum).then(function (notCompletedHomework) {
+                            if (notCompletedHomework) {
+                                notCompletedHomeworkArr.push(notCompletedHomework);
+                            }
+                        });
+                        promArr.push(prom);
                     });
 
-                    _getNotCompletedHomeworkByTopicId(topicsIds).then(function (notCompletedHomework) {
-                        if (notCompletedHomework) {
-                            _notCompletedHomeworkHandler(notCompletedHomework);
+                    $q.all(promArr).then(function () {
+                        if(notCompletedHomeworkArr.length === 0){
+                            promArr = [];
+                            return;
                         }
+
+                        var theOldestHomework;
+                        angular.forEach(notCompletedHomeworkArr, function (notCompletedHomework) {
+                            if (!theOldestHomework || notCompletedHomework.assignDate < theOldestHomework.assignDate) {
+                                theOldestHomework = notCompletedHomework;
+                            }
+                        });
+                        _notCompletedHomeworkHandler(theOldestHomework);
                     });
                 }
 
@@ -852,24 +869,24 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     });
                 }
 
-            function _finishedSectionHandler(eventData, exerciseContent, currentExerciseResult){
-                return ExamSrv.getExam(currentExerciseResult.examId).then(function (exam) {
-                    var sectionsResults = [];
-                    var promArr = [];
-                    var dontInit = true;
-                    if(exam.typeId !== ExamTypeEnum.MINI_TEST.enum){
-                        return;
-                    }
-                    angular.forEach(exam.sections, function (section) {
-                        var prom = ExerciseResultSrv.getExerciseResult(ExerciseTypeEnum.SECTION.enum, section.id, section.examId, null, dontInit).then(function(sectionResult){
-                            if(currentExerciseResult.exerciseId === section.id){
-                                sectionsResults.push(currentExerciseResult);
-                            } else{
-                                sectionsResults.push(sectionResult);
-                            }
+                function _finishedSectionHandler(eventData, exerciseContent, currentExerciseResult) {
+                    return ExamSrv.getExam(currentExerciseResult.examId).then(function (exam) {
+                        var sectionsResults = [];
+                        var promArr = [];
+                        var dontInit = true;
+                        if (exam.typeId !== ExamTypeEnum.MINI_TEST.enum) {
+                            return;
+                        }
+                        angular.forEach(exam.sections, function (section) {
+                            var prom = ExerciseResultSrv.getExerciseResult(ExerciseTypeEnum.SECTION.enum, section.id, section.examId, null, dontInit).then(function (sectionResult) {
+                                if (currentExerciseResult.exerciseId === section.id) {
+                                    sectionsResults.push(currentExerciseResult);
+                                } else {
+                                    sectionsResults.push(sectionResult);
+                                }
+                            });
+                            promArr.push(prom);
                         });
-                        promArr.push(prom);
-                    });
 
                         $q.all(promArr).then(function () {
                             for (var i = 0; i < sectionsResults.length; i++) {
@@ -912,7 +929,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 };
 
                 HomeworkSrv.hasLatePractice = function (topicId) {
-                    return _getNotCompletedHomeworkByTopicId(topicId).then(function(notCompletedHomework){
+                    return _getNotCompletedHomeworkByTopicId(topicId).then(function (notCompletedHomework) {
                         if (angular.isDefined(notCompletedHomework)) {
                             return isHomeworkIsLate(notCompletedHomework);
                         } else {
@@ -1259,7 +1276,6 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 var vm = this;
                 var receiverId;
                 var isPendingClick = false;
-                var autoCallStatusEnum = toggleAutoCallEnum;
                 var isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
                 var isOffline;
 
@@ -1350,23 +1366,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                                 hangCall(modelValue.isOffline);
                                 _changeBtnState(curBtnStatus);
                                 if (curBtnStatus !== CallsBtnStatusEnum.OFFLINE_BTN.enum) {
-                                    _initializeBtnStatus(receiverId).then(function(status) {
-                                        if (angular.isDefined(modelValue.toggleAutoCall) && isTeacher) {
-                                            var isInActiveCall = status === CallsBtnStatusEnum.CALLED_BTN.enum;
-                                            switch (modelValue.toggleAutoCall) {
-                                                case autoCallStatusEnum.ACTIVATE.enum:
-                                                    if (!isInActiveCall) {
-                                                        vm.clickBtn();
-                                                    }
-                                                    break;
-                                                case autoCallStatusEnum.DISABLE.enum:
-                                                    if (isInActiveCall) {
-                                                        vm.clickBtn();
-                                                    }
-                                                    break;
-                                            }
-                                        }
-                                    });
+                                    _initializeBtnStatus(receiverId);
                                 }
                             }
                         };
@@ -2326,7 +2326,8 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsSrv',
-        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "CallsDataSetterSrv", "WebcallSrv", "CallsEventsSrv", "CallsStatusEnum", "CallsActionStatusEnum", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv, CallsEventsSrv, CallsStatusEnum, CallsActionStatusEnum) {
+        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "CallsDataSetterSrv", "WebcallSrv", "CallsEventsSrv", "CallsStatusEnum", "CallsActionStatusEnum", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv,
+                  CallsEventsSrv, CallsStatusEnum, CallsActionStatusEnum) {
             'ngInject';
 
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
