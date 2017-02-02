@@ -40,8 +40,8 @@
                 parent: '?^ngModel'
             },
             controllerAs: 'vm',
-            controller: ["$translate", "CallsSrv", "CallsBtnSrv", "CallsErrorSrv", "CallsBtnStatusEnum", "$log", "$scope", "CALL_UPDATE", "toggleAutoCallEnum", "ENV", function ($translate, CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE,
-                                  toggleAutoCallEnum, ENV) {
+            controller: ["$translate", "CallsSrv", "CallsBtnSrv", "CallsErrorSrv", "CallsBtnStatusEnum", "$log", "$scope", "CALL_UPDATE", "ENV", function ($translate, CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope,
+                                  CALL_UPDATE, ENV) {
                 var vm = this;
                 var receiverId;
                 var isPendingClick = false;
@@ -215,22 +215,6 @@
                 ['DECLINE_CALL', 2, 'decline call'],
                 ['ACTIVE_CALL', 3, 'active call'],
                 ['ENDED_CALL', 4, 'ended call']
-            ]);
-        }]
-    );
-})(angular);
-
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.calls').factory('toggleAutoCallEnum',
-        ["EnumSrv", function (EnumSrv) {
-            'ngInject';
-
-            return new EnumSrv.BaseEnum([
-                ['DISABLE', 0, 'disable'],
-                ['ACTIVATE', 1, 'activate']
             ]);
         }]
     );
