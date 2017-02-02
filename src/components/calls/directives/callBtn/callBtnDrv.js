@@ -7,8 +7,8 @@
                 parent: '?^ngModel'
             },
             controllerAs: 'vm',
-            controller: function ($translate, CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE,
-                                  toggleAutoCallEnum, ENV) {
+            controller: function ($translate, CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope,
+                                  CALL_UPDATE, ENV) {
                 var vm = this;
                 var receiverId;
                 var isPendingClick = false;
