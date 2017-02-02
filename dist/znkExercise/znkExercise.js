@@ -3588,7 +3588,7 @@
                 return function() {
                     return true;
                 };
-            };
+            }; 
 
             this.setShouldBroadCastExerciseGetter = function(_broadCastExerciseFn) {
                 broadCastExerciseFn = _broadCastExerciseFn;
@@ -3656,7 +3656,6 @@
                         return $q.reject(e);
                     }
                 };
-
                 return ZnkExerciseUtilitySrv;
             }];
         }
