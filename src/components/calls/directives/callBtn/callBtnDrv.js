@@ -7,12 +7,11 @@
                 parent: '?^ngModel'
             },
             controllerAs: 'vm',
-            controller: function ($translate, CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE,
-                                  toggleAutoCallEnum, ENV) {
+            controller: function ($translate, CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope,
+                                  CALL_UPDATE, ENV) {
                 var vm = this;
                 var receiverId;
                 var isPendingClick = false;
-                var autoCallStatusEnum = toggleAutoCallEnum;
                 var isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
                 var isOffline;
 
@@ -103,23 +102,7 @@
                                 hangCall(modelValue.isOffline);
                                 _changeBtnState(curBtnStatus);
                                 if (curBtnStatus !== CallsBtnStatusEnum.OFFLINE_BTN.enum) {
-                                    _initializeBtnStatus(receiverId).then(function(status) {
-                                        if (angular.isDefined(modelValue.toggleAutoCall) && isTeacher) {
-                                            var isInActiveCall = status === CallsBtnStatusEnum.CALLED_BTN.enum;
-                                            switch (modelValue.toggleAutoCall) {
-                                                case autoCallStatusEnum.ACTIVATE.enum:
-                                                    if (!isInActiveCall) {
-                                                        vm.clickBtn();
-                                                    }
-                                                    break;
-                                                case autoCallStatusEnum.DISABLE.enum:
-                                                    if (isInActiveCall) {
-                                                        vm.clickBtn();
-                                                    }
-                                                    break;
-                                            }
-                                        }
-                                    });
+                                    _initializeBtnStatus(receiverId);
                                 }
                             }
                         };

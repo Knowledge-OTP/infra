@@ -79,7 +79,8 @@
                 result.questionResults = exercise.questions.map(function(question,index){
                     var questionResult = {
                         timeSpent: 0,
-                        questionId: question.id
+                        questionId: question.id,
+                        categoryId:question.categoryId
                     };
 
                     if (!correctAnswerMap[index] && numOfUnanswered) {
