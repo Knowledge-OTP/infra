@@ -508,7 +508,7 @@
                 var ASSIGNMENTS_DATA_PATH = 'users/$$uid/assignmentsData';
                 var ASSIGNMENT_RES_PATH = 'users/$$uid/assignmentResults';
                 var MODULE_RES_PATH = 'moduleResults/';
-                var POPUP_INTERVAL = 'settings/assignments/assignmentPopupInterval';
+                var HW_POPUP_TIMEOUT = 'settings/assignments/assignmentPopupTimeout';
                 var LOCAL_STORAGE_LAST_SEEN_HW_POPUP = 'lastSeenHwPopup';
 
                 var completeAssignmentBtn = {
@@ -555,10 +555,10 @@
 
                 function _homeworkCB(){
                      _getStudentStorage().then(function(studentStorage){
-                         studentStorage.get(POPUP_INTERVAL).then(function(popupInterval){
+                         studentStorage.get(HW_POPUP_TIMEOUT).then(function(hwPopupTimeout){
                              var lastSeenHWPopup = $window.localStorage.getItem(LOCAL_STORAGE_LAST_SEEN_HW_POPUP);
 
-                             if(!lastSeenHWPopup || new Date().getTime() - lastSeenHWPopup > popupInterval){
+                             if(!lastSeenHWPopup || new Date().getTime() - lastSeenHWPopup > hwPopupTimeout){
                                  _homeworkHandler();
                              }
                          });
