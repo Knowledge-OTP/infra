@@ -335,6 +335,9 @@
                             moduleSummary.overAll.status = ExerciseStatusEnum.ACTIVE.enum;
                         } else if (moduleExerciseNum === completedExercises) {
                             moduleSummary.overAll.status = ExerciseStatusEnum.COMPLETED.enum;
+                            if (!assignModule.isComplete) {
+                                _updateModuleResultToCompleted(assignModule.guid);
+                            }
                         }
                     }
                 }
