@@ -766,8 +766,8 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 topicsArray = _topicsArray;
             };
 
-            this.$get = ["$q", "$log", "InfraConfigSrv", "PopUpSrv", "DueDateSrv", "$translate", "$rootScope", "exerciseEventsConst", "ExamSrv", "ExerciseResultSrv", "ExamTypeEnum", "StorageSrv", "ExerciseTypeEnum", "$injector", "LiveSessionSubjectEnum", function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv,
-                                  ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum, $injector, LiveSessionSubjectEnum) {
+            this.$get = ["$q", "$log", "InfraConfigSrv", "PopUpSrv", "DueDateSrv", "$translate", "$rootScope", "exerciseEventsConst", "ExamSrv", "ExerciseResultSrv", "ExamTypeEnum", "StorageSrv", "ExerciseTypeEnum", "$injector", "LiveSessionSubjectEnum", "$window", function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv,
+                                  ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum, $injector, LiveSessionSubjectEnum, $window) {
                 'ngInject';
 
                 var HomeworkSrv = {};
@@ -777,6 +777,8 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 var ASSIGNMENTS_DATA_PATH = 'users/$$uid/assignmentsData';
                 var ASSIGNMENT_RES_PATH = 'users/$$uid/assignmentResults';
                 var MODULE_RES_PATH = 'moduleResults/';
+                var POPUP_INTERVAL = 'settings/assignments/assignmentPopupInterval';
+                var LOCAL_STORAGE_LAST_SEEN_HW_POPUP = 'lastSeenHwPopup';
 
                 var completeAssignmentBtn = {
                     resolveVal: $injector.invoke(popupResolveFn)
@@ -798,6 +800,8 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     var goToAssignmentText = 'ASSIGN_MODULE.ASSIGNMENT';
                     var closeText = 'ASSIGN_MODULE.CLOSE';
 
+                    $window.localStorage.setItem(LOCAL_STORAGE_LAST_SEEN_HW_POPUP, new Date().getTime());
+
                     if (isHomeworkIsLate(homeworkObj)) {
                         $translate([latePopupTitle, latePopupContent, goToAssignmentText, closeText]).then(function (res) {
                             var title = res[latePopupTitle];
@@ -816,6 +820,18 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                         });
                     }
 
+                }
+
+                function _homeworkCB(){
+                     _getStudentStorage().then(function(studentStorage){
+                         studentStorage.get(POPUP_INTERVAL).then(function(popupInterval){
+                             var lastSeenHWPopup = $window.localStorage.getItem(LOCAL_STORAGE_LAST_SEEN_HW_POPUP);
+
+                             if(!lastSeenHWPopup || new Date().getTime() - lastSeenHWPopup > popupInterval){
+                                 _homeworkHandler();
+                             }
+                         });
+                    });
                 }
 
                 function _homeworkHandler() {  //find the oldest not completed homework and show the relevant popup (late or regular hw)
@@ -931,7 +947,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     var homeworkPath = 'users/$$uid/assignmentResults';
                     homeworkPath = homeworkPath.replace('$$uid', uid);
                     return _getStudentStorage().then(function (userStorage) {
-                        userStorage.onEvent('value', homeworkPath, _homeworkHandler);
+                        userStorage.onEvent('value', homeworkPath, _homeworkCB);
                     });
                 };
 
@@ -954,7 +970,6 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                         });
                     });
                 };
-
                 return HomeworkSrv;
             }];
         }
