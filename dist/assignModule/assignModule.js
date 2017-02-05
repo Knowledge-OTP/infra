@@ -500,8 +500,8 @@
                 topicsArray = _topicsArray;
             };
 
-            this.$get = ["$q", "$log", "InfraConfigSrv", "PopUpSrv", "DueDateSrv", "$translate", "$rootScope", "exerciseEventsConst", "ExamSrv", "ExerciseResultSrv", "ExamTypeEnum", "StorageSrv", "ExerciseTypeEnum", "$injector", "LiveSessionSubjectEnum", function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv,
-                                  ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum, $injector, LiveSessionSubjectEnum) {
+            this.$get = ["$q", "$log", "InfraConfigSrv", "PopUpSrv", "DueDateSrv", "$translate", "$rootScope", "exerciseEventsConst", "ExamSrv", "ExerciseResultSrv", "ExamTypeEnum", "StorageSrv", "ExerciseTypeEnum", "$injector", "LiveSessionSubjectEnum", "$window", function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv,
+                                  ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum, $injector, LiveSessionSubjectEnum, $window) {
                 'ngInject';
 
                 var HomeworkSrv = {};
@@ -511,6 +511,8 @@
                 var ASSIGNMENTS_DATA_PATH = 'users/$$uid/assignmentsData';
                 var ASSIGNMENT_RES_PATH = 'users/$$uid/assignmentResults';
                 var MODULE_RES_PATH = 'moduleResults/';
+                var HW_POPUP_TIMEOUT = 'settings/assignments/assignmentPopupTimeout';
+                var LOCAL_STORAGE_LAST_SEEN_HW_POPUP = 'lastSeenHwPopup';
 
                 var completeAssignmentBtn = {
                     resolveVal: $injector.invoke(popupResolveFn)
@@ -532,6 +534,8 @@
                     var goToAssignmentText = 'ASSIGN_MODULE.ASSIGNMENT';
                     var closeText = 'ASSIGN_MODULE.CLOSE';
 
+                    $window.localStorage.setItem(LOCAL_STORAGE_LAST_SEEN_HW_POPUP, new Date().getTime());
+
                     if (isHomeworkIsLate(homeworkObj)) {
                         $translate([latePopupTitle, latePopupContent, goToAssignmentText, closeText]).then(function (res) {
                             var title = res[latePopupTitle];
@@ -550,6 +554,18 @@
                         });
                     }
 
+                }
+
+                function _homeworkCB(){
+                     _getStudentStorage().then(function(studentStorage){
+                         studentStorage.get(HW_POPUP_TIMEOUT).then(function(hwPopupTimeout){
+                             var lastSeenHWPopup = $window.localStorage.getItem(LOCAL_STORAGE_LAST_SEEN_HW_POPUP);
+
+                             if(!lastSeenHWPopup || new Date().getTime() - lastSeenHWPopup > hwPopupTimeout){
+                                 _homeworkHandler();
+                             }
+                         });
+                    });
                 }
 
                 function _homeworkHandler() {  //find the oldest not completed homework and show the relevant popup (late or regular hw)
@@ -665,7 +681,7 @@
                     var homeworkPath = 'users/$$uid/assignmentResults';
                     homeworkPath = homeworkPath.replace('$$uid', uid);
                     return _getStudentStorage().then(function (userStorage) {
-                        userStorage.onEvent('value', homeworkPath, _homeworkHandler);
+                        userStorage.onEvent('value', homeworkPath, _homeworkCB);
                     });
                 };
 
@@ -688,7 +704,6 @@
                         });
                     });
                 };
-
                 return HomeworkSrv;
             }];
         }
