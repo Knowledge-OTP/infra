@@ -873,8 +873,8 @@
                                 var isLastQuestion = maxQuestionNum === currIndex ? true : false;
 
                                 function _determineIfShowButton () {
-                                    return (isInLiveSession && isExerciseComplete && isTeacherApp && isLastQuestion && 
-                                    ((exerciseReviewStatus !== ExerciseReviewStatusEnum.YES.enum && exerciseReviewStatus !== ExerciseReviewStatusEnum.DONE_TOGETHER.enum) || angular.isUndefined(exerciseReviewStatus)));
+                                    return isInLiveSession && isExerciseComplete && isTeacherApp && isLastQuestion && 
+                                    exerciseReviewStatus !== ExerciseReviewStatusEnum.YES.enum && exerciseReviewStatus !== ExerciseReviewStatusEnum.DONE_TOGETHER.enum;
                                 }
 
                                 scope.showBtn = _determineIfShowButton();
