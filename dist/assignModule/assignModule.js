@@ -27,9 +27,9 @@
 (function (angular) {
     'use strict';
     angular.module('znk.infra.assignModule').service('UserAssignModuleService',
-        ["ZnkModuleService", "$q", "SubjectEnum", "ExerciseResultSrv", "ExerciseStatusEnum", "ExerciseTypeEnum", "EnumSrv", "$log", "InfraConfigSrv", "StudentContextSrv", "StorageSrv", "AssignContentEnum", "$rootScope", "exerciseEventsConst", "UtilitySrv", function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv,
+        ["ZnkModuleService", "$q", "SubjectEnum", "ExerciseResultSrv", "ExerciseStatusEnum", "ExerciseTypeEnum", "EnumSrv", "$log", "InfraConfigSrv", "StudentContextSrv", "StorageSrv", "AssignContentEnum", "$rootScope", "exerciseEventsConst", "UtilitySrv", "ENV", function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv,
                   $log, InfraConfigSrv, StudentContextSrv, StorageSrv, AssignContentEnum, $rootScope,
-                  exerciseEventsConst, UtilitySrv) {
+                  exerciseEventsConst, UtilitySrv, ENV) {
             'ngInject';
 
             var userAssignModuleService = {};
@@ -378,10 +378,17 @@
             }
 
             function _getAllModulesTypesResults () {
+                var userAssignmentsResPath = USER_ASSIGNMENT_RES_PATH;
+                var userModuleResPath = USER_MODULE_RES_PATH;
+                if(ENV.appContext === 'dashboard'){
+                    var uid = StudentContextSrv.getCurrUid();
+                    userAssignmentsResPath = userAssignmentsResPath.replace('$$uid',uid);
+                    userModuleResPath = userModuleResPath.replace('$$uid',uid);
+                }
                 return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                     return $q.all([
-                        StudentStorageSrv.get(USER_ASSIGNMENT_RES_PATH),
-                        StudentStorageSrv.get(USER_MODULE_RES_PATH)
+                        StudentStorageSrv.get(userAssignmentsResPath),
+                        StudentStorageSrv.get(userModuleResPath)
                     ]).then(function(res){
                         var promArr = [];
                         var moduleResultsArr = [];
