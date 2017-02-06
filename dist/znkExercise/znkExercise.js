@@ -2767,7 +2767,7 @@
                     function _setDrawMode(drawMode) {
                         switch (drawMode) {
                             case DRAWING_MODES.NONE:
-                                eventsManager.cleanQuestionListeners();
+                             //   eventsManager.cleanQuestionListeners();
                                 drawer.clean();
                                 break;
                             case DRAWING_MODES.VIEW:
@@ -3077,14 +3077,14 @@
 
                     EventsManager.prototype.registerFbListeners = function (questionId) {
                         /* this wrapper was made because of a bug that occurred sometimes when user have entered
-                           to an exercise which has a drawing, and the canvas is empty. as it seems, the problem is 
+                           to an exercise which has a drawing, and the canvas is empty. as it seems, the problem is
                            the callback from firebase is invoked to soon, before the canvas has fully loaded
                            (even tho it seems that the canvas alreay appended and compiled), still the canvas is empty.
                            because there's no holding ground for when it will be ok to draw, the solution for now it's
                            to wait 1 sec only for first time entrance and then register callbacks and try drawing.
                         */
                         var self = this;
-                        
+
                         if (!registerFbListenersInDelayOnce) {
 
                             $timeout(function () {
@@ -3142,7 +3142,7 @@
                         if (scope.d.drawMode === DRAWING_MODES.NONE) {
                             return;
                         }
-                        
+
                         // clear the canvas each before it will try to reload the new drawing
                         // because if you move fast between questions, it can draw to the wrong one.
                         drawer.clean();
