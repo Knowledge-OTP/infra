@@ -46,6 +46,10 @@
                     return studentStorage;
                 }
 
+                function _getGlobalStorage() {
+                    return InfraConfigSrv.getGlobalStorage();
+                }
+
                 function _notCompletedHomeworkHandler(homeworkObj) {
                     var popupTitle = 'ASSIGN_MODULE.ASSIGNMENT_AVAILABLE';
                     var popupContent = 'ASSIGN_MODULE.ASSIGNMENT_PENDING';
@@ -79,8 +83,8 @@
                 }
 
                 function _homeworkCB(){
-                     _getStudentStorage().then(function(studentStorage){
-                         studentStorage.get(HW_POPUP_TIMEOUT).then(function(hwPopupTimeout){
+                    _getGlobalStorage().then(function(globalStorage){
+                        globalStorage.get(HW_POPUP_TIMEOUT).then(function(hwPopupTimeout){
                              var lastSeenHWPopup = $window.localStorage.getItem(LOCAL_STORAGE_LAST_SEEN_HW_POPUP);
 
                              if(!lastSeenHWPopup || new Date().getTime() - lastSeenHWPopup > hwPopupTimeout){
