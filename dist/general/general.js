@@ -253,7 +253,7 @@
                             angular.forEach(attrsArray, function (value, key) {
                                 var attrVal;
                                 if (attrs.type === "topic") {
-                                    attrVal = topicNameToAdd;
+                                    attrVal = topicNameToAdd + '-' + attrs.type;
                                 } else {
                                     attrVal = subjectNameToAdd;
                                 }

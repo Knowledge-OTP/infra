@@ -5335,8 +5335,8 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
         'EnumSrv',
         function (EnumSrv) {
             return new EnumSrv.BaseEnum([
-                ['MATH', LiveSessionSubject.MATH, 'math-topic'],
-                ['ENGLISH', LiveSessionSubject.ENGLISH, 'english-topic']
+                ['MATH', LiveSessionSubject.MATH, 'math'],
+                ['ENGLISH', LiveSessionSubject.ENGLISH, 'english']
             ]);
         }
     ]);
@@ -5828,7 +5828,7 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
                             angular.forEach(attrsArray, function (value, key) {
                                 var attrVal;
                                 if (attrs.type === "topic") {
-                                    attrVal = topicNameToAdd;
+                                    attrVal = topicNameToAdd + '-' + attrs.type;
                                 } else {
                                     attrVal = subjectNameToAdd;
                                 }
