@@ -160,7 +160,7 @@
                     function _setDrawMode(drawMode) {
                         switch (drawMode) {
                             case DRAWING_MODES.NONE:
-                             //   eventsManager.cleanQuestionListeners();
+                                eventsManager.cleanQuestionListeners();
                                 drawer.clean();
                                 break;
                             case DRAWING_MODES.VIEW:
@@ -510,7 +510,6 @@
                     EventsManager.prototype.cleanQuestionListeners = function () {
                         this.killMouseEvents();
                         this.killFbListeners();
-                        this.killHoverEvents();
                     };
 
                     EventsManager.prototype.registerDimensionsListener = function (dimensionsRef, onValueCb) {
@@ -529,6 +528,7 @@
 
                     EventsManager.prototype.cleanGlobalListeners = function () {
                         this.killDimensionsListener();
+                        this.killHoverEvents();
                     };
 
                     function _reloadCanvas() {

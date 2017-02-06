@@ -14338,7 +14338,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     function _setDrawMode(drawMode) {
                         switch (drawMode) {
                             case DRAWING_MODES.NONE:
-                             //   eventsManager.cleanQuestionListeners();
+                                eventsManager.cleanQuestionListeners();
                                 drawer.clean();
                                 break;
                             case DRAWING_MODES.VIEW:
@@ -14688,7 +14688,6 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     EventsManager.prototype.cleanQuestionListeners = function () {
                         this.killMouseEvents();
                         this.killFbListeners();
-                        this.killHoverEvents();
                     };
 
                     EventsManager.prototype.registerDimensionsListener = function (dimensionsRef, onValueCb) {
@@ -14707,6 +14706,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                     EventsManager.prototype.cleanGlobalListeners = function () {
                         this.killDimensionsListener();
+                        this.killHoverEvents();
                     };
 
                     function _reloadCanvas() {
