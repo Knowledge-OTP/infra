@@ -182,8 +182,8 @@
         'EnumSrv',
         function (EnumSrv) {
             return new EnumSrv.BaseEnum([
-                ['MATH', LiveSessionSubject.MATH, 'math'],
-                ['ENGLISH', LiveSessionSubject.ENGLISH, 'english']
+                ['MATH', LiveSessionSubject.MATH, 'math-topic'],
+                ['ENGLISH', LiveSessionSubject.ENGLISH, 'english-topic']
             ]);
         }
     ]);
