@@ -790,6 +790,10 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                     return studentStorage;
                 }
 
+                function _getGlobalStorage() {
+                    return InfraConfigSrv.getGlobalStorage();
+                }
+
                 function _notCompletedHomeworkHandler(homeworkObj) {
                     var popupTitle = 'ASSIGN_MODULE.ASSIGNMENT_AVAILABLE';
                     var popupContent = 'ASSIGN_MODULE.ASSIGNMENT_PENDING';
@@ -823,7 +827,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
                 }
 
                 function _homeworkCB(){
-                     _getStudentStorage().then(function(studentStorage){
+                    _getGlobalStorage().then(function(studentStorage){
                          studentStorage.get(HW_POPUP_TIMEOUT).then(function(hwPopupTimeout){
                              var lastSeenHWPopup = $window.localStorage.getItem(LOCAL_STORAGE_LAST_SEEN_HW_POPUP);
 
