@@ -561,8 +561,8 @@
                 }
 
                 function _homeworkCB(){
-                    _getGlobalStorage().then(function(studentStorage){
-                         studentStorage.get(HW_POPUP_TIMEOUT).then(function(hwPopupTimeout){
+                    _getGlobalStorage().then(function(globalStorage){
+                        globalStorage.get(HW_POPUP_TIMEOUT).then(function(hwPopupTimeout){
                              var lastSeenHWPopup = $window.localStorage.getItem(LOCAL_STORAGE_LAST_SEEN_HW_POPUP);
 
                              if(!lastSeenHWPopup || new Date().getTime() - lastSeenHWPopup > hwPopupTimeout){
