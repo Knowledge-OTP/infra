@@ -15,6 +15,13 @@
         .config(function (znkChatDataSrvProvider, PresenceServiceProvider) {
             'ngInject';
 
+            localStorage.setItem('email','van_damme@zinkerz.com');
+            localStorage.setItem('password','123123');
+            localStorage.setItem('dataDbPath','https://sat-dev.firebaseio.com/');
+            localStorage.setItem('studentPath','/sat_app');
+            localStorage.setItem('teacherPath','/sat_dashboard');
+
+
             var chatPaths = {
                 chatPath: 'chats',
                 chatsUsersGuids: 'users/$$uid/chats',
@@ -42,9 +49,12 @@
             PresenceServiceProvider.setAuthServiceName('AuthService');
 
         })
-        .controller('ctrl', function ($scope) {
-            $scope.localUser = {
-                uid: 'simplelogin:12333',
+        .run(function ($rootScope, AuthService) {
+            'ngInject';
+            var authData = AuthService.getAuth();
+
+            $rootScope.localUser = {
+                uid: authData.uid,
                 isTeacher: false
             };
         });

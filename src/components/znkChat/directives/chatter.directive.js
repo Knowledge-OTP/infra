@@ -58,7 +58,10 @@
                                 znkChatSrv.getLastSeenMessage(chatGuid, scope.localUser.uid).then(function (lastSeenMessage) {
                                     scope.chatterObj.chatGuid = chatGuid;
                                     scope.chatterObj.lastSeenMessage = lastSeenMessage;
-                                    scope.setFirstChatter(scope.chatterObj);
+                                    if(scope.setFirstChatter()){
+                                        scope.setFirstChatter()(scope.chatterObj);
+                                    }
+
                                     _startListenToMessages(chatGuid);
                                 });
                             });
