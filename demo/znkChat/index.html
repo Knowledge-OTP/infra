@@ -16,7 +16,7 @@
 }
 
 </style>
-<body ng-app="demo" style="background-color: #3f51b2;" ng-controller="ctrl">
+<body ng-app="demo" style="background-color: #3f51b2;" >
 
 <!-- bower:js -->
 <script src="angular/angular.js"></script>
@@ -47,7 +47,7 @@
 <script src="env.service.js"></script>
 
 
-<div class="chat-wrapper">
+<div class="chat-wrapper" ng-if="localUser">
     <znk-chat local-user="localUser"></znk-chat>
 </div>
 

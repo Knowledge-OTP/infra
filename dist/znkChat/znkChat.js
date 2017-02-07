@@ -252,7 +252,10 @@
                                 znkChatSrv.getLastSeenMessage(chatGuid, scope.localUser.uid).then(function (lastSeenMessage) {
                                     scope.chatterObj.chatGuid = chatGuid;
                                     scope.chatterObj.lastSeenMessage = lastSeenMessage;
-                                    scope.setFirstChatter(scope.chatterObj);
+                                    if(scope.setFirstChatter()){
+                                        scope.setFirstChatter()(scope.chatterObj);
+                                    }
+
                                     _startListenToMessages(chatGuid);
                                 });
                             });
@@ -821,7 +824,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "         ng-if=\"d.chatData.support && d.chatData.support.uid\"\n" +
     "         ng-class=\"{'selected-chatter': d.chatData.support.isActive}\">\n" +
     "        <chatter\n" +
-    "            set-first-chatter=\"d.selectChatter(d.chatData.support)\"\n" +
+    "            set-first-chatter=\"!d.chatData.chatParticipantsArr || d.chatData.chatParticipantsArr.length === 0 ?  d.selectChatter : null\"\n" +
     "            chat-data=\"d.chatData\"\n" +
     "            local-user=\"d.chatData.localUser\"\n" +
     "            local-user-chats-guids-arr=\"d.chatData.localUserChatsGuidsArr\"\n" +
@@ -835,7 +838,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "                 ng-click=\"d.selectChatter(chatter)\"\n" +
     "                 ng-class=\"{'selected-chatter': chatter.isActive}\">\n" +
     "                <chatter\n" +
-    "                    set-first-chatter=\"$index === 0 && (!d.chatData.support || !d.chatData.support.uid) ? d.selectChatter(chatter) : null\"\n" +
+    "                    set-first-chatter=\"$index === 0  ? d.selectChatter : null\"\n" +
     "                    chat-data=\"d.chatData\"\n" +
     "                    local-user=\"d.chatData.localUser\"\n" +
     "                    local-user-chats-guids-arr=\"d.chatData.localUserChatsGuidsArr\"\n" +
