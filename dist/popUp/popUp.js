@@ -247,9 +247,13 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
     "");
   $templateCache.put("components/popUp/svg/info-message-icon.svg",
     "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
-    "	 viewBox=\"-1062 567 176.2 162.6\" style=\"enable-background:new -1062 567 176.2 162.6;\" xml:space=\"preserve\">\n" +
+    "	 viewBox=\"-1062 567 176.2 162.6\" style=\"enable-background:new -1062 567 176.2 162.6;\" xml:space=\"preserve\"\n" +
+    "     class=\"info-message-icon\">\n" +
     "<style type=\"text/css\">\n" +
-    "	.st0{fill:none;enable-background:new    ;}\n" +
+    "	info-message-icon .st0{\n" +
+    "    fill:none;\n" +
+    "    enable-background:new;\n" +
+    "    }\n" +
     "</style>\n" +
     "<path class=\"st0\" d=\"M-454,182.8\"/>\n" +
     "<g>\n" +
