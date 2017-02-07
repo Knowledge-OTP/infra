@@ -164,7 +164,7 @@
 
             PopUpSrv.info = function info(title,content){
                 var btn = new BaseButton('OK',null,'ok', undefined, true);
-                return basePopup('warning-popup','popup-correct',title || '',content,[btn]);
+                return basePopup('popup-info','popup-info-icon',title || '',content,[btn]);
             };
 
             PopUpSrv.warning = function warning(title,content,acceptBtnTitle,cancelBtnTitle){
