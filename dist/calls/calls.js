@@ -8,7 +8,9 @@
         'znk.infra.enum',
         'ngMaterial',
         'znk.infra.svgIcon',
-        'znk.infra.callsModals'
+        'znk.infra.callsModals',
+        'znk.infra.utility',
+        'znk.infra.znkTooltip'
     ]);
 })(angular);
 
@@ -32,39 +34,58 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.calls')
-        .config(["WebcallSrvProvider", "ENV", function (WebcallSrvProvider, ENV) {
-            'ngInject';
-            WebcallSrvProvider.setCallCred({
-                username: ENV.plivoUsername,
-                password: ENV.plivoPassword
-            });
-        }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.calls').component('callBtn', {
             templateUrl: 'components/calls/directives/callBtn/callBtn.template.html',
             require: {
                 parent: '?^ngModel'
             },
             controllerAs: 'vm',
-            controller: ["CallsSrv", "CallsBtnSrv", "CallsErrorSrv", "CallsBtnStatusEnum", "$log", "$scope", "CALL_UPDATE", function (CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope, CALL_UPDATE) {
+            controller: ["$translate", "CallsSrv", "CallsBtnSrv", "CallsErrorSrv", "CallsBtnStatusEnum", "$log", "$scope", "CALL_UPDATE", "ENV", function ($translate, CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope,
+                                  CALL_UPDATE, ENV) {
                 var vm = this;
                 var receiverId;
-
                 var isPendingClick = false;
+                var isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
+                var isOffline;
 
                 vm.callBtnEnum = CallsBtnStatusEnum;
 
-                function _changeBtnState(state) {
-                    vm.callBtnState = state;
+                var translateNamespace = 'AUDIO_CALLS';
+
+                var loadTranslations = $translate([
+                    translateNamespace + '.' + 'CALL_STUDENT',
+                    translateNamespace + '.' + 'CALL_TEACHER',
+                    translateNamespace + '.' + 'END_CALL',
+                    translateNamespace + '.' + 'OFFLINE'
+                ]);
+
+                function _changeTooltipTranslation(state) {
+                    return loadTranslations.then(function (translation) {
+                        var translatedStrings = {
+                            CALL_STUDENT: translation[translateNamespace + '.' + 'CALL_STUDENT'],
+                            CALL_TEACHER: translation[translateNamespace + '.' + 'CALL_TEACHER'],
+                            END_CALL: translation[translateNamespace + '.' + 'END_CALL'],
+                            OFFLINE: translation[translateNamespace + '.' + 'OFFLINE']
+                        };
+                        switch(state) {
+                            case CallsBtnStatusEnum.OFFLINE_BTN.enum:
+                                return translatedStrings.OFFLINE;
+                            case CallsBtnStatusEnum.CALL_BTN.enum:
+                                return isTeacher? translatedStrings.CALL_STUDENT : translatedStrings.CALL_TEACHER;
+                            case CallsBtnStatusEnum.CALLED_BTN.enum:
+                                return translatedStrings.END_CALL;
+                        }
+                    }).catch(function (err) {
+                        $log.debug('Could not fetch translation', err);
+                    });
                 }
 
-                function _isStateNotOffline() {
-                    return vm.callBtnState !== CallsBtnStatusEnum.OFFLINE_BTN.enum;
+                function _changeBtnState(state) {
+                    vm.callBtnState = state;
+                    _changeTooltipTranslation(state).then(function (tooltipText) {
+                        vm.tooltipTranslate = tooltipText;
+                    });
+
                 }
 
                 function _isNoPendingClick() {
@@ -76,17 +97,23 @@
                 }
 
                 function _initializeBtnStatus(receiverId) {
-                    CallsBtnSrv.initializeBtnStatus(receiverId).then(function (status) {
-                        if (status) {
+                    return CallsBtnSrv.initializeBtnStatus(receiverId).then(function (status) {
+                        if (isOffline) {
+                            _changeBtnState(CallsBtnStatusEnum.OFFLINE_BTN.enum);
+                        } else if (status) {
                             _changeBtnState(status);
                         }
+
+                        return status;
                     });
                 }
 
                 $scope.$on(CALL_UPDATE, function (e, callsData) {
                     if (callsData.status) {
                         CallsBtnSrv.updateBtnStatus(receiverId, callsData).then(function (status) {
-                            if (status) {
+                            if (isOffline) {
+                                _changeBtnState(CallsBtnStatusEnum.OFFLINE_BTN.enum);
+                            } else if (status) {
                                 _changeBtnState(status);
                             }
                         });
@@ -102,17 +129,28 @@
                         ngModelCtrl.$render = function() {
                             var modelValue = ngModelCtrl.$modelValue;
                             if (modelValue && angular.isDefined(modelValue.isOffline) && modelValue.receiverId) {
-                                var curBtnStatus = modelValue.isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
+                                isOffline = modelValue.isOffline;
+                                var curBtnStatus = isOffline ? CallsBtnStatusEnum.OFFLINE_BTN.enum : CallsBtnStatusEnum.CALL_BTN.enum;
                                 receiverId = modelValue.receiverId;
+                                hangCall(modelValue.isOffline);
                                 _changeBtnState(curBtnStatus);
-                                _initializeBtnStatus(receiverId);
+                                if (curBtnStatus !== CallsBtnStatusEnum.OFFLINE_BTN.enum) {
+                                    _initializeBtnStatus(receiverId);
+                                }
                             }
                         };
                     }
                 };
 
+                function hangCall(isOffline) {
+                    if (isOffline && vm.callBtnState === CallsBtnStatusEnum.CALLED_BTN.enum) {
+                        CallsSrv.disconnectCall();
+                        _changeBtnState(CallsBtnStatusEnum.OFFLINE_BTN.enum);
+                    }
+                }
+
                 vm.clickBtn = function() {
-                    if (_isStateNotOffline() && _isNoPendingClick()) {
+                    if (!isOffline && _isNoPendingClick()) {
                         _clickStatusSetter(true);
 
                         CallsSrv.callsStateChanged(receiverId).then(function (data) {
@@ -408,6 +446,20 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.calls')
+        .run(["ENV", "WebcallSrv", function (ENV, WebcallSrv) {
+            'ngInject';
+            WebcallSrv.setCallCredRunTime({
+                username: ENV.plivoUsername,
+                password: ENV.plivoPassword
+            });
+            WebcallSrv.activate();
+        }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.calls').service('CallsBtnSrv',
         ["CallsStatusEnum", "CallsBtnStatusEnum", "UserProfileService", "$log", "CallsDataGetterSrv", function (CallsStatusEnum, CallsBtnStatusEnum, UserProfileService, $log, CallsDataGetterSrv) {
             'ngInject';
@@ -415,20 +467,17 @@
             var self = this;
 
              this.getBtnStatus = function _getBtnStatus(callStatus) {
-                var status;
-                switch(callStatus) {
-                    case CallsStatusEnum.PENDING_CALL.enum:
-                        status = CallsBtnStatusEnum.CALLED_BTN.enum;
-                        break;
-                    case CallsStatusEnum.DECLINE_CALL.enum:
-                        status = CallsBtnStatusEnum.CALL_BTN.enum;
-                        break;
-                    case CallsStatusEnum.ACTIVE_CALL.enum:
-                        status = CallsBtnStatusEnum.CALLED_BTN.enum;
-                        break;
-                    case CallsStatusEnum.ENDED_CALL.enum:
-                        status = CallsBtnStatusEnum.CALL_BTN.enum;
-                }
+                 var status;
+                 if (callStatus) {
+                     switch(callStatus) {
+                         case CallsStatusEnum.ACTIVE_CALL.enum:
+                             status = CallsBtnStatusEnum.CALLED_BTN.enum;
+                             break;
+                         default:
+                             status = CallsBtnStatusEnum.CALL_BTN.enum;
+                     }
+                 }
+                 
                 return status;
             };
 
@@ -816,7 +865,8 @@
                 isEnabled = _isEnabled;
             };
 
-            this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "$q", "CALL_UPDATE", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log, $rootScope, $injector, $q, CALL_UPDATE) {
+            this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "$q", "CALL_UPDATE", "CallsActionStatusEnum", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log,
+                                  $rootScope, $injector, $q, CALL_UPDATE, CallsActionStatusEnum) {
                 'ngInject';
                 var registeredCbToCurrUserCallStateChange = [];
                 var currUserCallState;
@@ -879,7 +929,23 @@
                                     break;
                                 case CallsStatusEnum.ACTIVE_CALL.enum:
                                     $log.debug('call active');
-                                    if (!isCurrentUserInitiatedCall(currUid)) {
+                                    InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
+                                        var callPath = 'calls/' + callsData.guid;
+                                        var adapterRef = globalStorage.adapter.getRef(callPath);
+                                        adapterRef.onDisconnect().update({
+                                            isDisconnect: true
+                                        });
+                                    });
+                                    if (callsData.isDisconnect){
+                                        $log.debug('call disconnected');
+                                        var userCallData = {
+                                            action: CallsActionStatusEnum.DISCONNECT_ACTION.enum,
+                                            callerId: callsData.callerId,
+                                            newReceiverId: callsData.receiverId,
+                                            newCallGuid: callsData.guid
+                                        };
+                                        getCallsSrv().forceDisconnect(userCallData);
+                                    } else if (!isCurrentUserInitiatedCall(currUid)) {
                                         CallsUiSrv.closeModal();
                                         // show outgoing call modal WITH the ANSWERED TEXT, wait 2 seconds and close the modal, show the ActiveCallDRV
                                     } else {
@@ -1013,7 +1079,8 @@
     'use strict';
 
     angular.module('znk.infra.calls').service('CallsSrv',
-        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "CallsDataSetterSrv", "WebcallSrv", "CallsEventsSrv", "CallsStatusEnum", "CallsActionStatusEnum", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv, CallsEventsSrv, CallsStatusEnum, CallsActionStatusEnum) {
+        ["UserProfileService", "$q", "UtilitySrv", "ENV", "$log", "CallsDataGetterSrv", "CallsDataSetterSrv", "WebcallSrv", "CallsEventsSrv", "CallsStatusEnum", "CallsActionStatusEnum", function (UserProfileService, $q, UtilitySrv, ENV, $log, CallsDataGetterSrv, CallsDataSetterSrv, WebcallSrv,
+                  CallsEventsSrv, CallsStatusEnum, CallsActionStatusEnum) {
             'ngInject';
 
             var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';//  to lower case was added in order to
@@ -1217,6 +1284,11 @@
             };
 
             this.isUserInActiveCall = _isUserInActiveCall;
+
+            this.forceDisconnect = function (userCallData) {
+                _disconnectCall(userCallData);
+                _webCallHang();
+            };
         }]
     );
 })(angular);
@@ -1309,6 +1381,9 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     "        class=\"etutoring-phone-icon\"\n" +
     "        name=\"calls-etutoring-phone-icon\">\n" +
     "    </svg-icon>\n" +
+    "    <md-tooltip znk-tooltip class=\"md-fab\">\n" +
+    "        {{vm.tooltipTranslate}}\n" +
+    "    </md-tooltip>\n" +
     "</button>\n" +
     "");
   $templateCache.put("components/calls/modals/templates/baseCallsModal.template.html",

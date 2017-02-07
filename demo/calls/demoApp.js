@@ -1,6 +1,8 @@
 (function (angular) {
     'use strict';
 
+    var isTeacher = localStorage.getItem('isTeacher');
+
     angular.module('demo', [
         'demoEnv',
         'znk.infra.calls',
@@ -8,14 +10,15 @@
         'ngMaterial',
         'pascalprecht.translate',
         'znk.infra.filters',
-        'znk.infra.userContext'
+        'znk.infra.userContext',
+        'znk.infra.presence'
     ])
-        .config(function (CallsModalServiceProvider, CallsUiSrvProvider) {
+        .config(function (PresenceServiceProvider, CallsModalServiceProvider, CallsUiSrvProvider) {
             'ngInject';
 
-            CallsModalServiceProvider.setBaseTemplatePath('components/calls/modals/templates/baseCallsModal.template.html');
+            PresenceServiceProvider.setAuthServiceName('AuthService');
 
-            var isTeacher = localStorage.getItem('isTeacher');
+            CallsModalServiceProvider.setBaseTemplatePath('components/calls/modals/templates/baseCallsModal.template.html');
 
             localStorage.setItem('znkData', 'https://act-dev.firebaseio.com/');
             localStorage.setItem('znkStudentPath', '/act_app');
@@ -36,6 +39,27 @@
             };
             CallsUiSrvProvider.setCalleeNameFnGetter(fn);
         })
+        .decorator('ENV', function ($delegate) {
+            'ngInject';
+            var isTeacher = localStorage.getItem('isTeacher');
+            $delegate.mediaEndpoint = '//dfz02hjbsqn5e.cloudfront.net';
+            $delegate.plivoUsername = 'ZinkerzDev160731091034';
+            $delegate.plivoPassword = 'zinkerz$9999';
+            if(isTeacher) {
+                // teacher
+                $delegate.firebaseAppScopeName = "act_dashboard";
+                $delegate.appContext = 'dashboard';
+                $delegate.studentAppName = 'act_app';
+                $delegate.dashboardAppName = 'act_dashboard';
+            } else {
+                // student
+                $delegate.firebaseAppScopeName = "act_app";
+                $delegate.appContext = 'student';
+                $delegate.studentAppName = 'act_app';
+                $delegate.dashboardAppName = 'act_dashboard';
+            }
+            return $delegate;
+        })
         .run(function ($rootScope) {
             /**
              * to work with storage on act-dev add this to localStorage:
@@ -46,14 +70,11 @@
             'ngInject';
 
             $rootScope.offline = { isOffline: true, receiverId: 1 };
-
             $rootScope.call = { isOffline: false, receiverId: '21794e2b-3051-4016-8491-b3fe70e8212d' };
             $rootScope.called = { isOffline: false, receiverId: 'eebe2b53-08b7-4296-bcfd-62b69b531473' };
         })
-        .controller('demoCtrl', function ($scope, CallsUiSrv, $rootScope, ActivePanelSrv) {
+        .controller('demoCtrl', function ($scope, CallsUiSrv, $rootScope) {
             'ngInject';
-
-            ActivePanelSrv.init();
 
             $scope.openIncomingCallModal = function() {
                 var scope = $rootScope.$new();
@@ -75,24 +96,5 @@
                 };
                 CallsUiSrv.showErrorModal(CallsUiSrv.modals.ERROR, modalData);
             };
-        })
-        .decorator('ENV', function ($delegate) {
-            'ngInject';
-            var isTeacher = localStorage.getItem('isTeacher');
-            $delegate.mediaEndpoint = '//dfz02hjbsqn5e.cloudfront.net';
-            if(isTeacher) {
-                // teacher
-                $delegate.firebaseAppScopeName = "act_dashboard";
-                $delegate.appContext = 'dashboard';
-                $delegate.studentAppName = 'act_app';
-                $delegate.dashboardAppName = 'act_dashboard';
-            } else {
-                // student
-                $delegate.firebaseAppScopeName = "act_app";
-                $delegate.appContext = 'student';
-                $delegate.studentAppName = 'act_app';
-                $delegate.dashboardAppName = 'act_dashboard';
-            }
-            return $delegate;
         });
 })(angular);

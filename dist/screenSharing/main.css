@@ -277,56 +277,10 @@ $blueBG8: #75cbe8;
 .screen-sharing-ph {
   position: relative;
   z-index: 10; }
-  .screen-sharing-ph screen-sharing .close-icon-wrapper {
-    width: 40px;
-    height: 40px;
-    position: fixed;
-    top: 0;
-    right: 0;
-    border-bottom-left-radius: 15px;
-    text-align: center;
-    line-height: 42px;
-    cursor: pointer; }
-  .screen-sharing-ph screen-sharing .viewer-state .close-icon-wrapper {
-    background: #0a9bad; }
-  .screen-sharing-ph screen-sharing .sharer-state .close-icon-wrapper {
-    background: #ff931e; }
   .screen-sharing-ph screen-sharing .viewer-state-container {
     position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    border: 5px solid #0a9bad;
+    top: 5px;
+    right: 5px;
+    bottom: 5px;
+    left: 5px;
     background: rgba(15, 15, 15, 0.85); }
-  .screen-sharing-ph screen-sharing .sharer-state-container .square-side {
-    background: #ff931e;
-    position: fixed; }
-    .screen-sharing-ph screen-sharing .sharer-state-container .square-side.top, .screen-sharing-ph screen-sharing .sharer-state-container .square-side.bottom {
-      height: 5px;
-      right: 0;
-      left: 0; }
-    .screen-sharing-ph screen-sharing .sharer-state-container .square-side.right, .screen-sharing-ph screen-sharing .sharer-state-container .square-side.left {
-      width: 5px;
-      top: 0;
-      bottom: 0; }
-    .screen-sharing-ph screen-sharing .sharer-state-container .square-side.top {
-      top: 0; }
-    .screen-sharing-ph screen-sharing .sharer-state-container .square-side.right {
-      right: 0; }
-    .screen-sharing-ph screen-sharing .sharer-state-container .square-side.bottom {
-      bottom: 0; }
-    .screen-sharing-ph screen-sharing .sharer-state-container .square-side.left {
-      left: 0; }
-  .screen-sharing-ph screen-sharing .sharer-state-container .eye-wrapper {
-    background: #ff931e;
-    width: 52px;
-    text-align: center;
-    border-radius: 50%;
-    height: 30px;
-    box-sizing: border-box;
-    position: fixed;
-    top: -11px;
-    right: 50%;
-    margin-right: -26px;
-    padding-top: 10px; }

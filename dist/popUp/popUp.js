@@ -22,8 +22,10 @@
             var PopUpSrv = {};
 
             var $body = angular.element($document[0].body);
-            var popUpsPlaceHolderElement = angular.element('<div class="znk-popup"></div>');
-            $body.append(popUpsPlaceHolderElement);
+            if (!angular.element($body[0].querySelector('.znk-popup')).length) {
+                var popUpsPlaceHolderElement = angular.element('<div class="znk-popup"></div>');
+                $body.append(popUpsPlaceHolderElement);
+            }
 
             var popupInstance,
                 popupDefer;
@@ -103,7 +105,11 @@
                             var action = reject ? 'reject' : 'resolve';
                             reason = reason || 'close';
                             if(popupDefer[action]){
-                                popupDefer[action](reason);
+                                popupDefer[action](reason);  // todo - for some reason this function(reason) never executed.
+                                if(angular.isFunction(reason)){ //this works good.
+                                    reason();
+                                }
+
                             }
                             popupDefer = null;
                         }
@@ -151,6 +157,8 @@
                 return btn;
             }
 
+            PopUpSrv.basePopup = basePopup;
+
             PopUpSrv.error = function error(title,content){
                 var btn = new BaseButton('OK',null,'ok', undefined, true);
                 return basePopup('error-popup','popup-exclamation-mark',title || 'OOOPS...',content,[btn]);
@@ -167,6 +175,11 @@
             PopUpSrv.success = function success(title,content){
                 var btn = new BaseButton('OK',null,'ok', undefined, true);
                 return basePopup('success-popup','popup-correct',title || '',content,[btn]);
+            };
+
+            PopUpSrv.info = function info(title,content){
+                var btn = new BaseButton('OK',null,'ok', undefined, true);
+                return basePopup('warning-popup','popup-correct',title || '',content,[btn]);
             };
 
             PopUpSrv.warning = function warning(title,content,acceptBtnTitle,cancelBtnTitle){

@@ -9,13 +9,13 @@
 <svg-icon name="znk-exercise-pencil"
           ng-click="d.toolClicked(d.TOOLS.PENCIL)"
           ng-class="{
-            active:d.drawMode === d.DRAWING_MODES.VIEW_DRAW
+            active:(d.drawMode === d.DRAWING_MODES.VIEW_DRAW) && (d.drawMode !== d.DRAWING_MODES.NONE)
           }">
 </svg-icon>
 <svg-icon name="znk-exercise-eraser"
           ng-click="d.toolClicked(d.TOOLS.ERASER)"
           ng-class="{
-            active:d.drawMode === d.DRAWING_MODES.VIEW_ERASE
+            active:(d.drawMode === d.DRAWING_MODES.VIEW_ERASE) && (d.drawMode !== d.DRAWING_MODES.NONE)
           }">
 </svg-icon>
 <svg-icon name="znk-exercise-remove"

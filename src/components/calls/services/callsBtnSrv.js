@@ -8,20 +8,17 @@
             var self = this;
 
              this.getBtnStatus = function _getBtnStatus(callStatus) {
-                var status;
-                switch(callStatus) {
-                    case CallsStatusEnum.PENDING_CALL.enum:
-                        status = CallsBtnStatusEnum.CALLED_BTN.enum;
-                        break;
-                    case CallsStatusEnum.DECLINE_CALL.enum:
-                        status = CallsBtnStatusEnum.CALL_BTN.enum;
-                        break;
-                    case CallsStatusEnum.ACTIVE_CALL.enum:
-                        status = CallsBtnStatusEnum.CALLED_BTN.enum;
-                        break;
-                    case CallsStatusEnum.ENDED_CALL.enum:
-                        status = CallsBtnStatusEnum.CALL_BTN.enum;
-                }
+                 var status;
+                 if (callStatus) {
+                     switch(callStatus) {
+                         case CallsStatusEnum.ACTIVE_CALL.enum:
+                             status = CallsBtnStatusEnum.CALLED_BTN.enum;
+                             break;
+                         default:
+                             status = CallsBtnStatusEnum.CALL_BTN.enum;
+                     }
+                 }
+                 
                 return status;
             };
 

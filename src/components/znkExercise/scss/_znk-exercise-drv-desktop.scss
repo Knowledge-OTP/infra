@@ -76,7 +76,7 @@ znk-exercise.desktop {
             }
         }
 
-        .done-btn-wrap {
+        .done-btn-wrap, .review-btn-wrap {
             z-index: 3;
             width: 160px;
             position: absolute;
@@ -84,7 +84,7 @@ znk-exercise.desktop {
             bottom: 10px;
             height: 37px;
 
-            .done-btn {
+            .done-btn, .review-btn {
                 width: 100%;
                 height: 100%;
                 background: #ff931e;

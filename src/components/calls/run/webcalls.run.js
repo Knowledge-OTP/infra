@@ -2,11 +2,12 @@
     'use strict';
 
     angular.module('znk.infra.calls')
-        .config(function (WebcallSrvProvider, ENV) {
+        .run(function (ENV, WebcallSrv) {
             'ngInject';
-            WebcallSrvProvider.setCallCred({
+            WebcallSrv.setCallCredRunTime({
                 username: ENV.plivoUsername,
                 password: ENV.plivoPassword
             });
+            WebcallSrv.activate();
         });
 })(angular);

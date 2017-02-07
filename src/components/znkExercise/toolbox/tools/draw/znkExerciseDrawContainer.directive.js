@@ -22,7 +22,9 @@
                         // sometimes position relative adds an unnecessary scrollbar. hide it
                         element.css('overflow-x', 'hidden');
                     }
-                    ZnkExerciseDrawSrv.addCanvasToElement(element,question);
+                    if (ZnkExerciseDrawSrv.addCanvasToElement) {
+                        ZnkExerciseDrawSrv.addCanvasToElement(element,question);
+                    }
                 }
             };
 

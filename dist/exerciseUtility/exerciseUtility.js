@@ -77,6 +77,12 @@
 
 (function (angular) {
     'use strict';
+    var exerciseParentTypeConst = {
+        WORKOUT: 1,
+        TUTORIAL: 2,
+        EXAM: 3,
+        MODULE: 4
+    };
 
     angular.module('znk.infra.exerciseUtility').factory('ExerciseParentEnum', [
         'EnumSrv',
@@ -86,6 +92,23 @@
                 ['TUTORIAL', 2, 'tutorial'],
                 ['EXAM', 3, 'exam'],
                 ['MODULE', 4, 'module']
+            ]);
+        }
+    ])
+    .constant('exerciseParentTypeConst', exerciseParentTypeConst);
+
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.exerciseUtility').factory('ExerciseReviewStatusEnum', [
+        'EnumSrv',
+        function (EnumSrv) {
+            return new EnumSrv.BaseEnum([
+                ['YES', 1, 'yes'],
+                ['NO', 2, 'no'],
+                ['DONE_TOGETHER', 3, 'done together']
             ]);
         }
     ]);
@@ -148,6 +171,27 @@
 (function (angular) {
     'use strict';
 
+    var LiveSessionSubject = {
+        MATH: 1,
+        ENGLISH: 2
+    };
+
+    angular.module('znk.infra.exerciseUtility').constant('LiveSessionSubjectConst', LiveSessionSubject);
+
+    angular.module('znk.infra.exerciseUtility').factory('LiveSessionSubjectEnum', [
+        'EnumSrv',
+        function (EnumSrv) {
+            return new EnumSrv.BaseEnum([
+                ['MATH', LiveSessionSubject.MATH, 'math'],
+                ['ENGLISH', LiveSessionSubject.ENGLISH, 'english']
+            ]);
+        }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.exerciseUtility').factory('QuestionFormatEnum', [
         'EnumSrv',
         function (EnumSrv) {
@@ -180,7 +224,9 @@
         ENGLISH: 5,
         SCIENCE: 6,
         VERBAL: 7,
-        ESSAY: 8
+        ESSAY: 8,
+        MATHLVL1: 9,
+        MATHLVL2: 10
     };
 
     angular.module('znk.infra.exerciseUtility').constant('SubjectEnumConst', subjectEnum);
@@ -198,7 +244,9 @@
                 ['ENGLISH', subjectEnum.ENGLISH, 'english'],
                 ['SCIENCE', subjectEnum.SCIENCE, 'science'],
                 ['VERBAL', subjectEnum.VERBAL, 'verbal'],
-                ['ESSAY', subjectEnum.ESSAY, 'essay']
+                ['ESSAY', subjectEnum.ESSAY, 'essay'],
+                ['MATHLVL1', subjectEnum.MATHLVL1, 'mathlvl1'],
+                ['MATHLVL2', subjectEnum.MATHLVL2, 'mathlvl2']
             ]);
 
             return SubjectEnum;

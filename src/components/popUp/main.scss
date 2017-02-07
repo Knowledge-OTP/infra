@@ -35,14 +35,13 @@
                     margin-right: -28.5px;
                     @include flex-middle;
 
-                    .exclamation-mark{
-                        svg{
-                            width: 8px;
-
-                            path{
-                                fill: $bgColor6;
-                            }
-                        }
+                    .exclamation-mark, .popup-exclamation-mark {
+                        svg {
+                          @include dimension(8px, auto);
+                          path {
+                            fill: $bgColor6;
+                          }
+                      }
                     }
 
                     .correct{
@@ -103,6 +102,7 @@
                         @include flex-middle;
                         @include dimension(150px, 34px);
                         background: $bgColor6;
+                        outline: none;
                     }
                 }
             }
@@ -173,9 +173,8 @@
 
                 .content{
                     margin:{
-                        top: 0
+                        top: 0;
                     }
-                ;
                 }
             }
         }

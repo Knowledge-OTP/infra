@@ -8,6 +8,8 @@
         'znk.infra.enum',
         'ngMaterial',
         'znk.infra.svgIcon',
-        'znk.infra.callsModals'
+        'znk.infra.callsModals',
+        'znk.infra.utility',
+        'znk.infra.znkTooltip'
     ]);
 })(angular);

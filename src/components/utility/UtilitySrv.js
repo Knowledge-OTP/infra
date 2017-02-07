@@ -36,6 +36,16 @@
                 return arr;
             };
 
+            UtilitySrv.object.getKeyByValue = function(obj, value) {
+                for( var prop in obj ) {
+                    if( obj.hasOwnProperty( prop ) ) {
+                        if( obj[ prop ] === value ) {
+                            return prop;
+                        }
+                    }
+                }
+            };
+
             //array utility srv
             UtilitySrv.array = {};
 
@@ -48,6 +58,17 @@
                     map[item[keyProp]] = item;
                 });
                 return map;
+            };
+
+            UtilitySrv.array.sortByField = function(sortField){
+                return function (arrA, arrB) {
+                    if (arrA[sortField] > arrB[sortField]) {
+                        return -1;
+                    } else if (arrA[sortField] === arrB[sortField]) {
+                        return 0;
+                    }
+                    return 1;
+                };
             };
 
             UtilitySrv.fn = {};
