@@ -250,7 +250,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
     "	 viewBox=\"-1062 567 176.2 162.6\" style=\"enable-background:new -1062 567 176.2 162.6;\" xml:space=\"preserve\"\n" +
     "     class=\"info-message-icon\">\n" +
     "<style type=\"text/css\">\n" +
-    "	info-message-icon .st0{\n" +
+    "	.info-message-icon .st0{\n" +
     "    fill:none;\n" +
     "    enable-background:new;\n" +
     "    }\n" +
