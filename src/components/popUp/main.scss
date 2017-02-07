@@ -160,8 +160,11 @@
                 .icon-wrapper{
                     background: $bgColor2;
 
-                    .correct-answer-white{
+                    .popup-correct{
                         @include dimension(37px, 24px);
+                        * {
+                            stroke: #ffffff;
+                        }
                     }
                 }
             }
@@ -192,8 +195,7 @@
         }
     }
 
-
-    .warning-popup{
+    .warning-popup, .popup-info{
         .znk-popup-wrapper{
             .znk-popup-header{
                 background: $bgColor3;
@@ -226,6 +228,22 @@
                     .icon-wrapper{
                         .warning-icon{
                             @include dimension(12px, 46px);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .popup-info{
+        .znk-popup-wrapper{
+            .znk-popup-header{
+                .icon-wrapper{
+                    .popup-info-icon{
+                        @include dimension(30px, 30px);
+                        * {
+                            stroke: #ffffff;
+                            fill: #ffffff;
                         }
                     }
                 }
