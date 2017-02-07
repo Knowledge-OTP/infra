@@ -7,6 +7,9 @@
         .controller('Main', function ($scope, PopUpSrv) {
             $scope.showPopup = function(type){
                 switch (type){
+                    case 'info':
+                        PopUpSrv.info('Information', 'Bla Bla Bla');
+                        break;
                     case 'warning':
                         PopUpSrv.warning('Conformation', 'Bla Bla Bla', 'Accept', 'Cancel');
                         break;
