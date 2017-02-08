@@ -13,6 +13,7 @@
                     }
 
                     var newStats = {};
+                    var newStat;
 
                     var questionsMap = UtilitySrv.array.convertToMap(exercise.questions);
                     results.questionResults.forEach(function (result) {
@@ -20,20 +21,21 @@
                         var categoryIds = {};
                         categoryIds.categoryId = question.categoryId;
                         categoryIds.categoryId2 = question.categoryId2;
-                        var categoryId = question.categoryId;
-                        categoryIds.forEach(function (categoryId) {
+                        // var categoryId = question.categoryId;
+                        angular.forEach(categoryIds, function (categoryId) {
+                            if (angular.isDefined(categoryId)) {
+                                if (isNaN(+categoryId) || categoryId === null) {
+                                    $log.error('StatsEventsHandlerSrv: _eventHandler: bad category id for the following question: ', question.id, categoryId);
+                                    return;
+                                }
 
-                            if (isNaN(+categoryId) || categoryId === null) {
-                                $log.error('StatsEventsHandlerSrv: _eventHandler: bad category id for the following question: ', question.id, categoryId);
-                                return;
+                                if (!newStats[categoryId]) {
+                                    newStats[categoryId] = new StatsSrv.BaseStats();
+                                }
+                                newStat = newStats[categoryId];
                             }
 
-                            if (!newStats[categoryId]) {
-                                newStats[categoryId] = new StatsSrv.BaseStats();
-                            }
-                            var newStat = newStats[categoryId];
-
-                        })
+                        });
                         newStat.totalQuestions++;
 
                         newStat.totalTime += result.timeSpent || 0;
