@@ -355,7 +355,8 @@
                 exerciseResult.questionResults = exercise.questions.map(function (question) {
                     return {
                         questionId: question.id,
-                        categoryId: question.categoryId
+                        categoryId: question.categoryId,
+                        categoryId2: question.categoryId2
                     };
                 });
             }
