@@ -8274,10 +8274,8 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
                         var categoryIds = {};
                         categoryIds.categoryId = question.categoryId;
                         categoryIds.categoryId2 = question.categoryId2;
-                        // var categoryId = question.categoryId;
                         angular.forEach(categoryIds, function (categoryId) {
                             if (angular.isDefined(categoryId)) {
-
                                 if (isNaN(+categoryId) || categoryId === null) {
                                     $log.error('StatsEventsHandlerSrv: _eventHandler: bad category id for the following question: ', question.id, categoryId);
                                     return;

@@ -21,7 +21,6 @@
                         var categoryIds = {};
                         categoryIds.categoryId = question.categoryId;
                         categoryIds.categoryId2 = question.categoryId2;
-                        // var categoryId = question.categoryId;
                         angular.forEach(categoryIds, function (categoryId) {
                             if (angular.isDefined(categoryId)) {
                                 if (isNaN(+categoryId) || categoryId === null) {
