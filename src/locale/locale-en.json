@@ -100,5 +100,8 @@
         "CLOSE": "CLOSE",
         "PlEASE_COMPLETE_ASSIGNMENT": "Please complete this assignment before your next Zinkerz lesson",
         "YOUR_ASSIGNMENT_IS_LATE": "Your assignment is late"
+    },
+    "ZNK_CATEGORY_SUMMARY":{
+        "MASTERY": "mastery"
     }
 }

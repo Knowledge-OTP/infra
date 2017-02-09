@@ -1,0 +1,50 @@
+.category-level-wrap {
+    max-width: 467px;
+
+    div.category-level:nth-child(2n+1) {
+        float: left;
+    }
+
+    div.category-level:nth-child(2n) {
+        float: right;
+    }
+
+    .category-level {
+        @include dimension(200px, 88px);
+        @include display-flex;
+        @include flex-middle;
+        margin-bottom: 20px;
+
+        .icon-wrap {
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .category-data {
+            @include text-style(14px, #757a83, Lato, $regularFontWeight);
+            display: inline-block;
+            text-align: left;
+
+            .category-level-name {
+                max-width: 170px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden;
+                margin-bottom: 10px;
+            }
+
+            .level {
+                font-size: 10px;
+                font-weight: $lightFontWeight;
+                text-align: left;
+                text-transform: uppercase;
+                margin-top: 10px;
+            }
+
+            .progress-wrap {
+                width: 175px;
+                height: 5px;
+            }
+        }
+    }
+}

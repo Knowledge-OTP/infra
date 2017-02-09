@@ -1,0 +1,14 @@
+<div class="category-level-wrap">
+    <div class="category-level"
+         ng-repeat="(key, generalCategory) in vm.generalCategories">
+        <div class="category-data">
+            <div class="category-level-name">{{generalCategory.name}} </div>
+            <div znk-progress-bar
+                 progress-width="{{generalCategory.progress}}"
+                 progress-value="{{generalCategory.progress}}"
+                 show-progress-value="false">
+            </div>
+            <div class="level">{{generalCategory.progress}}% {{'ZNK_CATEGORY_SUMMARY.MASTERY' | translate}}</div>
+        </div>
+    </div>
+</div>
