@@ -23,39 +23,47 @@
         function (exerciseEventsConst, StatsSrv, ExerciseTypeEnum, $log, UtilitySrv) {
             var StatsEventsHandlerSrv = {};
 
-            StatsEventsHandlerSrv.addNewExerciseResult = function(exerciseType, exercise, results){
+            StatsEventsHandlerSrv.addNewExerciseResult = function (exerciseType, exercise, results) {
                 return StatsSrv.isExerciseStatsRecorded(exerciseType, exercise.id).then(function (isRecorded) {
                     if (isRecorded) {
                         return;
                     }
 
                     var newStats = {};
+                    var foundValidCategoryId = false;
+                    var newStat;
 
                     var questionsMap = UtilitySrv.array.convertToMap(exercise.questions);
                     results.questionResults.forEach(function (result) {
                         var question = questionsMap[result.questionId];
-                        var categoryId = question.categoryId;
+                        var categoryIds = {};
+                        categoryIds.categoryId = question.categoryId;
+                        categoryIds.categoryId2 = question.categoryId2;
+                        angular.forEach(categoryIds, function (categoryId) {
+                            if (angular.isDefined(categoryId) && Number.isInteger(+categoryId)) {
+                                foundValidCategoryId = true;
 
-                        if (isNaN(+categoryId) || categoryId === null) {
-                            $log.error('StatsEventsHandlerSrv: _eventHandler: bad category id for the following question: ', question.id, categoryId);
+                                if (!newStats[categoryId]) {
+                                    newStats[categoryId] = new StatsSrv.BaseStats();
+                                }
+                                newStat = newStats[categoryId];
+
+                                newStat.totalQuestions++;
+
+                                newStat.totalTime += result.timeSpent || 0;
+
+                                if (angular.isUndefined(result.userAnswer)) {
+                                    newStat.unanswered++;
+                                } else if (result.isAnsweredCorrectly) {
+                                    newStat.correct++;
+                                } else {
+                                    newStat.wrong++;
+                                }
+                            }
+                        });
+                        if (!foundValidCategoryId) {
+                            $log.error('StatsEventsHandlerSrv: _eventHandler: bad category id for the following question: ', question.id);
                             return;
-                        }
-
-                        if (!newStats[categoryId]) {
-                            newStats[categoryId] = new StatsSrv.BaseStats();
-                        }
-                        var newStat = newStats[categoryId];
-
-                        newStat.totalQuestions++;
-
-                        newStat.totalTime += result.timeSpent || 0;
-
-                        if (angular.isUndefined(result.userAnswer)) {
-                            newStat.unanswered++;
-                        } else if (result.isAnsweredCorrectly) {
-                            newStat.correct++;
-                        } else {
-                            newStat.wrong++;
                         }
                     });
 
