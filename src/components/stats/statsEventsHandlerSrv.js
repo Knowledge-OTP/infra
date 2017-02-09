@@ -23,7 +23,7 @@
                         categoryIds.categoryId = question.categoryId;
                         categoryIds.categoryId2 = question.categoryId2;
                         angular.forEach(categoryIds, function (categoryId) {
-                            if (angular.isDefined(categoryId) && Number.isInteger(+categoryId)) {
+                            if (angular.isDefined(categoryId) && !isNaN(+categoryId)) {
                                 foundValidCategoryId = true;
 
                                 if (!newStats[categoryId]) {
