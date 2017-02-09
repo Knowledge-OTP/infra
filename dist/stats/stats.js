@@ -30,6 +30,7 @@
                     }
 
                     var newStats = {};
+                    var foundInvalidCategoryId = false;
                     var newStat;
 
                     var questionsMap = UtilitySrv.array.convertToMap(exercise.questions);
@@ -41,27 +42,32 @@
                         angular.forEach(categoryIds, function (categoryId) {
                             if (angular.isDefined(categoryId)) {
                                 if (isNaN(+categoryId) || categoryId === null) {
-                                    $log.error('StatsEventsHandlerSrv: _eventHandler: bad category id for the following question: ', question.id, categoryId);
-                                    return;
+                                    foundInvalidCategoryId = true;
                                 }
 
                                 if (!newStats[categoryId]) {
                                     newStats[categoryId] = new StatsSrv.BaseStats();
                                 }
                                 newStat = newStats[categoryId];
+
+                                newStat.totalQuestions++;
+
+                                newStat.totalTime += result.timeSpent || 0;
+
+                                if (angular.isUndefined(result.userAnswer)) {
+                                    newStat.unanswered++;
+                                } else if (result.isAnsweredCorrectly) {
+                                    newStat.correct++;
+                                } else {
+                                    newStat.wrong++;
+                                }
+                            } else {
+                                foundInvalidCategoryId = true;
                             }
-
                         });
-                        newStat.totalQuestions++;
-
-                        newStat.totalTime += result.timeSpent || 0;
-
-                        if (angular.isUndefined(result.userAnswer)) {
-                            newStat.unanswered++;
-                        } else if (result.isAnsweredCorrectly) {
-                            newStat.correct++;
-                        } else {
-                            newStat.wrong++;
+                        if (foundInvalidCategoryId) {
+                            $log.error('StatsEventsHandlerSrv: _eventHandler: bad category id for the following question: ', question.id);
+                            return;
                         }
                     });
 
