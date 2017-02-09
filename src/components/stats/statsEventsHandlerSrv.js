@@ -13,7 +13,7 @@
                     }
 
                     var newStats = {};
-                    var foundInvalidCategoryId = false;
+                    var foundValidCategoryId = false;
                     var newStat;
 
                     var questionsMap = UtilitySrv.array.convertToMap(exercise.questions);
@@ -23,10 +23,8 @@
                         categoryIds.categoryId = question.categoryId;
                         categoryIds.categoryId2 = question.categoryId2;
                         angular.forEach(categoryIds, function (categoryId) {
-                            if (angular.isDefined(categoryId)) {
-                                if (isNaN(+categoryId) || categoryId === null) {
-                                    foundInvalidCategoryId = true;
-                                }
+                            if (angular.isDefined(categoryId) && Number.isInteger(+categoryId)) {
+                                foundValidCategoryId = true;
 
                                 if (!newStats[categoryId]) {
                                     newStats[categoryId] = new StatsSrv.BaseStats();
@@ -44,11 +42,9 @@
                                 } else {
                                     newStat.wrong++;
                                 }
-                            } else {
-                                foundInvalidCategoryId = true;
                             }
                         });
-                        if (foundInvalidCategoryId) {
+                        if (!foundValidCategoryId) {
                             $log.error('StatsEventsHandlerSrv: _eventHandler: bad category id for the following question: ', question.id);
                             return;
                         }
