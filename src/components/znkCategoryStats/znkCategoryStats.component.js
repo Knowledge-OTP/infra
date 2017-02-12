@@ -13,17 +13,12 @@
                 var vm = this;
                 var PERCENTAGE = 100;
                 var MILLISECOND = 1000;
-                var categoryKey = StatsSrv.getCategoryKey(vm.categoryId);
 
-                buildUiCategory(categoryKey);
-
-                StatsSrv.getStatsByCategoryId(vm.categoryId).then(function (categoryStats) {
-
-                });
+                buildUiCategory(vm.categoryId);
 
                 function buildUiCategory(categoryId) {
                     var dataPromMap = {};
-                    dataPromMap.stats = StatsSrv.getStatsByCategoryId(vm.categoryId);
+                    dataPromMap.stats = StatsSrv.getStatsByCategoryId(categoryId);
                     dataPromMap.category = CategoryService.getCategoryData(categoryId);
 
                     $q.all(dataPromMap).then(function (data) {
@@ -31,22 +26,10 @@
                         var category = data.category;
 
                         var extendObj = {};
-                        extendObj.progress = getProgress(categoryStats);
-                        extendObj.avgTime = getAvgTime(categoryStats);
+                        extendObj.progress = getProgress(userStats);
+                        extendObj.avgTime = getAvgTime(userStats);
 
-                        vm.category = angular.extend(categoryStats, extendObj);
-
-
-
-                        if (category && !vm.generalCategories[category.id] && userStats[LEVEL2_CATEGORIES_STATS]['id_' + category.id]) {
-                            var categoryObj = userStats[LEVEL2_CATEGORIES_STATS]['id_' + category.id];
-
-                            vm.generalCategories[category.id] = {};
-                            vm.generalCategories[category.id].shortName = category.shortName;
-                            vm.generalCategories[category.id].name = category.name;
-                            vm.generalCategories[category.id].progress = getProgress(categoryObj);
-                            vm.generalCategories[category.id].avgTime = getAvgTime(categoryObj);
-                        }
+                        vm.category = angular.extend(category, extendObj);
                     });
                 }
 
@@ -57,9 +40,6 @@
                 function getAvgTime(category) {
                     return category.totalQuestions > 0 ? Math.round(category.totalTime / category.totalQuestions / MILLISECOND) : 0;
                 }
-
             }
         });
-
-
 })(angular);

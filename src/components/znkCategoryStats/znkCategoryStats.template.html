@@ -3,16 +3,16 @@
          subject-id-to-attr-drv="vm.subjectId"
          translate-namespace="ZNK_CATEGORY_SUMMARY">
 
-        <div class="category-short-name">{{category.shortName}}</div>
-        <div class="category-name">{{category.name}}</div>
+        <div class="category-short-name">{{vm.category.shortName}}</div>
+        <div class="category-name">{{vm.category.name}}</div>
 
         <div class="progress-details-wrapper">
             <div class="level-status-wrapper">
-                <span translate=".CATEGORY_MASTERY" translate-values="{categoryProgress: category.progress}"></span>
+                <span translate=".CATEGORY_MASTERY" translate-values="{categoryProgress: vm.category.progress}"></span>
             </div>
 
             <div class="subject-progress-wrapper">
-                <znk-progress-bar progress-width="{{category.progress}}"></znk-progress-bar>
+                <znk-progress-bar progress-width="{{vm.category.progress}}"></znk-progress-bar>
                 <span class="level-white-line line1"></span>
                 <span class="level-white-line line2"></span>
                 <span class="level-white-line line3"></span>
@@ -21,16 +21,8 @@
 
             <div class="average-time-wrapper">
                 <svg-icon name="znkCategoryStats-clock-icon"></svg-icon>
-                <span translate=".AVERAGE_TIME_CATEGORY" translate-values="{avgTime: category.avgTime}"></span>
+                <span translate=".AVERAGE_TIME_CATEGORY" translate-values="{avgTime: vm.category.avgTime}"></span>
             </div>
         </div>
-    </div>
-
-    <div class="category-wrapper"
-         subject-id-to-attr-drv="vm.subjectId"
-         ng-repeat="(categoryId, categoryObj) in performanceData[subjectId].noDataItems">
-        <div class="category-short-name">{{categoryObj.shortName[0]}}</div>
-        <div class="category-name">{{categoryObj.name | cutString:20}}</div>
-        <div class="no-data-title" translate=".NO_DATA"></div>
     </div>
 </div>

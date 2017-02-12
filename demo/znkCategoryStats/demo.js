@@ -10,14 +10,7 @@
         'ngInject';
 
         $delegate.getCategoryData = function (categoryId) {
-            return $q.when({
-                    "correct" : 15,
-                    "id" : 0,
-                    "totalQuestions" : 43,
-                    "totalTime" : 842353,
-                    "unanswered" : 0,
-                    "wrong" : 28
-                });
+            return $q.when({"id":9,"name":"Math Level 1","shortName":"M1","parentId":null,"typeId":9,"instruction":null,"weight":null,"subScore1Id":null,"subScore2Id":null});
         };
         return $delegate;
     })
@@ -41,6 +34,6 @@
         'ngInject';
         var vm = this;
 
-        vm.categoryId = SubjectEnum.MATH.enum;
+        vm.categoryId = SubjectEnum.MATHLVL1.enum;
     });
 })(angular);
