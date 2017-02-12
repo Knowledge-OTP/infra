@@ -6,6 +6,17 @@
         'pascalprecht.translate',
         'znk.infra.znkProgressBar',
         'znk.infra.stats',
-        'znk.infra.contentGetters'
+        'znk.infra.contentGetters',
+        'znk.infra.general',
+        'znk.infra.svgIcon'
+    ])
+    .config([
+        'SvgIconSrvProvider',
+        function (SvgIconSrvProvider) {
+            var svgMap = {
+                'znkCategoryStats-clock-icon': 'components/znkCategoryStats/svg/clock-icon.svg'
+            };
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+        }
     ]);
 })(angular);

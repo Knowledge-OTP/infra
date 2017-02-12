@@ -3,7 +3,8 @@
     angular.module('demo', [
         'demoEnv',
         'znk.infra.znkCategoryStats',
-        'pascalprecht.translate'
+        'pascalprecht.translate',
+        'znk.infra.exerciseUtility'
     ])
     .decorator('CategoryService', function ($delegate, $q) {
         'ngInject';
@@ -31,10 +32,11 @@
         };
         return $delegate;
     })
-    .controller('Main', function () {
+    .controller('Main', function (SubjectEnum) {
         'ngInject';
         var vm = this;
 
+        vm.subjectId = SubjectEnum.MATHLVL1.enum;
         vm.categoryId = 48;
     });
 })(angular);

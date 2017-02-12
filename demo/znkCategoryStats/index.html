@@ -11,9 +11,22 @@
     <link rel="stylesheet" href="main.css" />
 
 </head>
+
+<style>
+    body {
+        background-color: lightblue;
+    }
+    znk-category-stats {
+        background-color: white;
+        margin: 100px;
+    }
+    .category-short-name {
+        background-color: #000000;
+    }
+</style>
 <body ng-app="demo" layout="column"  ng-controller="Main as vm">
 
-<znk-category-stats category-id="vm.categoryId"></znk-category-stats>
+<znk-category-stats category-id="vm.categoryId" subject-id="vm.subjectId"></znk-category-stats>
 
 
     <!-- bower:js -->

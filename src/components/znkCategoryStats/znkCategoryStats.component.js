@@ -4,7 +4,8 @@
     angular.module('znk.infra.znkCategoryStats')
         .component('znkCategoryStats', {
             bindings: {
-                categoryId: '='
+                categoryId: '=',
+                subjectId: '='
             },
             templateUrl: 'components/znkCategoryStats/znkCategoryStats.template.html',
             controllerAs: 'vm',
@@ -12,9 +13,10 @@
                 'ngInject';
                 var vm = this;
                 var PERCENTAGE = 100;
+                var MILLISECOND = 1000;
                 vm.generalCategories = {};
                 var userStats = {};
-                var GENERAL_CATEGORIES_STATS = 'level2Categories'; // property name of stats object in database
+                    var LEVEL2_CATEGORIES_STATS = 'level2Categories'; // property name of stats object in database
 
                 var statsProm = StatsSrv.getStats();
 
@@ -25,20 +27,26 @@
 
 
                 function buildGeneralCategory(categoryId) {
-                    CategoryService.getParentCategory(categoryId).then(function (generalCategory) {
-                        if (generalCategory && !vm.generalCategories[generalCategory.id] && userStats[GENERAL_CATEGORIES_STATS]['id_' + generalCategory.id]) {
-                            var generalCategoryObj = userStats[GENERAL_CATEGORIES_STATS]['id_' + generalCategory.id];
-                            var progress = getProgress(generalCategoryObj);
+                    CategoryService.getParentCategory(categoryId).then(function (level2Category) {
+                        if (level2Category && !vm.generalCategories[level2Category.id] && userStats[LEVEL2_CATEGORIES_STATS]['id_' + level2Category.id]) {
+                            var level2CategoryObj = userStats[LEVEL2_CATEGORIES_STATS]['id_' + level2Category.id];
 
-                            vm.generalCategories[generalCategory.id] = {};
-                            vm.generalCategories[generalCategory.id].name = generalCategory.name;
-                            vm.generalCategories[generalCategory.id].progress = progress;
+                            vm.generalCategories[level2Category.id] = {};
+                            vm.generalCategories[level2Category.id].shortName = level2Category.shortName;
+                            vm.generalCategories[level2Category.id].name = level2Category.name;
+                            vm.generalCategories[level2Category.id].masteryLevel = level2Category.masteryLevel;
+                            vm.generalCategories[level2Category.id].progress = getProgress(level2CategoryObj);
+                            vm.generalCategories[level2Category.id].avgTime = getAvgTime(level2CategoryObj);
                         }
                     });
                 }
 
-                function getProgress(generalCategoryObj) {
-                    return generalCategoryObj.totalQuestions > 0 ? Math.round((generalCategoryObj.correct * PERCENTAGE) / generalCategoryObj.totalQuestions) : 0;
+                function getProgress(category) {
+                    return category.totalQuestions > 0 ? Math.round(category.correct / category.totalQuestions * PERCENTAGE) : 0;
+                }
+
+                function getAvgTime(category) {
+                    return category.totalQuestions > 0 ? Math.round(category.totalTime / category.totalQuestions / MILLISECOND) : 0;
                 }
 
             }

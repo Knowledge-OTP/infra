@@ -43,6 +43,7 @@
 "znk.infra.webcall",
 "znk.infra.workouts",
 "znk.infra.znkAudioPlayer",
+"znk.infra.znkCategoryStats",
 "znk.infra.znkChat",
 "znk.infra.znkExercise",
 "znk.infra.znkMedia",
@@ -8276,7 +8277,7 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
                         categoryIds.categoryId = question.categoryId;
                         categoryIds.categoryId2 = question.categoryId2;
                         angular.forEach(categoryIds, function (categoryId) {
-                            if (angular.isDefined(categoryId) && Number.isInteger(+categoryId)) {
+                            if (angular.isDefined(categoryId) && !isNaN(+categoryId)) {
                                 foundValidCategoryId = true;
 
                                 if (!newStats[categoryId]) {
@@ -9722,33 +9723,6 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
-        var dayInMs = 86400000;
-        var WEEK = 7;
-        this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
-
-
-        this.isDueDatePass = function (dueDate) {
-            var res = {
-                dateDiff: 0,
-                passDue: false
-            };
-
-            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
-                return res;
-            }
-
-            res.dateDiff = Math.abs(Math.ceil((Date.now() - dueDate) / dayInMs));
-            res.passDue = dueDate - Date.now() < 0;
-            return res;
-        };
-    }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.utility').factory('UtilitySrv', [
         '$q',
         function ($q) {
@@ -9841,6 +9815,33 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 
             return UtilitySrv;
         }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
+        var dayInMs = 86400000;
+        var WEEK = 7;
+        this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
+
+
+        this.isDueDatePass = function (dueDate) {
+            var res = {
+                dateDiff: 0,
+                passDue: false
+            };
+
+            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
+                return res;
+            }
+
+            res.dateDiff = Math.abs(Math.ceil((Date.now() - dueDate) / dayInMs));
+            res.passDue = dueDate - Date.now() < 0;
+            return res;
+        };
+    }
     ]);
 })(angular);
 
@@ -10716,6 +10717,198 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "        <div class=\"skip-audio-button\" ng-if=\"d.showSkipButton\" ng-click=\"d.skippedHandler()\">\n" +
     "            <div translate=\".SKIP\"></div>\n" +
     "        </div>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
+}]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkCategoryStats', [
+        'ngMaterial',
+        'pascalprecht.translate',
+        'znk.infra.znkProgressBar',
+        'znk.infra.stats',
+        'znk.infra.contentGetters',
+        'znk.infra.general',
+        'znk.infra.svgIcon'
+    ])
+    .config([
+        'SvgIconSrvProvider',
+        function (SvgIconSrvProvider) {
+            var svgMap = {
+                'znkCategoryStats-clock-icon': 'components/znkCategoryStats/svg/clock-icon.svg'
+            };
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+        }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkCategoryStats')
+        .component('znkCategoryStats', {
+            bindings: {
+                categoryId: '=',
+                subjectId: '='
+            },
+            templateUrl: 'components/znkCategoryStats/znkCategoryStats.template.html',
+            controllerAs: 'vm',
+            controller: ["StatsSrv", "CategoryService", function (StatsSrv, CategoryService) {
+                'ngInject';
+                var vm = this;
+                var PERCENTAGE = 100;
+                var MILLISECOND = 1000;
+                vm.generalCategories = {};
+                var userStats = {};
+                    var LEVEL2_CATEGORIES_STATS = 'level2Categories'; // property name of stats object in database
+
+                var statsProm = StatsSrv.getStats();
+
+                statsProm.then(function (statsData) {
+                    userStats = statsData;
+                    buildGeneralCategory(vm.categoryId);
+                });
+
+
+                function buildGeneralCategory(categoryId) {
+                    CategoryService.getParentCategory(categoryId).then(function (level2Category) {
+                        if (level2Category && !vm.generalCategories[level2Category.id] && userStats[LEVEL2_CATEGORIES_STATS]['id_' + level2Category.id]) {
+                            var level2CategoryObj = userStats[LEVEL2_CATEGORIES_STATS]['id_' + level2Category.id];
+
+                            vm.generalCategories[level2Category.id] = {};
+                            vm.generalCategories[level2Category.id].shortName = level2Category.shortName;
+                            vm.generalCategories[level2Category.id].name = level2Category.name;
+                            vm.generalCategories[level2Category.id].masteryLevel = level2Category.masteryLevel;
+                            vm.generalCategories[level2Category.id].progress = getProgress(level2CategoryObj);
+                            vm.generalCategories[level2Category.id].avgTime = getAvgTime(level2CategoryObj);
+                        }
+                    });
+                }
+
+                function getProgress(category) {
+                    return category.totalQuestions > 0 ? Math.round(category.correct / category.totalQuestions * PERCENTAGE) : 0;
+                }
+
+                function getAvgTime(category) {
+                    return category.totalQuestions > 0 ? Math.round(category.totalTime / category.totalQuestions / MILLISECOND) : 0;
+                }
+
+            }]
+        });
+
+
+})(angular);
+
+angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/znkCategoryStats/svg/clock-icon.svg",
+    "<svg version=\"1.1\"\n" +
+    "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
+    "     x=\"0px\"\n" +
+    "     y=\"0px\"\n" +
+    "     viewBox=\"0 0 183 208.5\"\n" +
+    "     class=\"clock-icon\">\n" +
+    "    <style>\n" +
+    "\n" +
+    "        .clock-icon {width: 100%; height: auto;}\n" +
+    "\n" +
+    "        .clock-icon .st0 {\n" +
+    "        fill: none;\n" +
+    "        stroke: #757A83;\n" +
+    "        stroke-width: 10.5417;\n" +
+    "        stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon .st1 {\n" +
+    "        fill: none;\n" +
+    "        stroke: #757A83;\n" +
+    "        stroke-width: 12.3467;\n" +
+    "        stroke-linecap: round;\n" +
+    "        stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon .st2 {\n" +
+    "        fill: none;\n" +
+    "        stroke: #757A83;\n" +
+    "        stroke-width: 11.8313;\n" +
+    "        stroke-linecap: round;\n" +
+    "        stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon .st3 {\n" +
+    "        fill: none;\n" +
+    "        stroke: #757A83;\n" +
+    "        stroke-width: 22.9416;\n" +
+    "        stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon .st4 {\n" +
+    "        fill: none;\n" +
+    "        stroke: #757A83;\n" +
+    "        stroke-width: 14;\n" +
+    "        stroke-linecap: round;\n" +
+    "        stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "        .clock-icon .st5 {\n" +
+    "        fill: none;\n" +
+    "        stroke: #757A83;\n" +
+    "        stroke-width: 18;\n" +
+    "        stroke-linejoin: round;\n" +
+    "        stroke-miterlimit: 10;\n" +
+    "        }\n" +
+    "\n" +
+    "\n" +
+    "    </style>\n" +
+    "    <g>\n" +
+    "        <circle class=\"st0\" cx=\"91.5\" cy=\"117\" r=\"86.2\"/>\n" +
+    "        <line class=\"st1\" x1=\"92.1\" y1=\"121.5\" x2=\"92.1\" y2=\"61\"/>\n" +
+    "        <line class=\"st2\" x1=\"92.1\" y1=\"121.5\" x2=\"131.4\" y2=\"121.5\"/>\n" +
+    "        <line class=\"st3\" x1=\"78.2\" y1=\"18.2\" x2=\"104.9\" y2=\"18.2\"/>\n" +
+    "        <line class=\"st4\" x1=\"61.4\" y1=\"7\" x2=\"121.7\" y2=\"7\"/>\n" +
+    "        <line class=\"st5\" x1=\"156.1\" y1=\"43\" x2=\"171.3\" y2=\"61\"/>\n" +
+    "    </g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/znkCategoryStats/znkCategoryStats.template.html",
+    "<div class=\"znk-category-stats\" ng-if=\"vm.generalCategories.length\">\n" +
+    "    <div class=\"category-wrapper\"\n" +
+    "         subject-id-to-attr-drv=\"vm.subjectId\"\n" +
+    "         ng-repeat=\"(key, category) in vm.generalCategories\"\n" +
+    "         translate-namespace=\"ZNK_CATEGORY_SUMMARY\">\n" +
+    "\n" +
+    "        <div class=\"category-short-name\">{{category.shortName}}</div>\n" +
+    "        <div class=\"category-name\">{{category.name}}</div>\n" +
+    "\n" +
+    "        <div class=\"progress-details-wrapper\">\n" +
+    "            <div class=\"level-status-wrapper\">\n" +
+    "                <span translate=\".CATEGORY_MASTERY\" translate-values=\"{categoryProgress: category.progress}\"></span>\n" +
+    "                <span>{{category.masteryLevel | uppercase}}</span>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <div class=\"subject-progress-wrapper\">\n" +
+    "                <znk-progress-bar progress-width=\"{{category.progress}}\"></znk-progress-bar>\n" +
+    "                <span class=\"level-white-line line1\"></span>\n" +
+    "                <span class=\"level-white-line line2\"></span>\n" +
+    "                <span class=\"level-white-line line3\"></span>\n" +
+    "                <span class=\"level-white-line line4\"></span>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <div class=\"average-time-wrapper\">\n" +
+    "                <svg-icon name=\"znkCategoryStats-clock-icon\"></svg-icon>\n" +
+    "                <span translate=\".AVERAGE_TIME_CATEGORY\" translate-values=\"{avgTime: category.avgTime}\"></span>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "\n" +
+    "    <div class=\"category-wrapper\"\n" +
+    "         subject-id-to-attr-drv=\"vm.subjectId\"\n" +
+    "         ng-repeat=\"(categoryId, categoryObj) in performanceData[subjectId].noDataItems\">\n" +
+    "        <div class=\"category-short-name\">{{categoryObj.shortName[0]}}</div>\n" +
+    "        <div class=\"category-name\">{{categoryObj.name | cutString:20}}</div>\n" +
+    "        <div class=\"no-data-title\" translate=\".NO_DATA\"></div>\n" +
     "    </div>\n" +
     "</div>\n" +
     "");
