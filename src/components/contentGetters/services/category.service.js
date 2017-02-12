@@ -1,10 +1,11 @@
 'use strict';
 
 angular.module('znk.infra.contentGetters').service('CategoryService',
-    function (StorageRevSrv, $q, categoryEnum, $log, categories) {
+    function (StorageRevSrv, $q, categoryEnum, $log, categoriesConstant) {
         'ngInject';
 
-        $log.debug(categories);
+        $log.debug(categoriesConstant);
+        var categories = categoriesConstant;
 
         var categoryMapObj;
         var self = this;
@@ -15,18 +16,29 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             });
         };
 
-        self.getCategoryMap = function () {
-            if (categoryMapObj) {
-                return $q.when(categoryMapObj);
-            }
-            return self.get().then(function (categories) {
-                var categoryMap = {};
-                angular.forEach(categories, function (item) {
-                    categoryMap[item.id] = item;
-                });
-                categoryMapObj = categoryMap;
-                return categoryMapObj;
+        function mapCategories (categories) {
+            var categoryMap = {};
+            angular.forEach(categories, function (category) {
+                categoryMap[category.id] = category;
             });
+            categoryMapObj = categoryMap;
+            return categoryMapObj;
+        }
+
+        self.getCategoryMap = function (sync) {
+            if (sync) {
+                if (categoryMapObj) {
+                    return categoryMapObj;
+                }
+                return mapCategories(categories);
+            } else {
+                if (categoryMapObj){
+                    return $q.when(categoryMapObj);
+                }
+                return self.get().then(function (categories) {
+                return mapCategories(categories);
+                });
+            }
         };
 
         self.getCategoryData = function (categoryId) {
@@ -54,17 +66,32 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             });
         };
 
-        self.getCategoryLevel1ParentById = function (categoryId) {
+        self.getCategoryLevel1ParentById = function (categoryId, sync) {
+            //by default sync = false;
             if (angular.isUndefined(categoryId) || categoryId === null) {
                 return $q.when(null);
             }
-            return self.getCategoryMap().then(function (categories) {
-                var category = categories[categoryId];
-                if (categoryEnum.SUBJECT.enum === category.typeId) {
-                    return $q.when(categoryId);
+            if(!sync) {
+                return self.getCategoryMap().then(function (categories) {
+                    var category = categories[categoryId];
+                    if (categoryEnum.SUBJECT.enum === category.typeId) {
+                        return $q.when(categoryId);
+                    }
+                    return self.getCategoryLevel1ParentById(category.parentId, sync);
+                });
+            } else {
+                if(!categories) {
+                    $log.error('CategoryService: categories json is not available. try "getCategoryLevel1ParentById(categoryId, false)" for async approach');
+                    return;
+                } else {
+                    var categoriesMap = categoriesMap ? categoriesMap : self.getCategoryMap(sync);
+                    var category = categoriesMap[categoryId];
+                    if (categoryEnum.SUBJECT.enum === category.typeId) {
+                        return categoryId;
+                    }
+                    return self.getCategoryLevel1ParentById(category.parentId, sync);
                 }
-                return self.getCategoryLevel1ParentById(category.parentId);
-            });
+            }
         };
 
         self.getCategoryLevel1Parent = function (category) {

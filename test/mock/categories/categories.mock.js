@@ -1,10 +1,8 @@
 (function (angular) {
     'use strict';
 
-    var mockCategoriesServiceName = 'categories';
-
     angular.module('categories.mock', [])
-        .constant(mockCategoriesServiceName, [{
+        .constant("categoriesConstant", [{
     "id": 9,
     "name": "Math Level 1",
     "shortName": "M1",
