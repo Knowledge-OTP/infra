@@ -3457,6 +3457,7 @@ angular.module('znk.infra.contentAvail').run(['$templateCache', function($templa
 
     angular.module('znk.infra.contentGetters', [
         'znk.infra.config',
+        'categories.mock',
         'znk.infra.content',
         'znk.infra.exerciseUtility',
         'znk.infra.enum'
@@ -3532,8 +3533,10 @@ angular.module('znk.infra.contentAvail').run(['$templateCache', function($templa
 'use strict';
 
 angular.module('znk.infra.contentGetters').service('CategoryService',
-    ["StorageRevSrv", "$q", "categoryEnum", "$log", function (StorageRevSrv, $q, categoryEnum, $log) {
+    ["StorageRevSrv", "$q", "categoryEnum", "$log", "categories", function (StorageRevSrv, $q, categoryEnum, $log, categories) {
         'ngInject';
+
+        $log.debug(categories);
 
         var categoryMapObj;
         var self = this;
@@ -8276,7 +8279,7 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
                         categoryIds.categoryId = question.categoryId;
                         categoryIds.categoryId2 = question.categoryId2;
                         angular.forEach(categoryIds, function (categoryId) {
-                            if (angular.isDefined(categoryId) && Number.isInteger(+categoryId)) {
+                            if (angular.isDefined(categoryId) && !isNaN(+categoryId)) {
                                 foundValidCategoryId = true;
 
                                 if (!newStats[categoryId]) {

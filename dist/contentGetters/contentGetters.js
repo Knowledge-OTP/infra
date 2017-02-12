@@ -3,6 +3,7 @@
 
     angular.module('znk.infra.contentGetters', [
         'znk.infra.config',
+        'categories.mock',
         'znk.infra.content',
         'znk.infra.exerciseUtility',
         'znk.infra.enum'
@@ -78,8 +79,10 @@
 'use strict';
 
 angular.module('znk.infra.contentGetters').service('CategoryService',
-    ["StorageRevSrv", "$q", "categoryEnum", "$log", function (StorageRevSrv, $q, categoryEnum, $log) {
+    ["StorageRevSrv", "$q", "categoryEnum", "$log", "categories", function (StorageRevSrv, $q, categoryEnum, $log, categories) {
         'ngInject';
+
+        $log.debug(categories);
 
         var categoryMapObj;
         var self = this;

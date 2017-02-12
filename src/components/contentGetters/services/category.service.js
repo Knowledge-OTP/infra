@@ -1,8 +1,10 @@
 'use strict';
 
 angular.module('znk.infra.contentGetters').service('CategoryService',
-    function (StorageRevSrv, $q, categoryEnum, $log) {
+    function (StorageRevSrv, $q, categoryEnum, $log, categories) {
         'ngInject';
+
+        $log.debug(categories);
 
         var categoryMapObj;
         var self = this;
