@@ -18,8 +18,8 @@
                 typeId:6,
                 instruction:null,
                 weight:null,
-                subScore1Id:null
-                ,subScore2Id:null
+                subScore1Id:null,
+                subScore2Id:null
             });
         };
         return $delegate;
