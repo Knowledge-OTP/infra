@@ -42,6 +42,7 @@
   },
   "resolutions": {
     "angular": "1.5.8",
-    "angular-messages": "1.5.8"
+    "angular-messages": "1.5.8",
+    "angular-translate": "^2.13.1"
   }
 }

@@ -1066,14 +1066,6 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
                 return mapCategories(categories);
                 });
             }
-            // return self.get().then(function (categories) {
-            //     var categoryMap = {};
-            //     angular.forEach(categories, function (item) {
-            //         categoryMap[item.id] = item;
-            //     });
-            //     categoryMapObj = categoryMap;
-            //     return categoryMapObj;
-            // });
         };
 
         self.getCategoryData = function (categoryId) {
@@ -1100,19 +1092,6 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
                 return categories[parentId];
             });
         };
-
-        // self.getCategoryLevel1ParentById = function (categoryId) {
-        //     if (angular.isUndefined(categoryId) || categoryId === null) {
-        //         return $q.when(null);
-        //     }
-        //     return self.getCategoryMap().then(function (categories) {
-        //         var category = categories[categoryId];
-        //         if (categoryEnum.SUBJECT.enum === category.typeId) {
-        //             return $q.when(categoryId);
-        //         }
-        //         return self.getCategoryLevel1ParentById(category.parentId);
-        //     });
-        // };
 
         self.getCategoryLevel1ParentById = function (categoryId, sync) {
             //by default sync = false;
