@@ -1,7 +1,6 @@
-<div class="znk-category-stats" ng-if="vm.generalCategories.length">
+<div class="znk-category-stats">
     <div class="category-wrapper"
          subject-id-to-attr-drv="vm.subjectId"
-         ng-repeat="(key, category) in vm.generalCategories"
          translate-namespace="ZNK_CATEGORY_SUMMARY">
 
         <div class="category-short-name">{{category.shortName}}</div>
@@ -10,7 +9,6 @@
         <div class="progress-details-wrapper">
             <div class="level-status-wrapper">
                 <span translate=".CATEGORY_MASTERY" translate-values="{categoryProgress: category.progress}"></span>
-                <span>{{category.masteryLevel | uppercase}}</span>
             </div>
 
             <div class="subject-progress-wrapper">

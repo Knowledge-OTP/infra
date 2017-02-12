@@ -4,39 +4,48 @@
     angular.module('znk.infra.znkCategoryStats')
         .component('znkCategoryStats', {
             bindings: {
-                categoryId: '=',
-                subjectId: '='
+                categoryId: '='
             },
             templateUrl: 'components/znkCategoryStats/znkCategoryStats.template.html',
             controllerAs: 'vm',
-            controller: function (StatsSrv, CategoryService) {
+            controller: function (StatsSrv, CategoryService, $q) {
                 'ngInject';
                 var vm = this;
                 var PERCENTAGE = 100;
                 var MILLISECOND = 1000;
-                vm.generalCategories = {};
-                var userStats = {};
-                    var LEVEL2_CATEGORIES_STATS = 'level2Categories'; // property name of stats object in database
+                var categoryKey = StatsSrv.getCategoryKey(vm.categoryId);
 
-                var statsProm = StatsSrv.getStats();
+                buildUiCategory(categoryKey);
 
-                statsProm.then(function (statsData) {
-                    userStats = statsData;
-                    buildGeneralCategory(vm.categoryId);
+                StatsSrv.getStatsByCategoryId(vm.categoryId).then(function (categoryStats) {
+
                 });
 
+                function buildUiCategory(categoryId) {
+                    var dataPromMap = {};
+                    dataPromMap.stats = StatsSrv.getStatsByCategoryId(vm.categoryId);
+                    dataPromMap.category = CategoryService.getCategoryData(categoryId);
 
-                function buildGeneralCategory(categoryId) {
-                    CategoryService.getParentCategory(categoryId).then(function (level2Category) {
-                        if (level2Category && !vm.generalCategories[level2Category.id] && userStats[LEVEL2_CATEGORIES_STATS]['id_' + level2Category.id]) {
-                            var level2CategoryObj = userStats[LEVEL2_CATEGORIES_STATS]['id_' + level2Category.id];
+                    $q.all(dataPromMap).then(function (data) {
+                        var userStats = data.stats;
+                        var category = data.category;
 
-                            vm.generalCategories[level2Category.id] = {};
-                            vm.generalCategories[level2Category.id].shortName = level2Category.shortName;
-                            vm.generalCategories[level2Category.id].name = level2Category.name;
-                            vm.generalCategories[level2Category.id].masteryLevel = level2Category.masteryLevel;
-                            vm.generalCategories[level2Category.id].progress = getProgress(level2CategoryObj);
-                            vm.generalCategories[level2Category.id].avgTime = getAvgTime(level2CategoryObj);
+                        var extendObj = {};
+                        extendObj.progress = getProgress(categoryStats);
+                        extendObj.avgTime = getAvgTime(categoryStats);
+
+                        vm.category = angular.extend(categoryStats, extendObj);
+
+
+
+                        if (category && !vm.generalCategories[category.id] && userStats[LEVEL2_CATEGORIES_STATS]['id_' + category.id]) {
+                            var categoryObj = userStats[LEVEL2_CATEGORIES_STATS]['id_' + category.id];
+
+                            vm.generalCategories[category.id] = {};
+                            vm.generalCategories[category.id].shortName = category.shortName;
+                            vm.generalCategories[category.id].name = category.name;
+                            vm.generalCategories[category.id].progress = getProgress(categoryObj);
+                            vm.generalCategories[category.id].avgTime = getAvgTime(categoryObj);
                         }
                     });
                 }
