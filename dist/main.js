@@ -8425,7 +8425,7 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
     'use strict';
 
     angular.module('znk.infra.stats').service('StatsSrv',
-        ["InfraConfigSrv", "$q", "SubjectEnum", "$log", "$injector", "StorageSrv", "CategoryService", function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv, CategoryService) {
+        ["InfraConfigSrv", "$q", "SubjectEnum", "$log", "$injector", "StorageSrv", "CategoryService", "UtilitySrv", function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv, CategoryService, UtilitySrv) {
             'ngInject';
 
             var STATS_PATH = StorageSrv.variables.appUserSpacePath + '/stats';
@@ -8586,6 +8586,13 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
                 return StatsSrv.getStats().then(function (stats) {
                     var processedExerciseKey = _getProcessedExerciseKey(exerciseType, exerciseId);
                     return !!stats.processedExercises[processedExerciseKey];
+                });
+            };
+
+            StatsSrv.getStatsByCategoryId = function (categoryId) {
+                var categoryStatsKey = StatsSrv.getCategoryKey(categoryId);
+                return getStats().then(function (stats) {
+                    return UtilitySrv.object.findProp(stats, categoryStatsKey);
                 });
             };
 
@@ -9769,6 +9776,27 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
                         }
                     }
                 }
+            };
+
+            UtilitySrv.object.findProp = function findProp(obj, key, out) {
+                var i,
+                    proto = Object.prototype,
+                    ts = proto.toString,
+                    hasOwn = proto.hasOwnProperty.bind(obj);
+
+                if ('[object Array]' !== ts.call(out)) { out = []; }
+
+                for (i in obj) {
+                    if (hasOwn(i)) {
+                        if (i === key) {
+                            out.push(obj[i]);
+                        } else if ('[object Array]' === ts.call(obj[i]) || '[object Object]' === ts.call(obj[i])) {
+                            findProp(obj[i], key, out);
+                        }
+                    }
+                }
+
+                return out;
             };
 
             //array utility srv
