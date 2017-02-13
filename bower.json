@@ -36,13 +36,10 @@
     "es5-shim": "~4.4.1",
     "angular-mocks": "1.5.8",
     "mockfirebase": "~0.11.0",
-    "jasmine-jquery": "^2.1.1",
-    "angular-translate": "^2.13.1",
-    "angular-translate-loader-static-files": "^2.13.1"
+    "jasmine-jquery": "^2.1.1"
   },
   "resolutions": {
     "angular": "1.5.8",
-    "angular-messages": "1.5.8",
-    "angular-translate": "^2.13.1"
+    "angular-messages": "1.5.8"
   }
 }
