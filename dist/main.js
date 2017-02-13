@@ -43,7 +43,6 @@
 "znk.infra.webcall",
 "znk.infra.workouts",
 "znk.infra.znkAudioPlayer",
-"znk.infra.znkCategoryStats",
 "znk.infra.znkChat",
 "znk.infra.znkExercise",
 "znk.infra.znkMedia",
@@ -5207,10 +5206,10 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
                 ['SUBJECT', 9, 'subject'],
                 ['SUB_SCORE', 10, 'subScore'],
                 ['TEST_SCORE', 11, 'testScore'],
-                ['LEVEL1', 9, 'level1Categories'],
-                ['LEVEL2', 11, 'level2Categories'],
-                ['LEVEL3', 6, 'level3Categories'],
-                ['LEVEL4', 7, 'level4Categories']
+                ['LEVEL1', 101, 'level1Categories'],
+                ['LEVEL2', 102, 'level2Categories'],
+                ['LEVEL3', 103, 'level3Categories'],
+                ['LEVEL4', 104, 'level4Categories']
             ]);
         }
     ]);
@@ -10724,10 +10723,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     "    </div>\n" +
     "</div>\n" +
     "");
-}]);
-
-angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($templateCache) {
-
 }]);
 
 (function (angular) {

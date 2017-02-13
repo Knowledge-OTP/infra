@@ -16,10 +16,10 @@
                 ['SUBJECT', 9, 'subject'],
                 ['SUB_SCORE', 10, 'subScore'],
                 ['TEST_SCORE', 11, 'testScore'],
-                ['LEVEL1', 9, 'level1Categories'],
-                ['LEVEL2', 11, 'level2Categories'],
-                ['LEVEL3', 6, 'level3Categories'],
-                ['LEVEL4', 7, 'level4Categories']
+                ['LEVEL1', 101, 'level1Categories'],
+                ['LEVEL2', 102, 'level2Categories'],
+                ['LEVEL3', 103, 'level3Categories'],
+                ['LEVEL4', 104, 'level4Categories']
             ]);
         }
     ]);
