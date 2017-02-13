@@ -9,15 +9,17 @@ describe('testing service "CategoryService":', function () {
         'znk.infra.content',
         'znk.infra.storage',
         'storage.mock',
+        'categories.mock',
         'user.mock',
         'znk.infra.utility',
         'content.mock',
         'testUtility'));
 
-    var CategoryService, StorageRevSrv, $q, $log, actions, SubjectEnum;
+    var CategoryService, StorageRevSrv, $q, $log, actions, SubjectEnum, categoriesConstant;
     beforeEach(inject([
         '$injector',
         function ($injector) {
+            categoriesConstant = $injector.get('categoriesConstant');
             CategoryService = $injector.get('CategoryService');
             StorageRevSrv = $injector.get('StorageRevSrv');
             $q = $injector.get('$q');
