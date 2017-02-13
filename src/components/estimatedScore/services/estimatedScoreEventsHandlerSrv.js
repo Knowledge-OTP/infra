@@ -103,6 +103,30 @@
                     var questionsMap = UtilitySrv.array.convertToMap(questions);
 
                     sectionResult.questionResults.forEach(function (result, i) {
+                        if (angular.isUndefined(question)) {
+                            $log.error('EstimatedScoreEventsHandler: question for result is missing',
+                                'section id: ', section.id,
+                                'result index: ', i
+                            );
+                        } else {
+                            var subjectId1 = CategoryService.getCategoryLevel1ParentById(question.categoryId);
+                            var subjectId2 = CategoryService.getCategoryLevel1ParentById(question.categoryId2);
+                            var subjectIds = [subjectId1, subjectId2];
+                            angular.forEach(subjectIds, function (subjectId) {
+                                if (subjectId) {
+                                    if (angular.isUndefined(scores[subjectId])) {
+                                        scores[subjectId] = 0;
+                                    }
+                                    scores[subjectId] += _getDiagnosticQuestionPoints(question, result);
+                                }
+                            });
+                        }
+                    });
+                    angular.forEach(subjectIds, function(subjectId){
+                        EstimatedScoreSrv.setDiagnosticSectionScore(scores[subjectId], ExerciseTypeEnum.SECTION.enum, subjectId, section.id);
+                    })
+
+                    sectionResult.questionResults.forEach(function (result, i) {
                         var scoreDeferred = $q.defer();
                         var question = questionsMap[result.questionId];
                         if (angular.isUndefined(question)) {

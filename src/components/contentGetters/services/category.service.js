@@ -90,6 +90,10 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         };
 
         self.getCategoryLevel1ParentByIdSync = function (categoryId) {
+            if (!categoryId) {
+                $log.debug('CategoryService: No category id', categoryId);
+                return;
+            }
             var categoriesMap = self.getCategoryMap(true);
             var category = categoriesMap[categoryId];
             if (categoryEnum.LEVEL1.enum === category.typeId) {
