@@ -3668,9 +3668,6 @@ $blueBG8: #75cbe8;
         margin-bottom: 3px; }
       .znk-category-stats .category-wrapper .progress-details-wrapper .level-status-wrapper span:first-child {
         float: left; }
-      .znk-category-stats .category-wrapper .progress-details-wrapper .level-status-wrapper span:nth-child(2) {
-        float: right;
-        margin-right: 3px; }
       .znk-category-stats .category-wrapper .progress-details-wrapper .average-time-wrapper {
         margin-top: 7px; }
         .znk-category-stats .category-wrapper .progress-details-wrapper .average-time-wrapper .znkCategoryStats-clock-icon {

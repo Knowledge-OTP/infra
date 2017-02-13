@@ -10751,40 +10751,32 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
     angular.module('znk.infra.znkCategoryStats')
         .component('znkCategoryStats', {
             bindings: {
-                categoryId: '=',
-                subjectId: '='
+                categoryId: '='
             },
             templateUrl: 'components/znkCategoryStats/znkCategoryStats.template.html',
             controllerAs: 'vm',
-            controller: ["StatsSrv", "CategoryService", function (StatsSrv, CategoryService) {
+            controller: ["StatsSrv", "CategoryService", "$q", function (StatsSrv, CategoryService, $q) {
                 'ngInject';
                 var vm = this;
                 var PERCENTAGE = 100;
                 var MILLISECOND = 1000;
-                vm.generalCategories = {};
-                var userStats = {};
-                    var LEVEL2_CATEGORIES_STATS = 'level2Categories'; // property name of stats object in database
 
-                var statsProm = StatsSrv.getStats();
+                buildUiCategory(vm.categoryId);
 
-                statsProm.then(function (statsData) {
-                    userStats = statsData;
-                    buildGeneralCategory(vm.categoryId);
-                });
+                function buildUiCategory(categoryId) {
+                    var dataPromMap = {};
+                    dataPromMap.stats = StatsSrv.getStatsByCategoryId(categoryId);
+                    dataPromMap.category = CategoryService.getCategoryData(categoryId);
 
+                    $q.all(dataPromMap).then(function (data) {
+                        var userStats = data.stats;
+                        var category = data.category;
 
-                function buildGeneralCategory(categoryId) {
-                    CategoryService.getParentCategory(categoryId).then(function (level2Category) {
-                        if (level2Category && !vm.generalCategories[level2Category.id] && userStats[LEVEL2_CATEGORIES_STATS]['id_' + level2Category.id]) {
-                            var level2CategoryObj = userStats[LEVEL2_CATEGORIES_STATS]['id_' + level2Category.id];
+                        var extendObj = {};
+                        extendObj.progress = getProgress(userStats);
+                        extendObj.avgTime = getAvgTime(userStats);
 
-                            vm.generalCategories[level2Category.id] = {};
-                            vm.generalCategories[level2Category.id].shortName = level2Category.shortName;
-                            vm.generalCategories[level2Category.id].name = level2Category.name;
-                            vm.generalCategories[level2Category.id].masteryLevel = level2Category.masteryLevel;
-                            vm.generalCategories[level2Category.id].progress = getProgress(level2CategoryObj);
-                            vm.generalCategories[level2Category.id].avgTime = getAvgTime(level2CategoryObj);
-                        }
+                        vm.category = angular.extend(category, extendObj);
                     });
                 }
 
@@ -10795,11 +10787,8 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 function getAvgTime(category) {
                     return category.totalQuestions > 0 ? Math.round(category.totalTime / category.totalQuestions / MILLISECOND) : 0;
                 }
-
             }]
         });
-
-
 })(angular);
 
 angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($templateCache) {
@@ -10873,23 +10862,21 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
     "</svg>\n" +
     "");
   $templateCache.put("components/znkCategoryStats/znkCategoryStats.template.html",
-    "<div class=\"znk-category-stats\" ng-if=\"vm.generalCategories.length\">\n" +
+    "<div class=\"znk-category-stats\">\n" +
     "    <div class=\"category-wrapper\"\n" +
     "         subject-id-to-attr-drv=\"vm.subjectId\"\n" +
-    "         ng-repeat=\"(key, category) in vm.generalCategories\"\n" +
     "         translate-namespace=\"ZNK_CATEGORY_SUMMARY\">\n" +
     "\n" +
-    "        <div class=\"category-short-name\">{{category.shortName}}</div>\n" +
-    "        <div class=\"category-name\">{{category.name}}</div>\n" +
+    "        <div class=\"category-short-name\">{{vm.category.shortName}}</div>\n" +
+    "        <div class=\"category-name\">{{vm.category.name}}</div>\n" +
     "\n" +
     "        <div class=\"progress-details-wrapper\">\n" +
     "            <div class=\"level-status-wrapper\">\n" +
-    "                <span translate=\".CATEGORY_MASTERY\" translate-values=\"{categoryProgress: category.progress}\"></span>\n" +
-    "                <span>{{category.masteryLevel | uppercase}}</span>\n" +
+    "                <span translate=\".CATEGORY_MASTERY\" translate-values=\"{categoryProgress: vm.category.progress}\"></span>\n" +
     "            </div>\n" +
     "\n" +
     "            <div class=\"subject-progress-wrapper\">\n" +
-    "                <znk-progress-bar progress-width=\"{{category.progress}}\"></znk-progress-bar>\n" +
+    "                <znk-progress-bar progress-width=\"{{vm.category.progress}}\"></znk-progress-bar>\n" +
     "                <span class=\"level-white-line line1\"></span>\n" +
     "                <span class=\"level-white-line line2\"></span>\n" +
     "                <span class=\"level-white-line line3\"></span>\n" +
@@ -10898,17 +10885,9 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
     "\n" +
     "            <div class=\"average-time-wrapper\">\n" +
     "                <svg-icon name=\"znkCategoryStats-clock-icon\"></svg-icon>\n" +
-    "                <span translate=\".AVERAGE_TIME_CATEGORY\" translate-values=\"{avgTime: category.avgTime}\"></span>\n" +
+    "                <span translate=\".AVERAGE_TIME_CATEGORY\" translate-values=\"{avgTime: vm.category.avgTime}\"></span>\n" +
     "            </div>\n" +
     "        </div>\n" +
-    "    </div>\n" +
-    "\n" +
-    "    <div class=\"category-wrapper\"\n" +
-    "         subject-id-to-attr-drv=\"vm.subjectId\"\n" +
-    "         ng-repeat=\"(categoryId, categoryObj) in performanceData[subjectId].noDataItems\">\n" +
-    "        <div class=\"category-short-name\">{{categoryObj.shortName[0]}}</div>\n" +
-    "        <div class=\"category-name\">{{categoryObj.name | cutString:20}}</div>\n" +
-    "        <div class=\"no-data-title\" translate=\".NO_DATA\"></div>\n" +
     "    </div>\n" +
     "</div>\n" +
     "");
