@@ -8586,7 +8586,7 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
             };
 
             StatsSrv.getStatsByCategoryId = function (categoryId) {
-                var categoryStatsKey = 'id_' + categoryId;
+                var categoryStatsKey = StatsSrv.getCategoryKey(categoryId);
                 return getStats().then(function (stats) {
                     return UtilitySrv.object.findProp(stats, categoryStatsKey);
                 });
