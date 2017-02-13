@@ -13,6 +13,7 @@
     .config([
         'SvgIconSrvProvider',
         function (SvgIconSrvProvider) {
+            'ngInject';
             var svgMap = {
                 'znkCategoryStats-clock-icon': 'components/znkCategoryStats/svg/clock-icon.svg'
             };
@@ -148,7 +149,7 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
     "\n" +
     "        <div class=\"progress-details-wrapper\">\n" +
     "            <div class=\"level-status-wrapper\">\n" +
-    "                <span translate=\".CATEGORY_MASTERY\" translate-values=\"{categoryProgress: vm.category.progress}\"></span>\n" +
+    "                <span translate=\".CATEGORY_ACCURACY\" translate-values=\"{categoryProgress: vm.category.progress}\"></span>\n" +
     "            </div>\n" +
     "\n" +
     "            <div class=\"subject-progress-wrapper\">\n" +

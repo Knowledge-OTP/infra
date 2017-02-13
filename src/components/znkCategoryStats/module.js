@@ -13,6 +13,7 @@
     .config([
         'SvgIconSrvProvider',
         function (SvgIconSrvProvider) {
+            'ngInject';
             var svgMap = {
                 'znkCategoryStats-clock-icon': 'components/znkCategoryStats/svg/clock-icon.svg'
             };
