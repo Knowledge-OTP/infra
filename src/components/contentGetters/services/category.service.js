@@ -99,7 +99,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             if (categoryEnum.LEVEL1.enum === category.typeId) {
                 return categoryId;
             }
-            return self.getCategoryLevel1ParentById(category.parentId);
+            return self.getCategoryLevel1ParentByIdSync(category.parentId);
         };
 
         self.getCategoryLevel1ParentById = function (categoryId) {

@@ -1,7 +1,7 @@
 describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
     'use strict';
 
-    beforeEach(module('znk.infra.estimatedScore', 'htmlTemplates', 'testUtility', 'storage.mock', 'estimatedScore.mock', 'content.mock'));
+    beforeEach(module('znk.infra.estimatedScore', 'htmlTemplates', 'testUtility', 'storage.mock', 'estimatedScore.mock', 'content.mock', 'categories.mock'));
 
     var rawPointsForExerciseTypeMap = {
         4: {
@@ -31,7 +31,7 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
     }));
 
     var exerciseEventsConst, actions, TestUtilitySrv, $rootScope, ExerciseTypeEnum, SubjectEnum, StudentStorage,
-        ExerciseAnswerStatusEnum, EstimatedScoreSrv, EstimatedScoreEventsHandlerSrv;
+        ExerciseAnswerStatusEnum, EstimatedScoreSrv, EstimatedScoreEventsHandlerSrv, categoriesConstant;
     beforeEach(inject(
         function ($injector) {
             exerciseEventsConst = $injector.get('exerciseEventsConst');
@@ -44,6 +44,8 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
             var InfraConfigSrv = $injector.get('InfraConfigSrv');
             StudentStorage = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage, InfraConfigSrv)();
             ExerciseAnswerStatusEnum = $injector.get('ExerciseAnswerStatusEnum');
+            categoriesConstant = $injector.get('categoriesConstant');
+            
 
             TestUtilitySrv.general.printDebugLogs();
 
