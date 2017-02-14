@@ -15,7 +15,11 @@
                 ['STRATEGY', 8, 'strategy'],
                 ['SUBJECT', 9, 'subject'],
                 ['SUB_SCORE', 10, 'subScore'],
-                ['TEST_SCORE', 11, 'testScore']
+                ['TEST_SCORE', 11, 'testScore'],
+                ['LEVEL1', 101, 'level1Categories'],
+                ['LEVEL2', 102, 'level2Categories'],
+                ['LEVEL3', 103, 'level3Categories'],
+                ['LEVEL4', 104, 'level4Categories']
             ]);
         }
     ]);
