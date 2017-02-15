@@ -61,9 +61,9 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
                 return StudentStorage.adapter.__db.users.$$uid.estimatedScore.estimatedScores[subjectId];
             };
 
-/*            actions.getExercisesRawScoreFromDb = function (subjectId) {
+            actions.getExercisesRawScoreFromDb = function (subjectId) {
                 return StudentStorage.adapter.__db.users.$$uid.estimatedScore.sectionsRawScores[subjectId];
-            };*/
+            };
         }
     ));
 
@@ -82,11 +82,13 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         var scoresArr = actions.getEstimatedScoresFromDb(section.subjectId);
 
         expect(scoresArr.length).toEqual(1);
-
         var expectedResult = {
             exerciseType: ExerciseTypeEnum.SECTION.enum,
             exerciseId: section.id,
-            score: 1360
+            score: (0 * 90) + (1 * 100) + (2 * 120) + (1 * 140) + (1 * 150) + //correct
+            (1 * 50) + (3 * 60) + (2 * 80) + (1 * 100) + (2 * 120) //wrong
+            //score: (/*3*/ 3 * 120) + (/*2*/ 1 * 100) + (/*4*/ 1 * 140) +
+            //(/*1*/ 3 * 50) + (/*5*/ 2 * 120) + (/*4*/ 3 * 100) + (/*2*/ 2 * 60) + (/*3*/ 2 * 80)
         };
         expect(scoresArr[0]).toEqual(jasmine.objectContaining(expectedResult));
         //testing that same event will not be processed twice
@@ -132,7 +134,7 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         expect(sectionRawScore[0]).toEqual(jasmine.objectContaining(expectedResult));
     });
 
-    it('when drill exercise is completed then raw score and estimated should be updated accordingly', function () {
+    it('when section is completed then raw score and estimated should be updated accordingly', function () {
         var sectionMock = content.section1276;
         var diagnosticSectionRawScoreMock = {
             exerciseType: 4,
@@ -241,16 +243,8 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         expect(estimatedScores[2]).toEqual(jasmine.objectContaining(expectedEstimatedScore));
     });
 
-
-    xit('when exercise is completed and no initial score is set then the received score should be set as the initial one', function () {
+    it('when exercise is completed and no initial score is set then the received score should be set as the initial one', function () {
         var drillMock = content.drill10;
-        var estimatedScoreMock = {
-            exerciseType: 4,
-            exerciseId: 1087,
-            score: 24,
-            time: 1441625776941
-        };
-
         var CORRECT_NUM = 5;
         var UNANSWERED_NUM = 2;
         var resultMock = TestUtilitySrv.exercise.mockExerciseResult(drillMock, CORRECT_NUM, UNANSWERED_NUM, true);
@@ -286,6 +280,6 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, drillMock, resultMock);
         $rootScope.$digest();
 
-        expect(EstimatedScoreSrv.addRawScore).toHaveBeenCalledTimes(0);
+        expect(EstimatedScoreSrv.addRawScore).toHaveBeenCalledTimes(1);
     });
 });

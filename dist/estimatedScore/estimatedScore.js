@@ -132,7 +132,7 @@
                             var subjectId2 = CategoryService.getCategoryLevel1ParentByIdSync(question.categoryId2);
                             subjectIds = [subjectId1, subjectId2];
                             angular.forEach(subjectIds, function (subjectId) {
-                                if (subjectId) {
+                                if (angular.isDefined(subjectId) && subjectId !== null) {
                                     if (angular.isUndefined(scores[subjectId])) {
                                         scores[subjectId] = 0;
                                     }
@@ -142,7 +142,7 @@
                         }
                     });
                     angular.forEach(subjectIds, function (subjectId) {
-                        if(subjectId) {
+                        if(angular.isDefined(subjectId) && subjectId !== null) {
                             EstimatedScoreSrv.setDiagnosticSectionScore(scores[subjectId], ExerciseTypeEnum.SECTION.enum, subjectId, section.id);
                         }
                     });
@@ -213,7 +213,7 @@
                             var subjectId2 = CategoryService.getCategoryLevel1ParentByIdSync(questionResult.categoryId2);
                             var subjectIds = [subjectId1, subjectId2];
                             angular.forEach(subjectIds, function (subjectId) {
-                                if (subjectId) {
+                                if (angular.isDefined(subjectId) && subjectId !== null) {
                                     if (angular.isUndefined(rawScores[subjectId])) {
                                         rawScores[subjectId] = {
                                             total: questionResults.length * exercisesRawScoring[exerciseType].correctWithin,
