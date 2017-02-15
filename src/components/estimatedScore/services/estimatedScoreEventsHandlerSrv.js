@@ -125,7 +125,9 @@
                         }
                     });
                     angular.forEach(subjectIds, function (subjectId) {
-                        EstimatedScoreSrv.setDiagnosticSectionScore(scores[subjectId], ExerciseTypeEnum.SECTION.enum, subjectId, section.id);
+                        if(subjectId) {
+                            EstimatedScoreSrv.setDiagnosticSectionScore(scores[subjectId], ExerciseTypeEnum.SECTION.enum, subjectId, section.id);
+                        }
                     });
 
                     // sectionResult.questionResults.forEach(function (result, i) {
@@ -271,9 +273,8 @@
 
                 function _callCalculateAndSaveRawScore(exerciseTypeEnum, sectionResult, id, isDiagnostic) {
                     var rawScores = _calculateRawScore(exerciseTypeEnum, sectionResult);
-                    rawScores.forEach(function (subjectId) {
-                        var rawScore = rawScores[subjectId];
-                        EstimatedScoreSrv.addRawScore(rawScore, exerciseTypeEnum, subjectId, id, isDiagnostic);
+                    angular.forEach(rawScores, function (rawScore, subjectId) {
+                        EstimatedScoreSrv.addRawScore(rawScores[subjectId], exerciseTypeEnum, subjectId, id, isDiagnostic);
                     });
                 }
 
