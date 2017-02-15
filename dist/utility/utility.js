@@ -98,6 +98,12 @@
                 };
             };
 
+            UtilitySrv.array.removeDuplicates = function(arr){
+                return arr.filter(function(item, pos) {
+                    return arr.indexOf(item) === pos;
+                });
+            };
+
             UtilitySrv.fn = {};
 
             UtilitySrv.fn.singletonPromise = function(promGetter){
