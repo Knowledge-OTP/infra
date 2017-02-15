@@ -20,12 +20,12 @@
                     var dataPromMap = {};
                     dataPromMap.stats = StatsSrv.getStatsByCategoryId(categoryId);
                     dataPromMap.category = CategoryService.getCategoryData(categoryId);
-                    dataPromMap.subjectId = CategoryService.getCategoryLevel1ParentById(categoryId);
+                    dataPromMap.level1CategoryId = CategoryService.getCategoryLevel1ParentById(categoryId);
 
                     $q.all(dataPromMap).then(function (data) {
                         var userStats = data.stats;
                         var category = data.category;
-                        vm.subjectId = data.subjectId;
+                        vm.level1CategoryId = data.level1CategoryId;
 
                         var extendObj = {};
                         extendObj.progress = getProgress(userStats);

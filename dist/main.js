@@ -1738,7 +1738,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                              status = CallsBtnStatusEnum.CALL_BTN.enum;
                      }
                  }
-
+                 
                 return status;
             };
 
@@ -4720,7 +4720,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             angular.forEach(categoriesMap, function (category) {
                 if (category.typeId === categoryEnum.LEVEL4.enum) {
                     specificCategories[category.id] = category;
-                }
+                } 
             });
             return specificCategories;
         };
@@ -6463,7 +6463,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
     angular.module('znk.infra.exerciseUtility').factory('ExerciseUtilitySrv',
         function () {
             'ngInject';
-
+            
             var ExerciseUtilitySrv = {};
 
             return ExerciseUtilitySrv;
@@ -6490,7 +6490,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
                 if(!angular.isString(str) || !str.length){
                     return '';
                 }
-
+                
                 return str[0].toUpperCase() + str.substr(1);
             };
         }
@@ -6835,7 +6835,7 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
  *  In case only one prefix/suffix is provided, it will be used in all attributes
  *  In case no @context-attr is provided, it will set the class attribute by default
  *  No need to pass dashes ('-') to prefix or suffix, they are already appended
- *
+ * 
  * ** Optional **: you can now add an attribute called "type" and assign it the word topic if you want idToTopicName
  */
 (function (angular) {
@@ -7617,7 +7617,7 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function($template
 
 (function (angular) {
     'use strict';
-
+    
     angular.module('znk.infra.personalization')
         .service('PersonalizationSrv',
             ["StorageRevSrv", "$log", "$q", function (StorageRevSrv, $log, $q) {
@@ -8429,7 +8429,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
 (function(){
     'use strict';
-
+    
     angular.module('znk.infra.screenSharing').run(
         ["ScreenSharingEventsSrv", function(ScreenSharingEventsSrv){
             'ngInject';
@@ -10444,7 +10444,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.teachers', [
-
+        
     ]);
 })(angular);
 
@@ -11845,12 +11845,12 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                     var dataPromMap = {};
                     dataPromMap.stats = StatsSrv.getStatsByCategoryId(categoryId);
                     dataPromMap.category = CategoryService.getCategoryData(categoryId);
-                    dataPromMap.subjectId = CategoryService.getCategoryLevel1ParentById(categoryId);
+                    dataPromMap.level1CategoryId = CategoryService.getCategoryLevel1ParentById(categoryId);
 
                     $q.all(dataPromMap).then(function (data) {
                         var userStats = data.stats;
                         var category = data.category;
-                        vm.subjectId = data.subjectId;
+                        vm.level1CategoryId = data.level1CategoryId;
 
                         var extendObj = {};
                         extendObj.progress = getProgress(userStats);
@@ -11944,7 +11944,7 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
   $templateCache.put("components/znkCategoryStats/znkCategoryStats.template.html",
     "<div class=\"znk-category-stats\">\n" +
     "    <div class=\"category-wrapper\"\n" +
-    "         subject-id-to-attr-drv=\"vm.subjectId\"\n" +
+    "         subject-id-to-attr-drv=\"vm.level1CategoryId\"\n" +
     "         translate-namespace=\"ZNK_CATEGORY_SUMMARY\">\n" +
     "\n" +
     "        <div class=\"category-short-name\">{{vm.category.shortName}}</div>\n" +
@@ -13727,7 +13727,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         var exerciseReviewStatus = scope.settings.exerciseReviewStatus;
                         var isExerciseComplete = scope.settings.isComplete;
                         var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';
-
+                        
 
                         scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex) {
                             $q.all([
@@ -13743,7 +13743,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 var isLastQuestion = maxQuestionNum === currIndex ? true : false;
 
                                 function _determineIfShowButton () {
-                                    return isInLiveSession && isExerciseComplete && isTeacherApp && isLastQuestion &&
+                                    return isInLiveSession && isExerciseComplete && isTeacherApp && isLastQuestion && 
                                     exerciseReviewStatus !== ExerciseReviewStatusEnum.YES.enum && exerciseReviewStatus !== ExerciseReviewStatusEnum.DONE_TOGETHER.enum;
                                 }
 
@@ -13883,7 +13883,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             questionTypeGetterFn = typeGetterFn;
         };
 
-        var answersFormaterObjMap = {};
+        var answersFormaterObjMap = {};        
         this.setAnswersFormatValidtors = function (_answersFormaterObjMap) {
             answersFormaterObjMap = _answersFormaterObjMap;
         };
@@ -13907,7 +13907,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     return questionTypeGetterFn(question);
                 };
 
-                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {   
                     if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
                         $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
                         return;
@@ -13915,7 +13915,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                    var answersFormaterArr = answersFormaterObjMap[answerTypeId];
 
-                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer
+                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
                    if (angular.isUndefined(userAnswer) ||
                        !angular.isArray(answersFormaterArr) ||
                        !answersFormaterArr.length) {
@@ -13925,10 +13925,10 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                     var answersFormaterArrLength = answersFormaterArr.length;
 
-                    var answerValueBool, currentFormatter, functionGetter;
+                    var answerValueBool, currentFormatter, functionGetter;                     
                     for (var i = 0; i < answersFormaterArrLength; i++) {
                         currentFormatter = answersFormaterArr[i];
-
+                       
                         if (angular.isFunction(currentFormatter)) {
                             try {
                                  functionGetter = $injector.invoke(currentFormatter);
@@ -14875,12 +14875,12 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             var userAnswer = question.__questionStatus.userAnswer;
                             var answerTypeId = question.answerTypeId;
                             var currIndex = index || question.__questionStatus.index;
-
-                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function() {
-                                setPagerItemAnswerClass(currIndex, question);
+                            
+                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function() {               
+                                setPagerItemAnswerClass(currIndex, question); 
                             }, function() {
                                  var pagerItemElement = getPagerItemByIndex(currIndex);
-                                 pagerItemElement.removeClass('neutral correct wrong');
+                                 pagerItemElement.removeClass('neutral correct wrong');  
                             }, question);
                         }
 
@@ -15023,7 +15023,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     angular.module('znk.infra.znkExercise').service('ZnkExerciseDrawSrv',
         function () {
             //'ngInject';
-
+            
             var self = this;
 
             /** example of self.canvasContextManager
@@ -15036,7 +15036,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
              *                question: CanvasContextObject,
              *                answer: CanvasContextObject
              *             }
-             *  }
+             *  } 
              *
              *  the names (such as 'question' or 'answer') are set according to the attribute name 'canvas-name' of znkExerciseDrawContainer directive
              */
@@ -16459,7 +16459,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 return function() {
                     return true;
                 };
-            };
+            }; 
 
             this.setShouldBroadCastExerciseGetter = function(_broadCastExerciseFn) {
                 broadCastExerciseFn = _broadCastExerciseFn;
