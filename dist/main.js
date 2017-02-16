@@ -264,7 +264,7 @@
     }]);
 })(angular);
 
-angular.module('znk.infra.analytics').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.analytics').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -984,7 +984,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
     );
 })(angular);
 
-angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.assignModule').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -1215,7 +1215,7 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
         }]);
 })(angular);
 
-angular.module('znk.infra.auth').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.auth').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -1255,7 +1255,7 @@ angular.module('znk.infra.auth').run(['$templateCache', function($templateCache)
 })(angular);
 
 
-angular.module('znk.infra.autofocus').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.autofocus').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -2628,7 +2628,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     );
 })(angular);
 
-angular.module('znk.infra.calls').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.calls').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/calls/directives/callBtn/callBtn.template.html",
     "<button\n" +
     "    ng-click=\"vm.clickBtn()\"\n" +
@@ -2956,7 +2956,7 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     ]);
 })(angular);
 
-angular.module('znk.infra.config').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.config').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -3200,7 +3200,7 @@ angular.module('znk.infra.config').run(['$templateCache', function($templateCach
     ]);
 })(angular);
 
-angular.module('znk.infra.content').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.content').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -3449,7 +3449,7 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
     ]);
 })(angular);
 
-angular.module('znk.infra.contentAvail').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.contentAvail').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -4557,7 +4557,6 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             return categoriesMap[parentId];
         };
 
-
         self.getParentCategory = function (categoryId) {
             return self.getCategoryMap().then(function (categories) {
                 var parentId;
@@ -4572,12 +4571,16 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         };
 
         self.getCategoryLevel1ParentByIdSync = function (categoryId) {
+            if (angular.isUndefined(categoryId) || categoryId === null) {
+                $log.debug('CategoryService: No category id', categoryId);
+                return;
+            }
             var categoriesMap = self.getCategoryMap(true);
             var category = categoriesMap[categoryId];
-            if (categoryEnum.LEVEL1.enum === category.typeId) {
+            if (categoryEnum.SUBJECT.enum === category.typeId) {
                 return categoryId;
             }
-            return self.getCategoryLevel1ParentById(category.parentId);
+            return self.getCategoryLevel1ParentByIdSync(category.parentId);
         };
 
         self.getCategoryLevel1ParentById = function (categoryId) {
@@ -4592,31 +4595,6 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
                 return self.getCategoryLevel1ParentById(category.parentId);
             });
         };
-
-        // self.getCategoryLevel1ParentSync = function (category) {
-        //     if (!category) {
-        //         $log.error("Category Service: Couldn't fetch category", category);
-        //         return null;
-        //     }
-        //     if (category.typeId === categoryEnum.LEVEL1.enum) {
-        //         return category.id;
-        //     }
-        //     var parentCategory = self.getParentCategorySync(category.id);
-        //     return self.getCategoryLevel1ParentSync(parentCategory);
-        // };
-
-        // self.getCategoryLevel1Parent = function (category) {
-        //     if (!category) {
-        //         return $q.when(null);
-        //     }
-
-        //     if (category.typeId === categoryEnum.SUBJECT.enum) {
-        //         return $q.when(category.id);
-        //     }
-        //     return self.getParentCategory(category.id).then(function (parentCategory) {
-        //         return self.getCategoryLevel1Parent(parentCategory);
-        //     });
-        // };
 
         self.getCategoryLevel2ParentSync = function (categoryId) {
             var categoriesMap = self.getCategoryMap(true);
@@ -4672,55 +4650,13 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             });
         };
 
-        // self.getAllLevel3Categories = (function () {
-        //     var getAllLevel3CategoriesProm;
-        //     return function () {
-        //         if (!getAllLevel3CategoriesProm) {
-        //             getAllLevel3CategoriesProm = self.getCategoryMap().then(function (categories) {
-        //                 var generalCategories = {};
-        //                 angular.forEach(categories, function (category) {
-        //                     if (category.typeId === categoryEnum.GENERAL.enum) {
-        //                         generalCategories[category.id] = category;
-        //                     }
-        //                 });
-        //                 return generalCategories;
-        //             });
-        //         }
-        //         return getAllLevel3CategoriesProm;
-        //     };
-        // })();
-
-        // self.getAllLevel3CategoriesGroupedByLevel1 = (function () {
-        //     var getAllLevel3CategoriesGroupedByLevel1Prom;
-        //     return function (subjectId) {
-        //         if (!getAllLevel3CategoriesGroupedByLevel1Prom) {
-        //             getAllLevel3CategoriesGroupedByLevel1Prom = self.getAllLevel3Categories().then(function (categories) {
-        //                 var generalCategories = {};
-        //                 var promArray = [];
-        //                 angular.forEach(categories, function (generalCategory) {
-        //                     var prom = self.getCategoryLevel1Parent(generalCategory).then(function (currentCategorySubjectId) {
-        //                         if (currentCategorySubjectId === subjectId) {
-        //                             generalCategories[generalCategory.id] = generalCategory;
-        //                         }
-        //                     });
-        //                     promArray.push(prom);
-        //                 });
-        //                 return $q.all(promArray).then(function () {
-        //                     return generalCategories;
-        //                 });
-        //             });
-        //         }
-        //         return getAllLevel3CategoriesGroupedByLevel1Prom;
-        //     };
-        // })();
-
         self.getAllLevel4CategoriesSync = function () {
             var categoriesMap = self.getCategoryMap(true);
             var specificCategories = {};
             angular.forEach(categoriesMap, function (category) {
                 if (category.typeId === categoryEnum.LEVEL4.enum) {
                     specificCategories[category.id] = category;
-                } 
+                }
             });
             return specificCategories;
         };
@@ -4744,7 +4680,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         })();
     }]);
 
-angular.module('znk.infra.contentGetters').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.contentGetters').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -4794,7 +4730,7 @@ angular.module('znk.infra.contentGetters').run(['$templateCache', function($temp
     ]);
 })(angular);
 
-angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/deviceNotSupported/deviceNotSupported.template.html",
     "<div class=\"device-not-supported-inner\">\n" +
     "    <h1>{{title}}</h1>\n" +
@@ -4895,7 +4831,7 @@ angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function($
     ]);
 })(angular);
 
-angular.module('znk.infra.enum').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.enum').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -5015,46 +4951,36 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
 
                 function _diagnosticSectionCompleteHandler(section, sectionResult) {
                     var scores = {};
-                    var scoresPromises = [];
+                    var subjectIds = [];
 
                     var questions = section.questions;
                     var questionsMap = UtilitySrv.array.convertToMap(questions);
 
                     sectionResult.questionResults.forEach(function (result, i) {
-                        var scoreDeferred = $q.defer();
                         var question = questionsMap[result.questionId];
                         if (angular.isUndefined(question)) {
                             $log.error('EstimatedScoreEventsHandler: question for result is missing',
                                 'section id: ', section.id,
                                 'result index: ', i
                             );
-                            scoreDeferred.reject();
                         } else {
-                            var subjectId1Prom = CategoryService.getCategoryLevel1ParentById(question.categoryId);
-                            var subjectId2Prom = CategoryService.getCategoryLevel1ParentById(question.categoryId2);
-                            $q.all([
-                                subjectId1Prom,
-                                subjectId2Prom
-                            ]).then(function (subjectIds) {
-                                angular.forEach(subjectIds, function (subjectId) {
-                                    if (angular.isNumber(subjectId)) {
-                                        if (angular.isUndefined(scores[subjectId])) {
-                                            scores[subjectId] = 0;
-                                        }
-                                        scores[subjectId] += _getDiagnosticQuestionPoints(question, result);
+                            var subjectId1 = CategoryService.getCategoryLevel1ParentByIdSync(question.categoryId);
+                            var subjectId2 = CategoryService.getCategoryLevel1ParentByIdSync(question.categoryId2);
+                            subjectIds = [subjectId1, subjectId2];
+                            angular.forEach(subjectIds, function (subjectId) {
+                                if (angular.isDefined(subjectId) && subjectId !== null) {
+                                    if (angular.isUndefined(scores[subjectId])) {
+                                        scores[subjectId] = 0;
                                     }
-                                }); // forEach(subjectIds
-                                scoreDeferred.resolve();
-                            }); // then
+                                    scores[subjectId] += _getDiagnosticQuestionPoints(question, result);
+                                }
+                            });
                         }
-                        scoresPromises.push(scoreDeferred.promise);
                     });
-
-                    $q.all(scoresPromises).then(function () {
-                        var subjectIds = Object.keys(scores);
-                        subjectIds.forEach(function (subjectId) {
+                    angular.forEach(subjectIds, function (subjectId) {
+                        if(angular.isDefined(subjectId) && subjectId !== null) {
                             EstimatedScoreSrv.setDiagnosticSectionScore(scores[subjectId], ExerciseTypeEnum.SECTION.enum, subjectId, section.id);
-                        });
+                        }
                     });
                 }
 
@@ -5068,50 +4994,38 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
                 }
 
                 function _calculateRawScore(exerciseType, exerciseResult) {
-                    var scoresDeferred = $q.defer();
+
                     if (!exercisesRawScoring[exerciseType]) {
                         $log.error('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: ' + exerciseType);
                     }
                     var rawScores = {};
                     var questionResults = exerciseResult.questionResults;
-                    var rawScoresProms = [];
                     questionResults.forEach(function (questionResult, index) {
-                        var rawScoreDeferred = $q.defer();
                         if (angular.isUndefined(questionResult)) {
                             $log.error('EstimatedScoreEventsHandler: question for result is missing',
                                 'exercise id: ', exerciseResult.id,
                                 'result index: ', index
                             );
-                            rawScoreDeferred.reject();
+                            return;
                         } else {
-                            var subjectId1Prom = CategoryService.getCategoryLevel1ParentById(questionResult.categoryId);
-                            var subjectId2Prom = CategoryService.getCategoryLevel1ParentById(questionResult.categoryId2);
-
-                            $q.all([
-                                subjectId1Prom,
-                                subjectId2Prom
-                            ]).then(function (subjectIds) {
-                                subjectIds.forEach(function (subjectId) {
-                                    if (angular.isNumber(subjectId)) {
-                                        if (angular.isUndefined(rawScores[subjectId])) {
-                                            rawScores[subjectId] = {
-                                                total: questionResults.length * exercisesRawScoring[exerciseType].correctWithin,
-                                                earned: 0
-                                            };
-                                        }
-                                        rawScores[subjectId].earned += _getQuestionRawPoints(exerciseType, questionResult);
+                            var subjectId1 = CategoryService.getCategoryLevel1ParentByIdSync(questionResult.categoryId);
+                            var subjectId2 = CategoryService.getCategoryLevel1ParentByIdSync(questionResult.categoryId2);
+                            var subjectIds = [subjectId1, subjectId2];
+                            angular.forEach(subjectIds, function (subjectId) {
+                                if (angular.isDefined(subjectId) && subjectId !== null) {
+                                    if (angular.isUndefined(rawScores[subjectId])) {
+                                        rawScores[subjectId] = {
+                                            total: questionResults.length * exercisesRawScoring[exerciseType].correctWithin,
+                                            earned: 0
+                                        };
                                     }
-                                });
-                                rawScoreDeferred.resolve();
+                                    rawScores[subjectId].earned += _getQuestionRawPoints(exerciseType, questionResult);
+                                }
                             });
                         }
-                        rawScoresProms.push(rawScoreDeferred.promise);
-                    });
-                    $q.all(rawScoresProms).then(function () {
-                        scoresDeferred.resolve(rawScores);
                     });
 
-                    return scoresDeferred.promise;
+                    return rawScores;
                 }
 
                 function _shouldEventBeProcessed(exerciseType, exercise, exerciseResult) {
@@ -5132,14 +5046,9 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
 
 
                 function _callCalculateAndSaveRawScore(exerciseTypeEnum, sectionResult, id, isDiagnostic) {
-                    _calculateRawScore(exerciseTypeEnum, sectionResult).then(function (rawScores) {
-                        var rawScoresKeys = Object.keys(rawScores);
-                        rawScoresKeys.forEach(function (subjectId) {
-                            var rawScore = rawScores[subjectId];
-                            (function (rawScore) {
-                                EstimatedScoreSrv.addRawScore(rawScore, exerciseTypeEnum, subjectId, id, isDiagnostic);
-                            })(rawScore);
-                        });
+                    var rawScores = _calculateRawScore(exerciseTypeEnum, sectionResult);
+                    angular.forEach(rawScores, function (rawScore, subjectId) {
+                        EstimatedScoreSrv.addRawScore(rawScores[subjectId], exerciseTypeEnum, subjectId, id, isDiagnostic);
                     });
                 }
 
@@ -5475,7 +5384,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
     });
 })(angular);
 
-angular.module('znk.infra.estimatedScore').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.estimatedScore').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -5542,7 +5451,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
     });
 })(angular);
 
-angular.module('znk.infra.evaluator').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.evaluator').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -5607,7 +5516,7 @@ angular.module('znk.infra.evaluator').run(['$templateCache', function($templateC
     );
 })(angular);
 
-angular.module('znk.infra.eventManager').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.eventManager').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -5683,7 +5592,7 @@ angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "Co
         };
 }]);
 
-angular.module('znk.infra.exams').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.exams').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -6193,7 +6102,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
     ]);
 })(angular);
 
-angular.module('znk.infra.exerciseResult').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.exerciseResult').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -6471,7 +6380,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
     );
 })(angular);
 
-angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.exerciseUtility').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -6619,7 +6528,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
         }
         );
 })();
-angular.module('znk.infra.filters').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.filters').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -7365,7 +7274,7 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
     ]);
 })(angular);
 
-angular.module('znk.infra.general').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.general').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/general/svg/clock-icon.svg",
     "<svg version=\"1.1\" class=\"clock-icon-svg\"\n" +
     "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
@@ -7563,7 +7472,7 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
     });
 })(angular);
 
-angular.module('znk.infra.hint').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.hint').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -7605,7 +7514,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
 })(angular);
 
 
-angular.module('znk.infra.mailSender').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.mailSender').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -7648,7 +7557,7 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function($template
 })(angular);
 
 
-angular.module('znk.infra.personalization').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.personalization').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -7772,7 +7681,7 @@ angular.module('znk.infra.personalization').run(['$templateCache', function($tem
         }
     ]);
 })(angular);
-angular.module('znk.infra.pngSequence').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.pngSequence').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -7978,7 +7887,7 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function($templat
     ]);
 })();
 
-angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.popUp').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/popUp/svg/correct-icon.svg",
     "<svg version=\"1.1\"\n" +
     "     class=\"correct-icon-svg\"\n" +
@@ -8176,7 +8085,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
     });
 })(angular);
 
-angular.module('znk.infra.presence').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.presence').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -8319,7 +8228,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
 });
 
 
-angular.module('znk.infra.scoring').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.scoring').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -8995,7 +8904,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
     });
 })(angular);
 
-angular.module('znk.infra.screenSharing').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.screenSharing').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/screenSharing/directives/screenSharing/screenSharing.template.html",
     "<div ng-switch=\"$ctrl.userSharingState\"\n" +
     "     ng-class=\"$ctrl.sharingStateCls\">\n" +
@@ -9270,7 +9179,7 @@ angular.module('znk.infra.screenSharing').run(['$templateCache', function($templ
 })(angular);
 
 
-angular.module('znk.infra.scroll').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.scroll').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -9280,7 +9189,7 @@ angular.module('znk.infra.scroll').run(['$templateCache', function($templateCach
     angular.module('znk.infra.sharedScss', []);
 })(angular);
 
-angular.module('znk.infra.sharedScss').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.sharedScss').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -9646,7 +9555,7 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
         }]);
 })(angular);
 
-angular.module('znk.infra.stats').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.stats').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -10195,7 +10104,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
     ]);
 })(angular);
 
-angular.module('znk.infra.storage').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.storage').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -10318,7 +10227,7 @@ angular.module('znk.infra.storage').run(['$templateCache', function($templateCac
 
 
 
-angular.module('znk.infra.support').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.support').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -10436,7 +10345,7 @@ angular.module('znk.infra.support').run(['$templateCache', function($templateCac
         }]);
 })(angular);
 
-angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.svgIcon').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -10498,7 +10407,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
     );
 })(angular);
 
-angular.module('znk.infra.teachers').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.teachers').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -10638,7 +10547,7 @@ angular.module('znk.infra.user').service('UserProfileService',
     );
 })(angular);
 
-angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.user').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -10766,7 +10675,7 @@ angular.module('znk.infra.user').run(['$templateCache', function($templateCache)
     ]);
 })(angular);
 
-angular.module('znk.infra.userContext').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.userContext').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -10774,6 +10683,33 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
     'use strict';
 
     angular.module('znk.infra.utility', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
+        var dayInMs = 86400000;
+        var WEEK = 7;
+        this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
+
+
+        this.isDueDatePass = function (dueDate) {
+            var res = {
+                dateDiff: 0,
+                passDue: false
+            };
+
+            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
+                return res;
+            }
+
+            res.dateDiff = Math.abs(Math.ceil((Date.now() - dueDate) / dayInMs));
+            res.passDue = dueDate - Date.now() < 0;
+            return res;
+        };
+    }
+    ]);
 })(angular);
 
 (function (angular) {
@@ -10901,34 +10837,7 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
     ]);
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
-        var dayInMs = 86400000;
-        var WEEK = 7;
-        this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
-
-
-        this.isDueDatePass = function (dueDate) {
-            var res = {
-                dateDiff: 0,
-                passDue: false
-            };
-
-            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
-                return res;
-            }
-
-            res.dateDiff = Math.abs(Math.ceil((Date.now() - dueDate) / dayInMs));
-            res.passDue = dueDate - Date.now() < 0;
-            return res;
-        };
-    }
-    ]);
-})(angular);
-
-angular.module('znk.infra.utility').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.utility').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -11118,7 +11027,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 
 })(angular);
 
-angular.module('znk.infra.webcall').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.webcall').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -11217,7 +11126,7 @@ angular.module('znk.infra.webcall').run(['$templateCache', function($templateCac
     );
 })(angular);
 
-angular.module('znk.infra.workouts').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.workouts').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -11674,7 +11583,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
     ]);
 })(angular);
 
-angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkAudioPlayer/svg/close-icon.svg",
     "<svg\n" +
     "    x=\"0px\"\n" +
@@ -11877,7 +11786,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
         });
 })(angular);
 
-angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkCategoryStats/svg/clock-icon.svg",
     "<svg version=\"1.1\"\n" +
     "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
@@ -12712,7 +12621,7 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
     );
 })(angular);
 
-angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkChat/svg/znk-chat-chat-icon.svg",
     "<svg\n" +
     "    id=\"Layer_1\"\n" +
@@ -16539,7 +16448,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     );
 })(angular);
 
-angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkExercise').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkExercise/core/template/btnSectionDesktopTemplate.html",
     "<div class=\"btn-container left-container ng-hide\"\n" +
     "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
@@ -17256,7 +17165,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     ]);
 })(angular);
 
-angular.module('znk.infra.znkMedia').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkMedia').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -17292,7 +17201,7 @@ angular.module('znk.infra.znkMedia').run(['$templateCache', function($templateCa
 })(angular);
 
 
-angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkModule').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -17335,7 +17244,7 @@ angular.module('znk.infra.znkModule').run(['$templateCache', function($templateC
 })(angular);
 
 
-angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkProgressBar').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkProgressBar/znkProgressBar.template.html",
     "<div ng-if=\"::showProgressBubble()\" class=\"progress-bubble-wrapper\" ng-style=\"{left: progressWidth + '%'}\">\n" +
     "    <div class=\"progress-percentage\">\n" +
@@ -17502,7 +17411,7 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
         }]);
 })(angular);
 
-angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkQuestionReport/svg/close-popup.svg",
     "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\"\n" +
     "	 viewBox=\"-596.6 492.3 133.2 133.5\" xml:space=\"preserve\" class=\"close-pop-svg\">\n" +
@@ -17776,7 +17685,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
         });
 })(angular);
 
-angular.module('znk.infra.znkSessionData').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkSessionData').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -18067,7 +17976,7 @@ angular.module('znk.infra.znkSessionData').run(['$templateCache', function($temp
 })(angular);
 
 
-angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkTimeline').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
     "	 viewBox=\"-145 277 60 60\" style=\"enable-background:new -145 277 60 60;\" xml:space=\"preserve\" class=\"timeline-diagnostic-test-icon\" width=\"30px\" height=\"30px\">\n" +
@@ -18381,6 +18290,6 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templat
         });
 })(angular);
 
-angular.module('znk.infra.znkTooltip').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkTooltip').run(['$templateCache', function ($templateCache) {
 
 }]);
