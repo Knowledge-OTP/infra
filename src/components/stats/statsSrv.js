@@ -168,7 +168,7 @@
 
             StatsSrv.getStatsByCategoryId = function (categoryId) {
                 var categoryStatsKey = StatsSrv.getCategoryKey(categoryId);
-                var categoryStatsParentKey = StatsSrv.getStatsKeyByCategoryId(categoryId);
+                var categoryStatsParentKey = CategoryService.getStatsKeyByCategoryId(categoryId);
                 return getStats().then(function (stats) {
                     return stats[categoryStatsParentKey][categoryStatsKey];
                 });
