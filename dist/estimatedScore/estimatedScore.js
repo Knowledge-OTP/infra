@@ -114,46 +114,36 @@
 
                 function _diagnosticSectionCompleteHandler(section, sectionResult) {
                     var scores = {};
-                    var scoresPromises = [];
+                    var subjectIds = [];
 
                     var questions = section.questions;
                     var questionsMap = UtilitySrv.array.convertToMap(questions);
 
                     sectionResult.questionResults.forEach(function (result, i) {
-                        var scoreDeferred = $q.defer();
                         var question = questionsMap[result.questionId];
                         if (angular.isUndefined(question)) {
                             $log.error('EstimatedScoreEventsHandler: question for result is missing',
                                 'section id: ', section.id,
                                 'result index: ', i
                             );
-                            scoreDeferred.reject();
                         } else {
-                            var subjectId1Prom = CategoryService.getCategoryLevel1ParentById(question.categoryId);
-                            var subjectId2Prom = CategoryService.getCategoryLevel1ParentById(question.categoryId2);
-                            $q.all([
-                                subjectId1Prom,
-                                subjectId2Prom
-                            ]).then(function (subjectIds) {
-                                angular.forEach(subjectIds, function (subjectId) {
-                                    if (angular.isNumber(subjectId)) {
-                                        if (angular.isUndefined(scores[subjectId])) {
-                                            scores[subjectId] = 0;
-                                        }
-                                        scores[subjectId] += _getDiagnosticQuestionPoints(question, result);
+                            var subjectId1 = CategoryService.getCategoryLevel1ParentByIdSync(question.categoryId);
+                            var subjectId2 = CategoryService.getCategoryLevel1ParentByIdSync(question.categoryId2);
+                            subjectIds = [subjectId1, subjectId2];
+                            angular.forEach(subjectIds, function (subjectId) {
+                                if (angular.isDefined(subjectId) && subjectId !== null) {
+                                    if (angular.isUndefined(scores[subjectId])) {
+                                        scores[subjectId] = 0;
                                     }
-                                }); // forEach(subjectIds
-                                scoreDeferred.resolve();
-                            }); // then
+                                    scores[subjectId] += _getDiagnosticQuestionPoints(question, result);
+                                }
+                            });
                         }
-                        scoresPromises.push(scoreDeferred.promise);
                     });
-
-                    $q.all(scoresPromises).then(function () {
-                        var subjectIds = Object.keys(scores);
-                        subjectIds.forEach(function (subjectId) {
+                    angular.forEach(subjectIds, function (subjectId) {
+                        if(angular.isDefined(subjectId) && subjectId !== null) {
                             EstimatedScoreSrv.setDiagnosticSectionScore(scores[subjectId], ExerciseTypeEnum.SECTION.enum, subjectId, section.id);
-                        });
+                        }
                     });
                 }
 
@@ -167,50 +157,38 @@
                 }
 
                 function _calculateRawScore(exerciseType, exerciseResult) {
-                    var scoresDeferred = $q.defer();
+
                     if (!exercisesRawScoring[exerciseType]) {
                         $log.error('EstimatedScoreEventsHandlerSrv: raw scoring not exits for the following exercise type: ' + exerciseType);
                     }
                     var rawScores = {};
                     var questionResults = exerciseResult.questionResults;
-                    var rawScoresProms = [];
                     questionResults.forEach(function (questionResult, index) {
-                        var rawScoreDeferred = $q.defer();
                         if (angular.isUndefined(questionResult)) {
                             $log.error('EstimatedScoreEventsHandler: question for result is missing',
                                 'exercise id: ', exerciseResult.id,
                                 'result index: ', index
                             );
-                            rawScoreDeferred.reject();
+                            return;
                         } else {
-                            var subjectId1Prom = CategoryService.getCategoryLevel1ParentById(questionResult.categoryId);
-                            var subjectId2Prom = CategoryService.getCategoryLevel1ParentById(questionResult.categoryId2);
-
-                            $q.all([
-                                subjectId1Prom,
-                                subjectId2Prom
-                            ]).then(function (subjectIds) {
-                                subjectIds.forEach(function (subjectId) {
-                                    if (angular.isNumber(subjectId)) {
-                                        if (angular.isUndefined(rawScores[subjectId])) {
-                                            rawScores[subjectId] = {
-                                                total: questionResults.length * exercisesRawScoring[exerciseType].correctWithin,
-                                                earned: 0
-                                            };
-                                        }
-                                        rawScores[subjectId].earned += _getQuestionRawPoints(exerciseType, questionResult);
+                            var subjectId1 = CategoryService.getCategoryLevel1ParentByIdSync(questionResult.categoryId);
+                            var subjectId2 = CategoryService.getCategoryLevel1ParentByIdSync(questionResult.categoryId2);
+                            var subjectIds = [subjectId1, subjectId2];
+                            angular.forEach(subjectIds, function (subjectId) {
+                                if (angular.isDefined(subjectId) && subjectId !== null) {
+                                    if (angular.isUndefined(rawScores[subjectId])) {
+                                        rawScores[subjectId] = {
+                                            total: questionResults.length * exercisesRawScoring[exerciseType].correctWithin,
+                                            earned: 0
+                                        };
                                     }
-                                });
-                                rawScoreDeferred.resolve();
+                                    rawScores[subjectId].earned += _getQuestionRawPoints(exerciseType, questionResult);
+                                }
                             });
                         }
-                        rawScoresProms.push(rawScoreDeferred.promise);
-                    });
-                    $q.all(rawScoresProms).then(function () {
-                        scoresDeferred.resolve(rawScores);
                     });
 
-                    return scoresDeferred.promise;
+                    return rawScores;
                 }
 
                 function _shouldEventBeProcessed(exerciseType, exercise, exerciseResult) {
@@ -231,14 +209,9 @@
 
 
                 function _callCalculateAndSaveRawScore(exerciseTypeEnum, sectionResult, id, isDiagnostic) {
-                    _calculateRawScore(exerciseTypeEnum, sectionResult).then(function (rawScores) {
-                        var rawScoresKeys = Object.keys(rawScores);
-                        rawScoresKeys.forEach(function (subjectId) {
-                            var rawScore = rawScores[subjectId];
-                            (function (rawScore) {
-                                EstimatedScoreSrv.addRawScore(rawScore, exerciseTypeEnum, subjectId, id, isDiagnostic);
-                            })(rawScore);
-                        });
+                    var rawScores = _calculateRawScore(exerciseTypeEnum, sectionResult);
+                    angular.forEach(rawScores, function (rawScore, subjectId) {
+                        EstimatedScoreSrv.addRawScore(rawScores[subjectId], exerciseTypeEnum, subjectId, id, isDiagnostic);
                     });
                 }
 
