@@ -11833,7 +11833,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             },
             templateUrl: 'components/znkCategoryStats/znkCategoryStats.template.html',
             controllerAs: 'vm',
-            controller: ["StatsSrv", "CategoryService", "$q", function (StatsSrv, CategoryService, $q) {
+            controller: ["StatsSrv", "CategoryService", function (StatsSrv, CategoryService) {
                 'ngInject';
                 var vm = this;
                 var PERCENTAGE = 100;
@@ -11842,21 +11842,16 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 buildUiCategory(vm.categoryId);
 
                 function buildUiCategory(categoryId) {
-                    var dataPromMap = {};
-                    dataPromMap.stats = StatsSrv.getStatsByCategoryId(categoryId);
-                    dataPromMap.category = CategoryService.getCategoryData(categoryId);
-                    dataPromMap.level1CategoryId = CategoryService.getCategoryLevel1ParentById(categoryId);
+                    var statsProm = StatsSrv.getStatsByCategoryId(categoryId);
+                    vm.category = CategoryService.getCategoryDataSync(categoryId);
+                    vm.level1CategoryId = CategoryService.getCategoryLevel1ParentByIdSync(categoryId);
 
-                    $q.all(dataPromMap).then(function (data) {
-                        var userStats = data.stats;
-                        var category = data.category;
-                        vm.level1CategoryId = data.level1CategoryId;
-
+                    statsProm.then(function (categoryStats) {
                         var extendObj = {};
-                        extendObj.progress = getProgress(userStats);
-                        extendObj.avgTime = getAvgTime(userStats);
+                        extendObj.progress = getProgress(categoryStats);
+                        extendObj.avgTime = getAvgTime(categoryStats);
 
-                        vm.category = angular.extend(category, extendObj);
+                        vm.category = angular.extend(vm.category, extendObj);
                     });
                 }
 
