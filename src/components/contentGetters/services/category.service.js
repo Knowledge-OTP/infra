@@ -88,9 +88,12 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             });
         };
 
-        self.getCategoryLevel1ParentSync = function (object) {
-            var categoryId = object.categoryId || object.categoryId2;
-            return self.getCategoryLevel1ParentByIdSync(categoryId);
+        self.getCategoryLevel1ParentSync = function (categoriesArr) {
+            for (var i = 0; i < categoriesArr.length; i++) {
+                if (categoriesArr[i]) {
+                    return self.getCategoryLevel1ParentByIdSync(categoriesArr[i]);
+                }
+            }
         };
 
         self.getCategoryLevel1ParentByIdSync = function (categoryId) {
