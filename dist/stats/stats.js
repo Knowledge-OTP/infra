@@ -185,7 +185,7 @@
     'use strict';
 
     angular.module('znk.infra.stats').service('StatsSrv',
-        ["InfraConfigSrv", "$q", "SubjectEnum", "$log", "$injector", "StorageSrv", "CategoryService", "UtilitySrv", function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv, CategoryService, UtilitySrv) {
+        ["InfraConfigSrv", "$q", "SubjectEnum", "$log", "$injector", "StorageSrv", "CategoryService", function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv, CategoryService) {
             'ngInject';
 
             var STATS_PATH = StorageSrv.variables.appUserSpacePath + '/stats';
@@ -351,8 +351,9 @@
 
             StatsSrv.getStatsByCategoryId = function (categoryId) {
                 var categoryStatsKey = StatsSrv.getCategoryKey(categoryId);
+                var categoryStatsParentKey = CategoryService.getStatsKeyByCategoryId(categoryId);
                 return getStats().then(function (stats) {
-                    return UtilitySrv.object.findProp(stats, categoryStatsKey);
+                    return stats[categoryStatsParentKey][categoryStatsKey];
                 });
             };
 

@@ -10064,7 +10064,7 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
     'use strict';
 
     angular.module('znk.infra.stats').service('StatsSrv',
-        ["InfraConfigSrv", "$q", "SubjectEnum", "$log", "$injector", "StorageSrv", "CategoryService", "UtilitySrv", function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv, CategoryService, UtilitySrv) {
+        ["InfraConfigSrv", "$q", "SubjectEnum", "$log", "$injector", "StorageSrv", "CategoryService", function (InfraConfigSrv, $q, SubjectEnum, $log, $injector, StorageSrv, CategoryService) {
             'ngInject';
 
             var STATS_PATH = StorageSrv.variables.appUserSpacePath + '/stats';
@@ -10230,8 +10230,9 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
 
             StatsSrv.getStatsByCategoryId = function (categoryId) {
                 var categoryStatsKey = StatsSrv.getCategoryKey(categoryId);
+                var categoryStatsParentKey = CategoryService.getStatsKeyByCategoryId(categoryId);
                 return getStats().then(function (stats) {
-                    return UtilitySrv.object.findProp(stats, categoryStatsKey);
+                    return stats[categoryStatsParentKey][categoryStatsKey];
                 });
             };
 
@@ -11372,33 +11373,6 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
-        var dayInMs = 86400000;
-        var WEEK = 7;
-        this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
-
-
-        this.isDueDatePass = function (dueDate) {
-            var res = {
-                dateDiff: 0,
-                passDue: false
-            };
-
-            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
-                return res;
-            }
-
-            res.dateDiff = Math.abs(Math.ceil((Date.now() - dueDate) / dayInMs));
-            res.passDue = dueDate - Date.now() < 0;
-            return res;
-        };
-    }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.utility').factory('UtilitySrv', [
         '$q',
         function ($q) {
@@ -11518,6 +11492,33 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 
             return UtilitySrv;
         }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
+        var dayInMs = 86400000;
+        var WEEK = 7;
+        this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
+
+
+        this.isDueDatePass = function (dueDate) {
+            var res = {
+                dateDiff: 0,
+                passDue: false
+            };
+
+            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
+                return res;
+            }
+
+            res.dateDiff = Math.abs(Math.ceil((Date.now() - dueDate) / dayInMs));
+            res.passDue = dueDate - Date.now() < 0;
+            return res;
+        };
+    }
     ]);
 })(angular);
 
@@ -12432,7 +12433,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
             },
             templateUrl: 'components/znkCategoryStats/znkCategoryStats.template.html',
             controllerAs: 'vm',
-            controller: ["StatsSrv", "CategoryService", "$q", function (StatsSrv, CategoryService, $q) {
+            controller: ["StatsSrv", "CategoryService", function (StatsSrv, CategoryService) {
                 'ngInject';
                 var vm = this;
                 var PERCENTAGE = 100;
@@ -12441,21 +12442,16 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 buildUiCategory(vm.categoryId);
 
                 function buildUiCategory(categoryId) {
-                    var dataPromMap = {};
-                    dataPromMap.stats = StatsSrv.getStatsByCategoryId(categoryId);
-                    dataPromMap.category = CategoryService.getCategoryData(categoryId);
-                    dataPromMap.level1CategoryId = CategoryService.getCategoryLevel1ParentById(categoryId);
+                    var statsProm = StatsSrv.getStatsByCategoryId(categoryId);
+                    vm.category = CategoryService.getCategoryDataSync(categoryId);
+                    vm.level1CategoryId = CategoryService.getCategoryLevel1ParentByIdSync(categoryId);
 
-                    $q.all(dataPromMap).then(function (data) {
-                        var userStats = data.stats;
-                        var category = data.category;
-                        vm.level1CategoryId = data.level1CategoryId;
-
+                    statsProm.then(function (categoryStats) {
                         var extendObj = {};
-                        extendObj.progress = getProgress(userStats);
-                        extendObj.avgTime = getAvgTime(userStats);
+                        extendObj.progress = getProgress(categoryStats);
+                        extendObj.avgTime = getAvgTime(categoryStats);
 
-                        vm.category = angular.extend(category, extendObj);
+                        vm.category = angular.extend(vm.category, extendObj);
                     });
                 }
 
