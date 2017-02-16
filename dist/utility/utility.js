@@ -125,6 +125,12 @@
                 };
             };
 
+            UtilitySrv.array.removeDuplicates = function(arr){
+                return arr.filter(function(item, pos) {
+                    return arr.indexOf(item) === pos;
+                });
+            };
+
             UtilitySrv.fn = {};
 
             UtilitySrv.fn.singletonPromise = function(promGetter){
@@ -150,6 +156,6 @@
     ]);
 })(angular);
 
-angular.module('znk.infra.utility').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.utility').run(['$templateCache', function ($templateCache) {
 
 }]);
