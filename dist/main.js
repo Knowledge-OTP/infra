@@ -264,7 +264,7 @@
     }]);
 })(angular);
 
-angular.module('znk.infra.analytics').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.analytics').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -984,7 +984,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
     );
 })(angular);
 
-angular.module('znk.infra.assignModule').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -1215,7 +1215,7 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function ($templ
         }]);
 })(angular);
 
-angular.module('znk.infra.auth').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.auth').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -1255,7 +1255,7 @@ angular.module('znk.infra.auth').run(['$templateCache', function ($templateCache
 })(angular);
 
 
-angular.module('znk.infra.autofocus').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.autofocus').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -2628,7 +2628,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function ($template
     );
 })(angular);
 
-angular.module('znk.infra.calls').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.calls').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/calls/directives/callBtn/callBtn.template.html",
     "<button\n" +
     "    ng-click=\"vm.clickBtn()\"\n" +
@@ -2956,7 +2956,7 @@ angular.module('znk.infra.calls').run(['$templateCache', function ($templateCach
     ]);
 })(angular);
 
-angular.module('znk.infra.config').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.config').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -3200,7 +3200,7 @@ angular.module('znk.infra.config').run(['$templateCache', function ($templateCac
     ]);
 })(angular);
 
-angular.module('znk.infra.content').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.content').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -3449,7 +3449,7 @@ angular.module('znk.infra.content').run(['$templateCache', function ($templateCa
     ]);
 })(angular);
 
-angular.module('znk.infra.contentAvail').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.contentAvail').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -4570,6 +4570,11 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             });
         };
 
+        self.getCategoryLevel1ParentSync = function (object) {
+            var categoryId = object.categoryId || object.categoryId2;
+            return self.getCategoryLevel1ParentByIdSync(categoryId);
+        };
+
         self.getCategoryLevel1ParentByIdSync = function (categoryId) {
             if (angular.isUndefined(categoryId) || categoryId === null) {
                 $log.debug('CategoryService: No category id', categoryId);
@@ -4680,7 +4685,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         })();
     }]);
 
-angular.module('znk.infra.contentGetters').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.contentGetters').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -4730,7 +4735,7 @@ angular.module('znk.infra.contentGetters').run(['$templateCache', function ($tem
     ]);
 })(angular);
 
-angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/deviceNotSupported/deviceNotSupported.template.html",
     "<div class=\"device-not-supported-inner\">\n" +
     "    <h1>{{title}}</h1>\n" +
@@ -4831,7 +4836,7 @@ angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function (
     ]);
 })(angular);
 
-angular.module('znk.infra.enum').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.enum').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -5384,7 +5389,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function ($templateCache
     });
 })(angular);
 
-angular.module('znk.infra.estimatedScore').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.estimatedScore').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -5451,7 +5456,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function ($tem
     });
 })(angular);
 
-angular.module('znk.infra.evaluator').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.evaluator').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -5516,7 +5521,7 @@ angular.module('znk.infra.evaluator').run(['$templateCache', function ($template
     );
 })(angular);
 
-angular.module('znk.infra.eventManager').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.eventManager').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -5592,7 +5597,7 @@ angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "Co
         };
 }]);
 
-angular.module('znk.infra.exams').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.exams').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -6102,7 +6107,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function ($templateCach
     ]);
 })(angular);
 
-angular.module('znk.infra.exerciseResult').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.exerciseResult').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -6380,7 +6385,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function ($tem
     );
 })(angular);
 
-angular.module('znk.infra.exerciseUtility').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -6528,7 +6533,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function ($te
         }
         );
 })();
-angular.module('znk.infra.filters').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.filters').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -7274,7 +7279,7 @@ angular.module('znk.infra.filters').run(['$templateCache', function ($templateCa
     ]);
 })(angular);
 
-angular.module('znk.infra.general').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.general').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/general/svg/clock-icon.svg",
     "<svg version=\"1.1\" class=\"clock-icon-svg\"\n" +
     "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
@@ -7472,7 +7477,7 @@ angular.module('znk.infra.general').run(['$templateCache', function ($templateCa
     });
 })(angular);
 
-angular.module('znk.infra.hint').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.hint').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -7514,7 +7519,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function ($templateCache
 })(angular);
 
 
-angular.module('znk.infra.mailSender').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.mailSender').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -7557,7 +7562,7 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function ($templat
 })(angular);
 
 
-angular.module('znk.infra.personalization').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.personalization').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -7681,7 +7686,7 @@ angular.module('znk.infra.personalization').run(['$templateCache', function ($te
         }
     ]);
 })(angular);
-angular.module('znk.infra.pngSequence').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.pngSequence').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -7887,7 +7892,7 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function ($templa
     ]);
 })();
 
-angular.module('znk.infra.popUp').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/popUp/svg/correct-icon.svg",
     "<svg version=\"1.1\"\n" +
     "     class=\"correct-icon-svg\"\n" +
@@ -8085,7 +8090,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function ($templateCach
     });
 })(angular);
 
-angular.module('znk.infra.presence').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.presence').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -8228,7 +8233,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
 });
 
 
-angular.module('znk.infra.scoring').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.scoring').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -8904,7 +8909,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function ($templateCa
     });
 })(angular);
 
-angular.module('znk.infra.screenSharing').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.screenSharing').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/screenSharing/directives/screenSharing/screenSharing.template.html",
     "<div ng-switch=\"$ctrl.userSharingState\"\n" +
     "     ng-class=\"$ctrl.sharingStateCls\">\n" +
@@ -9179,7 +9184,7 @@ angular.module('znk.infra.screenSharing').run(['$templateCache', function ($temp
 })(angular);
 
 
-angular.module('znk.infra.scroll').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.scroll').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -9189,7 +9194,7 @@ angular.module('znk.infra.scroll').run(['$templateCache', function ($templateCac
     angular.module('znk.infra.sharedScss', []);
 })(angular);
 
-angular.module('znk.infra.sharedScss').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.sharedScss').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -9555,7 +9560,7 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function ($templat
         }]);
 })(angular);
 
-angular.module('znk.infra.stats').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.stats').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -10104,7 +10109,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function ($templateCach
     ]);
 })(angular);
 
-angular.module('znk.infra.storage').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.storage').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -10227,7 +10232,7 @@ angular.module('znk.infra.storage').run(['$templateCache', function ($templateCa
 
 
 
-angular.module('znk.infra.support').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.support').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -10345,7 +10350,7 @@ angular.module('znk.infra.support').run(['$templateCache', function ($templateCa
         }]);
 })(angular);
 
-angular.module('znk.infra.svgIcon').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -10407,7 +10412,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function ($templateCa
     );
 })(angular);
 
-angular.module('znk.infra.teachers').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.teachers').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -10547,7 +10552,7 @@ angular.module('znk.infra.user').service('UserProfileService',
     );
 })(angular);
 
-angular.module('znk.infra.user').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -10675,7 +10680,7 @@ angular.module('znk.infra.user').run(['$templateCache', function ($templateCache
     ]);
 })(angular);
 
-angular.module('znk.infra.userContext').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.userContext').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -10831,7 +10836,7 @@ angular.module('znk.infra.userContext').run(['$templateCache', function ($templa
     ]);
 })(angular);
 
-angular.module('znk.infra.utility').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.utility').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -11021,7 +11026,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function ($templateCa
 
 })(angular);
 
-angular.module('znk.infra.webcall').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.webcall').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -11120,7 +11125,7 @@ angular.module('znk.infra.webcall').run(['$templateCache', function ($templateCa
     );
 })(angular);
 
-angular.module('znk.infra.workouts').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.workouts').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -11577,7 +11582,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function ($templateC
     ]);
 })(angular);
 
-angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkAudioPlayer/svg/close-icon.svg",
     "<svg\n" +
     "    x=\"0px\"\n" +
@@ -11778,7 +11783,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function ($tem
         });
 })(angular);
 
-angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkCategoryStats/svg/clock-icon.svg",
     "<svg version=\"1.1\"\n" +
     "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
@@ -12613,7 +12618,7 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function ($t
     );
 })(angular);
 
-angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkChat/svg/znk-chat-chat-icon.svg",
     "<svg\n" +
     "    id=\"Layer_1\"\n" +
@@ -16440,7 +16445,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
     );
 })(angular);
 
-angular.module('znk.infra.znkExercise').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkExercise/core/template/btnSectionDesktopTemplate.html",
     "<div class=\"btn-container left-container ng-hide\"\n" +
     "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
@@ -17157,7 +17162,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function ($templa
     ]);
 })(angular);
 
-angular.module('znk.infra.znkMedia').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkMedia').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -17193,7 +17198,7 @@ angular.module('znk.infra.znkMedia').run(['$templateCache', function ($templateC
 })(angular);
 
 
-angular.module('znk.infra.znkModule').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -17236,7 +17241,7 @@ angular.module('znk.infra.znkModule').run(['$templateCache', function ($template
 })(angular);
 
 
-angular.module('znk.infra.znkProgressBar').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkProgressBar/znkProgressBar.template.html",
     "<div ng-if=\"::showProgressBubble()\" class=\"progress-bubble-wrapper\" ng-style=\"{left: progressWidth + '%'}\">\n" +
     "    <div class=\"progress-percentage\">\n" +
@@ -17403,7 +17408,7 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function ($tem
         }]);
 })(angular);
 
-angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkQuestionReport/svg/close-popup.svg",
     "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\"\n" +
     "	 viewBox=\"-596.6 492.3 133.2 133.5\" xml:space=\"preserve\" class=\"close-pop-svg\">\n" +
@@ -17677,7 +17682,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function ($
         });
 })(angular);
 
-angular.module('znk.infra.znkSessionData').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkSessionData').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -17968,7 +17973,7 @@ angular.module('znk.infra.znkSessionData').run(['$templateCache', function ($tem
 })(angular);
 
 
-angular.module('znk.infra.znkTimeline').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
     "	 viewBox=\"-145 277 60 60\" style=\"enable-background:new -145 277 60 60;\" xml:space=\"preserve\" class=\"timeline-diagnostic-test-icon\" width=\"30px\" height=\"30px\">\n" +
@@ -18282,6 +18287,6 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function ($templa
         });
 })(angular);
 
-angular.module('znk.infra.znkTooltip').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkTooltip').run(['$templateCache', function($templateCache) {
 
 }]);

@@ -1115,6 +1115,11 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             });
         };
 
+        self.getCategoryLevel1ParentSync = function (object) {
+            var categoryId = object.categoryId || object.categoryId2;
+            return self.getCategoryLevel1ParentByIdSync(categoryId);
+        };
+
         self.getCategoryLevel1ParentByIdSync = function (categoryId) {
             if (angular.isUndefined(categoryId) || categoryId === null) {
                 $log.debug('CategoryService: No category id', categoryId);
@@ -1225,6 +1230,6 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         })();
     }]);
 
-angular.module('znk.infra.contentGetters').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.contentGetters').run(['$templateCache', function($templateCache) {
 
 }]);
