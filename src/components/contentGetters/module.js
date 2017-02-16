@@ -3,7 +3,7 @@
 
     angular.module('znk.infra.contentGetters', [
         'znk.infra.config',
-        'categories.mock',
+        'categoriesConstant',
         'znk.infra.content',
         'znk.infra.exerciseUtility',
         'znk.infra.enum'

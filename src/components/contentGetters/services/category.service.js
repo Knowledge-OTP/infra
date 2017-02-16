@@ -88,6 +88,14 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             });
         };
 
+        self.getCategoryLevel1ParentSync = function (categoriesArr) {
+            for (var i = 0; i < categoriesArr.length; i++) {
+                if (categoriesArr[i]) {
+                    return self.getCategoryLevel1ParentByIdSync(categoriesArr[i]);
+                }
+            }
+        };
+
         self.getCategoryLevel1ParentByIdSync = function (categoryId) {
             if (angular.isUndefined(categoryId) || categoryId === null) {
                 $log.debug('CategoryService: No category id', categoryId);
