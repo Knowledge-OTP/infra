@@ -352,7 +352,7 @@
             StatsSrv.getStatsByCategoryId = function (categoryId) {
                 var categoryStatsKey = StatsSrv.getCategoryKey(categoryId);
                 return getStats().then(function (stats) {
-                    return UtilitySrv.object.findProp(stats, categoryStatsKey);
+                    return UtilitySrv.object.findProp(stats, categoryStatsKey)[0];
                 });
             };
 
