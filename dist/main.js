@@ -3533,7 +3533,7 @@ angular.module('znk.infra.contentAvail').run(['$templateCache', function($templa
 'use strict';
 
 angular.module('znk.infra.contentGetters').service('CategoryService',
-    ["StorageRevSrv", "$q", "categoryEnum", "$log", "categoriesConstant", "InfraConfigSrv", "StorageSrv", "ExerciseTypeEnum", function (StorageRevSrv, $q, categoryEnum, $log, categoriesConstant, InfraConfigSrv, StorageSrv, ExerciseTypeEnum) {
+    ["StorageRevSrv", "$q", "categoryEnum", "$log", "categoriesConstant", "InfraConfigSrv", "StorageSrv", function (StorageRevSrv, $q, categoryEnum, $log, categoriesConstant, InfraConfigSrv, StorageSrv) {
         'ngInject';
 
         var categoryMapObj;
@@ -3742,12 +3742,6 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                 return StudentStorageSrv.get(USER_SELECTED_TEST_LEVEL_PATH);
             });
-        };
-
-        self.getCategoryLevel1Id = function (exerciseTypeId, catIds) {
-            if (exerciseTypeId === ExerciseTypeEnum.SECTION.enum){
-                return self.getCategoryLevel1ParentSync(catIds);
-            }
         };
     }]);
 
