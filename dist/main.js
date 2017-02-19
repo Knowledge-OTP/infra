@@ -3635,7 +3635,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             }
             var categoriesMap = self.getCategoryMap(true);
             var category = categoriesMap[categoryId];
-            if (categoryEnum.SUBJECT.enum === category.typeId) {
+            if (categoryEnum.LEVEL1.enum === category.typeId) {
                 return categoryId;
             }
             return self.getCategoryLevel1ParentByIdSync(category.parentId);
