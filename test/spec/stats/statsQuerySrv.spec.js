@@ -1,7 +1,7 @@
 describe('testing service "StatsQuerySrv":', function () {
     'use strict';
 
-    beforeEach(module('znk.infra.stats', 'htmlTemplates','storage.mock', 'testUtility', 'content.mock'));
+    beforeEach(module('znk.infra.stats', 'htmlTemplates','storage.mock', 'testUtility', 'content.mock', 'categories.mock'));
 
     var $rootScope, StatsQuerySrv, SubjectEnum, StudentStorage;
     var actions;
