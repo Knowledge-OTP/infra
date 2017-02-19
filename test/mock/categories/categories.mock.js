@@ -1023,7 +1023,7 @@
         "name": "Usage and Mechanics",
         "shortName": "UM",
         "parentId": 5,
-        "typeId": 10,
+        "typeId": 102,
         "instruction": null,
         "weight": null
     }, {
@@ -1031,7 +1031,7 @@
         "name": "Rhetorical Skills",
         "shortName": "RH",
         "parentId": 5,
-        "typeId": 10,
+        "typeId": 102,
         "instruction": null,
         "weight": null
     }, {
@@ -1039,7 +1039,7 @@
         "name": "Intermediate Algebra and Coordinate Geometry",
         "shortName": "AC",
         "parentId": 0,
-        "typeId": 10,
+        "typeId": 102,
         "instruction": null,
         "weight": null
     }, {
@@ -1047,7 +1047,7 @@
         "name": "Elementary Algebra",
         "shortName": "PA",
         "parentId": 0,
-        "typeId": 10,
+        "typeId": 102,
         "instruction": null,
         "weight": null
     }, {
@@ -1055,7 +1055,7 @@
         "name": "Plane Geometry and Trigonometry",
         "shortName": "PT",
         "parentId": 0,
-        "typeId": 10,
+        "typeId": 102,
         "instruction": null,
         "weight": null
     }, {
@@ -1063,7 +1063,7 @@
         "name": "Arts and Literature",
         "shortName": "AL",
         "parentId": 1,
-        "typeId": 10,
+        "typeId": 102,
         "instruction": null,
         "weight": null
     }, {
@@ -1071,7 +1071,7 @@
         "name": "Social and Natural Science",
         "shortName": "SN",
         "parentId": 1,
-        "typeId": 10,
+        "typeId": 102,
         "instruction": null,
         "weight": null
     }, {
@@ -1079,7 +1079,7 @@
         "name": "Data Analysis",
         "shortName": "DA",
         "parentId": 6,
-        "typeId": 10,
+        "typeId": 102,
         "instruction": null,
         "weight": null
     }, {
@@ -1087,7 +1087,7 @@
         "name": "Research Summary",
         "shortName": "RS",
         "parentId": 6,
-        "typeId": 10,
+        "typeId": 102,
         "instruction": null,
         "weight": null
     }, {
@@ -1095,7 +1095,7 @@
         "name": "Conflicting Viewpoints",
         "shortName": "CV",
         "parentId": 6,
-        "typeId": 10,
+        "typeId": 102,
         "instruction": null,
         "weight": null
     }, {
@@ -1103,7 +1103,7 @@
         "name": "Essay",
         "shortName": "ES",
         "parentId": 2,
-        "typeId": 10,
+        "typeId": 102,
         "instruction": null,
         "weight": null
     }, {
