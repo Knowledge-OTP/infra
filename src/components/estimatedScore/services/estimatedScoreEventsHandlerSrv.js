@@ -123,9 +123,9 @@
                             });
                         }
                     });
-                    angular.forEach(subjectIds, function (subjectId) {
+                    angular.forEach(scores, function (score, subjectId) {
                         if(angular.isDefined(subjectId) && subjectId !== null) {
-                            EstimatedScoreSrv.setDiagnosticSectionScore(scores[subjectId], ExerciseTypeEnum.SECTION.enum, subjectId, section.id);
+                            EstimatedScoreSrv.setDiagnosticSectionScore(score, ExerciseTypeEnum.SECTION.enum, subjectId, section.id);
                         }
                     });
                 }
