@@ -3586,13 +3586,12 @@ $blueBG8: #75cbe8;
 .znk-category-stats {
   overflow: hidden;
   clear: both; }
-  .znk-category-stats .category-wrapper:nth-child(2n + 1) {
-    float: left; }
-  .znk-category-stats .category-wrapper:nth-child(2n + 2) {
-    float: right; }
   .znk-category-stats .category-wrapper {
     width: 300px;
-    height: auto; }
+    height: auto;
+    display: -ms-flexbox;
+    display: flex;
+    padding: 15px; }
     .znk-category-stats .category-wrapper .category-short-name {
       width: 30px;
       height: 30px;
@@ -3607,33 +3606,30 @@ $blueBG8: #75cbe8;
       -ms-flex-align: center;
           align-items: center;
       border-radius: 50%;
-      margin-right: 15px;
-      float: left; }
+      margin-right: 15px; }
     .znk-category-stats .category-wrapper.math .category-short-name, .znk-category-stats .category-wrapper.mathlvl1 .category-short-name, .znk-category-stats .category-wrapper.mathlvl2 .category-short-name {
       background-color: #AF89D2; }
     .znk-category-stats .category-wrapper.verbal .category-short-name {
       background-color: #F9D41B; }
     .znk-category-stats .category-wrapper.essay .category-short-name {
       background-color: #FF5895; }
-    .znk-category-stats .category-wrapper .category-name {
-      width: 250px;
-      height: auto;
-      font-size: 18px;
-      color: #4f4d4d;
-      font-family: Lato;
-      font-weight: 400;
-      display: inline-block;
-      text-align: left;
-      padding-top: 5px; }
     .znk-category-stats .category-wrapper .progress-details-wrapper {
       width: 255px;
       height: auto;
-      margin: 11px auto;
-      padding-left: 45px;
       display: -ms-flexbox;
       display: flex;
       -ms-flex-direction: column;
           flex-direction: column; }
+      .znk-category-stats .category-wrapper .progress-details-wrapper .category-name {
+        width: 250px;
+        height: auto;
+        font-size: 18px;
+        color: #4f4d4d;
+        font-family: Lato;
+        font-weight: 400;
+        display: inline-block;
+        text-align: left;
+        padding-top: 5px; }
       .znk-category-stats .category-wrapper .progress-details-wrapper .subject-progress-wrapper {
         clear: both;
         position: relative; }
