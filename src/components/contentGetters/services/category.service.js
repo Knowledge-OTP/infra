@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('znk.infra.contentGetters').service('CategoryService',
-    function (StorageRevSrv, $q, categoryEnum, $log, categoriesConstant) {
+    function (StorageRevSrv, $q, categoryEnum, $log, categoriesConstant, InfraConfigSrv, StorageSrv) {
         'ngInject';
 
         var categoryMapObj;
@@ -204,4 +204,11 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
                 return getAllLevel4CategoriessProm;
             };
         })();
+
+        self.getUserSelectedLevel1Category = function () {
+            var USER_SELECTED_TEST_LEVEL_PATH = StorageSrv.variables.appUserSpacePath + '/selectedTestLevel';
+            return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                return StudentStorageSrv.get(USER_SELECTED_TEST_LEVEL_PATH);
+            });
+        };
     });
