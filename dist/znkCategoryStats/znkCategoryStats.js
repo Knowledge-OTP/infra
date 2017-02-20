@@ -38,7 +38,9 @@
                 var PERCENTAGE = 100;
                 var MILLISECOND = 1000;
 
-                buildUiCategory(vm.categoryId);
+                this.$onInit = function() {
+                    buildUiCategory(vm.categoryId);
+                };
 
                 function buildUiCategory(categoryId) {
                     var statsProm = StatsSrv.getStatsByCategoryId(categoryId);
@@ -142,9 +144,9 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
     "         translate-namespace=\"ZNK_CATEGORY_SUMMARY\">\n" +
     "\n" +
     "        <div class=\"category-short-name\">{{vm.category.shortName}}</div>\n" +
-    "        <div class=\"category-name\">{{vm.category.name}}</div>\n" +
     "\n" +
     "        <div class=\"progress-details-wrapper\">\n" +
+    "            <div class=\"category-name\">{{vm.category.name}}</div>\n" +
     "            <div class=\"level-status-wrapper\">\n" +
     "                <span translate=\".CATEGORY_ACCURACY\" translate-values=\"{categoryProgress: vm.category.progress}\"></span>\n" +
     "            </div>\n" +

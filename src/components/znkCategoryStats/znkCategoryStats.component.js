@@ -14,7 +14,9 @@
                 var PERCENTAGE = 100;
                 var MILLISECOND = 1000;
 
-                buildUiCategory(vm.categoryId);
+                this.$onInit = function() {
+                    buildUiCategory(vm.categoryId);
+                };
 
                 function buildUiCategory(categoryId) {
                     var statsProm = StatsSrv.getStatsByCategoryId(categoryId);

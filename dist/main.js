@@ -9754,33 +9754,6 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
-        var dayInMs = 86400000;
-        var WEEK = 7;
-        this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
-
-
-        this.isDueDatePass = function (dueDate) {
-            var res = {
-                dateDiff: 0,
-                passDue: false
-            };
-
-            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
-                return res;
-            }
-
-            res.dateDiff = Math.abs(Math.ceil((Date.now() - dueDate) / dayInMs));
-            res.passDue = dueDate - Date.now() < 0;
-            return res;
-        };
-    }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.utility').factory('UtilitySrv', [
         '$q',
         function ($q) {
@@ -9900,6 +9873,33 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
 
             return UtilitySrv;
         }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
+        var dayInMs = 86400000;
+        var WEEK = 7;
+        this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
+
+
+        this.isDueDatePass = function (dueDate) {
+            var res = {
+                dateDiff: 0,
+                passDue: false
+            };
+
+            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
+                return res;
+            }
+
+            res.dateDiff = Math.abs(Math.ceil((Date.now() - dueDate) / dayInMs));
+            res.passDue = dueDate - Date.now() < 0;
+            return res;
+        };
+    }
     ]);
 })(angular);
 
@@ -10820,7 +10820,9 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 var PERCENTAGE = 100;
                 var MILLISECOND = 1000;
 
-                buildUiCategory(vm.categoryId);
+                this.$onInit = function() {
+                    buildUiCategory(vm.categoryId);
+                };
 
                 function buildUiCategory(categoryId) {
                     var statsProm = StatsSrv.getStatsByCategoryId(categoryId);
@@ -10924,9 +10926,9 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
     "         translate-namespace=\"ZNK_CATEGORY_SUMMARY\">\n" +
     "\n" +
     "        <div class=\"category-short-name\">{{vm.category.shortName}}</div>\n" +
-    "        <div class=\"category-name\">{{vm.category.name}}</div>\n" +
     "\n" +
     "        <div class=\"progress-details-wrapper\">\n" +
+    "            <div class=\"category-name\">{{vm.category.name}}</div>\n" +
     "            <div class=\"level-status-wrapper\">\n" +
     "                <span translate=\".CATEGORY_ACCURACY\" translate-values=\"{categoryProgress: vm.category.progress}\"></span>\n" +
     "            </div>\n" +

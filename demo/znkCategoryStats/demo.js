@@ -2,6 +2,7 @@
 
     angular.module('demo', [
         'demoEnv',
+        'categories.mock',
         'znk.infra.znkCategoryStats',
         'pascalprecht.translate',
         'znk.infra.exerciseUtility'
@@ -35,5 +36,6 @@
         var vm = this;
 
         vm.categoryId = SubjectEnum.MATHLVL1.enum;
+        // vm.categoryId = 29;
     });
 })(angular);
