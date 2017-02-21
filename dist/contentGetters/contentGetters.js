@@ -192,7 +192,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             }
             return self.getCategoryMap().then(function (categories) {
                 var category = categories[categoryId];
-                if (categoryEnum.SUBJECT.enum === category.typeId) {
+                if (categoryEnum.LEVEL1.enum === category.typeId) {
                     return $q.when(categoryId);
                 }
                 return self.getCategoryLevel1ParentById(category.parentId);
@@ -211,7 +211,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         self.getCategoryLevel2Parent = function (categoryId) {
             return self.getCategoryMap().then(function (categories) {
                 var category = categories[categoryId];
-                if (categoryEnum.TEST_SCORE.enum === category.typeId) {
+                if (categoryEnum.LEVEL2.enum === category.typeId) {
                     return category;
                 }
                 return self.getCategoryLevel2Parent(category.parentId);
@@ -271,7 +271,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
                     getAllLevel4CategoriessProm = self.getCategoryMap().then(function (categories) {
                         var specificCategories = {};
                         angular.forEach(categories, function (category) {
-                            if (category.typeId === categoryEnum.SPECIFIC.enum) {
+                            if (category.typeId === categoryEnum.LEVEL4.enum) {
                                 specificCategories[category.id] = category;
                             }
                         });
