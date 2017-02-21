@@ -47,9 +47,9 @@
                         scope.templateName = templatesPath + templateName;
                     }
 
-                    scope.$watch('activeViewObj', function (newVal, oldVal) {
+                    scope.$watch('activeViewObj.view', function (newVal, oldVal) {
                         if (newVal !== oldVal) {
-                            _setTemplateNameByView(newVal.view);
+                            _setTemplateNameByView(newVal);
                         }
                     });
 

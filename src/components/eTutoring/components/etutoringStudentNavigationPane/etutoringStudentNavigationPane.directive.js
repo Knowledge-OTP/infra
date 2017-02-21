@@ -1,5 +1,3 @@
-
-
 (function (angular) {
     'use strict';
 
@@ -56,10 +54,16 @@
                         scope.activeViewObj.view = view;
                         switch (view) {
                             case ETutoringViewsConst.LESSON:
+                                if(!scope.assignedModules){
+                                    return;
+                                }
                                 scope.assignContentArr = scope.assignedModules;
                                 scope.updateModel(scope.assignContentArr[0]);
                                 break;
                             case ETutoringViewsConst.PRACTICE:
+                                if(!scope.assignedHomework){
+                                    return;
+                                }
                                 scope.assignContentArr = scope.assignedHomework;
                                 scope.updateModel(scope.assignContentArr[0]);
                                 break;

@@ -89,7 +89,7 @@
         .wrapper-overlay {
             position: relative;
             text-align: center;
-            //@include full-background-image-retina('#{$bgPath}/modules-content-empty', 100%, 100%); // todo
+            @include full-background-image-retina('/assets/images/bg//modules-content-empty', 100%, 100%); // todo
             display: block;
             background-position-y: inherit ;
             background-size: 800px auto;

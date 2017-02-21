@@ -19,7 +19,7 @@
     }
 
     &.no-teachers-overlay {
-        //@include full-background-image-retina('#{$bgPath}/tutoring-no-teachers-bg',1077px, 676px);
+        @include full-background-image-retina('/assets/images/bg/tutoring-no-teachers-bg',1077px, 676px);
         .msg-wrap {
             position: absolute;
             top: 120px;

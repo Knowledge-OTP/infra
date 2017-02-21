@@ -335,7 +335,7 @@ etutoring-student-navigation-pane {
             position: absolute;
             top: 106px;
             text-align: center;
-            //@include full-background-image-retina('#{$bgPath}/modules-sidebar-empty', 100%, 458px); // todo - ngPath not defined...
+            @include full-background-image-retina('/assets/images/bg//modules-sidebar-empty', 100%, 458px);
             background-position: -8px -50px;
             background-size: 311px auto;
             span {

@@ -320,8 +320,6 @@
 
 
 
-
-
 (function (angular) {
     'use strict';
 
@@ -378,10 +376,16 @@
                         scope.activeViewObj.view = view;
                         switch (view) {
                             case ETutoringViewsConst.LESSON:
+                                if(!scope.assignedModules){
+                                    return;
+                                }
                                 scope.assignContentArr = scope.assignedModules;
                                 scope.updateModel(scope.assignContentArr[0]);
                                 break;
                             case ETutoringViewsConst.PRACTICE:
+                                if(!scope.assignedHomework){
+                                    return;
+                                }
                                 scope.assignContentArr = scope.assignedHomework;
                                 scope.updateModel(scope.assignContentArr[0]);
                                 break;
@@ -502,7 +506,6 @@
         }]);
 })(angular);
 
-
 (function (angular) {
     'use strict';
 
@@ -552,9 +555,9 @@
                         scope.templateName = templatesPath + templateName;
                     }
 
-                    scope.$watch('activeViewObj', function (newVal, oldVal) {
+                    scope.$watch('activeViewObj.view', function (newVal, oldVal) {
                         if (newVal !== oldVal) {
-                            _setTemplateNameByView(newVal.view);
+                            _setTemplateNameByView(newVal);
                         }
                     });
 
@@ -734,75 +737,54 @@
     'use strict';
 
     angular.module('znk.infra.eTutoring')
-        .service('ETutoringWorkoutsService', ["ExerciseTypeEnum", "$log", "DrillSrv", "TutorialSrv", "ExerciseResultSrv", "$q", "PracticeSrv", "LectureSrv", "AuthService", "CategoryService", "TestScoreCategoryEnum", function (ExerciseTypeEnum, $log, DrillSrv,
+        .provider('ETutoringService', ["ExerciseTypeEnum", "$log", "DrillSrv", "TutorialSrv", "ExerciseResultSrv", "$q", "PracticeSrv", "LectureSrv", "AuthService", "CategoryService", "TestScoreCategoryEnum", function (ExerciseTypeEnum, $log, DrillSrv,
                                                 TutorialSrv, ExerciseResultSrv, $q, PracticeSrv, LectureSrv, AuthService, CategoryService, TestScoreCategoryEnum) {
             'ngInject';
-            this.getWorkoutData = function (exerciseId, exerciseTypeId, moduleId) {
-                if (angular.isUndefined(exerciseId) || angular.isUndefined(exerciseTypeId)) {
-                    $log.error('ETutoringWorkoutsService: getWorkoutData function was invoked without exerciseId or exerciseTypeId');
-                    return ($q.when(null));
-                }
 
-                var getExerciseProm,
-                    exerciseResultProm;
+            var getIconNameByCategoryIdWrapper = function (CategoryService) {
+                'ngInject'; // jshint ignore:line
+                return function (categoryId) {
+                    return CategoryService.getCategoryLevel2Parent(categoryId).then(function (testScoreObj) {
+                        switch (testScoreObj.id) {
+                            case TestScoreCategoryEnum.MATH.enum:
+                                return 'calculator-icon';
 
-                if (angular.isDefined(moduleId)) {
-                    var authData = AuthService.getAuth();
-                    if (authData) {
-                        exerciseResultProm = ExerciseResultSrv.getModuleExerciseResult(authData.uid, moduleId, exerciseTypeId, exerciseId);
-                    }
-                } else {
-                    exerciseResultProm = ExerciseResultSrv.getExerciseResult(exerciseTypeId, exerciseId);
-                }
+                            case TestScoreCategoryEnum.WRITING.enum:
+                                return 'writing-icon';
 
-                switch (exerciseTypeId) {
-                    case ExerciseTypeEnum.TUTORIAL.enum:
-                        getExerciseProm = TutorialSrv.getTutorial(exerciseId);
-                        break;
-                    case ExerciseTypeEnum.PRACTICE.enum:
-                        getExerciseProm = PracticeSrv.getPractice(exerciseId);
-                        break;
-                    case ExerciseTypeEnum.LECTURE.enum:
-                        getExerciseProm = LectureSrv.getLecture(exerciseId);
-                        break;
-                    default:
-                        getExerciseProm = DrillSrv.getDrill(exerciseId);
-                }
+                            case TestScoreCategoryEnum.READING.enum:
+                                return 'reading-icon';
 
-                return $q.when({
-                    workoutId: exerciseId,
-                    exerciseTypeId: exerciseTypeId,
-                    exerciseProm: getExerciseProm,
-                    exerciseResultProm: exerciseResultProm
-                });
+                            case TestScoreCategoryEnum.ESSAY.enum:
+                                return 'essay-icon';
+                            default:
+                                break;
+                        }
+                    });
+                };
+            };
+            getIconNameByCategoryIdWrapper.$inject = ["CategoryService"];
+
+            this.setGetIconNameByCategoryIdWrapper = function (fn) {
+                getIconNameByCategoryIdWrapper = fn;
             };
 
-            this.getIconNameByCategoryId = function (categoryId) {
-                return CategoryService.getCategoryLevel2Parent(categoryId).then(function (testScoreObj) {
-                    switch (testScoreObj.id) {
-                        case TestScoreCategoryEnum.MATH.enum:
-                            return 'calculator-icon';
+            this.$get = ["$injector", "$log", "$q", function ($injector, $log, $q) {
+                var ETutoringService = {};
 
-                        case TestScoreCategoryEnum.WRITING.enum:
-                            return 'writing-icon';
-
-                        case TestScoreCategoryEnum.READING.enum:
-                            return 'reading-icon';
-
-                        case TestScoreCategoryEnum.ESSAY.enum:
-                            return 'essay-icon';
-                        default:
-                            break;
+                ETutoringService.getIconNameByCategoryId = function (categoryId) {
+                    if(angular.isUndefined(getIconNameByCategoryIdWrapper)){
+                        $log.error('ETutoringService: getIconNameByCategoryIdWrapper was not set up in config phase!');
+                        return $q.when();
+                    } else {
+                        var getIconNameByCategoryId = $injector.invoke(getIconNameByCategoryIdWrapper);
+                        return getIconNameByCategoryId(categoryId);
                     }
-                });
-            };
-
+                };
+                return ETutoringService;
+            }];
         }]);
 })(angular);
-
-
-
-
 
 
 (function (angular) {
