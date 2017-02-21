@@ -1,0 +1,36 @@
+<section class="e-tutoring-section" translate-namespace="E_TUTORING" ng-switch="diagnosticData && hasTeacher">
+    <div ng-switch-when="false" class="app-e-tutoring-overlay no-teachers-overlay">
+        <div class="msg-wrap">
+            <div class="big-title" translate=".NO_TEACHER_TITLE"></div>
+            <div ng-show="!diagnosticData" class="app-e-tutoring-overlay ng-hide">
+                <span class="msg" translate="E_TUTORING.COMPLETE_DIAGNOSTIC_FIRST"></span>
+            </div>
+            <div class="sub-title" ng-if="diagnosticData && !hasTeacher">
+                <div translate=".NO_TEACHER_SUBTITLE_1"></div>
+                <div translate=".NO_TEACHER_SUBTITLE_2"></div>
+            </div>
+            <div class="btn-wrap">
+                <button class="md-button md success" translate=".SCHEDULE" ng-click="vm.showContactUs()"></button>
+            </div>
+        </div>
+    </div>
+    <div ng-switch-default class="app-e-tutoring" layout="row" flex="grow"
+         ng-class="{'blurred-overlay': !diagnosticData || !hasTeacher}">
+        <div class="e-tutoring-main-container">
+            <div class="navigation-pane base-border-radius base-box-shadow">
+                <etutoring-student-navigation-pane
+                    ng-model="vm.currentModule"
+                    active-view-obj="activeViewObj"
+                    ng-change="vm.onModuleChange(vm.currentModule)">
+                </etutoring-student-navigation-pane>
+            </div>
+            <div class="app-e-tutoring-container base-border-radius base-box-shadow">
+                <module-exercise-pane
+                    active-view-obj="activeViewObj"
+                    show-loading="vm.showLoading"
+                    module="vm.currentModule">
+                </module-exercise-pane>
+            </div>
+        </div>
+    </div>
+</section>

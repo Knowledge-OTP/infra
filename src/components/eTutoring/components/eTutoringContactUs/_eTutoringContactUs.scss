@@ -1,0 +1,194 @@
+md-dialog.e-tutoring-contact-us-modal {
+    overflow: visible;
+    min-width: 90%;
+    min-height: 90%;
+    border: 20px;
+    //border-top-left-radius: 20px; // todo - check why it was defined like this.
+    //border-top-right-radius: 20px;
+    //border-bottom-left-radius: 20px;
+    //border-bottom-right-radius: 20px;
+
+    md-toolbar{
+        height: 40px;
+        max-height: 40px;
+        min-height: 40px;
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+
+        &:not(.md-menu-toolbar){
+            background-color: #0a9bad;
+        }
+
+        .close-popup-wrap {
+            @include absolute-position(-35px, -35px);
+            height:14px;
+            width: 14px;
+            padding: 10px;
+            cursor: pointer;
+        }
+    }
+
+    md-dialog-content {
+        background-color: #ffffff;
+        padding-top: 25px;
+        height: 100%;
+        @include border-bottom-radius(20px);
+
+        .calendly-inline-widget {
+            position: static;
+            height: 630px;
+            min-width: 320px;
+        }
+
+        .auth-form{
+            width: 430px;
+            margin: {
+                right: auto;
+                left: auto;
+                bottom: 10px;
+                top: 43px;
+            };
+
+            .znk-input-group {
+                input {
+                    width: 100%;
+                    display: block;
+                    border-radius: 0;
+                    padding-left: 20px;
+                    box-sizing:border-box;
+                }
+                .locked-icon {
+                    width: 14px;
+                    display: inline-block;
+                    position: absolute;
+                    left: 12px;
+                    top: 16px;
+                }
+
+                .locked-icon *{
+                    stroke: #CACACA;
+                }
+            }
+
+            .btn-wrap{
+                display: flex;
+                margin-top: 25px;
+                justify-content: space-around;
+                button {
+                    width:45%;
+                    margin:0;
+                    box-shadow: none;
+                }
+            }
+        }
+    }
+
+    .top-icon-wrap{
+        position: absolute;
+        top: 0;
+        width: 100%;
+        height: 40px;
+        .top-icon{
+            display: flex;
+            justify-content: center;
+
+            .round-icon-wrap{
+                width: 76px;
+                height: 76px;
+                border-radius: 38px;
+                background-color: #0a9bad;
+                z-index: 9;
+                margin-top: -15px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                .calendar-icon{
+                    stroke: #ffffff;
+                }
+
+                .calendar-icon *{
+                    fill: #ffffff;
+                    width: 35px;
+                    height: 35px;
+                }
+            }
+        }
+    }
+
+    .main-title{
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    .sub-title{
+        @include text-style(12px, #4f4d4d, Lato, $lightFontWeight);
+        text-align: center;
+    }
+    .main-error-msg{
+        position: absolute;
+        width: 100%;
+        justify-content: center;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        padding-top: 5px;
+        @include text-style(14px, #ff6766, Lato, $regularFontWeight);
+    }
+    .msg-wrap {
+        @include text-style(12px, #ffffff, Lato, $regularFontWeight);
+        width: 342px;
+        margin: 0 auto;
+        display: flex;
+        margin-top: 10px;
+        max-height: 28px;
+        visibility: hidden;
+
+        &.show-error{
+            .error-msg {
+                visibility: visible;
+                width: 100%;
+                height: 22px;
+                display: flex;
+                align-items: center;
+                padding: 6px 0 6px 5px;
+                @include text-style(14px, #ff6766, Lato, $regularFontWeight);
+            }
+        }
+
+        .danger-red-icon {
+            width: 20px;
+            margin-right: 17px;
+            * {
+                fill: #c95050;
+            }
+        }
+
+
+    }
+    .spinner {
+        margin: auto;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        * {
+            stroke: #0a9bad;
+        }
+    }
+
+    .big-success-msg{
+        margin-top: 65px;
+        .success-msg{
+            text-align: center;
+            line-height: 48px;
+            padding: 0 92px;
+            @include text-style(16px, #4f4d4d, Lato, $regularFontWeight);
+        }
+
+        .success-btn-wrap{
+            margin-top: 120px;
+            display: flex;
+            justify-content: center;
+        }
+    }
+}
+
