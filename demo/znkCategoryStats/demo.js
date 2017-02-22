@@ -2,7 +2,6 @@
 
     angular.module('demo', [
         'demoEnv',
-        'categories.mock',
         'znk.infra.znkCategoryStats',
         'pascalprecht.translate',
         'znk.infra.exerciseUtility'
