@@ -1291,6 +1291,52 @@ module-exercise-item .math-no-calc::before {
         top: 145px;
         font-size: 14px; }
 
+.lesson-container.homework-container .module-container .overdue-assignment-title {
+  display: none; }
+
+.lesson-container.homework-container .module-container .assignment-title-wrapper.pass-due-date {
+  position: relative; }
+  .lesson-container.homework-container .module-container .assignment-title-wrapper.pass-due-date .module-name {
+    color: #ff6766; }
+  .lesson-container.homework-container .module-container .assignment-title-wrapper.pass-due-date .overdue-assignment-title {
+    font-size: 14px;
+    color: #ff6766;
+    font-family: Lato;
+    font-weight: 400;
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 7px; }
+
+.lesson-container.homework-container .module-container .topic-icon {
+  height: 44px;
+  margin-bottom: 10px;
+  text-align: center; }
+  .lesson-container.homework-container .module-container .topic-icon svg-icon svg {
+    height: 40px;
+    width: auto; }
+  .lesson-container.homework-container .module-container .topic-icon svg-icon.english-topic-icon svg * {
+    fill: #f9d623; }
+  .lesson-container.homework-container .module-container .topic-icon svg-icon.math-topic-icon svg * {
+    fill: #a07ec1; }
+
+.lesson-container.homework-container .module-container .topic-name {
+  font-size: 16px;
+  color: #4f4d4d;
+  font-family: Quicksand;
+  font-weight: 400;
+  text-transform: capitalize;
+  text-align: center;
+  height: 20px; }
+
+.lesson-container.homework-container .module-container .exercises-box .homework-exercises-container {
+  padding: 20px 0; }
+  .lesson-container.homework-container .module-container .exercises-box .homework-exercises-container .exercise-item-wrap .exercise-item .divider {
+    display: none; }
+  .lesson-container.homework-container .module-container .exercises-box .homework-exercises-container .exercise-item-wrap .exercise-item module-exercise-item button {
+    width: 625px;
+    margin: 7px auto; }
+
 .flex-center {
   height: 100%;
   display: -ms-flexbox;

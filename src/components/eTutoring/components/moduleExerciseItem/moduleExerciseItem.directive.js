@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.eTutoring')
-        .directive('moduleExerciseItem', function($state, ExerciseStatusEnum, ExerciseTypeEnum, SubjectEnum, ETutoringWorkoutsService, ETutoringViewsConst) {
+        .directive('moduleExerciseItem', function($state, ExerciseStatusEnum, ExerciseTypeEnum, SubjectEnum, ETutoringService, ETutoringViewsConst) {
             'ngInject';
             return {
                 scope: {
@@ -22,7 +22,7 @@
 
                     if (scope.activeViewObj.view === ETutoringViewsConst.PRACTICE) {
                         scope.exerciseParentId = scope.module.guid;
-                        ETutoringWorkoutsService.getIconNameByCategoryId(scope.exercise.categoryId).then(function (className) {
+                        ETutoringService.getIconNameByCategoryId(scope.exercise.categoryId).then(function (className) {
                             scope.assignmentIconName = className;
                         });
                     }
