@@ -1,0 +1,82 @@
+<div class="etutoring-student-navigation-pane"
+     ng-class="{'no-lessons-assigned': !assignContentArr.length, 'lessons-pane': activeViewObj.view === ETutoringViewsConst.LESSON, 'practice-pane': activeViewObj.view === ETutoringViewsConst.PRACTICE}"
+     translate-namespace="E_TUTORING_NAVIGATION_PANE">
+    <div class="navigation-header">
+        <div class="lessons-button"
+             ng-click="changeView(ETutoringViewsConst.LESSON)"
+             ng-class="{'inactive': activeViewObj.view === ETutoringViewsConst.PRACTICE}">
+            <div class="title" translate=".LESSONS"></div>
+        </div>
+        <div class="practice-button"
+             ng-click="changeView(ETutoringViewsConst.PRACTICE)"
+             ng-class="{'inactive': activeViewObj.view === ETutoringViewsConst.LESSON}">
+            <div class="title" translate=".PRACTICE"></div>
+        </div>
+    </div>
+    <div class="search-wrap">
+            <div class="znk-input-group">
+                <input type="search"
+                       ng-model="vm.searchTerm"
+                       placeholder="{{'E_TUTORING_NAVIGATION_PANE.SEARCH' | translate}}">
+                <span class="clear-search"
+                      ng-if="vm.searchTerm"
+                      ng-click="vm.searchTerm = ''">
+                <svg-icon class="close-icon" name="app-close-popup"></svg-icon>
+            </span>
+            <svg-icon name="search-icon" class="search-icon"></svg-icon>
+        </div>
+    </div>
+    <div class="modules-wrap" ng-switch="showLoading">
+        <div class="modules-container" ng-switch-when="false" ng-switch="activeViewObj.view">
+            <div class="module-item"
+                 ng-repeat="assignContent in assignContentArr | filter: { name: vm.searchTerm } track by $index"
+                 title="{{assignContent.name}}"
+                 aria-label="{{assignContent.name}}"
+                 ng-click="updateModel(assignContent);"
+                 ng-class="{ 'active':  assignContent.moduleId===currentModule.moduleId,
+                            'completed': assignContent.moduleSummary.overAll.status===exerciseStatusEnum.COMPLETED.enum,
+                            'pass-due-date': assignContent.moduleSummary.overAll.status !== exerciseStatusEnum.COMPLETED.enum &&
+                            activeViewObj.view === ETutoringViewsConst.PRACTICE &&
+                             dueDateUtility.isDueDatePass(assignContent.assignDate + dueDateUtility.SEVEN_DAYS_IN_MS).passDue}">
+
+                <div class="icon-wrapper" >
+                    <div ng-if="activeViewObj.view===ETutoringViewsConst.LESSON" class="flex-center" >
+                        <svg-icon
+                            subject-id-to-attr-drv="assignContent.subjectId"
+                            context-attr="name"
+                            suffix="icon">
+                        </svg-icon>
+                    </div>
+                    <div ng-if="activeViewObj.view===ETutoringViewsConst.PRACTICE" class="flex-center homework-practice-icon">
+                        <svg-icon name="homework-icon"></svg-icon>
+                    </div>
+                </div>
+                <div class="module-details">
+                    <div class="module-name">{{assignContent.name | cutString: 25}}</div>
+                    <div class="subject-name">{{subjectsMap[assignContent.subjectId].val }}</div>
+                    <span class="assigned-date">{{assignContent.assignDate | date : 'MMM d'}}</span>
+                    <span class="due-date"
+                          translate="{{dueDateUtility.isDueDatePass(assignContent.assignDate + dueDateUtility.SEVEN_DAYS_IN_MS).passDue ? '.OVERDUE' : '.DUE_IN'}}"
+                          translate-values="{ days: {{'dueDateUtility.isDueDatePass(assignContent.assignDate + dueDateUtility.SEVEN_DAYS_IN_MS).dateDiff'}} }"
+                          ng-if="activeViewObj.view === ETutoringViewsConst.PRACTICE">
+
+                    </span>
+                </div>
+                <div class="module-status">
+                    <div class="flex-center" ng-switch="assignContent.moduleSummary.overAll.status">
+                        <div ng-switch-when="0" class="pill" translate=".NEW"></div>
+                        <div ng-switch-when="1" class="in-progress" translate=".IN_PROGRESS"></div>
+                        <svg-icon ng-switch-when="2" name="v-icon"></svg-icon>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="navigation-overlay" ng-switch-when="false" ng-if="!assignContentArr.length">
+            <span>{{ overlayTextObj[activeViewObj.view] }}</span>
+        </div>
+        <div class="navigation-overlay" ng-switch-when="true">
+            <span translate=".PROCESSING_OVERLAY"></span>
+        </div>
+    </div>
+
+</div>

@@ -1,0 +1,19 @@
+<md-dialog ng-cloak class="e-tutoring-contact-us-modal" translate-namespace="E_TUTORING_CONTACT_US">
+    <md-toolbar>
+        <div class="close-popup-wrap" ng-click="vm.closeDialog()">
+            <svg-icon name="app-close-popup"></svg-icon>
+        </div>
+    </md-toolbar>
+    <md-dialog-content ng-switch="!!vm.showSuccess">
+
+        <md-progress-circular ng-if="vm.showSpinner" class="md-accent spinner" md-mode="indeterminate" md-diameter="70"></md-progress-circular>
+        <div class="calendly-inline-widget" data-url="https://calendly.com/zinkerz-zoe/consultation-with-zinkerz"></div>
+    </md-dialog-content>
+    <div class="top-icon-wrap">
+        <div class="top-icon">
+            <div class="round-icon-wrap">
+                <svg-icon name="app-calendar-icon"></svg-icon>
+            </div>
+        </div>
+    </div>
+</md-dialog>

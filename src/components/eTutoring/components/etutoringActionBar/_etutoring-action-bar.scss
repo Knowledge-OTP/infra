@@ -1,0 +1,208 @@
+etutoring-action-bar {
+    .e-tutor-bar {
+        width: 100%;
+        height: 50px;
+        margin-bottom: 18px;
+        background: #ffffff;
+        display: flex;
+        .teacher-select-wrap {
+            display: flex;
+            flex-grow: 1;
+            padding-left: 45px;
+
+            .online-indicator-wrap {
+                position: relative;
+                .online-indicator {
+                    width: 7px;
+                    height: 7px;
+                    border: 2px solid #ebebeb;
+                    border-radius: 6px;
+                    position: absolute;
+                    top: 19px;
+                    left: -25px;
+
+                    &.offline {
+                        background: #B33520;
+                    }
+                    &.online {
+                        background: #87ca4d;
+                    }
+                    &.idle {
+                        background: #dbb910;
+                    }
+                }
+            }
+
+            .teachers-menu {
+                padding: 0;
+                .teacher-open-modal-btn {
+                    text-transform: none;
+                    font-size: 16px;
+                    background: #ffffff;
+                    width: auto;
+                    border-radius: 0;
+                    height: 100%;
+                    padding: 0;
+                    margin: 0;
+                    &:disabled {
+                        cursor: not-allowed;
+                        .expand-arrow {
+                            color: #dddddd;
+                        }
+                    }
+
+                    .teacher-details {
+                        min-width: 40px;
+                        text-align: left;
+                        vertical-align: middle;
+                        display: inline-block;
+                        position: relative;
+                        top: -1.5px;
+                        .teacher-name {
+                            line-height: 22px;
+                            margin-left: -1px;
+                            @include text-style(20px, #4f4d4d, Quicksand, $semiBoldFontWeight);
+                        }
+                        .teacher-subject {
+                            line-height: 16px;
+                            @include text-style(12px, #959595, Lato, $lightFontWeight);
+                        }
+                    }
+
+                    md-icon{
+                        margin-top: 0;
+                    }
+                }
+            }
+        }
+
+        .share-btn-wrap {
+            display: flex;
+            align-items: center;
+            padding-right: 15px;
+            .share-btn {
+                min-height: 28px;
+                height: 28px;
+                width: 150px;
+                @include text-style(12px, #ffffff, Lato, $regularFontWeight);
+                span {
+                    display: flex;
+                    height: 28px;
+                    align-items: center;
+                    justify-content: center;
+                }
+                &.primary {
+                 background-color: #0a9bad;
+                }
+                &.primary:hover{
+                    background-color: #0a8999;
+                }
+
+                &[disabled="disabled"]{
+                    opacity: 0.5;
+                    color: #ffffff!important;//overriding material
+
+                    &.primary:hover{
+                        background: #0a9bad;
+                    }
+
+                    &.warn:hover{
+                        background: #ff931e;
+                    }
+                }
+
+                &.md-focused{
+                    background-color: #ff931e;
+                }
+            }
+
+            call-btn {
+                margin-left: 7px;
+            }
+
+            .separator {
+                width: 2px;
+                height: 25px;
+                background: #ebebeb;
+                margin-right: 4px;
+                margin-left: 4px;
+            }
+        }
+    }
+}
+
+md-menu-content.md-menu-content-teacher-select {
+    min-width: 210px;
+    max-height: none;
+    padding: 16px 0;
+
+    md-list {
+        padding: {
+            top: 0;
+            bottom: 0;
+        }
+        .divider {
+            height: 1px;
+            margin: 10px 16px;
+            border-top: 1px solid #ebebeb;
+        }
+
+        md-list-item.teacher-list-item {
+            .online-indicator-wrap {
+                position: relative;
+                .online-indicator {
+                    width: 7px;
+                    height: 7px;
+                    border: 2px solid #ebebeb;
+                    border-radius: 6px;
+                    position: absolute;
+                    left: -6px;
+                    top: -11px;
+
+                    &.offline {
+                        background: #B33520;
+                    }
+                    &.online {
+                        background: #87ca4d;
+                    }
+                    &.idle {
+                        background: #dbb910;
+                    }
+                }
+            }
+            .teacher-details {
+                min-width: 40px;
+                text-align: left;
+                padding-left: 15px;
+                .teacher-name {
+                    padding-top: 4px;
+                    line-height: 18px;
+                    @include text-style(14px, #4f4d4d, Lato, $regularFontWeight);
+                }
+                .teacher-subject {
+                    line-height: 16px;
+                    @include text-style(11px, #959595, Lato, $lightFontWeight);
+                }
+            }
+            .md-list-item-inner {
+                width: 100%;
+            }
+            &:hover {
+                background-color: #f8f8f8;
+            }
+        }
+    }
+
+    .pending-purchase-icon-wrapper {
+        width: 16px;
+        height: auto;
+        margin-left: 10px;
+        position: relative;
+        top: 3px;
+    }
+
+    [disabled="disabled"] {
+        opacity: 0.5;
+        cursor: default;
+    }
+}
