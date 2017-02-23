@@ -495,12 +495,16 @@
             };
 
             var topicsArray;
-
             this.setTopicsArray = function (_topicsArray) {
                 topicsArray = _topicsArray;
             };
 
-            this.$get = ["$q", "$log", "InfraConfigSrv", "PopUpSrv", "DueDateSrv", "$translate", "$rootScope", "exerciseEventsConst", "ExamSrv", "ExerciseResultSrv", "ExamTypeEnum", "StorageSrv", "ExerciseTypeEnum", "$injector", "LiveSessionSubjectEnum", "$window", function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv,
+            var diagnosticExamId;
+            this.setDiagnosticExamId = function (id) {
+                diagnosticExamId = id;
+            };
+
+            this.$get = ["$q", "$log", "InfraConfigSrv", "PopUpSrv", "DueDateSrv", "$translate", "$rootScope", "exerciseEventsConst", "ExamSrv", "ENV", "ExerciseResultSrv", "ExamTypeEnum", "StorageSrv", "ExerciseTypeEnum", "$injector", "LiveSessionSubjectEnum", "$window", function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv, ENV,
                                   ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum, $injector, LiveSessionSubjectEnum, $window) {
                 'ngInject';
 
@@ -635,7 +639,8 @@
                         var sectionsResults = [];
                         var promArr = [];
                         var dontInit = true;
-                        if (exam.typeId !== ExamTypeEnum.MINI_TEST.enum) {
+
+                        if (exam.typeId !== ExamTypeEnum.MINI_TEST.enum || (angular.isDefined(diagnosticExamId) && exam.id === diagnosticExamId)) {
                             return;
                         }
                         angular.forEach(exam.sections, function (section) {
