@@ -5865,14 +5865,14 @@ chat-board {
     box-sizing: border-box;
     margin-right: 13px; }
   .chatter-wrapper.online .online-indicator {
-    background: #87ca4d;
-    border: none; }
+    background: #87ca4d; }
   .chatter-wrapper.idle .online-indicator {
-    background: #dbb910;
-    border: none; }
+    background: #dbb910; }
   .chatter-wrapper.offline .chatter-name {
     font-family: #4f4d4d;
     border: none; }
+  .chatter-wrapper.offline .online-indicator {
+    background: #B33520; }
   .chatter-wrapper .chatter-name {
     font-size: 16px;
     color: #4f4d4d;

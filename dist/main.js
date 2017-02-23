@@ -12981,7 +12981,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "<div class=\"chatter-wrapper\"\n" +
     "     ng-class=\"{'offline': chatterObj.presence === d.userStatus.OFFLINE,\n" +
     "     'online': chatterObj.presence === d.userStatus.ONLINE,\n" +
-    "     'idle': chatterObj.presence === vm.userStatus.IDLE}\">\n" +
+    "     'idle': chatterObj.presence === d.userStatus.IDLE}\">\n" +
     "    <div class=\"online-indicator\"></div>\n" +
     "    <div class=\"chatter-name\">{{chatterObj.name}}</div>\n" +
     "    <div class=\"message-not-seen\"\n" +
