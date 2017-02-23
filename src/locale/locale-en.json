@@ -109,9 +109,9 @@
     "E_TUTORING":{
         "HEADER_TITLE_PREFIX": "Lesson Name",
         "COMPLETE_DIAGNOSTIC_FIRST": "Please complete the diagnostic test in order to access Zinkerz Online Educators Lessons",
-        "NO_TEACHER_TITLE" : "Want to get the best SAT prep possible?",
+        "NO_TEACHER_TITLE" : "Want to get the best {{appName}} prep possible?",
         "NO_TEACHER_SUBTITLE_1": "Schedule a FREE online lesson with one of our professional tutors.",
-        "NO_TEACHER_SUBTITLE_2": "Our tutors are SAT experts who specialize in maximizing teaching opportunities across our test prep platforms.",
+        "NO_TEACHER_SUBTITLE_2": "Our tutors are {{appName}} experts who specialize in maximizing teaching opportunities across our test prep platforms.",
         "CONTACT_US": "Contact Us",
         "SCHEDULE": "Schedule a Consultation"
     },

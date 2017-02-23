@@ -1,13 +1,13 @@
 <section class="e-tutoring-section" translate-namespace="E_TUTORING" ng-switch="diagnosticData && hasTeacher">
     <div ng-switch-when="false" class="app-e-tutoring-overlay no-teachers-overlay">
         <div class="msg-wrap">
-            <div class="big-title" translate=".NO_TEACHER_TITLE"></div>
+            <div class="big-title" translate=".NO_TEACHER_TITLE"  translate-values="{appName: appName}"></div>
             <div ng-show="!diagnosticData" class="app-e-tutoring-overlay ng-hide">
                 <span class="msg" translate="E_TUTORING.COMPLETE_DIAGNOSTIC_FIRST"></span>
             </div>
             <div class="sub-title" ng-if="diagnosticData && !hasTeacher">
                 <div translate=".NO_TEACHER_SUBTITLE_1"></div>
-                <div translate=".NO_TEACHER_SUBTITLE_2"></div>
+                <div translate=".NO_TEACHER_SUBTITLE_2" translate-values="{appName: appName}"></div>
             </div>
             <div class="btn-wrap">
                 <button class="md-button md success" translate=".SCHEDULE" ng-click="vm.showContactUs()"></button>

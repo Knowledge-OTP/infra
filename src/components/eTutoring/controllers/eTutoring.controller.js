@@ -3,7 +3,7 @@
 
     angular.module('znk.infra.eTutoring').controller('ETutoringController',
         function ($scope, diagnosticData, $mdDialog, $document, $window, ENV, InvitationService,
-                  ExerciseTypeEnum, ETutoringViewsConst, $stateParams, $location) {
+                  ExerciseTypeEnum, ETutoringViewsConst, $stateParams, $location, ETutoringService) {
             'ngInject';
 
             var self = this;
@@ -20,6 +20,8 @@
             }
 
             $scope.hasTeacher = false;
+
+            $scope.appName = ETutoringService.getAppName();
 
             self.showContactUs = function () {
                 bodyElement = $document.find('body').eq(0);

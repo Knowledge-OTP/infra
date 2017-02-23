@@ -585,8 +585,8 @@
     'use strict';
 
     angular.module('znk.infra.eTutoring').controller('ETutoringController',
-        ["$scope", "diagnosticData", "$mdDialog", "$document", "$window", "ENV", "InvitationService", "ExerciseTypeEnum", "ETutoringViewsConst", "$stateParams", "$location", function ($scope, diagnosticData, $mdDialog, $document, $window, ENV, InvitationService,
-                  ExerciseTypeEnum, ETutoringViewsConst, $stateParams, $location) {
+        ["$scope", "diagnosticData", "$mdDialog", "$document", "$window", "ENV", "InvitationService", "ExerciseTypeEnum", "ETutoringViewsConst", "$stateParams", "$location", "ETutoringService", function ($scope, diagnosticData, $mdDialog, $document, $window, ENV, InvitationService,
+                  ExerciseTypeEnum, ETutoringViewsConst, $stateParams, $location, ETutoringService) {
             'ngInject';
 
             var self = this;
@@ -603,6 +603,8 @@
             }
 
             $scope.hasTeacher = false;
+
+            $scope.appName = ETutoringService.getAppName();
 
             self.showContactUs = function () {
                 bodyElement = $document.find('body').eq(0);
@@ -739,10 +741,14 @@
     angular.module('znk.infra.eTutoring')
         .provider('ETutoringService', function () {
 
-            var getIconNameByCategoryIdWrapper;
+            var getIconNameByCategoryIdWrapper, appName;
 
             this.setGetIconNameByCategoryId = function (fn) {
                 getIconNameByCategoryIdWrapper = fn;
+            };
+
+            this.setAppName = function(_appName){
+                appName = _appName;
             };
 
             this.$get = ["$injector", "$log", "$q", function ($injector, $log, $q) {
@@ -757,6 +763,11 @@
                         return getIconNameByCategoryId(categoryId);
                     }
                 };
+
+                ETutoringService.getAppName = function(){
+                    return appName;
+                };
+
                 return ETutoringService;
             }];
         });
@@ -1124,13 +1135,13 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "<section class=\"e-tutoring-section\" translate-namespace=\"E_TUTORING\" ng-switch=\"diagnosticData && hasTeacher\">\n" +
     "    <div ng-switch-when=\"false\" class=\"app-e-tutoring-overlay no-teachers-overlay\">\n" +
     "        <div class=\"msg-wrap\">\n" +
-    "            <div class=\"big-title\" translate=\".NO_TEACHER_TITLE\"></div>\n" +
+    "            <div class=\"big-title\" translate=\".NO_TEACHER_TITLE\"  translate-values=\"{appName: appName}\"></div>\n" +
     "            <div ng-show=\"!diagnosticData\" class=\"app-e-tutoring-overlay ng-hide\">\n" +
     "                <span class=\"msg\" translate=\"E_TUTORING.COMPLETE_DIAGNOSTIC_FIRST\"></span>\n" +
     "            </div>\n" +
     "            <div class=\"sub-title\" ng-if=\"diagnosticData && !hasTeacher\">\n" +
     "                <div translate=\".NO_TEACHER_SUBTITLE_1\"></div>\n" +
-    "                <div translate=\".NO_TEACHER_SUBTITLE_2\"></div>\n" +
+    "                <div translate=\".NO_TEACHER_SUBTITLE_2\" translate-values=\"{appName: appName}\"></div>\n" +
     "            </div>\n" +
     "            <div class=\"btn-wrap\">\n" +
     "                <button class=\"md-button md success\" translate=\".SCHEDULE\" ng-click=\"vm.showContactUs()\"></button>\n" +

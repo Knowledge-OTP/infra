@@ -4,10 +4,14 @@
     angular.module('znk.infra.eTutoring')
         .provider('ETutoringService', function () {
 
-            var getIconNameByCategoryIdWrapper;
+            var getIconNameByCategoryIdWrapper, appName;
 
             this.setGetIconNameByCategoryId = function (fn) {
                 getIconNameByCategoryIdWrapper = fn;
+            };
+
+            this.setAppName = function(_appName){
+                appName = _appName;
             };
 
             this.$get = function ($injector, $log, $q) {
@@ -22,6 +26,11 @@
                         return getIconNameByCategoryId(categoryId);
                     }
                 };
+
+                ETutoringService.getAppName = function(){
+                    return appName;
+                };
+
                 return ETutoringService;
             };
         });
