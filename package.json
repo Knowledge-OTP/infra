@@ -4,6 +4,7 @@
   "devDependencies": {
     "grunt": "^1.0.1",
     "grunt-autoprefixer": "^3.0.4",
+    "grunt-cli": "^1.2.0",
     "grunt-concat-json": "0.0.10",
     "grunt-contrib-clean": "0.6.0",
     "grunt-contrib-concat": "0.5.0",
@@ -12,6 +13,7 @@
     "grunt-contrib-jshint": "0.11.0",
     "grunt-contrib-uglify": "0.7.0",
     "grunt-contrib-watch": "^0.6.1",
+    "grunt-exec": "^1.0.1",
     "grunt-html2js": "^0.3.5",
     "grunt-karma": "0.12.0",
     "grunt-ng-annotate": "^2.0.2",
@@ -29,6 +31,7 @@
     "karma-phantomjs-launcher": "^0.2.3",
     "karma-safari-launcher": "0.1.1",
     "phantomjs": "^1.9.19",
+    "simple-git": "^1.66.0",
     "time-grunt": "1.0.0"
   },
   "engines": {
