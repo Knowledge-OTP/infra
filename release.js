@@ -1,6 +1,6 @@
 const simpleGit = require('simple-git')();
 
-const x = simpleGit.tags((err, tags) => {
+simpleGit.tags((err, tags) => {
     console.log("Latest available tag: %s", tags.latest);
     console.log('check out zinkerz');
     simpleGit.checkout('zinkerz/dev', (err, a) => {
