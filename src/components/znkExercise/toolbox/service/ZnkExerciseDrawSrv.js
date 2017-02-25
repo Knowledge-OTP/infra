@@ -38,7 +38,7 @@
 
             ZnkExerciseDrawSrv.isDrawToolEnabled = isDrawToolEnabled();
             ZnkExerciseDrawSrv.canvasContextManager = {};
-        //    ZnkExerciseDrawSrv.addCanvasToElement = angular.noop();
+            //    ZnkExerciseDrawSrv.addCanvasToElement = angular.noop();
             // addCanvasToElement function is to be added into this service as well. see znkExerciseDrawContainer directive
             return ZnkExerciseDrawSrv;
         };

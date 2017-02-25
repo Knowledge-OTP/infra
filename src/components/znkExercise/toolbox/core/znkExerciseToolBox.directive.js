@@ -16,8 +16,10 @@
                     settings: '<'
                 },
                 controllerAs: '$ctrl',
-                controller: function($element){
+                controller: function($element, ZnkExerciseViewModeEnum){
                     'ngInject';// jshint ignore: line
+
+                    this.isDrawEnabled = ZnkExerciseViewModeEnum.MUST_ANSWER.enum === this.znkExerciseCtrl.getViewMode();
 
                     this.getCurrentQuestion = function(){
                         return this.znkExerciseCtrl.getCurrentQuestion();

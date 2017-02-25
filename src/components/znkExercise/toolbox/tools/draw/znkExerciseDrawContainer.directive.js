@@ -7,7 +7,7 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseDrawContainer',
-        function (ZnkExerciseDrawSrv) {
+        function (ZnkExerciseDrawSrv,ZnkExerciseViewModeEnum) {
             //'ngInject';
 
             return {
@@ -22,7 +22,8 @@
                         // sometimes position relative adds an unnecessary scrollbar. hide it
                         element.css('overflow-x', 'hidden');
                     }
-                    if (ZnkExerciseDrawSrv.addCanvasToElement && ZnkExerciseDrawSrv.isDrawToolEnabled) {
+                    //temporary solution to the firebase multiple error
+                    if (ZnkExerciseDrawSrv.addCanvasToElement && (ZnkExerciseViewModeEnum.MUST_ANSWER.enum !== questionBuilderCtrl.getViewMode())) {
                         ZnkExerciseDrawSrv.addCanvasToElement(element, question);
                     }
                 }
