@@ -12,7 +12,7 @@
 
             return {
                 require: '^questionBuilder',
-                link: function (scope,element,attrs, questionBuilderCtrl) {
+                link: function (scope, element, attrs, questionBuilderCtrl) {
 
                     var question = questionBuilderCtrl.question;
 
@@ -22,8 +22,8 @@
                         // sometimes position relative adds an unnecessary scrollbar. hide it
                         element.css('overflow-x', 'hidden');
                     }
-                    if (ZnkExerciseDrawSrv.addCanvasToElement) {
-                        ZnkExerciseDrawSrv.addCanvasToElement(element,question);
+                    if (ZnkExerciseDrawSrv.addCanvasToElement && ZnkExerciseDrawSrv.isDrawToolEnabled) {
+                        ZnkExerciseDrawSrv.addCanvasToElement(element, question);
                     }
                 }
             };

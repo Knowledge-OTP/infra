@@ -5,12 +5,22 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').service('ZnkExerciseDrawSrv',
-        function () {
-            //'ngInject';
-            
-            var self = this;
+    angular.module('znk.infra.znkExercise').provider('ZnkExerciseDrawSrv', function () {
+        'ngInject';
 
+        var _isDrawToolEnabledFunc = function () {
+            return function () {
+                return true;
+            };
+        };
+        this.setDrawToolState = function (isDrawToolEnabledFunc) {
+            _isDrawToolEnabledFunc = isDrawToolEnabledFunc;
+        };
+        this.$get = function ($injector) {
+            'ngInject';  // jshint ignore:line
+
+            var ZnkExerciseDrawSrv = {};
+            var isDrawToolEnabled = $injector.invoke(_isDrawToolEnabledFunc);
             /** example of self.canvasContextManager
              *  {
              *      10981: {
@@ -21,16 +31,20 @@
              *                question: CanvasContextObject,
              *                answer: CanvasContextObject
              *             }
-             *  } 
+             *  }
              *
              *  the names (such as 'question' or 'answer') are set according to the attribute name 'canvas-name' of znkExerciseDrawContainer directive
              */
 
-            self.canvasContextManager = {};
-
+            ZnkExerciseDrawSrv.isDrawToolEnabled = isDrawToolEnabled();
+            ZnkExerciseDrawSrv.canvasContextManager = {};
+        //    ZnkExerciseDrawSrv.addCanvasToElement = angular.noop();
             // addCanvasToElement function is to be added into this service as well. see znkExerciseDrawContainer directive
+            return ZnkExerciseDrawSrv;
+        };
 
-        });
+
+    });
 
 })(angular);
 
