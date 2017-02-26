@@ -14268,8 +14268,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExercise', [
-        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ZnkExerciseUtilitySrv', 'QuestionTypesSrv',
-        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout, ZnkExerciseUtilitySrv, QuestionTypesSrv) {
+        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ZnkExerciseUtilitySrv', 'QuestionTypesSrv','ZnkExerciseDrawSrv',
+        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout, ZnkExerciseUtilitySrv, QuestionTypesSrv,ZnkExerciseDrawSrv) {
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExerciseDrv.html',
                 restrict: 'E',
@@ -14309,7 +14309,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 $log.error('znkExerciseDrv: allowed time for exercise was not set!!!!');
                             }
                             scope.settings = angular.extend(defaultSettings, scope.settings);
-
+                            scope.isDrawEnabled = ZnkExerciseDrawSrv.isDrawToolEnabled();
                             var znkExerciseDrvCtrl = ctrls[0];
                             var ngModelCtrl = ctrls[1];
 
@@ -15217,9 +15217,9 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
              *  the names (such as 'question' or 'answer') are set according to the attribute name 'canvas-name' of znkExerciseDrawContainer directive
              */
 
-            ZnkExerciseDrawSrv.isDrawToolEnabled = isDrawToolEnabled();
+            ZnkExerciseDrawSrv.isDrawToolEnabled = isDrawToolEnabled;
             ZnkExerciseDrawSrv.canvasContextManager = {};
-        //    ZnkExerciseDrawSrv.addCanvasToElement = angular.noop();
+            //    ZnkExerciseDrawSrv.addCanvasToElement = angular.noop();
             // addCanvasToElement function is to be added into this service as well. see znkExerciseDrawContainer directive
             return ZnkExerciseDrawSrv;
         }];
@@ -15642,7 +15642,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         // sometimes position relative adds an unnecessary scrollbar. hide it
                         element.css('overflow-x', 'hidden');
                     }
-                    if (ZnkExerciseDrawSrv.addCanvasToElement && ZnkExerciseDrawSrv.isDrawToolEnabled) {
+                    //temporary solution to the firebase multiple error
+                    if (ZnkExerciseDrawSrv.addCanvasToElement) {
                         ZnkExerciseDrawSrv.addCanvasToElement(element, question);
                     }
                 }
@@ -16011,7 +16012,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     scope.$on('$destroy', function () {
                         eventsManager.cleanQuestionListeners();
                         eventsManager.cleanGlobalListeners();
-
+                        // Don't operate when viewing 'diagnostic' page. (temporary (?) solution to the firebase multiple error bugs in sat/act) - Guy
+                        ZnkExerciseDrawSrv.addCanvasToElement = undefined;
                     });
 
                     function EventsManager() {
@@ -16032,7 +16034,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             this._hoveredElements = [];
                         }
 
-                        this._hoveredElements.push({ 'hoveredElement': elementToHoverOn, 'onHoverCb': onHoverCb });
+                        this._hoveredElements.push({'hoveredElement': elementToHoverOn, 'onHoverCb': onHoverCb});
                     };
 
 
@@ -16127,22 +16129,22 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                     EventsManager.prototype.registerFbListeners = function (questionId) {
                         /* this wrapper was made because of a bug that occurred sometimes when user have entered
-                           to an exercise which has a drawing, and the canvas is empty. as it seems, the problem is
-                           the callback from firebase is invoked to soon, before the canvas has fully loaded
-                           (even tho it seems that the canvas alreay appended and compiled), still the canvas is empty.
-                           because there's no holding ground for when it will be ok to draw, the solution for now it's
-                           to wait 1 sec only for first time entrance and then register callbacks and try drawing.
-                        */
+                         to an exercise which has a drawing, and the canvas is empty. as it seems, the problem is
+                         the callback from firebase is invoked to soon, before the canvas has fully loaded
+                         (even tho it seems that the canvas alreay appended and compiled), still the canvas is empty.
+                         because there's no holding ground for when it will be ok to draw, the solution for now it's
+                         to wait 1 sec only for first time entrance and then register callbacks and try drawing.
+                         */
                         var self = this;
 
                         if (!registerFbListenersInDelayOnce) {
 
                             $timeout(function () {
-                              _registerFbListeners.call(self, questionId);
+                                _registerFbListeners.call(self, questionId);
                             }, 1000);
 
                         } else {
-                             _registerFbListeners.call(self, questionId);
+                            _registerFbListeners.call(self, questionId);
                         }
                     };
 
@@ -16174,7 +16176,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             this._dimensionsRefPairs = [];
                         }
                         dimensionsRef.on('value', onValueCb);
-                        this._dimensionsRefPairs.push({ dimensionsRef: dimensionsRef, onValueCb: onValueCb });
+                        this._dimensionsRefPairs.push({dimensionsRef: dimensionsRef, onValueCb: onValueCb});
                     };
 
                     EventsManager.prototype.killDimensionsListener = function () {
@@ -16254,7 +16256,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 else {
                                     width = elementToCoverDomElement.offsetWidth;
                                 }
-                                return { height: height, width: width };
+                                return {height: height, width: width};
                             }
 
                             // return the larger dimensions out of the element's dimensions and the saved FB dimensions
@@ -16297,7 +16299,6 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             });
 
 
-
                         });
 
                     }
@@ -16335,8 +16336,6 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     }
 
 
-
-
                     scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex, oldIndex, _currQuestion) {
                         if (angular.isUndefined(scope.d.drawMode)) {
                             scope.d.drawMode = DRAWING_MODES.VIEW;
@@ -16346,7 +16345,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                         // if newIndex not equel oldIndex, it meens not the first entrance, change flag to true
                         if (newIndex !== oldIndex) {
-                           registerFbListenersInDelayOnce = true;
+                            registerFbListenersInDelayOnce = true;
                         }
 
                         if (serverDrawingUpdater) {

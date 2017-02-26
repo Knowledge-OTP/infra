@@ -36,7 +36,7 @@
              *  the names (such as 'question' or 'answer') are set according to the attribute name 'canvas-name' of znkExerciseDrawContainer directive
              */
 
-            ZnkExerciseDrawSrv.isDrawToolEnabled = isDrawToolEnabled();
+            ZnkExerciseDrawSrv.isDrawToolEnabled = isDrawToolEnabled;
             ZnkExerciseDrawSrv.canvasContextManager = {};
             //    ZnkExerciseDrawSrv.addCanvasToElement = angular.noop();
             // addCanvasToElement function is to be added into this service as well. see znkExerciseDrawContainer directive

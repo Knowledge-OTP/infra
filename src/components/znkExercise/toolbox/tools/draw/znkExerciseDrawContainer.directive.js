@@ -7,7 +7,7 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseDrawContainer',
-        function (ZnkExerciseDrawSrv,ZnkExerciseViewModeEnum) {
+        function (ZnkExerciseDrawSrv) {
             //'ngInject';
 
             return {
@@ -23,7 +23,7 @@
                         element.css('overflow-x', 'hidden');
                     }
                     //temporary solution to the firebase multiple error
-                    if (ZnkExerciseDrawSrv.addCanvasToElement && (ZnkExerciseViewModeEnum.MUST_ANSWER.enum !== questionBuilderCtrl.getViewMode())) {
+                    if (ZnkExerciseDrawSrv.addCanvasToElement) {
                         ZnkExerciseDrawSrv.addCanvasToElement(element, question);
                     }
                 }
