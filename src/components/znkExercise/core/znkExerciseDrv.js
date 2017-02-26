@@ -44,8 +44,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExercise', [
-        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ZnkExerciseUtilitySrv', 'QuestionTypesSrv','ZnkExerciseDrawSrv',
-        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout, ZnkExerciseUtilitySrv, QuestionTypesSrv,ZnkExerciseDrawSrv) {
+        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ZnkExerciseUtilitySrv', 'QuestionTypesSrv',
+        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout, ZnkExerciseUtilitySrv, QuestionTypesSrv) {
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExerciseDrv.html',
                 restrict: 'E',
@@ -85,7 +85,6 @@
                                 $log.error('znkExerciseDrv: allowed time for exercise was not set!!!!');
                             }
                             scope.settings = angular.extend(defaultSettings, scope.settings);
-                            scope.isDrawEnabled = ZnkExerciseDrawSrv.isDrawToolEnabled();
                             var znkExerciseDrvCtrl = ctrls[0];
                             var ngModelCtrl = ctrls[1];
 

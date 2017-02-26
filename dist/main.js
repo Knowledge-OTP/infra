@@ -14268,8 +14268,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExercise', [
-        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ZnkExerciseUtilitySrv', 'QuestionTypesSrv','ZnkExerciseDrawSrv',
-        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout, ZnkExerciseUtilitySrv, QuestionTypesSrv,ZnkExerciseDrawSrv) {
+        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ZnkExerciseUtilitySrv', 'QuestionTypesSrv',
+        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout, ZnkExerciseUtilitySrv, QuestionTypesSrv) {
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExerciseDrv.html',
                 restrict: 'E',
@@ -14309,7 +14309,6 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 $log.error('znkExerciseDrv: allowed time for exercise was not set!!!!');
                             }
                             scope.settings = angular.extend(defaultSettings, scope.settings);
-                            scope.isDrawEnabled = ZnkExerciseDrawSrv.isDrawToolEnabled();
                             var znkExerciseDrvCtrl = ctrls[0];
                             var ngModelCtrl = ctrls[1];
 
@@ -15186,22 +15185,12 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').provider('ZnkExerciseDrawSrv', function () {
-        'ngInject';
+    angular.module('znk.infra.znkExercise').service('ZnkExerciseDrawSrv',
+        function () {
+            //'ngInject';
 
-        var _isDrawToolEnabledFunc = function () {
-            return function () {
-                return true;
-            };
-        };
-        this.setDrawToolState = function (isDrawToolEnabledFunc) {
-            _isDrawToolEnabledFunc = isDrawToolEnabledFunc;
-        };
-        this.$get = ["$injector", function ($injector) {
-            'ngInject';  // jshint ignore:line
+            var self = this;
 
-            var ZnkExerciseDrawSrv = {};
-            var isDrawToolEnabled = $injector.invoke(_isDrawToolEnabledFunc);
             /** example of self.canvasContextManager
              *  {
              *      10981: {
@@ -15217,15 +15206,11 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
              *  the names (such as 'question' or 'answer') are set according to the attribute name 'canvas-name' of znkExerciseDrawContainer directive
              */
 
-            ZnkExerciseDrawSrv.isDrawToolEnabled = isDrawToolEnabled;
-            ZnkExerciseDrawSrv.canvasContextManager = {};
-            //    ZnkExerciseDrawSrv.addCanvasToElement = angular.noop();
+            self.canvasContextManager = {};
+
             // addCanvasToElement function is to be added into this service as well. see znkExerciseDrawContainer directive
-            return ZnkExerciseDrawSrv;
-        }];
 
-
-    });
+        });
 
 })(angular);
 
