@@ -8,7 +8,7 @@
     angular.module('znk.infra.znkExercise').service('ZnkExerciseDrawSrv',
         function () {
             //'ngInject';
-            
+
             var self = this;
 
             /** example of self.canvasContextManager
@@ -21,7 +21,7 @@
              *                question: CanvasContextObject,
              *                answer: CanvasContextObject
              *             }
-             *  } 
+             *  }
              *
              *  the names (such as 'question' or 'answer') are set according to the attribute name 'canvas-name' of znkExerciseDrawContainer directive
              */
