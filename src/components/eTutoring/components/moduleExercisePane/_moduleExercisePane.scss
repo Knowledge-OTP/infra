@@ -25,6 +25,12 @@
                     &.math-icon {
                         fill: #AF89D2;
                     }
+                    &.mathlvl1-icon {
+                        fill: $mathLvl1Color;
+                    }
+                    &.mathlvl2-icon {
+                        fill: $mathLvl2Color;
+                    }
                     &.verbal-icon {
                         fill: #F9D41B;
                     }
