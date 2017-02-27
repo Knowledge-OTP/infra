@@ -4735,14 +4735,14 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
             'ngInject';
             this.formData = {};
             this.showSpinner = true;
-            UserProfileService.getProfile().then((profile) => {
+            UserProfileService.getProfile().then(function(profile){
                 if (angular.isDefined(profile)) {
                     this.formData.name = profile.nickname || undefined;
                     this.formData.email = profile.email || undefined;
                 }
             });
 
-            this.sendContactUs = (authform) => {
+            this.sendContactUs = function(authform){
                 this.showError = false;
 
                 if (!authform.$invalid) {
@@ -4761,15 +4761,15 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
                         templateKey: 'zoeContactUs'
                     };
 
-                    MailSenderService.postMailRequest(mailRequest).then(() => {
+                    MailSenderService.postMailRequest(mailRequest).then(function(){
                         this.fillLoader = true;
-                        $timeout(() => {
+                        $timeout(function(){
                             this.startLoader = this.fillLoader = false;
                             this.showSuccess = true;
                         });
-                    }).catch((mailError) => {
+                    }).catch(function(mailError){
                         this.fillLoader = true;
-                        $timeout(() => {
+                        $timeout(function(){
                             this.startLoader = this.fillLoader = false;
                             this.showError = true;
                             $log.error('ETutoringContactUsController:sendContactUs:: error send mail', mailError);
