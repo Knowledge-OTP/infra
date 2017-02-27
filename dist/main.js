@@ -4500,9 +4500,9 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
                             var moduleResultGuid = $stateParams.moduleResultGuid;
                             var viewId = $stateParams.viewId;
                             return {
-                                exerciseId,
-                                exerciseTypeId,
-                                assignContentType,
+                                exerciseId: exerciseId,
+                                exerciseTypeId: exerciseTypeId,
+                                assignContentType: assignContentType,
                                 exerciseParentId: moduleId,
                                 moduleResultGuid: moduleResultGuid,
                                 exerciseParentTypeId: ExerciseParentEnum.MODULE.enum,
