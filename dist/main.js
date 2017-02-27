@@ -5843,6 +5843,7 @@ angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "Co
                     if (a.hasOwnProperty('orderId')){
                         return a.orderId - b.orderId;
                     }
+                    return a.order - b.order;
                 });
                 angular.forEach(examsByOrder, function (exam) {
                     examsProms.push(self.getExam(exam.examId, setIsAvail));
