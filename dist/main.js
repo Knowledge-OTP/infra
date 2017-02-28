@@ -4484,7 +4484,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
                     }
                 })
                 .state('app.eTutoringWorkout', {
-                    url: '/workout?exerciseId/?exerciseTypeId/?moduleId/?exerciseParentId/?assignContentType/?examId/?moduleResultGuid/?viewId',
+                    url: '/etutoring?exerciseId/?exerciseTypeId/?moduleId/?exerciseParentId/?assignContentType/?examId/?moduleResultGuid/?viewId',
                     templateUrl: 'components/eTutoring/templates/eTutoringWorkout.template.html',
                     controller: 'ETutoringWorkoutController',
                     controllerAs: 'vm',
