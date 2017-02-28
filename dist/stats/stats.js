@@ -82,7 +82,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.stats').factory('statsLevelEnum', [
+    angular.module('znk.infra.stats').factory('StatsLevelEnum', [
         'EnumSrv',
         function (EnumSrv) {
             return new EnumSrv.BaseEnum([
