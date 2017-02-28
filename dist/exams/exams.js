@@ -60,7 +60,13 @@ angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "Co
             return _getExamOrder().then(function (examOrder) {
                 var examsProms = [];
                 var examsByOrder = examOrder.sort(function (a, b) {
-                    return a.order > b.order;
+                    if (a.hasOwnProperty('order')){
+                        return a.order - b.order;
+                    }
+                    if (a.hasOwnProperty('orderId')){
+                        return a.orderId - b.orderId;
+                    }
+                    return a.order - b.order;
                 });
                 angular.forEach(examsByOrder, function (exam) {
                     examsProms.push(self.getExam(exam.examId, setIsAvail));
