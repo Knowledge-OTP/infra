@@ -27,9 +27,9 @@
 (function (angular) {
     'use strict';
     angular.module('znk.infra.assignModule').service('UserAssignModuleService',
-        ["ZnkModuleService", "$q", "SubjectEnum", "ExerciseResultSrv", "ExerciseStatusEnum", "ExerciseTypeEnum", "EnumSrv", "$log", "InfraConfigSrv", "StudentContextSrv", "StorageSrv", "AssignContentEnum", "$rootScope", "exerciseEventsConst", "UtilitySrv", "ENV", function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv,
+        ["ZnkModuleService", "$q", "SubjectEnum", "ExerciseResultSrv", "ExerciseStatusEnum", "ExerciseTypeEnum", "EnumSrv", "$log", "InfraConfigSrv", "StudentContextSrv", "StorageSrv", "AssignContentEnum", "$rootScope", "exerciseEventsConst", "UtilitySrv", "ENV", "CategoryService", function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv,
                   $log, InfraConfigSrv, StudentContextSrv, StorageSrv, AssignContentEnum, $rootScope,
-                  exerciseEventsConst, UtilitySrv, ENV) {
+                  exerciseEventsConst, UtilitySrv, ENV, CategoryService) {
             'ngInject';
 
             var userAssignModuleService = {};
@@ -55,7 +55,7 @@
                 },
                 homework: {
                     id: AssignContentEnum.PRACTICE.enum,
-                    fbPath: 'assignmentResults',
+                    fbPath: 'assignmentResults'
                 }
             };
 
@@ -121,7 +121,7 @@
                                     // copy fields from module object to results object for future using
                                     moduleResults[moduleId].name = moduleObj.name;
                                     moduleResults[moduleId].desc = moduleObj.desc;
-                                    moduleResults[moduleId].subjectId = moduleObj.subjectId;
+                                    moduleResults[moduleId].subjectId = CategoryService.getCategoryLevel1ParentByIdSync(moduleObj.categoryId);
                                     moduleResults[moduleId].order = moduleObj.order;
                                     moduleResults[moduleId].exercises = moduleObj.exercises;
                                     moduleResults[moduleId].assignDate = Date.now();
