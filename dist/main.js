@@ -3596,7 +3596,6 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
                 return categoryMap[categoryId];
             });
         };
-
         self.getStatsKeyByCategoryId = function (categoryId) {
             var categoriesMap = self.getCategoryMap(true);
             var category = categoriesMap[categoryId];
@@ -9531,6 +9530,22 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
             StatsEventsHandlerSrv.init = angular.noop;
 
             return StatsEventsHandlerSrv;
+        }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.stats').factory('statsLevelEnum', [
+        'EnumSrv',
+        function (EnumSrv) {
+            return new EnumSrv.BaseEnum([
+                ['LEVEL1', 1, 'level1Categories'],
+                ['LEVEL2', 2, 'level2Categories'],
+                ['LEVEL3', 3, 'level3Categories'],
+                ['LEVEL4', 4, 'level4Categories']
+            ]);
         }
     ]);
 })(angular);

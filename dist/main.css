@@ -1978,6 +1978,10 @@ module-exercise-item .math-no-calc::before {
           width: auto; }
         .ng-include-module-exercise-pane .lesson-container .module-container .subject-icon svg-icon.math-icon {
           fill: #AF89D2; }
+        .ng-include-module-exercise-pane .lesson-container .module-container .subject-icon svg-icon.mathlvl1-icon {
+          fill: #8e6fab; }
+        .ng-include-module-exercise-pane .lesson-container .module-container .subject-icon svg-icon.mathlvl2-icon {
+          fill: #8e6fab; }
         .ng-include-module-exercise-pane .lesson-container .module-container .subject-icon svg-icon.verbal-icon {
           fill: #F9D41B; }
         .ng-include-module-exercise-pane .lesson-container .module-container .subject-icon svg-icon.essay-icon {
@@ -2195,8 +2199,7 @@ module-exercise-item .math-no-calc::before {
   -ms-flex-direction: column;
       flex-direction: column; }
   .app-e-tutoring.blurred-overlay {
-    -webkit-filter: blur(3px);
-            filter: blur(3px);
+    filter: blur(3px);
     opacity: 0.3; }
   .app-e-tutoring .e-tutoring-main-container {
     display: -ms-flexbox;
