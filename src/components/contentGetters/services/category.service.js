@@ -56,6 +56,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
                 return categoryMap[categoryId];
             });
         };
+
         self.getStatsKeyByCategoryId = function (categoryId) {
             var categoriesMap = self.getCategoryMap(true);
             var category = categoriesMap[categoryId];

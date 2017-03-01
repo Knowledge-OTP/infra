@@ -125,6 +125,25 @@ etutoring-student-navigation-pane {
                                     fill: #ffffff;
                                 }
                             }
+
+                            &.math-icon {
+                                background-color: $mathColor;
+                            }
+                            &.writing-icon {
+                                background-color: $writingColor;
+                            }
+                            &.essay-icon {
+                                background-color: $essayColor;
+                            }
+                            &.reading-icon {
+                                background-color : $readingColor;
+                            }
+                            &.mathlvl1-icon {
+                                background-color: $mathLvl1Color;
+                            }
+                            &.mathlvl2-icon {
+                                background-color: $mathLvl2Color;
+                            }
                         }
 
                         .homework-practice-icon{
