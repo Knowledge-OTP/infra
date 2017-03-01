@@ -1331,6 +1331,18 @@ etutoring-student-navigation-pane .etutoring-student-navigation-pane {
               height: 65%; }
               etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper svg-icon svg * {
                 fill: #ffffff; }
+            etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper svg-icon.math-icon {
+              background-color: #AF89D2; }
+            etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper svg-icon.writing-icon {
+              background-color: #F9D41B; }
+            etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper svg-icon.essay-icon {
+              background-color: #FF5895; }
+            etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper svg-icon.reading-icon {
+              background-color: #F9D41B; }
+            etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper svg-icon.mathlvl1-icon {
+              background-color: #8e6fab; }
+            etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper svg-icon.mathlvl2-icon {
+              background-color: #8e6fab; }
           etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper .homework-practice-icon svg-icon {
             border: 1px solid #0a9bad; }
             etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper .homework-practice-icon svg-icon svg path {
@@ -2199,7 +2211,8 @@ module-exercise-item .math-no-calc::before {
   -ms-flex-direction: column;
       flex-direction: column; }
   .app-e-tutoring.blurred-overlay {
-    filter: blur(3px);
+    -webkit-filter: blur(3px);
+            filter: blur(3px);
     opacity: 0.3; }
   .app-e-tutoring .e-tutoring-main-container {
     display: -ms-flexbox;
