@@ -1821,68 +1821,67 @@ module-exercise-item .module-part {
   module-exercise-item .module-part.in-progress .children-count-wrap .completed-exercise-summary {
     display: none; }
   module-exercise-item .module-part.completed {
-    box-shadow: none; }
-    module-exercise-item .module-part.completed:not(.is-lecture) {
-      background: #fafafa; }
-      module-exercise-item .module-part.completed:not(.is-lecture) .icon-wrap {
+    box-shadow: none;
+    background: #fafafa; }
+    module-exercise-item .module-part.completed:not(.is-lecture) .icon-wrap {
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-pack: center;
+          justify-content: center; }
+    module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .children-count {
+      display: none; }
+    module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .questions-progress {
+      display: none; }
+    module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary {
+      width: 100%;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-pack: distribute;
+          justify-content: space-around; }
+      module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat {
         display: -ms-flexbox;
         display: flex;
-        -ms-flex-pack: center;
-            justify-content: center; }
-      module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .children-count {
-        display: none; }
-      module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .questions-progress {
-        display: none; }
-      module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary {
-        width: 100%;
-        display: -ms-flexbox;
-        display: flex;
-        -ms-flex-pack: distribute;
-            justify-content: space-around; }
-        module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat {
-          display: -ms-flexbox;
-          display: flex;
-          -ms-flex-direction: row;
-              flex-direction: row; }
-          module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat {
-            width: 24px;
-            height: 24px;
-            border-radius: 12px;
-            border-width: 1px;
-            border-style: solid;
-            font-size: 14px;
-            color: #4f4d4d;
-            font-family: Lato;
-            font-weight: 200;
-            display: -ms-flexbox;
-            display: flex;
-            -ms-flex-pack: center;
-                justify-content: center;
-            -ms-flex-align: center;
-                align-items: center;
-            margin-right: 5px; }
-            module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat.correct {
-              border-color: #87ca4d;
-              color: #87ca4d; }
-            module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat.wrong {
-              border-color: #ff6766;
-              color: #ff6766; }
-            module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat.unanswered {
-              border-color: #acacac;
-              color: #acacac; }
-        module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .practice-questions-stat {
+        -ms-flex-direction: row;
+            flex-direction: row; }
+        module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat {
+          width: 24px;
+          height: 24px;
+          border-radius: 12px;
+          border-width: 1px;
+          border-style: solid;
           font-size: 14px;
-          color: #757a83;
-          font-family: Lato;
-          font-weight: 400; }
-          module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .practice-questions-stat .text {
-            margin-left: 3px; }
-        module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-time {
-          margin: auto 0;
-          font-size: 12px;
           color: #4f4d4d;
           font-family: Lato;
-          font-weight: 200; }
+          font-weight: 200;
+          display: -ms-flexbox;
+          display: flex;
+          -ms-flex-pack: center;
+              justify-content: center;
+          -ms-flex-align: center;
+              align-items: center;
+          margin-right: 5px; }
+          module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat.correct {
+            border-color: #87ca4d;
+            color: #87ca4d; }
+          module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat.wrong {
+            border-color: #ff6766;
+            color: #ff6766; }
+          module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat.unanswered {
+            border-color: #acacac;
+            color: #acacac; }
+      module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .practice-questions-stat {
+        font-size: 14px;
+        color: #757a83;
+        font-family: Lato;
+        font-weight: 400; }
+        module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .practice-questions-stat .text {
+          margin-left: 3px; }
+      module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-time {
+        margin: auto 0;
+        font-size: 12px;
+        color: #4f4d4d;
+        font-family: Lato;
+        font-weight: 200; }
   module-exercise-item .module-part:disabled {
     box-shadow: none;
     background: #fafafa; }

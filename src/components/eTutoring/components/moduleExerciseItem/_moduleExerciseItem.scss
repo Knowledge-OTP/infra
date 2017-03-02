@@ -123,8 +123,8 @@ module-exercise-item {
 
         &.completed {
             box-shadow: none;
+            background: #fafafa;
             &:not(.is-lecture){
-                background: #fafafa;
                 .icon-wrap{
                     display: flex;
                     justify-content: center;
