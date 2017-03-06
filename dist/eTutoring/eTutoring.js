@@ -229,7 +229,7 @@
                     this.formData.name = profile.nickname || undefined;
                     this.formData.email = profile.email || undefined;
                 }
-            });
+            }.bind(this));
 
             this.sendContactUs = function(authform){
                 this.showError = false;
@@ -256,14 +256,14 @@
                             this.startLoader = this.fillLoader = false;
                             this.showSuccess = true;
                         });
-                    }).catch(function(mailError){
+                    }.bind(this)).catch(function(mailError){
                         this.fillLoader = true;
                         $timeout(function(){
                             this.startLoader = this.fillLoader = false;
                             this.showError = true;
                             $log.error('ETutoringContactUsController:sendContactUs:: error send mail', mailError);
                         });
-                    });
+                    }.bind(this));
                 }
             };
 
