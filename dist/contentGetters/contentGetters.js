@@ -175,7 +175,6 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
 
         self.getCategoryLevel1ParentByIdSync = function (categoryId) {
             if (angular.isUndefined(categoryId) || categoryId === null) {
-                $log.debug('CategoryService: No category id', categoryId);
                 return;
             }
             var categoriesMap = self.getCategoryMap(true);
