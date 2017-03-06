@@ -1556,6 +1556,9 @@ md-dialog.e-tutoring-contact-us-modal {
       width: 14px;
       padding: 10px;
       cursor: pointer; }
+      md-dialog.e-tutoring-contact-us-modal md-toolbar .close-popup-wrap .etutoring-close-icon {
+        stroke: #ffffff;
+        stroke-width: 8px; }
   md-dialog.e-tutoring-contact-us-modal md-dialog-content {
     background-color: #ffffff;
     padding-top: 25px;
@@ -1623,9 +1626,9 @@ md-dialog.e-tutoring-contact-us-modal {
             justify-content: center;
         -ms-flex-align: center;
             align-items: center; }
-        md-dialog.e-tutoring-contact-us-modal .top-icon-wrap .top-icon .round-icon-wrap .calendar-icon {
+        md-dialog.e-tutoring-contact-us-modal .top-icon-wrap .top-icon .round-icon-wrap .etutoring-calendar-icon {
           stroke: #ffffff; }
-        md-dialog.e-tutoring-contact-us-modal .top-icon-wrap .top-icon .round-icon-wrap .calendar-icon * {
+        md-dialog.e-tutoring-contact-us-modal .top-icon-wrap .top-icon .round-icon-wrap .etutoring-calendar-icon * {
           fill: #ffffff;
           width: 35px;
           height: 35px; }
@@ -2210,8 +2213,7 @@ module-exercise-item .math-no-calc::before {
   -ms-flex-direction: column;
       flex-direction: column; }
   .app-e-tutoring.blurred-overlay {
-    -webkit-filter: blur(3px);
-            filter: blur(3px);
+    filter: blur(3px);
     opacity: 0.3; }
   .app-e-tutoring .e-tutoring-main-container {
     display: -ms-flexbox;
