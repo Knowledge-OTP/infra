@@ -222,12 +222,13 @@
     angular.module('znk.infra.eTutoring').controller('ETutoringContactUsController',
         ["$mdDialog", "UserProfileService", "MailSenderService", "$timeout", "ENV", "$log", function ($mdDialog, UserProfileService, MailSenderService, $timeout, ENV, $log) {
             'ngInject';
+            var self = this;
             this.formData = {};
             this.showSpinner = true;
-            UserProfileService.getProfile().then(function(profile){
+            UserProfileService.getProfile().bind(this).then(function(profile){
                 if (angular.isDefined(profile)) {
-                    this.formData.name = profile.nickname || undefined;
-                    this.formData.email = profile.email || undefined;
+                    self.formData.name = profile.nickname || undefined;
+                    self.formData.email = profile.email || undefined;
                 }
             });
 
@@ -250,7 +251,7 @@
                         templateKey: 'zoeContactUs'
                     };
 
-                    MailSenderService.postMailRequest(mailRequest).then(function(){
+                    MailSenderService.postMailRequest(mailRequest).bind(this).then(function(){
                         this.fillLoader = true;
                         $timeout(function(){
                             this.startLoader = this.fillLoader = false;
