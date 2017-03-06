@@ -5061,7 +5061,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
                 'etutoring-exercise-icon': 'components/eTutoring/svg/etutoring-exercise-icon.svg',
                 'etutoring-slides-icon': 'components/eTutoring/svg/etutoring-slides-icon.svg',
                 'etutoring-calendar-icon': 'components/eTutoring/svg/etutoring-calendar-icon.svg',
-                'etutoring-close-icon': 'componets/eTutoring/svg/etutoring-close-popup.svg'
+                'etutoring-close-icon': 'components/eTutoring/svg/etutoring-close-popup.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
         }]);
