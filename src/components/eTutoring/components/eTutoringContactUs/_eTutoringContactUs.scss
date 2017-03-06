@@ -21,10 +21,14 @@ md-dialog.e-tutoring-contact-us-modal {
 
         .close-popup-wrap {
             @include absolute-position(-35px, -35px);
-            height:14px;
+            height:14px; 
             width: 14px;
             padding: 10px;
             cursor: pointer;
+            .etutoring-close-icon {
+                stroke: $fcColor2;
+                stroke-width: 8px;
+            }
         }
     }
 

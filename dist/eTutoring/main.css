@@ -775,6 +775,9 @@ md-dialog.e-tutoring-contact-us-modal {
       width: 14px;
       padding: 10px;
       cursor: pointer; }
+      md-dialog.e-tutoring-contact-us-modal md-toolbar .close-popup-wrap .etutoring-close-icon {
+        stroke: #ffffff;
+        stroke-width: 8px; }
   md-dialog.e-tutoring-contact-us-modal md-dialog-content {
     background-color: #ffffff;
     padding-top: 25px;
