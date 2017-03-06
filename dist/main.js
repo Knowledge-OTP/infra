@@ -4683,15 +4683,14 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
     angular.module('znk.infra.eTutoring').controller('ETutoringContactUsController',
         ["$mdDialog", "UserProfileService", "MailSenderService", "$timeout", "ENV", "$log", function ($mdDialog, UserProfileService, MailSenderService, $timeout, ENV, $log) {
             'ngInject';
-            var self = this;
             this.formData = {};
             this.showSpinner = true;
-            UserProfileService.getProfile().bind(this).then(function(profile){
+            UserProfileService.getProfile().then(function(profile){
                 if (angular.isDefined(profile)) {
-                    self.formData.name = profile.nickname || undefined;
-                    self.formData.email = profile.email || undefined;
+                    this.formData.name = profile.nickname || undefined;
+                    this.formData.email = profile.email || undefined;
                 }
-            });
+            }.bind(this));
 
             this.sendContactUs = function(authform){
                 this.showError = false;
@@ -4712,20 +4711,20 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
                         templateKey: 'zoeContactUs'
                     };
 
-                    MailSenderService.postMailRequest(mailRequest).bind(this).then(function(){
+                    MailSenderService.postMailRequest(mailRequest).then(function(){
                         this.fillLoader = true;
                         $timeout(function(){
                             this.startLoader = this.fillLoader = false;
                             this.showSuccess = true;
                         });
-                    }).catch(function(mailError){
+                    }.bind(this)).catch(function(mailError){
                         this.fillLoader = true;
                         $timeout(function(){
                             this.startLoader = this.fillLoader = false;
                             this.showError = true;
                             $log.error('ETutoringContactUsController:sendContactUs:: error send mail', mailError);
                         });
-                    });
+                    }.bind(this));
                 }
             };
 
