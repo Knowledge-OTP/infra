@@ -100,5 +100,61 @@
         "CLOSE": "CLOSE",
         "PlEASE_COMPLETE_ASSIGNMENT": "Please complete this assignment before your next Zinkerz lesson",
         "YOUR_ASSIGNMENT_IS_LATE": "Your assignment is late"
+    },
+    "ZNK_CATEGORY_SUMMARY":{
+        "CATEGORY_ACCURACY": "{{categoryProgress}}% accuracy",
+        "AVERAGE_TIME_CATEGORY": "Avg.: {{avgTime}} sec",
+        "SHOW_DETAILS": "Show details"
+    },
+    "E_TUTORING":{
+        "HEADER_TITLE_PREFIX": "Lesson Name",
+        "COMPLETE_DIAGNOSTIC_FIRST": "Please complete the diagnostic test in order to access Zinkerz Online Educators Lessons",
+        "NO_TEACHER_TITLE" : "Want to get the best {{appName}} prep possible?",
+        "NO_TEACHER_SUBTITLE_1": "Schedule a FREE online lesson with one of our professional tutors.",
+        "NO_TEACHER_SUBTITLE_2": "Our tutors are {{appName}} experts who specialize in maximizing teaching opportunities across our test prep platforms.",
+        "CONTACT_US": "Contact Us",
+        "SCHEDULE": "Schedule a Consultation"
+    },
+    "E_TUTORING_CONTACT_US":{
+        "CONTACT_US": "Contact Us",
+        "CONTACT_US_SUBTITLE_1": "Provide your information below,",
+        "CONTACT_US_SUBTITLE_2": "and we will contact you within 24 hours.",
+        "CANCEL":"Cancel",
+        "SUBMIT":"Submit",
+        "NAME":"Name",
+        "EMAIL":"Email",
+        "PHONE_NUMBER":"Phone Number",
+        "REQUIRED_FIELD":"This field is required",
+        "SUCCESS_TITLE":"Thank you for your interest!",
+        "SUCCESS_SUBTITLE":"Our eTutoring representative will get back to you in the coming days.",
+        "OK":"OK",
+        "SEND_ERROR":"An error has occured, Please try again later"
+    },
+    "E_TUTORING_ACTION_BAR":{
+        "SHOW_TEACHER_SCREEN": "Watch Teacher's Screen",
+        "SHARE_MY_SCREEN": "Share My Screen"
+    },
+    "E_TUTORING_NAVIGATION_PANE":{
+        "LESSONS": "Lessons",
+        "SEARCH": "Search",
+        "IN_PROGRESS": "In Progress",
+        "NO_LESSONS_ASSIGNED": "You Have No Lessons Assigned",
+        "NO_HW_ASSIGNED": "You Have No Practices Assigned",
+        "PROCESSING_OVERLAY":"Processing...",
+        "NEW":"New",
+        "PRACTICE": "Practice",
+        "DUE_IN": "Due In {{days}} Days",
+        "OVERDUE": "{{days}} Days Overdue",
+        "CORRECT": "correct"
+    },
+    "MODULE_EXERCISE_PANE_DRV":{
+        "NOT_YET_ASSIGNED": "You have not yet been assigned this lesson.",
+        "WILL_BE_ABLE_TO_VIEW_ONE_TEACHER_ASSIGNS": "Once your teacher assigns this lesson, you will be able to view it here.",
+        "NO_LESSONS_ASSIGNED": "You Have No Lessons Assigned",
+        "NO_LESSONS_ASSIGNED_SUBTEXT": "Once your teacher assigns a lesson, it will be available here.",
+        "PROCESSING_OVERLAY":"Processing...",
+        "NO_HW_ASSIGNED": "You Have No Practices Assigned",
+        "OVERDUE_ASSIGNMENT": "{{numOfDays}} Days Overdue"
+
     }
 }

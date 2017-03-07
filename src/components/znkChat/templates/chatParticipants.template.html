@@ -6,7 +6,7 @@
          ng-if="d.chatData.support && d.chatData.support.uid"
          ng-class="{'selected-chatter': d.chatData.support.isActive}">
         <chatter
-            set-first-chatter="d.selectChatter(d.chatData.support)"
+            set-first-chatter="!d.chatData.chatParticipantsArr || d.chatData.chatParticipantsArr.length === 0 ?  d.selectChatter : null"
             chat-data="d.chatData"
             local-user="d.chatData.localUser"
             local-user-chats-guids-arr="d.chatData.localUserChatsGuidsArr"
@@ -20,7 +20,7 @@
                  ng-click="d.selectChatter(chatter)"
                  ng-class="{'selected-chatter': chatter.isActive}">
                 <chatter
-                    set-first-chatter="$index === 0 && (!d.chatData.support || !d.chatData.support.uid) ? d.selectChatter(chatter) : null"
+                    set-first-chatter="$index === 0  ? d.selectChatter : null"
                     chat-data="d.chatData"
                     local-user="d.chatData.localUser"
                     local-user-chats-guids-arr="d.chatData.localUserChatsGuidsArr"

@@ -1,0 +1,60 @@
+<div class="e-tutor-bar base-border-radius base-box-shadow" translate-namespace="E_TUTORING_ACTION_BAR">
+    <div class="teacher-select-wrap" ng-if="myTeachers">
+        <div class="online-indicator-wrap">
+            <div class="online-indicator"
+                 ng-class="{'offline': currentTeacher.presence === userStatus.OFFLINE,
+                                'online': currentTeacher.presence === userStatus.ONLINE,
+                                'idle': currentTeacher.presence === userStatus.IDLE}"></div>
+        </div>
+        <md-menu md-offset="-49 70" class="teachers-menu">
+            <md-button
+                aria-label="{{currentTeacher.senderName}}"
+                class="md-icon-button teacher-open-modal-btn"
+                ng-click="$mdOpenMenu($event);changeSelectIcon();"
+                ng-disabled="lockTeacherSelection">
+                <div class="teacher-details">
+                    <div class="teacher-name">{{currentTeacher.senderName}}</div>
+                    <div class="teacher-subject">{{currentTeacher.zinkerzTeacherSubject}}</div>
+                </div>
+                <md-icon class="material-icons expand-arrow">{{expandIcon}}</md-icon>
+            </md-button>
+            <md-menu-content class="md-menu-content-teacher-select">
+                <md-list>
+                    <md-list-item class="teacher-list-item" ng-repeat="teacher in myTeachers"
+                                  ng-click="selectTeacher(teacher)">
+                        <div class="online-indicator-wrap">
+                            <div class="online-indicator"
+                                 ng-class="{
+                                    'offline': teacher.presence === userStatus.OFFLINE,
+                                    'online': teacher.presence === userStatus.ONLINE,
+                                    'idle': teacher.presence === userStatus.IDLE
+                                }"></div>
+                        </div>
+                        <div class="teacher-details">
+                            <div class="teacher-name">{{::teacher.senderName}}</div>
+                            <div class="teacher-subject">{{::teacher.zinkerzTeacherSubject}}</div>
+                        </div>
+                    </md-list-item>
+                </md-list>
+            </md-menu-content>
+        </md-menu>
+    </div>
+    <div class="share-btn-wrap">
+        <md-button class="primary share-btn"
+                   aria-label="{{'E_TUTORING_ACTION_BAR.SHOW_TEACHER_SCREEN' | translate}}"
+                   ng-click="showTeacherScreen()"
+                   ng-disabled="currentTeacher.presence === userStatus.OFFLINE">
+            <span translate=".SHOW_TEACHER_SCREEN"></span>
+        </md-button>
+        <md-button class="warn share-btn"
+                   aria-label="{{'E_TUTORING_ACTION_BAR.SHARE_MY_SCREEN' | translate}}"
+                   ng-click="shareMyScreen()"
+                   ng-disabled="currentTeacher.presence === userStatus.OFFLINE">
+            <span translate=".SHARE_MY_SCREEN"></span>
+        </md-button>
+        <div class="separator"></div>
+        <call-btn
+            ng-model="callBtnModel">
+        </call-btn>
+    </div>
+</div>

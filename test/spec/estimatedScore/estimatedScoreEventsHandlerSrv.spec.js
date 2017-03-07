@@ -1,7 +1,7 @@
 describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
     'use strict';
 
-    beforeEach(module('znk.infra.estimatedScore', 'htmlTemplates', 'testUtility', 'storage.mock', 'estimatedScore.mock', 'content.mock'));
+    beforeEach(module('znk.infra.estimatedScore', 'htmlTemplates', 'testUtility', 'storage.mock', 'estimatedScore.mock', 'content.mock', 'categories.mock'));
 
     var rawPointsForExerciseTypeMap = {
         4: {
@@ -31,7 +31,7 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
     }));
 
     var exerciseEventsConst, actions, TestUtilitySrv, $rootScope, ExerciseTypeEnum, SubjectEnum, StudentStorage,
-        ExerciseAnswerStatusEnum, EstimatedScoreSrv, EstimatedScoreEventsHandlerSrv;
+        ExerciseAnswerStatusEnum, EstimatedScoreSrv, EstimatedScoreEventsHandlerSrv, categoriesConstant;
     beforeEach(inject(
         function ($injector) {
             exerciseEventsConst = $injector.get('exerciseEventsConst');
@@ -44,6 +44,8 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
             var InfraConfigSrv = $injector.get('InfraConfigSrv');
             StudentStorage = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage, InfraConfigSrv)();
             ExerciseAnswerStatusEnum = $injector.get('ExerciseAnswerStatusEnum');
+            categoriesConstant = $injector.get('categoriesConstant');
+
 
             TestUtilitySrv.general.printDebugLogs();
 
@@ -60,7 +62,7 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
             };
 
             actions.getExercisesRawScoreFromDb = function (subjectId) {
-                return StudentStorage.adapter.__db.users.$$uid.estimatedScore.exercisesRawScores[subjectId];
+                return StudentStorage.adapter.__db.users.$$uid.estimatedScore.sectionsRawScores[subjectId];
             };
         }
     ));
@@ -80,7 +82,6 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         var scoresArr = actions.getEstimatedScoresFromDb(section.subjectId);
 
         expect(scoresArr.length).toEqual(1);
-
         var expectedResult = {
             exerciseType: ExerciseTypeEnum.SECTION.enum,
             exerciseId: section.id,
@@ -133,8 +134,8 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         expect(sectionRawScore[0]).toEqual(jasmine.objectContaining(expectedResult));
     });
 
-    it('when drill exercise is completed then raw score and estimated should be updated accordingly', function () {
-        var drillMock = content.drill10;
+    it('when section is completed then raw score and estimated should be updated accordingly', function () {
+        var sectionMock = content.section1276;
         var diagnosticSectionRawScoreMock = {
             exerciseType: 4,
             exerciseId: 1087,
@@ -152,44 +153,29 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
             sectionsRawScores: {},
             estimatedScores: {}
         };
-        StudentStorage.adapter.__db.users.$$uid.estimatedScore.sectionsRawScores[drillMock.subjectId] = [diagnosticSectionRawScoreMock];
-        StudentStorage.adapter.__db.users.$$uid.estimatedScore.estimatedScores[drillMock.subjectId] = [estimatedScoreMock];
+        StudentStorage.adapter.__db.users.$$uid.estimatedScore.sectionsRawScores[sectionMock.subjectId] = [diagnosticSectionRawScoreMock];
+        StudentStorage.adapter.__db.users.$$uid.estimatedScore.estimatedScores[sectionMock.subjectId] = [estimatedScoreMock];
 
-
-        var TOTAL_QUESTIONS = drillMock.questions.length;
         var CORRECT_NUM = 5;
         var UNANSWERED_NUM = 2;
-        var WRONG_NUM = CORRECT_NUM - UNANSWERED_NUM;
-        var resultMock = TestUtilitySrv.exercise.mockExerciseResult(drillMock, CORRECT_NUM, UNANSWERED_NUM, true);
+        var resultMock = TestUtilitySrv.exercise.mockExerciseResult(sectionMock, CORRECT_NUM, UNANSWERED_NUM, true);
 
-        $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, drillMock, resultMock);
+        $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, sectionMock, resultMock);
         $rootScope.$digest();
 
-        var drillRawPointsMap = rawPointsForExerciseTypeMap[ExerciseTypeEnum.DRILL.enum];
-        var expectedRawScore = {
-            exerciseType: ExerciseTypeEnum.DRILL.enum,
-            exerciseId: drillMock.id,
-            total: drillRawPointsMap.correctWithin * TOTAL_QUESTIONS,
-            earned: CORRECT_NUM * drillRawPointsMap.correctWithin +
-            WRONG_NUM * drillRawPointsMap.wrongWithin +
-            UNANSWERED_NUM * drillRawPointsMap.unanswered
-        };
-        var exerciseRawScore = actions.getExercisesRawScoreFromDb(drillMock.subjectId);
-        expect(exerciseRawScore).toEqual(jasmine.objectContaining(expectedRawScore));
-
-        var estimatedScore = actions.getEstimatedScoresFromDb(drillMock.subjectId);
+        var estimatedScore = actions.getEstimatedScoresFromDb(sectionMock.subjectId);
         var expectedEstimatedScore = {
             exerciseType: ExerciseTypeEnum.DRILL.enum,
-            exerciseId: drillMock.id,
-            score: 25.40625
+            exerciseId: sectionMock.id,
+            score: 25.94359756097561
         };
         expect(estimatedScore.length).toBe(2);
         expect(estimatedScore[1]).toEqual(jasmine.objectContaining(expectedEstimatedScore));
 
         //testing that same event will not be processed twice
-        $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, drillMock, resultMock);
+        $rootScope.$broadcast(exerciseEventsConst.drill.FINISH, sectionMock, resultMock);
         $rootScope.$digest();
-        estimatedScore = actions.getEstimatedScoresFromDb(drillMock.subjectId);
+        estimatedScore = actions.getEstimatedScoresFromDb(sectionMock.subjectId);
         expect(estimatedScore.length).toBe(2);
     });
 
@@ -257,16 +243,8 @@ describe('testing service "EstimatedScoreEventsHandlerSrv":', function () {
         expect(estimatedScores[2]).toEqual(jasmine.objectContaining(expectedEstimatedScore));
     });
 
-
     it('when exercise is completed and no initial score is set then the received score should be set as the initial one', function () {
         var drillMock = content.drill10;
-        var estimatedScoreMock = {
-            exerciseType: 4,
-            exerciseId: 1087,
-            score: 24,
-            time: 1441625776941
-        };
-
         var CORRECT_NUM = 5;
         var UNANSWERED_NUM = 2;
         var resultMock = TestUtilitySrv.exercise.mockExerciseResult(drillMock, CORRECT_NUM, UNANSWERED_NUM, true);

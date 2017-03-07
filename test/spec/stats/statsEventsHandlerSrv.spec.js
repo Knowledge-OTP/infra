@@ -2,7 +2,7 @@ describe('testing service "StatsEventsHandlerSrv":', function () {
     'use strict';
 
     beforeEach(module('znk.infra.stats', 'znk.infra.utility', 'htmlTemplates', 'storage.mock', 'testUtility',
-        'content.mock'));
+        'content.mock', 'categories.mock'));
 
     var $rootScope, exerciseEventsConst, TestUtilitySrv, StudentStorage, StatsEventsHandlerSrv, ExerciseTypeEnum;
     beforeEach(inject([

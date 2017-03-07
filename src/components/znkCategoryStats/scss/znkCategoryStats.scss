@@ -1,0 +1,161 @@
+
+.znk-category-stats{
+        overflow: hidden;
+        clear: both;
+
+        .category-wrapper {
+            @include dimension(300px, auto);
+            display: flex;
+            padding: 15px;
+
+            .category-short-name {
+                @include dimension(30px, 30px);
+                @include text-style(14px, $fcColor2, Lato, $regularFontWeight);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                border-radius: 50%;
+                margin-right: 15px;
+            }
+
+            &.math, &.mathlvl1, &.mathlvl2 {
+                .category-short-name {
+                    background-color: $mathColor;
+                }
+            }
+
+            &.verbal{
+                .category-short-name {
+                    background-color: $verbalColor;
+                }
+            }
+
+            &.essay{
+                .category-short-name {
+                    background-color: $essayColor;
+                }
+            }
+
+            .progress-details-wrapper {
+                @include dimension(255px, auto);
+                display: flex;
+                flex-direction: column;
+
+                .category-name {
+                    @include dimension(250px, auto);
+                    @include text-style(18px, $fcColor6, Lato, $regularFontWeight);
+                    display: inline-block;
+                    text-align: left;
+                    padding-top: 5px;
+                }
+
+                .subject-progress-wrapper {
+                    clear: both;
+                    position: relative;
+
+                    .progress-wrap {
+                        @include dimension(250px, 7px);
+                        background-color: $bgColor6;
+                        border: 1px solid $bcColor8;
+
+                        .progress{
+                            transition: 0.5s;
+                        }
+                    }
+
+                    .level-white-line {
+                        @include dimension(1px, 7px);
+                        background-color: $bgColor6;
+                        display: inline-block;
+                        position: absolute;
+                        bottom: 1px;
+                    }
+
+                    .line1 {
+                        left: 75px;
+                    }
+                    .line2 {
+                        left: 137px;
+                    }
+                    .line3 {
+                        left: 187px;
+                    }
+                    .line4 {
+                        left:222px;
+                    }
+                }
+
+                .level-status-wrapper {
+                    span{
+                        text-align: center;
+                        @include text-style(12px, $fcColor6, Quicksand, $regularFontWeight);
+                        margin-bottom: 3px;
+                    }
+
+                    span:first-child {
+                        float: left
+                    }
+                }
+
+                .average-time-wrapper {
+                    margin-top: 7px;
+                    .znkCategoryStats-clock-icon{
+                        float: left;
+                        margin-right: 8px;
+                        width: 11px;
+                        height: auto;
+                    }
+
+                    span {
+                        @include text-style(13px, $fcColor9, Quicksand, $regularFontWeight);
+                        line-height: 13px;
+                        float: left;
+                    }
+                }
+
+                .specific-categories{
+                    text-align: left;
+                    margin-top: 15px;
+                    display: flex;
+                    align-items: baseline;
+                    cursor: pointer;
+                    position: relative;
+                    .show-details-title{
+                        @include text-style(14px, $fcColor5, Lato, $regularFontWeight);
+                    }
+                    .dropdown-arrow-icon{
+                        width: 9px;
+                        height: 9px;
+                        transform: rotate(-90deg);
+                        margin-left: 5px;
+                        svg{
+                            width: 9px;
+                            height: 9px;
+                        }
+
+                        svg *{
+                            stroke: $fcColor5;
+                            stroke-width: 25px;
+                        }
+                    }
+
+                    md-menu.specific-menu {
+                        position: relative;
+                        .menu-btn{
+                            display: flex;
+                            align-items: baseline;
+                        }
+
+                    }
+
+                }
+            }
+
+            .no-data-title{
+                @include text-style(14px, $fcColor6, Lato, $lightFontWeight);
+                width: 152px;
+                margin-top: 20px;
+            }
+        }
+    }
+

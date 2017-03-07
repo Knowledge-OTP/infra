@@ -1,0 +1,44 @@
+<div class="lesson-container homework-container" ng-switch="showLoading" translate-namespace="MODULE_EXERCISE_PANE_DRV">
+    <div ng-switch-when="false" ng-if="hasModule" class="module-container">
+        <div class="assignment-title-wrapper"
+             ng-class="{'pass-due-date': dueDateUtility.isDueDatePass(module.assignDate + dueDateUtility.SEVEN_DAYS_IN_MS).passDue &&
+                                         module.moduleSummary.overAll.status !== exerciseStatusEnum.COMPLETED.enum }">
+            <div class="overdue-assignment-title"
+                 translate-values="{numOfDays:  dueDateUtility.isDueDatePass(module.assignDate + dueDateUtility.SEVEN_DAYS_IN_MS).dateDiff}"
+                 translate=".OVERDUE_ASSIGNMENT">
+            </div>
+            <div class="module-name">{{module.name}}</div>
+        </div>
+
+        <div class="topic-icon">
+            <svg-icon name="{{svgIcon}}"></svg-icon>
+        </div>
+
+        <div class="topic-name">{{LiveSessionSubjectEnum.getEnumMap()[module.topicId]}}</div>
+        <div class="exercises-box base-border-radius" ng-switch on="module.contentAssign">
+            <div ng-switch-when="false" class="content-not-assigned">
+                <div translate=".NOT_YET_ASSIGNED"></div>
+                <small translate=".WILL_BE_ABLE_TO_VIEW_ONE_TEACHER_ASSIGNS"></small>
+            </div>
+            <div ng-switch-when="true" class="homework-exercises-container">
+                <div class="exercise-item-wrap" ng-repeat="exercise in module.exercises">
+                    <div class="exercise-item" ng-repeat="item in exercise">
+                        <module-exercise-item
+                            e-tutoring-view="eTutoringViewsConst.PRACTICE"
+                            active-view-obj="activeViewObj"
+                            assign-content-type="assignContentEnum.PRACTICE.enum"
+                            module="module"
+                            exercise="item">
+                        </module-exercise-item>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div ng-switch-when="false" ng-if="!hasModule" class="wrapper-overlay">
+        <span translate=".NO_HW_ASSIGNED"></span>
+    </div>
+    <div ng-switch-when="true" class="wrapper-overlay">
+        <span translate=".PROCESSING_OVERLAY"></span>
+    </div>
+</div>

@@ -85,7 +85,6 @@
                                 $log.error('znkExerciseDrv: allowed time for exercise was not set!!!!');
                             }
                             scope.settings = angular.extend(defaultSettings, scope.settings);
-
                             var znkExerciseDrvCtrl = ctrls[0];
                             var ngModelCtrl = ctrls[1];
 

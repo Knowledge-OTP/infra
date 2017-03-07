@@ -3,7 +3,7 @@
     angular.module('znk.infra.assignModule').service('UserAssignModuleService',
         function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv,
                   $log, InfraConfigSrv, StudentContextSrv, StorageSrv, AssignContentEnum, $rootScope,
-                  exerciseEventsConst, UtilitySrv, ENV) {
+                  exerciseEventsConst, UtilitySrv, ENV, CategoryService) {
             'ngInject';
 
             var userAssignModuleService = {};
@@ -29,7 +29,7 @@
                 },
                 homework: {
                     id: AssignContentEnum.PRACTICE.enum,
-                    fbPath: 'assignmentResults',
+                    fbPath: 'assignmentResults'
                 }
             };
 
@@ -95,7 +95,7 @@
                                     // copy fields from module object to results object for future using
                                     moduleResults[moduleId].name = moduleObj.name;
                                     moduleResults[moduleId].desc = moduleObj.desc;
-                                    moduleResults[moduleId].subjectId = moduleObj.subjectId;
+                                    moduleResults[moduleId].subjectId = CategoryService.getCategoryLevel1ParentByIdSync(moduleObj.categoryId);
                                     moduleResults[moduleId].order = moduleObj.order;
                                     moduleResults[moduleId].exercises = moduleObj.exercises;
                                     moduleResults[moduleId].assignDate = Date.now();
@@ -286,17 +286,14 @@
 
                         if (_exerciseResults && _exerciseResults[exerciseTypeId]) {
                             if (_exerciseResults[exerciseTypeId][exerciseId]){
+                                currentExerciseRes.status = _exerciseResults[exerciseTypeId][exerciseId].isComplete ?
+                                    ExerciseStatusEnum.COMPLETED.enum :
+                                    (_exerciseResults[exerciseTypeId][exerciseId].questionResults.length > 0 ? ExerciseStatusEnum.ACTIVE.enum : ExerciseStatusEnum.NEW.enum);
 
-                                if (exercise.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum) {
-                                    currentExerciseRes.status = _exerciseResults[exerciseTypeId][exerciseId].isComplete ?
-                                        ExerciseStatusEnum.COMPLETED.enum :
-                                        (_exerciseResults[exerciseTypeId][exerciseId].questionResults.length > 0 ? ExerciseStatusEnum.ACTIVE.enum : ExerciseStatusEnum.NEW.enum);
-
-                                    currentExerciseRes.correctAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
-                                    currentExerciseRes.wrongAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
-                                    currentExerciseRes.skippedAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
-                                    currentExerciseRes.totalAnswered = currentExerciseRes.correctAnswersNum + currentExerciseRes.wrongAnswersNum;
-                                }
+                                currentExerciseRes.correctAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
+                                currentExerciseRes.wrongAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
+                                currentExerciseRes.skippedAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
+                                currentExerciseRes.totalAnswered = currentExerciseRes.correctAnswersNum + currentExerciseRes.wrongAnswersNum;
                                 currentExerciseRes.duration = _exerciseResults[exerciseTypeId][exerciseId].duration || 0;
                             }
                         }
@@ -335,6 +332,9 @@
                             moduleSummary.overAll.status = ExerciseStatusEnum.ACTIVE.enum;
                         } else if (moduleExerciseNum === completedExercises) {
                             moduleSummary.overAll.status = ExerciseStatusEnum.COMPLETED.enum;
+                            if (!assignModule.isComplete) {
+                                _updateModuleResultToCompleted(assignModule.guid);
+                            }
                         }
                     }
                 }

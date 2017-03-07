@@ -7,6 +7,33 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
+        var dayInMs = 86400000;
+        var WEEK = 7;
+        this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
+
+
+        this.isDueDatePass = function (dueDate) {
+            var res = {
+                dateDiff: 0,
+                passDue: false
+            };
+
+            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
+                return res;
+            }
+
+            res.dateDiff = Math.abs(Math.ceil((Date.now() - dueDate) / dayInMs));
+            res.passDue = dueDate - Date.now() < 0;
+            return res;
+        };
+    }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.utility').factory('UtilitySrv', [
         '$q',
         function ($q) {
@@ -52,6 +79,27 @@
                 }
             };
 
+            UtilitySrv.object.findProp = function findProp(obj, key, out) {
+                var i,
+                    proto = Object.prototype,
+                    ts = proto.toString,
+                    hasOwn = proto.hasOwnProperty.bind(obj);
+
+                if ('[object Array]' !== ts.call(out)) { out = []; }
+
+                for (i in obj) {
+                    if (hasOwn(i)) {
+                        if (i === key) {
+                            out.push(obj[i]);
+                        } else if ('[object Array]' === ts.call(obj[i]) || '[object Object]' === ts.call(obj[i])) {
+                            findProp(obj[i], key, out);
+                        }
+                    }
+                }
+
+                return out;
+            };
+
             //array utility srv
             UtilitySrv.array = {};
 
@@ -77,6 +125,12 @@
                 };
             };
 
+            UtilitySrv.array.removeDuplicates = function(arr){
+                return arr.filter(function(item, pos) {
+                    return arr.indexOf(item) === pos;
+                });
+            };
+
             UtilitySrv.fn = {};
 
             UtilitySrv.fn.singletonPromise = function(promGetter){
@@ -99,33 +153,6 @@
 
             return UtilitySrv;
         }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
-        var dayInMs = 86400000;
-        var WEEK = 7;
-        this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
-
-
-        this.isDueDatePass = function (dueDate) {
-            var res = {
-                dateDiff: 0,
-                passDue: false
-            };
-
-            if (angular.isUndefined(dueDate) || dueDate === null || dueDate === '') {
-                return res;
-            }
-
-            res.dateDiff = Math.abs(Math.ceil((Date.now() - dueDate) / dayInMs));
-            res.passDue = dueDate - Date.now() < 0;
-            return res;
-        };
-    }
     ]);
 })(angular);
 
