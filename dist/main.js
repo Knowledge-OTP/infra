@@ -5546,7 +5546,7 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "        <div class=\"subject-icon\">\n" +
     "            <svg-icon name=\"{{svgIcon}}\"></svg-icon>\n" +
     "        </div>\n" +
-    "        <div class=\"subject-name\">{{subjectEnumMap[module.subjectId]}}</div>\n" +
+    "        <div class=\"subject-name\" translate=\"SUBJECTS.{{module.subjectId}}\"></div>\n" +
     "        <div class=\"separator\"></div>\n" +
     "        <div class=\"module-desc\">{{module.desc}}</div>\n" +
     "        <div class=\"exercises-box base-border-radius\" ng-switch on=\"module.contentAssign\">\n" +
