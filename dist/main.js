@@ -5380,7 +5380,7 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "                </div>\n" +
     "                <div class=\"module-details\">\n" +
     "                    <div class=\"module-name\">{{assignContent.name | cutString: 25}}</div>\n" +
-    "                    <div class=\"subject-name\">{{subjectsMap[assignContent.subjectId].val }}</div>\n" +
+    "                    <div class=\"subject-name\" translate=\"SUBJECTS.{{assignContent.subjectId}}\"></div>\n" +
     "                    <span class=\"assigned-date\">{{assignContent.assignDate | date : 'MMM d'}}</span>\n" +
     "                    <span class=\"due-date\"\n" +
     "                          translate=\"{{dueDateUtility.isDueDatePass(assignContent.assignDate + dueDateUtility.SEVEN_DAYS_IN_MS).passDue ? '.OVERDUE' : '.DUE_IN'}}\"\n" +
