@@ -156,5 +156,15 @@
         "NO_HW_ASSIGNED": "You Have No Practices Assigned",
         "OVERDUE_ASSIGNMENT": "{{numOfDays}} Days Overdue"
 
+    },
+    "MODULE_EXERCISE_ITEM_DRV": {
+        "OVERVIEW": "Overview",
+        "EXERCISE": "Exercise",
+        "QUESTIONS": "questions",
+        "CORRECT": "correct",
+        "SLIDES": "Slides",
+        "COMPLETED": "completed",
+        "MIN":"min",
+        "UNLOCK_EXERSICE": "Please complete all the lesson's exercises to unlock this content."
     }
 }
