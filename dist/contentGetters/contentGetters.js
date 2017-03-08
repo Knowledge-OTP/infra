@@ -123,9 +123,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         };
 
         self.getCategoryData = function (categoryId) {
-            return self.getCategoryMap().then(function (categoryMap) {
-                return categoryMap[categoryId];
-            });
+            return $q.when(self.getCategoryDataSync(categoryId));
         };
 
         self.categoryName = function (categoryId) {
@@ -153,16 +151,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         };
 
         self.getParentCategory = function (categoryId) {
-            return self.getCategoryMap().then(function (categories) {
-                var parentId;
-                if (categories[categoryId]) {
-                    parentId = categories[categoryId].parentId;
-                } else {
-                    $log.error('category id was not found in the categories');
-                    return null;
-                }
-                return categories[parentId];
-            });
+            return $q.when(self.getParentCategorySync(categoryId));
         };
 
         self.getCategoryLevel1ParentSync = function (categoriesArr) {
@@ -186,19 +175,13 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         };
 
         self.getCategoryLevel1ParentById = function (categoryId) {
-            if (angular.isUndefined(categoryId) || categoryId === null) {
-                return $q.when(null);
-            }
-            return self.getCategoryMap().then(function (categories) {
-                var category = categories[categoryId];
-                if (categoryEnum.LEVEL1.enum === category.typeId) {
-                    return $q.when(categoryId);
-                }
-                return self.getCategoryLevel1ParentById(category.parentId);
-            });
+            return $q.when(self.getCategoryLevel1ParentByIdSync(categoryId));
         };
 
         self.getCategoryLevel2ParentSync = function (categoryId) {
+            if (angular.isUndefined(categoryId) || categoryId === null) {
+                return;
+            }
             var categoriesMap = self.getCategoryMap(true);
             var category = categoriesMap[categoryId];
             if (categoryEnum.LEVEL2.enum === category.typeId) {
@@ -208,16 +191,13 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         };
 
         self.getCategoryLevel2Parent = function (categoryId) {
-            return self.getCategoryMap().then(function (categories) {
-                var category = categories[categoryId];
-                if (categoryEnum.LEVEL2.enum === category.typeId) {
-                    return category;
-                }
-                return self.getCategoryLevel2Parent(category.parentId);
-            });
+            return $q.when(self.getCategoryLevel2ParentSync(categoryId));
         };
 
         self.getAllLevelCategoriesSync = function (level) {
+            if (angular.isUndefined(level) || level === null) {
+                return;
+            }
             var categoriesMap = self.getCategoryMap(true);
             var levelCategories = {};
             angular.forEach(categoriesMap, function (category) {
@@ -235,21 +215,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         };
 
         self.getAllLevelCategories = function (level) {
-            return self.getCategoryMap().then(function (categories) {
-                var levelCategories = {};
-                angular.forEach(categories, function (category) {
-                    var numLevel = 1;
-                    var catgoryDup = angular.copy(category);
-                    while (catgoryDup.parentId !== null) {
-                        catgoryDup = categories[catgoryDup.parentId];
-                        numLevel++;
-                    }
-                    if (numLevel === level) {
-                        levelCategories[category.id] = category;
-                    }
-                });
-                return levelCategories;
-            });
+            return $q.when(self.getAllLevelCategoriesSync(level));
         };
 
         self.getAllLevel4CategoriesSync = function () {
@@ -264,21 +230,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         };
 
         self.getAllLevel4Categories = (function () {
-            var getAllLevel4CategoriessProm;
-            return function () {
-                if (!getAllLevel4CategoriessProm) {
-                    getAllLevel4CategoriessProm = self.getCategoryMap().then(function (categories) {
-                        var specificCategories = {};
-                        angular.forEach(categories, function (category) {
-                            if (category.typeId === categoryEnum.LEVEL4.enum) {
-                                specificCategories[category.id] = category;
-                            }
-                        });
-                        return specificCategories;
-                    });
-                }
-                return getAllLevel4CategoriessProm;
-            };
+            return $q.when(self.getAllLevel4CategoriesSync());
         })();
 
         self.getUserSelectedLevel1Category = function () {
