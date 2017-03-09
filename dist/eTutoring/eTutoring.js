@@ -1,55 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.eTutoring',[])
-        .config(["$stateProvider", function ($stateProvider) {
-            'ngInject';
-            $stateProvider
-                .state('app.eTutoring', {
-                    url: '/etutoring/?moduleId/?viewId',
-                    templateUrl: 'components/eTutoring/templates/eTutoring.template.html',
-                    controller: 'ETutoringController',
-                    controllerAs: 'vm',
-                    reloadOnSearch: false,
-                    resolve: {
-                        diagnosticData: ["WorkoutsDiagnosticFlow", function (WorkoutsDiagnosticFlow) {
-                            return WorkoutsDiagnosticFlow.getDiagnostic().then(function (result) {
-                                return (result.isComplete) ? result.isComplete : false;
-                            });
-                        }]
-                    }
-                })
-                .state('app.eTutoringWorkout', {
-                    url: '/workout?exerciseId/?exerciseTypeId/?moduleId/?exerciseParentId/?assignContentType/?examId/?moduleResultGuid/?viewId',
-                    templateUrl: 'components/eTutoring/templates/eTutoringWorkout.template.html',
-                    controller: 'ETutoringWorkoutController',
-                    controllerAs: 'vm',
-                    resolve: {
-                        exerciseData: ["$stateParams", "ExerciseParentEnum", "$state", function ($stateParams, ExerciseParentEnum, $state) {
-                            'ngInject';  // jshint ignore:line
-
-                            var exerciseId = angular.isDefined($stateParams.exerciseId) ? +$stateParams.exerciseId : 1;
-                            var exerciseTypeId = angular.isDefined($stateParams.exerciseTypeId) ? +$stateParams.exerciseTypeId : 1;
-                            var assignContentType = angular.isDefined($stateParams.assignContentType) ? +$stateParams.assignContentType : 1;
-                            var moduleId = $stateParams.moduleId;
-                            var moduleResultGuid = $stateParams.moduleResultGuid;
-                            var viewId = $stateParams.viewId;
-                            return {
-                                exerciseId,
-                                exerciseTypeId,
-                                assignContentType,
-                                exerciseParentId: moduleId,
-                                moduleResultGuid: moduleResultGuid,
-                                exerciseParentTypeId: ExerciseParentEnum.MODULE.enum,
-                                examId: +$stateParams.examId,
-                                exitAction: function () {
-                                    $state.go('app.eTutoring', {moduleId: moduleId, viewId: viewId});
-                                }
-                            };
-                        }]
-                    }
-                });
-        }]);
+    angular.module('znk.infra.eTutoring',[
+        'znk.infra.contentGetters'
+    ]);
 })(angular);
 
 (function (angular) {
@@ -60,14 +14,14 @@
             'ngInject';
             this.formData = {};
             this.showSpinner = true;
-            UserProfileService.getProfile().then((profile) => {
+            UserProfileService.getProfile().then(function(profile){
                 if (angular.isDefined(profile)) {
                     this.formData.name = profile.nickname || undefined;
                     this.formData.email = profile.email || undefined;
                 }
-            });
+            }.bind(this));
 
-            this.sendContactUs = (authform) => {
+            this.sendContactUs = function(authform){
                 this.showError = false;
 
                 if (!authform.$invalid) {
@@ -86,20 +40,20 @@
                         templateKey: 'zoeContactUs'
                     };
 
-                    MailSenderService.postMailRequest(mailRequest).then(() => {
+                    MailSenderService.postMailRequest(mailRequest).then(function(){
                         this.fillLoader = true;
-                        $timeout(() => {
+                        $timeout(function(){
                             this.startLoader = this.fillLoader = false;
                             this.showSuccess = true;
                         });
-                    }).catch((mailError) => {
+                    }.bind(this)).catch(function(mailError){
                         this.fillLoader = true;
-                        $timeout(() => {
+                        $timeout(function(){
                             this.startLoader = this.fillLoader = false;
                             this.showError = true;
                             $log.error('ETutoringContactUsController:sendContactUs:: error send mail', mailError);
                         });
-                    });
+                    }.bind(this));
                 }
             };
 
@@ -575,6 +529,86 @@
 (function (angular) {
     'use strict';
 
+    diagnosticData.$inject = ["WorkoutsDiagnosticFlow"];
+    exerciseData.$inject = ["$stateParams", "ExerciseParentEnum", "$state"];
+    angular.module('znk.infra.eTutoring')
+        .config(["$stateProvider", function ($stateProvider) {
+            'ngInject';
+            $stateProvider
+                .state('app.eTutoring', {
+                    url: '/etutoring/?moduleId/?viewId',
+                    templateUrl: 'components/eTutoring/templates/eTutoring.template.html',
+                    controller: 'ETutoringController',
+                    controllerAs: 'vm',
+                    reloadOnSearch: false,
+                    resolve: {
+                        diagnosticData: diagnosticData
+                    }
+                })
+                .state('app.eTutoringWorkout', {
+                    url: '/etutoring?exerciseId/?exerciseTypeId/?moduleId/?exerciseParentId/?assignContentType/?examId/?moduleResultGuid/?viewId',
+                    templateUrl: 'components/eTutoring/templates/eTutoringWorkout.template.html',
+                    controller: 'ETutoringWorkoutController',
+                    controllerAs: 'vm',
+                    resolve: {
+                        exerciseData: exerciseData
+                    }
+                });
+        }]);
+
+    function diagnosticData(WorkoutsDiagnosticFlow) {
+        'ngInject';
+        return WorkoutsDiagnosticFlow.getDiagnostic().then(function (result) {
+            return (result.isComplete) ? result.isComplete : false;
+        });
+    }
+
+    function exerciseData($stateParams, ExerciseParentEnum, $state) {
+        'ngInject';
+
+        var exerciseId = angular.isDefined($stateParams.exerciseId) ? +$stateParams.exerciseId : 1;
+        var exerciseTypeId = angular.isDefined($stateParams.exerciseTypeId) ? +$stateParams.exerciseTypeId : 1;
+        var assignContentType = angular.isDefined($stateParams.assignContentType) ? +$stateParams.assignContentType : 1;
+        var moduleId = $stateParams.moduleId;
+        var moduleResultGuid = $stateParams.moduleResultGuid;
+        var viewId = $stateParams.viewId;
+        return {
+            exerciseId: exerciseId,
+            exerciseTypeId: exerciseTypeId,
+            assignContentType: assignContentType,
+            exerciseParentId: moduleId,
+            moduleResultGuid: moduleResultGuid,
+            exerciseParentTypeId: ExerciseParentEnum.MODULE.enum,
+            examId: +$stateParams.examId,
+            exitAction: function () {
+                $state.go('app.eTutoring', {moduleId: moduleId, viewId: viewId});
+            }
+        };
+    }
+
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.eTutoring')
+        .config(["SvgIconSrvProvider", function (SvgIconSrvProvider) {
+            'ngInject';
+
+            var svgMap = {
+                'etutoring-exercise-icon': 'components/eTutoring/svg/etutoring-exercise-icon.svg',
+                'etutoring-slides-icon': 'components/eTutoring/svg/etutoring-slides-icon.svg',
+                'etutoring-calendar-icon': 'components/eTutoring/svg/etutoring-calendar-icon.svg',
+                'etutoring-close-icon': 'components/eTutoring/svg/etutoring-close-popup.svg'
+            };
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+        }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.eTutoring').constant('ETutoringViewsConst', {
         LESSON: 1,
         PRACTICE: 2
@@ -612,7 +646,7 @@
                 $mdDialog.show({
                     controller: 'ETutoringContactUsController',
                     controllerAs: 'vm',
-                    templateUrl: 'app/eTutoring/components/eTutoringContactUs/eTutoringContactUs.template.html',
+                    templateUrl: 'components/eTutoring/components/eTutoringContactUs/eTutoringContactUs.template.html',
                     clickOutsideToClose: false,
                     onComplete: function (scope) {
                         var script = $window.document.createElement('script');
@@ -798,7 +832,7 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "<md-dialog ng-cloak class=\"e-tutoring-contact-us-modal\" translate-namespace=\"E_TUTORING_CONTACT_US\">\n" +
     "    <md-toolbar>\n" +
     "        <div class=\"close-popup-wrap\" ng-click=\"vm.closeDialog()\">\n" +
-    "            <svg-icon name=\"app-close-popup\"></svg-icon>\n" +
+    "            <svg-icon name=\"etutoring-close-icon\"></svg-icon>\n" +
     "        </div>\n" +
     "    </md-toolbar>\n" +
     "    <md-dialog-content ng-switch=\"!!vm.showSuccess\">\n" +
@@ -809,7 +843,7 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "    <div class=\"top-icon-wrap\">\n" +
     "        <div class=\"top-icon\">\n" +
     "            <div class=\"round-icon-wrap\">\n" +
-    "                <svg-icon name=\"app-calendar-icon\"></svg-icon>\n" +
+    "                <svg-icon name=\"etutoring-calendar-icon\"></svg-icon>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
@@ -1130,6 +1164,113 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "        <span translate=\".PROCESSING_OVERLAY\"></span>\n" +
     "    </div>\n" +
     "</div>\n" +
+    "");
+  $templateCache.put("components/eTutoring/svg/etutoring-calendar-icon.svg",
+    "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\" class=\"calendar-icon\"\n" +
+    "     viewBox=\"0 0 176.3 200\">\n" +
+    "    <style>\n" +
+    "        .calendar-icon{\n" +
+    "        enable-background:new 0 0 176.3 200;\n" +
+    "        width:35px;\n" +
+    "        height: auto;\n" +
+    "        }\n" +
+    "    </style>\n" +
+    "    <g id=\"XMLID_40_\">\n" +
+    "        <path id=\"XMLID_138_\" d=\"M164.1,200c-50.7,0-101.3,0-152,0C3.1,196-0.1,189.1,0,179.3c0.3-36.5,0.1-73,0.1-109.5c0-1.9,0-3.8,0-5.6\n" +
+    "		c59,0,117.3,0,176,0c0,2,0,3.8,0,5.6c0,36.5-0.2,73,0.1,109.5C176.4,189.1,173.2,196,164.1,200z M163.9,156.3\n" +
+    "		c-10.8,0-21.1,0-31.4,0c0,10.7,0,21.1,0,31.4c10.6,0,20.9,0,31.4,0C163.9,177.2,163.9,166.9,163.9,156.3z M123.9,156.2\n" +
+    "		c-10.8,0-21.1,0-31.5,0c0,10.6,0,21,0,31.4c10.7,0,21.1,0,31.5,0C123.9,177,123.9,166.7,123.9,156.2z M52.4,187.7\n" +
+    "		c10.8,0,21.1,0,31.5,0c0-10.6,0-21,0-31.4c-10.7,0-21.1,0-31.5,0C52.4,166.9,52.4,177.2,52.4,187.7z M12.5,156.2\n" +
+    "		c0,10.7,0,21.1,0,31.4c10.7,0,21.1,0,31.4,0c0-10.6,0-20.9,0-31.4C33.4,156.2,23.1,156.2,12.5,156.2z M163.8,147.7\n" +
+    "		c0-10.8,0-21.1,0-31.4c-10.7,0-21.1,0-31.4,0c0,10.7,0,20.9,0,31.4C142.9,147.7,153.2,147.7,163.8,147.7z M123.9,147.7\n" +
+    "		c0-10.8,0-21.1,0-31.5c-10.6,0-21,0-31.4,0c0,10.7,0,21.1,0,31.5C103.1,147.7,113.4,147.7,123.9,147.7z M52.4,147.6\n" +
+    "		c10.8,0,21.2,0,31.4,0c0-10.7,0-21.1,0-31.4c-10.7,0-20.9,0-31.4,0C52.4,126.7,52.4,137,52.4,147.6z M43.9,116.3\n" +
+    "		c-10.7,0-21.1,0-31.4,0c0,10.7,0,21.1,0,31.4c10.6,0,20.9,0,31.4,0C43.9,137.2,43.9,127,43.9,116.3z M132.5,76.1\n" +
+    "		c0,10.9,0,21.3,0,31.5c10.7,0,20.9,0,31.3,0c0-10.6,0-21,0-31.5C153.3,76.1,143,76.1,132.5,76.1z M92.5,76.2c0,10.8,0,21.1,0,31.4\n" +
+    "		c10.7,0,21.1,0,31.4,0c0-10.7,0-20.9,0-31.4C113.4,76.2,103.1,76.2,92.5,76.2z M83.9,76.3c-10.8,0-21.1,0-31.4,0\n" +
+    "		c0,10.7,0,21.1,0,31.4c10.6,0,20.9,0,31.4,0C83.9,97.2,83.9,86.9,83.9,76.3z M43.9,76.3c-10.8,0-21.2,0-31.4,0\n" +
+    "		c0,10.7,0,21.1,0,31.4c10.7,0,20.9,0,31.4,0C43.9,97.1,43.9,86.9,43.9,76.3z\"/>\n" +
+    "        <path id=\"XMLID_119_\" d=\"M176.1,55.8c-58.9,0-117.1,0-175.7,0c0-6.4-0.6-12.7,0.2-18.9c1-7.6,7.6-12.7,15.5-12.9\n" +
+    "		c4.3-0.1,8.7,0,13,0c4.1,0,8.3,0,13,0c0-5.8-0.1-11.2,0-16.6c0.1-4.7,2.5-7.7,6.2-7.3c4.3,0.4,5.8,3.2,5.8,7.3\n" +
+    "		c-0.1,5.3,0,10.6,0,16.3c22.6,0,45,0,68,0c0-5.4,0.1-10.8,0-16.3c-0.1-4.1,1.4-6.9,5.8-7.3c3.7-0.4,6.2,2.6,6.2,7.3\n" +
+    "		c0.1,5.3,0,10.6,0,16.6c7.8,0,15.4,0,23,0c12.9,0,19,6.1,19,18.9C176.1,47,176.1,51.1,176.1,55.8z M122.2,29.9\n" +
+    "		c-5.7,4.3-7.2,9.1-5.1,14.4c2,5.2,7.3,8.3,12.7,7.6c5.2-0.7,9.5-4.9,10.3-10.1c0.8-4.9-1.5-9.2-5.9-11.2c0,3.1,0.1,6.1,0,9\n" +
+    "		c-0.1,3.7-2.1,6.1-5.8,6.2c-4,0.1-6-2.4-6.1-6.3C122.1,36.6,122.2,33.6,122.2,29.9z M42.2,29.9c-5.7,4.3-7.2,9-5.2,14.3\n" +
+    "		c2,5.2,7.2,8.3,12.7,7.6c5.2-0.7,9.5-4.9,10.4-10.1c0.8-4.8-1.4-9.2-5.9-11.2c0,3.3,0.2,6.4,0,9.5c-0.2,3.4-2.3,5.6-5.7,5.7\n" +
+    "		c-3.7,0.1-5.9-2.1-6.1-5.8C42,36.9,42.2,33.8,42.2,29.9z\"/>\n" +
+    "    </g>\n" +
+    "</svg>");
+  $templateCache.put("components/eTutoring/svg/etutoring-close-popup.svg",
+    "<svg\n" +
+    "    x=\"0px\"\n" +
+    "    y=\"0px\"\n" +
+    "    viewBox=\"-596.6 492.3 133.2 133.5\" class=\"close-popup\">\n" +
+    "    <style>\n" +
+    "        .close-popup{\n" +
+    "        width:15px;\n" +
+    "        height:15px;\n" +
+    "        }\n" +
+    "    </style>\n" +
+    "<path class=\"st0\"/>\n" +
+    "<g>\n" +
+    "	<line class=\"st1\" x1=\"-592.6\" y1=\"496.5\" x2=\"-467.4\" y2=\"621.8\"/>\n" +
+    "	<line class=\"st1\" x1=\"-592.6\" y1=\"621.5\" x2=\"-467.4\" y2=\"496.3\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/eTutoring/svg/etutoring-exercise-icon.svg",
+    "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\"  x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"-830.8 420 117.6 141\" xml:space=\"preserve\" class=\"etutoring-exercise-icon\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.etutoring-exercise-icon {width: 100%; height: auto}\n" +
+    "	.etutoring-exercise-icon .st0{fill:#231F20;}\n" +
+    "</style>\n" +
+    "<g>\n" +
+    "	<path class=\"st0\" d=\"M-723.5,561h-97c-5.7,0-10.3-4.6-10.3-10.3V430.3c0-5.7,4.6-10.3,10.3-10.3h97c5.7,0,10.3,4.6,10.3,10.3v120.5\n" +
+    "		C-713.2,556.4-717.8,561-723.5,561z M-820.5,424c-3.5,0-6.3,2.8-6.3,6.3v120.4c0,3.5,2.8,6.3,6.3,6.3h97c3.4,0,6.3-2.8,6.3-6.2\n" +
+    "		V430.3c0-3.5-2.8-6.3-6.3-6.3H-820.5z\"/>\n" +
+    "	<path class=\"st0\" d=\"M-797.9,536.9c-0.2,0-0.4,0-0.6-0.1l-6-3.2l-5.9,3.2c-0.4,0.2-1,0.2-1.4-0.1c-0.4-0.3-0.6-0.8-0.5-1.3l1.1-6.7\n" +
+    "		l-4.8-4.6c-0.4-0.3-0.5-0.9-0.3-1.3s0.6-0.8,1-0.9l6.6-1l3-6.1c0.2-0.4,0.7-0.7,1.2-0.7s0.9,0.3,1.2,0.7l3,6.1l6.7,1\n" +
+    "		c0.5,0.1,0.9,0.4,1,0.9c0.1,0.5,0,1-0.3,1.3l-4.9,4.6l1.2,6.7c0.1,0.5-0.1,1-0.5,1.3C-797.4,536.8-797.6,536.9-797.9,536.9z\n" +
+    "		 M-804.5,530.8c0.2,0,0.4,0,0.6,0.1l4.3,2.3l-0.8-4.8c-0.1-0.4,0.1-0.9,0.4-1.2l3.5-3.3l-4.8-0.7c-0.4-0.1-0.8-0.3-1-0.7l-2.1-4.4\n" +
+    "		l-2.1,4.4c-0.2,0.4-0.5,0.6-1,0.7l-4.7,0.7l3.4,3.3c0.3,0.3,0.4,0.7,0.4,1.1l-0.8,4.8l4.2-2.3\n" +
+    "		C-804.9,530.9-804.7,530.8-804.5,530.8z\"/>\n" +
+    "	<path class=\"st0\" d=\"M-778.7,536.9c-0.3,0-0.5-0.1-0.8-0.2c-0.4-0.3-0.6-0.8-0.5-1.3l1.2-6.7l-4.8-4.6c-0.4-0.3-0.5-0.9-0.3-1.3\n" +
+    "		s0.6-0.8,1-0.9l6.6-1l3-6.1c0.2-0.4,0.7-0.7,1.2-0.7s0.9,0.3,1.2,0.7l3,6.1l6.6,1c0.5,0.1,0.9,0.4,1,0.9s0,1-0.3,1.3l-4.8,4.6\n" +
+    "		l1.2,6.7c0.1,0.5-0.1,1-0.5,1.3s-0.9,0.3-1.4,0.1l-6-3.2l-6,3.2C-778.3,536.8-778.5,536.9-778.7,536.9z M-772.1,530.8\n" +
+    "		c0.2,0,0.4,0,0.6,0.1l4.3,2.3l-0.8-4.8c-0.1-0.4,0.1-0.9,0.4-1.2l3.4-3.3l-4.7-0.7c-0.4-0.1-0.8-0.3-1-0.7l-2.1-4.4l-2.1,4.4\n" +
+    "		c-0.2,0.4-0.5,0.6-1,0.7l-4.7,0.7l3.4,3.3c0.3,0.3,0.5,0.7,0.4,1.2l-0.8,4.8l4.3-2.3C-772.5,530.9-772.3,530.8-772.1,530.8z\"/>\n" +
+    "	<path class=\"st0\" d=\"M-746.3,536.9c-0.3,0-0.5-0.1-0.8-0.2c-0.4-0.3-0.6-0.8-0.5-1.3l1.1-6.7l-4.8-4.6c-0.4-0.3-0.5-0.9-0.3-1.3\n" +
+    "		c0.1-0.5,0.6-0.8,1-0.9l6.7-1l3-6.1c0.2-0.4,0.7-0.7,1.2-0.7c0,0,0,0,0,0c0.5,0,0.9,0.3,1.2,0.7l2.9,6.1l6.7,1\n" +
+    "		c0.5,0.1,0.9,0.4,1,0.9c0.1,0.5,0,1-0.3,1.3l-4.8,4.6l1.1,6.7c0.1,0.5-0.1,1-0.5,1.3c-0.4,0.3-0.9,0.3-1.4,0.1l-5.9-3.2l-6,3.2\n" +
+    "		C-745.9,536.8-746.1,536.9-746.3,536.9z M-747.6,524l3.4,3.3c0.3,0.3,0.4,0.7,0.4,1.1l-0.8,4.8l4.3-2.3c0.4-0.2,0.8-0.2,1.2,0\n" +
+    "		l4.2,2.3l-0.8-4.8c-0.1-0.4,0.1-0.8,0.4-1.1l3.4-3.3l-4.8-0.7c-0.4-0.1-0.8-0.3-1-0.7l-2.1-4.3l-2.1,4.3c-0.2,0.4-0.5,0.6-1,0.7\n" +
+    "		L-747.6,524z\"/>\n" +
+    "	<path class=\"st0\" d=\"M-730.2,446.5h-85.9c-0.7,0-1.3-0.6-1.3-1.3s0.6-1.3,1.3-1.3h85.9c0.7,0,1.3,0.6,1.3,1.3\n" +
+    "		S-729.5,446.5-730.2,446.5z\"/>\n" +
+    "	<path class=\"st0\" d=\"M-730.2,467.8h-85.9c-0.7,0-1.3-0.6-1.3-1.3s0.6-1.3,1.3-1.3h85.9c0.7,0,1.3,0.6,1.3,1.3\n" +
+    "		S-729.5,467.8-730.2,467.8z\"/>\n" +
+    "	<path class=\"st0\" d=\"M-739.3,488.9H-807c-0.6,0-1.1-0.5-1.1-1.1s0.5-1.1,1.1-1.1h67.7c0.6,0,1.1,0.5,1.1,1.1\n" +
+    "		S-738.7,488.9-739.3,488.9z\"/>\n" +
+    "</g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/eTutoring/svg/etutoring-slides-icon.svg",
+    "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"-821.7 301.5 118.4 104.3\" xml:space=\"preserve\" class=\"etutoring-slides-icon\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.etutoring-slides-icon {width: 100%; height: auto}\n" +
+    "	.etutoring-slides-icon .st0{fill:#231F20;}\n" +
+    "</style>\n" +
+    "<path class=\"st0\" d=\"M-714.1,364.5h-96.7c-6,0-10.9-4.9-10.9-10.9v-41.3c0-6,4.9-10.9,10.9-10.9h96.7c6,0,10.9,4.9,10.9,10.9v41.3\n" +
+    "	C-703.3,359.7-708.1,364.5-714.1,364.5z M-810.8,305.5c-3.8,0-6.9,3.1-6.9,6.9v41.3c0,3.8,3.1,6.9,6.9,6.9h96.7\n" +
+    "	c3.8,0,6.9-3.1,6.9-6.9v-41.3c0-3.8-3.1-6.9-6.9-6.9H-810.8z\"/>\n" +
+    "<path class=\"st0\" d=\"M-705.3,372.5h-114.4c-1.1,0-2-0.9-2-2s0.9-2,2-2h114.4c1.1,0,2,0.9,2,2S-704.2,372.5-705.3,372.5z\"/>\n" +
+    "<path class=\"st0\" d=\"M-791.6,405.7c-0.3,0-0.7-0.1-1-0.3c-1-0.6-1.3-1.8-0.7-2.7l19.5-33.2c0.6-1,1.8-1.3,2.7-0.7\n" +
+    "	c1,0.6,1.3,1.8,0.7,2.7l-19.5,33.2C-790.2,405.4-790.9,405.7-791.6,405.7z\"/>\n" +
+    "<path class=\"st0\" d=\"M-734.3,405.7c-0.7,0-1.3-0.3-1.7-0.9l-21-33.2c-0.6-0.9-0.3-2.2,0.6-2.8c0.9-0.6,2.2-0.3,2.8,0.6l21,33.2\n" +
+    "	c0.6,0.9,0.3,2.2-0.6,2.8C-733.5,405.6-733.9,405.7-734.3,405.7z\"/>\n" +
+    "</svg>\n" +
     "");
   $templateCache.put("components/eTutoring/templates/eTutoring.template.html",
     "<section class=\"e-tutoring-section\" translate-namespace=\"E_TUTORING\" ng-switch=\"diagnosticData && hasTeacher\">\n" +

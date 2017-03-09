@@ -27,9 +27,9 @@
 (function (angular) {
     'use strict';
     angular.module('znk.infra.assignModule').service('UserAssignModuleService',
-        ["ZnkModuleService", "$q", "SubjectEnum", "ExerciseResultSrv", "ExerciseStatusEnum", "ExerciseTypeEnum", "EnumSrv", "$log", "InfraConfigSrv", "StudentContextSrv", "StorageSrv", "AssignContentEnum", "$rootScope", "exerciseEventsConst", "UtilitySrv", "ENV", function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv,
+        ["ZnkModuleService", "$q", "SubjectEnum", "ExerciseResultSrv", "ExerciseStatusEnum", "ExerciseTypeEnum", "EnumSrv", "$log", "InfraConfigSrv", "StudentContextSrv", "StorageSrv", "AssignContentEnum", "$rootScope", "exerciseEventsConst", "UtilitySrv", "ENV", "CategoryService", function (ZnkModuleService, $q, SubjectEnum, ExerciseResultSrv, ExerciseStatusEnum, ExerciseTypeEnum, EnumSrv,
                   $log, InfraConfigSrv, StudentContextSrv, StorageSrv, AssignContentEnum, $rootScope,
-                  exerciseEventsConst, UtilitySrv, ENV) {
+                  exerciseEventsConst, UtilitySrv, ENV, CategoryService) {
             'ngInject';
 
             var userAssignModuleService = {};
@@ -55,7 +55,7 @@
                 },
                 homework: {
                     id: AssignContentEnum.PRACTICE.enum,
-                    fbPath: 'assignmentResults',
+                    fbPath: 'assignmentResults'
                 }
             };
 
@@ -121,7 +121,7 @@
                                     // copy fields from module object to results object for future using
                                     moduleResults[moduleId].name = moduleObj.name;
                                     moduleResults[moduleId].desc = moduleObj.desc;
-                                    moduleResults[moduleId].subjectId = moduleObj.subjectId;
+                                    moduleResults[moduleId].subjectId = CategoryService.getCategoryLevel1ParentByIdSync(moduleObj.categoryId);
                                     moduleResults[moduleId].order = moduleObj.order;
                                     moduleResults[moduleId].exercises = moduleObj.exercises;
                                     moduleResults[moduleId].assignDate = Date.now();
@@ -312,17 +312,14 @@
 
                         if (_exerciseResults && _exerciseResults[exerciseTypeId]) {
                             if (_exerciseResults[exerciseTypeId][exerciseId]){
+                                currentExerciseRes.status = _exerciseResults[exerciseTypeId][exerciseId].isComplete ?
+                                    ExerciseStatusEnum.COMPLETED.enum :
+                                    (_exerciseResults[exerciseTypeId][exerciseId].questionResults.length > 0 ? ExerciseStatusEnum.ACTIVE.enum : ExerciseStatusEnum.NEW.enum);
 
-                                if (exercise.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum) {
-                                    currentExerciseRes.status = _exerciseResults[exerciseTypeId][exerciseId].isComplete ?
-                                        ExerciseStatusEnum.COMPLETED.enum :
-                                        (_exerciseResults[exerciseTypeId][exerciseId].questionResults.length > 0 ? ExerciseStatusEnum.ACTIVE.enum : ExerciseStatusEnum.NEW.enum);
-
-                                    currentExerciseRes.correctAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
-                                    currentExerciseRes.wrongAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
-                                    currentExerciseRes.skippedAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
-                                    currentExerciseRes.totalAnswered = currentExerciseRes.correctAnswersNum + currentExerciseRes.wrongAnswersNum;
-                                }
+                                currentExerciseRes.correctAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum || 0;
+                                currentExerciseRes.wrongAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum || 0;
+                                currentExerciseRes.skippedAnswersNum = _exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum || 0;
+                                currentExerciseRes.totalAnswered = currentExerciseRes.correctAnswersNum + currentExerciseRes.wrongAnswersNum;
                                 currentExerciseRes.duration = _exerciseResults[exerciseTypeId][exerciseId].duration || 0;
                             }
                         }
@@ -494,16 +491,6 @@
                 popupResolveFn = fn;
             };
 
-            var topicsArray;
-            this.setTopicsArray = function (_topicsArray) {
-                topicsArray = _topicsArray;
-            };
-
-            var diagnosticExamId;
-            this.setDiagnosticExamId = function (id) {
-                diagnosticExamId = id;
-            };
-
             this.$get = ["$q", "$log", "InfraConfigSrv", "PopUpSrv", "DueDateSrv", "$translate", "$rootScope", "exerciseEventsConst", "ExamSrv", "ENV", "ExerciseResultSrv", "ExamTypeEnum", "StorageSrv", "ExerciseTypeEnum", "$injector", "LiveSessionSubjectEnum", "$window", function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv, ENV,
                                   ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum, $injector, LiveSessionSubjectEnum, $window) {
                 'ngInject';
@@ -512,7 +499,6 @@
                 var studentStorage = InfraConfigSrv.getStudentStorage();
                 var ONE_WEEK_IN_MILLISECONDS = 604800000;
 
-                var ASSIGNMENTS_DATA_PATH = 'users/$$uid/assignmentsData';
                 var ASSIGNMENT_RES_PATH = 'users/$$uid/assignmentResults';
                 var MODULE_RES_PATH = 'moduleResults/';
                 var HW_POPUP_TIMEOUT = 'settings/assignments/assignmentPopupTimeout';
@@ -634,49 +620,6 @@
                     });
                 }
 
-                function _finishedSectionHandler(eventData, exerciseContent, currentExerciseResult) {
-                    return ExamSrv.getExam(currentExerciseResult.examId).then(function (exam) {
-                        var sectionsResults = [];
-                        var promArr = [];
-                        var dontInit = true;
-
-                        if (exam.typeId !== ExamTypeEnum.MINI_TEST.enum || (angular.isDefined(diagnosticExamId) && exam.id === diagnosticExamId)) {
-                            return;
-                        }
-                        angular.forEach(exam.sections, function (section) {
-                            var prom = ExerciseResultSrv.getExerciseResult(ExerciseTypeEnum.SECTION.enum, section.id, section.examId, null, dontInit).then(function (sectionResult) {
-                                if (currentExerciseResult.exerciseId === section.id) {
-                                    sectionsResults.push(currentExerciseResult);
-                                } else {
-                                    sectionsResults.push(sectionResult);
-                                }
-                            });
-                            promArr.push(prom);
-                        });
-
-                        $q.all(promArr).then(function () {
-                            for (var i = 0; i < sectionsResults.length; i++) {
-                                if (sectionsResults[i] === null || !sectionsResults[i].isComplete) {
-                                    return;
-                                }
-                            }
-                            _getStudentStorage().then(function (studentStorage) {
-                                if (!angular.isArray(topicsArray)) {
-                                    $log.error('HomeworkSrv: topics must be array!');
-                                }
-
-                                var homeworkObj = {};
-                                angular.forEach(topicsArray, function (topicId) {
-                                    homeworkObj[topicId] = {
-                                        assignmentStartDate: StorageSrv.variables.currTimeStamp
-                                    };
-                                });
-                                studentStorage.set(ASSIGNMENTS_DATA_PATH, homeworkObj);
-                            });
-                        });
-                    });
-                }
-
                 function isHomeworkIsLate(homeworkObj) {
                     var dueDate = homeworkObj.assignDate + ONE_WEEK_IN_MILLISECONDS;
                     var isDueDateObj = DueDateSrv.isDueDatePass(dueDate);
@@ -704,15 +647,6 @@
                     });
                 };
 
-                HomeworkSrv.assignHomework = function () {
-                    return _getStudentStorage().then(function (studentStorage) {
-                        return studentStorage.get(ASSIGNMENTS_DATA_PATH).then(function (assignment) {
-                            if (angular.equals({}, assignment) || angular.isUndefined(assignment) || assignment === null) {
-                                $rootScope.$on(exerciseEventsConst.section.FINISH, _finishedSectionHandler);
-                            }
-                        });
-                    });
-                };
                 return HomeworkSrv;
             }];
         }

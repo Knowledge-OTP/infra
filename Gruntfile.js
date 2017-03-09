@@ -159,6 +159,7 @@ module.exports = function (grunt) {
         karma: {
             unit: {
                 browsers: [
+                    'PhantomJS',
                     'Chrome',
                     'Safari'
                 ],
