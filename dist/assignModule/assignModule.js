@@ -491,16 +491,6 @@
                 popupResolveFn = fn;
             };
 
-            var topicsArray;
-            this.setTopicsArray = function (_topicsArray) {
-                topicsArray = _topicsArray;
-            };
-
-            var diagnosticExamId;
-            this.setDiagnosticExamId = function (id) {
-                diagnosticExamId = id;
-            };
-
             this.$get = ["$q", "$log", "InfraConfigSrv", "PopUpSrv", "DueDateSrv", "$translate", "$rootScope", "exerciseEventsConst", "ExamSrv", "ENV", "ExerciseResultSrv", "ExamTypeEnum", "StorageSrv", "ExerciseTypeEnum", "$injector", "LiveSessionSubjectEnum", "$window", function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv, ENV,
                                   ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum, $injector, LiveSessionSubjectEnum, $window) {
                 'ngInject';
@@ -509,7 +499,6 @@
                 var studentStorage = InfraConfigSrv.getStudentStorage();
                 var ONE_WEEK_IN_MILLISECONDS = 604800000;
 
-                var ASSIGNMENTS_DATA_PATH = 'users/$$uid/assignmentsData';
                 var ASSIGNMENT_RES_PATH = 'users/$$uid/assignmentResults';
                 var MODULE_RES_PATH = 'moduleResults/';
                 var HW_POPUP_TIMEOUT = 'settings/assignments/assignmentPopupTimeout';
@@ -631,49 +620,6 @@
                     });
                 }
 
-                function _finishedSectionHandler(eventData, exerciseContent, currentExerciseResult) {
-                    return ExamSrv.getExam(currentExerciseResult.examId).then(function (exam) {
-                        var sectionsResults = [];
-                        var promArr = [];
-                        var dontInit = true;
-
-                        if (exam.typeId !== ExamTypeEnum.MINI_TEST.enum || (angular.isDefined(diagnosticExamId) && exam.id === diagnosticExamId)) {
-                            return;
-                        }
-                        angular.forEach(exam.sections, function (section) {
-                            var prom = ExerciseResultSrv.getExerciseResult(ExerciseTypeEnum.SECTION.enum, section.id, section.examId, null, dontInit).then(function (sectionResult) {
-                                if (currentExerciseResult.exerciseId === section.id) {
-                                    sectionsResults.push(currentExerciseResult);
-                                } else {
-                                    sectionsResults.push(sectionResult);
-                                }
-                            });
-                            promArr.push(prom);
-                        });
-
-                        $q.all(promArr).then(function () {
-                            for (var i = 0; i < sectionsResults.length; i++) {
-                                if (sectionsResults[i] === null || !sectionsResults[i].isComplete) {
-                                    return;
-                                }
-                            }
-                            _getStudentStorage().then(function (studentStorage) {
-                                if (!angular.isArray(topicsArray)) {
-                                    $log.error('HomeworkSrv: topics must be array!');
-                                }
-
-                                var homeworkObj = {};
-                                angular.forEach(topicsArray, function (topicId) {
-                                    homeworkObj[topicId] = {
-                                        assignmentStartDate: StorageSrv.variables.currTimeStamp
-                                    };
-                                });
-                                studentStorage.set(ASSIGNMENTS_DATA_PATH, homeworkObj);
-                            });
-                        });
-                    });
-                }
-
                 function isHomeworkIsLate(homeworkObj) {
                     var dueDate = homeworkObj.assignDate + ONE_WEEK_IN_MILLISECONDS;
                     var isDueDateObj = DueDateSrv.isDueDatePass(dueDate);
@@ -701,15 +647,6 @@
                     });
                 };
 
-                HomeworkSrv.assignHomework = function () {
-                    return _getStudentStorage().then(function (studentStorage) {
-                        return studentStorage.get(ASSIGNMENTS_DATA_PATH).then(function (assignment) {
-                            if (angular.equals({}, assignment) || angular.isUndefined(assignment) || assignment === null) {
-                                $rootScope.$on(exerciseEventsConst.section.FINISH, _finishedSectionHandler);
-                            }
-                        });
-                    });
-                };
                 return HomeworkSrv;
             }];
         }
