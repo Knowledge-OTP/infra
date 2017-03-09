@@ -1161,30 +1161,6 @@ module-exercise-item .tooltip {
     border-bottom: 1px solid rgba(0, 0, 0, 0.25);
     border-left: 1px solid rgba(0, 0, 0, 0.25); }
 
-module-exercise-item .reading-icon, module-exercise-item .essay-icon, module-exercise-item .writing-icon, module-exercise-item .calculator-icon {
-  width: 23px;
-  height: 23px; }
-
-module-exercise-item .reading-icon svg path, module-exercise-item .essay-icon svg path {
-  fill: #acacac; }
-
-module-exercise-item .writing-icon svg path, module-exercise-item .calculator-icon svg path {
-  fill: #ffffff;
-  stroke: #acacac;
-  stroke-width: 8px; }
-
-module-exercise-item .calculator-icon.math-no-calc {
-  position: relative; }
-
-module-exercise-item .math-no-calc::before {
-  content: '';
-  position: absolute;
-  top: calc(50% - 2px);
-  width: 100%;
-  height: 2px;
-  transform: rotate(45deg);
-  background-color: #acacac; }
-
 .ng-include-module-exercise-pane {
   height: 100%; }
   .ng-include-module-exercise-pane .lesson-container {
