@@ -1432,8 +1432,7 @@ module-exercise-item .math-no-calc::before {
   -ms-flex-direction: column;
       flex-direction: column; }
   .app-e-tutoring.blurred-overlay {
-    -webkit-filter: blur(3px);
-            filter: blur(3px);
+    filter: blur(3px);
     opacity: 0.3; }
   .app-e-tutoring .e-tutoring-main-container {
     display: -ms-flexbox;
