@@ -4,10 +4,10 @@
     angular.module('znk.infra.eTutoring')
         .provider('ETutoringService', function () {
 
-            var getIconNameByCategoryIdWrapper, appName;
+            var getSubjectDataByExerciseWrapper, appName;
 
-            this.setGetIconNameByCategoryId = function (fn) {
-                getIconNameByCategoryIdWrapper = fn;
+            this.setGetSubjectDataByExercise = function (fn) {
+                getSubjectDataByExerciseWrapper = fn;
             };
 
             this.setAppName = function(_appName){
@@ -17,13 +17,13 @@
             this.$get = function ($injector, $log, $q) {
                 var ETutoringService = {};
 
-                ETutoringService.getIconNameByCategoryId = function (categoryId) {
-                    if(angular.isUndefined(getIconNameByCategoryIdWrapper)){
-                        $log.error('ETutoringService: getIconNameByCategoryIdWrapper was not set up in config phase!');
+                ETutoringService.getSubjectDataByExercise = function (exercise) {
+                    if(angular.isUndefined(getSubjectDataByExerciseWrapper)){
+                        $log.error('ETutoringService: getSubjectDataByExercise was not set up in config phase!');
                         return $q.when();
                     } else {
-                        var getIconNameByCategoryId = $injector.invoke(getIconNameByCategoryIdWrapper);
-                        return getIconNameByCategoryId(categoryId);
+                        var getSubjectDataByExercise = $injector.invoke(getSubjectDataByExerciseWrapper);
+                        return getSubjectDataByExercise(exercise);
                     }
                 };
 

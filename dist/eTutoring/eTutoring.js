@@ -3,7 +3,73 @@
 
     angular.module('znk.infra.eTutoring',[
         'znk.infra.contentGetters'
-    ]);
+    ])
+        .config([
+            'SvgIconSrvProvider',
+            function (SvgIconSrvProvider) {
+                var svgMap = {
+                    'homework-icon': 'components/eTutoring/svg/homework-icon.svg'
+                };
+                SvgIconSrvProvider.registerSvgSources(svgMap);
+            }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.eTutoring').controller('ETutoringContactUsController',
+        ["$mdDialog", "UserProfileService", "MailSenderService", "$timeout", "ENV", "$log", function ($mdDialog, UserProfileService, MailSenderService, $timeout, ENV, $log) {
+            'ngInject';
+            this.formData = {};
+            this.showSpinner = true;
+            UserProfileService.getProfile().then(function(profile){
+                if (angular.isDefined(profile)) {
+                    this.formData.name = profile.nickname || undefined;
+                    this.formData.email = profile.email || undefined;
+                }
+            }.bind(this));
+
+            this.sendContactUs = function(authform){
+                this.showError = false;
+
+                if (!authform.$invalid) {
+                    this.startLoader = true;
+                    var appName = ENV.firebaseAppScopeName;
+                    var emailsArr = ['support@zinkerz.com'];
+                    var message = '' +
+                        'A new student contacted you through the live lessons tab' +
+                        'App Name: ' + appName + '<br/>' +
+                        'Email: ' + this.formData.email;
+                    var mailRequest = {
+                        subject: 'contact us',
+                        message: message,
+                        emails: emailsArr,
+                        appName: appName,
+                        templateKey: 'zoeContactUs'
+                    };
+
+                    MailSenderService.postMailRequest(mailRequest).then(function(){
+                        this.fillLoader = true;
+                        $timeout(function(){
+                            this.startLoader = this.fillLoader = false;
+                            this.showSuccess = true;
+                        });
+                    }.bind(this)).catch(function(mailError){
+                        this.fillLoader = true;
+                        $timeout(function(){
+                            this.startLoader = this.fillLoader = false;
+                            this.showError = true;
+                            $log.error('ETutoringContactUsController:sendContactUs:: error send mail', mailError);
+                        });
+                    }.bind(this));
+                }
+            };
+
+
+            this.closeDialog = function () {
+                $mdDialog.cancel();
+            };
+        }]);
 })(angular);
 
 (function (angular) {
@@ -219,64 +285,6 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.eTutoring').controller('ETutoringContactUsController',
-        ["$mdDialog", "UserProfileService", "MailSenderService", "$timeout", "ENV", "$log", function ($mdDialog, UserProfileService, MailSenderService, $timeout, ENV, $log) {
-            'ngInject';
-            this.formData = {};
-            this.showSpinner = true;
-            UserProfileService.getProfile().then(function(profile){
-                if (angular.isDefined(profile)) {
-                    this.formData.name = profile.nickname || undefined;
-                    this.formData.email = profile.email || undefined;
-                }
-            }.bind(this));
-
-            this.sendContactUs = function(authform){
-                this.showError = false;
-
-                if (!authform.$invalid) {
-                    this.startLoader = true;
-                    var appName = ENV.firebaseAppScopeName;
-                    var emailsArr = ['support@zinkerz.com'];
-                    var message = '' +
-                        'A new student contacted you through the live lessons tab' +
-                        'App Name: ' + appName + '<br/>' +
-                        'Email: ' + this.formData.email;
-                    var mailRequest = {
-                        subject: 'contact us',
-                        message: message,
-                        emails: emailsArr,
-                        appName: appName,
-                        templateKey: 'zoeContactUs'
-                    };
-
-                    MailSenderService.postMailRequest(mailRequest).then(function(){
-                        this.fillLoader = true;
-                        $timeout(function(){
-                            this.startLoader = this.fillLoader = false;
-                            this.showSuccess = true;
-                        });
-                    }.bind(this)).catch(function(mailError){
-                        this.fillLoader = true;
-                        $timeout(function(){
-                            this.startLoader = this.fillLoader = false;
-                            this.showError = true;
-                            $log.error('ETutoringContactUsController:sendContactUs:: error send mail', mailError);
-                        });
-                    }.bind(this));
-                }
-            };
-
-
-            this.closeDialog = function () {
-                $mdDialog.cancel();
-            };
-        }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.eTutoring')
         .directive('etutoringStudentNavigationPane', ["UserAssignModuleService", "ExerciseStatusEnum", "$log", "AuthService", "ETutoringViewsConst", "DueDateSrv", "SubjectEnum", "$stateParams", "$location", "StudentContextSrv", "AssignContentEnum", "UtilitySrv", "$translate", function(UserAssignModuleService, ExerciseStatusEnum, $log, AuthService, ETutoringViewsConst, DueDateSrv,
                                            SubjectEnum, $stateParams, $location, StudentContextSrv, AssignContentEnum, UtilitySrv, $translate) {
@@ -434,8 +442,10 @@
 
                     if (scope.activeViewObj.view === ETutoringViewsConst.PRACTICE) {
                         scope.exerciseParentId = scope.module.guid;
-                        ETutoringService.getIconNameByCategoryId(scope.exercise.categoryId).then(function (className) {
-                            scope.assignmentIconName = className;
+                        ETutoringService.getSubjectDataByExercise(scope.exercise).then(function (subjectData) {
+                            scope.subjectIcon = subjectData.iconName;
+                            scope.svgWrapperClassName = subjectData.className;
+                            scope.subjectId = subjectData.subjectId;
                         });
                     }
 
@@ -775,10 +785,10 @@
     angular.module('znk.infra.eTutoring')
         .provider('ETutoringService', function () {
 
-            var getIconNameByCategoryIdWrapper, appName;
+            var getSubjectDataByExerciseWrapper, appName;
 
-            this.setGetIconNameByCategoryId = function (fn) {
-                getIconNameByCategoryIdWrapper = fn;
+            this.setGetSubjectDataByExercise = function (fn) {
+                getSubjectDataByExerciseWrapper = fn;
             };
 
             this.setAppName = function(_appName){
@@ -788,13 +798,13 @@
             this.$get = ["$injector", "$log", "$q", function ($injector, $log, $q) {
                 var ETutoringService = {};
 
-                ETutoringService.getIconNameByCategoryId = function (categoryId) {
-                    if(angular.isUndefined(getIconNameByCategoryIdWrapper)){
-                        $log.error('ETutoringService: getIconNameByCategoryIdWrapper was not set up in config phase!');
+                ETutoringService.getSubjectDataByExercise = function (exercise) {
+                    if(angular.isUndefined(getSubjectDataByExerciseWrapper)){
+                        $log.error('ETutoringService: getSubjectDataByExercise was not set up in config phase!');
                         return $q.when();
                     } else {
-                        var getIconNameByCategoryId = $injector.invoke(getIconNameByCategoryIdWrapper);
-                        return getIconNameByCategoryId(categoryId);
+                        var getSubjectDataByExercise = $injector.invoke(getSubjectDataByExerciseWrapper);
+                        return getSubjectDataByExercise(exercise);
                     }
                 };
 
@@ -828,6 +838,27 @@
 })(angular);
 
 angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/eTutoring/components/eTutoringContactUs/eTutoringContactUs.template.html",
+    "<md-dialog ng-cloak class=\"e-tutoring-contact-us-modal\" translate-namespace=\"E_TUTORING_CONTACT_US\">\n" +
+    "    <md-toolbar>\n" +
+    "        <div class=\"close-popup-wrap\" ng-click=\"vm.closeDialog()\">\n" +
+    "            <svg-icon name=\"etutoring-close-icon\"></svg-icon>\n" +
+    "        </div>\n" +
+    "    </md-toolbar>\n" +
+    "    <md-dialog-content ng-switch=\"!!vm.showSuccess\">\n" +
+    "\n" +
+    "        <md-progress-circular ng-if=\"vm.showSpinner\" class=\"md-accent spinner\" md-mode=\"indeterminate\" md-diameter=\"70\"></md-progress-circular>\n" +
+    "        <div class=\"calendly-inline-widget\" data-url=\"https://calendly.com/zinkerz-zoe/consultation-with-zinkerz\"></div>\n" +
+    "    </md-dialog-content>\n" +
+    "    <div class=\"top-icon-wrap\">\n" +
+    "        <div class=\"top-icon\">\n" +
+    "            <div class=\"round-icon-wrap\">\n" +
+    "                <svg-icon name=\"etutoring-calendar-icon\"></svg-icon>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</md-dialog>\n" +
+    "");
   $templateCache.put("components/eTutoring/components/etutoringActionBar/etutoringActionBar.template.html",
     "<div class=\"e-tutor-bar base-border-radius base-box-shadow\" translate-namespace=\"E_TUTORING_ACTION_BAR\">\n" +
     "    <div class=\"teacher-select-wrap\" ng-if=\"myTeachers\">\n" +
@@ -889,27 +920,6 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "        </call-btn>\n" +
     "    </div>\n" +
     "</div>\n" +
-    "");
-  $templateCache.put("components/eTutoring/components/eTutoringContactUs/eTutoringContactUs.template.html",
-    "<md-dialog ng-cloak class=\"e-tutoring-contact-us-modal\" translate-namespace=\"E_TUTORING_CONTACT_US\">\n" +
-    "    <md-toolbar>\n" +
-    "        <div class=\"close-popup-wrap\" ng-click=\"vm.closeDialog()\">\n" +
-    "            <svg-icon name=\"etutoring-close-icon\"></svg-icon>\n" +
-    "        </div>\n" +
-    "    </md-toolbar>\n" +
-    "    <md-dialog-content ng-switch=\"!!vm.showSuccess\">\n" +
-    "\n" +
-    "        <md-progress-circular ng-if=\"vm.showSpinner\" class=\"md-accent spinner\" md-mode=\"indeterminate\" md-diameter=\"70\"></md-progress-circular>\n" +
-    "        <div class=\"calendly-inline-widget\" data-url=\"https://calendly.com/zinkerz-zoe/consultation-with-zinkerz\"></div>\n" +
-    "    </md-dialog-content>\n" +
-    "    <div class=\"top-icon-wrap\">\n" +
-    "        <div class=\"top-icon\">\n" +
-    "            <div class=\"round-icon-wrap\">\n" +
-    "                <svg-icon name=\"etutoring-calendar-icon\"></svg-icon>\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "</md-dialog>\n" +
     "");
   $templateCache.put("components/eTutoring/components/etutoringStudentNavigationPane/etutoringStudentNavigationPane.template.html",
     "<div class=\"etutoring-student-navigation-pane\"\n" +
@@ -1005,16 +1015,17 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "                'in-progress': module.moduleSummary[exerciseTypeId][exerciseId].status===exerciseStatusEnum.ACTIVE.enum,\n" +
     "                'completed': module.moduleSummary[exerciseTypeId][exerciseId].status===exerciseStatusEnum.COMPLETED.enum}\">\n" +
     "\n" +
-    "    <div class=\"icon-wrap\" >\n" +
+    "    <div class=\"icon-wrap\"  >\n" +
     "            <svg-icon name=\"etutoring-exercise-icon\" class=\"svg-icon-wrap\"\n" +
     "                      ng-if=\"exerciseTypeId!==exerciseTypeEnum.LECTURE.enum && activeViewObj.view === ETutoringViewsConst.LESSON\">\n" +
     "            </svg-icon>\n" +
     "            <svg-icon name=\"etutoring-slides-icon\" class=\"svg-icon-wrap\"\n" +
     "                      ng-if=\"exerciseTypeId===exerciseTypeEnum.LECTURE.enum &&  activeViewObj.view === ETutoringViewsConst.LESSON\"\">\n" +
     "            </svg-icon>\n" +
-    "            <svg-icon name=\"{{assignmentIconName}}\"\n" +
+    "            <svg-icon name=\"{{subjectIcon}}\"\n" +
+    "                      subject-id-to-attr-drv=\"subjectId\"\n" +
+    "                      ng-class=\"svgWrapperClass\"\n" +
     "                      class=\"svg-icon-wrap\"\n" +
-    "                      ng-class=\"::{'math-no-calc': !exercise.calculator && exercise.subjectId === subjectEnum.MATH.enum && assignmentIconName}\"\n" +
     "                      ng-if=\"eTutoringView() === ETutoringViewsConst.PRACTICE\">\n" +
     "            </svg-icon>\n" +
     "    </div>\n" +
@@ -1270,6 +1281,21 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "	c1,0.6,1.3,1.8,0.7,2.7l-19.5,33.2C-790.2,405.4-790.9,405.7-791.6,405.7z\"/>\n" +
     "<path class=\"st0\" d=\"M-734.3,405.7c-0.7,0-1.3-0.3-1.7-0.9l-21-33.2c-0.6-0.9-0.3-2.2,0.6-2.8c0.9-0.6,2.2-0.3,2.8,0.6l21,33.2\n" +
     "	c0.6,0.9,0.3,2.2-0.6,2.8C-733.5,405.6-733.9,405.7-734.3,405.7z\"/>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/eTutoring/svg/homework-icon.svg",
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+    "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"0 0 153.7 147.9\" style=\"enable-background:new 0 0 153.7 147.9;\" xml:space=\"preserve\">\n" +
+    "<g>\n" +
+    "	<path d=\"M16.1,147.9c0-2.4,0-4.5,0-6.7c0-23.8,0.1-47.6-0.1-71.4c0-3.1,0.9-5.1,3.5-7c18.1-13.1,36-26.3,53.9-39.7\n" +
+    "		c2.9-2.1,4.6-1.9,7.3,0.1c17.9,13.4,35.9,26.5,53.8,39.8c1.5,1.1,3.2,3.3,3.2,4.9c0.2,26.5,0.1,52.9,0.1,79.8c-14,0-27.7,0-42,0\n" +
+    "		c0-15,0-30,0-45.3c-12.7,0-24.8,0-37.5,0c0,15.1,0,30.1,0,45.5C44.1,147.9,30.5,147.9,16.1,147.9z\"/>\n" +
+    "	<path d=\"M76.9,0c15.7,11.5,30.9,22.7,46.8,34.4c0.3-2.8,0.5-5,0.7-7.7c1.6-0.1,3.2-0.1,4.7-0.3c3.1-0.4,5,0.7,4.3,4.1\n" +
+    "		c-1.9,8.9,2.4,14.3,9.7,18.4c3.6,2,6.7,4.9,10.5,7.6c-1.7,2.5-3.4,4.9-5.3,7.6c-9.7-7.1-19.2-14.1-28.7-21.1\n" +
+    "		c-13-9.6-26.1-19.1-38.9-28.8c-2.9-2.2-4.8-2-7.7,0.1C51.8,30.2,30.4,45.8,9.1,61.5C8.1,62.3,7,63,5.5,64c-1.8-2.5-3.6-4.8-5.5-7.4\n" +
+    "		C25.7,37.7,51.2,19,76.9,0z\"/>\n" +
+    "</g>\n" +
     "</svg>\n" +
     "");
   $templateCache.put("components/eTutoring/templates/eTutoring.template.html",
