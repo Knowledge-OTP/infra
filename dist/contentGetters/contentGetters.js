@@ -156,7 +156,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
 
         self.getCategoryLevel1ParentSync = function (categoriesArr) {
             for (var i = 0; i < categoriesArr.length; i++) {
-                if (categoriesArr[i]) {
+                if (angular.isDefined(categoriesArr[i]) && categoriesArr[i] !== null) {
                     return self.getCategoryLevel1ParentByIdSync(categoriesArr[i]);
                 }
             }
@@ -243,6 +243,6 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         };
     }]);
 
-angular.module('znk.infra.contentGetters').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.contentGetters').run(['$templateCache', function ($templateCache) {
 
 }]);
