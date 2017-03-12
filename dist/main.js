@@ -7842,17 +7842,15 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function($template
 
     angular.module('znk.infra.personalization')
         .service('PersonalizationSrv',
-            ["StorageRevSrv", "$log", "$q", "WorkoutPersonalizationServiceUtil", "StatsQuerySrv", "ExerciseStatusEnum", "StatsSrv", "ExerciseTypeEnum", "WorkoutsSrv", "CategoryService", "ExerciseResultSrv", function (StorageRevSrv, $log, $q, WorkoutPersonalizationServiceUtil, StatsQuerySrv, ExerciseStatusEnum, StatsSrv, ExerciseTypeEnum, WorkoutsSrv, CategoryService, ExerciseResultSrv) {
+            ["$q", "StatsSrv", "$log", "StorageRevSrv", "ExerciseResultSrv", function ($q,StatsSrv,$log, StorageRevSrv, ExerciseResultSrv) {
                 'ngInject';
-
-                var self = this;
 
                 this.getPersonalizationData = function () {
                     return _getPersonalizationData();
                 };
 
                 this.getExamOrder = function () {
-                    return self.getPersonalizationData().then(function (personalizationData) {
+                    return _getPersonalizationData().then(function (personalizationData) {
                         var errorMsg = 'PersonalizationSrv getExamOrder: personalization.examOrder is not array or empty!';
                         if (!angular.isArray(personalizationData.examOrder) || personalizationData.examOrder.length === 0) {
                             $log.error(errorMsg);
