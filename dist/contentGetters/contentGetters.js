@@ -243,6 +243,6 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         };
     }]);
 
-angular.module('znk.infra.contentGetters').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.contentGetters').run(['$templateCache', function($templateCache) {
 
 }]);
