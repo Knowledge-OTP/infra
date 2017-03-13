@@ -133,7 +133,13 @@
             this.getUserScreenSharingRequestsPath  = function (userData) {
                 var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
                 var USER_DATA_PATH = appName  + '/users/' + userData.uid;
-                return USER_DATA_PATH + '/screenSharing';
+                return USER_DATA_PATH + '/screenSharing/active';
+            };
+
+            this.getUserScreenSharingArchivePath  = function (userData) {
+                var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
+                var USER_DATA_PATH = appName  + '/users/' + userData.uid;
+                return USER_DATA_PATH + '/screenSharing/archive';
             };
 
             this.getScreenSharingData = function (screenSharingGuid) {
@@ -146,7 +152,7 @@
             this.getCurrUserScreenSharingRequests = function(){
                 return UserProfileService.getCurrUserId().then(function(currUid){
                     return _getStorage().then(function(storage){
-                        var currUserScreenSharingDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/screenSharing';
+                        var currUserScreenSharingDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/screenSharing/active';
                         return storage.getAndBindToServer(currUserScreenSharingDataPath);
                     });
                 });
@@ -249,7 +255,7 @@
                 UserProfileService.getCurrUserId().then(function (currUid) {
                     InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
                         var appName = ENV.firebaseAppScopeName;
-                        var userScreenSharingPath = appName + '/users/' + currUid + '/screenSharing';
+                        var userScreenSharingPath = appName + '/users/' + currUid + '/screenSharing/active';
                         globalStorage.onEvent(StorageSrv.EVENTS.VALUE, userScreenSharingPath, function (userScreenSharingData) {
                             if (userScreenSharingData) {
                                 angular.forEach(userScreenSharingData, function (isActive, guid) {
@@ -367,26 +373,31 @@
                     return $q.all(getDataPromMap).then(function (data) {
                         var dataToSave = {};
 
-                        var viewerPath = ScreenSharingDataGetterSrv.getUserScreenSharingRequestsPath(viewerData, newScreenSharingGuid);
-                        var sharerPath = ScreenSharingDataGetterSrv.getUserScreenSharingRequestsPath(sharerData, newScreenSharingGuid);
+                        var viewerActivePath = ScreenSharingDataGetterSrv.getUserScreenSharingRequestsPath(viewerData);
+                        var sharerActivePath = ScreenSharingDataGetterSrv.getUserScreenSharingRequestsPath(sharerData);
+                        var viewerArchivePath = ScreenSharingDataGetterSrv.getUserScreenSharingArchivePath(viewerData);
+                        var sharerArchivePath = ScreenSharingDataGetterSrv.getUserScreenSharingArchivePath(sharerData);
                         var newScreenSharingData = {
                             guid: newScreenSharingGuid,
                             sharerId: sharerData.uid,
                             viewerId: viewerData.uid,
                             status: initScreenSharingStatus,
-                            viewerPath: viewerPath,
-                            sharerPath: sharerPath
+                            viewerActivePath: viewerActivePath,
+                            sharerActivePath: sharerActivePath,
+                            viewerArchivePath: viewerArchivePath,
+                            sharerArchivePath: sharerArchivePath
                         };
-                        angular.extend(data.newScreenSharingData, newScreenSharingData);
 
+                        // update root screen sharing object
+                        angular.extend(data.newScreenSharingData, newScreenSharingData);
                         dataToSave[data.newScreenSharingData.$$path] = data.newScreenSharingData;
-                        //current user screen sharing requests object update
-                        data.currUserScreenSharingRequests[newScreenSharingGuid] = true;
-                        dataToSave[data.currUserScreenSharingRequests.$$path] = data.currUserScreenSharingRequests;
-                        //other user screen sharing requests object update
-                        var otherUserScreenSharingPath = viewerData.uid === data.currUid ? sharerPath : viewerPath;
-                        var viewerScreenSharingDataGuidPath = otherUserScreenSharingPath + '/' + newScreenSharingGuid;
-                        dataToSave[viewerScreenSharingDataGuidPath] = true;
+
+                        // update viewerActivePath
+                        var viewerActiveGuidPath = viewerActivePath + '/' + newScreenSharingGuid;
+                        dataToSave[viewerActiveGuidPath] = true;
+                        // update sharerActivePath
+                        var sharerActiveGuidPath = sharerActivePath + '/' + newScreenSharingGuid;
+                        dataToSave[sharerActiveGuidPath] = true;
 
                         return _getStorage().then(function (StudentStorage) {
                             return StudentStorage.update(dataToSave);
@@ -458,21 +469,21 @@
                 getDataPromMap.storage = _getStorage();
                 return $q.all(getDataPromMap).then(function (data) {
                     var dataToSave = {};
-
+                    // update root screen sharing object
                     data.screenSharingData.status = ScreenSharingStatusEnum.ENDED.enum;
-                    dataToSave [data.screenSharingData.$$path] = data.screenSharingData;
+                    dataToSave[data.screenSharingData.$$path] = data.screenSharingData;
 
-                    data.currUidScreenSharingRequests[data.screenSharingData.guid] = false;
-                    dataToSave[data.currUidScreenSharingRequests.$$path] = data.currUidScreenSharingRequests;
+                    // update viewerActivePath
+                    dataToSave[data.screenSharingData.viewerActivePath] = null;
+                    // update sharerActivePath
+                    dataToSave[data.screenSharingData.sharerActivePath] = null;
 
-                    var otherUserScreenSharingRequestPath;
-                    if (data.screenSharingData.viewerId !== data.currUid) {
-                        otherUserScreenSharingRequestPath = data.screenSharingData.viewerPath;
-                    } else {
-                        otherUserScreenSharingRequestPath = data.screenSharingData.sharerPath;
-                    }
-                    otherUserScreenSharingRequestPath += '/' + data.screenSharingData.guid;
-                    dataToSave[otherUserScreenSharingRequestPath] = false;
+                    // update viewerArchivePath
+                    var viewerArchiveGuidPath = data.screenSharingData.viewerArchivePath + '/' + data.screenSharingData.guid;
+                    dataToSave[viewerArchiveGuidPath] = false;
+                    // update sharerArchivePath
+                    var sharerArchiveGuidPath = data.screenSharingData.sharerArchivePath + '/' + data.screenSharingData.guid;
+                    dataToSave[sharerArchiveGuidPath] = false;
 
                     return data.storage.update(dataToSave);
                 });

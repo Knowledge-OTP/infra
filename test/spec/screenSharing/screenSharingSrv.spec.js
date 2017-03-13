@@ -31,7 +31,7 @@ describe('testing service "ScreenSharingSrv":', function () {
     function _addScreenSharingRequestToUser(uid, isTeacher, guid) {
         var appName = isTeacher ? _deps.ENV.dashboardAppName : _deps.ENV.studentAppName;
 
-        var path = appName + '/users/' + uid + '/screenSharing';
+        var path = appName + '/users/' + uid + '/screenSharing/active';
         var value = {};
         value[guid] = true;
         _deps.GlobalStorage.adapter.update(path, value);
@@ -59,14 +59,18 @@ describe('testing service "ScreenSharingSrv":', function () {
         };
         _deps.ScreenSharingSrvSync.shareMyScreen(viewerData);
 
-        var expectedViewerPath = _deps.ENV.dashboardAppName + '/users/' + viewerId + '/screenSharing';
-        var expectedSharerPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
+        var expectedActiveViewerPath = _deps.ENV.dashboardAppName + '/users/' + viewerId + '/screenSharing/active';
+        var expectedActiveSharerPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/active';
+        var expectedArchiveViewerPath = _deps.ENV.dashboardAppName + '/users/' + viewerId + '/screenSharing/archive';
+        var expectedArchiveSharerPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/archive';
         var expectedRootScreenSharing = {
             guid: {
                 sharerId: sharerId,
                 viewerId: viewerId,
-                viewerPath: expectedViewerPath,
-                sharerPath: expectedSharerPath,
+                viewerActivePath: expectedActiveViewerPath,
+                sharerActivePath: expectedActiveSharerPath,
+                viewerArchivePath: expectedArchiveViewerPath,
+                sharerArchivePath: expectedArchiveSharerPath,
                 status: _deps.ScreenSharingStatusEnum.PENDING_VIEWER.enum,
                 guid: screenSharingDataGuid
             }
@@ -76,7 +80,9 @@ describe('testing service "ScreenSharingSrv":', function () {
         var expectedStudentAppUsersObject = {};
         expectedStudentAppUsersObject[sharerId] = {
             screenSharing: {
-                guid: true
+                active: {
+                    guid: true
+                }
             }
         };
         var currStudentAppUsersObject = _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users;
@@ -85,7 +91,9 @@ describe('testing service "ScreenSharingSrv":', function () {
         var expectedTeacherAppUsersObject = {};
         expectedTeacherAppUsersObject[viewerId] = {
             screenSharing: {
-                guid: true
+                active: {
+                    guid: true
+                }
             }
         };
         var currTeacherAppUsersObject = _deps.GlobalStorage.adapter.__db[_deps.ENV.dashboardAppName].users;
@@ -106,16 +114,20 @@ describe('testing service "ScreenSharingSrv":', function () {
         };
         _deps.ScreenSharingSrvSync.shareMyScreen(viewerData);
 
-        var expectedViewerPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
-        var expectedSharerPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
+        var expectedViewerPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/active';
+        var expectedSharerPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/active';
+        var expectedArchiveViewerPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/archive';
+        var expectedArchiveSharerPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/archive';
         var expectedRootScreenSharing = {
             guid: {
+                guid: screenSharingDataGuid,
                 sharerId: sharerId,
                 viewerId: viewerId,
                 status: _deps.ScreenSharingStatusEnum.PENDING_VIEWER.enum,
-                guid: screenSharingDataGuid,
-                viewerPath: expectedViewerPath,
-                sharerPath: expectedSharerPath
+                viewerActivePath: expectedViewerPath,
+                sharerActivePath: expectedSharerPath,
+                viewerArchivePath: expectedArchiveViewerPath,
+                sharerArchivePath: expectedArchiveSharerPath
             }
         };
         expect(_deps.GlobalStorage.adapter.__db.screenSharing).toEqual(jasmine.objectContaining(expectedRootScreenSharing));
@@ -123,12 +135,16 @@ describe('testing service "ScreenSharingSrv":', function () {
         var expectedStudentAppUsersObject = {};
         expectedStudentAppUsersObject[sharerId] = {
             screenSharing: {
-                guid: true
+                active: {
+                    guid: true
+                }
             }
         };
         expectedStudentAppUsersObject[viewerId] = {
             screenSharing: {
-                guid: true
+                active: {
+                    guid: true
+                }
             }
         };
         var currStudentAppUsersObject = _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users;
@@ -180,15 +196,19 @@ describe('testing service "ScreenSharingSrv":', function () {
 
         var viewerId = myUid;
         var sharerId = otherUid;
-        var myUserScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + myUid + '/screenSharing';
-        var otherUserScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + otherUid + '/screenSharing';
+        var viewerActivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/active';
+        var sharerActivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/active';
+        var viewerArchivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/archive';
+        var sharerArchivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/archive';
         screenSharingData[screenSharingDataGuid] = {
             guid: screenSharingDataGuid,
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.ENDED.enum,
-            viewerPath: myUserScreenSharingRequestsPath,
-            sharerPath: otherUserScreenSharingRequestsPath
+            viewerActivePath: viewerActivePath,
+            sharerActivePath: sharerActivePath,
+            viewerArchivePath: viewerArchivePath,
+            sharerArchivePath: sharerArchivePath
         };
 
         var viewerData = {
@@ -216,16 +236,20 @@ describe('testing service "ScreenSharingSrv":', function () {
         };
         _deps.ScreenSharingSrvSync.viewOtherUserScreen(sharerData);
 
-        var expectedViewerPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
-        var expectedSharerPath = _deps.ENV.dashboardAppName + '/users/' + sharerId + '/screenSharing';
+        var viewerActivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/active';
+        var sharerActivePath = _deps.ENV.dashboardAppName + '/users/' + sharerId + '/screenSharing/active';
+        var viewerArchivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/archive';
+        var sharerArchivePath = _deps.ENV.dashboardAppName + '/users/' + sharerId + '/screenSharing/archive';
         var expectedRootScreenSharing = {
             guid: {
                 sharerId: sharerId,
                 viewerId: viewerId,
                 status: _deps.ScreenSharingStatusEnum.PENDING_SHARER.enum,
                 guid: screenSharingDataGuid,
-                viewerPath: expectedViewerPath,
-                sharerPath: expectedSharerPath
+                viewerActivePath: viewerActivePath,
+                sharerActivePath: sharerActivePath,
+                viewerArchivePath: viewerArchivePath,
+                sharerArchivePath: sharerArchivePath
             }
         };
         expect(_deps.GlobalStorage.adapter.__db.screenSharing).toEqual(jasmine.objectContaining(expectedRootScreenSharing));
@@ -233,7 +257,9 @@ describe('testing service "ScreenSharingSrv":', function () {
         var expectedStudentAppUsersObject = {};
         expectedStudentAppUsersObject[viewerId] = {
             screenSharing: {
-                guid: true
+                active: {
+                    guid: true
+                }
             }
         };
         var currStudentAppUsersObject = _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users;
@@ -242,7 +268,9 @@ describe('testing service "ScreenSharingSrv":', function () {
         var expectedTeacherAppUsersObject = {};
         expectedTeacherAppUsersObject[sharerId] = {
             screenSharing: {
-                guid: true
+                active: {
+                    guid: true
+                }
             }
         };
         var currTeacherAppUsersObject = _deps.GlobalStorage.adapter.__db[_deps.ENV.dashboardAppName].users;
@@ -263,16 +291,20 @@ describe('testing service "ScreenSharingSrv":', function () {
         };
         _deps.ScreenSharingSrvSync.viewOtherUserScreen(sharerData);
 
-        var expectedViewerPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
-        var expectedSharerPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
+        var viewerActivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/active';
+        var sharerActivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/active';
+        var viewerArchivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/archive';
+        var sharerArchivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/archive';
         var expectedRootScreenSharing = {
             guid: {
                 sharerId: sharerId,
                 viewerId: viewerId,
                 status: _deps.ScreenSharingStatusEnum.PENDING_SHARER.enum,
                 guid: screenSharingDataGuid,
-                viewerPath: expectedViewerPath,
-                sharerPath: expectedSharerPath
+                viewerActivePath: viewerActivePath,
+                sharerActivePath: sharerActivePath,
+                viewerArchivePath: viewerArchivePath,
+                sharerArchivePath: sharerArchivePath
             }
         };
         expect(_deps.GlobalStorage.adapter.__db.screenSharing).toEqual(jasmine.objectContaining(expectedRootScreenSharing));
@@ -280,12 +312,16 @@ describe('testing service "ScreenSharingSrv":', function () {
         var expectedStudentAppUsersObject = {};
         expectedStudentAppUsersObject[viewerId] = {
             screenSharing: {
-                guid: true
+                active: {
+                    guid: true
+                }
             }
         };
         expectedStudentAppUsersObject[sharerId] = {
             screenSharing: {
-                guid: true
+                active: {
+                    guid: true
+                }
             }
         };
 
@@ -328,19 +364,21 @@ describe('testing service "ScreenSharingSrv":', function () {
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.PENDING_VIEWER.enum,
-            viewerPath: _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing',
-            sharerPath: _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing'
+            viewerActivePath: _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/active',
+            sharerActivePath: _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/active',
+            viewerArchivePath: _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/archive',
+            sharerArchivePath: _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/archive'
         };
 
         _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName] = {users: {}};
 
         //set viewer screen sharing requests data
-        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[viewerId] = {screenSharing: {}};
-        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[viewerId].screenSharing[screenSharingDataGuid] = true;
+        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[viewerId] = { screenSharing: { active: {} } };
+        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[viewerId].screenSharing.active[screenSharingDataGuid] = true;
 
         //set sharer screen sharing requests data
-        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[sharerId] = {screenSharing: {}};
-        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[sharerId].screenSharing[screenSharingDataGuid] = true;
+        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[sharerId] = { screenSharing: { active: {} } };
+        _deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[sharerId].screenSharing.active[screenSharingDataGuid] = true;
 
         _deps.ScreenSharingSrvSync.endSharing(screenSharingDataGuid);
 
@@ -364,15 +402,19 @@ describe('testing service "ScreenSharingSrv":', function () {
 
         var viewerId = myUid;
         var sharerId = otherUid;
-        var viewerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
-        var sharerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
+        var viewerActivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/active';
+        var sharerActivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/active';
+        var viewerArchivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/archive';
+        var sharerArchivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/archive';
         var screenSharingData = {
             guid: screenSharingDataGuid,
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.PENDING_VIEWER.enum,
-            viewerPath: viewerScreenSharingRequestsPath,
-            sharerPath: sharerScreenSharingRequestsPath
+            viewerActivePath: viewerActivePath,
+            sharerActivePath: sharerActivePath,
+            viewerArchivePath: viewerArchivePath,
+            sharerArchivePath: sharerArchivePath
         };
         _updateScreenSharingData(screenSharingData);
 
@@ -397,15 +439,19 @@ describe('testing service "ScreenSharingSrv":', function () {
 
         var viewerId = myUid;
         var sharerId = otherUid;
-        var viewerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
-        var sharerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
+        var viewerActivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/active';
+        var sharerActivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/active';
+        var viewerArchivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/archive';
+        var sharerArchivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/archive';
         var screenSharingData = {
             guid: screenSharingDataGuid,
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
-            viewerPath: viewerScreenSharingRequestsPath,
-            sharerPath: sharerScreenSharingRequestsPath
+            viewerActivePath: viewerActivePath,
+            sharerActivePath: sharerActivePath,
+            viewerArchivePath: viewerArchivePath,
+            sharerArchivePath: sharerArchivePath
         };
         _updateScreenSharingData(screenSharingData);
 
@@ -414,7 +460,7 @@ describe('testing service "ScreenSharingSrv":', function () {
             uid: otherUid,
             isTeacher: false
         };
-        var shareMyScreenProm = _deps.ScreenSharingSrv.shareMyScreen(viewerData)
+        var shareMyScreenProm = _deps.ScreenSharingSrv.shareMyScreen(viewerData);
         shareMyScreenProm.then(function () {
             shareMyScreenResult = 'resolved';
         }, function () {
@@ -437,15 +483,19 @@ describe('testing service "ScreenSharingSrv":', function () {
 
         var viewerId = myUid;
         var sharerId = otherUid;
-        var viewerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
-        var sharerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
+        var viewerActivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/active';
+        var sharerActivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/active';
+        var viewerArchivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/archive';
+        var sharerArchivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/archive';
         var screenSharingData = {
             guid: screenSharingDataGuid,
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
-            viewerPath: viewerScreenSharingRequestsPath,
-            sharerPath: sharerScreenSharingRequestsPath
+            viewerActivePath: viewerActivePath,
+            sharerActivePath: sharerActivePath,
+            viewerArchivePath: viewerArchivePath,
+            sharerArchivePath: sharerArchivePath
         };
         _updateScreenSharingData(screenSharingData);
 
@@ -479,15 +529,19 @@ describe('testing service "ScreenSharingSrv":', function () {
 
         var viewerId = myUid;
         var sharerId = otherUid;
-        var viewerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
-        var sharerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
+        var viewerActivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/active';
+        var sharerActivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/active';
+        var viewerArchivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/archive';
+        var sharerArchivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/archive';
         var screenSharingData = {
             guid: screenSharingDataGuid,
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
-            viewerPath: viewerScreenSharingRequestsPath,
-            sharerPath: sharerScreenSharingRequestsPath
+            viewerActivePath: viewerActivePath,
+            sharerActivePath: sharerActivePath,
+            viewerArchivePath: viewerArchivePath,
+            sharerArchivePath: sharerArchivePath
         };
         _updateScreenSharingData(screenSharingData);
 
@@ -522,15 +576,19 @@ describe('testing service "ScreenSharingSrv":', function () {
 
         var viewerId = myUid;
         var sharerId = otherUid;
-        var viewerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
-        var sharerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
+        var viewerActivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/active';
+        var sharerActivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/active';
+        var viewerArchivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/archive';
+        var sharerArchivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/archive';
         var screenSharingData = {
             guid: screenSharingDataGuid,
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
-            viewerPath: viewerScreenSharingRequestsPath,
-            sharerPath: sharerScreenSharingRequestsPath
+            viewerActivePath: viewerActivePath,
+            sharerActivePath: sharerActivePath,
+            viewerArchivePath: viewerArchivePath,
+            sharerArchivePath: sharerArchivePath
         };
         _updateScreenSharingData(screenSharingData);
 
@@ -565,15 +623,19 @@ describe('testing service "ScreenSharingSrv":', function () {
 
         var viewerId = myUid;
         var sharerId = otherUid;
-        var viewerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
-        var sharerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
+        var viewerActivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/active';
+        var sharerActivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/active';
+        var viewerArchivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/archive';
+        var sharerArchivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/archive';
         var screenSharingData = {
             guid: screenSharingDataGuid,
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
-            viewerPath: viewerScreenSharingRequestsPath,
-            sharerPath: sharerScreenSharingRequestsPath
+            viewerActivePath: viewerActivePath,
+            sharerActivePath: sharerActivePath,
+            viewerArchivePath: viewerArchivePath,
+            sharerArchivePath: sharerArchivePath
         };
         _updateScreenSharingData(screenSharingData);
 
@@ -618,15 +680,19 @@ describe('testing service "ScreenSharingSrv":', function () {
 
         var viewerId = myUid;
         var sharerId = otherUid;
-        var viewerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
-        var sharerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
+        var viewerActivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/active';
+        var sharerActivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/active';
+        var viewerArchivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/archive';
+        var sharerArchivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/archive';
         var screenSharingData = {
             guid: screenSharingDataGuid,
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
-            viewerPath: viewerScreenSharingRequestsPath,
-            sharerPath: sharerScreenSharingRequestsPath
+            viewerActivePath: viewerActivePath,
+            sharerActivePath: sharerActivePath,
+            viewerArchivePath: viewerArchivePath,
+            sharerArchivePath: sharerArchivePath
         };
         _updateScreenSharingData(screenSharingData);
         expectedValue = _deps.UserScreenSharingStateEnum.VIEWER.enum;
@@ -653,15 +719,19 @@ describe('testing service "ScreenSharingSrv":', function () {
 
         var viewerId = myUid;
         var sharerId = otherUid;
-        var viewerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
-        var sharerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
+        var viewerActivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/active';
+        var sharerActivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/active';
+        var viewerArchivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/archive';
+        var sharerArchivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/archive';
         var screenSharingData = {
             guid: screenSharingDataGuid,
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
-            viewerPath: viewerScreenSharingRequestsPath,
-            sharerPath: sharerScreenSharingRequestsPath
+            viewerActivePath: viewerActivePath,
+            sharerActivePath: sharerActivePath,
+            viewerArchivePath: viewerArchivePath,
+            sharerArchivePath: sharerArchivePath
         };
         _deps.ScreenSharingSrv.unregisterFromCurrUserScreenSharingStateChanges(cb);
         _updateScreenSharingData(screenSharingData);
@@ -680,15 +750,19 @@ describe('testing service "ScreenSharingSrv":', function () {
 
         var viewerId = myUid;
         var sharerId = otherUid;
-        var viewerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing';
-        var sharerScreenSharingRequestsPath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing';
+        var viewerActivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/active';
+        var sharerActivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/active';
+        var viewerArchivePath = _deps.ENV.studentAppName + '/users/' + viewerId + '/screenSharing/archive';
+        var sharerArchivePath = _deps.ENV.studentAppName + '/users/' + sharerId + '/screenSharing/archive';
         var screenSharingData = {
             guid: screenSharingDataGuid,
             sharerId: sharerId,
             viewerId: viewerId,
             status: _deps.ScreenSharingStatusEnum.CONFIRMED.enum,
-            viewerPath: viewerScreenSharingRequestsPath,
-            sharerPath: sharerScreenSharingRequestsPath
+            viewerActivePath: viewerActivePath,
+            sharerActivePath: sharerActivePath,
+            viewerArchivePath: viewerArchivePath,
+            sharerArchivePath: sharerArchivePath
         };
         _updateScreenSharingData(screenSharingData);
 
