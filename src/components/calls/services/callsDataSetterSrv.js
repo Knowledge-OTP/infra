@@ -12,27 +12,31 @@
             this.setNewConnect = function(data, userCallData, guid, isTeacherApp) {
                 var dataToSave = {};
                 var isCallerTeacher = userCallData.callerId === data.currUid && isTeacherApp;
-                var receiverPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.newReceiverId, !isCallerTeacher);
-                var callerPath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.callerId, isCallerTeacher);
+                var receiverActivePath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.newReceiverId, !isCallerTeacher);
+                var callerActivePath = CallsDataGetterSrv.getCallsRequestsPath(userCallData.callerId, isCallerTeacher);
+                var receiverArchivePath = CallsDataGetterSrv.getCallsArchivePath(userCallData.newReceiverId, !isCallerTeacher);
+                var callerArchivePath = CallsDataGetterSrv.getCallsArchivePath(userCallData.callerId, isCallerTeacher);
                 var newCallData = {
                     guid: guid,
                     callerId: userCallData.callerId,
                     receiverId: userCallData.newReceiverId,
                     status: CallsStatusEnum.PENDING_CALL.enum,
-                    callerPath: callerPath,
-                    receiverPath: receiverPath,
+                    callerActivePath: callerActivePath,
+                    receiverActivePath: receiverActivePath,
+                    callerArchivePath: callerArchivePath,
+                    receiverArchivePath: receiverArchivePath,
                     startedTime: Date.now()
                 };
                 // update root call
                 angular.extend(data.currCallData, newCallData);
                 dataToSave[data.currCallData.$$path] = data.currCallData;
-                //current user call requests object update
-                data.currUserCallsRequests[guid] = true;
-                dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
-                //other user call requests object update
-                var otherUserCallPath = userCallData.newReceiverId === data.currUid ? callerPath : receiverPath;
-                var otherUserCallDataGuidPath = otherUserCallPath + '/' + guid;
-                dataToSave[otherUserCallDataGuidPath] = true;
+                // update receiverActivePath
+                var receiverActiveGuidPath = receiverActivePath + '/' + guid;
+                dataToSave[receiverActiveGuidPath] = true;
+                // update callerActivePath
+                var callerActiveGuidPath = callerActivePath + '/' + guid;
+                dataToSave[callerActiveGuidPath] = true;
+
                 return _getStorage().then(function (StudentStorage) {
                     return StudentStorage.update(dataToSave);
                 });
@@ -44,13 +48,19 @@
                 data.currCallData.status = CallsStatusEnum.ENDED_CALL.enum;
                 data.currCallData.endedTime = Date.now();
                 dataToSave[data.currCallData.$$path] = angular.copy(data.currCallData);
-                //current user call requests object update
-                data.currUserCallsRequests[guid] = null;
-                dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
-                //other user call requests object update
-                var otherUserCallPath = userCallData.receiverId === data.currUid ? data.currCallData.callerPath : data.currCallData.receiverPath;
-                var otherUserCallDataGuidPath = otherUserCallPath + '/' + guid;
-                dataToSave[otherUserCallDataGuidPath] = null;
+
+                // update receiverActivePath
+                dataToSave[data.currCallData.receiverActivePath] = null;
+                // update callerActivePath
+                dataToSave[data.currCallData.callerActivePath] = null;
+
+                // update receiverArchivePath
+                var receiverArchiveGuidPath = data.currCallData.receiverArchivePath + '/' + guid;
+                dataToSave[receiverArchiveGuidPath] = false;
+                // update callerArchivePath
+                var callerArchiveGuidPath = data.currCallData.callerArchivePath + '/' + guid;
+                dataToSave[callerArchiveGuidPath] = false;
+
                 return _getStorage().then(function (StudentStorage) {
                     return StudentStorage.update(dataToSave);
                 });
@@ -62,13 +72,18 @@
                 data.currCallData.status = CallsStatusEnum.DECLINE_CALL.enum;
                 data.currCallData.endedTime = Date.now();
                 dataToSave[data.currCallData.$$path] = angular.copy(data.currCallData);
-                //current user call requests object update
-                data.currUserCallsRequests[guid] = null;
-                dataToSave[data.currUserCallsRequests.$$path] = data.currUserCallsRequests;
-                //other user call requests object update
-                var otherUserCallPath = userCallData.receiverId === data.currUid ? data.currCallData.callerPath : data.currCallData.receiverPath;
-                var otherUserCallDataGuidPath = otherUserCallPath + '/' + guid;
-                dataToSave[otherUserCallDataGuidPath] = null;
+
+                // update receiverActivePath
+                dataToSave[data.currCallData.receiverActivePath] = null;
+                // update callerActivePath
+                dataToSave[data.currCallData.callerActivePath] = null;
+
+                // update receiverArchivePath
+                var receiverArchiveGuidPath = data.currCallData.receiverArchivePath + '/' + guid;
+                dataToSave[receiverArchiveGuidPath] = false;
+                // update callerArchivePath
+                var callerArchiveGuidPath = data.currCallData.callerArchivePath + '/' + guid;
+                dataToSave[callerArchiveGuidPath] = false;
 
                 return _getStorage().then(function (StudentStorage) {
                     return StudentStorage.update(dataToSave);
