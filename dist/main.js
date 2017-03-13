@@ -7868,12 +7868,8 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function($template
 
                 var self = this;
 
-                this.getPersonalizationData = function () {
-                    return _getPersonalizationData();
-                };
-
                 self.getExamOrder = function () {
-                    return self.getPersonalizationData().then(function (personalizationData) {
+                    return _getPersonalizationData().then(function (personalizationData) {
                         var errorMsg = 'PersonalizationSrv getExamOrder: personalization.examOrder is not array or empty!';
                         if (!angular.isArray(personalizationData.examOrder) || personalizationData.examOrder.length === 0) {
                             $log.error(errorMsg);
@@ -7905,9 +7901,7 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function($template
                         return _generateExercisesForAllTimes(availableExercises, availableStats, subjectsToIgnore, exerciseTypesToIgnore);
                     });
                 };
-                self.getAvailableExercises = function (includeInProgress) {
-                    return _getAvailableExercises(includeInProgress);
-                };
+
                 /* _generateExercisesForAllTimes
                  * Returns an exercise for each of the time bundles (if available)
                  * Starts by searching for the weakest subject in the "availableStats" that is not in the "subjectsToIgnore" list
@@ -8196,7 +8190,7 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function($template
                 }
 
                 function _getAvailableExercises(includeInProgress) {
-                    var getAllExercisesProm = self.getPersonalizationData();
+                    var getAllExercisesProm = _getPersonalizationData();
                     var getUsedExercisesProm = ExerciseResultSrv.getExercisesStatusMap();
                     return $q.all([
                         getAllExercisesProm,
