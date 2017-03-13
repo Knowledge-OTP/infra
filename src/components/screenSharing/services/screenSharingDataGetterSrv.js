@@ -17,7 +17,13 @@
             this.getUserScreenSharingRequestsPath  = function (userData) {
                 var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
                 var USER_DATA_PATH = appName  + '/users/' + userData.uid;
-                return USER_DATA_PATH + '/screenSharing';
+                return USER_DATA_PATH + '/screenSharing/active';
+            };
+
+            this.getUserScreenSharingArchivePath  = function (userData) {
+                var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
+                var USER_DATA_PATH = appName  + '/users/' + userData.uid;
+                return USER_DATA_PATH + '/screenSharing/archive';
             };
 
             this.getScreenSharingData = function (screenSharingGuid) {
@@ -30,7 +36,7 @@
             this.getCurrUserScreenSharingRequests = function(){
                 return UserProfileService.getCurrUserId().then(function(currUid){
                     return _getStorage().then(function(storage){
-                        var currUserScreenSharingDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/screenSharing';
+                        var currUserScreenSharingDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/screenSharing/active';
                         return storage.getAndBindToServer(currUserScreenSharingDataPath);
                     });
                 });

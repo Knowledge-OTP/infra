@@ -78,7 +78,7 @@
                 UserProfileService.getCurrUserId().then(function (currUid) {
                     InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
                         var appName = ENV.firebaseAppScopeName;
-                        var userScreenSharingPath = appName + '/users/' + currUid + '/screenSharing';
+                        var userScreenSharingPath = appName + '/users/' + currUid + '/screenSharing/active';
                         globalStorage.onEvent(StorageSrv.EVENTS.VALUE, userScreenSharingPath, function (userScreenSharingData) {
                             if (userScreenSharingData) {
                                 angular.forEach(userScreenSharingData, function (isActive, guid) {

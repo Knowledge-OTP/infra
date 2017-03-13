@@ -1680,7 +1680,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                              status = CallsBtnStatusEnum.CALL_BTN.enum;
                      }
                  }
-
+                 
                 return status;
             };
 
@@ -3729,7 +3729,15 @@ angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function($
 
     angular.module('znk.infra.eTutoring',[
         'znk.infra.contentGetters'
-    ]);
+    ])
+        .config([
+            'SvgIconSrvProvider',
+            function (SvgIconSrvProvider) {
+                var svgMap = {
+                    'homework-icon': 'components/eTutoring/svg/homework-icon.svg'
+                };
+                SvgIconSrvProvider.registerSvgSources(svgMap);
+            }]);
 })(angular);
 
 (function (angular) {
@@ -3745,7 +3753,7 @@ angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function($
                     this.formData.name = profile.nickname || undefined;
                     this.formData.email = profile.email || undefined;
                 }
-            });
+            }.bind(this));
 
             this.sendContactUs = function(authform){
                 this.showError = false;
@@ -3772,155 +3780,18 @@ angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function($
                             this.startLoader = this.fillLoader = false;
                             this.showSuccess = true;
                         });
-                    }).catch(function(mailError){
+                    }.bind(this)).catch(function(mailError){
                         this.fillLoader = true;
                         $timeout(function(){
                             this.startLoader = this.fillLoader = false;
                             this.showError = true;
                             $log.error('ETutoringContactUsController:sendContactUs:: error send mail', mailError);
                         });
-                    });
+                    }.bind(this));
                 }
             };
 
 
-                EstimatedScoreSrv.getSectionsRawScores = _baseGetter.bind(this, 'sectionsRawScores');
-
-                EstimatedScoreSrv.getExercisesRawScore = _baseGetter.bind(this, 'exercisesRawScores');
-
-                EstimatedScoreSrv.getEstimatedScores = function (subjectId){
-                    return _baseGetter('estimatedScores', subjectId).then(function (allScoresOrScoreForSubject) {
-                        if (angular.isDefined(subjectId)) {
-                            if (!allScoresOrScoreForSubject.length) {
-                                return {};
-                            }
-                            return allScoresOrScoreForSubject.map(convertObjScoreToRoundScore);
-                        }
-                        var allScoresPerSubject = {};
-                        angular.forEach(allScoresOrScoreForSubject, function (scoresForSubject, subjectId) {
-                            allScoresPerSubject[subjectId] = scoresForSubject.length ? scoresForSubject.map(convertObjScoreToRoundScore) : [];
-                        });
-
-                        return allScoresPerSubject;
-                    });
-                };
-
-                EstimatedScoreSrv.getLatestEstimatedScore = function (subjectId) {
-                    return _baseGetter('estimatedScores',subjectId).then(function (allScoresOrScoreForSubject) {
-                        if (angular.isDefined(subjectId)){
-                            if (!allScoresOrScoreForSubject.length) {
-                                return {};
-                            }
-                            return convertObjScoreToRoundScore(allScoresOrScoreForSubject[allScoresOrScoreForSubject.length - 1]);
-                        }
-                        var latestScoresPerSubject = {};
-                        angular.forEach(allScoresOrScoreForSubject, function (scoresForSubject, subjectId) {
-                            latestScoresPerSubject[subjectId] = scoresForSubject.length ? convertObjScoreToRoundScore(scoresForSubject[scoresForSubject.length -1]) : {};
-                        });
-
-                        return latestScoresPerSubject;
-                    });
-                };
-
-                EstimatedScoreSrv.setDiagnosticSectionScore = function (score, exerciseType, subjectId, exerciseId) {
-                    processingData = processingData.then(function(){
-                        return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScoreData) {
-                            //score was already set
-                            if (estimatedScoreData.estimatedScores[subjectId].length) {
-                                var errMsg = 'Exercise already processed ' + 'type ' + exerciseType + ' id ' + exerciseId;
-                                $log.info(errMsg);
-                                return $q.reject(errMsg);
-                            }
-
-                            score = Math.max(minDiagnosticScore, Math.min(maxDiagnosticScore, score));
-                            estimatedScoreData.estimatedScores[subjectId].push({
-                                exerciseType: exerciseType,
-                                exerciseId: exerciseId,
-                                score: score,
-                                time: Date.now()
-                            });
-                            return EstimatedScoreHelperSrv.setEstimateScoreData(estimatedScoreData).then(function () {
-                                return estimatedScoreData.estimatedScores[subjectId][estimatedScoreData.estimatedScores[subjectId].length - 1];
-                            });
-                        }).catch(function(errMsg){
-                            $log.info(errMsg);
-                        });
-                    });
-                    return processingData;
-                };
-
-                EstimatedScoreSrv.addRawScore = function (rawScore, exerciseType, subjectId, exerciseId, isDiagnostic) {
-                    processingData = processingData.then(function(){
-                        return EstimatedScoreHelperSrv.getEstimatedScoreData().then(function (estimatedScoreData) {
-                            if (_isExerciseAlreadyProcessed(estimatedScoreData, exerciseType, exerciseId, subjectId)) {
-                                var errMsg = 'Exercise already processed ' + 'type ' + exerciseType + ' id ' + exerciseId;
-                                return $q.reject(errMsg);
-                            }
-                            if (exerciseType === ExerciseTypeEnum.SECTION.enum) {
-                                var sectionSubjectRowScores = estimatedScoreData.sectionsRawScores[subjectId];
-                                var newSectionSubjectRawScore = {
-                                    exerciseType: exerciseType,
-                                    exerciseId: exerciseId,
-                                    time: Date.now()
-                                };
-                                angular.extend(newSectionSubjectRawScore, rawScore);
-                                sectionSubjectRowScores.push(newSectionSubjectRawScore);
-                            } else {
-                                var exerciseSubjectRawScore = estimatedScoreData.exercisesRawScores[subjectId];
-                                exerciseSubjectRawScore.exerciseType = exerciseType;
-                                exerciseSubjectRawScore.exerciseId = exerciseId;
-                                exerciseSubjectRawScore.time = Date.now();
-                                exerciseSubjectRawScore.total += rawScore.total;
-                                exerciseSubjectRawScore.earned += rawScore.earned;
-                            }
-
-                            if (!isDiagnostic) {
-                                var normalizedRawScore = _calculateNormalizedRawScore(estimatedScoreData.sectionsRawScores[subjectId], estimatedScoreData.exercisesRawScores[subjectId], subjectId);
-                                var estimatedScoresForSpecificSubject = estimatedScoreData.estimatedScores[subjectId];
-                                var currEstimatedScore = estimatedScoresForSpecificSubject[estimatedScoresForSpecificSubject.length - 1] || {};
-                                return _calculateNewEstimatedScore(subjectId, normalizedRawScore, currEstimatedScore.score, exerciseType !== ExerciseTypeEnum.SECTION.enum).then(function (newEstimatedScore) {
-                                    estimatedScoreData.estimatedScores[subjectId].push({
-                                        exerciseType: exerciseType,
-                                        exerciseId: exerciseId,
-                                        score: newEstimatedScore,
-                                        time: Date.now()
-                                    });
-                                    return estimatedScoreData;
-                                });
-                            }
-                            return estimatedScoreData;
-                        }).then(function (estimatedScoreData) {
-                            return EstimatedScoreHelperSrv.setEstimateScoreData(estimatedScoreData);
-                        }).catch(function(errMsg){
-                            $log.info(errMsg);
-                        });
-                    });
-                    return processingData;
-                };
-
-                return EstimatedScoreSrv;
-            }];
-    });
-})(angular);
-
-angular.module('znk.infra.estimatedScore').run(['$templateCache', function($templateCache) {
-
-}]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.eTutoring',[
-        'znk.infra.contentGetters'
-    ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
-                var svgMap = {
-                    'homework-icon': 'components/eTutoring/svg/homework-icon.svg'
-                };
-                SvgIconSrvProvider.registerSvgSources(svgMap);
-            }]);
             this.closeDialog = function () {
                 $mdDialog.cancel();
             };
@@ -4136,64 +4007,6 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 })(angular);
 
 
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.eTutoring').controller('ETutoringContactUsController',
-        ["$mdDialog", "UserProfileService", "MailSenderService", "$timeout", "ENV", "$log", function ($mdDialog, UserProfileService, MailSenderService, $timeout, ENV, $log) {
-            'ngInject';
-            this.formData = {};
-            this.showSpinner = true;
-            UserProfileService.getProfile().then(function(profile){
-                if (angular.isDefined(profile)) {
-                    this.formData.name = profile.nickname || undefined;
-                    this.formData.email = profile.email || undefined;
-                }
-            }.bind(this));
-
-            this.sendContactUs = function(authform){
-                this.showError = false;
-
-                if (!authform.$invalid) {
-                    this.startLoader = true;
-                    var appName = ENV.firebaseAppScopeName;
-                    var emailsArr = ['support@zinkerz.com'];
-                    var message = '' +
-                        'A new student contacted you through the live lessons tab' +
-                        'App Name: ' + appName + '<br/>' +
-                        'Email: ' + this.formData.email;
-                    var mailRequest = {
-                        subject: 'contact us',
-                        message: message,
-                        emails: emailsArr,
-                        appName: appName,
-                        templateKey: 'zoeContactUs'
-                    };
-
-                    MailSenderService.postMailRequest(mailRequest).then(function(){
-                        this.fillLoader = true;
-                        $timeout(function(){
-                            this.startLoader = this.fillLoader = false;
-                            this.showSuccess = true;
-                        });
-                    }.bind(this)).catch(function(mailError){
-                        this.fillLoader = true;
-                        $timeout(function(){
-                            this.startLoader = this.fillLoader = false;
-                            this.showError = true;
-                            $log.error('ETutoringContactUsController:sendContactUs:: error send mail', mailError);
-                        });
-                    }.bind(this));
-                }
-            };
-
-
-            this.closeDialog = function () {
-                $mdDialog.cancel();
-            };
-        }]);
-})(angular);
 
 (function (angular) {
     'use strict';
@@ -4755,7 +4568,7 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "<md-dialog ng-cloak class=\"e-tutoring-contact-us-modal\" translate-namespace=\"E_TUTORING_CONTACT_US\">\n" +
     "    <md-toolbar>\n" +
     "        <div class=\"close-popup-wrap\" ng-click=\"vm.closeDialog()\">\n" +
-    "            <svg-icon name=\"app-close-popup\"></svg-icon>\n" +
+    "            <svg-icon name=\"etutoring-close-icon\"></svg-icon>\n" +
     "        </div>\n" +
     "    </md-toolbar>\n" +
     "    <md-dialog-content ng-switch=\"!!vm.showSuccess\">\n" +
@@ -4766,7 +4579,7 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "    <div class=\"top-icon-wrap\">\n" +
     "        <div class=\"top-icon\">\n" +
     "            <div class=\"round-icon-wrap\">\n" +
-    "                <svg-icon name=\"app-calendar-icon\"></svg-icon>\n" +
+    "                <svg-icon name=\"etutoring-calendar-icon\"></svg-icon>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
@@ -4833,27 +4646,6 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "        </call-btn>\n" +
     "    </div>\n" +
     "</div>\n" +
-    "");
-  $templateCache.put("components/eTutoring/components/eTutoringContactUs/eTutoringContactUs.template.html",
-    "<md-dialog ng-cloak class=\"e-tutoring-contact-us-modal\" translate-namespace=\"E_TUTORING_CONTACT_US\">\n" +
-    "    <md-toolbar>\n" +
-    "        <div class=\"close-popup-wrap\" ng-click=\"vm.closeDialog()\">\n" +
-    "            <svg-icon name=\"etutoring-close-icon\"></svg-icon>\n" +
-    "        </div>\n" +
-    "    </md-toolbar>\n" +
-    "    <md-dialog-content ng-switch=\"!!vm.showSuccess\">\n" +
-    "\n" +
-    "        <md-progress-circular ng-if=\"vm.showSpinner\" class=\"md-accent spinner\" md-mode=\"indeterminate\" md-diameter=\"70\"></md-progress-circular>\n" +
-    "        <div class=\"calendly-inline-widget\" data-url=\"https://calendly.com/zinkerz-zoe/consultation-with-zinkerz\"></div>\n" +
-    "    </md-dialog-content>\n" +
-    "    <div class=\"top-icon-wrap\">\n" +
-    "        <div class=\"top-icon\">\n" +
-    "            <div class=\"round-icon-wrap\">\n" +
-    "                <svg-icon name=\"etutoring-calendar-icon\"></svg-icon>\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "</md-dialog>\n" +
     "");
   $templateCache.put("components/eTutoring/components/etutoringStudentNavigationPane/etutoringStudentNavigationPane.template.html",
     "<div class=\"etutoring-student-navigation-pane\"\n" +
@@ -6914,7 +6706,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
     angular.module('znk.infra.exerciseUtility').factory('ExerciseUtilitySrv',
         function () {
             'ngInject';
-
+            
             var ExerciseUtilitySrv = {};
 
             return ExerciseUtilitySrv;
@@ -6941,7 +6733,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
                 if(!angular.isString(str) || !str.length){
                     return '';
                 }
-
+                
                 return str[0].toUpperCase() + str.substr(1);
             };
         }
@@ -7286,7 +7078,7 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
  *  In case only one prefix/suffix is provided, it will be used in all attributes
  *  In case no @context-attr is provided, it will set the class attribute by default
  *  No need to pass dashes ('-') to prefix or suffix, they are already appended
- *
+ * 
  * ** Optional **: you can now add an attribute called "type" and assign it the word topic if you want idToTopicName
  */
 (function (angular) {
@@ -8068,7 +7860,7 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function($template
 
 (function (angular) {
     'use strict';
-
+    
     angular.module('znk.infra.personalization')
         .service('PersonalizationSrv',
             ["StorageRevSrv", "$log", "$q", function (StorageRevSrv, $log, $q) {
@@ -8880,7 +8672,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
 (function(){
     'use strict';
-
+    
     angular.module('znk.infra.screenSharing').run(
         ["ScreenSharingEventsSrv", function(ScreenSharingEventsSrv){
             'ngInject';
@@ -8909,7 +8701,13 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             this.getUserScreenSharingRequestsPath  = function (userData) {
                 var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
                 var USER_DATA_PATH = appName  + '/users/' + userData.uid;
-                return USER_DATA_PATH + '/screenSharing';
+                return USER_DATA_PATH + '/screenSharing/active';
+            };
+
+            this.getUserScreenSharingArchivePath  = function (userData) {
+                var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
+                var USER_DATA_PATH = appName  + '/users/' + userData.uid;
+                return USER_DATA_PATH + '/screenSharing/archive';
             };
 
             this.getScreenSharingData = function (screenSharingGuid) {
@@ -8922,7 +8720,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
             this.getCurrUserScreenSharingRequests = function(){
                 return UserProfileService.getCurrUserId().then(function(currUid){
                     return _getStorage().then(function(storage){
-                        var currUserScreenSharingDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/screenSharing';
+                        var currUserScreenSharingDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/screenSharing/active';
                         return storage.getAndBindToServer(currUserScreenSharingDataPath);
                     });
                 });
@@ -9025,7 +8823,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 UserProfileService.getCurrUserId().then(function (currUid) {
                     InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
                         var appName = ENV.firebaseAppScopeName;
-                        var userScreenSharingPath = appName + '/users/' + currUid + '/screenSharing';
+                        var userScreenSharingPath = appName + '/users/' + currUid + '/screenSharing/active';
                         globalStorage.onEvent(StorageSrv.EVENTS.VALUE, userScreenSharingPath, function (userScreenSharingData) {
                             if (userScreenSharingData) {
                                 angular.forEach(userScreenSharingData, function (isActive, guid) {
@@ -9143,26 +8941,31 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                     return $q.all(getDataPromMap).then(function (data) {
                         var dataToSave = {};
 
-                        var viewerPath = ScreenSharingDataGetterSrv.getUserScreenSharingRequestsPath(viewerData, newScreenSharingGuid);
-                        var sharerPath = ScreenSharingDataGetterSrv.getUserScreenSharingRequestsPath(sharerData, newScreenSharingGuid);
+                        var viewerActivePath = ScreenSharingDataGetterSrv.getUserScreenSharingRequestsPath(viewerData);
+                        var sharerActivePath = ScreenSharingDataGetterSrv.getUserScreenSharingRequestsPath(sharerData);
+                        var viewerArchivePath = ScreenSharingDataGetterSrv.getUserScreenSharingArchivePath(viewerData);
+                        var sharerArchivePath = ScreenSharingDataGetterSrv.getUserScreenSharingArchivePath(sharerData);
                         var newScreenSharingData = {
                             guid: newScreenSharingGuid,
                             sharerId: sharerData.uid,
                             viewerId: viewerData.uid,
                             status: initScreenSharingStatus,
-                            viewerPath: viewerPath,
-                            sharerPath: sharerPath
+                            viewerActivePath: viewerActivePath,
+                            sharerActivePath: sharerActivePath,
+                            viewerArchivePath: viewerArchivePath,
+                            sharerArchivePath: sharerArchivePath
                         };
-                        angular.extend(data.newScreenSharingData, newScreenSharingData);
 
+                        // update root screen sharing object
+                        angular.extend(data.newScreenSharingData, newScreenSharingData);
                         dataToSave[data.newScreenSharingData.$$path] = data.newScreenSharingData;
-                        //current user screen sharing requests object update
-                        data.currUserScreenSharingRequests[newScreenSharingGuid] = true;
-                        dataToSave[data.currUserScreenSharingRequests.$$path] = data.currUserScreenSharingRequests;
-                        //other user screen sharing requests object update
-                        var otherUserScreenSharingPath = viewerData.uid === data.currUid ? sharerPath : viewerPath;
-                        var viewerScreenSharingDataGuidPath = otherUserScreenSharingPath + '/' + newScreenSharingGuid;
-                        dataToSave[viewerScreenSharingDataGuidPath] = true;
+
+                        // update viewerActivePath
+                        var viewerActiveGuidPath = viewerActivePath + '/' + newScreenSharingGuid;
+                        dataToSave[viewerActiveGuidPath] = true;
+                        // update sharerActivePath
+                        var sharerActiveGuidPath = sharerActivePath + '/' + newScreenSharingGuid;
+                        dataToSave[sharerActiveGuidPath] = true;
 
                         return _getStorage().then(function (StudentStorage) {
                             return StudentStorage.update(dataToSave);
@@ -9234,21 +9037,21 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
                 getDataPromMap.storage = _getStorage();
                 return $q.all(getDataPromMap).then(function (data) {
                     var dataToSave = {};
-
+                    // update root screen sharing object
                     data.screenSharingData.status = ScreenSharingStatusEnum.ENDED.enum;
-                    dataToSave [data.screenSharingData.$$path] = data.screenSharingData;
+                    dataToSave[data.screenSharingData.$$path] = data.screenSharingData;
 
-                    data.currUidScreenSharingRequests[data.screenSharingData.guid] = false;
-                    dataToSave[data.currUidScreenSharingRequests.$$path] = data.currUidScreenSharingRequests;
+                    // update viewerActivePath
+                    dataToSave[data.screenSharingData.viewerActivePath] = null;
+                    // update sharerActivePath
+                    dataToSave[data.screenSharingData.sharerActivePath] = null;
 
-                    var otherUserScreenSharingRequestPath;
-                    if (data.screenSharingData.viewerId !== data.currUid) {
-                        otherUserScreenSharingRequestPath = data.screenSharingData.viewerPath;
-                    } else {
-                        otherUserScreenSharingRequestPath = data.screenSharingData.sharerPath;
-                    }
-                    otherUserScreenSharingRequestPath += '/' + data.screenSharingData.guid;
-                    dataToSave[otherUserScreenSharingRequestPath] = false;
+                    // update viewerArchivePath
+                    var viewerArchiveGuidPath = data.screenSharingData.viewerArchivePath + '/' + data.screenSharingData.guid;
+                    dataToSave[viewerArchiveGuidPath] = false;
+                    // update sharerArchivePath
+                    var sharerArchiveGuidPath = data.screenSharingData.sharerArchivePath + '/' + data.screenSharingData.guid;
+                    dataToSave[sharerArchiveGuidPath] = false;
 
                     return data.storage.update(dataToSave);
                 });
@@ -10912,7 +10715,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.teachers', [
-
+        
     ]);
 })(angular);
 
@@ -14198,7 +14001,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         var exerciseReviewStatus = scope.settings.exerciseReviewStatus;
                         var isExerciseComplete = scope.settings.isComplete;
                         var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';
-
+                        
 
                         scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex) {
                             $q.all([
@@ -14214,7 +14017,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 var isLastQuestion = maxQuestionNum === currIndex ? true : false;
 
                                 function _determineIfShowButton () {
-                                    return isInLiveSession && isExerciseComplete && isTeacherApp && isLastQuestion &&
+                                    return isInLiveSession && isExerciseComplete && isTeacherApp && isLastQuestion && 
                                     exerciseReviewStatus !== ExerciseReviewStatusEnum.YES.enum && exerciseReviewStatus !== ExerciseReviewStatusEnum.DONE_TOGETHER.enum;
                                 }
 
@@ -14354,7 +14157,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             questionTypeGetterFn = typeGetterFn;
         };
 
-        var answersFormaterObjMap = {};
+        var answersFormaterObjMap = {};        
         this.setAnswersFormatValidtors = function (_answersFormaterObjMap) {
             answersFormaterObjMap = _answersFormaterObjMap;
         };
@@ -14378,7 +14181,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     return questionTypeGetterFn(question);
                 };
 
-                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {   
                     if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
                         $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
                         return;
@@ -14386,7 +14189,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                    var answersFormaterArr = answersFormaterObjMap[answerTypeId];
 
-                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer
+                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
                    if (angular.isUndefined(userAnswer) ||
                        !angular.isArray(answersFormaterArr) ||
                        !answersFormaterArr.length) {
@@ -14396,10 +14199,10 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                     var answersFormaterArrLength = answersFormaterArr.length;
 
-                    var answerValueBool, currentFormatter, functionGetter;
+                    var answerValueBool, currentFormatter, functionGetter;                     
                     for (var i = 0; i < answersFormaterArrLength; i++) {
                         currentFormatter = answersFormaterArr[i];
-
+                       
                         if (angular.isFunction(currentFormatter)) {
                             try {
                                  functionGetter = $injector.invoke(currentFormatter);
@@ -15345,12 +15148,12 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             var userAnswer = question.__questionStatus.userAnswer;
                             var answerTypeId = question.answerTypeId;
                             var currIndex = index || question.__questionStatus.index;
-
-                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function() {
-                                setPagerItemAnswerClass(currIndex, question);
+                            
+                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function() {               
+                                setPagerItemAnswerClass(currIndex, question); 
                             }, function() {
                                  var pagerItemElement = getPagerItemByIndex(currIndex);
-                                 pagerItemElement.removeClass('neutral correct wrong');
+                                 pagerItemElement.removeClass('neutral correct wrong');  
                             }, question);
                         }
 
@@ -16928,7 +16731,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 return function() {
                     return true;
                 };
-            };
+            }; 
 
             this.setShouldBroadCastExerciseGetter = function(_broadCastExerciseFn) {
                 broadCastExerciseFn = _broadCastExerciseFn;

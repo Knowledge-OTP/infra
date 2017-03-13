@@ -27,7 +27,7 @@
                     this.formData.name = profile.nickname || undefined;
                     this.formData.email = profile.email || undefined;
                 }
-            });
+            }.bind(this));
 
             this.sendContactUs = function(authform){
                 this.showError = false;
@@ -54,14 +54,14 @@
                             this.startLoader = this.fillLoader = false;
                             this.showSuccess = true;
                         });
-                    }).catch(function(mailError){
+                    }.bind(this)).catch(function(mailError){
                         this.fillLoader = true;
                         $timeout(function(){
                             this.startLoader = this.fillLoader = false;
                             this.showError = true;
                             $log.error('ETutoringContactUsController:sendContactUs:: error send mail', mailError);
                         });
-                    });
+                    }.bind(this));
                 }
             };
 
@@ -281,64 +281,6 @@
 })(angular);
 
 
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.eTutoring').controller('ETutoringContactUsController',
-        ["$mdDialog", "UserProfileService", "MailSenderService", "$timeout", "ENV", "$log", function ($mdDialog, UserProfileService, MailSenderService, $timeout, ENV, $log) {
-            'ngInject';
-            this.formData = {};
-            this.showSpinner = true;
-            UserProfileService.getProfile().then(function(profile){
-                if (angular.isDefined(profile)) {
-                    this.formData.name = profile.nickname || undefined;
-                    this.formData.email = profile.email || undefined;
-                }
-            }.bind(this));
-
-            this.sendContactUs = function(authform){
-                this.showError = false;
-
-                if (!authform.$invalid) {
-                    this.startLoader = true;
-                    var appName = ENV.firebaseAppScopeName;
-                    var emailsArr = ['support@zinkerz.com'];
-                    var message = '' +
-                        'A new student contacted you through the live lessons tab' +
-                        'App Name: ' + appName + '<br/>' +
-                        'Email: ' + this.formData.email;
-                    var mailRequest = {
-                        subject: 'contact us',
-                        message: message,
-                        emails: emailsArr,
-                        appName: appName,
-                        templateKey: 'zoeContactUs'
-                    };
-
-                    MailSenderService.postMailRequest(mailRequest).then(function(){
-                        this.fillLoader = true;
-                        $timeout(function(){
-                            this.startLoader = this.fillLoader = false;
-                            this.showSuccess = true;
-                        });
-                    }.bind(this)).catch(function(mailError){
-                        this.fillLoader = true;
-                        $timeout(function(){
-                            this.startLoader = this.fillLoader = false;
-                            this.showError = true;
-                            $log.error('ETutoringContactUsController:sendContactUs:: error send mail', mailError);
-                        });
-                    }.bind(this));
-                }
-            };
-
-
-            this.closeDialog = function () {
-                $mdDialog.cancel();
-            };
-        }]);
-})(angular);
 
 (function (angular) {
     'use strict';
@@ -900,7 +842,7 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "<md-dialog ng-cloak class=\"e-tutoring-contact-us-modal\" translate-namespace=\"E_TUTORING_CONTACT_US\">\n" +
     "    <md-toolbar>\n" +
     "        <div class=\"close-popup-wrap\" ng-click=\"vm.closeDialog()\">\n" +
-    "            <svg-icon name=\"app-close-popup\"></svg-icon>\n" +
+    "            <svg-icon name=\"etutoring-close-icon\"></svg-icon>\n" +
     "        </div>\n" +
     "    </md-toolbar>\n" +
     "    <md-dialog-content ng-switch=\"!!vm.showSuccess\">\n" +
@@ -911,7 +853,7 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "    <div class=\"top-icon-wrap\">\n" +
     "        <div class=\"top-icon\">\n" +
     "            <div class=\"round-icon-wrap\">\n" +
-    "                <svg-icon name=\"app-calendar-icon\"></svg-icon>\n" +
+    "                <svg-icon name=\"etutoring-calendar-icon\"></svg-icon>\n" +
     "            </div>\n" +
     "        </div>\n" +
     "    </div>\n" +
@@ -978,27 +920,6 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "        </call-btn>\n" +
     "    </div>\n" +
     "</div>\n" +
-    "");
-  $templateCache.put("components/eTutoring/components/eTutoringContactUs/eTutoringContactUs.template.html",
-    "<md-dialog ng-cloak class=\"e-tutoring-contact-us-modal\" translate-namespace=\"E_TUTORING_CONTACT_US\">\n" +
-    "    <md-toolbar>\n" +
-    "        <div class=\"close-popup-wrap\" ng-click=\"vm.closeDialog()\">\n" +
-    "            <svg-icon name=\"etutoring-close-icon\"></svg-icon>\n" +
-    "        </div>\n" +
-    "    </md-toolbar>\n" +
-    "    <md-dialog-content ng-switch=\"!!vm.showSuccess\">\n" +
-    "\n" +
-    "        <md-progress-circular ng-if=\"vm.showSpinner\" class=\"md-accent spinner\" md-mode=\"indeterminate\" md-diameter=\"70\"></md-progress-circular>\n" +
-    "        <div class=\"calendly-inline-widget\" data-url=\"https://calendly.com/zinkerz-zoe/consultation-with-zinkerz\"></div>\n" +
-    "    </md-dialog-content>\n" +
-    "    <div class=\"top-icon-wrap\">\n" +
-    "        <div class=\"top-icon\">\n" +
-    "            <div class=\"round-icon-wrap\">\n" +
-    "                <svg-icon name=\"etutoring-calendar-icon\"></svg-icon>\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "</md-dialog>\n" +
     "");
   $templateCache.put("components/eTutoring/components/etutoringStudentNavigationPane/etutoringStudentNavigationPane.template.html",
     "<div class=\"etutoring-student-navigation-pane\"\n" +
