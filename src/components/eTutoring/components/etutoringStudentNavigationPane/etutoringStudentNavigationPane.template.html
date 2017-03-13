@@ -53,7 +53,7 @@
                 </div>
                 <div class="module-details">
                     <div class="module-name">{{assignContent.name | cutString: 25}}</div>
-                    <div class="subject-name">{{subjectsMap[assignContent.subjectId].val }}</div>
+                    <div class="subject-name" translate="SUBJECTS.{{assignContent.subjectId}}"></div>
                     <span class="assigned-date">{{assignContent.assignDate | date : 'MMM d'}}</span>
                     <span class="due-date"
                           translate="{{dueDateUtility.isDueDatePass(assignContent.assignDate + dueDateUtility.SEVEN_DAYS_IN_MS).passDue ? '.OVERDUE' : '.DUE_IN'}}"

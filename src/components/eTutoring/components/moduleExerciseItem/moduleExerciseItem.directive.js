@@ -22,8 +22,10 @@
 
                     if (scope.activeViewObj.view === ETutoringViewsConst.PRACTICE) {
                         scope.exerciseParentId = scope.module.guid;
-                        ETutoringService.getIconNameByCategoryId(scope.exercise.categoryId).then(function (className) {
-                            scope.assignmentIconName = className;
+                        ETutoringService.getSubjectDataByExercise(scope.exercise).then(function (subjectData) {
+                            scope.subjectIcon = subjectData.iconName;
+                            scope.svgWrapperClassName = subjectData.className;
+                            scope.subjectId = subjectData.subjectId;
                         });
                     }
 

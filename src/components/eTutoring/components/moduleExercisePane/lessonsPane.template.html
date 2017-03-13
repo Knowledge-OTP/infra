@@ -4,7 +4,7 @@
         <div class="subject-icon">
             <svg-icon name="{{svgIcon}}"></svg-icon>
         </div>
-        <div class="subject-name">{{subjectEnumMap[module.subjectId]}}</div>
+        <div class="subject-name" translate="SUBJECTS.{{module.subjectId}}"></div>
         <div class="separator"></div>
         <div class="module-desc">{{module.desc}}</div>
         <div class="exercises-box base-border-radius" ng-switch on="module.contentAssign">
