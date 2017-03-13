@@ -7,10 +7,10 @@
 
 (function (angular) {
     'use strict';
-
     angular.module('znk.infra.scroll').directive('znkScroll', [
         '$log', '$window', '$timeout', '$interpolate',
         function ($log, $window, $timeout, $interpolate) {
+            var child;
             function setElementTranslateX(element,val,isOffset,minVal,maxVal){
                 var domElement = angular.isArray(element) ? element[0] : element;
                 var newTranslateX = val;
@@ -28,14 +28,11 @@
                 }
                 minVal = angular.isUndefined(minVal) ? -Infinity : minVal;
                 maxVal = angular.isUndefined(maxVal) ? Infinity : maxVal;
-
                 newTranslateX = Math.max(newTranslateX,minVal);
                 newTranslateX = Math.min(newTranslateX,maxVal);
-
                 var newTransformValue = 'translateX(' + newTranslateX + 'px)';
                 setCssPropery(domElement,'transform',newTransformValue);
             }
-
             function setCssPropery(element,prop,value){
                 var domElement = angular.isArray(element) ? element[0] : element;
                 if(value === null){
@@ -44,31 +41,24 @@
                     domElement.style[prop] = value;
                 }
             }
-
             function getElementWidth(element){
                 var domElement = angular.isArray(element) ? element[0] : element;
-
                 var domElementStyle  = $window.getComputedStyle(domElement);
                 var domElementMarginRight = +domElementStyle.marginRight.replace('px','');
                 var domElementMarginLeft = +domElementStyle.marginLeft.replace('px','');
                 return domElement .offsetWidth + domElementMarginRight + domElementMarginLeft;
             }
-
             return {
                 restrict: 'E',
                 compile: function(element){
                     var domElement = element[0];
-
                     var currMousePoint;
                     var containerWidth;
                     var childWidth;
-
                     var WHEEL_MOUSE_EVENT = 'wheel';
-
                     function mouseMoveEventHandler(evt){
                         //$log.debug('mouse move',evt.pageX);
                         var xOffset = evt.pageX - currMousePoint.x;
-
                         currMousePoint.x = evt.pageX;
                         currMousePoint.y = evt.pageY;
                         moveScroll(xOffset,containerWidth,childWidth);
@@ -87,55 +77,40 @@
                     }
                     function mouseDownHandler(evt){
                         //$log.debug('mouse down',evt.pageX);
-
-                        var child = domElement.children[0];
                         if(!child){
                             return;
                         }
-
                         containerWidth = domElement.offsetWidth;
                         childWidth = getElementWidth(child);
-
                         currMousePoint = {
                             x: evt.pageX,
                             y: evt.pageY
                         };
-
-
                         document.addEventListener('mousemove',mouseMoveEventHandler);
-
                         document.addEventListener('mouseup',mouseUpEventHandler);
                     }
-                    domElement.addEventListener('mousedown',mouseDownHandler);
-
                     function moveScroll(xOffset, containerWidth, childWidth/*,yOffset*/){
                         var minTranslateX = Math.min(containerWidth - childWidth,0);
                         var maxTranslateX = 0;
-                        var child = domElement.children[0];
-
                         if(!child.style.transform){
                             setElementTranslateX(child,0,false,false,minTranslateX,maxTranslateX);
                         }
-
                         setElementTranslateX(child,xOffset,true,minTranslateX,maxTranslateX);
                     }
-
                     function setScrollPos(scrollX){
                         var containerWidth = domElement.offsetWidth;
-                        var child = domElement.children[0];
                         var childWidth = getElementWidth(child);
                         var minTranslateX = Math.min(containerWidth - childWidth,0);
                         var maxTranslateX = 0;
                         setElementTranslateX(child,scrollX,false,minTranslateX,maxTranslateX);
                     }
-
                     return {
-                        pre: function(scope,element,attrs){
-                            var child = domElement.children[0];
+                        post: function(scope,element,attrs){
+                            element[0].addEventListener('mousedown',mouseDownHandler);
+                            child = element[0].children[0];
                             if(child){
                                 setElementTranslateX(child,0);
                             }
-
                             var scrollOnMouseWheel = $interpolate(attrs.scrollOnMouseWheel || '')(scope) !== 'false';
                             var containerWidth,childWidth;
                             function mouseWheelEventHandler(evt){
@@ -157,13 +132,11 @@
                                 domElement.addEventListener('mouseenter',mouseEnterEventHandler);
                                 domElement.addEventListener('mouseleave',mouseUpEventHandler);
                             }
-
                             if(attrs.actions){
                                 if(angular.isUndefined(scope.$eval(attrs.actions))){
                                     scope.$eval(attrs.actions + '={}');
                                 }
                                 var actions = scope.$eval(attrs.actions);
-
                                 actions.animate = function(scrollTo,transitionDuration,transitionTimingFunction){
                                     if(transitionDuration && transitionTimingFunction){
                                         var transitionPropVal = 'transform ' + transitionDuration + 'ms ' + transitionTimingFunction;
@@ -176,7 +149,6 @@
                                     },transitionDuration,false);
                                 };
                             }
-
                             scope.$on('$destroy',function(){
                                 document.removeEventListener('mousemove',mouseMoveEventHandler);
                                 document.removeEventListener('mouseup',mouseUpEventHandler);
@@ -187,11 +159,8 @@
                             });
                         }
                     };
-
                 }
             };
         }
     ]);
-
 })(angular);
-
