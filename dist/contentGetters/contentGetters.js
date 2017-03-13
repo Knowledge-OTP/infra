@@ -187,7 +187,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             if (categoryEnum.LEVEL2.enum === category.typeId) {
                 return category;
             }
-            return self.getCategoryLevel2ParentSync(categoryId);
+            return self.getCategoryLevel2ParentSync(category.parentId);
         };
 
         self.getCategoryLevel2Parent = function (categoryId) {
@@ -243,6 +243,6 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         };
     }]);
 
-angular.module('znk.infra.contentGetters').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.contentGetters').run(['$templateCache', function($templateCache) {
 
 }]);
