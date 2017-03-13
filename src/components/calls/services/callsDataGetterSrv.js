@@ -36,7 +36,7 @@
 
             function _getCallsRequests(uid, path) {
                 return _getStorage().then(function(storage){
-                    var currUserCallsDataPath = path ? path : ENV.firebaseAppScopeName + '/users/' + uid + '/calls';
+                    var currUserCallsDataPath = path ? path : ENV.firebaseAppScopeName + '/users/' + uid + '/calls/active';
                     return storage.get(currUserCallsDataPath);
                 }).catch(function(err){
                     $log.error('Error in _getStorage', err);
@@ -55,14 +55,20 @@
             }
 
             this.getCallsDataPath = function (guid) {
-                var SCREEN_SHARING_ROOT_PATH = 'calls';
-                return SCREEN_SHARING_ROOT_PATH + '/' + guid;
+                var CALLS_ROOT_PATH = 'calls';
+                return CALLS_ROOT_PATH + '/' + guid;
             };
 
             this.getCallsRequestsPath  = function (uid, isTeacher) {
                 var appName = isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
                 var USER_DATA_PATH = appName  + '/users/' + uid;
-                return USER_DATA_PATH + '/calls';
+                return USER_DATA_PATH + '/calls/active';
+            };
+
+            this.getCallsArchivePath  = function (uid, isTeacher) {
+                var appName = isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
+                var USER_DATA_PATH = appName  + '/users/' + uid;
+                return USER_DATA_PATH + '/calls/archive';
             };
 
             this.getCallsData = function (callsGuid) {
@@ -91,8 +97,8 @@
             };
 
             this.getReceiverCallsData = function (receiverId, isTeacherApp) {
-                var receiverPath = self.getCallsRequestsPath(receiverId, !isTeacherApp);
-                return _getCallsRequests(receiverId, receiverPath).then(function(receiverCallsRequests){
+                var receiverActivePath = self.getCallsRequestsPath(receiverId, !isTeacherApp);
+                return _getCallsRequests(receiverId, receiverActivePath).then(function(receiverCallsRequests){
                     return _getCallsDataMap(receiverCallsRequests);
                 });
             };
