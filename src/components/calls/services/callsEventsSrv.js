@@ -122,7 +122,7 @@
                     UserProfileService.getCurrUserId().then(function (currUid) {
                         InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
                             var appName = ENV.firebaseAppScopeName;
-                            var userCallsPath = appName + '/users/' + currUid + '/calls';
+                            var userCallsPath = appName + '/users/' + currUid + '/calls/active';
                             globalStorage.onEvent(StorageSrv.EVENTS.VALUE, userCallsPath, function (userCallsData) {
                                 var prom = $q.when(false);
                                 if (!isInitialize && userCallsData) {
