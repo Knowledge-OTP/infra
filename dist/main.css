@@ -1535,6 +1535,12 @@ etutoring-student-navigation-pane .etutoring-student-navigation-pane {
       padding: 0 35px;
       box-sizing: border-box; }
 
+etutoring-student-navigation-pane .etutoring-student-navigation-pane.practice-pane .modules-wrap .modules-container .module-item .module-details .module-name {
+  margin-bottom: 20px; }
+
+etutoring-student-navigation-pane .etutoring-student-navigation-pane.practice-pane .modules-wrap .modules-container .module-item .module-details .subject-name {
+  display: none; }
+
 md-dialog.e-tutoring-contact-us-modal {
   overflow: visible;
   min-width: 90%;
