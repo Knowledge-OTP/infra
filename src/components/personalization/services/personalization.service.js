@@ -6,12 +6,14 @@
             function ($q,StatsSrv,$log, StorageRevSrv, ExerciseResultSrv) {
                 'ngInject';
 
+                var self = this;
+
                 this.getPersonalizationData = function () {
                     return _getPersonalizationData();
                 };
 
-                this.getExamOrder = function () {
-                    return _getPersonalizationData().then(function (personalizationData) {
+                self.getExamOrder = function () {
+                    return self.getPersonalizationData().then(function (personalizationData) {
                         var errorMsg = 'PersonalizationSrv getExamOrder: personalization.examOrder is not array or empty!';
                         if (!angular.isArray(personalizationData.examOrder) || personalizationData.examOrder.length === 0) {
                             $log.error(errorMsg);
@@ -22,7 +24,7 @@
                 };
 
                 // For WorkoutPersonalization.Service.js, replace the following function:
-                this.getPersonalizedExercise = function (subjectsToIgnore, workoutOrder, exerciseTypesToIgnore) {
+                self.getPersonalizedExercise = function (subjectsToIgnore, workoutOrder, exerciseTypesToIgnore) {
                     if (angular.isUndefined(subjectsToIgnore) && !angular.isNumber(subjectsToIgnore)) {
                         subjectsToIgnore = [];
                     }
@@ -43,7 +45,7 @@
                         return _generateExercisesForAllTimes(availableExercises, availableStats, subjectsToIgnore, exerciseTypesToIgnore);
                     });
                 };
-                this.getAvailableExercises = function (includeInProgress) {
+                self.getAvailableExercises = function (includeInProgress) {
                     return _getAvailableExercises(includeInProgress);
                 };
                 /* _generateExercisesForAllTimes
@@ -334,7 +336,7 @@
                 }
 
                 function _getAvailableExercises(includeInProgress) {
-                    var getAllExercisesProm = _getPersonalizationData();
+                    var getAllExercisesProm = self.getPersonalizationData();
                     var getUsedExercisesProm = ExerciseResultSrv.getExercisesStatusMap();
                     return $q.all([
                         getAllExercisesProm,
