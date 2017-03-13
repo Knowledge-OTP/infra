@@ -1556,6 +1556,9 @@ md-dialog.e-tutoring-contact-us-modal {
       width: 14px;
       padding: 10px;
       cursor: pointer; }
+      md-dialog.e-tutoring-contact-us-modal md-toolbar .close-popup-wrap .etutoring-close-icon {
+        stroke: #ffffff;
+        stroke-width: 8px; }
   md-dialog.e-tutoring-contact-us-modal md-dialog-content {
     background-color: #ffffff;
     padding-top: 25px;
@@ -1623,9 +1626,9 @@ md-dialog.e-tutoring-contact-us-modal {
             justify-content: center;
         -ms-flex-align: center;
             align-items: center; }
-        md-dialog.e-tutoring-contact-us-modal .top-icon-wrap .top-icon .round-icon-wrap .calendar-icon {
+        md-dialog.e-tutoring-contact-us-modal .top-icon-wrap .top-icon .round-icon-wrap .etutoring-calendar-icon {
           stroke: #ffffff; }
-        md-dialog.e-tutoring-contact-us-modal .top-icon-wrap .top-icon .round-icon-wrap .calendar-icon * {
+        md-dialog.e-tutoring-contact-us-modal .top-icon-wrap .top-icon .round-icon-wrap .etutoring-calendar-icon * {
           fill: #ffffff;
           width: 35px;
           height: 35px; }
@@ -1821,68 +1824,67 @@ module-exercise-item .module-part {
   module-exercise-item .module-part.in-progress .children-count-wrap .completed-exercise-summary {
     display: none; }
   module-exercise-item .module-part.completed {
-    box-shadow: none; }
-    module-exercise-item .module-part.completed:not(.is-lecture) {
-      background: #fafafa; }
-      module-exercise-item .module-part.completed:not(.is-lecture) .icon-wrap {
+    box-shadow: none;
+    background: #fafafa; }
+    module-exercise-item .module-part.completed:not(.is-lecture) .icon-wrap {
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-pack: center;
+          justify-content: center; }
+    module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .children-count {
+      display: none; }
+    module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .questions-progress {
+      display: none; }
+    module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary {
+      width: 100%;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-pack: distribute;
+          justify-content: space-around; }
+      module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat {
         display: -ms-flexbox;
         display: flex;
-        -ms-flex-pack: center;
-            justify-content: center; }
-      module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .children-count {
-        display: none; }
-      module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .questions-progress {
-        display: none; }
-      module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary {
-        width: 100%;
-        display: -ms-flexbox;
-        display: flex;
-        -ms-flex-pack: distribute;
-            justify-content: space-around; }
-        module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat {
-          display: -ms-flexbox;
-          display: flex;
-          -ms-flex-direction: row;
-              flex-direction: row; }
-          module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat {
-            width: 24px;
-            height: 24px;
-            border-radius: 12px;
-            border-width: 1px;
-            border-style: solid;
-            font-size: 14px;
-            color: #4f4d4d;
-            font-family: Lato;
-            font-weight: 200;
-            display: -ms-flexbox;
-            display: flex;
-            -ms-flex-pack: center;
-                justify-content: center;
-            -ms-flex-align: center;
-                align-items: center;
-            margin-right: 5px; }
-            module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat.correct {
-              border-color: #87ca4d;
-              color: #87ca4d; }
-            module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat.wrong {
-              border-color: #ff6766;
-              color: #ff6766; }
-            module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat.unanswered {
-              border-color: #acacac;
-              color: #acacac; }
-        module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .practice-questions-stat {
+        -ms-flex-direction: row;
+            flex-direction: row; }
+        module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat {
+          width: 24px;
+          height: 24px;
+          border-radius: 12px;
+          border-width: 1px;
+          border-style: solid;
           font-size: 14px;
-          color: #757a83;
-          font-family: Lato;
-          font-weight: 400; }
-          module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .practice-questions-stat .text {
-            margin-left: 3px; }
-        module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-time {
-          margin: auto 0;
-          font-size: 12px;
           color: #4f4d4d;
           font-family: Lato;
-          font-weight: 200; }
+          font-weight: 200;
+          display: -ms-flexbox;
+          display: flex;
+          -ms-flex-pack: center;
+              justify-content: center;
+          -ms-flex-align: center;
+              align-items: center;
+          margin-right: 5px; }
+          module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat.correct {
+            border-color: #87ca4d;
+            color: #87ca4d; }
+          module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat.wrong {
+            border-color: #ff6766;
+            color: #ff6766; }
+          module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat.unanswered {
+            border-color: #acacac;
+            color: #acacac; }
+      module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .practice-questions-stat {
+        font-size: 14px;
+        color: #757a83;
+        font-family: Lato;
+        font-weight: 400; }
+        module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .practice-questions-stat .text {
+          margin-left: 3px; }
+      module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-time {
+        margin: auto 0;
+        font-size: 12px;
+        color: #4f4d4d;
+        font-family: Lato;
+        font-weight: 200; }
   module-exercise-item .module-part:disabled {
     box-shadow: none;
     background: #fafafa; }
@@ -1939,30 +1941,6 @@ module-exercise-item .tooltip {
     background: #ffffff;
     border-bottom: 1px solid rgba(0, 0, 0, 0.25);
     border-left: 1px solid rgba(0, 0, 0, 0.25); }
-
-module-exercise-item .reading-icon, module-exercise-item .essay-icon, module-exercise-item .writing-icon, module-exercise-item .calculator-icon {
-  width: 23px;
-  height: 23px; }
-
-module-exercise-item .reading-icon svg path, module-exercise-item .essay-icon svg path {
-  fill: #acacac; }
-
-module-exercise-item .writing-icon svg path, module-exercise-item .calculator-icon svg path {
-  fill: #ffffff;
-  stroke: #acacac;
-  stroke-width: 8px; }
-
-module-exercise-item .calculator-icon.math-no-calc {
-  position: relative; }
-
-module-exercise-item .math-no-calc::before {
-  content: '';
-  position: absolute;
-  top: calc(50% - 2px);
-  width: 100%;
-  height: 2px;
-  transform: rotate(45deg);
-  background-color: #acacac; }
 
 .ng-include-module-exercise-pane {
   height: 100%; }
@@ -2211,8 +2189,7 @@ module-exercise-item .math-no-calc::before {
   -ms-flex-direction: column;
       flex-direction: column; }
   .app-e-tutoring.blurred-overlay {
-    -webkit-filter: blur(3px);
-            filter: blur(3px);
+    filter: blur(3px);
     opacity: 0.3; }
   .app-e-tutoring .e-tutoring-main-container {
     display: -ms-flexbox;

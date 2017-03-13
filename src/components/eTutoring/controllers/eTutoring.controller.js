@@ -29,7 +29,7 @@
                 $mdDialog.show({
                     controller: 'ETutoringContactUsController',
                     controllerAs: 'vm',
-                    templateUrl: 'app/eTutoring/components/eTutoringContactUs/eTutoringContactUs.template.html',
+                    templateUrl: 'components/eTutoring/components/eTutoringContactUs/eTutoringContactUs.template.html',
                     clickOutsideToClose: false,
                     onComplete: function (scope) {
                         var script = $window.document.createElement('script');
