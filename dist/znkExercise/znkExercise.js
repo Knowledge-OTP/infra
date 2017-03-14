@@ -2055,6 +2055,14 @@
                                     setPagerItemBookmarkStatus(i, question.__questionStatus.bookmark);
                                     setPagerItemAnswerClassValidAnswerWrapper(question, i);
                                 }
+
+                                var parentDomElementWidth = domElement.parentElement.offsetWidth;
+                                var containerCenter = parentDomElementWidth / 2;
+                                var activeItem = domElement.querySelectorAll('.current')[0];
+                                var centerAlignment = activeItem.offsetWidth / 2;
+                                var scrollActiveItem = activeItem.offsetLeft + centerAlignment;
+                                var offset = containerCenter - scrollActiveItem + 300;
+                                scope.scrollActions.animate(offset, 100, 'ease-in-out');
                             });
                         };
 
@@ -3772,7 +3780,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</znk-exercise-tool-box>\n" +
     "");
   $templateCache.put("components/znkExercise/core/template/znkExercisePagerDrv.html",
-    "<znk-scroll>\n" +
+    "<znk-scroll actions=\"scrollActions\">\n" +
     "    <div class=\"pager-items-wrapper\">\n" +
     "        <div class=\"pager-item noselect\"\n" +
     "             ng-repeat=\"question in questions\"\n" +
