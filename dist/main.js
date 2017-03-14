@@ -15560,11 +15560,10 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 }
 
                                 var parentDomElementWidth = domElement.parentElement.offsetWidth;
-                                var containerCenter = parentDomElementWidth / 2;
                                 var activeItem = domElement.querySelectorAll('.current')[0];
                                 var centerAlignment = activeItem.offsetWidth / 2;
                                 var scrollActiveItem = activeItem.offsetLeft + centerAlignment;
-                                var offset = containerCenter - scrollActiveItem + 300;
+                                var offset = parentDomElementWidth - 210 - scrollActiveItem;
                                 scope.scrollActions.animate(offset, 100, 'ease-in-out');
                             });
                         };
