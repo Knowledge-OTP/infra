@@ -15609,7 +15609,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseToolBox',
-        function () {
+        ["ZnkExerciseViewModeEnum", function (ZnkExerciseViewModeEnum) {
             'ngInject';
 
             return {
@@ -15638,10 +15638,15 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 link: {
                     pre: function(scope, element, attrs, znkExerciseCtrl){
                         scope.$ctrl.znkExerciseCtrl = znkExerciseCtrl;
+
+                        // hide toolbox when viewing 'diagnostic' page.
+                        if (ZnkExerciseViewModeEnum.MUST_ANSWER.enum === znkExerciseCtrl.getViewMode()) {
+                            element[0].style.display ="none";
+                        }
                     }
                 }
             };
-        }
+        }]
     );
 })(angular);
 
