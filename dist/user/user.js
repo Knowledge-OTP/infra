@@ -3,85 +3,104 @@
 
     angular.module('znk.infra.user', [
         'znk.infra.config',
-        'znk.infra.storage'
+        'znk.infra.storage',
+        'znk.infra.auth'
     ]);
 })(angular);
 
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
-    ["InfraConfigSrv", "StorageSrv", function (InfraConfigSrv, StorageSrv) {
+    ["$q", "ENV", function ($q, ENV) {
         'ngInject';
-        var profilePath = StorageSrv.variables.appUserSpacePath + '/profile';
+
+        var _this = this;
+        var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
+        var refAuthDB = new Firebase(ENV.fbGlobalEndPoint);
 
         this.getProfile = function () {
-            return InfraConfigSrv.getGlobalStorage().then(function(globalStorage) {
-                return globalStorage.get(profilePath).then(function (profile) {
-                    if (profile && (angular.isDefined(profile.email) || angular.isDefined(profile.nickname))) {
-                        return profile;
+            var authData = rootRef.getAuth();
+            var profilePath = 'users/' + authData.uid + '/profile';
+            return refAuthDB.child(profilePath).once('value').then(function (snapshot) {
+                var profile = snapshot.val();
+                if (profile && (angular.isDefined(profile.email) || angular.isDefined(profile.nickname))) {
+                    return profile;
+                } else {
+                    var emailFromAuth = authData.auth ? authData.auth.email : authData.password ? authData.password.email : '';
+                    var nickNameFromAuth = authData.auth.name ? authData.auth.name : nickNameFromEmail(emailFromAuth);
+
+                    if (!profile) {
+                        profile = {
+                            email: emailFromAuth,
+                            nickname: nickNameFromAuth,
+                            createdTime: Firebase.ServerValue.TIMESTAMP
+                        };
                     }
-                    return InfraConfigSrv.getUserData().then(function(authData) {
-                        var emailFromAuth = authData.password ? authData.password.email : '';
-                        var nickNameFromAuth = authData.auth ? authData.auth.name : emailFromAuth;
+                    if (!profile.email) {
+                        profile.email = emailFromAuth;
+                    }
+                    if (!profile.nickname) {
+                        profile.nickname = nickNameFromAuth;
+                    }
+                    if (!profile.createdTime) {
+                        profile.createdTime = Firebase.ServerValue.TIMESTAMP;
+                    }
 
-                        if (!profile.email) {
-                            profile.email = emailFromAuth;
-                        }
-                        if (!profile.nickname) {
-                            profile.nickname = nickNameFromAuth;
-                        }
-                        if (!profile.createdTime) {
-                            profile.createdTime = StorageSrv.variables.currTimeStamp;
-                        }
-
-                        return globalStorage.set(profilePath, profile);
-                    });
-                });
+                    _this.setProfile(profile);
+                    return profile;
+                }
             });
         };
 
         this.getProfileByUserId = function (userId) {
             var userProfilePath = 'users/' + userId + '/profile';
-            return InfraConfigSrv.getGlobalStorage().then(function(globalStorage) {
-                return globalStorage.get(userProfilePath);
+            return refAuthDB.child(userProfilePath).once('value').then(function (snapshot) {
+                return snapshot.val();
             });
         };
 
         this.setProfile = function (newProfile) {
-            return InfraConfigSrv.getGlobalStorage().then(function(globalStorage) {
-                return globalStorage.set(profilePath, newProfile);
+            var authData = rootRef.getAuth();
+            var profilePath = 'users/' + authData.uid + '/profile';
+            return refAuthDB.child(profilePath).once('value').then(function (snapshot) {
+                var profile = snapshot.val();
+                return profile ? refAuthDB.child(profilePath).update(newProfile) : refAuthDB.child(profilePath).set(newProfile);
             });
+
         };
 
         this.getCurrUserId = function(){
-            return InfraConfigSrv.getGlobalStorage().then(function(GlobalStorage){
-                var ref = GlobalStorage.adapter.getRef('');
-                var authData = ref.getAuth();
-                return authData && authData.uid;
-            });
+            var authData = rootRef.getAuth();
+            return $q.when(authData.uid);
         };
 
         this.updateUserTeachWorksId = function(uid, userTeachWorksId){
-            return InfraConfigSrv.getGlobalStorage().then(function(GlobalStorage){
-                var path = 'users/' + uid + '/teachworksId';
-                return GlobalStorage.update(path, userTeachWorksId);
+            var path = 'users/' + uid + '/teachworksId';
+            return refAuthDB.child(path).once('value').then(function (snapshot) {
+                var teachWorksId = snapshot.val();
+                return teachWorksId ? refAuthDB.child(path).update(userTeachWorksId) : refAuthDB.child(path).set(userTeachWorksId);
             });
         };
 
         this.getUserTeachWorksId = function(uid){
-            return InfraConfigSrv.getGlobalStorage().then(function(GlobalStorage){
-                var path = 'users/' + uid + '/teachworksId';
-                return GlobalStorage.get(path);
+            var path = 'users/' + uid + '/teachworksId';
+            return refAuthDB.child(path).once('value').then(function (snapshot) {
+                return snapshot.val();
             });
         };
 
         this.getUserName = function(uid){
             var path = 'users/' + uid + '/profile/nickname';
-
-            return InfraConfigSrv.getGlobalStorage().then(function(globalStorage){
-                return globalStorage.get(path);
+            return refAuthDB.child(path).once('value').then(function (snapshot) {
+                return snapshot.val();
             });
         };
+
+        function nickNameFromEmail(email) {
+            if (email){
+                return email.split('@')[0];
+            }
+        }
 }]);
 
 (function (angular) {
@@ -100,6 +119,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                 'ngInject';// jshint ignore:line
 
                 var initProm,lastSessionData;
+                var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
 
                 var UserSessionSrv = {};
 
@@ -114,16 +134,15 @@ angular.module('znk.infra.user').service('UserProfileService',
                 };
 
                 function init() {
-                    return InfraConfigSrv.getUserData().then(function (userData) {
-                        var globalLastSessionRef = new Firebase(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
-                        return globalLastSessionRef.once('value').then(function(snapshot){
-                            lastSessionData = snapshot.val();
-                            if(!isLastSessionRecordDisabled){
-                                globalLastSessionRef.child('began').set(Firebase.ServerValue.TIMESTAMP);
-                                globalLastSessionRef.child('ended').set(null);
-                                globalLastSessionRef.child('ended').onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
-                            }
-                        });
+                    var userData = rootRef.getAuth();
+                    var globalLastSessionRef = new Firebase(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
+                    return globalLastSessionRef.once('value').then(function(snapshot){
+                        lastSessionData = snapshot.val();
+                        if(!isLastSessionRecordDisabled){
+                            globalLastSessionRef.child('began').set(Firebase.ServerValue.TIMESTAMP);
+                            globalLastSessionRef.child('ended').set(null);
+                            globalLastSessionRef.child('ended').onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
+                        }
                     });
                 }
                 initProm = init();

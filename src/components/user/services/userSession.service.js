@@ -14,6 +14,7 @@
                 'ngInject';// jshint ignore:line
 
                 var initProm,lastSessionData;
+                var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
 
                 var UserSessionSrv = {};
 
@@ -28,16 +29,15 @@
                 };
 
                 function init() {
-                    return InfraConfigSrv.getUserData().then(function (userData) {
-                        var globalLastSessionRef = new Firebase(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
-                        return globalLastSessionRef.once('value').then(function(snapshot){
-                            lastSessionData = snapshot.val();
-                            if(!isLastSessionRecordDisabled){
-                                globalLastSessionRef.child('began').set(Firebase.ServerValue.TIMESTAMP);
-                                globalLastSessionRef.child('ended').set(null);
-                                globalLastSessionRef.child('ended').onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
-                            }
-                        });
+                    var userData = rootRef.getAuth();
+                    var globalLastSessionRef = new Firebase(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
+                    return globalLastSessionRef.once('value').then(function(snapshot){
+                        lastSessionData = snapshot.val();
+                        if(!isLastSessionRecordDisabled){
+                            globalLastSessionRef.child('began').set(Firebase.ServerValue.TIMESTAMP);
+                            globalLastSessionRef.child('ended').set(null);
+                            globalLastSessionRef.child('ended').onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
+                        }
                     });
                 }
                 initProm = init();
