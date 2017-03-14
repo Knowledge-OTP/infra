@@ -3501,6 +3501,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
 
         var categoryMapObj;
         var self = this;
+        var USER_SELECTED_TEST_LEVEL_PATH = StorageSrv.variables.appUserSpacePath + '/selectedTestLevel';
 
         var categoryEnumMap = categoryEnum.getEnumMap();
 
@@ -3652,11 +3653,17 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         })();
 
         self.getUserSelectedLevel1Category = function () {
-            var USER_SELECTED_TEST_LEVEL_PATH = StorageSrv.variables.appUserSpacePath + '/selectedTestLevel';
             return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                 return StudentStorageSrv.get(USER_SELECTED_TEST_LEVEL_PATH);
             }).catch(function (err) {
                 $log.debug('CategoryService: getUserSelectedLevel1Category failed to get data', err);
+            });
+        };
+        self.setUserSelectedLevel1Category = function (selectedTestLevel) {
+            return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
+                return StudentStorageSrv.set(USER_SELECTED_TEST_LEVEL_PATH, selectedTestLevel);
+            }).catch(function (err) {
+                $log.debug('CategoryService: setUserSelectedLevel1Category failed to set data', err);
             });
         };
     }]);
