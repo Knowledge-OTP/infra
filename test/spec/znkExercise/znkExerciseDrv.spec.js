@@ -2,7 +2,7 @@ describe('testing directive "znkExerciseDrv":', function () {
     'use strict';
 
     // Load  the module, which contains the directive
-    beforeEach(module('znk.infra.znkExercise', 'htmlTemplates', 'analytics.mock'));
+    beforeEach(module('znk.infra.znkExercise', 'htmlTemplates', 'analytics.mock', 'user.mock'));
 
     beforeEach(function () {
         module(function ($provide) {
@@ -33,12 +33,12 @@ describe('testing directive "znkExerciseDrv":', function () {
         }
     ]));
 
-    var time, actions = {};    
+    var time, actions = {};
     beforeEach(function () {
         time = 0;
         Date.now = function () {
             return time;
-        }; 
+        };
     });
 
     actions.addTime = function (newTime) {
@@ -48,7 +48,7 @@ describe('testing directive "znkExerciseDrv":', function () {
     actions.setTime = function (newTime) {
         time = newTime;
     };
-    
+
     function createDirectiveHtml($scope, content, scopeSettings, scopeAnswers) {
         if (!$scope) {
             $scope = $rootScope.$new();
@@ -354,17 +354,17 @@ describe('testing directive "znkExerciseDrv":', function () {
         var scopeContent = createDirectiveHtml(null, null, null, [{ questionId: 1 }]);
         var scope = scopeContent.scope;
         actions.addTime(5000);
-        scope.$destroy();   
+        scope.$destroy();
         expect(scope.d.answers[0].timeSpent).toBe(5000);
     });
-    
+
     it('when the user swipe to another question then save the timeSpent of the current question and other question should be init with 0', function () {
         // initial answer without userAnswer beacause otherwise will not update
         var scopeContent = createDirectiveHtml(null, null, null, [{ questionId: 1 }, { questionId: 2 }]);
         var scope = scopeContent.scope;
         var content = scopeContent.content;
         actions.setTime(5000);
-        content.setCurrentIndex(1);   
+        content.setCurrentIndex(1);
         expect(scope.d.answers[0].timeSpent).toBe(5000);
         expect(scope.d.answers[1].timeSpent).toBe(0);
    });
@@ -375,14 +375,14 @@ describe('testing directive "znkExerciseDrv":', function () {
         var scope = scopeContent.scope;
         var content = scopeContent.content;
         actions.addTime(5000);
-        content.setCurrentIndex(1);   
+        content.setCurrentIndex(1);
         actions.addTime(5000);
-        content.setCurrentIndex(0); 
+        content.setCurrentIndex(0);
         actions.addTime(10000);
         scope.d.actions.finishExercise();
         expect(scope.d.answers[0].timeSpent).toBe(15000);
    });
-    
+
    it('when the user answer the question save to time spent', function () {
         var scopeContent = createDirectiveHtml();
         var scope = scopeContent.scope;
@@ -391,7 +391,7 @@ describe('testing directive "znkExerciseDrv":', function () {
         isolateScope.vm.questionAnswered();
         expect(scope.d.answers[0].timeSpent).toBe(5000);
    });
-    
+
    it('when the user answer the question then do not update anymore', function () {
         // initial answer without userAnswer beacause otherwise will not update
         var scopeContent = createDirectiveHtml(null, null, null, [{ questionId: 1 }, { questionId: 2 }]);
@@ -401,7 +401,7 @@ describe('testing directive "znkExerciseDrv":', function () {
         actions.addTime(5000);
         scope.d.answers[0].userAnswer = 1;
         isolateScope.vm.questionAnswered();
-        content.setCurrentIndex(1);     
+        content.setCurrentIndex(1);
         actions.addTime(5000);
         content.setCurrentIndex(0);
         actions.addTime(5000);
@@ -415,11 +415,11 @@ describe('testing directive "znkExerciseDrv":', function () {
         var content = scopeContent.content;
         var initSpentTime = scope.d.answers[0].timeSpent;
         actions.addTime(5000);
-        content.setCurrentIndex(1); 
+        content.setCurrentIndex(1);
         actions.addTime(5000);
-        content.setCurrentIndex(0); 
+        content.setCurrentIndex(0);
         actions.addTime(5000);
-        scope.$destroy();  
+        scope.$destroy();
         expect(scope.d.answers[0].timeSpent).toBe(initSpentTime);
    });
 
