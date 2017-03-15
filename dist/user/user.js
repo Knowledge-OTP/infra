@@ -14,6 +14,7 @@ angular.module('znk.infra.user').service('UserProfileService',
     ["$q", "ENV", function ($q, ENV) {
         'ngInject';
 
+        var _this = this;
         var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
         var refAuthDB = new Firebase(ENV.fbGlobalEndPoint);
 
@@ -21,7 +22,33 @@ angular.module('znk.infra.user').service('UserProfileService',
             var authData = rootRef.getAuth();
             var profilePath = 'users/' + authData.uid + '/profile';
             return refAuthDB.child(profilePath).once('value').then(function (snapshot) {
-                return snapshot.val();
+                var profile = snapshot.val();
+                if (profile && (angular.isDefined(profile.email) || angular.isDefined(profile.nickname))) {
+                    return profile;
+                } else {
+                    var emailFromAuth = authData.auth ? authData.auth.email : authData.password ? authData.password.email : '';
+                    var nickNameFromAuth = authData.auth.name ? authData.auth.name : nickNameFromEmail(emailFromAuth);
+
+                    if (!profile) {
+                        profile = {
+                            email: emailFromAuth,
+                            nickname: nickNameFromAuth,
+                            createdTime: Firebase.ServerValue.TIMESTAMP
+                        };
+                    }
+                    if (!profile.email) {
+                        profile.email = emailFromAuth;
+                    }
+                    if (!profile.nickname) {
+                        profile.nickname = nickNameFromAuth;
+                    }
+                    if (!profile.createdTime) {
+                        profile.createdTime = Firebase.ServerValue.TIMESTAMP;
+                    }
+
+                    _this.setProfile(profile);
+                    return profile;
+                }
             });
         };
 
@@ -68,6 +95,12 @@ angular.module('znk.infra.user').service('UserProfileService',
                 return snapshot.val();
             });
         };
+
+        function nickNameFromEmail(email) {
+            if (email){
+                return email.split('@')[0];
+            }
+        }
 }]);
 
 (function (angular) {
