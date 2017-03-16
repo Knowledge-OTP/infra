@@ -3,13 +3,20 @@
 
     angular.module('znk.infra.personalization')
         .service('PersonalizationSrv',
-            function ($q,StatsSrv,$log, StorageRevSrv, ExerciseResultSrv) {
+            function ($q, StatsSrv, $log, StorageRevSrv, ExerciseResultSrv) {
                 'ngInject';
 
                 var self = this;
 
+                self.getPersonalizationData = function () {
+                    var data = {
+                        exerciseType: 'personalization'
+                    };
+
+                    return StorageRevSrv.getContent(data);
+                };
                 self.getExamOrder = function () {
-                    return _getPersonalizationData().then(function (personalizationData) {
+                    return self.getPersonalizationData().then(function (personalizationData) {
                         var errorMsg = 'PersonalizationSrv getExamOrder: personalization.examOrder is not array or empty!';
                         if (!angular.isArray(personalizationData.examOrder) || personalizationData.examOrder.length === 0) {
                             $log.error(errorMsg);
@@ -330,7 +337,7 @@
                 }
 
                 function _getAvailableExercises(includeInProgress) {
-                    var getAllExercisesProm = _getPersonalizationData();
+                    var getAllExercisesProm = self.getPersonalizationData();
                     var getUsedExercisesProm = ExerciseResultSrv.getExercisesStatusMap();
                     return $q.all([
                         getAllExercisesProm,
@@ -408,14 +415,6 @@
                         }
                     });
                     return availableExercises;
-                }
-
-                function _getPersonalizationData() {
-                    var data = {
-                        exerciseType: 'personalization'
-                    };
-
-                    return StorageRevSrv.getContent(data);
                 }
             }
         );
