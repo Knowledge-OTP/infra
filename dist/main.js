@@ -11146,15 +11146,14 @@ angular.module('znk.infra.teachers').run(['$templateCache', function($templateCa
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
-    ["$q", "ENV", function ($q, ENV) {
+    ["$q", "ENV", "AuthService", function ($q, ENV, AuthService) {
         'ngInject';
 
         var _this = this;
-        var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
         var refAuthDB = new Firebase(ENV.fbGlobalEndPoint);
 
         this.getProfile = function () {
-            var authData = rootRef.getAuth();
+            var authData = AuthService.getAuth();
             var profilePath = 'users/' + authData.uid + '/profile';
             return refAuthDB.child(profilePath).once('value').then(function (snapshot) {
                 var profile = snapshot.val();
@@ -11195,7 +11194,7 @@ angular.module('znk.infra.user').service('UserProfileService',
         };
 
         this.setProfile = function (newProfile) {
-            var authData = rootRef.getAuth();
+            var authData = AuthService.getAuth();
             var profilePath = 'users/' + authData.uid + '/profile';
             return refAuthDB.child(profilePath).once('value').then(function (snapshot) {
                 var profile = snapshot.val();
@@ -11205,7 +11204,7 @@ angular.module('znk.infra.user').service('UserProfileService',
         };
 
         this.getCurrUserId = function(){
-            var authData = rootRef.getAuth();
+            var authData = AuthService.getAuth();
             return $q.when(authData.uid);
         };
 
