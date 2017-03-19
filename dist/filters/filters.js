@@ -142,6 +142,6 @@
         }
         );
 })();
-angular.module('znk.infra.filters').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.filters').run(['$templateCache', function ($templateCache) {
 
 }]);

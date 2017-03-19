@@ -278,7 +278,7 @@ etutoring-action-bar .e-tutor-bar {
   width: 100%;
   height: 50px;
   margin-bottom: 18px;
-  background: #ffffff;
+  background: #fff;
   display: -ms-flexbox;
   display: flex; }
   etutoring-action-bar .e-tutor-bar .teacher-select-wrap {
@@ -308,7 +308,7 @@ etutoring-action-bar .e-tutor-bar {
       etutoring-action-bar .e-tutor-bar .teacher-select-wrap .teachers-menu .teacher-open-modal-btn {
         text-transform: none;
         font-size: 16px;
-        background: #ffffff;
+        background: #fff;
         width: auto;
         border-radius: 0;
         height: 100%;
@@ -365,7 +365,7 @@ etutoring-action-bar .e-tutor-bar {
       etutoring-action-bar .e-tutor-bar .share-btn-wrap .share-btn.primary {
         background-color: #0a9bad; }
       etutoring-action-bar .e-tutor-bar .share-btn-wrap .share-btn.primary:hover {
-        background-color: #0a8999; }
+        background-color: #a8999; }
       etutoring-action-bar .e-tutor-bar .share-btn-wrap .share-btn[disabled="disabled"] {
         opacity: 0.5;
         color: #ffffff !important; }

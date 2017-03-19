@@ -837,7 +837,7 @@
         }]);
 })(angular);
 
-angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.eTutoring').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/eTutoring/components/etutoringActionBar/etutoringActionBar.template.html",
     "<div class=\"e-tutor-bar base-border-radius base-box-shadow\" translate-namespace=\"E_TUTORING_ACTION_BAR\">\n" +
     "    <div class=\"teacher-select-wrap\" ng-if=\"myTeachers\">\n" +

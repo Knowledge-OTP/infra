@@ -100,7 +100,7 @@ etutoring-action-bar {
 
                 &[disabled="disabled"]{
                     opacity: 0.5;
-                    color: $fcColor2; !important;//overriding material
+                    color: $fcColor2 !important;//overriding material
 
                     &.primary:hover{
                         background: $fcColor5;

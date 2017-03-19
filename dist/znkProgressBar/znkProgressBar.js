@@ -37,7 +37,7 @@
 })(angular);
 
 
-angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkProgressBar').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkProgressBar/znkProgressBar.template.html",
     "<div ng-if=\"::showProgressBubble()\" class=\"progress-bubble-wrapper\" ng-style=\"{left: progressWidth + '%'}\">\n" +
     "    <div class=\"progress-percentage\">\n" +

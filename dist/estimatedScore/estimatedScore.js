@@ -547,6 +547,6 @@
     });
 })(angular);
 
-angular.module('znk.infra.estimatedScore').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.estimatedScore').run(['$templateCache', function ($templateCache) {
 
 }]);
