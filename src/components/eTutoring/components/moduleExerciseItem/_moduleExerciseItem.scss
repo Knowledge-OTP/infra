@@ -123,7 +123,7 @@ module-exercise-item {
 
         &.completed {
             box-shadow: none;
-            background: #fafafa;
+            background: $bgColor13;
             &:not(.is-lecture){
                 .icon-wrap{
                     display: flex;
@@ -194,7 +194,7 @@ module-exercise-item {
 
         &:disabled {
             box-shadow: none;
-            background: #fafafa;
+            background: $bgColor13;
             .exercise-name, .children-count-wrap .children-count .count-content{
                 color: lighten($fcColor9, 20%);
             }

@@ -225,6 +225,6 @@
         }]);
 })(angular);
 
-angular.module('znk.infra.auth').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.auth').run(['$templateCache', function($templateCache) {
 
 }]);

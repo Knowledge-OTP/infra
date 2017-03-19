@@ -1227,7 +1227,7 @@ etutoring-student-navigation-pane .etutoring-student-navigation-pane {
   height: 100%;
   width: 100%;
   position: relative;
-  background: #ffffff;
+  background: #fff;
   overflow: hidden; }
   etutoring-student-navigation-pane .etutoring-student-navigation-pane .navigation-header {
     display: -ms-flexbox;
@@ -1260,7 +1260,7 @@ etutoring-student-navigation-pane .etutoring-student-navigation-pane {
     etutoring-student-navigation-pane .etutoring-student-navigation-pane .navigation-header .practice-button.no-homework {
       pointer-events: none; }
   etutoring-student-navigation-pane .etutoring-student-navigation-pane.lessons-pane .lessons-button, etutoring-student-navigation-pane .etutoring-student-navigation-pane.practice-pane .practice-button {
-    background-color: #ffffff; }
+    background-color: #fff; }
     etutoring-student-navigation-pane .etutoring-student-navigation-pane.lessons-pane .lessons-button ::before, etutoring-student-navigation-pane .etutoring-student-navigation-pane.practice-pane .practice-button ::before {
       width: 100%;
       height: 2px;
@@ -1313,7 +1313,7 @@ etutoring-student-navigation-pane .etutoring-student-navigation-pane {
         border-bottom: 2px solid #f2f2f2;
         border-left: 3px solid #0a9bad;
         cursor: pointer;
-        background-color: #ffffff;
+        background-color: #fff;
         transition: all, 0.2s; }
         etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .md-button.md-default-theme:not([disabled]):hover,
         etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .md-button:not([disabled]):hover {
@@ -1330,19 +1330,7 @@ etutoring-student-navigation-pane .etutoring-student-navigation-pane {
               width: 65%;
               height: 65%; }
               etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper svg-icon svg * {
-                fill: #ffffff; }
-            etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper svg-icon.math-icon {
-              background-color: #AF89D2; }
-            etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper svg-icon.writing-icon {
-              background-color: #F9D41B; }
-            etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper svg-icon.essay-icon {
-              background-color: #FF5895; }
-            etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper svg-icon.reading-icon {
-              background-color: #F9D41B; }
-            etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper svg-icon.mathlvl1-icon {
-              background-color: #8e6fab; }
-            etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper svg-icon.mathlvl2-icon {
-              background-color: #8e6fab; }
+                fill: #fff; }
           etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper .homework-practice-icon svg-icon {
             border: 1px solid #0a9bad; }
             etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper .homework-practice-icon svg-icon svg path {
@@ -1449,7 +1437,7 @@ etutoring-student-navigation-pane .etutoring-student-navigation-pane {
           display: flex;
           line-height: normal; }
           etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-btn:hover {
-            background-color: #FCFCFC; }
+            background-color: #fcfcfc; }
           etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-btn .subject-icon {
             width: 50px;
             height: 76px;
@@ -1462,7 +1450,7 @@ etutoring-student-navigation-pane .etutoring-student-navigation-pane {
               height: 36px;
               border-radius: 36px; }
               etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-btn .subject-icon svg-icon * {
-                fill: #ffffff; }
+                fill: #fff; }
           etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-btn .module-name-wrap {
             height: 76px;
             display: -ms-flexbox;
@@ -1566,7 +1554,7 @@ md-dialog.e-tutoring-contact-us-modal {
         stroke: #ffffff;
         stroke-width: 8px; }
   md-dialog.e-tutoring-contact-us-modal md-dialog-content {
-    background-color: #ffffff;
+    background-color: #fff;
     padding-top: 25px;
     height: 100%;
     border-bottom-right-radius: 20px;
@@ -1598,7 +1586,7 @@ md-dialog.e-tutoring-contact-us-modal {
         left: 12px;
         top: 16px; }
       md-dialog.e-tutoring-contact-us-modal md-dialog-content .auth-form .znk-input-group .locked-icon * {
-        stroke: #CACACA; }
+        stroke: #cacaca; }
       md-dialog.e-tutoring-contact-us-modal md-dialog-content .auth-form .btn-wrap {
         display: -ms-flexbox;
         display: flex;
@@ -1633,9 +1621,9 @@ md-dialog.e-tutoring-contact-us-modal {
         -ms-flex-align: center;
             align-items: center; }
         md-dialog.e-tutoring-contact-us-modal .top-icon-wrap .top-icon .round-icon-wrap .etutoring-calendar-icon {
-          stroke: #ffffff; }
+          stroke: #fff; }
         md-dialog.e-tutoring-contact-us-modal .top-icon-wrap .top-icon .round-icon-wrap .etutoring-calendar-icon * {
-          fill: #ffffff;
+          fill: #fff;
           width: 35px;
           height: 35px; }
   md-dialog.e-tutoring-contact-us-modal .main-title {
@@ -1727,7 +1715,7 @@ module-exercise-item .module-part {
       flex-direction: row;
   border-radius: 15px;
   border: 1px solid #ebebeb;
-  background: #ffffff;
+  background: #fff;
   cursor: pointer;
   box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.2); }
   module-exercise-item .module-part .icon-wrap {
@@ -1924,7 +1912,7 @@ module-exercise-item .tooltip {
     transition-property: opacity, margin-top, visibility, margin-left;
     transition-duration: 0.4s, 0.3s, 0.4s, 0.3s;
     transition-timing-function: ease-in-out, ease-in-out, ease-in-out, ease-in-out;
-    background: #ffffff;
+    background: #fff;
     border: 1px solid rgba(0, 0, 0, 0.25); }
   module-exercise-item .tooltip:hover > span {
     border-color: rgba(0, 0, 0, 0.25);
@@ -1944,7 +1932,7 @@ module-exercise-item .tooltip {
     position: absolute;
     transform: rotate(-45deg);
     box-shadow: inset 0 1px 0 #ffffff;
-    background: #ffffff;
+    background: #fff;
     border-bottom: 1px solid rgba(0, 0, 0, 0.25);
     border-left: 1px solid rgba(0, 0, 0, 0.25); }
 
@@ -1972,16 +1960,6 @@ module-exercise-item .tooltip {
         .ng-include-module-exercise-pane .lesson-container .module-container .subject-icon svg-icon svg {
           height: 40px;
           width: auto; }
-        .ng-include-module-exercise-pane .lesson-container .module-container .subject-icon svg-icon.math-icon {
-          fill: #AF89D2; }
-        .ng-include-module-exercise-pane .lesson-container .module-container .subject-icon svg-icon.mathlvl1-icon {
-          fill: #8e6fab; }
-        .ng-include-module-exercise-pane .lesson-container .module-container .subject-icon svg-icon.mathlvl2-icon {
-          fill: #8e6fab; }
-        .ng-include-module-exercise-pane .lesson-container .module-container .subject-icon svg-icon.verbal-icon {
-          fill: #F9D41B; }
-        .ng-include-module-exercise-pane .lesson-container .module-container .subject-icon svg-icon.essay-icon {
-          fill: #FF5895; }
       .ng-include-module-exercise-pane .lesson-container .module-container .subject-name {
         font-size: 16px;
         color: #4f4d4d;
@@ -2195,7 +2173,8 @@ module-exercise-item .tooltip {
   -ms-flex-direction: column;
       flex-direction: column; }
   .app-e-tutoring.blurred-overlay {
-    filter: blur(3px);
+    -webkit-filter: blur(3px);
+            filter: blur(3px);
     opacity: 0.3; }
   .app-e-tutoring .e-tutoring-main-container {
     display: -ms-flexbox;
@@ -2206,7 +2185,7 @@ module-exercise-item .tooltip {
       width: 320px;
       height: 100%; }
     .app-e-tutoring .e-tutoring-main-container .app-e-tutoring-container {
-      background: #ffffff;
+      background: #fff;
       width: 745px;
       margin-left: 20px;
       height: 100%; }
