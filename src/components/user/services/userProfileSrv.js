@@ -1,17 +1,15 @@
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
-    function ($q, ENV, AuthService) {
+    function ($q, ENV, AuthService, UserStorageService) {
         'ngInject';
 
         var _this = this;
-        var refAuthDB = new Firebase(ENV.fbGlobalEndPoint);
 
         this.getProfile = function () {
             var authData = AuthService.getAuth();
             var profilePath = 'users/' + authData.uid + '/profile';
-            return refAuthDB.child(profilePath).once('value').then(function (snapshot) {
-                var profile = snapshot.val();
+            return UserStorageService.get(profilePath).then(function (profile) {
                 if (profile && (angular.isDefined(profile.email) || angular.isDefined(profile.nickname))) {
                     return profile;
                 } else {
@@ -43,17 +41,14 @@ angular.module('znk.infra.user').service('UserProfileService',
 
         this.getProfileByUserId = function (userId) {
             var userProfilePath = 'users/' + userId + '/profile';
-            return refAuthDB.child(userProfilePath).once('value').then(function (snapshot) {
-                return snapshot.val();
-            });
+            return UserStorageService.get(userProfilePath);
         };
 
         this.setProfile = function (newProfile) {
             var authData = AuthService.getAuth();
             var profilePath = 'users/' + authData.uid + '/profile';
-            return refAuthDB.child(profilePath).once('value').then(function (snapshot) {
-                var profile = snapshot.val();
-                return profile ? refAuthDB.child(profilePath).update(newProfile) : refAuthDB.child(profilePath).set(newProfile);
+            return UserStorageService.get(profilePath).then(function (profile) {
+                return profile ? UserStorageService.update(profilePath, newProfile) : UserStorageService.set(profilePath, newProfile);
             });
 
         };
@@ -65,24 +60,19 @@ angular.module('znk.infra.user').service('UserProfileService',
 
         this.updateUserTeachWorksId = function(uid, userTeachWorksId){
             var path = 'users/' + uid + '/teachworksId';
-            return refAuthDB.child(path).once('value').then(function (snapshot) {
-                var teachWorksId = snapshot.val();
-                return teachWorksId ? refAuthDB.child(path).update(userTeachWorksId) : refAuthDB.child(path).set(userTeachWorksId);
+            return UserStorageService.get(path).then(function (teachWorksId) {
+                return teachWorksId ? UserStorageService.update(path, userTeachWorksId) : UserStorageService.set(path, userTeachWorksId);
             });
         };
 
         this.getUserTeachWorksId = function(uid){
             var path = 'users/' + uid + '/teachworksId';
-            return refAuthDB.child(path).once('value').then(function (snapshot) {
-                return snapshot.val();
-            });
+            return UserStorageService.get(path);
         };
 
         this.getUserName = function(uid){
             var path = 'users/' + uid + '/profile/nickname';
-            return refAuthDB.child(path).once('value').then(function (snapshot) {
-                return snapshot.val();
-            });
+            return UserStorageService.get(path);
         };
 
         function nickNameFromEmail(email) {

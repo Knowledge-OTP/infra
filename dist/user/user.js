@@ -11,17 +11,15 @@
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
-    ["$q", "ENV", "AuthService", function ($q, ENV, AuthService) {
+    ["$q", "ENV", "AuthService", "UserStorageService", function ($q, ENV, AuthService, UserStorageService) {
         'ngInject';
 
         var _this = this;
-        var refAuthDB = new Firebase(ENV.fbGlobalEndPoint);
 
         this.getProfile = function () {
             var authData = AuthService.getAuth();
             var profilePath = 'users/' + authData.uid + '/profile';
-            return refAuthDB.child(profilePath).once('value').then(function (snapshot) {
-                var profile = snapshot.val();
+            return UserStorageService.get(profilePath).then(function (profile) {
                 if (profile && (angular.isDefined(profile.email) || angular.isDefined(profile.nickname))) {
                     return profile;
                 } else {
@@ -53,17 +51,14 @@ angular.module('znk.infra.user').service('UserProfileService',
 
         this.getProfileByUserId = function (userId) {
             var userProfilePath = 'users/' + userId + '/profile';
-            return refAuthDB.child(userProfilePath).once('value').then(function (snapshot) {
-                return snapshot.val();
-            });
+            return UserStorageService.get(userProfilePath);
         };
 
         this.setProfile = function (newProfile) {
             var authData = AuthService.getAuth();
             var profilePath = 'users/' + authData.uid + '/profile';
-            return refAuthDB.child(profilePath).once('value').then(function (snapshot) {
-                var profile = snapshot.val();
-                return profile ? refAuthDB.child(profilePath).update(newProfile) : refAuthDB.child(profilePath).set(newProfile);
+            return UserStorageService.get(profilePath).then(function (profile) {
+                return profile ? UserStorageService.update(profilePath, newProfile) : UserStorageService.set(profilePath, newProfile);
             });
 
         };
@@ -75,24 +70,19 @@ angular.module('znk.infra.user').service('UserProfileService',
 
         this.updateUserTeachWorksId = function(uid, userTeachWorksId){
             var path = 'users/' + uid + '/teachworksId';
-            return refAuthDB.child(path).once('value').then(function (snapshot) {
-                var teachWorksId = snapshot.val();
-                return teachWorksId ? refAuthDB.child(path).update(userTeachWorksId) : refAuthDB.child(path).set(userTeachWorksId);
+            return UserStorageService.get(path).then(function (teachWorksId) {
+                return teachWorksId ? UserStorageService.update(path, userTeachWorksId) : UserStorageService.set(path, userTeachWorksId);
             });
         };
 
         this.getUserTeachWorksId = function(uid){
             var path = 'users/' + uid + '/teachworksId';
-            return refAuthDB.child(path).once('value').then(function (snapshot) {
-                return snapshot.val();
-            });
+            return UserStorageService.get(path);
         };
 
         this.getUserName = function(uid){
             var path = 'users/' + uid + '/profile/nickname';
-            return refAuthDB.child(path).once('value').then(function (snapshot) {
-                return snapshot.val();
-            });
+            return UserStorageService.get(path);
         };
 
         function nickNameFromEmail(email) {
@@ -118,7 +108,6 @@ angular.module('znk.infra.user').service('UserProfileService',
                 'ngInject';// jshint ignore:line
 
                 var initProm,lastSessionData;
-                var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
 
                 var UserSessionSrv = {};
 
@@ -133,15 +122,16 @@ angular.module('znk.infra.user').service('UserProfileService',
                 };
 
                 function init() {
-                    var userData = rootRef.getAuth();
-                    var globalLastSessionRef = new Firebase(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
-                    return globalLastSessionRef.once('value').then(function(snapshot){
-                        lastSessionData = snapshot.val();
-                        if(!isLastSessionRecordDisabled){
-                            globalLastSessionRef.child('began').set(Firebase.ServerValue.TIMESTAMP);
-                            globalLastSessionRef.child('ended').set(null);
-                            globalLastSessionRef.child('ended').onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
-                        }
+                    return InfraConfigSrv.getUserData().then(function (userData) {
+                        var globalLastSessionRef = new Firebase(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
+                        return globalLastSessionRef.once('value').then(function(snapshot){
+                            lastSessionData = snapshot.val();
+                            if(!isLastSessionRecordDisabled){
+                                globalLastSessionRef.child('began').set(Firebase.ServerValue.TIMESTAMP);
+                                globalLastSessionRef.child('ended').set(null);
+                                globalLastSessionRef.child('ended').onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
+                            }
+                        });
                     });
                 }
                 initProm = init();
@@ -151,6 +141,24 @@ angular.module('znk.infra.user').service('UserProfileService',
         }
     );
 })(angular);
+
+'use strict';
+
+angular.module('znk.infra.user').service('UserStorageService',
+    ["StorageFirebaseAdapter", "ENV", "StorageSrv", "AuthService", function (StorageFirebaseAdapter, ENV, StorageSrv, AuthService) {
+        'ngInject';
+
+        var fbAdapter = new StorageFirebaseAdapter(ENV.fbGlobalEndPoint);
+        var config = {
+            variables: {
+                uid: function uid() {
+                    return AuthService.getAuth() && AuthService.getAuth().uid;
+                }
+            }
+        };
+
+        return new StorageSrv(fbAdapter, config);
+    }]);
 
 angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 
