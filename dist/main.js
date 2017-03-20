@@ -11191,8 +11191,12 @@ angular.module('znk.infra.user').service('UserProfileService',
                 profile.createdTime = Firebase.ServerValue.TIMESTAMP;
             }
 
-            _setProfile(profile, authData.uid);
-            return profile;
+            return _setProfile(profile, authData.uid).then(function () {
+                return profile;
+            }).catch(function (err) {
+                $log.error('UserProfileService.extendProfileFromAuth: Error: ' + err);
+            });
+
         }
 
         function _createUserProfile(userId, email, nickname, provider) {
@@ -11203,7 +11207,11 @@ angular.module('znk.infra.user').service('UserProfileService',
                 createdTime: Firebase.ServerValue.TIMESTAMP
             };
 
-            _setProfile(profile, userId);
+            return _setProfile(profile, userId).then(function () {
+                return profile;
+            }).catch(function (err) {
+                $log.error('UserProfileService.createUserProfile: Error: ' + err);
+            });
         }
 
         function _setProfile(newProfile, userId) {
