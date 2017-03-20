@@ -3,10 +3,6 @@ md-dialog.e-tutoring-contact-us-modal {
     min-width: 90%;
     min-height: 90%;
     border: 20px;
-    //border-top-left-radius: 20px; // todo - check why it was defined like this.
-    //border-top-right-radius: 20px;
-    //border-bottom-left-radius: 20px;
-    //border-bottom-right-radius: 20px;
 
     md-toolbar{
         height: 40px;
@@ -16,12 +12,12 @@ md-dialog.e-tutoring-contact-us-modal {
         border-top-right-radius: 20px;
 
         &:not(.md-menu-toolbar){
-            background-color: #0a9bad;
+            background-color: $bgColor3;
         }
 
         .close-popup-wrap {
             @include absolute-position(-35px, -35px);
-            height:14px; 
+            height:14px;
             width: 14px;
             padding: 10px;
             cursor: pointer;
@@ -33,7 +29,7 @@ md-dialog.e-tutoring-contact-us-modal {
     }
 
     md-dialog-content {
-        background-color: #ffffff;
+        background-color: $bgColor6;
         padding-top: 25px;
         height: 100%;
         @include border-bottom-radius(20px);
@@ -70,7 +66,7 @@ md-dialog.e-tutoring-contact-us-modal {
                 }
 
                 .locked-icon *{
-                    stroke: #CACACA;
+                    stroke: $bgColor42;
                 }
             }
 
@@ -100,18 +96,18 @@ md-dialog.e-tutoring-contact-us-modal {
                 width: 76px;
                 height: 76px;
                 border-radius: 38px;
-                background-color: #0a9bad;
+                background-color: $bgColor3;
                 z-index: 9;
                 margin-top: -15px;
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 .etutoring-calendar-icon{
-                    stroke: #ffffff;
+                    stroke: $bgColor6;
                 }
 
                 .etutoring-calendar-icon *{
-                    fill: #ffffff;
+                    fill: $bgColor6;
                     width: 35px;
                     height: 35px;
                 }
@@ -124,7 +120,7 @@ md-dialog.e-tutoring-contact-us-modal {
         margin-bottom: 20px;
     }
     .sub-title{
-        @include text-style(12px, #4f4d4d, Lato, $lightFontWeight);
+        @include text-style(12px, $fcColor6, Lato, $lightFontWeight);
         text-align: center;
     }
     .main-error-msg{
@@ -135,10 +131,10 @@ md-dialog.e-tutoring-contact-us-modal {
         display: flex;
         align-items: center;
         padding-top: 5px;
-        @include text-style(14px, #ff6766, Lato, $regularFontWeight);
+        @include text-style(14px, $fcColor3, Lato, $regularFontWeight);
     }
     .msg-wrap {
-        @include text-style(12px, #ffffff, Lato, $regularFontWeight);
+        @include text-style(12px, $fcColor2, Lato, $regularFontWeight);
         width: 342px;
         margin: 0 auto;
         display: flex;
@@ -154,7 +150,7 @@ md-dialog.e-tutoring-contact-us-modal {
                 display: flex;
                 align-items: center;
                 padding: 6px 0 6px 5px;
-                @include text-style(14px, #ff6766, Lato, $regularFontWeight);
+                @include text-style(14px, $fcColor3, Lato, $regularFontWeight);
             }
         }
 
@@ -162,7 +158,7 @@ md-dialog.e-tutoring-contact-us-modal {
             width: 20px;
             margin-right: 17px;
             * {
-                fill: #c95050;
+                fill: $bgColor33;
             }
         }
 
@@ -175,7 +171,7 @@ md-dialog.e-tutoring-contact-us-modal {
         left: 50%;
         transform: translate(-50%, -50%);
         * {
-            stroke: #0a9bad;
+            stroke: $bgColor3;
         }
     }
 
@@ -185,7 +181,7 @@ md-dialog.e-tutoring-contact-us-modal {
             text-align: center;
             line-height: 48px;
             padding: 0 92px;
-            @include text-style(16px, #4f4d4d, Lato, $regularFontWeight);
+            @include text-style(16px, $fcColor6, Lato, $regularFontWeight);
         }
 
         .success-btn-wrap{

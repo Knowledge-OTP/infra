@@ -9,7 +9,7 @@
             overflow-x: hidden;
             padding-right: 20px;
             .module-name {
-                @include text-style(20px, #4f4d4d, Quicksand, $boldFontWeight);
+                @include text-style(20px, $fcColor6, Quicksand, $boldFontWeight);
                 text-align: center;
                 margin-bottom: 20px;
             }
@@ -22,50 +22,35 @@
                         height: 40px;
                         width: auto;
                     }
-                    &.math-icon {
-                        fill: #AF89D2;
-                    }
-                    &.mathlvl1-icon {
-                        fill: $mathLvl1Color;
-                    }
-                    &.mathlvl2-icon {
-                        fill: $mathLvl2Color;
-                    }
-                    &.verbal-icon {
-                        fill: #F9D41B;
-                    }
-                    &.essay-icon {
-                        fill: #FF5895;
-                    }
                 }
             }
             .subject-name {
-                @include text-style(16px, #4f4d4d, Quicksand, $regularFontWeight, null, capitalize);
+                @include text-style(16px, $fcColor6, Quicksand, $regularFontWeight, null, capitalize);
                 text-align: center;
                 height: 20px;
             }
             .divider {
                 width: 100%;
                 height:1px;
-                background-color: #ebebeb;
+                background-color: $bgColor17;
                 margin: 15px auto;
             }
             .module-desc {
                 text-align: center;
-                @include text-style(12px, #757a83, Quicksand, $regularFontWeight);
+                @include text-style(12px, $fcColor9, Quicksand, $regularFontWeight);
                 height: 25px;
             }
             .exercises-box {
                 width: 100%;
                 min-height: 80%;
                 margin: 15px auto 0;
-                background-color: #f9f9f9;
+                background-color: $bgColor32;
                 box-sizing: border-box;
 
                 .content-not-assigned {
                     padding: 45px 0;
                     text-align: center;
-                    @include text-style(16px, #4f4d4d, Quicksand, $regularFontWeight);
+                    @include text-style(16px, $fcColor6, Quicksand, $regularFontWeight);
                     & > div {
                         margin-bottom: 25px;
                     }
@@ -106,7 +91,7 @@
                 left:0;
                 padding: 0 40px;
                 box-sizing: border-box;
-                @include text-style(16px, #4f4d4d, Quicksand, $regularFontWeight);
+                @include text-style(16px, $fcColor6, Quicksand, $regularFontWeight);
             }
             span.sub {
                 top: 145px;

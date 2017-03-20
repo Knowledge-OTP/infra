@@ -3,7 +3,7 @@ etutoring-student-navigation-pane {
         height: 100%;
         width: 100%;
         position: relative;
-        background: #ffffff;
+        background: $bgColor6;
         overflow: hidden;
 
         .navigation-header {
@@ -12,7 +12,7 @@ etutoring-student-navigation-pane {
             justify-content: space-around;
 
             .lessons-button, .practice-button{
-                @include text-style(16px, #4f4d4d, Quicksand, $regularFontWeight);
+                @include text-style(16px,$fcColor6, Quicksand, $regularFontWeight);
                 @include dimension(50%, 51px);
                 cursor: pointer;
                 transition: 0.5s;
@@ -20,7 +20,7 @@ etutoring-student-navigation-pane {
                 justify-content: center;
                 align-items: center;
                 cursor: pointer;
-                background-color: #f7f7f7;
+                background-color: $bgColor21;
 
                 .title{
                     position: relative;
@@ -37,7 +37,7 @@ etutoring-student-navigation-pane {
         }
 
         &.lessons-pane .lessons-button, &.practice-pane .practice-button{
-            background-color: #ffffff;
+            background-color: $bgColor6;
             ::before{
                 @include dimension(100%, 2px);
                 content: '';
@@ -65,7 +65,7 @@ etutoring-student-navigation-pane {
                 }
 
                 .search-icon * {
-                    stroke: #c2c2c2;
+                    stroke: $bgColor44;
                 }
                 .clear-search {
                     font-size: 14px;
@@ -82,7 +82,7 @@ etutoring-student-navigation-pane {
                          margin-right: 5px;
                          margin-top: 1px;
                         *{
-                            stroke: #c2c2c2;
+                            stroke: $bgColor44;
                         }
                     }
                 }
@@ -98,15 +98,15 @@ etutoring-student-navigation-pane {
                     height: 80px;
                     display: flex;
                     flex-direction: row;
-                    border-bottom: 2px solid #f2f2f2;
-                    border-left: 3px solid #0a9bad;
+                    border-bottom: 2px solid $bcColor19;
+                    border-left: 3px solid $bgColor3;
                     cursor: pointer;
-                    background-color: #ffffff;
+                    background-color: $bgColor6;
                     transition: all, 0.2s;
 
                     .md-button.md-default-theme:not([disabled]):hover,
                     .md-button:not([disabled]):hover {
-                        background-color: #f2f2f2;
+                        background-color: $fcColor23;
                     }
 
                     .icon-wrapper {
@@ -122,35 +122,16 @@ etutoring-student-navigation-pane {
                                 width: 65%;
                                 height: 65%;
                                 * {
-                                    fill: #ffffff;
+                                    fill: $bgColor6;
                                 }
-                            }
-
-                            &.math-icon {
-                                background-color: $mathColor;
-                            }
-                            &.writing-icon {
-                                background-color: $writingColor;
-                            }
-                            &.essay-icon {
-                                background-color: $essayColor;
-                            }
-                            &.reading-icon {
-                                background-color : $readingColor;
-                            }
-                            &.mathlvl1-icon {
-                                background-color: $mathLvl1Color;
-                            }
-                            &.mathlvl2-icon {
-                                background-color: $mathLvl2Color;
                             }
                         }
 
                         .homework-practice-icon{
                             svg-icon {
-                                border: 1px solid #0a9bad;
+                                border: 1px solid $bgColor3;
                                 svg path {
-                                    fill: #0a9bad;
+                                    fill: $bcColor2;
                                 }
                             }
                         }
@@ -164,28 +145,28 @@ etutoring-student-navigation-pane {
                             overflow: hidden;
                             white-space: nowrap;
                             text-overflow: ellipsis;
-                            @include text-style(16px, #0a9bad, Lato, $regularFontWeight);
+                            @include text-style(16px, $fcColor5, Lato, $regularFontWeight);
                             margin-bottom: 5px;
                         }
                         .subject-name {
-                            @include text-style(12px, #4f4d4d, Lato, $regularFontWeight);
+                            @include text-style(12px, $fcColor6, Lato, $regularFontWeight);
                             height: 15px;
                             text-transform: capitalize;
                             margin-bottom: 3px;
                         }
                         .assigned-date {
-                            @include text-style(12px, #757a83, Lato, $regularFontWeight);
+                            @include text-style(12px, $fcColor9, Lato, $regularFontWeight);
                         }
 
                         .due-date{
-                            @include text-style(12px, #4f4d4d, Lato, $regularFontWeight);
+                            @include text-style(12px, $fcColor6, Lato, $regularFontWeight);
                         }
                     }
 
                     .module-status {
                         width: 63px;
                         .pill{
-                            @include text-style(12px, #ffffff, Lato, $regularFontWeight);
+                            @include text-style(12px, $fcColor2, Lato, $regularFontWeight);
                             display: inline;
                             background-color: #ff931e;
                             padding: 1px 4px;
@@ -193,7 +174,7 @@ etutoring-student-navigation-pane {
                             border-radius: 4px;
                         }
                         .in-progress {
-                            @include text-style(10px, #0a9bad, Lato, $regularFontWeight, null, lowercase);
+                            @include text-style(10px, $fcColor5, Lato, $regularFontWeight, null, lowercase);
                             font-style: italic;
                             padding-right: 5px;
                         }
@@ -202,8 +183,8 @@ etutoring-student-navigation-pane {
                             height:20px;
                             svg {
                                 line {
-                                    fill: #87ca4d;
-                                    stroke: #87ca4d;
+                                    fill: $bgColor2;
+                                    stroke: $bgColor2;
                                 }
                             }
                         }
@@ -214,29 +195,29 @@ etutoring-student-navigation-pane {
                     }
 
                     &:hover {
-                        background-color: #f2f2f2;
+                        background-color: $bgColor43;
                     }
                     &.done {
-                        border-left: 2px solid #87ca4d;
+                        border-left: 2px solid $bcColor1;
                         button {
-                            color: #4f4d4d;
+                            color: $fcColor6;
                         }
                     }
                     &.active {
-                        background-color: #f2f2f2;
-                        border-left: 8px solid #0a9bad;
+                        background-color: $bgColor43;
+                        border-left: 8px solid $bgColor3;
                         .icon-wrapper {
                         }
                         button {
-                            color: #0a9bad;
+                            color: $fcColor5;
                             transition: border 0.2s;
-                            border-left: 8px solid #0a9bad;
+                            border-left: 8px solid $bgColor3;
                         }
                     }
                     &.completed{
                         .module-details{
                             .module-name{
-                                color: #757a83;
+                                color: $fcColor9;
                             }
                             .due-date{
                                 display: none;
@@ -246,26 +227,26 @@ etutoring-student-navigation-pane {
                     &.pass-due-date, &.active.pass-due-date{
                         .homework-practice-icon{
                             svg-icon {
-                                border: 1px solid #ff6766;
+                                border: 1px solid $bcColor4;
                                 svg path {
-                                    fill: #ff6766;
+                                    fill: $bgColor1;
                                 }
                             }
                         }
 
                         .module-name, .due-date {
-                            color:#ff6766;
+                            color:$fcColor10;
                         }
                     }
                     &.completed,  &completed.pass-due-date, &.completed.active{
                         .module-name, .due-date {
-                            color:#acacac;
+                            color:$fcColor15;
                         }
                         .homework-practice-icon {
                             svg-icon {
-                                border: 1px solid #acacac;
+                                border: 1px solid $bcColor14;
                                 svg path {
-                                    fill: #acacac;
+                                    fill: $bgColor45;
                                 }
                             }
                         }
@@ -278,11 +259,11 @@ etutoring-student-navigation-pane {
                         margin: 0;
                         background-color: inherit;
                         justify-content: space-between;
-                        color: #4f4d4d;
+                        color: $fcColor6;
                         display: flex;
                         line-height: normal;
                         &:hover {
-                            background-color: #FCFCFC;
+                            background-color: $bgColor46;
                         }
 
                         .subject-icon {
@@ -298,7 +279,7 @@ etutoring-student-navigation-pane {
                                 height: 36px;
                                 border-radius: 36px;
                                 * {
-                                    fill: #ffffff;
+                                    fill: $bgColor6;
                                 }
                             }
                         }
@@ -310,17 +291,17 @@ etutoring-student-navigation-pane {
                             align-items: flex-end;
 
                             .module-name{
-                                @include text-style(12px, #0a9bad, Lato, $regularFontWeight);
+                                @include text-style(12px, $fcColor5, Lato, $regularFontWeight);
                             }
                             .module-subject{
-                                @include text-style(12px, #757a83, Lato, $lightFontWeight);
+                                @include text-style(12px, $fcColor9, Lato, $lightFontWeight);
                             }
                             .assign-date{
-                                @include text-style(10px, #757a83, Lato, $lightFontWeight);
+                                @include text-style(10px, $fcColor9, Lato, $lightFontWeight);
                             }
                         }
                         .module-status{
-                            @include text-style(10px, #757a83, Lato, $lightFontWeight);
+                            @include text-style(10px, $fcColor9, Lato, $lightFontWeight);
                         }
                     }
                 }
@@ -348,7 +329,7 @@ etutoring-student-navigation-pane {
             background-position: -8px -50px;
             background-size: 311px auto;
             span {
-                @include text-style(16px, #4f4d4d, Quicksand, $regularFontWeight);
+                @include text-style(16px, $fcColor6, Quicksand, $regularFontWeight);
                 width: 100%;
                 position: absolute;
                 top: 25px;

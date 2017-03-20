@@ -6,8 +6,8 @@ module-exercise-item {
         display: flex;
         flex-direction: row;
         border-radius: 15px;
-        border: 1px solid #ebebeb;
-        background: #ffffff;
+        border: 1px solid $bcColor11;
+        background: $bgColor6;
         cursor: pointer;
         box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.2);
 
@@ -23,7 +23,7 @@ module-exercise-item {
             .summary-icon * {
                 width: 18px;
                 height: 18px;
-                stroke: #b7b7b7;
+                stroke: $bgColor20;
             }
         }
         .exercise-name-wrap{
@@ -33,17 +33,17 @@ module-exercise-item {
             justify-content: center;
             flex: 2;
             .exercise-name{
-                @include text-style(16px, #757a83, Quicksand, $semiBoldFontWeight);
+                @include text-style(16px, $fcColor9, Quicksand, $semiBoldFontWeight);
             }
             .category-name{
-                @include text-style(12px, #4f4d4d, Lato, $lightFontWeight);
+                @include text-style(12px,$fcColor6, Lato, $lightFontWeight);
             }
         }
         .children-count-wrap{
             width: 200px;
             display: flex;
             align-items: center;
-            border-left: 1px solid #ebebeb;
+            border-left: 1px solid $bcColor11;
             .children-count{
                 width: 100%;
                 display: flex;
@@ -51,7 +51,7 @@ module-exercise-item {
                 justify-content: space-between;
                 .count-content {
                     display: flex;
-                    @include text-style(16px, #757a83, Lato, $regularFontWeight);
+                    @include text-style(16px, $fcColor9, Lato, $regularFontWeight);
                     margin-left: 20px;
                     .count{
                         margin-right: 5px;
@@ -63,7 +63,7 @@ module-exercise-item {
                     * {
                         width: 20px;
                         height: 20px;
-                        stroke: #4f4d4d;
+                        stroke:$bgColor47;
                     }
                 }
             }
@@ -72,7 +72,7 @@ module-exercise-item {
                 display: none;
 
                 .total-question{
-                    @include text-style(14px, #4f4d4d, Lato, $regularFontWeight);
+                    @include text-style(14px,$fcColor6, Lato, $regularFontWeight);
                     margin: auto 20px;
                 }
             }
@@ -123,7 +123,7 @@ module-exercise-item {
 
         &.completed {
             box-shadow: none;
-            background: #fafafa;
+            background: $bgColor13;
             &:not(.is-lecture){
                 .icon-wrap{
                     display: flex;
@@ -152,32 +152,32 @@ module-exercise-item {
                                 border-radius: 12px;
                                 border-width: 1px;
                                 border-style: solid;
-                                @include text-style(14px, #4f4d4d, Lato, $lightFontWeight);
+                                @include text-style(14px, $fcColor6, Lato, $lightFontWeight);
                                 display: flex;
                                 justify-content: center;
                                 align-items: center;
                                 margin-right: 5px;
 
                                 &.correct {
-                                    border-color: #87ca4d;
-                                    color: #87ca4d;
+                                    border-color: $bcColor9;
+                                    color: $fcColor7;
 
                                 }
 
                                 &.wrong {
-                                    border-color: #ff6766;
-                                    color: #ff6766;
+                                    border-color: $bcColor4;
+                                    color: $fcColor10;
                                 }
 
                                 &.unanswered {
-                                    border-color: #acacac;
-                                    color: #acacac;
+                                    border-color: $bcColor14;
+                                    color: $fcColor15;
                                 }
                             }
                         }
 
                         .practice-questions-stat{
-                            @include text-style(14px, #757a83, Lato, $regularFontWeight);
+                            @include text-style(14px, $fcColor9, Lato, $regularFontWeight);
                             .text{
                                 margin-left: 3px;
                             }
@@ -185,7 +185,7 @@ module-exercise-item {
 
                         .completed-time{
                             margin: auto 0;
-                            @include text-style(12px, #4f4d4d, Lato, $lightFontWeight);
+                            @include text-style(12px, $fcColor6, Lato, $lightFontWeight);
                         }
                     }
                 }
@@ -194,9 +194,9 @@ module-exercise-item {
 
         &:disabled {
             box-shadow: none;
-            background: #fafafa;
+            background: $bgColor13;
             .exercise-name, .children-count-wrap .children-count .count-content{
-                color: lighten(#757a83, 20%);
+                color: lighten($fcColor9, 20%);
             }
 
         }
@@ -223,13 +223,13 @@ module-exercise-item {
             visibility: hidden;
             z-index: 10;
             position: absolute;
-            @include text-style(14px, #757a83, Lato, $normalFontWeight);
+            @include text-style(14px, $fcColor9, Lato, $normalFontWeight);
             border-radius: 5px;
             box-shadow: 2px 2px 2px  rgba(190, 190, 190, 0.75);
             transition-property: opacity, margin-top, visibility, margin-left;
             transition-duration: 0.4s, 0.3s, 0.4s, 0.3s;
             transition-timing-function: ease-in-out, ease-in-out, ease-in-out, ease-in-out;
-            background: #ffffff;
+            background: $bgColor6;
             border: 1px solid  rgba(0, 0, 0, 0.25);
         }
         &:hover {
@@ -253,8 +253,8 @@ module-exercise-item {
                 display: block;
                 position: absolute;
                 transform: rotate(-45deg);
-                box-shadow: inset 0 1px 0 #ffffff;
-                background: #ffffff;
+                box-shadow: inset 0 1px 0 $bsColor3;
+                background: $bgColor6;
                 border-bottom: 1px solid  rgba(0, 0, 0, 0.25);
                 border-left: 1px solid  rgba(0, 0, 0, 0.25);
             }
