@@ -10,7 +10,9 @@
                 var svgMap = {
                     'homework-icon': 'components/eTutoring/svg/homework-icon.svg',
                     'english-topic-icon': 'components/eTutoring/svg/english-topic-icon.svg',
-                    'math-topic-icon': 'components/eTutoring/svg/math-topic-icon.svg'
+                    'math-topic-icon': 'components/eTutoring/svg/math-topic-icon.svg',
+                    'etutoring-slides-icon': 'components/eTutoring/svg/etutoring-slides-icon.svg',
+                    'etutoring-exercise-icon': 'components/eTutoring/svg/etutoring-exercise-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }]);
@@ -604,23 +606,6 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.eTutoring')
-        .config(["SvgIconSrvProvider", function (SvgIconSrvProvider) {
-            'ngInject';
-
-            var svgMap = {
-                'etutoring-exercise-icon': 'components/eTutoring/svg/etutoring-exercise-icon.svg',
-                'etutoring-slides-icon': 'components/eTutoring/svg/etutoring-slides-icon.svg',
-                'etutoring-calendar-icon': 'components/eTutoring/svg/etutoring-calendar-icon.svg',
-                'etutoring-close-icon': 'components/eTutoring/svg/etutoring-close-popup.svg'
-            };
-            SvgIconSrvProvider.registerSvgSources(svgMap);
-        }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.eTutoring').constant('ETutoringViewsConst', {
         LESSON: 1,
         PRACTICE: 2
@@ -839,7 +824,7 @@
         }]);
 })(angular);
 
-angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.eTutoring').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/eTutoring/components/etutoringActionBar/etutoringActionBar.template.html",
     "<div class=\"e-tutor-bar base-border-radius base-box-shadow\" translate-namespace=\"E_TUTORING_ACTION_BAR\">\n" +
     "    <div class=\"teacher-select-wrap\" ng-if=\"myTeachers\">\n" +
@@ -1216,6 +1201,43 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "        <path d=\"M66.5,49.2c-0.2,0-0.5-0.1-0.7-0.2c-9.2-5.2-17-0.3-17.3-0.1c-0.7,0.4-1.6,0.3-2.1-0.4\n" +
     "		c-0.5-0.7-0.3-1.6,0.4-2c0.4-0.3,9.5-6.2,20.4-0.1c0.7,0.4,1,1.3,0.6,2C67.6,48.9,67.1,49.2,66.5,49.2z\"/>\n" +
     "    </g>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/eTutoring/svg/etutoring-exercise-icon.svg",
+    "<svg\n" +
+    "    version=\"1.1\"\n" +
+    "    id=\"Layer_8\"\n" +
+    "    x=\"0px\"\n" +
+    "    y=\"0px\"\n" +
+    "    class=\"etutoring-exercise-icon\"\n" +
+    "    viewBox=\"0 0 680.8 427.5\"\n" +
+    "    style=\"enable-background:new 0 0 680.8 427.5;\"\n" +
+    "    xml:space=\"preserve\">\n" +
+    "<style type=\"text/css\">\n" +
+    "    .etutoring-exercise-icon .st0{fill:none;stroke:#000000;stroke-width:5;stroke-miterlimit:10;}\n" +
+    "	.etutoring-exercise-icon .st1{fill:none;stroke:#000000;stroke-width:5;stroke-linecap:round;stroke-miterlimit:10;}\n" +
+    "</style>\n" +
+    "<path class=\"st0\" d=\"M495.6,425H180.5c-29.5,0-53.7-24.1-53.7-53.7V56.2c0-29.5,24.1-53.7,53.7-53.7h315.2\n" +
+    "	c29.5,0,53.7,24.1,53.7,53.7v315.2C549.3,400.9,525.2,425,495.6,425z\"/>\n" +
+    "<path class=\"st0\" d=\"M155.7,414.2H63.9c-33.8,0-61.4-27.6-61.4-61.4V77.5C2.5,43.7,30.1,16,63.9,16h84.3\"/>\n" +
+    "<path class=\"st0\" d=\"M525.1,414.2h91.8c33.8,0,61.4-27.6,61.4-61.4V77.5c0-33.8-27.6-61.4-61.4-61.4h-84.3\"/>\n" +
+    "<path class=\"st1\" d=\"M296.1,158.3c0,0,66-56.7,95,5c25.5,54.2-30.7,73.4-51,78.4c-4.1,1-6.9,4.7-6.7,8.9c0.2,6.5,0.5,15.8,0.3,21.5\"\n" +
+    "	/>\n" +
+    "<circle cx=\"333.7\" cy=\"319.4\" r=\"7.1\"/>\n" +
+    "</svg>\n" +
+    "");
+  $templateCache.put("components/eTutoring/svg/etutoring-slides-icon.svg",
+    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+    "<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->\n" +
+    "<svg version=\"1.1\" id=\"Layer_8\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
+    "	 viewBox=\"0 0 466.5 427.5\" style=\"enable-background:new 0 0 466.5 427.5;\" xml:space=\"preserve\">\n" +
+    "<style type=\"text/css\">\n" +
+    "	.st0{fill:none;stroke:#000000;stroke-width:5;stroke-miterlimit:10;}\n" +
+    "</style>\n" +
+    "<path class=\"st0\" d=\"M410.4,425H148.7c-29.5,0-53.7-24.1-53.7-53.7V109.6C95,80.1,119.1,56,148.7,56h261.7\n" +
+    "	c29.5,0,53.7,24.1,53.7,53.7v261.7C464,400.9,439.9,425,410.4,425z\"/>\n" +
+    "<path class=\"st0\" d=\"M95,371.6H56.2c-29.5,0-53.7-24.1-53.7-53.7V56.2c0-29.5,24.1-53.7,53.7-53.7h261.7c29.5,0,53.7,24.1,53.7,53.7\n" +
+    "	\"/>\n" +
     "</svg>\n" +
     "");
   $templateCache.put("components/eTutoring/svg/homework-icon.svg",

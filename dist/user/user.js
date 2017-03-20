@@ -134,6 +134,6 @@ angular.module('znk.infra.user').service('UserProfileService',
     );
 })(angular);
 
-angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.user').run(['$templateCache', function ($templateCache) {
 
 }]);
