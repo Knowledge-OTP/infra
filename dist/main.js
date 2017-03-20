@@ -11152,7 +11152,7 @@ angular.module('znk.infra.user').service('UserProfileService',
         function _getProfile() {
             var authData = AuthService.getAuth();
             if (!authData) {
-                $log.debug('UserProfileService.getProfile: Authenticate user not found');
+                $log.error('UserProfileService.getProfile: Authenticate user not found');
                 return $q.when(null);
             } else {
                 var profilePath = 'users/' + authData.uid + '/profile';
@@ -11167,8 +11167,14 @@ angular.module('znk.infra.user').service('UserProfileService',
         }
 
         function _getProfileByUserId(userId) {
-            var userProfilePath = 'users/' + userId + '/profile';
-            return UserStorageService.get(userProfilePath);
+            if (!userId) {
+                $log.error('UserProfileService._getProfileByUserId: userId is undefined');
+                return $q.when(null);
+            } else {
+                var userProfilePath = 'users/' + userId + '/profile';
+                return UserStorageService.get(userProfilePath);
+            }
+
         }
 
         function _extendProfileFromAuth(userId, profile, authData) {
