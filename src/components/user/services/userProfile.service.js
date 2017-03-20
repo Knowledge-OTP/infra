@@ -32,7 +32,7 @@ angular.module('znk.infra.user').service('UserProfileService',
 
         }
 
-        function _extendProfileFromAuth(userId, profile, authData) {
+        function _extendProfileFromAuth(profile, authData) {
             var emailFromAuth = authData.auth ? authData.auth.email : authData.password ? authData.password.email : '';
             var nickNameFromAuth = authData.auth.name ? authData.auth.name : nickNameFromEmail(emailFromAuth);
 
@@ -46,7 +46,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                 profile.createdTime = Firebase.ServerValue.TIMESTAMP;
             }
 
-            _setProfile(profile, userId);
+            _setProfile(profile, authData.uid);
             return profile;
         }
 
