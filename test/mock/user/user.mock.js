@@ -23,6 +23,10 @@
                 return $q.when($delegate.__currUserId);
             };
 
+            $delegate.getProfileByUserId = function(userId){
+                return $q.when({});
+            };
+
             return $delegate;
         });
 })(angular);
