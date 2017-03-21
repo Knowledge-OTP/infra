@@ -263,6 +263,6 @@
     ]);
 })(angular);
 
-angular.module('znk.infra.znkMedia').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkMedia').run(['$templateCache', function ($templateCache) {
 
 }]);
