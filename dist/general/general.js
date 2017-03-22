@@ -740,7 +740,7 @@
     ]);
 })(angular);
 
-angular.module('znk.infra.general').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.general').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/general/svg/clock-icon.svg",
     "<svg version=\"1.1\" class=\"clock-icon-svg\"\n" +
     "     xmlns=\"http://www.w3.org/2000/svg\"\n" +

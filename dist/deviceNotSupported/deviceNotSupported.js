@@ -44,7 +44,7 @@
     ]);
 })(angular);
 
-angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/deviceNotSupported/deviceNotSupported.template.html",
     "<div class=\"device-not-supported-inner\">\n" +
     "    <h1>{{title}}</h1>\n" +

@@ -142,7 +142,7 @@
         }]);
 })(angular);
 
-angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkQuestionReport/svg/close-popup.svg",
     "<svg version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" x=\"0px\" y=\"0px\"\n" +
     "	 viewBox=\"-596.6 492.3 133.2 133.5\" xml:space=\"preserve\" class=\"close-pop-svg\">\n" +
