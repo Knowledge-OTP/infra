@@ -230,9 +230,9 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
             return specificCategories;
         };
 
-        self.getAllLevel4Categories = (function () {
+        self.getAllLevel4Categories = function () {
             return $q.when(self.getAllLevel4CategoriesSync());
-        })();
+        };
 
         self.getUserSelectedLevel1Category = function () {
             return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
@@ -250,6 +250,6 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         };
     }]);
 
-angular.module('znk.infra.contentGetters').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.contentGetters').run(['$templateCache', function($templateCache) {
 
 }]);

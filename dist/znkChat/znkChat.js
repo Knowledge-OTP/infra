@@ -731,7 +731,7 @@
     );
 })(angular);
 
-angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkChat/svg/znk-chat-chat-icon.svg",
     "<svg\n" +
     "    id=\"Layer_1\"\n" +
