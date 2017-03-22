@@ -25,7 +25,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                     if (profile && (angular.isDefined(profile.email) || angular.isDefined(profile.nickname))) {
                         return profile;
                     } else {
-                        return _extendProfileFromAuth(authData.uid, profile, authData);
+                        return _extendProfileFromAuth(profile, authData);
                     }
                 });
             }
