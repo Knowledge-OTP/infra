@@ -354,7 +354,8 @@
                     scope.$on('$destroy', function () {
                         eventsManager.cleanQuestionListeners();
                         eventsManager.cleanGlobalListeners();
-
+                        // Don't operate when viewing 'diagnostic' page. (temporary (?) solution to the firebase multiple error bugs in sat/act) - Guy
+                        ZnkExerciseDrawSrv.addCanvasToElement = undefined;
                     });
 
                     function EventsManager() {
@@ -375,7 +376,7 @@
                             this._hoveredElements = [];
                         }
 
-                        this._hoveredElements.push({ 'hoveredElement': elementToHoverOn, 'onHoverCb': onHoverCb });
+                        this._hoveredElements.push({'hoveredElement': elementToHoverOn, 'onHoverCb': onHoverCb});
                     };
 
 
@@ -470,22 +471,22 @@
 
                     EventsManager.prototype.registerFbListeners = function (questionId) {
                         /* this wrapper was made because of a bug that occurred sometimes when user have entered
-                           to an exercise which has a drawing, and the canvas is empty. as it seems, the problem is
-                           the callback from firebase is invoked to soon, before the canvas has fully loaded
-                           (even tho it seems that the canvas alreay appended and compiled), still the canvas is empty.
-                           because there's no holding ground for when it will be ok to draw, the solution for now it's
-                           to wait 1 sec only for first time entrance and then register callbacks and try drawing.
-                        */
+                         to an exercise which has a drawing, and the canvas is empty. as it seems, the problem is
+                         the callback from firebase is invoked to soon, before the canvas has fully loaded
+                         (even tho it seems that the canvas alreay appended and compiled), still the canvas is empty.
+                         because there's no holding ground for when it will be ok to draw, the solution for now it's
+                         to wait 1 sec only for first time entrance and then register callbacks and try drawing.
+                         */
                         var self = this;
 
                         if (!registerFbListenersInDelayOnce) {
 
                             $timeout(function () {
-                              _registerFbListeners.call(self, questionId);
+                                _registerFbListeners.call(self, questionId);
                             }, 1000);
 
                         } else {
-                             _registerFbListeners.call(self, questionId);
+                            _registerFbListeners.call(self, questionId);
                         }
                     };
 
@@ -517,7 +518,7 @@
                             this._dimensionsRefPairs = [];
                         }
                         dimensionsRef.on('value', onValueCb);
-                        this._dimensionsRefPairs.push({ dimensionsRef: dimensionsRef, onValueCb: onValueCb });
+                        this._dimensionsRefPairs.push({dimensionsRef: dimensionsRef, onValueCb: onValueCb});
                     };
 
                     EventsManager.prototype.killDimensionsListener = function () {
@@ -597,7 +598,7 @@
                                 else {
                                     width = elementToCoverDomElement.offsetWidth;
                                 }
-                                return { height: height, width: width };
+                                return {height: height, width: width};
                             }
 
                             // return the larger dimensions out of the element's dimensions and the saved FB dimensions
@@ -640,7 +641,6 @@
                             });
 
 
-
                         });
 
                     }
@@ -678,8 +678,6 @@
                     }
 
 
-
-
                     scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex, oldIndex, _currQuestion) {
                         if (angular.isUndefined(scope.d.drawMode)) {
                             scope.d.drawMode = DRAWING_MODES.VIEW;
@@ -689,7 +687,7 @@
 
                         // if newIndex not equel oldIndex, it meens not the first entrance, change flag to true
                         if (newIndex !== oldIndex) {
-                           registerFbListenersInDelayOnce = true;
+                            registerFbListenersInDelayOnce = true;
                         }
 
                         if (serverDrawingUpdater) {

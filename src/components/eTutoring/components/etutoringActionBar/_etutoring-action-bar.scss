@@ -1,0 +1,208 @@
+etutoring-action-bar {
+    .e-tutor-bar {
+        width: 100%;
+        height: 50px;
+        margin-bottom: 18px;
+        background: $bgColor6;
+        display: flex;
+        .teacher-select-wrap {
+            display: flex;
+            flex-grow: 1;
+            padding-left: 45px;
+
+            .online-indicator-wrap {
+                position: relative;
+                .online-indicator {
+                    width: 7px;
+                    height: 7px;
+                    border: 2px solid $bgColor17;
+                    border-radius: 6px;
+                    position: absolute;
+                    top: 19px;
+                    left: -25px;
+
+                    &.offline {
+                        background: $bgColor22;
+                    }
+                    &.online {
+                        background: $bcColor1;
+                    }
+                    &.idle {
+                        background: $bgColor27;
+                    }
+                }
+            }
+
+            .teachers-menu {
+                padding: 0;
+                .teacher-open-modal-btn {
+                    text-transform: none;
+                    font-size: 16px;
+                    background: $bgColor6;
+                    width: auto;
+                    border-radius: 0;
+                    height: 100%;
+                    padding: 0;
+                    margin: 0;
+                    &:disabled {
+                        cursor: not-allowed;
+                        .expand-arrow {
+                            color: $fcColor22;
+                        }
+                    }
+
+                    .teacher-details {
+                        min-width: 40px;
+                        text-align: left;
+                        vertical-align: middle;
+                        display: inline-block;
+                        position: relative;
+                        top: -1.5px;
+                        .teacher-name {
+                            line-height: 22px;
+                            margin-left: -1px;
+                            @include text-style(20px, $fcColor6, Quicksand, $semiBoldFontWeight);
+                        }
+                        .teacher-subject {
+                            line-height: 16px;
+                            @include text-style(12px, $fcColor21, Lato, $lightFontWeight);
+                        }
+                    }
+
+                    md-icon{
+                        margin-top: 0;
+                    }
+                }
+            }
+        }
+
+        .share-btn-wrap {
+            display: flex;
+            align-items: center;
+            padding-right: 15px;
+            .share-btn {
+                min-height: 28px;
+                height: 28px;
+                width: 150px;
+                @include text-style(12px, $fcColor2, Lato, $regularFontWeight);
+                span {
+                    display: flex;
+                    height: 28px;
+                    align-items: center;
+                    justify-content: center;
+                }
+                &.primary {
+                 background-color: $bgColor3;
+                }
+                &.primary:hover{
+                    background-color: $bgColor41;
+                }
+
+                &[disabled="disabled"]{
+                    opacity: 0.5;
+                    color: $fcColor2 !important;//overriding material
+
+                    &.primary:hover{
+                        background: $fcColor5;
+                    }
+
+                    &.warn:hover{
+                        background: $bgColor19;
+                    }
+                }
+
+                &.md-focused{
+                    background-color: $bgColor19;
+                }
+            }
+
+            call-btn {
+                margin-left: 7px;
+            }
+
+            .separator {
+                width: 2px;
+                height: 25px;
+                background: $bgColor17;
+                margin-right: 4px;
+                margin-left: 4px;
+            }
+        }
+    }
+}
+
+md-menu-content.md-menu-content-teacher-select {
+    min-width: 210px;
+    max-height: none;
+    padding: 16px 0;
+
+    md-list {
+        padding: {
+            top: 0;
+            bottom: 0;
+        }
+        .divider {
+            height: 1px;
+            margin: 10px 16px;
+            border-top: 1px solid $bcColor11;
+        }
+
+        md-list-item.teacher-list-item {
+            .online-indicator-wrap {
+                position: relative;
+                .online-indicator {
+                    width: 7px;
+                    height: 7px;
+                    border: 2px solid $bcColor11;
+                    border-radius: 6px;
+                    position: absolute;
+                    left: -6px;
+                    top: -11px;
+
+                    &.offline {
+                        background: $bgColor22;
+                    }
+                    &.online {
+                        background: $bcColor1;
+                    }
+                    &.idle {
+                        background: $bgColor27;
+                    }
+                }
+            }
+            .teacher-details {
+                min-width: 40px;
+                text-align: left;
+                padding-left: 15px;
+                .teacher-name {
+                    padding-top: 4px;
+                    line-height: 18px;
+                    @include text-style(14px, $fcColor6, Lato, $regularFontWeight);
+                }
+                .teacher-subject {
+                    line-height: 16px;
+                    @include text-style(11px, $fcColor21, Lato, $lightFontWeight);
+                }
+            }
+            .md-list-item-inner {
+                width: 100%;
+            }
+            &:hover {
+                background-color: $bgColor40;
+            }
+        }
+    }
+
+    .pending-purchase-icon-wrapper {
+        width: 16px;
+        height: auto;
+        margin-left: 10px;
+        position: relative;
+        top: 3px;
+    }
+
+    [disabled="disabled"] {
+        opacity: 0.5;
+        cursor: default;
+    }
+}

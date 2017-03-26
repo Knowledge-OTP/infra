@@ -1,0 +1,84 @@
+<button translate-namespace="MODULE_EXERCISE_ITEM_DRV"
+     class="module-part"
+     ng-click="go(module, exercise)"
+     ng-disabled="exercise.isLessonSummary && !module.enableLessonSummaryEx"
+     ng-class="{'is-lecture': (exerciseTypeId===exerciseTypeEnum.LECTURE.enum) ||
+                (!module.moduleSummary[exerciseTypeId][exerciseId]),
+                'in-progress': module.moduleSummary[exerciseTypeId][exerciseId].status===exerciseStatusEnum.ACTIVE.enum,
+                'completed': module.moduleSummary[exerciseTypeId][exerciseId].status===exerciseStatusEnum.COMPLETED.enum}">
+
+    <div class="icon-wrap"  >
+            <svg-icon name="etutoring-exercise-icon" class="svg-icon-wrap"
+                      ng-if="exerciseTypeId!==exerciseTypeEnum.LECTURE.enum && activeViewObj.view === ETutoringViewsConst.LESSON">
+            </svg-icon>
+            <svg-icon name="etutoring-slides-icon" class="svg-icon-wrap"
+                      ng-if="exerciseTypeId===exerciseTypeEnum.LECTURE.enum &&  activeViewObj.view === ETutoringViewsConst.LESSON"">
+            </svg-icon>
+            <svg-icon name="{{subjectIcon}}"
+                      subject-id-to-attr-drv="subjectId"
+                      ng-class="svgWrapperClass"
+                      class="svg-icon-wrap"
+                      ng-if="eTutoringView() === ETutoringViewsConst.PRACTICE">
+            </svg-icon>
+    </div>
+    <div class="exercise-name-wrap">
+        <div class="exercise-name">{{exercise.liveLessonName ? exercise.liveLessonName : exercise.name ?
+            exercise.name : exercise.exerciseTypeId===exerciseTypeEnum.LECTURE.enum ?
+            'MODULE_EXERCISE_ITEM_DRV.OVERVIEW' : 'MODULE_EXERCISE_ITEM_DRV.EXERCISE' | translate | cutString:40}}
+        </div>
+    </div>
+    <div class="children-count-wrap">
+        <div class="children-count">
+            <div class="count-content">
+                <span class="count">{{itemsCount}}</span>
+                <span translate=".QUESTIONS" ng-if="exerciseTypeId!==exerciseTypeEnum.LECTURE.enum"></span>
+                <span translate=".SLIDES" ng-if="exerciseTypeId===exerciseTypeEnum.LECTURE.enum"></span>
+            </div>
+            <div class="tooltip">
+                <svg-icon name="locked-icon" class="locked-icon tooltip"
+                          ng-if="exercise.isLessonSummary && !module.enableLessonSummaryEx"
+                          title="{{'MODULE_EXERCISE_ITEM_DRV.UNLOCK_EXERSICE' | translate}}">
+                </svg-icon>
+                <!-- start tooltip -->
+                <span>
+		            <b></b>
+		            {{'MODULE_EXERCISE_ITEM_DRV.UNLOCK_EXERSICE' | translate}}
+	           </span>
+                <!-- end tooltip -->
+            </div>
+        </div>
+        <div class="questions-progress">
+            <div class="total-question">
+                <span>{{itemsCount}}</span>
+                <span translate=".QUESTIONS"></span>
+            </div>
+
+            <div class="progress-wrap">
+                <znk-progress-bar
+                    show-progress-value="true"
+                    progress-value="{{module.exerciseResults[exerciseTypeId][exerciseId].totalAnsweredNum}}"
+                    progress-width="{{(module.exerciseResults[exerciseTypeId][exerciseId].totalAnsweredNum/itemsCount)*100}}">
+                </znk-progress-bar>
+            </div>
+        </div>
+        <div class="completed-exercise-summary" >
+
+            <div class="completed-questions-stat">
+                <div class="stat correct">
+                    {{module.exerciseResults[exerciseTypeId][exerciseId].correctAnswersNum}}
+                </div>
+                <div class="stat wrong">
+                    {{module.exerciseResults[exerciseTypeId][exerciseId].wrongAnswersNum}}
+                </div>
+                <div class="stat unanswered">
+                    {{module.exerciseResults[exerciseTypeId][exerciseId].skippedAnswersNum}}
+                </div>
+            </div>
+
+            <div class="completed-time">
+                {{(module.exerciseResults[exerciseTypeId][exerciseId].duration || 0) | formatTimeDuration: 'mm'}}
+                <span translate=".MIN"></span>
+            </div>
+        </div>
+    </div>
+</button>

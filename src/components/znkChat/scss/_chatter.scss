@@ -13,14 +13,12 @@
     &.online {
         .online-indicator {
             background: $bgColor2;
-            border:none;
         }
     }
 
     &.idle{
         .online-indicator {
             background: $bgColor27;
-            border:none;
         }
     }
 
@@ -28,6 +26,10 @@
         .chatter-name {
             font-family: $fcColor6;
             border:none;
+        }
+
+        .online-indicator {
+            background: $bgColor22;
         }
     }
 

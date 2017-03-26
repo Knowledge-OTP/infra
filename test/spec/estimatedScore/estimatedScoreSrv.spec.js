@@ -1,9 +1,9 @@
 describe('testing service "EstimatedScoreSrv":', function () {
     'use strict';
 
-    beforeEach(module('znk.infra.estimatedScore', 'htmlTemplates', 'testUtility', 'storage.mock', 'estimatedScore.mock', 'znk.infra.presence', 'env.mock', 'user.mock'));
+    beforeEach(module('znk.infra.estimatedScore', 'htmlTemplates', 'testUtility', 'storage.mock', 'estimatedScore.mock', 'znk.infra.presence', 'env.mock', 'user.mock', 'categories.mock'));
 
-    var actions, TestUtilitySrv, $rootScope, StudentStorage, EstimatedScoreSrv, InfraConfigSrv;
+    var actions, TestUtilitySrv, $rootScope, StudentStorage, EstimatedScoreSrv, InfraConfigSrv, categoriesConstant;
 
     beforeEach(module(function (EstimatedScoreSrvProvider, EstimatedScoreEventsHandlerSrvProvider, exerciseTypeConst, $provide, PresenceServiceProvider) {
 
@@ -52,6 +52,7 @@ describe('testing service "EstimatedScoreSrv":', function () {
             EstimatedScoreSrv = $injector.get('EstimatedScoreSrv');
             InfraConfigSrv = $injector.get('InfraConfigSrv');
             StudentStorage = TestUtilitySrv.general.asyncToSync(InfraConfigSrv.getStudentStorage, InfraConfigSrv)();
+            categoriesConstant = $injector.get('categoriesConstant');
 
             TestUtilitySrv.general.printDebugLogs();
 

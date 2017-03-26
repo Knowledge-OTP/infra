@@ -1,0 +1,102 @@
+.ng-include-module-exercise-pane {
+    height: 100%;
+    .lesson-container {
+        padding: 20px 0 20px 20px;
+        height: 95%;
+        .module-container {
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 20px;
+            .module-name {
+                @include text-style(20px, $fcColor6, Quicksand, $boldFontWeight);
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            .subject-icon {
+                height: 44px;
+                margin-bottom: 10px;
+                text-align: center;
+                svg-icon {
+                    svg {
+                        height: 40px;
+                        width: auto;
+                    }
+                }
+            }
+            .subject-name {
+                @include text-style(16px, $fcColor6, Quicksand, $regularFontWeight, null, capitalize);
+                text-align: center;
+                height: 20px;
+            }
+            .divider {
+                width: 100%;
+                height:1px;
+                background-color: $bgColor17;
+                margin: 15px auto;
+            }
+            .module-desc {
+                text-align: center;
+                @include text-style(12px, $fcColor9, Quicksand, $regularFontWeight);
+                height: 25px;
+            }
+            .exercises-box {
+                width: 100%;
+                min-height: 80%;
+                margin: 15px auto 0;
+                background-color: $bgColor32;
+                box-sizing: border-box;
+
+                .content-not-assigned {
+                    padding: 45px 0;
+                    text-align: center;
+                    @include text-style(16px, $fcColor6, Quicksand, $regularFontWeight);
+                    & > div {
+                        margin-bottom: 25px;
+                    }
+                    small {
+                        font-size: 14px;
+                    }
+                }
+
+                .lesson-exercises-container {
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+                    flex-wrap: nowrap;
+                    padding: 20px;
+                    .exercise-item-wrap:nth-last-child(1){
+                        .divider{
+                            display: none;
+                        }
+                    }
+                }
+            }
+            .e-tutoring-overlay.ng-enter {
+                transition: 0.5s linear all;
+                opacity: 0;
+            }
+        }
+        .wrapper-overlay {
+            position: relative;
+            text-align: center;
+            @include full-background-image-retina('/assets/images/bg//modules-content-empty', 100%, 100%); // todo
+            display: block;
+            background-position-y: inherit ;
+            background-size: 800px auto;
+            span {
+                width: 100%;
+                position: absolute;
+                top: 115px;
+                left:0;
+                padding: 0 40px;
+                box-sizing: border-box;
+                @include text-style(16px, $fcColor6, Quicksand, $regularFontWeight);
+            }
+            span.sub {
+                top: 145px;
+                font-size: 14px;
+            }
+        }
+    }
+}

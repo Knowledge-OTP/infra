@@ -98,6 +98,13 @@
                                     setPagerItemBookmarkStatus(i, question.__questionStatus.bookmark);
                                     setPagerItemAnswerClassValidAnswerWrapper(question, i);
                                 }
+
+                                var parentDomElementWidth = domElement.parentElement.offsetWidth;
+                                var activeItem = domElement.querySelectorAll('.current')[0];
+                                var centerAlignment = activeItem.offsetWidth / 2;
+                                var scrollActiveItem = activeItem.offsetLeft + centerAlignment;
+                                var offset = parentDomElementWidth - 210 - scrollActiveItem;
+                                scope.scrollActions.animate(offset, 100, 'ease-in-out');
                             });
                         };
 

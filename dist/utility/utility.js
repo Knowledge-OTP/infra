@@ -52,6 +52,27 @@
                 }
             };
 
+            UtilitySrv.object.findProp = function findProp(obj, key, out) {
+                var i,
+                    proto = Object.prototype,
+                    ts = proto.toString,
+                    hasOwn = proto.hasOwnProperty.bind(obj);
+
+                if ('[object Array]' !== ts.call(out)) { out = []; }
+
+                for (i in obj) {
+                    if (hasOwn(i)) {
+                        if (i === key) {
+                            out.push(obj[i]);
+                        } else if ('[object Array]' === ts.call(obj[i]) || '[object Object]' === ts.call(obj[i])) {
+                            findProp(obj[i], key, out);
+                        }
+                    }
+                }
+
+                return out;
+            };
+
             //array utility srv
             UtilitySrv.array = {};
 
@@ -75,6 +96,12 @@
                     }
                     return 1;
                 };
+            };
+
+            UtilitySrv.array.removeDuplicates = function(arr){
+                return arr.filter(function(item, pos) {
+                    return arr.indexOf(item) === pos;
+                });
             };
 
             UtilitySrv.fn = {};

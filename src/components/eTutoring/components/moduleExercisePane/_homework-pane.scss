@@ -1,0 +1,65 @@
+.lesson-container.homework-container {
+    .module-container {
+        .overdue-assignment-title {
+            display: none;
+        }
+
+        .assignment-title-wrapper.pass-due-date {
+            position: relative;
+            .module-name {
+                color: $fcColor10;
+            }
+
+            .overdue-assignment-title {
+                @include text-style(14px, $fcColor10, Lato, $regularFontWeight);
+                display: block;
+                position: absolute;
+                right: 0;
+                top: 7px;
+            }
+        }
+
+        .topic-icon{
+            height: 44px;
+            margin-bottom: 10px;
+            text-align: center;
+            svg-icon {
+                svg {
+                    height: 40px;
+                    width: auto;
+                }
+                &.english-topic-icon {svg * {fill: $bgColor48;}}
+                &.math-topic-icon {svg * {fill: $bgColor49;}}
+            }
+        }
+
+        .topic-name{
+            @include text-style(16px,$fcColor6, Quicksand, $regularFontWeight, null, capitalize);
+            text-align: center;
+            height: 20px;
+
+        }
+
+        .exercises-box {
+            .homework-exercises-container {
+                padding: 20px 0;
+
+                .exercise-item-wrap {
+                    .exercise-item {
+                        .divider {
+                            display: none;
+                        }
+
+                        module-exercise-item {
+                            button {
+                                width: 625px;
+                                margin: 7px auto;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+

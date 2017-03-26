@@ -1,0 +1,72 @@
+.flex-center {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.app-e-tutoring-overlay {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    .msg {
+        @include text-style(20px, $fcColor9, Quicksand, $regularFontWeight);
+        line-height: 40px;
+        text-align: center;
+        z-index: 2;
+    }
+
+    &.no-teachers-overlay {
+        @include full-background-image-retina('/assets/images/bg/tutoring-no-teachers-bg',1077px, 676px);
+        .msg-wrap {
+            position: absolute;
+            top: 120px;
+            text-align: center;
+            z-index: 10;
+            width: 100%;
+
+            .big-title {
+                @include text-style(22px, $fcColor6, Quicksand, $semiBoldFontWeight);
+                margin-bottom: 50px;
+            }
+            .sub-title {
+                @include text-style(18px, $fcColor6, Quicksand, $regularFontWeight);
+                line-height: 40px;
+            }
+            .btn-wrap {
+                display: flex;
+                margin-top: 40px;
+                justify-content: center;
+            }
+        }
+    }
+}
+
+.app-e-tutoring {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    &.blurred-overlay {
+        filter: blur(3px);
+        opacity: 0.3;
+    }
+    .e-tutoring-main-container {
+        display: flex;
+        height: 100%;
+        .navigation-pane {
+            overflow: hidden;
+            width: 320px;
+            height: 100%;
+        }
+
+        .app-e-tutoring-container {
+            background: $bgColor6;
+            width: 745px;
+            margin-left: 20px;
+            height: 100%;
+        }
+    }
+}
+

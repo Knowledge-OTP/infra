@@ -1,0 +1,37 @@
+<div class="lesson-container" ng-switch="showLoading" translate-namespace="MODULE_EXERCISE_PANE_DRV">
+    <div ng-switch-when="false" ng-if="hasModule" class="module-container">
+        <div class="module-name">{{module.name}}</div>
+        <div class="subject-icon">
+            <svg-icon name="{{svgIcon}}"></svg-icon>
+        </div>
+        <div class="subject-name" translate="SUBJECTS.{{module.subjectId}}"></div>
+        <div class="separator"></div>
+        <div class="module-desc">{{module.desc}}</div>
+        <div class="exercises-box base-border-radius" ng-switch on="module.contentAssign">
+            <div ng-switch-when="false" class="content-not-assigned">
+                <div translate=".NOT_YET_ASSIGNED"></div>
+                <small translate=".WILL_BE_ABLE_TO_VIEW_ONE_TEACHER_ASSIGNS"></small>
+            </div>
+            <div ng-switch-when="true" class="lesson-exercises-container">
+                <div class="exercise-item-wrap" ng-repeat="exercise in module.exercises">
+                    <div class="exercise-item" ng-repeat="item in exercise">
+                        <module-exercise-item
+                            assign-content-type="assignContentEnum.LESSON.enum"
+                            active-view-obj="activeViewObj"
+                            module="module"
+                            exercise="item">
+                        </module-exercise-item>
+                    </div>
+                    <div class="divider"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div ng-switch-when="false" ng-if="!hasModule" class="wrapper-overlay">
+        <span translate=".NO_LESSONS_ASSIGNED"></span>
+        <span class="sub" translate=".NO_LESSONS_ASSIGNED_SUBTEXT"></span>
+    </div>
+    <div ng-switch-when="true" class="wrapper-overlay">
+        <span translate=".PROCESSING_OVERLAY"></span>
+    </div>
+</div>

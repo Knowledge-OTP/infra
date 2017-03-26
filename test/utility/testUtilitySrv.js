@@ -80,7 +80,8 @@
                     var questionResult = {
                         timeSpent: 0,
                         questionId: question.id,
-                        categoryId:question.categoryId
+                        categoryId: question.categoryId,
+                        categoryId2: question.categoryId2
                     };
 
                     if (!correctAnswerMap[index] && numOfUnanswered) {

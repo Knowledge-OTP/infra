@@ -1,0 +1,343 @@
+etutoring-student-navigation-pane {
+    .etutoring-student-navigation-pane{
+        height: 100%;
+        width: 100%;
+        position: relative;
+        background: $bgColor6;
+        overflow: hidden;
+
+        .navigation-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-around;
+
+            .lessons-button, .practice-button{
+                @include text-style(16px,$fcColor6, Quicksand, $regularFontWeight);
+                @include dimension(50%, 51px);
+                cursor: pointer;
+                transition: 0.5s;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: pointer;
+                background-color: $bgColor21;
+
+                .title{
+                    position: relative;
+                }
+
+                &.inactive {
+                    box-shadow: 0px -1px 7px 0px rgba(0, 0, 0, 0.1) inset;
+                }
+            }
+
+            .practice-button.no-homework{
+                pointer-events: none;
+            }
+        }
+
+        &.lessons-pane .lessons-button, &.practice-pane .practice-button{
+            background-color: $bgColor6;
+            ::before{
+                @include dimension(100%, 2px);
+                content: '';
+                position: absolute;
+                bottom: 0;
+            }
+        }
+
+        .search-wrap {
+            padding: 0 18px 18px;
+            .znk-input-group {
+                position: relative;
+                min-height: 45px;
+                input {
+                    width: 88%;
+                    height: 25px;
+                    padding-left: 25px;
+                }
+
+                .search-icon {
+                    width: 14px;
+                    position: absolute;
+                    top: 16px;
+                    left: 7px;
+                }
+
+                .search-icon * {
+                    stroke: $bgColor44;
+                }
+                .clear-search {
+                    font-size: 14px;
+                    cursor: pointer;
+                    color: $fcColor6;
+                    position: absolute;
+                    right: 6px;
+                    top: 15px;
+                    font-weight: $extraLightFontWeight;
+                    padding-right: 5px;
+                     .close-icon {
+                         width: 12px;
+                         height: 12px;
+                         margin-right: 5px;
+                         margin-top: 1px;
+                        *{
+                            stroke: $bgColor44;
+                        }
+                    }
+                }
+            }
+        }
+
+        .modules-wrap {
+            height: 85%;
+            .modules-container {
+                height: 95%;
+                overflow: auto;
+                .module-item {
+                    height: 80px;
+                    display: flex;
+                    flex-direction: row;
+                    border-bottom: 2px solid $bcColor19;
+                    border-left: 3px solid $bgColor3;
+                    cursor: pointer;
+                    background-color: $bgColor6;
+                    transition: all, 0.2s;
+
+                    .md-button.md-default-theme:not([disabled]):hover,
+                    .md-button:not([disabled]):hover {
+                        background-color: $fcColor23;
+                    }
+
+                    .icon-wrapper {
+                        width: 60px;
+                        svg-icon {
+                            height: 30px;
+                            width: 30px;
+                            border-radius: 50%;
+                            position: relative;
+                            text-align: center;
+
+                            svg {
+                                width: 65%;
+                                height: 65%;
+                                * {
+                                    fill: $bgColor6;
+                                }
+                            }
+                        }
+
+                        .homework-practice-icon{
+                            svg-icon {
+                                border: 1px solid $bgColor3;
+                                svg path {
+                                    fill: $bcColor2;
+                                }
+                            }
+                        }
+                    }
+
+                    .module-details {
+                        width: 180px;
+                        padding-top: 18px;
+                        box-sizing: border-box;
+                        .module-name {
+                            overflow: hidden;
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                            @include text-style(16px, $fcColor5, Lato, $regularFontWeight);
+                            margin-bottom: 5px;
+                        }
+                        .subject-name {
+                            @include text-style(12px, $fcColor6, Lato, $regularFontWeight);
+                            height: 15px;
+                            text-transform: capitalize;
+                            margin-bottom: 3px;
+                        }
+                        .assigned-date {
+                            @include text-style(12px, $fcColor9, Lato, $regularFontWeight);
+                        }
+
+                        .due-date{
+                            @include text-style(12px, $fcColor6, Lato, $regularFontWeight);
+                        }
+                    }
+
+                    .module-status {
+                        width: 63px;
+                        .pill{
+                            @include text-style(12px, $fcColor2, Lato, $regularFontWeight);
+                            display: inline;
+                            background-color: #ff931e;
+                            padding: 1px 4px;
+                            line-height: normal;
+                            border-radius: 4px;
+                        }
+                        .in-progress {
+                            @include text-style(10px, $fcColor5, Lato, $regularFontWeight, null, lowercase);
+                            font-style: italic;
+                            padding-right: 5px;
+                        }
+                        svg-icon[name="v-icon"] {
+                            width:20px;
+                            height:20px;
+                            svg {
+                                line {
+                                    fill: $bgColor2;
+                                    stroke: $bgColor2;
+                                }
+                            }
+                        }
+                        .flex-center{
+                            padding-top: 15px;
+                            padding-right: 2px;
+                        }
+                    }
+
+                    &:hover {
+                        background-color: $bgColor43;
+                    }
+                    &.done {
+                        border-left: 2px solid $bcColor1;
+                        button {
+                            color: $fcColor6;
+                        }
+                    }
+                    &.active {
+                        background-color: $bgColor43;
+                        border-left: 8px solid $bgColor3;
+                        .icon-wrapper {
+                        }
+                        button {
+                            color: $fcColor5;
+                            transition: border 0.2s;
+                            border-left: 8px solid $bgColor3;
+                        }
+                    }
+                    &.completed{
+                        .module-details{
+                            .module-name{
+                                color: $fcColor9;
+                            }
+                            .due-date{
+                                display: none;
+                            }
+                        }
+                    }
+                    &.pass-due-date, &.active.pass-due-date{
+                        .homework-practice-icon{
+                            svg-icon {
+                                border: 1px solid $bcColor4;
+                                svg path {
+                                    fill: $bgColor1;
+                                }
+                            }
+                        }
+
+                        .module-name, .due-date {
+                            color:$fcColor10;
+                        }
+                    }
+                    &.completed,  &completed.pass-due-date, &.completed.active{
+                        .module-name, .due-date {
+                            color:$fcColor15;
+                        }
+                        .homework-practice-icon {
+                            svg-icon {
+                                border: 1px solid $bcColor14;
+                                svg path {
+                                    fill: $bgColor45;
+                                }
+                            }
+                        }
+                    }
+
+                    .module-btn {
+                        width: 100%;
+                        height: 100%;
+                        border-radius: 0;
+                        margin: 0;
+                        background-color: inherit;
+                        justify-content: space-between;
+                        color: $fcColor6;
+                        display: flex;
+                        line-height: normal;
+                        &:hover {
+                            background-color: $bgColor46;
+                        }
+
+                        .subject-icon {
+                            width: 50px;
+                            height: 76px;
+                            text-align: center;
+
+                            svg-icon {
+                                position: absolute;
+                                top: 15px;
+                                left: 15px;
+                                width: 36px;
+                                height: 36px;
+                                border-radius: 36px;
+                                * {
+                                    fill: $bgColor6;
+                                }
+                            }
+                        }
+
+                        .module-name-wrap {
+                            height: 76px;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: flex-end;
+
+                            .module-name{
+                                @include text-style(12px, $fcColor5, Lato, $regularFontWeight);
+                            }
+                            .module-subject{
+                                @include text-style(12px, $fcColor9, Lato, $lightFontWeight);
+                            }
+                            .assign-date{
+                                @include text-style(10px, $fcColor9, Lato, $lightFontWeight);
+                            }
+                        }
+                        .module-status{
+                            @include text-style(10px, $fcColor9, Lato, $lightFontWeight);
+                        }
+                    }
+                }
+
+                .module-item.ng-enter {
+                    opacity: 0;
+                }
+                .module-item.ng-enter-active {
+                    opacity: 1;
+                }
+                .module-item.ng-leave {
+                    opacity: 1;
+                }
+                .module-item.ng-leave.ng-leave-active{
+                    opacity: 0;
+                }
+            }
+        }
+
+        .navigation-overlay {
+            position: absolute;
+            top: 106px;
+            text-align: center;
+            @include full-background-image-retina('/assets/images/bg//modules-sidebar-empty', 100%, 458px);
+            background-position: -8px -50px;
+            background-size: 311px auto;
+            span {
+                @include text-style(16px, $fcColor6, Quicksand, $regularFontWeight);
+                width: 100%;
+                position: absolute;
+                top: 25px;
+                left:0;
+                padding: 0 35px;
+                box-sizing: border-box;
+            }
+        }
+    }
+}
+
