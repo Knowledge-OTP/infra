@@ -21,7 +21,6 @@
             localStorage.setItem('studentPath','/sat_app');
             localStorage.setItem('teacherPath','/sat_dashboard');
 
-
             var chatPaths = {
                 chatPath: 'chats',
                 chatsUsersGuids: 'users/$$uid/chats',
@@ -49,14 +48,15 @@
             PresenceServiceProvider.setAuthServiceName('AuthService');
 
         })
-        .run(function ($rootScope, AuthService) {
+        .run(function ($rootScope, InfraConfigSrv) {
             'ngInject';
-            var authData = AuthService.getAuth();
+            InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
+                $rootScope.localUser = {
+                    uid: studentStorage.__config.variables.uid(),
+                    isTeacher: false
+                };
+            });
 
-            $rootScope.localUser = {
-                uid: authData.uid,
-                isTeacher: false
-            };
         });
 
     angular.module('znk.infra.presence').constant('ENV', {
