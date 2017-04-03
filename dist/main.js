@@ -11148,7 +11148,7 @@ angular.module('znk.infra.teachers').run(['$templateCache', function($templateCa
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
-    ["$log", "$q", "ENV", "AuthService", "UserStorageService", function ($log, $q, ENV, AuthService, UserStorageService) {
+    ["$log", "$q", "ENV", "AuthService", "UserStorageService", "InfraConfigSrv", function ($log, $q, ENV, AuthService, UserStorageService, InfraConfigSrv) {
         'ngInject';
 
         function _getProfile() {
@@ -11217,17 +11217,32 @@ angular.module('znk.infra.user').service('UserProfileService',
         }
 
         function _setProfile(newProfile, userId) {
+            var saveProfileProm = [];
             var authData = AuthService.getAuth();
             if (authData || userId){
                 var uid = userId ? userId : authData.uid;
                 var profilePath = 'users/' + uid + '/profile';
                 return UserStorageService.get(profilePath).then(function (profile) {
-                    return profile ? UserStorageService.update(profilePath, newProfile) : UserStorageService.set(profilePath, newProfile);
+                    if (ENV.setUserProfileTwice) {
+                        saveProfileProm.push(_setUserProfileTwice(profilePath, newProfile));
+                    }
+                    if (profile){
+                        saveProfileProm.push(UserStorageService.update(profilePath, newProfile));
+                    } else {
+                        saveProfileProm.push(UserStorageService.set(profilePath, newProfile));
+                    }
+                    return $q.all(saveProfileProm);
                 });
             } else {
                 $log.error('UserProfileService.setProfile: No user were found');
                 return $q.when(null);
             }
+        }
+
+        function _setUserProfileTwice(profilePath, newProfile) {
+            return InfraConfigSrv.getGlobalStorage().then(function(globalStorage) {
+                return globalStorage.set(profilePath, newProfile);
+            });
         }
 
         function _getCurrUserId(){
