@@ -9,6 +9,8 @@
     <!-- endbower-->
 
     <link rel="stylesheet" href="main.css" />
+    <link rel="stylesheet" href="cssConfig/fonts.css" />
+    <link rel="stylesheet" href="cssConfig/znk-scrollbar.css" />
 
 </head>
 
@@ -20,11 +22,9 @@
         background-color: white;
         margin: 100px;
     }
-    .category-short-name {
-        background-color: #000000;
-    }
 </style>
-<body ng-app="demo" layout="column"  ng-controller="Main as vm">
+
+<body ng-app="demo" layout="column"  ng-controller="Main as vm" class="znk-scrollbar">
 
 <znk-category-stats category-id="vm.categoryId"></znk-category-stats>
 

@@ -1,0 +1,14 @@
+/**
+ *  Customize Scrollbar
+ */
+.znk-scrollbar ::-webkit-scrollbar, .znk-scrollbar::-webkit-scrollbar {
+    height: 20px;
+    width: 10px;
+    background-color: #f9f9f9;
+    border-radius: 100px;
+    margin: 20px 0;
+}
+.znk-scrollbar ::-webkit-scrollbar-thumb, .znk-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #E1E1E1;
+    -webkit-border-radius: 1ex;
+}

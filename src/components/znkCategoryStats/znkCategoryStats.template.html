@@ -3,8 +3,6 @@
          subject-id-to-attr-drv="vm.level1CategoryId"
          translate-namespace="ZNK_CATEGORY_SUMMARY">
 
-        <div class="category-short-name">{{vm.category.shortName}}</div>
-
         <div class="progress-details-wrapper">
             <div class="category-name">{{vm.category.name}}</div>
             <div class="level-status-wrapper">
@@ -19,9 +17,56 @@
                 <span class="level-white-line line4"></span>
             </div>
 
-            <div class="average-time-wrapper">
-                <svg-icon name="znkCategoryStats-clock-icon"></svg-icon>
-                <span translate=".AVERAGE_TIME_CATEGORY" translate-values="{avgTime: vm.category.avgTime}"></span>
+            <div class="stats-footer">
+                <div class="average-time-wrapper">
+
+                    <svg-icon name="znkCategoryStats-clock-icon"></svg-icon>
+                    <span translate=".AVERAGE_TIME_CATEGORY" translate-values="{avgTime: vm.category.avgTime}"></span>
+                </div>
+                <div class="show-details" ng-if="vm.category.specificArray">
+                    <md-menu class="specific-menu" md-offset="320 -38">
+                        <div ng-click="$mdOpenMenu($event)" class="menu-btn">
+                            <div translate=".SHOW_DETAILS" class="show-details-title"></div>
+                        </div>
+                        <md-menu-content class="subscore-specific-content" width="4">
+                            <div class="icons-wrap">
+                                <div class="stat-icon-wrap">
+                                    <svg-icon name="znkCategoryStats-v-icon" class="v-icon"></svg-icon>
+                                </div>
+                                <div class="stat-icon-wrap">
+                                    <svg-icon name="znkCategoryStats-x-icon" class="x-icon"></svg-icon>
+                                </div>
+                                <div class="stat-icon-wrap">
+                                    <svg-icon name="znkCategoryStats-total-icon" class="total-icon"></svg-icon>
+                                </div>
+                            </div>
+                            <md-menu-item class="specific-wrap" ng-repeat="specific in vm.category.specificArray track by $index">
+                                 <!--TODO: https://github.com/angular/material/issues/10041-->
+                                <!--<md-tooltip znk-tooltip md-direction="top">{{specific.name}}</md-tooltip>-->
+                                <div class="specific-name" ng-class="{'highlight': specific.levelProgress < 30}">
+                                    {{specific.name | cutString: 25}}
+                                </div>
+                                <div class="category-data">
+                                    <div class="level-progress" ng-class="{'highlight': specific.levelProgress < 30}">
+                                        {{specific.levelProgress}}%
+                                    </div>
+                                    <div class="correct">
+                                        {{specific.correct}}
+                                    </div>
+                                    <div class="wrong">
+                                        {{specific.wrong}}
+                                    </div>
+                                    <div class="unanswered">
+                                        {{specific.totalQuestions}}
+                                    </div>
+                                </div>
+                            </md-menu-item>
+                            <div class="triangle-wrap">
+                                <div class="triangle"></div>
+                            </div>
+                        </md-menu-content>
+                    </md-menu>
+                </div>
             </div>
         </div>
     </div>
