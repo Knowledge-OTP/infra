@@ -1,0 +1,16 @@
+<svg class="v-icon-wrapper" x="0px" y="0px" viewBox="0 0 334.5 228.7">
+    <style type="text/css">
+        .v-icon-wrapper .st0{
+            fill:#ffffff;
+            stroke:#ffffff;
+            stroke-width:26;
+            stroke-linecap:round;
+            stroke-linejoin:round;
+            stroke-miterlimit:10;
+        }
+    </style>
+<g>
+	<line class="st0" x1="13" y1="109.9" x2="118.8" y2="215.7"/>
+	<line class="st0" x1="118.8" y1="215.7" x2="321.5" y2="13"/>
+</g>
+</svg>
