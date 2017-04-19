@@ -11251,9 +11251,18 @@ angular.module('znk.infra.user').service('UserProfileService',
         }
 
         function _updateUserTeachWorksId(uid, userTeachWorksId){
+            var saveProfileProm = [];
             var path = 'users/' + uid + '/teachworksId';
             return UserStorageService.get(path).then(function (teachWorksId) {
-                return teachWorksId ? UserStorageService.update(path, userTeachWorksId) : UserStorageService.set(path, userTeachWorksId);
+                if (ENV.setUserProfileTwice) {
+                    saveProfileProm.push(_setUserProfileTwice(path, userTeachWorksId));
+                }
+                if (teachWorksId){
+                    saveProfileProm.push(UserStorageService.update(path, userTeachWorksId));
+                } else {
+                    saveProfileProm.push(UserStorageService.set(path, userTeachWorksId));
+                }
+                return $q.all(saveProfileProm);
             });
         }
 
