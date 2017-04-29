@@ -566,10 +566,10 @@
                     var platform = ZnkExerciseSrv.getPlatform();
                     switch (platform) {
                         case PlatformEnum.DESKTOP.enum:
-                            templateUrl += 'questionSwiperDesktopTemplate.html';
+                            templateUrl += 'questionSwiperDesktop.template.html';
                             break;
                         case PlatformEnum.MOBILE.enum:
-                            templateUrl += 'questionSwiperMobileTemplate.html';
+                            templateUrl += 'questionSwiperMobileT.template.html';
                             break;
                     }
                     if (!templateUrl) {
@@ -669,10 +669,10 @@
                     var platform = ZnkExerciseSrv.getPlatform();
                     switch (platform) {
                         case PlatformEnum.DESKTOP.enum:
-                            templateUrl += 'btnSectionDesktopTemplate.html';
+                            templateUrl += 'btnSectionDesktop.template.html';
                             break;
                         case PlatformEnum.MOBILE.enum:
-                            templateUrl += 'btnSectionMobileTemplate.html';
+                            templateUrl += 'btnSectionMobile.template.html';
                             break;
                     }
                     if (!templateUrl) {
@@ -849,7 +849,7 @@
                     settings: '<'
                 },
                 require: '^znkExercise',
-                templateUrl: "components/znkExercise/core/template/znkExerciseReviewSectionBtnTemplate.html",
+                templateUrl: "components/znkExercise/core/template/znkExerciseReviewSectionBtn.template.html",
                 link: {
                     pre: function (scope, element, attrs, znkExerciseDrvCtrl) {
                         var liveSessionGuidProm = znkSessionDataSrv.isActiveLiveSession();
@@ -858,7 +858,7 @@
                         var exerciseReviewStatus = scope.settings.exerciseReviewStatus;
                         var isExerciseComplete = scope.settings.isComplete;
                         var isTeacherApp = (ENV.appContext.toLowerCase()) === 'dashboard';
-                        
+
 
                         scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex) {
                             $q.all([
@@ -874,7 +874,7 @@
                                 var isLastQuestion = maxQuestionNum === currIndex ? true : false;
 
                                 function _determineIfShowButton () {
-                                    return isInLiveSession && isExerciseComplete && isTeacherApp && isLastQuestion && 
+                                    return isInLiveSession && isExerciseComplete && isTeacherApp && isLastQuestion &&
                                     exerciseReviewStatus !== ExerciseReviewStatusEnum.YES.enum && exerciseReviewStatus !== ExerciseReviewStatusEnum.DONE_TOGETHER.enum;
                                 }
 
@@ -912,7 +912,7 @@
         '$timeout', '$q',
         function ($timeout, $q) {
             return {
-                templateUrl: 'components/znkExercise/core/template/znkSwiperTemplate.html',
+                templateUrl: 'components/znkExercise/core/template/znkSwiper.template.html',
                 replace: true,
                 restrict: 'E',
                 require: 'ngModel',
@@ -1014,7 +1014,7 @@
             questionTypeGetterFn = typeGetterFn;
         };
 
-        var answersFormaterObjMap = {};        
+        var answersFormaterObjMap = {};
         this.setAnswersFormatValidtors = function (_answersFormaterObjMap) {
             answersFormaterObjMap = _answersFormaterObjMap;
         };
@@ -1038,7 +1038,7 @@
                     return questionTypeGetterFn(question);
                 };
 
-                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {   
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {
                     if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
                         $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
                         return;
@@ -1046,7 +1046,7 @@
 
                    var answersFormaterArr = answersFormaterObjMap[answerTypeId];
 
-                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
+                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer
                    if (angular.isUndefined(userAnswer) ||
                        !angular.isArray(answersFormaterArr) ||
                        !answersFormaterArr.length) {
@@ -1056,10 +1056,10 @@
 
                     var answersFormaterArrLength = answersFormaterArr.length;
 
-                    var answerValueBool, currentFormatter, functionGetter;                     
+                    var answerValueBool, currentFormatter, functionGetter;
                     for (var i = 0; i < answersFormaterArrLength; i++) {
                         currentFormatter = answersFormaterArr[i];
-                       
+
                         if (angular.isFunction(currentFormatter)) {
                             try {
                                  functionGetter = $injector.invoke(currentFormatter);
@@ -2005,12 +2005,12 @@
                             var userAnswer = question.__questionStatus.userAnswer;
                             var answerTypeId = question.answerTypeId;
                             var currIndex = index || question.__questionStatus.index;
-                            
-                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function() {               
-                                setPagerItemAnswerClass(currIndex, question); 
+
+                            QuestionTypesSrv.checkAnswerAgainstFormatValidtors(userAnswer, answerTypeId, function() {
+                                setPagerItemAnswerClass(currIndex, question);
                             }, function() {
                                  var pagerItemElement = getPagerItemByIndex(currIndex);
-                                 pagerItemElement.removeClass('neutral correct wrong');  
+                                 pagerItemElement.removeClass('neutral correct wrong');
                             }, question);
                         }
 
@@ -3600,7 +3600,7 @@
                 return function() {
                     return true;
                 };
-            }; 
+            };
 
             this.setShouldBroadCastExerciseGetter = function(_broadCastExerciseFn) {
                 broadCastExerciseFn = _broadCastExerciseFn;
@@ -3675,7 +3675,7 @@
 })(angular);
 
 angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
-  $templateCache.put("components/znkExercise/core/template/btnSectionDesktopTemplate.html",
+  $templateCache.put("components/znkExercise/core/template/btnSectionDesktop.template.html",
     "<div class=\"btn-container left-container ng-hide\"\n" +
     "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
     "    <button ng-click=\"vm.prevQuestion()\">\n" +
@@ -3696,7 +3696,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "    </button>\n" +
     "</div>\n" +
     "");
-  $templateCache.put("components/znkExercise/core/template/btnSectionMobileTemplate.html",
+  $templateCache.put("components/znkExercise/core/template/btnSectionMobile.template.html",
     "<div ng-class=\"{ 'next-disabled' : settings.slideDirection === d.slideDirections.NONE ||  settings.slideDirection === d.slideDirections.RIGHT }\">\n" +
     "    <div class=\"bookmark-icon-container only-tablet\"\n" +
     "         ng-class=\"vm.questionsWithAnswers[vm.currentSlide].__questionStatus.bookmark ? 'bookmark-active-icon' : 'bookmark-icon'\"\n" +
@@ -3726,7 +3726,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "    </button>\n" +
     "</div>\n" +
     "");
-  $templateCache.put("components/znkExercise/core/template/questionSwiperDesktopTemplate.html",
+  $templateCache.put("components/znkExercise/core/template/questionSwiperDesktop.template.html",
     "<znk-swiper ng-if=\"vm.questions.length\"\n" +
     "            class=\"znk-carousel\"\n" +
     "            ng-model=\"vm.currSlideIndex\"\n" +
@@ -3744,7 +3744,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "    </div>\n" +
     "</znk-swiper>\n" +
     "");
-  $templateCache.put("components/znkExercise/core/template/questionSwiperMobileTemplate.html",
+  $templateCache.put("components/znkExercise/core/template/questionSwiperMobile.template.html",
     "<ion-slide-box znk-slide=\"settings.slideDirection\" class=\"znk-carousel\"\n" +
     "               show-pager=\"false\"\n" +
     "               active-slide=\"vm.currentSlide\">\n" +
@@ -3799,14 +3799,14 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "    </div>\n" +
     "</znk-scroll>\n" +
     "");
-  $templateCache.put("components/znkExercise/core/template/znkExerciseReviewSectionBtnTemplate.html",
+  $templateCache.put("components/znkExercise/core/template/znkExerciseReviewSectionBtn.template.html",
     "<div class=\"btn-section\" ng-if=\"showBtn\">\n" +
     "    <div class=\"review-btn-wrap show-opacity-animate ng-scope\">\n" +
     "        <button class=\"review-btn\" ng-click=\"onReview()\">CONFIRM REVIEW</button>\n" +
     "    </div>\n" +
     "</div>\n" +
     "");
-  $templateCache.put("components/znkExercise/core/template/znkSwiperTemplate.html",
+  $templateCache.put("components/znkExercise/core/template/znkSwiper.template.html",
     "<div class=\"swiper-container\">\n" +
     "    <!-- Additional required wrapper -->\n" +
     "    <div class=\"swiper-wrapper\" ng-transclude>\n" +
