@@ -1,8 +1,3 @@
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.svgIcon', []);
-})(angular);
 /**
  * attrs:
  *  name: svg icon name
@@ -112,6 +107,11 @@
         }]);
 })(angular);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.svgIcon', []);
+})(angular);
 angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCache) {
 
 }]);

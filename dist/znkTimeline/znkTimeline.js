@@ -1,10 +1,5 @@
 (function (angular) {
     'use strict';
-    angular.module('znk.infra.znkTimeline', ['znk.infra.svgIcon', 'znk.infra.enum']);
-})(angular);
-
-(function (angular) {
-    'use strict';
 
     angular.module('znk.infra.znkTimeline').directive('znkTimeline', ['$window', '$templateCache', 'TimelineSrv',
         function ($window, $templateCache, TimelineSrv) {
@@ -284,6 +279,11 @@
     });
 })(angular);
 
+
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.znkTimeline', ['znk.infra.svgIcon', 'znk.infra.enum']);
+})(angular);
 
 angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg",

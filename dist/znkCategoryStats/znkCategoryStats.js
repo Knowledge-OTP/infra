@@ -1,34 +1,6 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkCategoryStats', [
-        'ngMaterial',
-        'pascalprecht.translate',
-        'znk.infra.znkProgressBar',
-        'znk.infra.stats',
-        'znk.infra.contentGetters',
-        'znk.infra.general',
-        'znk.infra.svgIcon',
-        'znk.infra.znkTooltip'
-    ])
-    .config([
-        'SvgIconSrvProvider',
-        function (SvgIconSrvProvider) {
-            'ngInject';
-            var svgMap = {
-                'znkCategoryStats-clock-icon': 'components/znkCategoryStats/svg/clock-icon.svg',
-                'znkCategoryStats-v-icon': 'components/znkCategoryStats/svg/v-icon.svg',
-                'znkCategoryStats-x-icon': 'components/znkCategoryStats/svg/x-icon.svg',
-                'znkCategoryStats-total-icon': 'components/znkCategoryStats/svg/total-icon.svg'
-            };
-            SvgIconSrvProvider.registerSvgSources(svgMap);
-        }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.znkCategoryStats')
         .component('znkCategoryStats', {
             bindings: {
@@ -76,7 +48,110 @@
         });
 })(angular);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkCategoryStats', [
+        'ngMaterial',
+        'pascalprecht.translate',
+        'znk.infra.znkProgressBar',
+        'znk.infra.stats',
+        'znk.infra.contentGetters',
+        'znk.infra.general',
+        'znk.infra.svgIcon',
+        'znk.infra.znkTooltip'
+    ])
+    .config([
+        'SvgIconSrvProvider',
+        function (SvgIconSrvProvider) {
+            'ngInject';
+            var svgMap = {
+                'znkCategoryStats-clock-icon': 'components/znkCategoryStats/svg/clock-icon.svg',
+                'znkCategoryStats-v-icon': 'components/znkCategoryStats/svg/v-icon.svg',
+                'znkCategoryStats-x-icon': 'components/znkCategoryStats/svg/x-icon.svg',
+                'znkCategoryStats-total-icon': 'components/znkCategoryStats/svg/total-icon.svg'
+            };
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+        }
+    ]);
+})(angular);
+
 angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/znkCategoryStats/components/znkCategoryStats.template.html",
+    "<div class=\"znk-category-stats\">\n" +
+    "    <div class=\"category-wrapper\"\n" +
+    "         subject-id-to-attr-drv=\"vm.level1CategoryId\"\n" +
+    "         translate-namespace=\"ZNK_CATEGORY_SUMMARY\">\n" +
+    "\n" +
+    "        <div class=\"progress-details-wrapper\">\n" +
+    "            <div class=\"category-name\">{{vm.category.name}}</div>\n" +
+    "            <div class=\"level-status-wrapper\">\n" +
+    "                <span translate=\".CATEGORY_ACCURACY\" translate-values=\"{categoryProgress: vm.category.progress}\"></span>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <div class=\"subject-progress-wrapper\">\n" +
+    "                <znk-progress-bar progress-width=\"{{vm.category.progress}}\"></znk-progress-bar>\n" +
+    "                <span class=\"level-white-line line1\"></span>\n" +
+    "                <span class=\"level-white-line line2\"></span>\n" +
+    "                <span class=\"level-white-line line3\"></span>\n" +
+    "                <span class=\"level-white-line line4\"></span>\n" +
+    "            </div>\n" +
+    "\n" +
+    "            <div class=\"stats-footer\">\n" +
+    "                <div class=\"average-time-wrapper\">\n" +
+    "\n" +
+    "                    <svg-icon name=\"znkCategoryStats-clock-icon\"></svg-icon>\n" +
+    "                    <span translate=\".AVERAGE_TIME_CATEGORY\" translate-values=\"{avgTime: vm.category.avgTime}\"></span>\n" +
+    "                </div>\n" +
+    "                <div class=\"show-details\" ng-if=\"vm.category.specificArray\">\n" +
+    "                    <md-menu class=\"specific-menu\" md-offset=\"320 -38\">\n" +
+    "                        <div ng-click=\"$mdOpenMenu($event)\" class=\"menu-btn\">\n" +
+    "                            <div translate=\".SHOW_DETAILS\" class=\"show-details-title\"></div>\n" +
+    "                        </div>\n" +
+    "                        <md-menu-content class=\"subscore-specific-content\" width=\"4\">\n" +
+    "                            <div class=\"icons-wrap\">\n" +
+    "                                <div class=\"stat-icon-wrap\">\n" +
+    "                                    <svg-icon name=\"znkCategoryStats-v-icon\" class=\"v-icon\"></svg-icon>\n" +
+    "                                </div>\n" +
+    "                                <div class=\"stat-icon-wrap\">\n" +
+    "                                    <svg-icon name=\"znkCategoryStats-x-icon\" class=\"x-icon\"></svg-icon>\n" +
+    "                                </div>\n" +
+    "                                <div class=\"stat-icon-wrap\">\n" +
+    "                                    <svg-icon name=\"znkCategoryStats-total-icon\" class=\"total-icon\"></svg-icon>\n" +
+    "                                </div>\n" +
+    "                            </div>\n" +
+    "                            <md-menu-item class=\"specific-wrap\" ng-repeat=\"specific in vm.category.specificArray track by $index\">\n" +
+    "                                 <!--TODO: https://github.com/angular/material/issues/10041-->\n" +
+    "                                <!--<md-tooltip znk-tooltip md-direction=\"top\">{{specific.name}}</md-tooltip>-->\n" +
+    "                                <div class=\"specific-name\" ng-class=\"{'highlight': specific.levelProgress < 30}\">\n" +
+    "                                    {{specific.name | cutString: 25}}\n" +
+    "                                </div>\n" +
+    "                                <div class=\"category-data\">\n" +
+    "                                    <div class=\"level-progress\" ng-class=\"{'highlight': specific.levelProgress < 30}\">\n" +
+    "                                        {{specific.levelProgress}}%\n" +
+    "                                    </div>\n" +
+    "                                    <div class=\"correct\">\n" +
+    "                                        {{specific.correct}}\n" +
+    "                                    </div>\n" +
+    "                                    <div class=\"wrong\">\n" +
+    "                                        {{specific.wrong}}\n" +
+    "                                    </div>\n" +
+    "                                    <div class=\"unanswered\">\n" +
+    "                                        {{specific.totalQuestions}}\n" +
+    "                                    </div>\n" +
+    "                                </div>\n" +
+    "                            </md-menu-item>\n" +
+    "                            <div class=\"triangle-wrap\">\n" +
+    "                                <div class=\"triangle\"></div>\n" +
+    "                            </div>\n" +
+    "                        </md-menu-content>\n" +
+    "                    </md-menu>\n" +
+    "                </div>\n" +
+    "            </div>\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
   $templateCache.put("components/znkCategoryStats/svg/clock-icon.svg",
     "<svg version=\"1.1\"\n" +
     "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
@@ -192,80 +267,5 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
     "        <line class=\"st1\" x1=\"-592.6\" y1=\"621.5\" x2=\"-467.4\" y2=\"496.3\"/>\n" +
     "    </g>\n" +
     "</svg>\n" +
-    "");
-  $templateCache.put("components/znkCategoryStats/znkCategoryStats.template.html",
-    "<div class=\"znk-category-stats\">\n" +
-    "    <div class=\"category-wrapper\"\n" +
-    "         subject-id-to-attr-drv=\"vm.level1CategoryId\"\n" +
-    "         translate-namespace=\"ZNK_CATEGORY_SUMMARY\">\n" +
-    "\n" +
-    "        <div class=\"progress-details-wrapper\">\n" +
-    "            <div class=\"category-name\">{{vm.category.name}}</div>\n" +
-    "            <div class=\"level-status-wrapper\">\n" +
-    "                <span translate=\".CATEGORY_ACCURACY\" translate-values=\"{categoryProgress: vm.category.progress}\"></span>\n" +
-    "            </div>\n" +
-    "\n" +
-    "            <div class=\"subject-progress-wrapper\">\n" +
-    "                <znk-progress-bar progress-width=\"{{vm.category.progress}}\"></znk-progress-bar>\n" +
-    "                <span class=\"level-white-line line1\"></span>\n" +
-    "                <span class=\"level-white-line line2\"></span>\n" +
-    "                <span class=\"level-white-line line3\"></span>\n" +
-    "                <span class=\"level-white-line line4\"></span>\n" +
-    "            </div>\n" +
-    "\n" +
-    "            <div class=\"stats-footer\">\n" +
-    "                <div class=\"average-time-wrapper\">\n" +
-    "\n" +
-    "                    <svg-icon name=\"znkCategoryStats-clock-icon\"></svg-icon>\n" +
-    "                    <span translate=\".AVERAGE_TIME_CATEGORY\" translate-values=\"{avgTime: vm.category.avgTime}\"></span>\n" +
-    "                </div>\n" +
-    "                <div class=\"show-details\" ng-if=\"vm.category.specificArray\">\n" +
-    "                    <md-menu class=\"specific-menu\" md-offset=\"320 -38\">\n" +
-    "                        <div ng-click=\"$mdOpenMenu($event)\" class=\"menu-btn\">\n" +
-    "                            <div translate=\".SHOW_DETAILS\" class=\"show-details-title\"></div>\n" +
-    "                        </div>\n" +
-    "                        <md-menu-content class=\"subscore-specific-content\" width=\"4\">\n" +
-    "                            <div class=\"icons-wrap\">\n" +
-    "                                <div class=\"stat-icon-wrap\">\n" +
-    "                                    <svg-icon name=\"znkCategoryStats-v-icon\" class=\"v-icon\"></svg-icon>\n" +
-    "                                </div>\n" +
-    "                                <div class=\"stat-icon-wrap\">\n" +
-    "                                    <svg-icon name=\"znkCategoryStats-x-icon\" class=\"x-icon\"></svg-icon>\n" +
-    "                                </div>\n" +
-    "                                <div class=\"stat-icon-wrap\">\n" +
-    "                                    <svg-icon name=\"znkCategoryStats-total-icon\" class=\"total-icon\"></svg-icon>\n" +
-    "                                </div>\n" +
-    "                            </div>\n" +
-    "                            <md-menu-item class=\"specific-wrap\" ng-repeat=\"specific in vm.category.specificArray track by $index\">\n" +
-    "                                 <!--TODO: https://github.com/angular/material/issues/10041-->\n" +
-    "                                <!--<md-tooltip znk-tooltip md-direction=\"top\">{{specific.name}}</md-tooltip>-->\n" +
-    "                                <div class=\"specific-name\" ng-class=\"{'highlight': specific.levelProgress < 30}\">\n" +
-    "                                    {{specific.name | cutString: 25}}\n" +
-    "                                </div>\n" +
-    "                                <div class=\"category-data\">\n" +
-    "                                    <div class=\"level-progress\" ng-class=\"{'highlight': specific.levelProgress < 30}\">\n" +
-    "                                        {{specific.levelProgress}}%\n" +
-    "                                    </div>\n" +
-    "                                    <div class=\"correct\">\n" +
-    "                                        {{specific.correct}}\n" +
-    "                                    </div>\n" +
-    "                                    <div class=\"wrong\">\n" +
-    "                                        {{specific.wrong}}\n" +
-    "                                    </div>\n" +
-    "                                    <div class=\"unanswered\">\n" +
-    "                                        {{specific.totalQuestions}}\n" +
-    "                                    </div>\n" +
-    "                                </div>\n" +
-    "                            </md-menu-item>\n" +
-    "                            <div class=\"triangle-wrap\">\n" +
-    "                                <div class=\"triangle\"></div>\n" +
-    "                            </div>\n" +
-    "                        </md-menu-content>\n" +
-    "                    </md-menu>\n" +
-    "                </div>\n" +
-    "            </div>\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "</div>\n" +
     "");
 }]);

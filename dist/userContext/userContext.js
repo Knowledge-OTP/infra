@@ -1,12 +1,6 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.userContext', []);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.userContext').service('StudentContextSrv', ['$window', '$log',
 
         function ($window, $log) {
@@ -120,6 +114,12 @@
             return TeacherContextSrv;
         }
     ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.userContext', []);
 })(angular);
 
 angular.module('znk.infra.userContext').run(['$templateCache', function($templateCache) {

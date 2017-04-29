@@ -1,87 +1,6 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.stats', [
-            'znk.infra.enum',
-            'znk.infra.znkExercise',
-            'znk.infra.utility',
-            'znk.infra.contentGetters'
-        ])
-        .run([
-            'StatsEventsHandlerSrv',
-            function (StatsEventsHandlerSrv) {
-                StatsEventsHandlerSrv.init();
-            }
-        ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.stats').factory('StatsEventsHandlerSrv', [
-        'exerciseEventsConst', 'StatsSrv', 'ExerciseTypeEnum', '$log', 'UtilitySrv',
-        function (exerciseEventsConst, StatsSrv, ExerciseTypeEnum, $log, UtilitySrv) {
-            var StatsEventsHandlerSrv = {};
-
-            StatsEventsHandlerSrv.addNewExerciseResult = function (exerciseType, exercise, results) {
-                return StatsSrv.isExerciseStatsRecorded(exerciseType, exercise.id).then(function (isRecorded) {
-                    if (isRecorded) {
-                        return;
-                    }
-
-                    var newStats = {};
-                    var foundValidCategoryId = false;
-                    var newStat;
-
-                    var questionsMap = UtilitySrv.array.convertToMap(exercise.questions);
-                    results.questionResults.forEach(function (result) {
-                        var question = questionsMap[result.questionId];
-                        var categoryIds = {};
-                        categoryIds.categoryId = question.categoryId;
-                        categoryIds.categoryId2 = question.categoryId2;
-                        angular.forEach(categoryIds, function (categoryId) {
-                            if (angular.isDefined(categoryId) && !isNaN(+categoryId) && categoryId !== null) {
-                                foundValidCategoryId = true;
-
-                                if (!newStats[categoryId]) {
-                                    newStats[categoryId] = new StatsSrv.BaseStats();
-                                }
-                                newStat = newStats[categoryId];
-
-                                newStat.totalQuestions++;
-
-                                newStat.totalTime += result.timeSpent || 0;
-
-                                if (angular.isUndefined(result.userAnswer)) {
-                                    newStat.unanswered++;
-                                } else if (result.isAnsweredCorrectly) {
-                                    newStat.correct++;
-                                } else {
-                                    newStat.wrong++;
-                                }
-                            }
-                        });
-                        if (!foundValidCategoryId) {
-                            $log.error('StatsEventsHandlerSrv: _eventHandler: bad category id for the following question: ', question.id);
-                            return;
-                        }
-                    });
-
-                    return StatsSrv.updateStats(newStats, exerciseType, exercise.id);
-                });
-            };
-
-            //added in order to load the service
-            StatsEventsHandlerSrv.init = angular.noop;
-
-            return StatsEventsHandlerSrv;
-        }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.stats').factory('StatsLevelEnum', [
         'EnumSrv',
         function (EnumSrv) {
@@ -91,108 +10,6 @@
                 ['LEVEL3', 3, 'level3Categories'],
                 ['LEVEL4', 4, 'level4Categories']
             ]);
-        }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.stats').service('StatsQuerySrv', [
-        'StatsSrv', '$q',
-        function (StatsSrv, $q) {
-            var StatsQuerySrv = {};
-
-            function _getCategoryWeakness(category) {
-                if (!category.totalQuestions) {
-                    return -Infinity;
-                }
-                return (category.totalQuestions - category.correct) / (category.totalQuestions);
-            }
-
-            function WeaknessAccumulator() {
-                var currWeakestCategory = {};
-
-                function _isMostWeakSoFar(categoryWeakness) {
-                    return angular.isUndefined(currWeakestCategory.weakness) || currWeakestCategory.weakness < categoryWeakness;
-                }
-
-                this.proccessCategory = function (categoryStats) {
-                    var categoryWeakness = _getCategoryWeakness(categoryStats);
-                    if (_isMostWeakSoFar(categoryWeakness)) {
-                        currWeakestCategory.weakness = categoryWeakness;
-                        currWeakestCategory.category = categoryStats;
-                    }
-                };
-
-                this.getWeakestCategory = function () {
-                    return currWeakestCategory.category;
-                };
-            }
-
-            StatsQuerySrv.getWeakestCategoryInLevel = function (level, optionalIds, parentId) {
-                function _isOptional(categoryStats) {
-                    if (!optionalIds.length && angular.isUndefined(parentId)) {
-                        return true;
-                    }
-
-                    var id = categoryStats.id;
-                    if (optionalIds.length && (optionalIds.indexOf(id) === -1)) {
-                        return false;
-                    }
-
-                    var parentsIds = categoryStats.parentsIds;
-                    if (angular.isDefined(parentId) && parentsIds.indexOf(parentId) === -1) {
-                        return false;
-                    }
-
-                    return true;
-                }
-
-                if (!angular.isArray(optionalIds)) {
-                    optionalIds = [];
-                }
-
-                return StatsSrv.getLevelStats(level).then(function (levelStats) {
-                    var iteratedObjProm = $q.when();
-                    var iteratedObj = {};
-
-                    if (optionalIds.length) {
-                        var allProm = [];
-                        optionalIds.forEach(function (categoryId) {
-                            var categoryKey = StatsSrv.getCategoryKey(categoryId);
-
-                            if (levelStats && levelStats[categoryKey]) {
-                                iteratedObj[categoryKey] = levelStats[categoryKey];
-                            } else {
-                                var prom = StatsSrv.getAncestorIds(categoryId).then(function (parentsIds) {
-                                    iteratedObj[categoryKey] = new StatsSrv.BaseStats(categoryId, true);
-                                    iteratedObj[categoryKey].parentsIds = parentsIds;
-                                });
-                                allProm.push(prom);
-                            }
-                        });
-                        iteratedObjProm = $q.all(allProm);
-                    } else {
-                        iteratedObjProm = $q.when();
-                        iteratedObj = levelStats;
-                    }
-
-                    return iteratedObjProm.then(function () {
-                        var weaknessAccumulator = new WeaknessAccumulator();
-                        angular.forEach(iteratedObj, function (categoryStats) {
-                            if (_isOptional(categoryStats)) {
-                                weaknessAccumulator.proccessCategory(categoryStats);
-                            }
-                        });
-
-                        return weaknessAccumulator.getWeakestCategory();
-                    });
-
-                });
-            };
-
-            return StatsQuerySrv;
         }
     ]);
 })(angular);
@@ -375,6 +192,189 @@
 
             return StatsSrv;
         }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.stats').factory('StatsEventsHandlerSrv', [
+        'exerciseEventsConst', 'StatsSrv', 'ExerciseTypeEnum', '$log', 'UtilitySrv',
+        function (exerciseEventsConst, StatsSrv, ExerciseTypeEnum, $log, UtilitySrv) {
+            var StatsEventsHandlerSrv = {};
+
+            StatsEventsHandlerSrv.addNewExerciseResult = function (exerciseType, exercise, results) {
+                return StatsSrv.isExerciseStatsRecorded(exerciseType, exercise.id).then(function (isRecorded) {
+                    if (isRecorded) {
+                        return;
+                    }
+
+                    var newStats = {};
+                    var foundValidCategoryId = false;
+                    var newStat;
+
+                    var questionsMap = UtilitySrv.array.convertToMap(exercise.questions);
+                    results.questionResults.forEach(function (result) {
+                        var question = questionsMap[result.questionId];
+                        var categoryIds = {};
+                        categoryIds.categoryId = question.categoryId;
+                        categoryIds.categoryId2 = question.categoryId2;
+                        angular.forEach(categoryIds, function (categoryId) {
+                            if (angular.isDefined(categoryId) && !isNaN(+categoryId) && categoryId !== null) {
+                                foundValidCategoryId = true;
+
+                                if (!newStats[categoryId]) {
+                                    newStats[categoryId] = new StatsSrv.BaseStats();
+                                }
+                                newStat = newStats[categoryId];
+
+                                newStat.totalQuestions++;
+
+                                newStat.totalTime += result.timeSpent || 0;
+
+                                if (angular.isUndefined(result.userAnswer)) {
+                                    newStat.unanswered++;
+                                } else if (result.isAnsweredCorrectly) {
+                                    newStat.correct++;
+                                } else {
+                                    newStat.wrong++;
+                                }
+                            }
+                        });
+                        if (!foundValidCategoryId) {
+                            $log.error('StatsEventsHandlerSrv: _eventHandler: bad category id for the following question: ', question.id);
+                            return;
+                        }
+                    });
+
+                    return StatsSrv.updateStats(newStats, exerciseType, exercise.id);
+                });
+            };
+
+            //added in order to load the service
+            StatsEventsHandlerSrv.init = angular.noop;
+
+            return StatsEventsHandlerSrv;
+        }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.stats').service('StatsQuerySrv', [
+        'StatsSrv', '$q',
+        function (StatsSrv, $q) {
+            var StatsQuerySrv = {};
+
+            function _getCategoryWeakness(category) {
+                if (!category.totalQuestions) {
+                    return -Infinity;
+                }
+                return (category.totalQuestions - category.correct) / (category.totalQuestions);
+            }
+
+            function WeaknessAccumulator() {
+                var currWeakestCategory = {};
+
+                function _isMostWeakSoFar(categoryWeakness) {
+                    return angular.isUndefined(currWeakestCategory.weakness) || currWeakestCategory.weakness < categoryWeakness;
+                }
+
+                this.proccessCategory = function (categoryStats) {
+                    var categoryWeakness = _getCategoryWeakness(categoryStats);
+                    if (_isMostWeakSoFar(categoryWeakness)) {
+                        currWeakestCategory.weakness = categoryWeakness;
+                        currWeakestCategory.category = categoryStats;
+                    }
+                };
+
+                this.getWeakestCategory = function () {
+                    return currWeakestCategory.category;
+                };
+            }
+
+            StatsQuerySrv.getWeakestCategoryInLevel = function (level, optionalIds, parentId) {
+                function _isOptional(categoryStats) {
+                    if (!optionalIds.length && angular.isUndefined(parentId)) {
+                        return true;
+                    }
+
+                    var id = categoryStats.id;
+                    if (optionalIds.length && (optionalIds.indexOf(id) === -1)) {
+                        return false;
+                    }
+
+                    var parentsIds = categoryStats.parentsIds;
+                    if (angular.isDefined(parentId) && parentsIds.indexOf(parentId) === -1) {
+                        return false;
+                    }
+
+                    return true;
+                }
+
+                if (!angular.isArray(optionalIds)) {
+                    optionalIds = [];
+                }
+
+                return StatsSrv.getLevelStats(level).then(function (levelStats) {
+                    var iteratedObjProm = $q.when();
+                    var iteratedObj = {};
+
+                    if (optionalIds.length) {
+                        var allProm = [];
+                        optionalIds.forEach(function (categoryId) {
+                            var categoryKey = StatsSrv.getCategoryKey(categoryId);
+
+                            if (levelStats && levelStats[categoryKey]) {
+                                iteratedObj[categoryKey] = levelStats[categoryKey];
+                            } else {
+                                var prom = StatsSrv.getAncestorIds(categoryId).then(function (parentsIds) {
+                                    iteratedObj[categoryKey] = new StatsSrv.BaseStats(categoryId, true);
+                                    iteratedObj[categoryKey].parentsIds = parentsIds;
+                                });
+                                allProm.push(prom);
+                            }
+                        });
+                        iteratedObjProm = $q.all(allProm);
+                    } else {
+                        iteratedObjProm = $q.when();
+                        iteratedObj = levelStats;
+                    }
+
+                    return iteratedObjProm.then(function () {
+                        var weaknessAccumulator = new WeaknessAccumulator();
+                        angular.forEach(iteratedObj, function (categoryStats) {
+                            if (_isOptional(categoryStats)) {
+                                weaknessAccumulator.proccessCategory(categoryStats);
+                            }
+                        });
+
+                        return weaknessAccumulator.getWeakestCategory();
+                    });
+
+                });
+            };
+
+            return StatsQuerySrv;
+        }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.stats', [
+            'znk.infra.enum',
+            'znk.infra.znkExercise',
+            'znk.infra.utility',
+            'znk.infra.contentGetters'
+        ])
+        .run([
+            'StatsEventsHandlerSrv',
+            function (StatsEventsHandlerSrv) {
+                StatsEventsHandlerSrv.init();
+            }
+        ]);
 })(angular);
 
 angular.module('znk.infra.stats').run(['$templateCache', function($templateCache) {

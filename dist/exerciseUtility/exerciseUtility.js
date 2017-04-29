@@ -1,19 +1,6 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.exerciseUtility', [
-        'znk.infra.config',
-        'znk.infra.enum',
-        'znk.infra.storage',
-        'znk.infra.exerciseResult',
-        'znk.infra.contentAvail',
-        'znk.infra.content'
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     var answerTypeEnum = {
         SELECT_ANSWER: 0,
         FREE_TEXT_ANSWER: 1,
@@ -255,6 +242,19 @@
 
             return SubjectEnum;
         }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.exerciseUtility', [
+        'znk.infra.config',
+        'znk.infra.enum',
+        'znk.infra.storage',
+        'znk.infra.exerciseResult',
+        'znk.infra.contentAvail',
+        'znk.infra.content'
     ]);
 })(angular);
 

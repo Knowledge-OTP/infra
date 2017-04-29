@@ -1,294 +1,6 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise', [
-        'ngAnimate',
-        'pascalprecht.translate',
-        'znk.infra.znkQuestionReport',
-        'znk.infra.svgIcon',
-        'znk.infra.scroll',
-        'znk.infra.autofocus',
-        'znk.infra.exerciseUtility',
-        'znk.infra.analytics',
-        'znk.infra.popUp',
-        'znk.infra.user',
-        'znk.infra.utility',
-        'znk.infra.znkSessionData'
-    ])
-    .config([
-        'SvgIconSrvProvider',
-        function (SvgIconSrvProvider) {
-            var svgMap = {
-                'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg',
-                'znk-exercise-eraser': 'components/znkExercise/svg/tools-eraser.svg',
-                'znk-exercise-pencil': 'components/znkExercise/svg/tools-pencil.svg',
-                'znk-exercise-pointer': 'components/znkExercise/svg/tools-pointer.svg',
-                'znk-exercise-remove': 'components/znkExercise/svg/tools-remove.svg',
-                'znk-exercise-touche': 'components/znkExercise/svg/tools-touche.svg'
-            };
-            SvgIconSrvProvider.registerSvgSources(svgMap);
-        }]);
-})(angular);
-
-/**
- * attrs:
- *
- */
-(function (angular) {
-    'use strict';
-
-    var typeToViewMap;
-    angular.module('znk.infra.znkExercise').directive('answerBuilder', [
-        '$compile', 'AnswerTypeEnum', 'ZnkExerciseUtilitySrv', 'ZnkExerciseViewModeEnum',
-        function ($compile, AnswerTypeEnum, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum) {
-            if(!typeToViewMap) {
-                typeToViewMap = {};
-                angular.forEach(AnswerTypeEnum, function (enumData, enumName) {
-                    var directiveName = enumName.toLowerCase().replace(/_/g, '-');
-                    typeToViewMap[enumData.enum] = '<' + directiveName + '></' + directiveName + '>';
-                });
-            }
-
-            return {
-                require: ['answerBuilder','^questionBuilder', '^ngModel'],
-                restrict: 'E',
-                controller:[
-                    function(){
-
-                    }
-                ],
-                link: {
-                    pre:function (scope, element, attrs, ctrls) {
-                        var answerBuilderCtrl = ctrls[0];
-                        var questionBuilderCtrl = ctrls[1];
-                        var ngModelCtrl = ctrls[2];
-
-                        var fnToBindFromQuestionBuilder = ['getViewMode', 'getCurrentIndex'];
-                        ZnkExerciseUtilitySrv.bindFunctions(answerBuilderCtrl,questionBuilderCtrl,fnToBindFromQuestionBuilder);
-
-                        answerBuilderCtrl.canUserAnswerBeChanged = function(){
-                            var viewMode = questionBuilderCtrl.getViewMode();
-                            var isntReviewMode = viewMode !== ZnkExerciseViewModeEnum.REVIEW.enum;
-                            var notAnswered = angular.isDefined(ngModelCtrl.$viewValue);
-                            var isAnswerWithResultViewMode = viewMode === ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum;
-                            return isntReviewMode && isAnswerWithResultViewMode && notAnswered;
-                        };
-
-                        answerBuilderCtrl.question = questionBuilderCtrl.question;
-
-                        var answerType = questionBuilderCtrl.question.answerTypeId;
-                        var answerHtml = typeToViewMap[answerType];
-                        element.html(answerHtml);
-                        $compile(element.contents())(scope);
-                    }
-                }
-            };
-        }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkExercise').provider('ZnkExerciseAnswersSrv', function () {
-        this.config = {
-            selectAnswer:{}
-        };
-
-        var selectAnswer = {};
-
-        this.config.selectAnswer.setAnswerIndexFormatter = function(fn){
-            selectAnswer.answerIndexFormatter = fn;
-        };
-
-        this.$get = [
-            function () {
-                var ZnkExerciseAnswersSrv = {
-                    selectAnswer: {}
-                };
-
-                ZnkExerciseAnswersSrv.selectAnswer.getAnswerIndex = function(answerIndex){
-                    var formattedAnswerIndex;
-
-                    if(selectAnswer.answerIndexFormatter){
-                        formattedAnswerIndex = selectAnswer.answerIndexFormatter.apply(this,arguments);
-                    }
-
-                    if(angular.isUndefined(formattedAnswerIndex)){
-                        var UPPER_A_ASCII_CODE = 65;
-                        formattedAnswerIndex  = String.fromCharCode(UPPER_A_ASCII_CODE + answerIndex);
-                    }
-
-                    return formattedAnswerIndex;
-                };
-
-                return ZnkExerciseAnswersSrv;
-            }
-        ];
-    });
-})(angular);
-
-'use strict';
-
-(function (angular) {
-    angular.module('znk.infra.znkExercise').directive('markup', [
-        '$window',
-        function ($window) {
-            var _isMobile = false;//MobileSrv.isMobile();
-            var MAX_IMAGE_WIDTH = 275;
-            var dummyElem = angular.element('<P/>');
-            return {
-                replace: true,
-                restrict: 'E',
-                link: function (scope, element, attrs) {
-
-                    var toDomElement = function domElement(markup) {
-                        dummyElem.append(markup);
-                        return dummyElem.contents();
-                    };
-
-                    var imageStyle = function imageStyle(image){
-                        var _style = {
-                            width: '',
-                            height: ''
-                        };
-
-                        if(image.style.width){
-                            var _height = image.style.height;
-                            var _width = image.style.width;
-
-                            _height = _height.replace('px','');
-                            _width = _width.replace('px','');
-
-                            if(!isNaN(_width)){
-                                _width = parseInt(_width);
-
-                                while(_width > MAX_IMAGE_WIDTH){
-                                    _width = _width * 0.90;
-                                    _height = _height * 0.90;
-                                }
-                                _style.width = _width + 'px';
-                                _style.height = _height + 'px';
-                            }
-                        }
-                        return _style;
-                    };
-
-                    var resizeImages = function resizeImages(domElement){
-                        var style;
-
-                        for(var i=0; i<domElement.length; i++ ){
-
-                            if(domElement[i].tagName && domElement[i].tagName.toLowerCase() === 'img')
-                            {
-                                if(domElement[i].style.width){
-                                    style = imageStyle(domElement[i]);
-                                    domElement[i].style.width = style.width;
-                                    domElement[i].style.height = style.height;
-                                }
-                            }
-                            else{
-                                var _images = angular.element(domElement[i]).find('img');
-                                if(_images.length){
-                                    for(var x=0; x<_images.length; x++){
-                                        if(_images[x].style.width){
-                                            style = imageStyle(_images[x]);
-                                            _images[x].style.width = style.width;
-                                            _images[x].style.height = style.height;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        return domElement;
-                    };
-
-                    var removeLeftMargin = function removeLeftMargin(domElement){
-
-                        for(var i=0; i<domElement.length; i++){
-
-                            if(domElement[i].tagName && domElement[i].tagName.toLowerCase() === 'p')
-                            {
-                                if(!domElement[i].style) {
-                                    break;
-                                }
-
-                                var marginLeft = domElement[i].style.marginLeft;
-                                marginLeft = marginLeft ?  marginLeft.replace('px','') : marginLeft;
-
-                                if(marginLeft && !isNaN(marginLeft))
-                                {
-                                    domElement[i].style.marginLeft = 0;
-                                }
-                            }
-                        }
-
-                        return domElement;
-                    };
-
-                    var watchDestroyer = scope.$watch(attrs.content,function(newVal){
-                        if(!!newVal){
-
-                            if(_isMobile){
-                                MAX_IMAGE_WIDTH= ($window.innerWidth / 1.05);
-                            }
-                            else{
-                                MAX_IMAGE_WIDTH= ($window.innerWidth / 1.25);
-                            }
-
-                            var _domElements = toDomElement(newVal);
-                            if(_domElements) {
-                                var _newDomElements = resizeImages(_domElements);
-
-                                //remove left margin from <p> tag
-                                _newDomElements = removeLeftMargin(_newDomElements);
-
-                                element.append(_newDomElements);
-                            }
-
-                            watchDestroyer();
-                        }
-                    });
-                }
-            };
-        }
-    ]);
-})(angular);
-
-
-'use strict';
-
-(function (angular) {
-    angular.module('znk.infra.znkExercise').directive('arrayToStringFmtr', [
-        function () {
-            return {
-                require: 'ngModel',
-                link: function (scope, element, attrs, ngModelCtrl) {
-                    function parser(val){
-                        if(!val || !val.length){
-                            return undefined;
-                        }
-                        return val.join('');
-                    }
-                    ngModelCtrl.$parsers.push(parser);
-
-                    function formatter(val){
-                        if (!val || !val.length) {
-                            return [];
-                        }
-                        return val.match(/.{1}/g);
-                    }
-                    ngModelCtrl.$formatters.push(formatter);
-                }
-            };
-        }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.znkExercise').controller('BaseZnkExerciseController',
         ["$scope", "exerciseData", "exerciseSettings", "$state", "$q", "ExerciseTypeEnum", "$location", "ExerciseResultSrv", "ZnkExerciseSrv", "$filter", "PopUpSrv", "exerciseEventsConst", "$rootScope", "ZnkExerciseUtilitySrv", "ZnkExerciseViewModeEnum", "SubjectEnum", "znkAnalyticsSrv", "$translate", "$log", "StatsEventsHandlerSrv", function ($scope, exerciseData, exerciseSettings, $state, $q, ExerciseTypeEnum, $location, ExerciseResultSrv, ZnkExerciseSrv,
                   $filter, PopUpSrv, exerciseEventsConst, $rootScope, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum, SubjectEnum,
@@ -569,7 +281,7 @@
                             templateUrl += 'questionSwiperDesktop.template.html';
                             break;
                         case PlatformEnum.MOBILE.enum:
-                            templateUrl += 'questionSwiperMobileT.template.html';
+                            templateUrl += 'questionSwiperMobile.template.html';
                             break;
                     }
                     if (!templateUrl) {
@@ -1014,7 +726,7 @@
             questionTypeGetterFn = typeGetterFn;
         };
 
-        var answersFormaterObjMap = {};
+        var answersFormaterObjMap = {};        
         this.setAnswersFormatValidtors = function (_answersFormaterObjMap) {
             answersFormaterObjMap = _answersFormaterObjMap;
         };
@@ -1038,7 +750,7 @@
                     return questionTypeGetterFn(question);
                 };
 
-                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {   
                     if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
                         $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
                         return;
@@ -1046,7 +758,7 @@
 
                    var answersFormaterArr = answersFormaterObjMap[answerTypeId];
 
-                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer
+                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
                    if (angular.isUndefined(userAnswer) ||
                        !angular.isArray(answersFormaterArr) ||
                        !answersFormaterArr.length) {
@@ -1056,10 +768,10 @@
 
                     var answersFormaterArrLength = answersFormaterArr.length;
 
-                    var answerValueBool, currentFormatter, functionGetter;
+                    var answerValueBool, currentFormatter, functionGetter;                     
                     for (var i = 0; i < answersFormaterArrLength; i++) {
                         currentFormatter = answersFormaterArr[i];
-
+                       
                         if (angular.isFunction(currentFormatter)) {
                             try {
                                  functionGetter = $injector.invoke(currentFormatter);
@@ -1187,6 +899,283 @@
     );
 })(angular);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').controller('ZnkExerciseDrvCtrl', [
+        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$element', 'ZnkExerciseSrv', 'UtilitySrv', 'ENV',
+        function ($scope, $q, ZnkExerciseEvents, $log, $element, ZnkExerciseSrv, UtilitySrv, ENV) {
+            var self = this;
+
+            var questionReadyDefer = $q.defer();
+            var btnSectionReadyDefer = $q.defer();
+
+            var exerciseReadyProm = $q.all([
+                questionReadyDefer.promise,
+                btnSectionReadyDefer.promise
+            ]);
+
+            exerciseReadyProm.then(function(){
+                $scope.$broadcast(ZnkExerciseEvents.READY);
+                if ($scope.settings.onExerciseReady) {
+                    $scope.settings.onExerciseReady();
+                }
+            });
+
+            function isQuestionAnswered(index) {
+                var questionWithAnswer = $scope.vm.questionsWithAnswers ? $scope.vm.questionsWithAnswers[index] : {};
+                return questionWithAnswer && questionWithAnswer.__questionStatus && angular.isDefined(questionWithAnswer.__questionStatus.userAnswer);
+            }
+
+            function canChangeQuestion(requiredIndex, currIndex){
+                var promArr = [];
+                changeQuestionResolvers.forEach(function(resolver){
+                    var getResolverResult = $q.when(angular.isFunction(resolver ) ? resolver(requiredIndex, currIndex) : resolver);
+                    promArr.push(getResolverResult);
+                });
+                return $q.all(promArr);
+            }
+
+            self.isExerciseReady = function(){
+                return exerciseReadyProm;
+            };
+
+            self.getViewMode = function () {
+                return $scope.settings.viewMode;
+            };
+
+            self.getSlideDirection = function () {
+                return $scope.settings.slideDirection;
+            };
+
+            var changeQuestionResolvers = [];
+            self.addQuestionChangeResolver = function(resolver){
+                changeQuestionResolvers.push(resolver);
+            };
+
+            self.removeQuestionChangeResolver = function(resolver){
+                var newChangeQuestionResolvers = [];
+                changeQuestionResolvers.forEach(function(resolverItem){
+                    if(resolverItem !== resolver){
+                        newChangeQuestionResolvers.push(resolverItem);
+                    }
+                });
+                changeQuestionResolvers = newChangeQuestionResolvers;
+            };
+
+            self.getCurrentIndex = function () {
+                return $scope.vm.currentSlide;
+            };
+
+            self.setCurrentIndex = function (newQuestionIndex) {
+                if (angular.isDefined(newQuestionIndex)) {
+                    var currIndex = self.getCurrentIndex();
+                    return canChangeQuestion(newQuestionIndex, currIndex).then(function () {
+                        //max index limit
+                        var questions = $scope.questionsGetter() || [];
+                        newQuestionIndex = Math.min(newQuestionIndex, questions.length - 1);
+
+                        //minimum index limit
+                        newQuestionIndex = Math.max(0, newQuestionIndex);
+
+                        $scope.vm.currentSlide = newQuestionIndex;
+
+                        if(self.__exerciseViewBinding){
+                            self.__exerciseViewBinding.currSlideIndex = newQuestionIndex;
+                        }
+
+                        return $scope.vm.currentSlide;
+                    });
+                }else{
+                    $log.debug('ZnkExerciseDrv: setCurrentIndex was invoked with undefined newQuestionIndex parameter');
+                }
+                return $q.when($scope.vm.currentSlide);
+            };
+
+            self.setCurrentIndexByOffset = function (offset) {
+                var currIndex = this.getCurrentIndex();
+                var newCurrIndex = currIndex + offset;
+                return this.setCurrentIndex(newCurrIndex);
+            };
+
+            self.notifyQuestionBuilderReady = function () {
+                questionReadyDefer.resolve();
+            };
+
+            self.notifyBtnSectionReady = function(){
+                btnSectionReadyDefer.resolve();
+            };
+
+            self.isCurrentQuestionAnswered = function () {
+                return isQuestionAnswered($scope.vm.currentSlide);
+            };
+
+            self.isLastUnansweredQuestion = function(){
+                var questionsNum = ($scope.vm.questionsWithAnswers || []).length;
+                var unansweredNum = 0;
+                for(var i=0; i<questionsNum; i++){
+                    if(!isQuestionAnswered(i)){
+                        unansweredNum++;
+                        if(unansweredNum === 2){
+                            return false;
+                        }
+                    }
+                }
+                return unansweredNum === 1;
+            };
+
+            self.getQuestions = function(){
+                return questionReadyDefer.promise.then(function(){
+                    return $scope.vm.questionsWithAnswers;
+                });
+            };
+
+            self.areAllQuestionsAnswered = function() {
+                var asnwerCount = 0;
+                angular.forEach(self.questionsWithAnswers, function (question) {
+                    if (angular.isDefined(question.__questionStatus.userAnswer)) {
+                        asnwerCount++;
+                    }
+                });
+
+                return asnwerCount === self.questionsWithAnswers.length;
+            };
+
+            self.getElement = function(){
+                return $element;
+            };
+
+            self.getCurrentQuestion = function(){
+                return self.getQuestions().then(function(questions){
+                    var currIndex = self.getCurrentIndex();
+                    return questions[currIndex];
+                });
+            };
+            /**
+             *  bind exercise
+             *  BindExerciseEventManager: use the registerCb and update in directives
+             *    update: update the bind object in firebase that something change
+             *    registerCb: register callback to sync data after update
+             *    trigger: internally when the watch update the trigger fires
+             */
+            (function(self) {
+
+                self.updatedBy = ENV.appContext;
+                // initial an empty object in case bindExerciseViewTo was not called
+                self.__exerciseViewBinding = {};
+
+                function BindExerciseEventManager() {
+                    this.cbObj = {};
+                }
+
+                BindExerciseEventManager.prototype.trigger = function(key, value) {
+                    if (angular.isArray(this.cbObj[key])) {
+                        this.cbObj[key].forEach(function (obj) {
+                            if (obj.id && value.id && value.updatedBy && self.updatedBy) {
+                                if (obj.id === value.id && self.updatedBy !== value.updatedBy) {
+                                    obj.cb(value);
+                                }
+                            } else if (obj.id && value.id) {
+                                if (obj.id === value.id) {
+                                    obj.cb(value);
+                                }
+                            } else if (self.updatedBy && value.updatedBy) {
+                                if (self.updatedBy !== value.updatedBy) {
+                                    obj.cb(value);
+                                }
+                            } else {
+                                obj.cb(value);
+                            }
+                        }, this);
+                    }
+                };
+
+                BindExerciseEventManager.prototype.update = function(key, valueObj, id) {
+                    if (!angular.isObject(valueObj) || angular.isArray(valueObj) && valueObj !== null) {
+                        $log.error('ZnkExerciseDrvCtrl BindExerciseEventManager: value that pass to update function must be an object ie: {}');
+                        return;
+                    }
+
+                    var curValue = self.__exerciseViewBinding[key] || {};
+
+                    if (id) {
+                        curValue.id = id;
+                    }
+
+                    if (self.updatedBy) {
+                        curValue.updatedBy = self.updatedBy;
+                    }
+
+                    // create new guid for each update to enforce it
+                    valueObj.update = UtilitySrv.general.createGuid();
+
+                    curValue = angular.extend({}, curValue, valueObj);
+
+                    self.__exerciseViewBinding[key] = curValue;
+                };
+
+                BindExerciseEventManager.prototype.registerCb = function(key, cb, id) {
+                     if (!angular.isArray(this.cbObj[key])) {
+                         this.cbObj[key] = [];
+                     }
+                     this.cbObj[key].push({ id: id, cb: cb });
+                };
+
+                self.bindExerciseEventManager = new BindExerciseEventManager();
+
+                var exerciseViewListenersObj =  {};
+
+                var keys = ZnkExerciseSrv.getBindExerciseKeys();
+
+                self.bindExerciseViewTo = function (exerciseView) {
+                    if(!angular.isObject(exerciseView) || !angular.isArray(keys)) {
+                        $log.error('ZnkExerciseDrvCtrl bindExerciseViewTo: exercise view should be an object or keys should be an array');
+                        return;
+                    }
+
+                    self.__exerciseViewBinding = exerciseView;
+
+                    angular.forEach(keys, function (keyObj) {
+                        exerciseViewListenersObj[keyObj.getterName] = $scope.$watchCollection(function () {
+                            return exerciseView[keyObj.getterName];
+                        },function (newVal) {
+                            if (angular.isDefined(newVal)) {
+                                if (keyObj.setterName) {
+                                    self[keyObj.setterName](newVal);
+                                } else {
+                                    self.bindExerciseEventManager.trigger(keyObj.getterName, newVal);
+                                }
+                            }
+                        });
+                    });
+                };
+
+                self.unbindExerciseView = function (keyNameObj) {
+                    angular.forEach(exerciseViewListenersObj, function(fn, key) {
+                        if (!keyNameObj || keyNameObj[key]) {
+                            exerciseViewListenersObj[key]();
+                            exerciseViewListenersObj[key] = null;
+                        }
+                    });
+
+                    var cleanExerciseViewBinding = true;
+
+                    for (var i in exerciseViewListenersObj) {
+                        if (exerciseViewListenersObj.hasOwnProperty(i) && exerciseViewListenersObj[i] !== null) {
+                            cleanExerciseViewBinding = false;
+                            break;
+                        }
+                    }
+
+                    if (self.__exerciseViewBinding && cleanExerciseViewBinding){
+                        self.__exerciseViewBinding = null;
+                    }
+                };
+
+            })(self);
+        }]);
+})(angular);
+
 /**
  * attrs:
  *  questions: questions array
@@ -1236,7 +1225,7 @@
         'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ZnkExerciseUtilitySrv', 'QuestionTypesSrv',
         function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout, ZnkExerciseUtilitySrv, QuestionTypesSrv) {
             return {
-                templateUrl: 'components/znkExercise/core/template/znkExerciseDrv.html',
+                templateUrl: 'components/znkExercise/core/template/znkExercise.template.html',
                 restrict: 'E',
                 transclude: true,
                 controllerAs: 'vm',
@@ -1678,282 +1667,220 @@
 })(angular);
 
 
+/**
+ * attrs:
+ *
+ */
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').controller('ZnkExerciseDrvCtrl', [
-        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$element', 'ZnkExerciseSrv', 'UtilitySrv', 'ENV',
-        function ($scope, $q, ZnkExerciseEvents, $log, $element, ZnkExerciseSrv, UtilitySrv, ENV) {
-            var self = this;
-
-            var questionReadyDefer = $q.defer();
-            var btnSectionReadyDefer = $q.defer();
-
-            var exerciseReadyProm = $q.all([
-                questionReadyDefer.promise,
-                btnSectionReadyDefer.promise
-            ]);
-
-            exerciseReadyProm.then(function(){
-                $scope.$broadcast(ZnkExerciseEvents.READY);
-                if ($scope.settings.onExerciseReady) {
-                    $scope.settings.onExerciseReady();
-                }
-            });
-
-            function isQuestionAnswered(index) {
-                var questionWithAnswer = $scope.vm.questionsWithAnswers ? $scope.vm.questionsWithAnswers[index] : {};
-                return questionWithAnswer && questionWithAnswer.__questionStatus && angular.isDefined(questionWithAnswer.__questionStatus.userAnswer);
+    var typeToViewMap;
+    angular.module('znk.infra.znkExercise').directive('answerBuilder', [
+        '$compile', 'AnswerTypeEnum', 'ZnkExerciseUtilitySrv', 'ZnkExerciseViewModeEnum',
+        function ($compile, AnswerTypeEnum, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum) {
+            if(!typeToViewMap) {
+                typeToViewMap = {};
+                angular.forEach(AnswerTypeEnum, function (enumData, enumName) {
+                    var directiveName = enumName.toLowerCase().replace(/_/g, '-');
+                    typeToViewMap[enumData.enum] = '<' + directiveName + '></' + directiveName + '>';
+                });
             }
 
-            function canChangeQuestion(requiredIndex, currIndex){
-                var promArr = [];
-                changeQuestionResolvers.forEach(function(resolver){
-                    var getResolverResult = $q.when(angular.isFunction(resolver ) ? resolver(requiredIndex, currIndex) : resolver);
-                    promArr.push(getResolverResult);
-                });
-                return $q.all(promArr);
-            }
+            return {
+                require: ['answerBuilder','^questionBuilder', '^ngModel'],
+                restrict: 'E',
+                controller:[
+                    function(){
 
-            self.isExerciseReady = function(){
-                return exerciseReadyProm;
-            };
-
-            self.getViewMode = function () {
-                return $scope.settings.viewMode;
-            };
-
-            self.getSlideDirection = function () {
-                return $scope.settings.slideDirection;
-            };
-
-            var changeQuestionResolvers = [];
-            self.addQuestionChangeResolver = function(resolver){
-                changeQuestionResolvers.push(resolver);
-            };
-
-            self.removeQuestionChangeResolver = function(resolver){
-                var newChangeQuestionResolvers = [];
-                changeQuestionResolvers.forEach(function(resolverItem){
-                    if(resolverItem !== resolver){
-                        newChangeQuestionResolvers.push(resolverItem);
                     }
-                });
-                changeQuestionResolvers = newChangeQuestionResolvers;
-            };
+                ],
+                link: {
+                    pre:function (scope, element, attrs, ctrls) {
+                        var answerBuilderCtrl = ctrls[0];
+                        var questionBuilderCtrl = ctrls[1];
+                        var ngModelCtrl = ctrls[2];
 
-            self.getCurrentIndex = function () {
-                return $scope.vm.currentSlide;
-            };
+                        var fnToBindFromQuestionBuilder = ['getViewMode', 'getCurrentIndex'];
+                        ZnkExerciseUtilitySrv.bindFunctions(answerBuilderCtrl,questionBuilderCtrl,fnToBindFromQuestionBuilder);
 
-            self.setCurrentIndex = function (newQuestionIndex) {
-                if (angular.isDefined(newQuestionIndex)) {
-                    var currIndex = self.getCurrentIndex();
-                    return canChangeQuestion(newQuestionIndex, currIndex).then(function () {
-                        //max index limit
-                        var questions = $scope.questionsGetter() || [];
-                        newQuestionIndex = Math.min(newQuestionIndex, questions.length - 1);
+                        answerBuilderCtrl.canUserAnswerBeChanged = function(){
+                            var viewMode = questionBuilderCtrl.getViewMode();
+                            var isntReviewMode = viewMode !== ZnkExerciseViewModeEnum.REVIEW.enum;
+                            var notAnswered = angular.isDefined(ngModelCtrl.$viewValue);
+                            var isAnswerWithResultViewMode = viewMode === ZnkExerciseViewModeEnum.ANSWER_WITH_RESULT.enum;
+                            return isntReviewMode && isAnswerWithResultViewMode && notAnswered;
+                        };
 
-                        //minimum index limit
-                        newQuestionIndex = Math.max(0, newQuestionIndex);
+                        answerBuilderCtrl.question = questionBuilderCtrl.question;
 
-                        $scope.vm.currentSlide = newQuestionIndex;
-
-                        if(self.__exerciseViewBinding){
-                            self.__exerciseViewBinding.currSlideIndex = newQuestionIndex;
-                        }
-
-                        return $scope.vm.currentSlide;
-                    });
-                }else{
-                    $log.debug('ZnkExerciseDrv: setCurrentIndex was invoked with undefined newQuestionIndex parameter');
-                }
-                return $q.when($scope.vm.currentSlide);
-            };
-
-            self.setCurrentIndexByOffset = function (offset) {
-                var currIndex = this.getCurrentIndex();
-                var newCurrIndex = currIndex + offset;
-                return this.setCurrentIndex(newCurrIndex);
-            };
-
-            self.notifyQuestionBuilderReady = function () {
-                questionReadyDefer.resolve();
-            };
-
-            self.notifyBtnSectionReady = function(){
-                btnSectionReadyDefer.resolve();
-            };
-
-            self.isCurrentQuestionAnswered = function () {
-                return isQuestionAnswered($scope.vm.currentSlide);
-            };
-
-            self.isLastUnansweredQuestion = function(){
-                var questionsNum = ($scope.vm.questionsWithAnswers || []).length;
-                var unansweredNum = 0;
-                for(var i=0; i<questionsNum; i++){
-                    if(!isQuestionAnswered(i)){
-                        unansweredNum++;
-                        if(unansweredNum === 2){
-                            return false;
-                        }
+                        var answerType = questionBuilderCtrl.question.answerTypeId;
+                        var answerHtml = typeToViewMap[answerType];
+                        element.html(answerHtml);
+                        $compile(element.contents())(scope);
                     }
                 }
-                return unansweredNum === 1;
             };
-
-            self.getQuestions = function(){
-                return questionReadyDefer.promise.then(function(){
-                    return $scope.vm.questionsWithAnswers;
-                });
-            };
-
-            self.areAllQuestionsAnswered = function() {
-                var asnwerCount = 0;
-                angular.forEach(self.questionsWithAnswers, function (question) {
-                    if (angular.isDefined(question.__questionStatus.userAnswer)) {
-                        asnwerCount++;
-                    }
-                });
-
-                return asnwerCount === self.questionsWithAnswers.length;
-            };
-
-            self.getElement = function(){
-                return $element;
-            };
-
-            self.getCurrentQuestion = function(){
-                return self.getQuestions().then(function(questions){
-                    var currIndex = self.getCurrentIndex();
-                    return questions[currIndex];
-                });
-            };
-            /**
-             *  bind exercise
-             *  BindExerciseEventManager: use the registerCb and update in directives
-             *    update: update the bind object in firebase that something change
-             *    registerCb: register callback to sync data after update
-             *    trigger: internally when the watch update the trigger fires
-             */
-            (function(self) {
-
-                self.updatedBy = ENV.appContext;
-                // initial an empty object in case bindExerciseViewTo was not called
-                self.__exerciseViewBinding = {};
-
-                function BindExerciseEventManager() {
-                    this.cbObj = {};
-                }
-
-                BindExerciseEventManager.prototype.trigger = function(key, value) {
-                    if (angular.isArray(this.cbObj[key])) {
-                        this.cbObj[key].forEach(function (obj) {
-                            if (obj.id && value.id && value.updatedBy && self.updatedBy) {
-                                if (obj.id === value.id && self.updatedBy !== value.updatedBy) {
-                                    obj.cb(value);
-                                }
-                            } else if (obj.id && value.id) {
-                                if (obj.id === value.id) {
-                                    obj.cb(value);
-                                }
-                            } else if (self.updatedBy && value.updatedBy) {
-                                if (self.updatedBy !== value.updatedBy) {
-                                    obj.cb(value);
-                                }
-                            } else {
-                                obj.cb(value);
-                            }
-                        }, this);
-                    }
-                };
-
-                BindExerciseEventManager.prototype.update = function(key, valueObj, id) {
-                    if (!angular.isObject(valueObj) || angular.isArray(valueObj) && valueObj !== null) {
-                        $log.error('ZnkExerciseDrvCtrl BindExerciseEventManager: value that pass to update function must be an object ie: {}');
-                        return;
-                    }
-
-                    var curValue = self.__exerciseViewBinding[key] || {};
-
-                    if (id) {
-                        curValue.id = id;
-                    }
-
-                    if (self.updatedBy) {
-                        curValue.updatedBy = self.updatedBy;
-                    }
-
-                    // create new guid for each update to enforce it
-                    valueObj.update = UtilitySrv.general.createGuid();
-
-                    curValue = angular.extend({}, curValue, valueObj);
-
-                    self.__exerciseViewBinding[key] = curValue;
-                };
-
-                BindExerciseEventManager.prototype.registerCb = function(key, cb, id) {
-                     if (!angular.isArray(this.cbObj[key])) {
-                         this.cbObj[key] = [];
-                     }
-                     this.cbObj[key].push({ id: id, cb: cb });
-                };
-
-                self.bindExerciseEventManager = new BindExerciseEventManager();
-
-                var exerciseViewListenersObj =  {};
-
-                var keys = ZnkExerciseSrv.getBindExerciseKeys();
-
-                self.bindExerciseViewTo = function (exerciseView) {
-                    if(!angular.isObject(exerciseView) || !angular.isArray(keys)) {
-                        $log.error('ZnkExerciseDrvCtrl bindExerciseViewTo: exercise view should be an object or keys should be an array');
-                        return;
-                    }
-
-                    self.__exerciseViewBinding = exerciseView;
-
-                    angular.forEach(keys, function (keyObj) {
-                        exerciseViewListenersObj[keyObj.getterName] = $scope.$watchCollection(function () {
-                            return exerciseView[keyObj.getterName];
-                        },function (newVal) {
-                            if (angular.isDefined(newVal)) {
-                                if (keyObj.setterName) {
-                                    self[keyObj.setterName](newVal);
-                                } else {
-                                    self.bindExerciseEventManager.trigger(keyObj.getterName, newVal);
-                                }
-                            }
-                        });
-                    });
-                };
-
-                self.unbindExerciseView = function (keyNameObj) {
-                    angular.forEach(exerciseViewListenersObj, function(fn, key) {
-                        if (!keyNameObj || keyNameObj[key]) {
-                            exerciseViewListenersObj[key]();
-                            exerciseViewListenersObj[key] = null;
-                        }
-                    });
-
-                    var cleanExerciseViewBinding = true;
-
-                    for (var i in exerciseViewListenersObj) {
-                        if (exerciseViewListenersObj.hasOwnProperty(i) && exerciseViewListenersObj[i] !== null) {
-                            cleanExerciseViewBinding = false;
-                            break;
-                        }
-                    }
-
-                    if (self.__exerciseViewBinding && cleanExerciseViewBinding){
-                        self.__exerciseViewBinding = null;
-                    }
-                };
-
-            })(self);
-        }]);
+        }
+    ]);
 })(angular);
+
+'use strict';
+
+(function (angular) {
+    angular.module('znk.infra.znkExercise').directive('arrayToStringFmtr', [
+        function () {
+            return {
+                require: 'ngModel',
+                link: function (scope, element, attrs, ngModelCtrl) {
+                    function parser(val){
+                        if(!val || !val.length){
+                            return undefined;
+                        }
+                        return val.join('');
+                    }
+                    ngModelCtrl.$parsers.push(parser);
+
+                    function formatter(val){
+                        if (!val || !val.length) {
+                            return [];
+                        }
+                        return val.match(/.{1}/g);
+                    }
+                    ngModelCtrl.$formatters.push(formatter);
+                }
+            };
+        }
+    ]);
+})(angular);
+
+'use strict';
+
+(function (angular) {
+    angular.module('znk.infra.znkExercise').directive('markup', [
+        '$window',
+        function ($window) {
+            var _isMobile = false;//MobileSrv.isMobile();
+            var MAX_IMAGE_WIDTH = 275;
+            var dummyElem = angular.element('<P/>');
+            return {
+                replace: true,
+                restrict: 'E',
+                link: function (scope, element, attrs) {
+
+                    var toDomElement = function domElement(markup) {
+                        dummyElem.append(markup);
+                        return dummyElem.contents();
+                    };
+
+                    var imageStyle = function imageStyle(image){
+                        var _style = {
+                            width: '',
+                            height: ''
+                        };
+
+                        if(image.style.width){
+                            var _height = image.style.height;
+                            var _width = image.style.width;
+
+                            _height = _height.replace('px','');
+                            _width = _width.replace('px','');
+
+                            if(!isNaN(_width)){
+                                _width = parseInt(_width);
+
+                                while(_width > MAX_IMAGE_WIDTH){
+                                    _width = _width * 0.90;
+                                    _height = _height * 0.90;
+                                }
+                                _style.width = _width + 'px';
+                                _style.height = _height + 'px';
+                            }
+                        }
+                        return _style;
+                    };
+
+                    var resizeImages = function resizeImages(domElement){
+                        var style;
+
+                        for(var i=0; i<domElement.length; i++ ){
+
+                            if(domElement[i].tagName && domElement[i].tagName.toLowerCase() === 'img')
+                            {
+                                if(domElement[i].style.width){
+                                    style = imageStyle(domElement[i]);
+                                    domElement[i].style.width = style.width;
+                                    domElement[i].style.height = style.height;
+                                }
+                            }
+                            else{
+                                var _images = angular.element(domElement[i]).find('img');
+                                if(_images.length){
+                                    for(var x=0; x<_images.length; x++){
+                                        if(_images[x].style.width){
+                                            style = imageStyle(_images[x]);
+                                            _images[x].style.width = style.width;
+                                            _images[x].style.height = style.height;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        return domElement;
+                    };
+
+                    var removeLeftMargin = function removeLeftMargin(domElement){
+
+                        for(var i=0; i<domElement.length; i++){
+
+                            if(domElement[i].tagName && domElement[i].tagName.toLowerCase() === 'p')
+                            {
+                                if(!domElement[i].style) {
+                                    break;
+                                }
+
+                                var marginLeft = domElement[i].style.marginLeft;
+                                marginLeft = marginLeft ?  marginLeft.replace('px','') : marginLeft;
+
+                                if(marginLeft && !isNaN(marginLeft))
+                                {
+                                    domElement[i].style.marginLeft = 0;
+                                }
+                            }
+                        }
+
+                        return domElement;
+                    };
+
+                    var watchDestroyer = scope.$watch(attrs.content,function(newVal){
+                        if(!!newVal){
+
+                            if(_isMobile){
+                                MAX_IMAGE_WIDTH= ($window.innerWidth / 1.05);
+                            }
+                            else{
+                                MAX_IMAGE_WIDTH= ($window.innerWidth / 1.25);
+                            }
+
+                            var _domElements = toDomElement(newVal);
+                            if(_domElements) {
+                                var _newDomElements = resizeImages(_domElements);
+
+                                //remove left margin from <p> tag
+                                _newDomElements = removeLeftMargin(_newDomElements);
+
+                                element.append(_newDomElements);
+                            }
+
+                            watchDestroyer();
+                        }
+                    });
+                }
+            };
+        }
+    ]);
+})(angular);
+
 
 /**
  * attrs:
@@ -1967,7 +1894,7 @@
         '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum', 'QuestionTypesSrv',
         function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum, QuestionTypesSrv) {
             return {
-                templateUrl: 'components/znkExercise/core/template/znkExercisePagerDrv.html',
+                templateUrl: 'components/znkExercise/core/template/znkExercisePager.template.html',
                 restrict: 'E',
                 require: ['ngModel', '^znkExercise'],
                 scope: {
@@ -2105,93 +2032,152 @@
 })(angular);
 
 
-/**
- * attrs:
- */
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').provider('ZnkExerciseAnswersSrv', function () {
+        this.config = {
+            selectAnswer:{}
+        };
+
+        var selectAnswer = {};
+
+        this.config.selectAnswer.setAnswerIndexFormatter = function(fn){
+            selectAnswer.answerIndexFormatter = fn;
+        };
+
+        this.$get = [
+            function () {
+                var ZnkExerciseAnswersSrv = {
+                    selectAnswer: {}
+                };
+
+                ZnkExerciseAnswersSrv.selectAnswer.getAnswerIndex = function(answerIndex){
+                    var formattedAnswerIndex;
+
+                    if(selectAnswer.answerIndexFormatter){
+                        formattedAnswerIndex = selectAnswer.answerIndexFormatter.apply(this,arguments);
+                    }
+
+                    if(angular.isUndefined(formattedAnswerIndex)){
+                        var UPPER_A_ASCII_CODE = 65;
+                        formattedAnswerIndex  = String.fromCharCode(UPPER_A_ASCII_CODE + answerIndex);
+                    }
+
+                    return formattedAnswerIndex;
+                };
+
+                return ZnkExerciseAnswersSrv;
+            }
+        ];
+    });
+})(angular);
 
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('znkExerciseToolBox',
-        ["ZnkExerciseViewModeEnum", function (ZnkExerciseViewModeEnum) {
-            'ngInject';
+    angular.module('znk.infra.znkExercise').controller('ZnkExerciseToolBoxModalCtrl', [
+        '$scope', 'ZnkExerciseDrvSrv', 'Settings',
+        function ($scope, ZnkExerciseDrvSrv, Settings) {
+            Settings.actions = Settings.actions || {};
+            Settings.events = Settings.events || {};
+            Settings.events.onToolOpened = Settings.events.onToolOpened || angular.noop;
+            Settings.events.onToolOpened = Settings.events.onToolOpened || angular.noop;
 
-            return {
-                templateUrl: 'components/znkExercise/toolbox/core/znkExerciseToolBoxDirective.template.html',
-                require: '^znkExercise',
-                scope:{
-                    settings: '<'
+            $scope.d = {
+                blackboardTool: {
+                    actions: {},
+                    value: {}
                 },
-                controllerAs: '$ctrl',
-                controller: ["$element", function($element){
-                    'ngInject';// jshint ignore: line
+                bookmarkTool: {},
+                showPagerTool: {},
+                tools: ZnkExerciseDrvSrv.toolBoxTools,
+                toolsStatus: {},
+                toolsToHide: Settings.toolsToHide
+            };
 
-                    this.getCurrentQuestion = function(){
-                        return this.znkExerciseCtrl.getCurrentQuestion();
-                    };
-
-                    this.getZnkExerciseElement = function(){
-                        return $element.parent();
-                    };
-
-                    this.isExerciseReady = function(){
-                        return this.znkExerciseCtrl.isExerciseReady();
-                    };
-                }],
-                bindToController: true,
-                link: {
-                    pre: function(scope, element, attrs, znkExerciseCtrl){
-                        scope.$ctrl.znkExerciseCtrl = znkExerciseCtrl;
-
-                        // hide toolbox when viewing 'diagnostic' page.
-                        if (ZnkExerciseViewModeEnum.MUST_ANSWER.enum === znkExerciseCtrl.getViewMode()) {
-                            element[0].style.display ="none";
-                        }
-                    }
+            Settings.actions.setToolValue = function (tool, value) {
+                switch (tool) {
+                    case $scope.d.tools.BOOKMARK:
+                        $scope.d.bookmarkTool.value = value;
+                        break;
+                    case $scope.d.tools.BLACKBOARD:
+                        $scope.d.blackboardTool.value = value;
+                        break;
                 }
             };
-        }]
-    );
+
+            $scope.d.openTool = function (tool) {
+                var eventObj = {
+                    tool: tool
+                };
+                Settings.events.onToolOpened(eventObj);
+                $scope.d.toolsStatus[tool] = true;
+            };
+
+            $scope.d.closeTool = function (tool) {
+                var eventObj = {
+                    tool: tool
+                };
+                switch (tool) {
+                    case $scope.d.tools.BLACKBOARD:
+                        eventObj.value = $scope.d.blackboardTool.value;
+                        break;
+                    case $scope.d.tools.BOOKMARK:
+                        eventObj.value = $scope.d.bookmarkTool.value;
+                }
+                Settings.events.onToolClosed(eventObj);
+                $scope.d.toolsStatus[tool] = false;
+            };
+
+            function triggerToolValueChangedEvent(tool, newStatus) {
+                var eventObj = {
+                    tool: tool,
+                    value: newStatus
+                };
+                if(Settings.events.onToolValueChanged){
+                    Settings.events.onToolValueChanged(eventObj);
+                }
+            }
+
+            $scope.d.reverseBookmarkValue = function () {
+                $scope.d.bookmarkTool.value = !$scope.d.bookmarkTool.value;
+                triggerToolValueChangedEvent($scope.d.tools.BOOKMARK, $scope.d.bookmarkTool.value);
+            };
+
+            $scope.d.activateBlackboardPencil = function(){
+                if(!$scope.d[$scope.d.tools.BLACKBOARD]){
+                    $scope.d.openTool($scope.d.tools.BLACKBOARD);
+                }
+
+                $scope.d.blackboardTool.pencilActivated = true;
+                if ($scope.d.blackboardTool.actions.activatePen) {
+                    $scope.d.blackboardTool.actions.activatePen();
+                }
+            };
+
+            $scope.d.activateBlackboardEraser = function(){
+                $scope.d.blackboardTool.pencilActivated = false;
+                if ($scope.d.blackboardTool.actions.activateEraser) {
+                    $scope.d.blackboardTool.actions.activateEraser();
+                }
+            };
+
+            $scope.d.reverseShowPagerValue = function(){
+                $scope.d.showPagerTool.value = !$scope.d.showPagerTool.value;
+                triggerToolValueChangedEvent($scope.d.tools.SHOW_PAGER, $scope.d.showPagerTool.value);
+            };
+
+            $scope.d.onCalcClick = function(){
+                if($scope.d.toolsStatus.hasOwnProperty($scope.d.tools.CALCULATOR)){
+                    $scope.d.closeTool($scope.d.tools.CALCULATOR);
+                }else{
+                    $scope.d.openTool($scope.d.tools.CALCULATOR);
+                }
+            };
+        }
+    ]);
 })(angular);
-
-
-/**
- * This service serves as a communication tool between znkExerciseDrawContainer and znkExerciseDrawTool
- */
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkExercise').service('ZnkExerciseDrawSrv',
-        function () {
-            //'ngInject';
-
-            var self = this;
-
-            /** example of self.canvasContextManager
-             *  {
-             *      10981: {
-             *                question: CanvasContextObject,
-             *                answer: CanvasContextObject
-             *             },
-             *      10982: {
-             *                question: CanvasContextObject,
-             *                answer: CanvasContextObject
-             *             }
-             *  }
-             *
-             *  the names (such as 'question' or 'answer') are set according to the attribute name 'canvas-name' of znkExerciseDrawContainer directive
-             */
-
-            self.canvasContextManager = {};
-
-            // addCanvasToElement function is to be added into this service as well. see znkExerciseDrawContainer directive
-
-        });
-
-})(angular);
-
-
 
 'use strict';
 
@@ -2639,7 +2625,7 @@
             };
 
             return {
-                templateUrl: 'components/znkExercise/toolbox/tools/draw/znkExerciseDrawToolDirective.template.html',
+                templateUrl: 'components/znkExercise/toolbox/directives/znkExerciseDrawTool/znkExerciseDrawTool.template.html',
                 require: '^znkExerciseToolBox',
                 scope: {
                     settings: '<'
@@ -3326,111 +3312,93 @@
         }]);
 })(angular);
 
+/**
+ * attrs:
+ */
+
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').controller('ZnkExerciseToolBoxModalCtrl', [
-        '$scope', 'ZnkExerciseDrvSrv', 'Settings',
-        function ($scope, ZnkExerciseDrvSrv, Settings) {
-            Settings.actions = Settings.actions || {};
-            Settings.events = Settings.events || {};
-            Settings.events.onToolOpened = Settings.events.onToolOpened || angular.noop;
-            Settings.events.onToolOpened = Settings.events.onToolOpened || angular.noop;
+    angular.module('znk.infra.znkExercise').directive('znkExerciseToolBox',
+        ["ZnkExerciseViewModeEnum", function (ZnkExerciseViewModeEnum) {
+            'ngInject';
 
-            $scope.d = {
-                blackboardTool: {
-                    actions: {},
-                    value: {}
+            return {
+                templateUrl: 'components/znkExercise/toolbox/directives/znkExerciseToolBox/znkExerciseToolBoxDirective.template.html',
+                require: '^znkExercise',
+                scope:{
+                    settings: '<'
                 },
-                bookmarkTool: {},
-                showPagerTool: {},
-                tools: ZnkExerciseDrvSrv.toolBoxTools,
-                toolsStatus: {},
-                toolsToHide: Settings.toolsToHide
-            };
+                controllerAs: '$ctrl',
+                controller: ["$element", function($element){
+                    'ngInject';// jshint ignore: line
 
-            Settings.actions.setToolValue = function (tool, value) {
-                switch (tool) {
-                    case $scope.d.tools.BOOKMARK:
-                        $scope.d.bookmarkTool.value = value;
-                        break;
-                    case $scope.d.tools.BLACKBOARD:
-                        $scope.d.blackboardTool.value = value;
-                        break;
+                    this.getCurrentQuestion = function(){
+                        return this.znkExerciseCtrl.getCurrentQuestion();
+                    };
+
+                    this.getZnkExerciseElement = function(){
+                        return $element.parent();
+                    };
+
+                    this.isExerciseReady = function(){
+                        return this.znkExerciseCtrl.isExerciseReady();
+                    };
+                }],
+                bindToController: true,
+                link: {
+                    pre: function(scope, element, attrs, znkExerciseCtrl){
+                        scope.$ctrl.znkExerciseCtrl = znkExerciseCtrl;
+
+                        // hide toolbox when viewing 'diagnostic' page.
+                        if (ZnkExerciseViewModeEnum.MUST_ANSWER.enum === znkExerciseCtrl.getViewMode()) {
+                            element[0].style.display ="none";
+                        }
+                    }
                 }
             };
-
-            $scope.d.openTool = function (tool) {
-                var eventObj = {
-                    tool: tool
-                };
-                Settings.events.onToolOpened(eventObj);
-                $scope.d.toolsStatus[tool] = true;
-            };
-
-            $scope.d.closeTool = function (tool) {
-                var eventObj = {
-                    tool: tool
-                };
-                switch (tool) {
-                    case $scope.d.tools.BLACKBOARD:
-                        eventObj.value = $scope.d.blackboardTool.value;
-                        break;
-                    case $scope.d.tools.BOOKMARK:
-                        eventObj.value = $scope.d.bookmarkTool.value;
-                }
-                Settings.events.onToolClosed(eventObj);
-                $scope.d.toolsStatus[tool] = false;
-            };
-
-            function triggerToolValueChangedEvent(tool, newStatus) {
-                var eventObj = {
-                    tool: tool,
-                    value: newStatus
-                };
-                if(Settings.events.onToolValueChanged){
-                    Settings.events.onToolValueChanged(eventObj);
-                }
-            }
-
-            $scope.d.reverseBookmarkValue = function () {
-                $scope.d.bookmarkTool.value = !$scope.d.bookmarkTool.value;
-                triggerToolValueChangedEvent($scope.d.tools.BOOKMARK, $scope.d.bookmarkTool.value);
-            };
-
-            $scope.d.activateBlackboardPencil = function(){
-                if(!$scope.d[$scope.d.tools.BLACKBOARD]){
-                    $scope.d.openTool($scope.d.tools.BLACKBOARD);
-                }
-
-                $scope.d.blackboardTool.pencilActivated = true;
-                if ($scope.d.blackboardTool.actions.activatePen) {
-                    $scope.d.blackboardTool.actions.activatePen();
-                }
-            };
-
-            $scope.d.activateBlackboardEraser = function(){
-                $scope.d.blackboardTool.pencilActivated = false;
-                if ($scope.d.blackboardTool.actions.activateEraser) {
-                    $scope.d.blackboardTool.actions.activateEraser();
-                }
-            };
-
-            $scope.d.reverseShowPagerValue = function(){
-                $scope.d.showPagerTool.value = !$scope.d.showPagerTool.value;
-                triggerToolValueChangedEvent($scope.d.tools.SHOW_PAGER, $scope.d.showPagerTool.value);
-            };
-
-            $scope.d.onCalcClick = function(){
-                if($scope.d.toolsStatus.hasOwnProperty($scope.d.tools.CALCULATOR)){
-                    $scope.d.closeTool($scope.d.tools.CALCULATOR);
-                }else{
-                    $scope.d.openTool($scope.d.tools.CALCULATOR);
-                }
-            };
-        }
-    ]);
+        }]
+    );
 })(angular);
+
+
+/**
+ * This service serves as a communication tool between znkExerciseDrawContainer and znkExerciseDrawTool
+ */
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise').service('ZnkExerciseDrawSrv',
+        function () {
+            //'ngInject';
+
+            var self = this;
+
+            /** example of self.canvasContextManager
+             *  {
+             *      10981: {
+             *                question: CanvasContextObject,
+             *                answer: CanvasContextObject
+             *             },
+             *      10982: {
+             *                question: CanvasContextObject,
+             *                answer: CanvasContextObject
+             *             }
+             *  }
+             *
+             *  the names (such as 'question' or 'answer') are set according to the attribute name 'canvas-name' of znkExerciseDrawContainer directive
+             */
+
+            self.canvasContextManager = {};
+
+            // addCanvasToElement function is to be added into this service as well. see znkExerciseDrawContainer directive
+
+        });
+
+})(angular);
+
+
 
 (function (angular) {
     'use strict';
@@ -3600,7 +3568,7 @@
                 return function() {
                     return true;
                 };
-            };
+            }; 
 
             this.setShouldBroadCastExerciseGetter = function(_broadCastExerciseFn) {
                 broadCastExerciseFn = _broadCastExerciseFn;
@@ -3672,6 +3640,38 @@
             }];
         }
     );
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise', [
+        'ngAnimate',
+        'pascalprecht.translate',
+        'znk.infra.znkQuestionReport',
+        'znk.infra.svgIcon',
+        'znk.infra.scroll',
+        'znk.infra.autofocus',
+        'znk.infra.exerciseUtility',
+        'znk.infra.analytics',
+        'znk.infra.popUp',
+        'znk.infra.user',
+        'znk.infra.utility',
+        'znk.infra.znkSessionData'
+    ])
+    .config([
+        'SvgIconSrvProvider',
+        function (SvgIconSrvProvider) {
+            var svgMap = {
+                'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg',
+                'znk-exercise-eraser': 'components/znkExercise/svg/tools-eraser.svg',
+                'znk-exercise-pencil': 'components/znkExercise/svg/tools-pencil.svg',
+                'znk-exercise-pointer': 'components/znkExercise/svg/tools-pointer.svg',
+                'znk-exercise-remove': 'components/znkExercise/svg/tools-remove.svg',
+                'znk-exercise-touche': 'components/znkExercise/svg/tools-touche.svg'
+            };
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+        }]);
 })(angular);
 
 angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
@@ -3755,7 +3755,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "    </question-builder>\n" +
     "</ion-slide-box>\n" +
     "");
-  $templateCache.put("components/znkExercise/core/template/znkExerciseDrv.html",
+  $templateCache.put("components/znkExercise/core/template/znkExercise.template.html",
     "<div ng-transclude></div>\n" +
     "<questions-carousel class=\"znk-carousel-container\"\n" +
     "                    questions=\"vm.questionsWithAnswers\"\n" +
@@ -3783,7 +3783,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "<znk-exercise-tool-box settings=\"settings.toolBox\">\n" +
     "</znk-exercise-tool-box>\n" +
     "");
-  $templateCache.put("components/znkExercise/core/template/znkExercisePagerDrv.html",
+  $templateCache.put("components/znkExercise/core/template/znkExercisePager.template.html",
     "<znk-scroll actions=\"scrollActions\">\n" +
     "    <div class=\"pager-items-wrapper\">\n" +
     "        <div class=\"pager-item noselect\"\n" +
@@ -4094,12 +4094,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</g>\n" +
     "</svg>\n" +
     "");
-  $templateCache.put("components/znkExercise/toolbox/core/znkExerciseToolBoxDirective.template.html",
-    "<znk-exercise-draw-tool settings=\"$ctrl.settings.drawing\">\n" +
-    "</znk-exercise-draw-tool>\n" +
-    "\n" +
-    "");
-  $templateCache.put("components/znkExercise/toolbox/tools/draw/znkExerciseDrawToolDirective.template.html",
+  $templateCache.put("components/znkExercise/toolbox/directives/znkExerciseDrawTool/znkExerciseDrawTool.template.html",
     "<svg-icon name=\"znk-exercise-touche\"\n" +
     "          ng-click=\"d.toolClicked(d.TOOLS.TOUCHE)\"\n" +
     "          ng-class=\"{\n" +
@@ -4123,5 +4118,10 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "<svg-icon name=\"znk-exercise-remove\"\n" +
     "          ng-click=\"d.cleanCanvas()\">\n" +
     "</svg-icon>\n" +
+    "");
+  $templateCache.put("components/znkExercise/toolbox/directives/znkExerciseToolBox/znkExerciseToolBoxDirective.template.html",
+    "<znk-exercise-draw-tool settings=\"$ctrl.settings.drawing\">\n" +
+    "</znk-exercise-draw-tool>\n" +
+    "\n" +
     "");
 }]);

@@ -1,8 +1,3 @@
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.pngSequence', []);
-})(angular);
 /**
  * Created by Igor on 8/19/2015.
  */
@@ -117,6 +112,11 @@
             };
         }
     ]);
+})(angular);
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.pngSequence', []);
 })(angular);
 angular.module('znk.infra.pngSequence').run(['$templateCache', function($templateCache) {
 
