@@ -66,7 +66,7 @@ module.exports = function (config) {
 
             //src files
             'src/core/*.js',
-            'src/components/**/module.js',
+            'src/components/**/*.module.js',
             'src/components/**/*.js',
 
             //mock

@@ -1,22 +1,6 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.screenSharing', [
-        'ngAnimate',
-        'pascalprecht.translate',
-        'znk.infra.user',
-        'znk.infra.utility',
-        'znk.infra.config',
-        'znk.infra.enum',
-        'znk.infra.svgIcon',
-        'znk.infra.popUp',
-        'znk.infra.general'
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.screenSharing')
         .config(["SvgIconSrvProvider", function (SvgIconSrvProvider) {
             'ngInject';
@@ -117,167 +101,17 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.screenSharing').service('ScreenSharingDataGetterSrv',
-        ["InfraConfigSrv", "$q", "ENV", "UserProfileService", function (InfraConfigSrv, $q, ENV, UserProfileService) {
-            'ngInject';
-
-            function _getStorage() {
-                return InfraConfigSrv.getGlobalStorage();
-            }
-
-            this.getScreenSharingDataPath = function (guid) {
-                var SCREEN_SHARING_ROOT_PATH = 'screenSharing';
-                return SCREEN_SHARING_ROOT_PATH + '/' + guid;
-            };
-
-            this.getUserScreenSharingRequestsPath  = function (userData) {
-                var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
-                var USER_DATA_PATH = appName  + '/users/' + userData.uid;
-                return USER_DATA_PATH + '/screenSharing/active';
-            };
-
-            this.getUserScreenSharingArchivePath  = function (userData) {
-                var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
-                var USER_DATA_PATH = appName  + '/users/' + userData.uid;
-                return USER_DATA_PATH + '/screenSharing/archive';
-            };
-
-            this.getScreenSharingData = function (screenSharingGuid) {
-                var screenSharingDataPath = this.getScreenSharingDataPath(screenSharingGuid);
-                return _getStorage().then(function (storage) {
-                    return storage.getAndBindToServer(screenSharingDataPath);
-                });
-            };
-
-            this.getCurrUserScreenSharingRequests = function(){
-                return UserProfileService.getCurrUserId().then(function(currUid){
-                    return _getStorage().then(function(storage){
-                        var currUserScreenSharingDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/screenSharing/active';
-                        return storage.getAndBindToServer(currUserScreenSharingDataPath);
-                    });
-                });
-            };
-
-            this.getCurrUserScreenSharingData = function () {
-                var self = this;
-                return this.getCurrUserScreenSharingRequests().then(function(currUserScreenSharingRequests){
-                    var screenSharingDataPromMap = {};
-                    angular.forEach(currUserScreenSharingRequests, function(isActive, guid){
-                        if(isActive){
-                            screenSharingDataPromMap[guid] = self.getScreenSharingData(guid);
-                        }
-                    });
-
-                    return $q.all(screenSharingDataPromMap);
-                });
-            };
-        }]
-    );
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.screenSharing').provider('ScreenSharingEventsSrv', function () {
-        var isEnabled = true;
-
-        this.enabled = function (_isEnabled) {
-            isEnabled = _isEnabled;
-        };
-
-        this.$get = ["UserProfileService", "InfraConfigSrv", "$q", "StorageSrv", "ENV", "ScreenSharingStatusEnum", "UserScreenSharingStateEnum", "ScreenSharingSrv", "$log", "ScreenSharingUiSrv", function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, ScreenSharingStatusEnum, UserScreenSharingStateEnum, ScreenSharingSrv, $log, ScreenSharingUiSrv) {
-            'ngInject';
-
-            var ScreenSharingEventsSrv = {};
-
-            function _listenToScreenSharingData(guid) {
-                var screenSharingStatusPath = 'screenSharing/' + guid;
-
-                function _cb(screenSharingData) {
-                    if (!screenSharingData) {
-                        return;
-                    }
-
-                    UserProfileService.getCurrUserId().then(function (currUid) {
-                        switch (screenSharingData.status) {
-                            case ScreenSharingStatusEnum.PENDING_VIEWER.enum:
-                                if (screenSharingData.viewerId !== currUid) {
-                                    return;
-                                }
-
-                                ScreenSharingUiSrv.showScreenSharingConfirmationPopUp().then(function () {
-                                    ScreenSharingSrv.confirmSharing(screenSharingData.guid);
-                                }, function () {
-                                    ScreenSharingSrv.endSharing(screenSharingData.guid);
-                                });
-                                break;
-                            case ScreenSharingStatusEnum.PENDING_SHARER.enum:
-                                if (screenSharingData.sharerId !== currUid) {
-                                    return;
-                                }
-
-                                ScreenSharingSrv.confirmSharing(screenSharingData.guid);
-                                break;
-                            case ScreenSharingStatusEnum.CONFIRMED.enum:
-                                var userScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
-
-                                if (screenSharingData.viewerId === currUid) {
-                                    userScreenSharingState = UserScreenSharingStateEnum.VIEWER.enum;
-                                }
-
-                                if (screenSharingData.sharerId === currUid) {
-                                    userScreenSharingState = UserScreenSharingStateEnum.SHARER.enum;
-                                }
-
-                                if (userScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
-                                    ScreenSharingSrv._userScreenSharingStateChanged(userScreenSharingState, screenSharingData);
-                                }
-
-                                break;
-                            case ScreenSharingStatusEnum.ENDED.enum:
-                                ScreenSharingSrv._userScreenSharingStateChanged(UserScreenSharingStateEnum.NONE.enum, screenSharingData);
-                                break;
-                            default:
-                                $log.error('ScreenSharingEventsSrv: invalid status was received ' + screenSharingData.status);
-
-                        }
-
-                        ScreenSharingSrv._screenSharingDataChanged(screenSharingData);
-                    });
-                }
-
-                InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
-                    globalStorage.onEvent(StorageSrv.EVENTS.VALUE, screenSharingStatusPath, _cb);
-                });
-            }
-
-            function _startListening() {
-                UserProfileService.getCurrUserId().then(function (currUid) {
-                    InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
-                        var appName = ENV.firebaseAppScopeName;
-                        var userScreenSharingPath = appName + '/users/' + currUid + '/screenSharing/active';
-                        globalStorage.onEvent(StorageSrv.EVENTS.VALUE, userScreenSharingPath, function (userScreenSharingData) {
-                            if (userScreenSharingData) {
-                                angular.forEach(userScreenSharingData, function (isActive, guid) {
-                                    if(isActive){
-                                        _listenToScreenSharingData(guid);
-                                    }
-                                });
-                            }
-                        });
-                    });
-                });
-            }
-
-            ScreenSharingEventsSrv.activate = function () {
-                if (isEnabled) {
-                    _startListening();
-                }
-            };
-
-            return ScreenSharingEventsSrv;
-        }];
-    });
+    angular.module('znk.infra.screenSharing', [
+        'ngAnimate',
+        'pascalprecht.translate',
+        'znk.infra.user',
+        'znk.infra.utility',
+        'znk.infra.config',
+        'znk.infra.enum',
+        'znk.infra.svgIcon',
+        'znk.infra.popUp',
+        'znk.infra.general'
+    ]);
 })(angular);
 
 (function (angular) {
@@ -561,6 +395,172 @@
             };
         }]
     );
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.screenSharing').service('ScreenSharingDataGetterSrv',
+        ["InfraConfigSrv", "$q", "ENV", "UserProfileService", function (InfraConfigSrv, $q, ENV, UserProfileService) {
+            'ngInject';
+
+            function _getStorage() {
+                return InfraConfigSrv.getGlobalStorage();
+            }
+
+            this.getScreenSharingDataPath = function (guid) {
+                var SCREEN_SHARING_ROOT_PATH = 'screenSharing';
+                return SCREEN_SHARING_ROOT_PATH + '/' + guid;
+            };
+
+            this.getUserScreenSharingRequestsPath  = function (userData) {
+                var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
+                var USER_DATA_PATH = appName  + '/users/' + userData.uid;
+                return USER_DATA_PATH + '/screenSharing/active';
+            };
+
+            this.getUserScreenSharingArchivePath  = function (userData) {
+                var appName = userData.isTeacher ? ENV.dashboardAppName : ENV.studentAppName;
+                var USER_DATA_PATH = appName  + '/users/' + userData.uid;
+                return USER_DATA_PATH + '/screenSharing/archive';
+            };
+
+            this.getScreenSharingData = function (screenSharingGuid) {
+                var screenSharingDataPath = this.getScreenSharingDataPath(screenSharingGuid);
+                return _getStorage().then(function (storage) {
+                    return storage.getAndBindToServer(screenSharingDataPath);
+                });
+            };
+
+            this.getCurrUserScreenSharingRequests = function(){
+                return UserProfileService.getCurrUserId().then(function(currUid){
+                    return _getStorage().then(function(storage){
+                        var currUserScreenSharingDataPath = ENV.firebaseAppScopeName + '/users/' + currUid + '/screenSharing/active';
+                        return storage.getAndBindToServer(currUserScreenSharingDataPath);
+                    });
+                });
+            };
+
+            this.getCurrUserScreenSharingData = function () {
+                var self = this;
+                return this.getCurrUserScreenSharingRequests().then(function(currUserScreenSharingRequests){
+                    var screenSharingDataPromMap = {};
+                    angular.forEach(currUserScreenSharingRequests, function(isActive, guid){
+                        if(isActive){
+                            screenSharingDataPromMap[guid] = self.getScreenSharingData(guid);
+                        }
+                    });
+
+                    return $q.all(screenSharingDataPromMap);
+                });
+            };
+        }]
+    );
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.screenSharing').provider('ScreenSharingEventsSrv', function () {
+        var isEnabled = true;
+
+        this.enabled = function (_isEnabled) {
+            isEnabled = _isEnabled;
+        };
+
+        this.$get = ["UserProfileService", "InfraConfigSrv", "$q", "StorageSrv", "ENV", "ScreenSharingStatusEnum", "UserScreenSharingStateEnum", "ScreenSharingSrv", "$log", "ScreenSharingUiSrv", function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, ScreenSharingStatusEnum, UserScreenSharingStateEnum, ScreenSharingSrv, $log, ScreenSharingUiSrv) {
+            'ngInject';
+
+            var ScreenSharingEventsSrv = {};
+
+            function _listenToScreenSharingData(guid) {
+                var screenSharingStatusPath = 'screenSharing/' + guid;
+
+                function _cb(screenSharingData) {
+                    if (!screenSharingData) {
+                        return;
+                    }
+
+                    UserProfileService.getCurrUserId().then(function (currUid) {
+                        switch (screenSharingData.status) {
+                            case ScreenSharingStatusEnum.PENDING_VIEWER.enum:
+                                if (screenSharingData.viewerId !== currUid) {
+                                    return;
+                                }
+
+                                ScreenSharingUiSrv.showScreenSharingConfirmationPopUp().then(function () {
+                                    ScreenSharingSrv.confirmSharing(screenSharingData.guid);
+                                }, function () {
+                                    ScreenSharingSrv.endSharing(screenSharingData.guid);
+                                });
+                                break;
+                            case ScreenSharingStatusEnum.PENDING_SHARER.enum:
+                                if (screenSharingData.sharerId !== currUid) {
+                                    return;
+                                }
+
+                                ScreenSharingSrv.confirmSharing(screenSharingData.guid);
+                                break;
+                            case ScreenSharingStatusEnum.CONFIRMED.enum:
+                                var userScreenSharingState = UserScreenSharingStateEnum.NONE.enum;
+
+                                if (screenSharingData.viewerId === currUid) {
+                                    userScreenSharingState = UserScreenSharingStateEnum.VIEWER.enum;
+                                }
+
+                                if (screenSharingData.sharerId === currUid) {
+                                    userScreenSharingState = UserScreenSharingStateEnum.SHARER.enum;
+                                }
+
+                                if (userScreenSharingState !== UserScreenSharingStateEnum.NONE.enum) {
+                                    ScreenSharingSrv._userScreenSharingStateChanged(userScreenSharingState, screenSharingData);
+                                }
+
+                                break;
+                            case ScreenSharingStatusEnum.ENDED.enum:
+                                ScreenSharingSrv._userScreenSharingStateChanged(UserScreenSharingStateEnum.NONE.enum, screenSharingData);
+                                break;
+                            default:
+                                $log.error('ScreenSharingEventsSrv: invalid status was received ' + screenSharingData.status);
+
+                        }
+
+                        ScreenSharingSrv._screenSharingDataChanged(screenSharingData);
+                    });
+                }
+
+                InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
+                    globalStorage.onEvent(StorageSrv.EVENTS.VALUE, screenSharingStatusPath, _cb);
+                });
+            }
+
+            function _startListening() {
+                UserProfileService.getCurrUserId().then(function (currUid) {
+                    InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
+                        var appName = ENV.firebaseAppScopeName;
+                        var userScreenSharingPath = appName + '/users/' + currUid + '/screenSharing/active';
+                        globalStorage.onEvent(StorageSrv.EVENTS.VALUE, userScreenSharingPath, function (userScreenSharingData) {
+                            if (userScreenSharingData) {
+                                angular.forEach(userScreenSharingData, function (isActive, guid) {
+                                    if(isActive){
+                                        _listenToScreenSharingData(guid);
+                                    }
+                                });
+                            }
+                        });
+                    });
+                });
+            }
+
+            ScreenSharingEventsSrv.activate = function () {
+                if (isEnabled) {
+                    _startListening();
+                }
+            };
+
+            return ScreenSharingEventsSrv;
+        }];
+    });
 })(angular);
 
 (function (angular) {

@@ -1,13 +1,3 @@
-(function () {
-    'use strict';
-
-    angular.module('znk.infra.znkSessionData', [
-        'znk.infra.enum',
-        'znk.infra.userContext',
-        'znk.infra.user'
-    ]);
-})();
-
 (function (angular) {
     'use strict';
 
@@ -101,6 +91,16 @@
 
         });
 })(angular);
+
+(function () {
+    'use strict';
+
+    angular.module('znk.infra.znkSessionData', [
+        'znk.infra.enum',
+        'znk.infra.userContext',
+        'znk.infra.user'
+    ]);
+})();
 
 angular.module('znk.infra.znkSessionData').run(['$templateCache', function($templateCache) {
 

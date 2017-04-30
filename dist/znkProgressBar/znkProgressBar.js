@@ -1,3 +1,27 @@
+/**
+ * attrs:
+ */
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkProgressBar').directive('znkProgressBar',
+        function () {
+        'ngInject';
+            return {
+                templateUrl: 'components/znkProgressBar/directives/znkProgressBar.template.html',
+                scope: {
+                    progressWidth: '@',
+                    progressValue: '@',
+                    showProgressValue: '@',
+                    showProgressBubble: '&'
+                }
+            };
+        }
+    );
+})(angular);
+
+
 (function (angular) {
     'use strict';
 
@@ -13,32 +37,8 @@
             }]);
 })(angular);
 
-/**
- * attrs:
- */
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkProgressBar').directive('znkProgressBar',
-        function () {
-        'ngInject';
-            return {
-                templateUrl: 'components/znkProgressBar/znkProgressBar.template.html',
-                scope: {
-                    progressWidth: '@',
-                    progressValue: '@',
-                    showProgressValue: '@',
-                    showProgressBubble: '&'
-                }
-            };
-        }
-    );
-})(angular);
-
-
 angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($templateCache) {
-  $templateCache.put("components/znkProgressBar/znkProgressBar.template.html",
+  $templateCache.put("components/znkProgressBar/directives/znkProgressBar.template.html",
     "<div ng-if=\"::showProgressBubble()\" class=\"progress-bubble-wrapper\" ng-style=\"{left: progressWidth + '%'}\">\n" +
     "    <div class=\"progress-percentage\">\n" +
     "        <div>{{progressWidth}}%\n" +

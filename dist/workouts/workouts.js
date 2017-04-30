@@ -1,17 +1,6 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.workouts', [
-        'znk.infra.exerciseUtility',
-        'znk.infra.config',
-        'znk.infra.exerciseResult',
-        'znk.infra.contentAvail'
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.contentGetters').service('WorkoutsSrv',
         ["ExerciseStatusEnum", "ExerciseTypeEnum", "$log", "StorageSrv", "ExerciseResultSrv", "ContentAvailSrv", "$q", "InfraConfigSrv", function (ExerciseStatusEnum, ExerciseTypeEnum, $log, StorageSrv, ExerciseResultSrv, ContentAvailSrv, $q,
                   InfraConfigSrv) {
@@ -91,6 +80,17 @@
             this.getWorkoutKey = getWorkoutKey;
         }]
     );
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.workouts', [
+        'znk.infra.exerciseUtility',
+        'znk.infra.config',
+        'znk.infra.exerciseResult',
+        'znk.infra.contentAvail'
+    ]);
 })(angular);
 
 angular.module('znk.infra.workouts').run(['$templateCache', function($templateCache) {

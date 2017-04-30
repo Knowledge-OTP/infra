@@ -1,8 +1,3 @@
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.webcall', []);
-})(angular);
 'use strict';
 
 (function (angular) {
@@ -184,6 +179,11 @@
 
 })(angular);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.webcall', []);
+})(angular);
 angular.module('znk.infra.webcall').run(['$templateCache', function($templateCache) {
 
 }]);

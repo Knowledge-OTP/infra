@@ -1,24 +1,3 @@
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.general',
-        [
-            'znk.infra.enum',
-            'znk.infra.svgIcon',
-            'pascalprecht.translate',
-            'angular-svg-round-progressbar'
-        ])
-        .config([
-        'SvgIconSrvProvider',
-        function (SvgIconSrvProvider) {
-            var svgMap = {
-                'general-clock-icon': 'components/general/svg/clock-icon.svg'
-            };
-            SvgIconSrvProvider.registerSvgSources(svgMap);
-        }]);
-
-})(angular);
-
 /**
  * evaluates content , then it appended it to the DOM , and finally it compiles it with scope which was created out of the directive scope.
  * attrs-
@@ -77,38 +56,6 @@
         };
     }]);
 })(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.general').filter('cutString', function cutStringFilter() {
-        return function (str, length, onlyFullWords) {
-            length = +length;
-            if (!str || length <= 0) {
-                return '';
-            }
-            if (isNaN(length) || str.length < length) {
-                return str;
-            }
-            var words = str.split(' ');
-            var newStr = '';
-            if (onlyFullWords) {
-                for (var i = 0; i < words.length; i++) {
-                    if (newStr.length + words[i].length <= length) {
-                        newStr = newStr + words[i] + ' ';
-                    } else {
-                        break;
-                    }
-                }
-            } else {
-                newStr = str.substr(0, length);
-            }
-
-            return newStr + '...';
-        };
-    });
-})(angular);
-
 
 'use strict';
 
@@ -381,7 +328,7 @@
                 },
                 require: '?ngModel',
                 replace: true,
-                templateUrl: 'components/general/templates/timerDrv.html',
+                templateUrl: 'components/general/directives/timer/timer.template.html',
                 link: function link(scope, element, attrs, ngModelCtrl) {
                     var domElement = element[0];
 
@@ -740,7 +687,83 @@
     ]);
 })(angular);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.general').filter('cutString', function cutStringFilter() {
+        return function (str, length, onlyFullWords) {
+            length = +length;
+            if (!str || length <= 0) {
+                return '';
+            }
+            if (isNaN(length) || str.length < length) {
+                return str;
+            }
+            var words = str.split(' ');
+            var newStr = '';
+            if (onlyFullWords) {
+                for (var i = 0; i < words.length; i++) {
+                    if (newStr.length + words[i].length <= length) {
+                        newStr = newStr + words[i] + ' ';
+                    } else {
+                        break;
+                    }
+                }
+            } else {
+                newStr = str.substr(0, length);
+            }
+
+            return newStr + '...';
+        };
+    });
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.general',
+        [
+            'znk.infra.enum',
+            'znk.infra.svgIcon',
+            'pascalprecht.translate',
+            'angular-svg-round-progressbar'
+        ])
+        .config([
+        'SvgIconSrvProvider',
+        function (SvgIconSrvProvider) {
+            var svgMap = {
+                'general-clock-icon': 'components/general/svg/clock-icon.svg'
+            };
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+        }]);
+
+})(angular);
+
 angular.module('znk.infra.general').run(['$templateCache', function($templateCache) {
+  $templateCache.put("components/general/directives/timer/timer.template.html",
+    "<div ng-switch=\"type\" class=\"timer-drv\">\n" +
+    "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +
+    "        <svg-icon class=\"icon-wrapper\" name=\"general-clock-icon\"></svg-icon>\n" +
+    "        <div class=\"timer-view\"></div>\n" +
+    "    </div>\n" +
+    "    <div ng-switch-when=\"2\" class=\"timer-type2\">\n" +
+    "        <div class=\"timer-display-wrapper\">\n" +
+    "            <div class=\"timer-display\"></div>\n" +
+    "            <div class=\"seconds-text\" translate=\"TIMER.SECONDS\" ng-if=\"!config.hideSecondsText\"></div>\n" +
+    "        </div>\n" +
+    "        <div round-progress\n" +
+    "             current=\"timeElapsed\"\n" +
+    "             max=\"config.max\"\n" +
+    "             color=\"{{config.color}}\"\n" +
+    "             bgcolor=\"{{config.bgcolor}}\"\n" +
+    "             stroke=\"{{config.stroke}}\"\n" +
+    "             radius=\"{{config.radius}}\"\n" +
+    "             clockwise=\"config.clockwise\">\n" +
+    "        </div>\n" +
+    "    </div>\n" +
+    "</div>\n" +
+    "");
   $templateCache.put("components/general/svg/clock-icon.svg",
     "<svg version=\"1.1\" class=\"clock-icon-svg\"\n" +
     "     xmlns=\"http://www.w3.org/2000/svg\"\n" +
@@ -807,28 +830,5 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
     "        <line class=\"st5\" x1=\"156.1\" y1=\"43\" x2=\"171.3\" y2=\"61\"/>\n" +
     "    </g>\n" +
     "</svg>\n" +
-    "");
-  $templateCache.put("components/general/templates/timerDrv.html",
-    "<div ng-switch=\"type\" class=\"timer-drv\">\n" +
-    "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +
-    "        <svg-icon class=\"icon-wrapper\" name=\"general-clock-icon\"></svg-icon>\n" +
-    "        <div class=\"timer-view\"></div>\n" +
-    "    </div>\n" +
-    "    <div ng-switch-when=\"2\" class=\"timer-type2\">\n" +
-    "        <div class=\"timer-display-wrapper\">\n" +
-    "            <div class=\"timer-display\"></div>\n" +
-    "            <div class=\"seconds-text\" translate=\"TIMER.SECONDS\" ng-if=\"!config.hideSecondsText\"></div>\n" +
-    "        </div>\n" +
-    "        <div round-progress\n" +
-    "             current=\"timeElapsed\"\n" +
-    "             max=\"config.max\"\n" +
-    "             color=\"{{config.color}}\"\n" +
-    "             bgcolor=\"{{config.bgcolor}}\"\n" +
-    "             stroke=\"{{config.stroke}}\"\n" +
-    "             radius=\"{{config.radius}}\"\n" +
-    "             clockwise=\"config.clockwise\">\n" +
-    "        </div>\n" +
-    "    </div>\n" +
-    "</div>\n" +
     "");
 }]);

@@ -1,10 +1,5 @@
 (function (angular) {
     'use strict';
-    angular.module('znk.infra.znkModule', []);
-})(angular);
-
-(function (angular) {
-    'use strict';
 
     angular.module('znk.infra.znkModule').service('ZnkModuleService', [
         'StorageRevSrv',
@@ -29,6 +24,11 @@
     ]);
 })(angular);
 
+
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.znkModule', []);
+})(angular);
 
 angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
 

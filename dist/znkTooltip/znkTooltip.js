@@ -1,13 +1,3 @@
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkTooltip', [
-        'ngMaterial',
-        'pascalprecht.translate',
-        'ngSanitize'
-    ]);
-})(angular);
-
 
 (function (angular) {
     'use strict';
@@ -28,6 +18,16 @@
                 }
             };
         });
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkTooltip', [
+        'ngMaterial',
+        'pascalprecht.translate',
+        'ngSanitize'
+    ]);
 })(angular);
 
 angular.module('znk.infra.znkTooltip').run(['$templateCache', function($templateCache) {
