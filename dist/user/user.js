@@ -1,3 +1,13 @@
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.user', [
+        'znk.infra.config',
+        'znk.infra.storage',
+        'znk.infra.auth'
+    ]);
+})(angular);
+
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
@@ -214,16 +224,6 @@ angular.module('znk.infra.user').service('UserStorageService',
 
         return new StorageSrv(fbAdapter, config);
     }]);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.user', [
-        'znk.infra.config',
-        'znk.infra.storage',
-        'znk.infra.auth'
-    ]);
-})(angular);
 
 angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 

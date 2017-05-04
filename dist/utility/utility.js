@@ -1,6 +1,12 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.utility', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.utility').factory('UtilitySrv', [
         '$q',
         function ($q) {
@@ -148,12 +154,6 @@
         };
     }
     ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.utility', []);
 })(angular);
 
 angular.module('znk.infra.utility').run(['$templateCache', function($templateCache) {

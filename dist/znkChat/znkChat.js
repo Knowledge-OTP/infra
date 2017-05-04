@@ -1,6 +1,26 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.znkChat',
+        [
+            'znk.infra.svgIcon',
+            'znk.infra.teachers',
+            'znk.infra.znkMedia'
+        ])
+        .config([
+            'SvgIconSrvProvider',
+            function (SvgIconSrvProvider) {
+                var svgMap = {
+                    'znk-chat-chat-icon': 'components/znkChat/svg/znk-chat-chat-icon.svg',
+                    'znk-chat-close-icon': 'components/znkChat/svg/znk-chat-close-icon.svg'
+                };
+                SvgIconSrvProvider.registerSvgSources(svgMap);
+            }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.znkChat').constant('ZNK_CHAT', {
         MAX_NUM_UNSEEN_MESSAGES: 10,
         SUPPORT_EMAIL: 'support@zinkerz.com',
@@ -709,26 +729,6 @@
 
         }]
     );
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkChat',
-        [
-            'znk.infra.svgIcon',
-            'znk.infra.teachers',
-            'znk.infra.znkMedia'
-        ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
-                var svgMap = {
-                    'znk-chat-chat-icon': 'components/znkChat/svg/znk-chat-chat-icon.svg',
-                    'znk-chat-close-icon': 'components/znkChat/svg/znk-chat-close-icon.svg'
-                };
-                SvgIconSrvProvider.registerSvgSources(svgMap);
-            }]);
 })(angular);
 
 angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCache) {

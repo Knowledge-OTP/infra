@@ -1,5 +1,10 @@
 (function (angular) {
     'use strict';
+    angular.module('znk.infra.znkMedia',[]);
+})(angular);
+
+(function (angular) {
+    'use strict';
 
     angular.module('znk.infra.znkMedia').factory('MediaSrv', [
         'ENV', '$q', '$window', '$log',
@@ -256,11 +261,6 @@
             return MediaSrv;
         }
     ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-    angular.module('znk.infra.znkMedia',[]);
 })(angular);
 
 angular.module('znk.infra.znkMedia').run(['$templateCache', function($templateCache) {

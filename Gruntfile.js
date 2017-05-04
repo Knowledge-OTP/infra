@@ -398,7 +398,7 @@ module.exports = function (grunt) {
             // create a subtask for each module, find all src files
             // and combine into a single js file per component, should be running after html2js task
             concat.build.files.push({
-                src: [dir + '/module.js', dir + '/**/*.js', '<%= yeoman.tmp %>/' + dirName + '/templates.js'],
+                src: [dir + '/*.module.js', dir + '/**/*.js', '<%= yeoman.tmp %>/' + dirName + '/templates.js'],
                 dest: '<%= yeoman.tmp %>/' + dirName + '/' + dirName + '.js'
             });
 

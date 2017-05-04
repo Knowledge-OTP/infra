@@ -1,3 +1,24 @@
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.general',
+        [
+            'znk.infra.enum',
+            'znk.infra.svgIcon',
+            'pascalprecht.translate',
+            'angular-svg-round-progressbar'
+        ])
+        .config([
+        'SvgIconSrvProvider',
+        function (SvgIconSrvProvider) {
+            var svgMap = {
+                'general-clock-icon': 'components/general/svg/clock-icon.svg'
+            };
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+        }]);
+
+})(angular);
+
 /**
  * evaluates content , then it appended it to the DOM , and finally it compiles it with scope which was created out of the directive scope.
  * attrs-
@@ -718,27 +739,6 @@
     });
 })(angular);
 
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.general',
-        [
-            'znk.infra.enum',
-            'znk.infra.svgIcon',
-            'pascalprecht.translate',
-            'angular-svg-round-progressbar'
-        ])
-        .config([
-        'SvgIconSrvProvider',
-        function (SvgIconSrvProvider) {
-            var svgMap = {
-                'general-clock-icon': 'components/general/svg/clock-icon.svg'
-            };
-            SvgIconSrvProvider.registerSvgSources(svgMap);
-        }]);
-
-})(angular);
 
 angular.module('znk.infra.general').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/general/directives/timer/timer.template.html",

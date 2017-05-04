@@ -1,6 +1,14 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.teachers', [
+        
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     /**
      api:
      getAllTeachers: returns all teachers of current user as objects
@@ -46,14 +54,6 @@
 
         }]
     );
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.teachers', [
-        
-    ]);
 })(angular);
 
 angular.module('znk.infra.teachers').run(['$templateCache', function($templateCache) {

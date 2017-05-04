@@ -3734,6 +3734,26 @@ angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function($
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.eTutoring',[
+        'znk.infra.contentGetters'
+    ])
+        .config([
+            'SvgIconSrvProvider',
+            function (SvgIconSrvProvider) {
+                var svgMap = {
+                    'homework-icon': 'components/eTutoring/svg/homework-icon.svg',
+                    'english-topic-icon': 'components/eTutoring/svg/english-topic-icon.svg',
+                    'math-topic-icon': 'components/eTutoring/svg/math-topic-icon.svg',
+                    'etutoring-slides-icon': 'components/eTutoring/svg/etutoring-slides-icon.svg',
+                    'etutoring-exercise-icon': 'components/eTutoring/svg/etutoring-exercise-icon.svg'
+                };
+                SvgIconSrvProvider.registerSvgSources(svgMap);
+            }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     diagnosticData.$inject = ["WorkoutsDiagnosticFlow"];
     exerciseData.$inject = ["$stateParams", "ExerciseParentEnum", "$state"];
     angular.module('znk.infra.eTutoring')
@@ -4477,26 +4497,6 @@ angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function($
                 }
             };
         }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.eTutoring',[
-        'znk.infra.contentGetters'
-    ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
-                var svgMap = {
-                    'homework-icon': 'components/eTutoring/svg/homework-icon.svg',
-                    'english-topic-icon': 'components/eTutoring/svg/english-topic-icon.svg',
-                    'math-topic-icon': 'components/eTutoring/svg/math-topic-icon.svg',
-                    'etutoring-slides-icon': 'components/eTutoring/svg/etutoring-slides-icon.svg',
-                    'etutoring-exercise-icon': 'components/eTutoring/svg/etutoring-exercise-icon.svg'
-                };
-                SvgIconSrvProvider.registerSvgSources(svgMap);
-            }]);
 })(angular);
 
 (function (angular) {
@@ -6446,6 +6446,19 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.exerciseUtility', [
+        'znk.infra.config',
+        'znk.infra.enum',
+        'znk.infra.storage',
+        'znk.infra.exerciseResult',
+        'znk.infra.contentAvail',
+        'znk.infra.content'
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     var answerTypeEnum = {
         SELECT_ANSWER: 0,
         FREE_TEXT_ANSWER: 1,
@@ -6693,19 +6706,6 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.exerciseUtility', [
-        'znk.infra.config',
-        'znk.infra.enum',
-        'znk.infra.storage',
-        'znk.infra.exerciseResult',
-        'znk.infra.contentAvail',
-        'znk.infra.content'
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.exerciseUtility').factory('ExerciseUtilitySrv',
         function () {
             'ngInject';
@@ -6868,6 +6868,27 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
 angular.module('znk.infra.filters').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.general',
+        [
+            'znk.infra.enum',
+            'znk.infra.svgIcon',
+            'pascalprecht.translate',
+            'angular-svg-round-progressbar'
+        ])
+        .config([
+        'SvgIconSrvProvider',
+        function (SvgIconSrvProvider) {
+            var svgMap = {
+                'general-clock-icon': 'components/general/svg/clock-icon.svg'
+            };
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+        }]);
+
+})(angular);
 
 /**
  * evaluates content , then it appended it to the DOM , and finally it compiles it with scope which was created out of the directive scope.
@@ -7590,27 +7611,6 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
 })(angular);
 
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.general',
-        [
-            'znk.infra.enum',
-            'znk.infra.svgIcon',
-            'pascalprecht.translate',
-            'angular-svg-round-progressbar'
-        ])
-        .config([
-        'SvgIconSrvProvider',
-        function (SvgIconSrvProvider) {
-            var svgMap = {
-                'general-clock-icon': 'components/general/svg/clock-icon.svg'
-            };
-            SvgIconSrvProvider.registerSvgSources(svgMap);
-        }]);
-
-})(angular);
-
 angular.module('znk.infra.general').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/general/directives/timer/timer.template.html",
     "<div ng-switch=\"type\" class=\"timer-drv\">\n" +
@@ -8288,6 +8288,11 @@ angular.module('znk.infra.personalization').run(['$templateCache', function($tem
 
 }]);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.pngSequence', []);
+})(angular);
 /**
  * Created by Igor on 8/19/2015.
  */
@@ -8402,11 +8407,6 @@ angular.module('znk.infra.personalization').run(['$templateCache', function($tem
             };
         }
     ]);
-})(angular);
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.pngSequence', []);
 })(angular);
 angular.module('znk.infra.pngSequence').run(['$templateCache', function($templateCache) {
 
@@ -8962,6 +8962,22 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.screenSharing', [
+        'ngAnimate',
+        'pascalprecht.translate',
+        'znk.infra.user',
+        'znk.infra.utility',
+        'znk.infra.config',
+        'znk.infra.enum',
+        'znk.infra.svgIcon',
+        'znk.infra.popUp',
+        'znk.infra.general'
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.screenSharing')
         .config(["SvgIconSrvProvider", function (SvgIconSrvProvider) {
             'ngInject';
@@ -9058,22 +9074,6 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
         }]
     );
 })();
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.screenSharing', [
-        'ngAnimate',
-        'pascalprecht.translate',
-        'znk.infra.user',
-        'znk.infra.utility',
-        'znk.infra.config',
-        'znk.infra.enum',
-        'znk.infra.svgIcon',
-        'znk.infra.popUp',
-        'znk.infra.general'
-    ]);
-})(angular);
 
 (function (angular) {
     'use strict';
@@ -9714,6 +9714,11 @@ angular.module('znk.infra.screenSharing').run(['$templateCache', function($templ
     "");
 }]);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.scroll', []);
+})(angular);
 /**
  * attrs:
  *      actions:
@@ -9881,11 +9886,6 @@ angular.module('znk.infra.screenSharing').run(['$templateCache', function($templ
     ]);
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.scroll', []);
-})(angular);
 angular.module('znk.infra.scroll').run(['$templateCache', function($templateCache) {
 
 }]);
@@ -9899,6 +9899,23 @@ angular.module('znk.infra.scroll').run(['$templateCache', function($templateCach
 angular.module('znk.infra.sharedScss').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.stats', [
+            'znk.infra.enum',
+            'znk.infra.znkExercise',
+            'znk.infra.utility',
+            'znk.infra.contentGetters'
+        ])
+        .run([
+            'StatsEventsHandlerSrv',
+            function (StatsEventsHandlerSrv) {
+                StatsEventsHandlerSrv.init();
+            }
+        ]);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -10262,26 +10279,15 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
     ]);
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.stats', [
-            'znk.infra.enum',
-            'znk.infra.znkExercise',
-            'znk.infra.utility',
-            'znk.infra.contentGetters'
-        ])
-        .run([
-            'StatsEventsHandlerSrv',
-            function (StatsEventsHandlerSrv) {
-                StatsEventsHandlerSrv.init();
-            }
-        ]);
-})(angular);
-
 angular.module('znk.infra.stats').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.storage', []);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -10822,15 +10828,15 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
         }]);
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.storage', []);
-})(angular);
-
 angular.module('znk.infra.storage').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.support', []);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -10945,16 +10951,15 @@ angular.module('znk.infra.storage').run(['$templateCache', function($templateCac
 
 
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.support', []);
-})(angular);
-
 angular.module('znk.infra.support').run(['$templateCache', function($templateCache) {
 
 }]);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.svgIcon', []);
+})(angular);
 /**
  * attrs:
  *  name: svg icon name
@@ -11064,14 +11069,17 @@ angular.module('znk.infra.support').run(['$templateCache', function($templateCac
         }]);
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.svgIcon', []);
-})(angular);
 angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.teachers', [
+        
+    ]);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -11123,17 +11131,19 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
     );
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.teachers', [
-        
-    ]);
-})(angular);
-
 angular.module('znk.infra.teachers').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.user', [
+        'znk.infra.config',
+        'znk.infra.storage',
+        'znk.infra.auth'
+    ]);
+})(angular);
 
 'use strict';
 
@@ -11352,19 +11362,15 @@ angular.module('znk.infra.user').service('UserStorageService',
         return new StorageSrv(fbAdapter, config);
     }]);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.user', [
-        'znk.infra.config',
-        'znk.infra.storage',
-        'znk.infra.auth'
-    ]);
-})(angular);
-
 angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.userContext', []);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -11484,15 +11490,15 @@ angular.module('znk.infra.user').run(['$templateCache', function($templateCache)
     ]);
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.userContext', []);
-})(angular);
-
 angular.module('znk.infra.userContext').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.utility', []);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -11646,16 +11652,15 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
     ]);
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.utility', []);
-})(angular);
-
 angular.module('znk.infra.utility').run(['$templateCache', function($templateCache) {
 
 }]);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.webcall', []);
+})(angular);
 'use strict';
 
 (function (angular) {
@@ -11837,14 +11842,20 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.webcall', []);
-})(angular);
 angular.module('znk.infra.webcall').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.workouts', [
+        'znk.infra.exerciseUtility',
+        'znk.infra.config',
+        'znk.infra.exerciseResult',
+        'znk.infra.contentAvail'
+    ]);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -11930,20 +11941,29 @@ angular.module('znk.infra.webcall').run(['$templateCache', function($templateCac
     );
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.workouts', [
-        'znk.infra.exerciseUtility',
-        'znk.infra.config',
-        'znk.infra.exerciseResult',
-        'znk.infra.contentAvail'
-    ]);
-})(angular);
-
 angular.module('znk.infra.workouts').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkAudioPlayer', [
+        'znk.infra.znkMedia',
+        'pascalprecht.translate',
+        'znk.infra.svgIcon'
+    ])
+        .config([
+            'SvgIconSrvProvider',
+            function (SvgIconSrvProvider) {
+                var svgMap = {
+                    'znk-audio-player-play': 'components/znkAudioPlayer/svg/play-icon.svg',
+                    'znk-audio-player-pause': 'components/znkAudioPlayer/svg/pause-icon.svg',
+                    'znk-audio-player-close': 'components/znkAudioPlayer/svg/close-icon.svg'
+                };
+                SvgIconSrvProvider.registerSvgSources(svgMap);
+            }]);
+})(angular);
 
 'use strict';
 
@@ -12378,26 +12398,6 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
     ]);
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkAudioPlayer', [
-        'znk.infra.znkMedia',
-        'pascalprecht.translate',
-        'znk.infra.svgIcon'
-    ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
-                var svgMap = {
-                    'znk-audio-player-play': 'components/znkAudioPlayer/svg/play-icon.svg',
-                    'znk-audio-player-pause': 'components/znkAudioPlayer/svg/pause-icon.svg',
-                    'znk-audio-player-close': 'components/znkAudioPlayer/svg/close-icon.svg'
-                };
-                SvgIconSrvProvider.registerSvgSources(svgMap);
-            }]);
-})(angular);
-
 angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkAudioPlayer/svg/close-icon.svg",
     "<svg\n" +
@@ -12532,6 +12532,34 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.znkCategoryStats', [
+        'ngMaterial',
+        'pascalprecht.translate',
+        'znk.infra.znkProgressBar',
+        'znk.infra.stats',
+        'znk.infra.contentGetters',
+        'znk.infra.general',
+        'znk.infra.svgIcon',
+        'znk.infra.znkTooltip'
+    ])
+    .config([
+        'SvgIconSrvProvider',
+        function (SvgIconSrvProvider) {
+            'ngInject';
+            var svgMap = {
+                'znkCategoryStats-clock-icon': 'components/znkCategoryStats/svg/clock-icon.svg',
+                'znkCategoryStats-v-icon': 'components/znkCategoryStats/svg/v-icon.svg',
+                'znkCategoryStats-x-icon': 'components/znkCategoryStats/svg/x-icon.svg',
+                'znkCategoryStats-total-icon': 'components/znkCategoryStats/svg/total-icon.svg'
+            };
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+        }
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.znkCategoryStats')
         .component('znkCategoryStats', {
             bindings: {
@@ -12577,34 +12605,6 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
                 }
             }]
         });
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkCategoryStats', [
-        'ngMaterial',
-        'pascalprecht.translate',
-        'znk.infra.znkProgressBar',
-        'znk.infra.stats',
-        'znk.infra.contentGetters',
-        'znk.infra.general',
-        'znk.infra.svgIcon',
-        'znk.infra.znkTooltip'
-    ])
-    .config([
-        'SvgIconSrvProvider',
-        function (SvgIconSrvProvider) {
-            'ngInject';
-            var svgMap = {
-                'znkCategoryStats-clock-icon': 'components/znkCategoryStats/svg/clock-icon.svg',
-                'znkCategoryStats-v-icon': 'components/znkCategoryStats/svg/v-icon.svg',
-                'znkCategoryStats-x-icon': 'components/znkCategoryStats/svg/x-icon.svg',
-                'znkCategoryStats-total-icon': 'components/znkCategoryStats/svg/total-icon.svg'
-            };
-            SvgIconSrvProvider.registerSvgSources(svgMap);
-        }
-    ]);
 })(angular);
 
 angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($templateCache) {
@@ -12800,6 +12800,26 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
     "</svg>\n" +
     "");
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkChat',
+        [
+            'znk.infra.svgIcon',
+            'znk.infra.teachers',
+            'znk.infra.znkMedia'
+        ])
+        .config([
+            'SvgIconSrvProvider',
+            function (SvgIconSrvProvider) {
+                var svgMap = {
+                    'znk-chat-chat-icon': 'components/znkChat/svg/znk-chat-chat-icon.svg',
+                    'znk-chat-close-icon': 'components/znkChat/svg/znk-chat-close-icon.svg'
+                };
+                SvgIconSrvProvider.registerSvgSources(svgMap);
+            }]);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -13514,26 +13534,6 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
     );
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkChat',
-        [
-            'znk.infra.svgIcon',
-            'znk.infra.teachers',
-            'znk.infra.znkMedia'
-        ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
-                var svgMap = {
-                    'znk-chat-chat-icon': 'components/znkChat/svg/znk-chat-chat-icon.svg',
-                    'znk-chat-close-icon': 'components/znkChat/svg/znk-chat-close-icon.svg'
-                };
-                SvgIconSrvProvider.registerSvgSources(svgMap);
-            }]);
-})(angular);
-
 angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkChat/svg/znk-chat-chat-icon.svg",
     "<svg\n" +
@@ -13694,6 +13694,38 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     "</div>\n" +
     "");
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkExercise', [
+        'ngAnimate',
+        'pascalprecht.translate',
+        'znk.infra.znkQuestionReport',
+        'znk.infra.svgIcon',
+        'znk.infra.scroll',
+        'znk.infra.autofocus',
+        'znk.infra.exerciseUtility',
+        'znk.infra.analytics',
+        'znk.infra.popUp',
+        'znk.infra.user',
+        'znk.infra.utility',
+        'znk.infra.znkSessionData'
+    ])
+    .config([
+        'SvgIconSrvProvider',
+        function (SvgIconSrvProvider) {
+            var svgMap = {
+                'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg',
+                'znk-exercise-eraser': 'components/znkExercise/svg/tools-eraser.svg',
+                'znk-exercise-pencil': 'components/znkExercise/svg/tools-pencil.svg',
+                'znk-exercise-pointer': 'components/znkExercise/svg/tools-pointer.svg',
+                'znk-exercise-remove': 'components/znkExercise/svg/tools-remove.svg',
+                'znk-exercise-touche': 'components/znkExercise/svg/tools-touche.svg'
+            };
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+        }]);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -17339,38 +17371,6 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     );
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkExercise', [
-        'ngAnimate',
-        'pascalprecht.translate',
-        'znk.infra.znkQuestionReport',
-        'znk.infra.svgIcon',
-        'znk.infra.scroll',
-        'znk.infra.autofocus',
-        'znk.infra.exerciseUtility',
-        'znk.infra.analytics',
-        'znk.infra.popUp',
-        'znk.infra.user',
-        'znk.infra.utility',
-        'znk.infra.znkSessionData'
-    ])
-    .config([
-        'SvgIconSrvProvider',
-        function (SvgIconSrvProvider) {
-            var svgMap = {
-                'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg',
-                'znk-exercise-eraser': 'components/znkExercise/svg/tools-eraser.svg',
-                'znk-exercise-pencil': 'components/znkExercise/svg/tools-pencil.svg',
-                'znk-exercise-pointer': 'components/znkExercise/svg/tools-pointer.svg',
-                'znk-exercise-remove': 'components/znkExercise/svg/tools-remove.svg',
-                'znk-exercise-touche': 'components/znkExercise/svg/tools-touche.svg'
-            };
-            SvgIconSrvProvider.registerSvgSources(svgMap);
-        }]);
-})(angular);
-
 angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkExercise/core/template/btnSectionDesktop.template.html",
     "<div class=\"btn-container left-container ng-hide\"\n" +
@@ -17825,6 +17825,11 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
 
 (function (angular) {
     'use strict';
+    angular.module('znk.infra.znkMedia',[]);
+})(angular);
+
+(function (angular) {
+    'use strict';
 
     angular.module('znk.infra.znkMedia').factory('MediaSrv', [
         'ENV', '$q', '$window', '$log',
@@ -18083,14 +18088,14 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     ]);
 })(angular);
 
-(function (angular) {
-    'use strict';
-    angular.module('znk.infra.znkMedia',[]);
-})(angular);
-
 angular.module('znk.infra.znkMedia').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.znkModule', []);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -18119,14 +18124,24 @@ angular.module('znk.infra.znkMedia').run(['$templateCache', function($templateCa
 })(angular);
 
 
-(function (angular) {
-    'use strict';
-    angular.module('znk.infra.znkModule', []);
-})(angular);
-
 angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkProgressBar', [
+        'znk.infra.svgIcon',
+        'pascalprecht.translate'
+    ])
+        .config([
+            'SvgIconSrvProvider',
+            function (SvgIconSrvProvider) {
+                var svgMap = {};
+                SvgIconSrvProvider.registerSvgSources(svgMap);
+            }]);
+})(angular);
 
 /**
  * attrs:
@@ -18152,21 +18167,6 @@ angular.module('znk.infra.znkModule').run(['$templateCache', function($templateC
 })(angular);
 
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkProgressBar', [
-        'znk.infra.svgIcon',
-        'pascalprecht.translate'
-    ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
-                var svgMap = {};
-                SvgIconSrvProvider.registerSvgSources(svgMap);
-            }]);
-})(angular);
-
 angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkProgressBar/directives/znkProgressBar.template.html",
     "<div ng-if=\"::showProgressBubble()\" class=\"progress-bubble-wrapper\" ng-style=\"{left: progressWidth + '%'}\">\n" +
@@ -18189,6 +18189,35 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
     "</div>\n" +
     "");
 }]);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkQuestionReport',
+        [
+            'ngMaterial',
+            'znk.infra.popUp',
+            'pascalprecht.translate',
+            'znk.infra.auth',
+            'znk.infra.analytics',
+            'znk.infra.general',
+            'znk.infra.user',
+            'znk.infra.svgIcon',
+            'znk.infra.mailSender',
+            'znk.infra.exerciseUtility'
+        ])
+        .config([
+            'SvgIconSrvProvider',
+            function (SvgIconSrvProvider) {
+                var svgMap = {
+                    'report-question-close-popup': 'components/znkQuestionReport/svg/close-popup.svg',
+                    'report-question-icon': 'components/znkQuestionReport/svg/report-question-icon.svg',
+                    'completed-v-report-icon': 'components/znkQuestionReport/svg/completed-v-report.svg'
+                };
+                SvgIconSrvProvider.registerSvgSources(svgMap);
+            }
+        ]);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -18303,35 +18332,6 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
                 $mdDialog.cancel();
             };
         }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkQuestionReport',
-        [
-            'ngMaterial',
-            'znk.infra.popUp',
-            'pascalprecht.translate',
-            'znk.infra.auth',
-            'znk.infra.analytics',
-            'znk.infra.general',
-            'znk.infra.user',
-            'znk.infra.svgIcon',
-            'znk.infra.mailSender',
-            'znk.infra.exerciseUtility'
-        ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
-                var svgMap = {
-                    'report-question-close-popup': 'components/znkQuestionReport/svg/close-popup.svg',
-                    'report-question-icon': 'components/znkQuestionReport/svg/report-question-icon.svg',
-                    'completed-v-report-icon': 'components/znkQuestionReport/svg/completed-v-report.svg'
-                };
-                SvgIconSrvProvider.registerSvgSources(svgMap);
-            }
-        ]);
 })(angular);
 
 angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($templateCache) {
@@ -18504,6 +18504,16 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
     "");
 }]);
 
+(function () {
+    'use strict';
+
+    angular.module('znk.infra.znkSessionData', [
+        'znk.infra.enum',
+        'znk.infra.userContext',
+        'znk.infra.user'
+    ]);
+})();
+
 (function (angular) {
     'use strict';
 
@@ -18598,19 +18608,14 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
         });
 })(angular);
 
-(function () {
-    'use strict';
-
-    angular.module('znk.infra.znkSessionData', [
-        'znk.infra.enum',
-        'znk.infra.userContext',
-        'znk.infra.user'
-    ]);
-})();
-
 angular.module('znk.infra.znkSessionData').run(['$templateCache', function($templateCache) {
 
 }]);
+
+(function (angular) {
+    'use strict';
+    angular.module('znk.infra.znkTimeline', ['znk.infra.svgIcon', 'znk.infra.enum']);
+})(angular);
 
 (function (angular) {
     'use strict';
@@ -18894,11 +18899,6 @@ angular.module('znk.infra.znkSessionData').run(['$templateCache', function($temp
 })(angular);
 
 
-(function (angular) {
-    'use strict';
-    angular.module('znk.infra.znkTimeline', ['znk.infra.svgIcon', 'znk.infra.enum']);
-})(angular);
-
 angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
@@ -19181,6 +19181,16 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templat
     "");
 }]);
 
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.znkTooltip', [
+        'ngMaterial',
+        'pascalprecht.translate',
+        'ngSanitize'
+    ]);
+})(angular);
+
 
 (function (angular) {
     'use strict';
@@ -19201,16 +19211,6 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templat
                 }
             };
         });
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkTooltip', [
-        'ngMaterial',
-        'pascalprecht.translate',
-        'ngSanitize'
-    ]);
 })(angular);
 
 angular.module('znk.infra.znkTooltip').run(['$templateCache', function($templateCache) {
