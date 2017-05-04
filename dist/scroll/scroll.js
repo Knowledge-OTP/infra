@@ -1,3 +1,8 @@
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.scroll', []);
+})(angular);
 /**
  * attrs:
  *      actions:
@@ -165,11 +170,6 @@
     ]);
 })(angular);
 
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.scroll', []);
-})(angular);
 angular.module('znk.infra.scroll').run(['$templateCache', function($templateCache) {
 
 }]);

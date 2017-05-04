@@ -1,6 +1,12 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.storage', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.storage').service('InvitationStorageSrv',
         ["StorageFirebaseAdapter", "ENV", "StorageSrv", "AuthService", function (StorageFirebaseAdapter, ENV, StorageSrv, AuthService) {
         'ngInjedct';
@@ -535,12 +541,6 @@
 
             return StorageFirebaseAdapter;
         }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.storage', []);
 })(angular);
 
 angular.module('znk.infra.storage').run(['$templateCache', function($templateCache) {

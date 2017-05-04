@@ -1,6 +1,12 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.support', []);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.support').service('SupportSrv',
         ["InfraConfigSrv", "ENV", "AuthService", "UserProfileService", "$q", "$injector", "$log", "teachersSrv", "$http", function (InfraConfigSrv, ENV, AuthService, UserProfileService, $q, $injector, $log, teachersSrv, $http) {
             'ngInject';
@@ -110,12 +116,6 @@
 
 
 
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.support', []);
-})(angular);
 
 angular.module('znk.infra.support').run(['$templateCache', function($templateCache) {
 

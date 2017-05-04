@@ -1,6 +1,23 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.stats', [
+            'znk.infra.enum',
+            'znk.infra.znkExercise',
+            'znk.infra.utility',
+            'znk.infra.contentGetters'
+        ])
+        .run([
+            'StatsEventsHandlerSrv',
+            function (StatsEventsHandlerSrv) {
+                StatsEventsHandlerSrv.init();
+            }
+        ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.stats').factory('StatsLevelEnum', [
         'EnumSrv',
         function (EnumSrv) {
@@ -358,23 +375,6 @@
             return StatsQuerySrv;
         }
     ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.stats', [
-            'znk.infra.enum',
-            'znk.infra.znkExercise',
-            'znk.infra.utility',
-            'znk.infra.contentGetters'
-        ])
-        .run([
-            'StatsEventsHandlerSrv',
-            function (StatsEventsHandlerSrv) {
-                StatsEventsHandlerSrv.init();
-            }
-        ]);
 })(angular);
 
 angular.module('znk.infra.stats').run(['$templateCache', function($templateCache) {

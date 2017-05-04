@@ -1,6 +1,35 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.znkQuestionReport',
+        [
+            'ngMaterial',
+            'znk.infra.popUp',
+            'pascalprecht.translate',
+            'znk.infra.auth',
+            'znk.infra.analytics',
+            'znk.infra.general',
+            'znk.infra.user',
+            'znk.infra.svgIcon',
+            'znk.infra.mailSender',
+            'znk.infra.exerciseUtility'
+        ])
+        .config([
+            'SvgIconSrvProvider',
+            function (SvgIconSrvProvider) {
+                var svgMap = {
+                    'report-question-close-popup': 'components/znkQuestionReport/svg/close-popup.svg',
+                    'report-question-icon': 'components/znkQuestionReport/svg/report-question-icon.svg',
+                    'completed-v-report-icon': 'components/znkQuestionReport/svg/completed-v-report.svg'
+                };
+                SvgIconSrvProvider.registerSvgSources(svgMap);
+            }
+        ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.znkQuestionReport')
         .component('znkQuestionReport', {
             bindings: {
@@ -111,35 +140,6 @@
                 $mdDialog.cancel();
             };
         }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkQuestionReport',
-        [
-            'ngMaterial',
-            'znk.infra.popUp',
-            'pascalprecht.translate',
-            'znk.infra.auth',
-            'znk.infra.analytics',
-            'znk.infra.general',
-            'znk.infra.user',
-            'znk.infra.svgIcon',
-            'znk.infra.mailSender',
-            'znk.infra.exerciseUtility'
-        ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
-                var svgMap = {
-                    'report-question-close-popup': 'components/znkQuestionReport/svg/close-popup.svg',
-                    'report-question-icon': 'components/znkQuestionReport/svg/report-question-icon.svg',
-                    'completed-v-report-icon': 'components/znkQuestionReport/svg/completed-v-report.svg'
-                };
-                SvgIconSrvProvider.registerSvgSources(svgMap);
-            }
-        ]);
 })(angular);
 
 angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($templateCache) {
