@@ -6,12 +6,12 @@
 
         var _credentials;
 
-        this.setCallCred = function (credentials) {
+        this.setCallCred = function () {
             // _credentials = credentials;
             _credentials = {
                 username:'ZinkerzDev160731091034',
                 password:'zinkerz$9999'
-            }
+            };
         };
 
         this.$get = ['$q', '$log', 'ENV', function ($q, $log, ENV) {
@@ -48,10 +48,10 @@
                 deferredMap.init.reject(_notSupportedMsg);
             }
 
-            function _onReady() {
-                $log.debug('_onReady');
-                _plivoLogin();
-            }
+            // function _onReady() {
+            //     $log.debug('_onReady');
+            //     _plivoLogin();
+            // }
 
             function _plivoLogin() {
                 $log.debug('_plivoLogin');
@@ -128,7 +128,7 @@
                 // plivoWebSdk.client.on('audioDeviceChange',audioDeviceChange);
                 plivoWebSdk.client.setRingTone(true);
                 plivoWebSdk.client.setRingToneBack(false);
-                console.log('initPhone ready!')
+                console.log('initPhone ready!');
 
                 // Plivo.setDebug(ENV.debug);
 
@@ -182,10 +182,10 @@
             };
 
             WebcallSrv.connect = function (callId) {
-                return _init().then(function () {
-                    $log.debug('init done');
-                    // return _call(callId);
-                });
+                return _init().then(function () {                        
+                    $log.debug('init done');                            
+                    return _call(callId);                          
+                 });
             };
 
              WebcallSrv.login = function () {
@@ -218,9 +218,9 @@
                 _credentials = credentials;
             };
 
-            WebcallSrv.activate = function () {
-                _activate();
-            };
+            // WebcallSrv.activate = function () {
+            //     _activate();
+            // };
 
             return WebcallSrv;
         }];
