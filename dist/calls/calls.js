@@ -455,7 +455,6 @@
                 username: ENV.plivoUsername,
                 password: ENV.plivoPassword
             });
-            // WebcallSrv.activate();
         }]);
 })(angular);
 

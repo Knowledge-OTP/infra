@@ -1656,7 +1656,6 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 username: ENV.plivoUsername,
                 password: ENV.plivoPassword
             });
-            // WebcallSrv.activate();
         }]);
 })(angular);
 
@@ -11669,12 +11668,12 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 
         var _credentials;
 
-        this.setCallCred = function () {
-            // _credentials = credentials;
-            _credentials = {
-                username:'ZinkerzDev160731091034',
-                password:'zinkerz$9999'
-            };
+        this.setCallCred = function (credentials) {
+            _credentials = credentials;
+            // _credentials = {
+            //     username:'ZinkerzDev160731091034',
+            //     password:'zinkerz$9999'
+            // };
         };
 
         this.$get = ['$q', '$log', 'ENV', function ($q, $log, ENV) {
@@ -11690,11 +11689,11 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 
             var _notSupportedMsg = 'webcall feature is not available';
 
-            var _username,
-                _password;
+            // var _username,
+            //     _password;
 
-            _username ='ZinkerzDev160731091034';
-            _password = 'zinkerz$9999';
+            // _username ='ZinkerzDev160731091034';
+            // _password = 'zinkerz$9999';
 
             function _webrtcNotSupportedAlert() {
                 $log.error(_notSupportedMsg);
@@ -11703,7 +11702,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 
             function _plivoLogin() {
                 $log.debug('_plivoLogin');
-                plivoWebSdk.client.login(_username, _password);
+                plivoWebSdk.client.login(_credentials.username, _credentials.password);
             }
 
             function _onLoginFailed() {
@@ -11726,7 +11725,6 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                 if (!angular.equals({}, deferredMap.init)) {
                     deferredMap.init.resolve();
                 }
-                // _call(1234);
             }
 
             function _onCallTerminated() {
@@ -11770,8 +11768,8 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                 // plivoWebSdk.client.on('audioDeviceChange',audioDeviceChange);
                 plivoWebSdk.client.setRingTone(true);
                 plivoWebSdk.client.setRingToneBack(false);
-                console.log('initPhone ready!');
-                plivoWebSdk.client.login(_username, _password);
+                $log.debug('initPhone ready!');
+                plivoWebSdk.client.login(_credentials.username, _credentials.password);
             }
 
             function _getSettings(){
@@ -11802,7 +11800,6 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
             function _call(callId) {
                 deferredMap.call = $q.defer();
                 var res = plivoWebSdk.client.call(callId);
-                // var res = Plivo.conn.call(callId);
                 if (res === false) {
                     deferredMap.call.reject();
                 }
@@ -11812,7 +11809,6 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
             WebcallSrv.call = function (callId) {
                 return _call(callId).then(function () {
                     $log.debug('call done');
-                    // return _call(callId);
                 });
             };
 
