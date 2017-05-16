@@ -1219,7 +1219,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     'use strict';
 
     angular.module('znk.infra.calls').component('callBtn', {
-            templateUrl: 'components/calls/directives/callBtn/callBtn.template.html',
+            templateUrl: 'components/calls/components/callBtn/callBtn.template.html',
             require: {
                 parent: '?^ngModel'
             },
