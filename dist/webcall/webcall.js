@@ -38,29 +38,13 @@
             _username ='ZinkerzDev160731091034';
             _password = 'zinkerz$9999';
 
-            // function _activate() {
-            //     if (angular.isUndefined(_credentials)) {
-            //         $log.error('credentials were not supplied');
-            //     } else {
-            //         _username = _credentials.username;
-            //         _password = _credentials.password;
-            //     }
-
-            // }
-
             function _webrtcNotSupportedAlert() {
                 $log.error(_notSupportedMsg);
                 deferredMap.init.reject(_notSupportedMsg);
             }
 
-            // function _onReady() {
-            //     $log.debug('_onReady');
-            //     _plivoLogin();
-            // }
-
             function _plivoLogin() {
                 $log.debug('_plivoLogin');
-                // Plivo.conn.login(_username, _password);
                 plivoWebSdk.client.login(_username, _password);
             }
 
@@ -117,31 +101,19 @@
                 var options = _getSettings();
                 plivoWebSdk = new window.Plivo(options);
                 plivoWebSdk.client.on('onWebrtcNotSupported', _webrtcNotSupportedAlert);
-                // plivoWebSdk.client.on('onReady', _onReady); - not working
                 plivoWebSdk.client.on('onLogin', _onLogin);
-                // plivoWebSdk.client.on('onLogout', onLogout);
                 plivoWebSdk.client.on('onLoginFailed', _onLoginFailed);
-                // plivoWebSdk.client.on('onCallRemoteRinging', onCallRemoteRinging);
-                // plivoWebSdk.client.on('onIncomingCallCanceled', onIncomingCallCanceled);
                 plivoWebSdk.client.on('onCallFailed', _onCallFailed);
                 plivoWebSdk.client.on('onCallAnswered', _onCallAnswered);
                 plivoWebSdk.client.on('onCallTerminated', _onCallTerminated);
                 plivoWebSdk.client.on('onCalling', _onCalling);
-                // plivoWebSdk.client.on('onIncomingCall', onIncomingCall);
                 plivoWebSdk.client.on('onMediaPermission', _onMediaPermission);
                 // plivoWebSdk.client.on('mediaMetrics',mediaMetrics);
                 // plivoWebSdk.client.on('audioDeviceChange',audioDeviceChange);
                 plivoWebSdk.client.setRingTone(true);
                 plivoWebSdk.client.setRingToneBack(false);
                 console.log('initPhone ready!');
-
-                // Plivo.setDebug(ENV.debug);
-
-
-
                 plivoWebSdk.client.login(_username, _password);
-                // console.log('login=' + login);
-
             }
 
             function _getSettings(){
@@ -200,7 +172,7 @@
 
             WebcallSrv.hang = function () {
                 deferredMap.hang = $q.defer();
-                if (plivoWebSdk.client.callSession) {
+                if (plivoWebSdk && plivoWebSdk.client && plivoWebSdk.client.callSession) {
 
                     var res = plivoWebSdk.client.hangup();
                     if (res === false) {
@@ -222,10 +194,6 @@
 
                 _credentials = credentials;
             };
-
-            // WebcallSrv.activate = function () {
-            //     _activate();
-            // };
 
             return WebcallSrv;
         }];
