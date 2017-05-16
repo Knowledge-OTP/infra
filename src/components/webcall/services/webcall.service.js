@@ -30,8 +30,8 @@
             var _username,
                 _password;
 
-            _username = _credentials.username;
-            _password = _credentials.password;
+            _username ='ZinkerzDev160731091034';
+            _password = 'zinkerz$9999';
 
             // function _activate() {
             //     if (angular.isUndefined(_credentials)) {
