@@ -79,7 +79,7 @@
                 if (!angular.equals({}, deferredMap.init)) {
                     deferredMap.init.resolve();
                 }
-                _call();
+                // _call(1234);
             }
 
             function _onCallTerminated() {
@@ -132,6 +132,11 @@
 
                 // Plivo.setDebug(ENV.debug);
 
+
+
+                plivoWebSdk.client.login(_username, _password);
+                // console.log('login=' + login);
+
             }
 
             function _getSettings(){
@@ -169,6 +174,13 @@
                 return deferredMap.call.promise;
             }
 
+            WebcallSrv.call = function (callId) {
+                return _call(callId).then(function () {
+                    $log.debug('call done');
+                    // return _call(callId);
+                });
+            };
+
             WebcallSrv.connect = function (callId) {
                 return _init().then(function () {
                     $log.debug('init done');
@@ -183,8 +195,9 @@
 
             WebcallSrv.hang = function () {
                 deferredMap.hang = $q.defer();
-                if (Plivo.conn) {
-                    var res = Plivo.conn.hangup();
+                if (plivoWebSdk.client.callSession) {
+
+                    var res = plivoWebSdk.client.hangup();
                     if (res === false) {
                         deferredMap.hang.reject();
                     }

@@ -21,12 +21,12 @@
                 });
             }
 
-            $scope.connect = function(){
+            $scope.call = function(callId){
                 console.log('connecting');
-                return WebcallSrv.connect('1234').then(function () {
-                    console.log('connected');
+                return WebcallSrv.call(callId).then(function () {
+                    console.log('called');
                 }).catch(function (err) {
-                    console.log('connect error');
+                    console.log('called error');
                 });
 
             }
