@@ -11670,10 +11670,6 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 
         this.setCallCred = function (credentials) {
             _credentials = credentials;
-            // _credentials = {
-            //     username:'ZinkerzDev160731091034',
-            //     password:'zinkerz$9999'
-            // };
         };
 
         this.$get = ['$q', '$log', 'ENV', function ($q, $log, ENV) {
@@ -11688,12 +11684,6 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
             };
 
             var _notSupportedMsg = 'webcall feature is not available';
-
-            // var _username,
-            //     _password;
-
-            // _username ='ZinkerzDev160731091034';
-            // _password = 'zinkerz$9999';
 
             function _webrtcNotSupportedAlert() {
                 $log.error(_notSupportedMsg);
