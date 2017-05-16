@@ -1656,7 +1656,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                 username: ENV.plivoUsername,
                 password: ENV.plivoPassword
             });
-            WebcallSrv.activate();
+            // WebcallSrv.activate();
         }]);
 })(angular);
 

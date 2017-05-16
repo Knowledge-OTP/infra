@@ -8,6 +8,6 @@
                 username: ENV.plivoUsername,
                 password: ENV.plivoPassword
             });
-            WebcallSrv.activate();
+            // WebcallSrv.activate();
         });
 })(angular);
