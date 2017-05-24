@@ -18,7 +18,7 @@
     "angular-translate": "2.13.1",
     "angular-translate-loader-static-files": "2.13.1",
     "angular-translate-loader-partial": "2.13.1",
-    "plivo": "https://github.com/Knowledge-OTP/plivo.git#~v1.0.1",
+    "plivo": "https://github.com/Knowledge-OTP/plivo.git#~v2.0.0",
     "angular-material": "1.1.0",
     "angular-ui-router": "0.3.1",
     "angular-svg-round-progressbar": "0.4.8"

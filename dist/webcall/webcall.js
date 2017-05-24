@@ -18,6 +18,7 @@
         this.$get = ['$q', '$log', 'ENV', function ($q, $log, ENV) {
 
             var WebcallSrv = {};
+            var plivoWebSdk; 
 
             var deferredMap = {
                 call: {},
@@ -27,32 +28,14 @@
 
             var _notSupportedMsg = 'webcall feature is not available';
 
-            var _username,
-                _password;
-
-            function _activate() {
-                if (angular.isUndefined(_credentials)) {
-                    $log.error('credentials were not supplied');
-                } else {
-                    _username = _credentials.username;
-                    _password = _credentials.password;
-                }
-
-            }
-
             function _webrtcNotSupportedAlert() {
                 $log.error(_notSupportedMsg);
                 deferredMap.init.reject(_notSupportedMsg);
             }
 
-            function _onReady() {
-                $log.debug('_onReady');
-                _plivoLogin();
-            }
-
             function _plivoLogin() {
                 $log.debug('_plivoLogin');
-                Plivo.conn.login(_username, _password);
+                plivoWebSdk.client.login(_credentials.username, _credentials.password);
             }
 
             function _onLoginFailed() {
@@ -103,17 +86,32 @@
             }
 
             function _initPlivo() {
-                Plivo.onWebrtcNotSupported = _webrtcNotSupportedAlert;
-                Plivo.onReady = _onReady;
-                Plivo.onLogin = _onLogin;
-                Plivo.onLoginFailed = _onLoginFailed;
-                Plivo.onCallAnswered = _onCallAnswered;
-                Plivo.onCallTerminated = _onCallTerminated;
-                Plivo.onCallFailed = _onCallFailed;
-                Plivo.onMediaPermission = _onMediaPermission;
-                Plivo.onCalling = _onCalling;
-                Plivo.init();
-                Plivo.setDebug(ENV.debug);
+
+                var options = _getSettings();
+                plivoWebSdk = new window.Plivo(options);
+                plivoWebSdk.client.on('onWebrtcNotSupported', _webrtcNotSupportedAlert);
+                plivoWebSdk.client.on('onLogin', _onLogin);
+                plivoWebSdk.client.on('onLoginFailed', _onLoginFailed);
+                plivoWebSdk.client.on('onCallFailed', _onCallFailed);
+                plivoWebSdk.client.on('onCallAnswered', _onCallAnswered);
+                plivoWebSdk.client.on('onCallTerminated', _onCallTerminated);
+                plivoWebSdk.client.on('onCalling', _onCalling);
+                plivoWebSdk.client.on('onMediaPermission', _onMediaPermission);
+                // plivoWebSdk.client.on('mediaMetrics',mediaMetrics);
+                // plivoWebSdk.client.on('audioDeviceChange',audioDeviceChange);
+                plivoWebSdk.client.setRingTone(true);
+                plivoWebSdk.client.setRingToneBack(false);
+                $log.debug('initPhone ready!');
+                plivoWebSdk.client.login(_credentials.username, _credentials.password);
+            }
+
+            function _getSettings(){
+
+                var defaultSettings = { "permOnClick": true, "codecs": ["OPUS","PCMU"], "enableIPV6": false, "audioConstraints": { "optional": [ { "googAutoGainControl": false }, {"googEchoCancellation":false} ] }, "enableTracking": true};
+                if (ENV.debug){ 
+                    defaultSettings.debug="DEBUG";
+                }
+                return defaultSettings;
             }
 
             function _init() {
@@ -134,24 +132,36 @@
 
             function _call(callId) {
                 deferredMap.call = $q.defer();
-                var res = Plivo.conn.call(callId);
+                var res = plivoWebSdk.client.call(callId);
                 if (res === false) {
                     deferredMap.call.reject();
                 }
                 return deferredMap.call.promise;
             }
 
-            WebcallSrv.connect = function (callId) {
-                return _init().then(function () {
-                    $log.debug('init done');
-                    return _call(callId);
+            WebcallSrv.call = function (callId) {
+                return _call(callId).then(function () {
+                    $log.debug('call done');
                 });
             };
 
+            WebcallSrv.connect = function (callId) {
+                return _init().then(function () {                        
+                    $log.debug('init done');                            
+                    return _call(callId);                          
+                 });
+            };
+
+             WebcallSrv.login = function () {
+                _plivoLogin();
+            };
+
+
             WebcallSrv.hang = function () {
                 deferredMap.hang = $q.defer();
-                if (Plivo.conn) {
-                    var res = Plivo.conn.hangup();
+                if (plivoWebSdk && plivoWebSdk.client && plivoWebSdk.client.callSession) {
+
+                    var res = plivoWebSdk.client.hangup();
                     if (res === false) {
                         deferredMap.hang.reject();
                     }
@@ -170,10 +180,6 @@
                 }
 
                 _credentials = credentials;
-            };
-
-            WebcallSrv.activate = function () {
-                _activate();
             };
 
             return WebcallSrv;
