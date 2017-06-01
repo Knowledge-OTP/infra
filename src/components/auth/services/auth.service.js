@@ -1,13 +1,44 @@
 (function (angular) {
     'use strict';
 
+    angular.module('znk.infra.auth', [
+        'pascalprecht.translate',
+        'znk.infra.config'
+    ]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.auth').factory('AuthService',
-        function (ENV, $q, $timeout, $log, StorageFirebaseAdapter, StorageSrv, $http, $rootScope) {
+        ["ENV", "$q", "$timeout", "$log", "StorageFirebaseAdapter", "StorageSrv", "$http", "$rootScope", function (ENV, $q, $timeout, $log, StorageFirebaseAdapter, StorageSrv, $http, $rootScope) {
             'ngInject';
 
-            var refAuthDB = new Firebase(ENV.fbGlobalEndPoint, ENV.firebaseAppScopeName);
-            var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
+            var refAuthDB;
+            var rootRef;
 
+            var defferd = $q.defer();
+
+
+            // if (ENV.fbGlobalEndPoint && ENV.fbDataEndPoint){
+            //     _init();
+  
+            // }
+
+            $rootScope.$watch('ENV', function() {
+                console.log('ENV changed');
+                if (ENV.fbGlobalEndPoint && ENV.fbDataEndPoint){
+                    defferd.resolve();
+                }
+            });
+
+            var _init = function(){
+                return defferd.promise.then(function(){
+                    refAuthDB = new Firebase(ENV.fbGlobalEndPoint, ENV.firebaseAppScopeName);
+                    rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
+                });
+            };
+            
             var authService = {};
 
             authService.saveRegistration = function (registration, login) {
@@ -75,22 +106,28 @@
             };
 
             authService.getAuth = function() {
-                var authData = rootRef.getAuth();
-                if (!authData) {
-                    return null;
-                }
 
-                if (!authData.auth) {
-                    authData.auth = {};
-                }
+                return _init.then(function(){
+                    var authData ={};
+                    authData = rootRef.getAuth();
+                    if (!authData) {
+                        return null;
+                    }
 
-                if (!authData.password) {
-                    authData.password = {};
-                }
+                    if (!authData.auth) {
+                        authData.auth = {};
+                    }
 
-                var userEmail = authData.auth.email || authData.password.email;
-                authData.auth.email = authData.password.email = userEmail;
-                return authData;
+                    if (!authData.password) {
+                        authData.password = {};
+                    }
+
+                    var userEmail = authData.auth.email || authData.password.email;
+                    authData.auth.email = authData.password.email = userEmail;
+                    
+                    return authData;
+                });
+                
             };
 
             authService.changePassword = function (changePasswordData) {
@@ -179,5 +216,43 @@
             }
 
             return authService;
-        });
+        }]);
 })(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.auth')
+        .service('AuthHelperService', ["$filter", "ENV", function ($filter, ENV) {
+            'ngInject';
+
+            var translateFilter = $filter('translate');
+            var excludeDomains = ['mailinator.com'];
+
+            this.errorMessages = {
+                DEFAULT_ERROR: translateFilter('AUTH_HELPER.DEFAULT_ERROR_MESSAGE'),
+                FB_ERROR: translateFilter('AUTH_HELPER.FACEBOOK_ERROR'),
+                EMAIL_EXIST: translateFilter('AUTH_HELPER.EMAIL_EXIST'),
+                INVALID_EMAIL: translateFilter('AUTH_HELPER.INVALID_EMAIL'),
+                NO_INTERNET_CONNECTION_ERR: translateFilter('AUTH_HELPER.NO_INTERNET_CONNECTION_ERR'),
+                EMAIL_NOT_EXIST: translateFilter('AUTH_HELPER.EMAIL_NOT_EXIST'),
+                INCORRECT_EMAIL_AND_PASSWORD_COMBINATION: translateFilter('AUTH_HELPER.INCORRECT_EMAIL_AND_PASSWORD_COMBINATION')
+            };
+
+            this.isDomainExclude = function (userEmail) {
+                var userDomain = userEmail.substr(userEmail.indexOf('@') + 1);
+                if (userDomain.toLowerCase() !== 'zinkerz.com' && ENV.enforceZinkerzDomainSignup) {
+                    return true;
+                }
+
+                var domains = excludeDomains.filter(function (excludeDomain) {
+                    return excludeDomain === userDomain;
+                });
+                return domains.length > 0;
+            };
+        }]);
+})(angular);
+
+angular.module('znk.infra.auth').run([ function () {
+
+}]);
