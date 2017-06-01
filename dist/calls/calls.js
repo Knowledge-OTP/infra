@@ -1389,7 +1389,7 @@
     );
 })(angular);
 
-angular.module('znk.infra.calls').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.calls').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/calls/components/callBtn/callBtn.template.html",
     "<button\n" +
     "    ng-click=\"vm.clickBtn()\"\n" +

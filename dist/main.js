@@ -265,7 +265,7 @@
     }]);
 })(angular);
 
-angular.module('znk.infra.analytics').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.analytics').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -924,7 +924,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function($templateC
     );
 })(angular);
 
-angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.assignModule').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -1155,7 +1155,7 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
         }]);
 })(angular);
 
-angular.module('znk.infra.auth').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.auth').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -1195,7 +1195,7 @@ angular.module('znk.infra.auth').run(['$templateCache', function($templateCache)
 })(angular);
 
 
-angular.module('znk.infra.autofocus').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.autofocus').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -2590,7 +2590,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
     );
 })(angular);
 
-angular.module('znk.infra.calls').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.calls').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/calls/components/callBtn/callBtn.template.html",
     "<button\n" +
     "    ng-click=\"vm.clickBtn()\"\n" +
@@ -2918,7 +2918,7 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
     ]);
 })(angular);
 
-angular.module('znk.infra.config').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.config').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -3162,7 +3162,7 @@ angular.module('znk.infra.config').run(['$templateCache', function($templateCach
     ]);
 })(angular);
 
-angular.module('znk.infra.content').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.content').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -3411,7 +3411,7 @@ angular.module('znk.infra.content').run(['$templateCache', function($templateCac
     ]);
 })(angular);
 
-angular.module('znk.infra.contentAvail').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.contentAvail').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -3667,7 +3667,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         };
     }]);
 
-angular.module('znk.infra.contentGetters').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.contentGetters').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -3717,7 +3717,7 @@ angular.module('znk.infra.contentGetters').run(['$templateCache', function($temp
     ]);
 })(angular);
 
-angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/deviceNotSupported/directives/deviceNotSupported.template.html",
     "<div class=\"device-not-supported-inner\">\n" +
     "    <h1>{{title}}</h1>\n" +
@@ -3818,7 +3818,7 @@ angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function($
     ]);
 })(angular);
 
-angular.module('znk.infra.enum').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.enum').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -4371,7 +4371,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function($templateCache)
     );
 })(angular);
 
-angular.module('znk.infra.estimatedScore').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.estimatedScore').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -4393,232 +4393,6 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    diagnosticData.$inject = ["WorkoutsDiagnosticFlow"];
-    exerciseData.$inject = ["$stateParams", "ExerciseParentEnum", "$state"];
-    angular.module('znk.infra.eTutoring')
-        .config(["$stateProvider", function ($stateProvider) {
-            'ngInject';
-            $stateProvider
-                .state('app.eTutoring', {
-                    url: '/etutoring/?moduleId/?viewId',
-                    templateUrl: 'components/eTutoring/templates/eTutoring.template.html',
-                    controller: 'ETutoringController',
-                    controllerAs: 'vm',
-                    reloadOnSearch: false,
-                    resolve: {
-                        diagnosticData: diagnosticData
-                    }
-                })
-                .state('app.eTutoringWorkout', {
-                    url: '/etutoring?exerciseId/?exerciseTypeId/?moduleId/?exerciseParentId/?assignContentType/?examId/?moduleResultGuid/?viewId',
-                    templateUrl: 'components/eTutoring/templates/eTutoringWorkout.template.html',
-                    controller: 'ETutoringWorkoutController',
-                    controllerAs: 'vm',
-                    resolve: {
-                        exerciseData: exerciseData
-                    }
-                });
-        }]);
-
-    function diagnosticData(WorkoutsDiagnosticFlow) {
-        'ngInject';
-        return WorkoutsDiagnosticFlow.getDiagnostic().then(function (result) {
-            return (result.isComplete) ? result.isComplete : false;
-        });
-    }
-
-    function exerciseData($stateParams, ExerciseParentEnum, $state) {
-        'ngInject';
-
-        var exerciseId = angular.isDefined($stateParams.exerciseId) ? +$stateParams.exerciseId : 1;
-        var exerciseTypeId = angular.isDefined($stateParams.exerciseTypeId) ? +$stateParams.exerciseTypeId : 1;
-        var assignContentType = angular.isDefined($stateParams.assignContentType) ? +$stateParams.assignContentType : 1;
-        var moduleId = $stateParams.moduleId;
-        var moduleResultGuid = $stateParams.moduleResultGuid;
-        var viewId = $stateParams.viewId;
-        return {
-            exerciseId: exerciseId,
-            exerciseTypeId: exerciseTypeId,
-            assignContentType: assignContentType,
-            exerciseParentId: moduleId,
-            moduleResultGuid: moduleResultGuid,
-            exerciseParentTypeId: ExerciseParentEnum.MODULE.enum,
-            examId: +$stateParams.examId,
-            exitAction: function () {
-                $state.go('app.eTutoring', {moduleId: moduleId, viewId: viewId});
-            }
-        };
-    }
-
-})(angular);
-
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.eTutoring').constant('ETutoringViewsConst', {
-        LESSON: 1,
-        PRACTICE: 2
-    });
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.eTutoring').controller('ETutoringController',
-        ["$scope", "diagnosticData", "$mdDialog", "$document", "$window", "ENV", "InvitationService", "ExerciseTypeEnum", "ETutoringViewsConst", "$stateParams", "$location", "ETutoringService", function ($scope, diagnosticData, $mdDialog, $document, $window, ENV, InvitationService,
-                  ExerciseTypeEnum, ETutoringViewsConst, $stateParams, $location, ETutoringService) {
-            'ngInject';
-
-            var self = this;
-            var bodyElement;
-            var SCRIPT_SRC = 'https://calendly.com/assets/external/widget.js';
-
-            self.teachers = null;
-            $scope.diagnosticData = diagnosticData;
-            $scope.activeViewObj = {
-                view: +$stateParams.viewId || ETutoringViewsConst.LESSON
-            };
-            if (angular.isDefined($stateParams.viewId)) {
-                $location.search('viewId', null);
-            }
-
-            $scope.hasTeacher = false;
-
-            $scope.appName = ETutoringService.getAppName();
-
-            self.showContactUs = function () {
-                bodyElement = $document.find('body').eq(0);
-
-                $mdDialog.show({
-                    controller: 'ETutoringContactUsController',
-                    controllerAs: 'vm',
-                    templateUrl: 'components/eTutoring/components/eTutoringContactUs/eTutoringContactUs.template.html',
-                    clickOutsideToClose: false,
-                    onComplete: function (scope) {
-                        var script = $window.document.createElement('script');
-                        script.type = 'text/javascript';
-                        script.onload = function () {
-                            scope.vm.showSpinner = false;
-                        };
-                        script.src = SCRIPT_SRC;
-                        bodyElement.append(script);
-                    },
-                    onRemoving: function () {
-                        var calendlyScript = $window.document.querySelector('script[src="' + SCRIPT_SRC + '"]');
-                        var calendlyScriptElement = angular.element(calendlyScript);
-                        calendlyScriptElement.remove();
-                    },
-                    escapeToClose: false
-                });
-            };
-
-            self.onModuleChange = function (newModule) {
-                if (angular.isUndefined(newModule) || angular.equals(newModule, {})) {
-                    self.currentModule = undefined;
-                    self.showLoading = false;
-                    return;
-                }
-                if (angular.isDefined(newModule) && !newModule) {
-                    self.showLoading = true;
-                    return;
-                }
-                self.currentModule = newModule;
-                self.showLoading = false;
-
-                if (self.currentModule && angular.isArray(self.currentModule.exercises)) {
-                    var countCompleted = 0;
-                    self.currentModule.enableLessonSummaryEx = false;
-                    angular.forEach(self.currentModule.exercises, function (exercise) {
-                        var exR = self.currentModule.exerciseResults;
-                        if (exercise.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum ||
-                            exercise.isLessonSummary ||
-                            (exR && exR[exercise.exerciseTypeId] &&
-                            exR[exercise.exerciseTypeId][exercise.exerciseId] &&
-                            exR[exercise.exerciseTypeId][exercise.exerciseId].isComplete)) {
-                            countCompleted++;
-                        }
-                        self.currentModule.enableLessonSummaryEx = countCompleted === self.currentModule.exercises.length;
-                    });
-
-
-                    self.currentModule.exercises = groupBy(self.currentModule.exercises, 'order');
-                    angular.forEach(self.currentModule.exercises, function (exercise) {
-                        exercise.sort(function compareLessonSummary(a, b) {
-                            if (a.hasOwnProperty('isLessonSummary') && !b.hasOwnProperty('isLessonSummary')) {
-                                return 1;
-                            }
-                            if (!a.hasOwnProperty('isLessonSummary') && b.hasOwnProperty('isLessonSummary')) {
-                                return -1;
-                            }
-                            return 0;
-                        });
-                    });
-                }
-            };
-
-            function hasTeacher(teachers) {
-                if (angular.isUndefined(teachers)) {
-                    return false;
-                }
-                var teacherskeys = Object.keys(teachers);
-                for (var i = 0; i < teacherskeys.length; i++) {
-                    if (teachers[teacherskeys[i]].senderEmail !== ENV.supportEmail && teachers[teacherskeys[i]].zinkerzTeacher) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            function myTeachersCB(teachers) {
-                self.teachers = teachers;
-                $scope.hasTeacher = hasTeacher(self.teachers);
-            }
-
-            function groupBy(arr, property) {
-                return arr.reduce(function (memo, x) {
-                    if (!memo[x[property]]) {
-                        memo[x[property]] = [];
-                    }
-                    memo[x[property]].push(x);
-                    return memo;
-                }, {});
-            }
-
-            $scope.$on('$destroy', function () {
-                InvitationService.offListenerCB(InvitationService.listeners.USER_TEACHERS, myTeachersCB);
-            });
-
-            InvitationService.registerListenerCB(InvitationService.listeners.USER_TEACHERS, myTeachersCB);
-
-        }]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.eTutoring').controller('ETutoringWorkoutController',
-        ["exerciseData", function (exerciseData) {
-            'ngInject';
-            this.completeExerciseDetails = {
-                exerciseId: exerciseData.exerciseId,
-                exerciseTypeId: exerciseData.exerciseTypeId,
-                exerciseParentId: exerciseData.exerciseParentId,
-                exerciseParentTypeId: exerciseData.exerciseParentTypeId,
-                moduleResultGuid: exerciseData.moduleResultGuid,
-                assignContentType: exerciseData.assignContentType,
-                examId: exerciseData.examId
-            };
-
-            this.completeExerciseSettings = {
-                exitAction: exerciseData.exitAction
-            };
-        }]);
 })(angular);
 
 (function (angular) {
@@ -5146,6 +4920,232 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
 (function (angular) {
     'use strict';
 
+    diagnosticData.$inject = ["WorkoutsDiagnosticFlow"];
+    exerciseData.$inject = ["$stateParams", "ExerciseParentEnum", "$state"];
+    angular.module('znk.infra.eTutoring')
+        .config(["$stateProvider", function ($stateProvider) {
+            'ngInject';
+            $stateProvider
+                .state('app.eTutoring', {
+                    url: '/etutoring/?moduleId/?viewId',
+                    templateUrl: 'components/eTutoring/templates/eTutoring.template.html',
+                    controller: 'ETutoringController',
+                    controllerAs: 'vm',
+                    reloadOnSearch: false,
+                    resolve: {
+                        diagnosticData: diagnosticData
+                    }
+                })
+                .state('app.eTutoringWorkout', {
+                    url: '/etutoring?exerciseId/?exerciseTypeId/?moduleId/?exerciseParentId/?assignContentType/?examId/?moduleResultGuid/?viewId',
+                    templateUrl: 'components/eTutoring/templates/eTutoringWorkout.template.html',
+                    controller: 'ETutoringWorkoutController',
+                    controllerAs: 'vm',
+                    resolve: {
+                        exerciseData: exerciseData
+                    }
+                });
+        }]);
+
+    function diagnosticData(WorkoutsDiagnosticFlow) {
+        'ngInject';
+        return WorkoutsDiagnosticFlow.getDiagnostic().then(function (result) {
+            return (result.isComplete) ? result.isComplete : false;
+        });
+    }
+
+    function exerciseData($stateParams, ExerciseParentEnum, $state) {
+        'ngInject';
+
+        var exerciseId = angular.isDefined($stateParams.exerciseId) ? +$stateParams.exerciseId : 1;
+        var exerciseTypeId = angular.isDefined($stateParams.exerciseTypeId) ? +$stateParams.exerciseTypeId : 1;
+        var assignContentType = angular.isDefined($stateParams.assignContentType) ? +$stateParams.assignContentType : 1;
+        var moduleId = $stateParams.moduleId;
+        var moduleResultGuid = $stateParams.moduleResultGuid;
+        var viewId = $stateParams.viewId;
+        return {
+            exerciseId: exerciseId,
+            exerciseTypeId: exerciseTypeId,
+            assignContentType: assignContentType,
+            exerciseParentId: moduleId,
+            moduleResultGuid: moduleResultGuid,
+            exerciseParentTypeId: ExerciseParentEnum.MODULE.enum,
+            examId: +$stateParams.examId,
+            exitAction: function () {
+                $state.go('app.eTutoring', {moduleId: moduleId, viewId: viewId});
+            }
+        };
+    }
+
+})(angular);
+
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.eTutoring').constant('ETutoringViewsConst', {
+        LESSON: 1,
+        PRACTICE: 2
+    });
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.eTutoring').controller('ETutoringController',
+        ["$scope", "diagnosticData", "$mdDialog", "$document", "$window", "ENV", "InvitationService", "ExerciseTypeEnum", "ETutoringViewsConst", "$stateParams", "$location", "ETutoringService", function ($scope, diagnosticData, $mdDialog, $document, $window, ENV, InvitationService,
+                  ExerciseTypeEnum, ETutoringViewsConst, $stateParams, $location, ETutoringService) {
+            'ngInject';
+
+            var self = this;
+            var bodyElement;
+            var SCRIPT_SRC = 'https://calendly.com/assets/external/widget.js';
+
+            self.teachers = null;
+            $scope.diagnosticData = diagnosticData;
+            $scope.activeViewObj = {
+                view: +$stateParams.viewId || ETutoringViewsConst.LESSON
+            };
+            if (angular.isDefined($stateParams.viewId)) {
+                $location.search('viewId', null);
+            }
+
+            $scope.hasTeacher = false;
+
+            $scope.appName = ETutoringService.getAppName();
+
+            self.showContactUs = function () {
+                bodyElement = $document.find('body').eq(0);
+
+                $mdDialog.show({
+                    controller: 'ETutoringContactUsController',
+                    controllerAs: 'vm',
+                    templateUrl: 'components/eTutoring/components/eTutoringContactUs/eTutoringContactUs.template.html',
+                    clickOutsideToClose: false,
+                    onComplete: function (scope) {
+                        var script = $window.document.createElement('script');
+                        script.type = 'text/javascript';
+                        script.onload = function () {
+                            scope.vm.showSpinner = false;
+                        };
+                        script.src = SCRIPT_SRC;
+                        bodyElement.append(script);
+                    },
+                    onRemoving: function () {
+                        var calendlyScript = $window.document.querySelector('script[src="' + SCRIPT_SRC + '"]');
+                        var calendlyScriptElement = angular.element(calendlyScript);
+                        calendlyScriptElement.remove();
+                    },
+                    escapeToClose: false
+                });
+            };
+
+            self.onModuleChange = function (newModule) {
+                if (angular.isUndefined(newModule) || angular.equals(newModule, {})) {
+                    self.currentModule = undefined;
+                    self.showLoading = false;
+                    return;
+                }
+                if (angular.isDefined(newModule) && !newModule) {
+                    self.showLoading = true;
+                    return;
+                }
+                self.currentModule = newModule;
+                self.showLoading = false;
+
+                if (self.currentModule && angular.isArray(self.currentModule.exercises)) {
+                    var countCompleted = 0;
+                    self.currentModule.enableLessonSummaryEx = false;
+                    angular.forEach(self.currentModule.exercises, function (exercise) {
+                        var exR = self.currentModule.exerciseResults;
+                        if (exercise.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum ||
+                            exercise.isLessonSummary ||
+                            (exR && exR[exercise.exerciseTypeId] &&
+                            exR[exercise.exerciseTypeId][exercise.exerciseId] &&
+                            exR[exercise.exerciseTypeId][exercise.exerciseId].isComplete)) {
+                            countCompleted++;
+                        }
+                        self.currentModule.enableLessonSummaryEx = countCompleted === self.currentModule.exercises.length;
+                    });
+
+
+                    self.currentModule.exercises = groupBy(self.currentModule.exercises, 'order');
+                    angular.forEach(self.currentModule.exercises, function (exercise) {
+                        exercise.sort(function compareLessonSummary(a, b) {
+                            if (a.hasOwnProperty('isLessonSummary') && !b.hasOwnProperty('isLessonSummary')) {
+                                return 1;
+                            }
+                            if (!a.hasOwnProperty('isLessonSummary') && b.hasOwnProperty('isLessonSummary')) {
+                                return -1;
+                            }
+                            return 0;
+                        });
+                    });
+                }
+            };
+
+            function hasTeacher(teachers) {
+                if (angular.isUndefined(teachers)) {
+                    return false;
+                }
+                var teacherskeys = Object.keys(teachers);
+                for (var i = 0; i < teacherskeys.length; i++) {
+                    if (teachers[teacherskeys[i]].senderEmail !== ENV.supportEmail && teachers[teacherskeys[i]].zinkerzTeacher) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            function myTeachersCB(teachers) {
+                self.teachers = teachers;
+                $scope.hasTeacher = hasTeacher(self.teachers);
+            }
+
+            function groupBy(arr, property) {
+                return arr.reduce(function (memo, x) {
+                    if (!memo[x[property]]) {
+                        memo[x[property]] = [];
+                    }
+                    memo[x[property]].push(x);
+                    return memo;
+                }, {});
+            }
+
+            $scope.$on('$destroy', function () {
+                InvitationService.offListenerCB(InvitationService.listeners.USER_TEACHERS, myTeachersCB);
+            });
+
+            InvitationService.registerListenerCB(InvitationService.listeners.USER_TEACHERS, myTeachersCB);
+
+        }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
+    angular.module('znk.infra.eTutoring').controller('ETutoringWorkoutController',
+        ["exerciseData", function (exerciseData) {
+            'ngInject';
+            this.completeExerciseDetails = {
+                exerciseId: exerciseData.exerciseId,
+                exerciseTypeId: exerciseData.exerciseTypeId,
+                exerciseParentId: exerciseData.exerciseParentId,
+                exerciseParentTypeId: exerciseData.exerciseParentTypeId,
+                moduleResultGuid: exerciseData.moduleResultGuid,
+                assignContentType: exerciseData.assignContentType,
+                examId: exerciseData.examId
+            };
+
+            this.completeExerciseSettings = {
+                exitAction: exerciseData.exitAction
+            };
+        }]);
+})(angular);
+
+(function (angular) {
+    'use strict';
+
     angular.module('znk.infra.eTutoring')
         .provider('ETutoringService', function () {
 
@@ -5201,8 +5201,8 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
         }]);
 })(angular);
 
-angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateCache) {
-  $templateCache.put("components/eTutoring/directives/etutoringActionBar/etutoringActionBar.template.html",
+angular.module('znk.infra.eTutoring').run(['$templateCache', function ($templateCache) {
+  $templateCache.put("components/eTutoring/components/etutoringActionBar/etutoringActionBar.template.html",
     "<div class=\"e-tutor-bar base-border-radius base-box-shadow\" translate-namespace=\"E_TUTORING_ACTION_BAR\">\n" +
     "    <div class=\"teacher-select-wrap\" ng-if=\"myTeachers\">\n" +
     "        <div class=\"online-indicator-wrap\">\n" +
@@ -5264,7 +5264,7 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "    </div>\n" +
     "</div>\n" +
     "");
-  $templateCache.put("components/eTutoring/directives/eTutoringContactUs/eTutoringContactUs.template.html",
+  $templateCache.put("components/eTutoring/components/eTutoringContactUs/eTutoringContactUs.template.html",
     "<md-dialog ng-cloak class=\"e-tutoring-contact-us-modal\" translate-namespace=\"E_TUTORING_CONTACT_US\">\n" +
     "    <md-toolbar>\n" +
     "        <div class=\"close-popup-wrap\" ng-click=\"vm.closeDialog()\">\n" +
@@ -5285,7 +5285,7 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "    </div>\n" +
     "</md-dialog>\n" +
     "");
-  $templateCache.put("components/eTutoring/directives/etutoringStudentNavigationPane/etutoringStudentNavigationPane.template.html",
+  $templateCache.put("components/eTutoring/components/etutoringStudentNavigationPane/etutoringStudentNavigationPane.template.html",
     "<div class=\"etutoring-student-navigation-pane\"\n" +
     "     ng-class=\"{'no-lessons-assigned': !assignContentArr.length, 'lessons-pane': activeViewObj.view === ETutoringViewsConst.LESSON, 'practice-pane': activeViewObj.view === ETutoringViewsConst.PRACTICE}\"\n" +
     "     translate-namespace=\"E_TUTORING_NAVIGATION_PANE\">\n" +
@@ -5369,7 +5369,7 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "\n" +
     "</div>\n" +
     "");
-  $templateCache.put("components/eTutoring/directives/moduleExerciseItem/moduleExerciseItem.template.html",
+  $templateCache.put("components/eTutoring/components/moduleExerciseItem/moduleExerciseItem.template.html",
     "<button translate-namespace=\"MODULE_EXERCISE_ITEM_DRV\"\n" +
     "     class=\"module-part\"\n" +
     "     ng-click=\"go(module, exercise)\"\n" +
@@ -5455,7 +5455,7 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "    </div>\n" +
     "</button>\n" +
     "");
-  $templateCache.put("components/eTutoring/directives/moduleExercisePane/homeworkPane.template.html",
+  $templateCache.put("components/eTutoring/components/moduleExercisePane/homeworkPane.template.html",
     "<div class=\"lesson-container homework-container\" ng-switch=\"showLoading\" translate-namespace=\"MODULE_EXERCISE_PANE_DRV\">\n" +
     "    <div ng-switch-when=\"false\" ng-if=\"hasModule\" class=\"module-container\">\n" +
     "        <div class=\"assignment-title-wrapper\"\n" +
@@ -5501,7 +5501,7 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     "    </div>\n" +
     "</div>\n" +
     "");
-  $templateCache.put("components/eTutoring/directives/moduleExercisePane/lessonsPane.template.html",
+  $templateCache.put("components/eTutoring/components/moduleExercisePane/lessonsPane.template.html",
     "<div class=\"lesson-container\" ng-switch=\"showLoading\" translate-namespace=\"MODULE_EXERCISE_PANE_DRV\">\n" +
     "    <div ng-switch-when=\"false\" ng-if=\"hasModule\" class=\"module-container\">\n" +
     "        <div class=\"module-name\">{{module.name}}</div>\n" +
@@ -5781,7 +5781,7 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateC
     });
 })(angular);
 
-angular.module('znk.infra.evaluator').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.evaluator').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -5846,7 +5846,7 @@ angular.module('znk.infra.evaluator').run(['$templateCache', function($templateC
     );
 })(angular);
 
-angular.module('znk.infra.eventManager').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.eventManager').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -5928,7 +5928,7 @@ angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "Co
         };
 }]);
 
-angular.module('znk.infra.exams').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.exams').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -6438,7 +6438,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function($templateCache
     ]);
 })(angular);
 
-angular.module('znk.infra.exerciseResult').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.exerciseResult').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -6716,7 +6716,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
     );
 })(angular);
 
-angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.exerciseUtility').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -6864,7 +6864,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
         }
         );
 })();
-angular.module('znk.infra.filters').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.filters').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -7610,7 +7610,7 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
 })(angular);
 
 
-angular.module('znk.infra.general').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.general').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/general/directives/timer/timer.template.html",
     "<div ng-switch=\"type\" class=\"timer-drv\">\n" +
     "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +
@@ -7808,7 +7808,7 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
     });
 })(angular);
 
-angular.module('znk.infra.hint').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.hint').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -7850,7 +7850,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function($templateCache)
 })(angular);
 
 
-angular.module('znk.infra.mailSender').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.mailSender').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -8283,7 +8283,7 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function($template
 })(angular);
 
 
-angular.module('znk.infra.personalization').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.personalization').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -8407,7 +8407,7 @@ angular.module('znk.infra.personalization').run(['$templateCache', function($tem
         }
     ]);
 })(angular);
-angular.module('znk.infra.pngSequence').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.pngSequence').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -8613,7 +8613,7 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function($templat
     ]);
 })();
 
-angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.popUp').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/popUp/svg/correct-icon.svg",
     "<svg version=\"1.1\"\n" +
     "     class=\"correct-icon-svg\"\n" +
@@ -8811,7 +8811,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
     });
 })(angular);
 
-angular.module('znk.infra.presence').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.presence').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -8954,7 +8954,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
 });
 
 
-angular.module('znk.infra.scoring').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.scoring').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -9641,7 +9641,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
     });
 })(angular);
 
-angular.module('znk.infra.screenSharing').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.screenSharing').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/screenSharing/directives/screenSharing/screenSharing.template.html",
     "<div ng-switch=\"$ctrl.userSharingState\"\n" +
     "     ng-class=\"$ctrl.sharingStateCls\">\n" +
@@ -9885,7 +9885,7 @@ angular.module('znk.infra.screenSharing').run(['$templateCache', function($templ
     ]);
 })(angular);
 
-angular.module('znk.infra.scroll').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.scroll').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -9895,7 +9895,7 @@ angular.module('znk.infra.scroll').run(['$templateCache', function($templateCach
     angular.module('znk.infra.sharedScss', []);
 })(angular);
 
-angular.module('znk.infra.sharedScss').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.sharedScss').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -10278,7 +10278,7 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function($template
     ]);
 })(angular);
 
-angular.module('znk.infra.stats').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.stats').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -10827,7 +10827,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
         }]);
 })(angular);
 
-angular.module('znk.infra.storage').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.storage').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -10950,7 +10950,7 @@ angular.module('znk.infra.storage').run(['$templateCache', function($templateCac
 
 
 
-angular.module('znk.infra.support').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.support').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -11068,7 +11068,7 @@ angular.module('znk.infra.support').run(['$templateCache', function($templateCac
         }]);
 })(angular);
 
-angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.svgIcon').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -11130,7 +11130,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
     );
 })(angular);
 
-angular.module('znk.infra.teachers').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.teachers').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -11361,7 +11361,7 @@ angular.module('znk.infra.user').service('UserStorageService',
         return new StorageSrv(fbAdapter, config);
     }]);
 
-angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.user').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -11489,7 +11489,7 @@ angular.module('znk.infra.user').run(['$templateCache', function($templateCache)
     ]);
 })(angular);
 
-angular.module('znk.infra.userContext').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.userContext').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -11651,7 +11651,7 @@ angular.module('znk.infra.userContext').run(['$templateCache', function($templat
     ]);
 })(angular);
 
-angular.module('znk.infra.utility').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.utility').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -11847,7 +11847,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 
 })(angular);
 
-angular.module('znk.infra.webcall').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.webcall').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -11946,7 +11946,7 @@ angular.module('znk.infra.webcall').run(['$templateCache', function($templateCac
     );
 })(angular);
 
-angular.module('znk.infra.workouts').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.workouts').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -12403,7 +12403,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
     ]);
 })(angular);
 
-angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkAudioPlayer/svg/close-icon.svg",
     "<svg\n" +
     "    x=\"0px\"\n" +
@@ -12612,7 +12612,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($temp
         });
 })(angular);
 
-angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkCategoryStats/components/znkCategoryStats.template.html",
     "<div class=\"znk-category-stats\">\n" +
     "    <div class=\"category-wrapper\"\n" +
@@ -13539,7 +13539,7 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
     );
 })(angular);
 
-angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkChat/svg/znk-chat-chat-icon.svg",
     "<svg\n" +
     "    id=\"Layer_1\"\n" +
@@ -17376,7 +17376,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     );
 })(angular);
 
-angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkExercise').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkExercise/core/template/btnSectionDesktop.template.html",
     "<div class=\"btn-container left-container ng-hide\"\n" +
     "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
@@ -18093,7 +18093,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     ]);
 })(angular);
 
-angular.module('znk.infra.znkMedia').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkMedia').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -18129,7 +18129,7 @@ angular.module('znk.infra.znkMedia').run(['$templateCache', function($templateCa
 })(angular);
 
 
-angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkModule').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -18172,7 +18172,7 @@ angular.module('znk.infra.znkModule').run(['$templateCache', function($templateC
 })(angular);
 
 
-angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkProgressBar').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkProgressBar/directives/znkProgressBar.template.html",
     "<div ng-if=\"::showProgressBubble()\" class=\"progress-bubble-wrapper\" ng-style=\"{left: progressWidth + '%'}\">\n" +
     "    <div class=\"progress-percentage\">\n" +
@@ -18339,7 +18339,7 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
         }]);
 })(angular);
 
-angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkQuestionReport/components/znkReport/znkReport.template.html",
     "<div class=\"report-dialog\">\n" +
     "    <md-dialog class=\"base base-border-radius report-container\" translate-namespace=\"REPORT_POPUP\">\n" +
@@ -18613,7 +18613,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
         });
 })(angular);
 
-angular.module('znk.infra.znkSessionData').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkSessionData').run(['$templateCache', function ($templateCache) {
 
 }]);
 
@@ -18904,7 +18904,7 @@ angular.module('znk.infra.znkSessionData').run(['$templateCache', function($temp
 })(angular);
 
 
-angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkTimeline').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
     "	 viewBox=\"-145 277 60 60\" style=\"enable-background:new -145 277 60 60;\" xml:space=\"preserve\" class=\"timeline-diagnostic-test-icon\" width=\"30px\" height=\"30px\">\n" +
@@ -19218,6 +19218,6 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templat
         });
 })(angular);
 
-angular.module('znk.infra.znkTooltip').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkTooltip').run(['$templateCache', function ($templateCache) {
 
 }]);

@@ -1,11 +1,11 @@
 @import './src/scss/imports/variables',
         './src/scss/imports/colors',
         './src/scss/imports/mixins';
-@import 'directives/etutoringActionBar/etutoring-action-bar',
-        'directives/etutoringStudentNavigationPane/etutoringStudentNavigationPane',
-        'directives/etutoringStudentNavigationPane/etutoringStudentPracticeView',
-        'directives/eTutoringContactUs/eTutoringContactUs',
-        'directives/moduleExerciseItem/moduleExerciseItem',
-        'directives/moduleExercisePane/moduleExercisePane',
-        'directives/moduleExercisePane/homework-pane',
+@import 'components/etutoringActionBar/etutoring-action-bar',
+'components/etutoringStudentNavigationPane/etutoringStudentNavigationPane',
+'components/etutoringStudentNavigationPane/etutoringStudentPracticeView',
+'components/eTutoringContactUs/eTutoringContactUs',
+'components/moduleExerciseItem/moduleExerciseItem',
+'components/moduleExercisePane/moduleExercisePane',
+'components/moduleExercisePane/homework-pane',
         'scss/etutoring';
