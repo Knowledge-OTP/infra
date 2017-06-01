@@ -112,6 +112,6 @@
         }]);
 })(angular);
 
-angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.svgIcon').run(['$templateCache', function ($templateCache) {
 
 }]);
