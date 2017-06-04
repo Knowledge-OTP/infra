@@ -14,9 +14,11 @@
         ["ENV", "$q", "$timeout", "$log", "StorageFirebaseAdapter", "StorageSrv", "$http", "$rootScope", function (ENV, $q, $timeout, $log, StorageFirebaseAdapter, StorageSrv, $http, $rootScope) {
             'ngInject';
 
-            var refAuthDB = new Firebase(ENV.fbGlobalEndPoint, ENV.firebaseAppScopeName);
-            var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
-
+            if (ENV.fbGlobalEndPoint && ENV.fbDataEndPoint){
+                var refAuthDB = new Firebase(ENV.fbGlobalEndPoint, ENV.firebaseAppScopeName);
+                var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
+            }
+            
             var authService = {};
 
             authService.saveRegistration = function (registration, login) {
@@ -84,7 +86,7 @@
             };
 
             authService.getAuth = function() {
-                var authData = rootRef.getAuth();
+                var authData = rootRef ? rootRef.getAuth() : undefined;
                 if (!authData) {
                     return null;
                 }
@@ -225,6 +227,6 @@
         }]);
 })(angular);
 
-angular.module('znk.infra.auth').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.auth').run(['$templateCache', function($templateCache) {
 
 }]);

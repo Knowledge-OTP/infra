@@ -225,6 +225,6 @@ angular.module('znk.infra.user').service('UserStorageService',
         return new StorageSrv(fbAdapter, config);
     }]);
 
-angular.module('znk.infra.user').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 
 }]);
