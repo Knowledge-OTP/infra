@@ -8,6 +8,9 @@
         'toolbox/scss/tool-box';
 
 znk-exercise {
+    font-family: Lato;
+    font-weight: $regularFontWeight;
+
     &:not(.done-btn-show){
         .question-bottom-shadow {
             width: 0;
