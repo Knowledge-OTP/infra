@@ -6609,31 +6609,29 @@ znk-exercise-tool-box {
   right: -42px;
   top: 7px; }
 
-znk-exercise:not(.done-btn-show) .question-bottom-shadow {
-  width: 0; }
-
-znk-exercise question-builder, znk-exercise questions-carousel, znk-exercise answer-builder {
-  display: block; }
-
-znk-exercise .question-bottom-shadow {
-  transition: all 0.1s linear;
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  height: 55px;
-  z-index: 1;
-  background: rgba(255, 255, 255, 0.91);
-  box-shadow: 0px -3px 7px 0px rgba(0, 0, 0, 0.08); }
-
-znk-exercise.done-btn-show .question-bottom-shadow, znk-exercise.pager-displayed .question-bottom-shadow {
-  width: 100%; }
-
-znk-exercise .show-opacity-animate.ng-hide-add, znk-exercise .show-opacity-animate.ng-hide-remove {
-  transition: all linear 0.2s;
-  opacity: 1; }
-
-znk-exercise .show-opacity-animate.ng-hide {
-  opacity: 0; }
+znk-exercise {
+  font-family: Lato;
+  font-weight: 400; }
+  znk-exercise:not(.done-btn-show) .question-bottom-shadow {
+    width: 0; }
+  znk-exercise question-builder, znk-exercise questions-carousel, znk-exercise answer-builder {
+    display: block; }
+  znk-exercise .question-bottom-shadow {
+    transition: all 0.1s linear;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    height: 55px;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.91);
+    box-shadow: 0px -3px 7px 0px rgba(0, 0, 0, 0.08); }
+  znk-exercise.done-btn-show .question-bottom-shadow, znk-exercise.pager-displayed .question-bottom-shadow {
+    width: 100%; }
+  znk-exercise .show-opacity-animate.ng-hide-add, znk-exercise .show-opacity-animate.ng-hide-remove {
+    transition: all linear 0.2s;
+    opacity: 1; }
+  znk-exercise .show-opacity-animate.ng-hide {
+    opacity: 0; }
 
 /* paths*/
 /* fonts size */
