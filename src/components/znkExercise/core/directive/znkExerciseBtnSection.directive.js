@@ -177,7 +177,7 @@
                         body.addEventListener('keyup',keyboardClickCB);
 
                         function keydownCB(e){
-                            if(e.originalEvent.keyCode === 13 && scope.vm.showDoneButton) {
+                            if(e.keyCode === 13 && scope.vm.showDoneButton) {
                                 scope.onDone();
                             }
                         }
