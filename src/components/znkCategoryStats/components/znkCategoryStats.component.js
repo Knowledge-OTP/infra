@@ -6,7 +6,7 @@
             bindings: {
                 categoryId: '='
             },
-            templateUrl: 'components/znkCategoryStats/components/znkCategoryStats.template.html',
+            templateUrl: 'components/znkCategoryStats/znkCategoryStats.template.html',
             controllerAs: 'vm',
             controller: function (StatsSrv, CategoryService) {
                 'ngInject';

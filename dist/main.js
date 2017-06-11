@@ -12572,7 +12572,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function ($tem
             bindings: {
                 categoryId: '='
             },
-            templateUrl: 'components/znkCategoryStats/components/znkCategoryStats.template.html',
+            templateUrl: 'components/znkCategoryStats/znkCategoryStats.template.html',
             controllerAs: 'vm',
             controller: ["StatsSrv", "CategoryService", function (StatsSrv, CategoryService) {
                 'ngInject';
