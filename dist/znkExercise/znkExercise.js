@@ -559,6 +559,13 @@
                         var body = document.body;
                         body.addEventListener('keyup',keyboardClickCB);
 
+                        function keydownCB(e){
+                            if(e.originalEvent.keyCode === 13 && scope.vm.showDoneButton) {
+                                scope.onDone();
+                            }
+                        }
+                        body.addEventListener('keydown',keydownCB);
+
                         var currentQuestionAnsweredWatchFn;
                         if(_notReviewMode()){
                             currentQuestionAnsweredWatchFn = function(){
@@ -571,7 +578,9 @@
 
                         scope.$on('$destroy',function(){
                             body.removeEventListener('keyup',keyboardClickCB);
+                            body.removeEventListener('keydown',keydownCB);
                         });
+
                     }
                 }
             };
@@ -3674,7 +3683,7 @@
     );
 })(angular);
 
-angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkExercise').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkExercise/core/template/btnSectionDesktop.template.html",
     "<div class=\"btn-container left-container ng-hide\"\n" +
     "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +

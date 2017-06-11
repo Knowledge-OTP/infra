@@ -14263,6 +14263,13 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
                         var body = document.body;
                         body.addEventListener('keyup',keyboardClickCB);
 
+                        function keydownCB(e){
+                            if(e.originalEvent.keyCode === 13 && scope.vm.showDoneButton) {
+                                scope.onDone();
+                            }
+                        }
+                        body.addEventListener('keydown',keydownCB);
+
                         var currentQuestionAnsweredWatchFn;
                         if(_notReviewMode()){
                             currentQuestionAnsweredWatchFn = function(){
@@ -14275,7 +14282,9 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
 
                         scope.$on('$destroy',function(){
                             body.removeEventListener('keyup',keyboardClickCB);
+                            body.removeEventListener('keydown',keydownCB);
                         });
+
                     }
                 }
             };
