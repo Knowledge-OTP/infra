@@ -1797,14 +1797,14 @@
 'use strict';
 
 (function (angular) {
-    angular.module('znk.infra.znkExercise').directive('markupImageResize', [
+    angular.module('znk.infra.znkExercise').directive('markup', [
         '$window',
         function ($window) {
             var MAX_IMAGE_WIDTH = 275;
             var dummyElem = angular.element('<P/>');
             return {
                 replace: true,
-                restrict: 'E',
+                restrict: 'EA',
                 link: function (scope, element, attrs) {
 
                     var toDomElement = function domElement(markup) {
