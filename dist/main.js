@@ -12572,7 +12572,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function ($tem
             bindings: {
                 categoryId: '='
             },
-            templateUrl: 'components/znkCategoryStats/znkCategoryStats.template.html',
+            templateUrl: 'components/znkCategoryStats/components/znkCategoryStats.template.html',
             controllerAs: 'vm',
             controller: ["StatsSrv", "CategoryService", function (StatsSrv, CategoryService) {
                 'ngInject';
@@ -15501,10 +15501,9 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
 'use strict';
 
 (function (angular) {
-    angular.module('znk.infra.znkExercise').directive('markup', [
+    angular.module('znk.infra.znkExercise').directive('markupImageResize', [
         '$window',
         function ($window) {
-            var _isMobile = false;//MobileSrv.isMobile();
             var MAX_IMAGE_WIDTH = 275;
             var dummyElem = angular.element('<P/>');
             return {
@@ -15600,12 +15599,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
                     var watchDestroyer = scope.$watch(attrs.content,function(newVal){
                         if(!!newVal){
 
-                            if(_isMobile){
-                                MAX_IMAGE_WIDTH= ($window.innerWidth / 1.05);
-                            }
-                            else{
-                                MAX_IMAGE_WIDTH= ($window.innerWidth / 1.25);
-                            }
+                            MAX_IMAGE_WIDTH = ($window.innerWidth / 1.25);
 
                             var _domElements = toDomElement(newVal);
                             if(_domElements) {

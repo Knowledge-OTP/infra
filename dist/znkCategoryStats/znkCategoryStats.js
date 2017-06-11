@@ -34,7 +34,7 @@
             bindings: {
                 categoryId: '='
             },
-            templateUrl: 'components/znkCategoryStats/znkCategoryStats.template.html',
+            templateUrl: 'components/znkCategoryStats/components/znkCategoryStats.template.html',
             controllerAs: 'vm',
             controller: ["StatsSrv", "CategoryService", function (StatsSrv, CategoryService) {
                 'ngInject';
