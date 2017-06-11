@@ -34,7 +34,7 @@
             bindings: {
                 categoryId: '='
             },
-            templateUrl: 'components/znkCategoryStats/znkCategoryStats.template.html',
+            templateUrl: 'components/znkCategoryStats/components/znkCategoryStats.template.html',
             controllerAs: 'vm',
             controller: ["StatsSrv", "CategoryService", function (StatsSrv, CategoryService) {
                 'ngInject';
@@ -76,7 +76,7 @@
         });
 })(angular);
 
-angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkCategoryStats/components/znkCategoryStats.template.html",
     "<div class=\"znk-category-stats\">\n" +
     "    <div class=\"category-wrapper\"\n" +
