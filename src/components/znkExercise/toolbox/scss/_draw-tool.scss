@@ -5,10 +5,12 @@ znk-exercise{
 
         &.no-pointer-events{
             pointer-events: none;
+            overflow: hidden;
         }
 
         &.crosshair-cursor{
             cursor: crosshair;
+            overflow: hidden;
         }
     }
 }
