@@ -176,6 +176,13 @@
                         var body = document.body;
                         body.addEventListener('keyup',keyboardClickCB);
 
+                        function keydownCB(e){
+                            if(e.keyCode === 13 && scope.vm.showDoneButton) {
+                                scope.onDone();
+                            }
+                        }
+                        body.addEventListener('keydown',keydownCB);
+
                         var currentQuestionAnsweredWatchFn;
                         if(_notReviewMode()){
                             currentQuestionAnsweredWatchFn = function(){
@@ -188,7 +195,9 @@
 
                         scope.$on('$destroy',function(){
                             body.removeEventListener('keyup',keyboardClickCB);
+                            body.removeEventListener('keydown',keydownCB);
                         });
+
                     }
                 }
             };

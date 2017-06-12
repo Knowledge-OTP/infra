@@ -14263,6 +14263,13 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
                         var body = document.body;
                         body.addEventListener('keyup',keyboardClickCB);
 
+                        function keydownCB(e){
+                            if(e.keyCode === 13 && scope.vm.showDoneButton) {
+                                scope.onDone();
+                            }
+                        }
+                        body.addEventListener('keydown',keydownCB);
+
                         var currentQuestionAnsweredWatchFn;
                         if(_notReviewMode()){
                             currentQuestionAnsweredWatchFn = function(){
@@ -14275,7 +14282,9 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
 
                         scope.$on('$destroy',function(){
                             body.removeEventListener('keyup',keyboardClickCB);
+                            body.removeEventListener('keydown',keydownCB);
                         });
+
                     }
                 }
             };
@@ -15495,12 +15504,11 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
     angular.module('znk.infra.znkExercise').directive('markup', [
         '$window',
         function ($window) {
-            var _isMobile = false;//MobileSrv.isMobile();
             var MAX_IMAGE_WIDTH = 275;
             var dummyElem = angular.element('<P/>');
             return {
                 replace: true,
-                restrict: 'E',
+                restrict: 'EA',
                 link: function (scope, element, attrs) {
 
                     var toDomElement = function domElement(markup) {
@@ -15591,12 +15599,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
                     var watchDestroyer = scope.$watch(attrs.content,function(newVal){
                         if(!!newVal){
 
-                            if(_isMobile){
-                                MAX_IMAGE_WIDTH= ($window.innerWidth / 1.05);
-                            }
-                            else{
-                                MAX_IMAGE_WIDTH= ($window.innerWidth / 1.25);
-                            }
+                            MAX_IMAGE_WIDTH = ($window.innerWidth / 1.25);
 
                             var _domElements = toDomElement(newVal);
                             if(_domElements) {
