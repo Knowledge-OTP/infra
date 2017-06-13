@@ -99,7 +99,11 @@
                     var watchDestroyer = scope.$watch(attrs.content,function(newVal){
                         if(!!newVal){
 
-                            MAX_IMAGE_WIDTH = ($window.innerWidth / 1.25);
+                            if(angular.isDefined(attrs.halfView)) {
+                                MAX_IMAGE_WIDTH = ($window.innerWidth / 3.2);
+                            } else {
+                                MAX_IMAGE_WIDTH = ($window.innerWidth / 1.25);
+                            }
 
                             var _domElements = toDomElement(newVal);
                             if(_domElements) {
