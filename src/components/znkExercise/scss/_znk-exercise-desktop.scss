@@ -125,6 +125,10 @@ znk-exercise.desktop {
                         height: 100%;
                     }
                 }
+                .swiper-slide-active {
+                  overflow: auto;
+                  height: 95%;
+                }
             }
         }
     }
