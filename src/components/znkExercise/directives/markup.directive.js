@@ -114,8 +114,7 @@
                         var parentWidth;
 
                         try{
-                            while (!parent.classList.contains('question-container') 
-                                  && !parent.classList.contains('answer-container')) {
+                            while (!parent.classList.contains('question-container') && !parent.classList.contains('answer-container')) {
                                 if(parent.nodeName && parent.nodeName.toLowerCase() === 'body') {
                                     isBody = true;
                                     break;

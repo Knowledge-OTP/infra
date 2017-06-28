@@ -1911,18 +1911,20 @@
 
                         try{
                             while (!parent.classList.contains('question-container') && !parent.classList.contains('answer-container')) {
-                                if(parent.nodeName && parent.nodeName.toLowerCase()==='BODY') {
+                                if(parent.nodeName && parent.nodeName.toLowerCase() === 'body') {
                                     isBody = true;
                                     break;
                                 }
                                 parent = parent.parentElement;
                             }
 
-                            parentWidth = parent.offsetWidth;
-                            var paddingLeft = getActualStyle(window.getComputedStyle(parent).paddingLeft);
-                            var paddingRight =getActualStyle(window.getComputedStyle(parent).paddingRight);
+                            if (!isBody) {
+                              parentWidth = parent.offsetWidth;
+                              var paddingLeft = getActualStyle(window.getComputedStyle(parent).paddingLeft);
+                              var paddingRight =getActualStyle(window.getComputedStyle(parent).paddingRight);
 
-                            parentWidth = (parentWidth -  paddingLeft - paddingRight);
+                              parentWidth = (parentWidth -  paddingLeft - paddingRight);
+                            }
                         } catch(e) {
                             parentWidth = undefined;
                         }
@@ -3722,7 +3724,7 @@
     );
 })(angular);
 
-angular.module('znk.infra.znkExercise').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkExercise/core/template/btnSectionDesktop.template.html",
     "<div class=\"btn-container left-container ng-hide\"\n" +
     "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
