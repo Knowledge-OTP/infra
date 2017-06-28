@@ -15610,6 +15610,11 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
 
                     function calcParentWidth() {
                         var parent = element[0].parentElement;
+
+                        while (parent.classList.indexOf('question-container') > -1) {
+                            parent = parent.parentElement;
+                        }
+
                         var parentWidth = parent.offsetWidth;
                         var paddingLeft = getActualStyle(window.getComputedStyle(parent).paddingLeft);
                         var paddingRight =getActualStyle(window.getComputedStyle(parent).paddingRight);
