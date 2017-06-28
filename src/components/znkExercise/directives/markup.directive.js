@@ -114,19 +114,22 @@
                         var parentWidth;
 
                         try{
-                            while (!parent.classList.contains('question-container') && !parent.classList.contains('answer-container')) {
-                                if(parent.nodeName && parent.nodeName.toLowerCase()==='BODY') {
+                            while (!parent.classList.contains('question-container') 
+                                  && !parent.classList.contains('answer-container')) {
+                                if(parent.nodeName && parent.nodeName.toLowerCase() === 'body') {
                                     isBody = true;
                                     break;
                                 }
                                 parent = parent.parentElement;
                             }
 
-                            parentWidth = parent.offsetWidth;
-                            var paddingLeft = getActualStyle(window.getComputedStyle(parent).paddingLeft);
-                            var paddingRight =getActualStyle(window.getComputedStyle(parent).paddingRight);
+                            if (!isBody) {
+                              parentWidth = parent.offsetWidth;
+                              var paddingLeft = getActualStyle(window.getComputedStyle(parent).paddingLeft);
+                              var paddingRight =getActualStyle(window.getComputedStyle(parent).paddingRight);
 
-                            parentWidth = (parentWidth -  paddingLeft - paddingRight);
+                              parentWidth = (parentWidth -  paddingLeft - paddingRight);
+                            }
                         } catch(e) {
                             parentWidth = undefined;
                         }
