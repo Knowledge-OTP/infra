@@ -2170,8 +2170,7 @@ module-exercise-item .tooltip {
   -ms-flex-direction: column;
       flex-direction: column; }
   .app-e-tutoring.blurred-overlay {
-    -webkit-filter: blur(3px);
-            filter: blur(3px);
+    filter: blur(3px);
     opacity: 0.3; }
   .app-e-tutoring .e-tutoring-main-container {
     display: -ms-flexbox;
@@ -6468,7 +6467,6 @@ znk-exercise.desktop {
           width: 100%;
           height: 100%; }
       znk-exercise.desktop questions-carousel.znk-carousel-container .znk-carousel .swiper-slide-active {
-        overflow: auto;
         height: 95%; }
   znk-exercise.desktop button {
     padding: 0;
@@ -6623,6 +6621,8 @@ znk-exercise {
     width: 0; }
   znk-exercise question-builder, znk-exercise questions-carousel, znk-exercise answer-builder {
     display: block; }
+  znk-exercise question-builder {
+    height: 100%; }
   znk-exercise .question-bottom-shadow {
     transition: all 0.1s linear;
     position: absolute;
