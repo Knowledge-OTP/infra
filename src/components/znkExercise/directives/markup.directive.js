@@ -110,18 +110,28 @@
 
                     function calcParentWidth() {
                         var parent = element[0].parentElement;
+                        var isBody = false;
+                        var parentWidth;
 
-                        while (!parent.classList.contains('question-container')) {
-                            parent = parent.parentElement;
+                        try{
+                            while ((!parent.classList.contains('question-container') || !parent.classList.contains('answer-container'))) {
+                                if(parent.nodeName==='BODY') {
+                                    isBody = true;
+                                    break;
+                                }
+                                parent = parent.parentElement;
+                            }
+
+                            parentWidth = parent.offsetWidth;
+                            var paddingLeft = getActualStyle(window.getComputedStyle(parent).paddingLeft);
+                            var paddingRight =getActualStyle(window.getComputedStyle(parent).paddingRight);
+
+                            parentWidth = (parentWidth -  paddingLeft - paddingRight);
+                        } catch(e) {
+                            parentWidth = undefined;
                         }
 
-                        var parentWidth = parent.offsetWidth;
-                        var paddingLeft = getActualStyle(window.getComputedStyle(parent).paddingLeft);
-                        var paddingRight =getActualStyle(window.getComputedStyle(parent).paddingRight);
-
-                        parentWidth = (parentWidth -  paddingLeft - paddingRight);
-
-                        if(isNaN(parentWidth)) {
+                        if(isNaN(parentWidth) || isBody) {
                             if(angular.isDefined(attrs.halfView)) {
                                 MAX_IMAGE_WIDTH = ($window.innerWidth / 3.2);
                             } else {
