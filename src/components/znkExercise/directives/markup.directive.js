@@ -114,8 +114,8 @@
                         var parentWidth;
 
                         try{
-                            while ((!parent.classList.contains('question-container') || !parent.classList.contains('answer-container'))) {
-                                if(parent.nodeName==='BODY') {
+                            while (!parent.classList.contains('question-container') && !parent.classList.contains('answer-container')) {
+                                if(parent.nodeName && parent.nodeName.toLowerCase()==='BODY') {
                                     isBody = true;
                                     break;
                                 }
@@ -135,7 +135,7 @@
                             if(angular.isDefined(attrs.halfView)) {
                                 MAX_IMAGE_WIDTH = ($window.innerWidth / 3.2);
                             } else {
-                                MAX_IMAGE_WIDTH = ($window.innerWidth / 1.45);
+                                MAX_IMAGE_WIDTH = ($window.innerWidth / 1.48);
                             }
                         }
 
