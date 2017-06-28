@@ -15602,7 +15602,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
                             if(angular.isDefined(attrs.halfView)) {
                                 MAX_IMAGE_WIDTH = ($window.innerWidth / 3.2);
                             } else {
-                                MAX_IMAGE_WIDTH = ($window.innerWidth / 1.25);
+                                MAX_IMAGE_WIDTH = ($window.innerWidth / 1.45);
                             }
 
                             var _domElements = toDomElement(newVal);
