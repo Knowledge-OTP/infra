@@ -111,7 +111,7 @@
                     function calcParentWidth() {
                         var parent = element[0].parentElement;
 
-                        while (parent.classList.indexOf('question-container') > -1) {
+                        while (!parent.classList.contains('question-container')) {
                             parent = parent.parentElement;
                         }
 
