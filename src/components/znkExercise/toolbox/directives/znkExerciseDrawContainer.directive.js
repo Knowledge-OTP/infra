@@ -12,7 +12,7 @@
 
             return {
                 require: '^questionBuilder',
-                link: function (scope, element, attrs, questionBuilderCtrl) {
+                link: function (scope, element, attrs, questionBuilderCtrl, $timeout) {
 
                     var question = questionBuilderCtrl.question;
 
@@ -24,7 +24,9 @@
                     }
                     //temporary solution to the firebase multiple error
                     if (ZnkExerciseDrawSrv.addCanvasToElement) {
-                        ZnkExerciseDrawSrv.addCanvasToElement(element, question);
+                        $timeout(function () {
+                            ZnkExerciseDrawSrv.addCanvasToElement(element, question);
+                        });
                     }
                 }
             };
