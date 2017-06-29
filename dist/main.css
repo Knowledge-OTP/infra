@@ -6467,7 +6467,7 @@ znk-exercise.desktop {
         znk-exercise.desktop questions-carousel.znk-carousel-container .znk-carousel .slide question-builder {
           width: 100%;
           height: 100%; }
-      znk-exercise.desktop questions-carousel.znk-carousel-container .znk-carousel .swiper-slide-active {
+      znk-exercise.desktop questions-carousel.znk-carousel-container .znk-carousel .swiper-slide {
         height: 93%; }
   znk-exercise.desktop button {
     padding: 0;

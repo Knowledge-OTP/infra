@@ -14323,7 +14323,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 getQuestionsProm,
                                 getCurrentQuestionIndexProm
                             ]).then(function (res) {
-                                var isInLiveSession = !angular.equals(res[0], {});
+                                var isInLiveSession = res[0];
                                 var questionsArr = res[1];
                                 var currIndex = res[2];
                                 currIndex = newIndex ? newIndex : currIndex;
@@ -16403,7 +16403,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseDrawTool',
-        ["ZnkExerciseEvents", "ZnkExerciseDrawSrv", "InfraConfigSrv", "ZnkExerciseViewModeEnum", "$log", "$q", "$compile", "$timeout", "$window", function (ZnkExerciseEvents, ZnkExerciseDrawSrv, InfraConfigSrv, ZnkExerciseViewModeEnum, $log, $q, $compile, $timeout, $window) {
+        ["ZnkExerciseEvents", "ZnkExerciseDrawSrv", "InfraConfigSrv", "ZnkExerciseViewModeEnum", "$log", "$q", "$compile", "$timeout", "$window", "znkSessionDataSrv", function (ZnkExerciseEvents, ZnkExerciseDrawSrv, InfraConfigSrv, ZnkExerciseViewModeEnum, $log, $q, $compile, $timeout, $window, znkSessionDataSrv) {
             'ngInject';
 
             var TOUCHE_COLORS = {
@@ -17008,24 +17008,26 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                             // set the canvas dimensions to the larger dimensions between the two ^
                             var setDimensionsCb = function (data) {
-                                // DOM dimensions
-                                var elementDimensions = _getDimensionsByElementSize();
-                                // FB dimensions
-                                var maxDimensions;
-                                // nothing is saved on FB, set the dimensions to be element dimensions
-                                if (!data.val()) {
-                                    maxDimensions = elementDimensions;
-                                }
-                                else {
-                                    maxDimensions = data.val();
-                                }
-                                // compare them and set the canvas dimensions to be the larger between the two
-                                // also save the new maxDimensions to FB
-                                var finalDimensions = _compareFbDimensionsWithElementDimensions(maxDimensions);
-                                canvasDomContainerElement[0].setAttribute('height', finalDimensions.height);
-                                canvasDomContainerElement[0].setAttribute('width', finalDimensions.width);
-                                canvasDomContainerElement.css('position', 'absolute');
-
+                                znkSessionDataSrv.isActiveLiveSession().then(function (isActiveLiveSession) {
+                                    // DOM dimensions
+                                    var elementDimensions = _getDimensionsByElementSize();
+                                    // FB dimensions
+                                    var maxDimensions;
+                                    // nothing is saved on FB, set the dimensions to be element dimensions
+                                    var fbDimensions = data.val();
+                                    if (!fbDimensions || !isActiveLiveSession) {
+                                        maxDimensions = elementDimensions;
+                                    }
+                                    else {
+                                        maxDimensions = fbDimensions;
+                                    }
+                                    // compare them and set the canvas dimensions to be the larger between the two
+                                    // also save the new maxDimensions to FB
+                                    var finalDimensions = _compareFbDimensionsWithElementDimensions(maxDimensions);
+                                    canvasDomContainerElement[0].setAttribute('height', finalDimensions.height);
+                                    canvasDomContainerElement[0].setAttribute('width', finalDimensions.width);
+                                    canvasDomContainerElement.css('position', 'absolute');
+                                });
                             };
 
                             // this piece of code fetches the previously calculated maxDimensions from firebase, and then kickstart all the functions we just went by above ^
@@ -18652,11 +18654,17 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($t
                 };
 
                 znkSessionDataSrv.isActiveLiveSession = function () {
-                    return UserProfileService.getCurrUserId().then(function (currUid) {
-                        return InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
-                            var appName = ENV.firebaseAppScopeName;
-                            var userLiveSessionPath = appName + '/users/' + currUid + '/liveSession/active';
-                            return globalStorage.get(userLiveSessionPath);
+                    return new Promise(function(resolve, reject) {
+                        UserProfileService.getCurrUserId().then(function (currUid) {
+                            InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
+                                var appName = ENV.firebaseAppScopeName;
+                                var userLiveSessionPath = appName + '/users/' + currUid + '/liveSession/active';
+                                globalStorage.get(userLiveSessionPath).then(function (liveSessionGuid) {
+                                    resolve(!angular.equals(liveSessionGuid, {}));
+                                });
+                            });
+                        }).catch(function (err) {
+                            reject('isActiveLiveSession: Error: ' + err);
                         });
                     });
                 };
