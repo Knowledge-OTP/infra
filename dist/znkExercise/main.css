@@ -472,8 +472,7 @@ znk-exercise .draw-tool-container {
   left: 0;
   z-index: 1; }
   znk-exercise .draw-tool-container.no-pointer-events {
-    pointer-events: none;
-    overflow: hidden; }
+    pointer-events: none; }
   znk-exercise .draw-tool-container.crosshair-cursor {
     cursor: crosshair; }
 

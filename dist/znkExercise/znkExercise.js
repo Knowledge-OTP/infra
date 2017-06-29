@@ -3293,7 +3293,7 @@
                             function _compareFbDimensionsWithElementDimensions(fbDimensions) {
                                 var elementDimensions = _getDimensionsByElementSize();
                                 var finalDimensions = {
-                                    height: Math.max(elementDimensions.height, fbDimensions.height),
+                                    height: Math.max(elementDimensions.height-40, fbDimensions.height-40),
                                     width: Math.max(elementDimensions.width, fbDimensions.width)
                                 };
                                 exerciseDrawingRefProm.child('maxDimensions').update(finalDimensions);
