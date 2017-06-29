@@ -2170,7 +2170,8 @@ module-exercise-item .tooltip {
   -ms-flex-direction: column;
       flex-direction: column; }
   .app-e-tutoring.blurred-overlay {
-    filter: blur(3px);
+    -webkit-filter: blur(3px);
+            filter: blur(3px);
     opacity: 0.3; }
   .app-e-tutoring .e-tutoring-main-container {
     display: -ms-flexbox;
@@ -6580,8 +6581,7 @@ znk-exercise .draw-tool-container {
     pointer-events: none;
     overflow: hidden; }
   znk-exercise .draw-tool-container.crosshair-cursor {
-    cursor: crosshair;
-    overflow: hidden; }
+    cursor: crosshair; }
 
 znk-exercise-draw-tool {
   height: 100%;
