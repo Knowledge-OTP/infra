@@ -7,12 +7,12 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseDrawContainer',
-        function (ZnkExerciseDrawSrv) {
-            //'ngInject';
+        function (ZnkExerciseDrawSrv, $timeout) {
+            'ngInject';
 
             return {
                 require: '^questionBuilder',
-                link: function (scope, element, attrs, questionBuilderCtrl, $timeout) {
+                link: function (scope, element, attrs, questionBuilderCtrl) {
 
                     var question = questionBuilderCtrl.question;
 

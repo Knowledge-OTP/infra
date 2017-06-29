@@ -16361,12 +16361,12 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseDrawContainer',
-        ["ZnkExerciseDrawSrv", function (ZnkExerciseDrawSrv) {
-            //'ngInject';
+        ["ZnkExerciseDrawSrv", "$timeout", function (ZnkExerciseDrawSrv, $timeout) {
+            'ngInject';
 
             return {
                 require: '^questionBuilder',
-                link: function (scope, element, attrs, questionBuilderCtrl, $timeout) {
+                link: function (scope, element, attrs, questionBuilderCtrl) {
 
                     var question = questionBuilderCtrl.question;
 
