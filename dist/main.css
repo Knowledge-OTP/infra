@@ -6578,13 +6578,9 @@ znk-exercise .draw-tool-container {
   left: 0;
   z-index: 1; }
   znk-exercise .draw-tool-container.no-pointer-events {
-    pointer-events: none;
-    overflow-y: auto;
-    overflow-x: hidden; }
+    pointer-events: none; }
   znk-exercise .draw-tool-container.crosshair-cursor {
-    cursor: crosshair;
-    overflow-y: auto;
-    overflow-x: hidden; }
+    cursor: crosshair; }
 
 znk-exercise-draw-tool {
   height: 100%;
