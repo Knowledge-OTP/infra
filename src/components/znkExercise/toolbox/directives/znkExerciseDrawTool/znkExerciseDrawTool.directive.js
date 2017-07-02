@@ -9,7 +9,7 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseDrawTool',
-        function (ZnkExerciseEvents, ZnkExerciseDrawSrv, InfraConfigSrv, ZnkExerciseViewModeEnum, $log, $q, $compile, $timeout, $window, znkSessionDataSrv) {
+        function (ZnkExerciseEvents, ZnkExerciseDrawSrv, InfraConfigSrv, ZnkExerciseViewModeEnum, $log, $q, $compile, $timeout, $window) {
             'ngInject';
 
             var TOUCHE_COLORS = {
@@ -614,26 +614,24 @@
 
                             // set the canvas dimensions to the larger dimensions between the two ^
                             var setDimensionsCb = function (data) {
-                                znkSessionDataSrv.isActiveLiveSession().then(function (isActiveLiveSession) {
-                                    // DOM dimensions
-                                    var elementDimensions = _getDimensionsByElementSize();
-                                    // FB dimensions
-                                    var maxDimensions;
-                                    // nothing is saved on FB, set the dimensions to be element dimensions
-                                    var fbDimensions = data.val();
-                                    if (!fbDimensions || !isActiveLiveSession) {
-                                        maxDimensions = elementDimensions;
-                                    }
-                                    else {
-                                        maxDimensions = fbDimensions;
-                                    }
-                                    // compare them and set the canvas dimensions to be the larger between the two
-                                    // also save the new maxDimensions to FB
-                                    var finalDimensions = _compareFbDimensionsWithElementDimensions(maxDimensions);
-                                    canvasDomContainerElement[0].setAttribute('height', finalDimensions.height);
-                                    canvasDomContainerElement[0].setAttribute('width', finalDimensions.width);
-                                    canvasDomContainerElement.css('position', 'absolute');
-                                });
+                                // DOM dimensions
+                                var elementDimensions = _getDimensionsByElementSize();
+                                // FB dimensions
+                                var maxDimensions;
+                                // nothing is saved on FB, set the dimensions to be element dimensions
+                                var fbDimensions = data.val();
+                                if (!fbDimensions) {
+                                    maxDimensions = elementDimensions;
+                                }
+                                else {
+                                    maxDimensions = fbDimensions;
+                                }
+                                // compare them and set the canvas dimensions to be the larger between the two
+                                // also save the new maxDimensions to FB
+                                var finalDimensions = _compareFbDimensionsWithElementDimensions(maxDimensions);
+                                canvasDomContainerElement[0].setAttribute('height', finalDimensions.height);
+                                canvasDomContainerElement[0].setAttribute('width', finalDimensions.width);
+                                canvasDomContainerElement.css('position', 'absolute');
                             };
 
                             // this piece of code fetches the previously calculated maxDimensions from firebase, and then kickstart all the functions we just went by above ^
