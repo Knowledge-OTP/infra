@@ -6467,8 +6467,8 @@ znk-exercise.desktop {
         znk-exercise.desktop questions-carousel.znk-carousel-container .znk-carousel .slide question-builder {
           width: 100%;
           height: 100%; }
-      znk-exercise.desktop questions-carousel.znk-carousel-container .znk-carousel .swiper-slide-active {
-        height: 95%; }
+      znk-exercise.desktop questions-carousel.znk-carousel-container .znk-carousel .swiper-slide {
+        height: 93%; }
   znk-exercise.desktop button {
     padding: 0;
     border-top: none;
@@ -6622,6 +6622,9 @@ znk-exercise {
     display: block; }
   znk-exercise question-builder {
     height: 100%; }
+    znk-exercise question-builder reading-question {
+      height: 100%;
+      display: block; }
   znk-exercise .question-bottom-shadow {
     transition: all 0.1s linear;
     position: absolute;

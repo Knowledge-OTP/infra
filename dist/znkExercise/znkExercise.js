@@ -619,7 +619,7 @@
                                 getQuestionsProm,
                                 getCurrentQuestionIndexProm
                             ]).then(function (res) {
-                                var isInLiveSession = !angular.equals(res[0], {});
+                                var isInLiveSession = res[0];
                                 var questionsArr = res[1];
                                 var currIndex = res[2];
                                 currIndex = newIndex ? newIndex : currIndex;
@@ -2657,8 +2657,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseDrawContainer',
-        ["ZnkExerciseDrawSrv", function (ZnkExerciseDrawSrv) {
-            //'ngInject';
+        ["ZnkExerciseDrawSrv", "$timeout", function (ZnkExerciseDrawSrv, $timeout) {
+            'ngInject';
 
             return {
                 require: '^questionBuilder',
@@ -2674,7 +2674,9 @@
                     }
                     //temporary solution to the firebase multiple error
                     if (ZnkExerciseDrawSrv.addCanvasToElement) {
-                        ZnkExerciseDrawSrv.addCanvasToElement(element, question);
+                        $timeout(function () {
+                            ZnkExerciseDrawSrv.addCanvasToElement(element, question);
+                        });
                     }
                 }
             };
@@ -3293,7 +3295,7 @@
                             function _compareFbDimensionsWithElementDimensions(fbDimensions) {
                                 var elementDimensions = _getDimensionsByElementSize();
                                 var finalDimensions = {
-                                    height: Math.max(elementDimensions.height-40, fbDimensions.height-40),
+                                    height: Math.max(elementDimensions.height, fbDimensions.height),
                                     width: Math.max(elementDimensions.width, fbDimensions.width)
                                 };
                                 exerciseDrawingRefProm.child('maxDimensions').update(finalDimensions);
@@ -3307,11 +3309,12 @@
                                 // FB dimensions
                                 var maxDimensions;
                                 // nothing is saved on FB, set the dimensions to be element dimensions
-                                if (!data.val()) {
+                                var fbDimensions = data.val();
+                                if (!fbDimensions) {
                                     maxDimensions = elementDimensions;
                                 }
                                 else {
-                                    maxDimensions = data.val();
+                                    maxDimensions = fbDimensions;
                                 }
                                 // compare them and set the canvas dimensions to be the larger between the two
                                 // also save the new maxDimensions to FB
@@ -3319,7 +3322,6 @@
                                 canvasDomContainerElement[0].setAttribute('height', finalDimensions.height);
                                 canvasDomContainerElement[0].setAttribute('width', finalDimensions.width);
                                 canvasDomContainerElement.css('position', 'absolute');
-
                             };
 
                             // this piece of code fetches the previously calculated maxDimensions from firebase, and then kickstart all the functions we just went by above ^

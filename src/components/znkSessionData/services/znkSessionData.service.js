@@ -23,11 +23,17 @@
                 };
 
                 znkSessionDataSrv.isActiveLiveSession = function () {
-                    return UserProfileService.getCurrUserId().then(function (currUid) {
-                        return InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
-                            var appName = ENV.firebaseAppScopeName;
-                            var userLiveSessionPath = appName + '/users/' + currUid + '/liveSession/active';
-                            return globalStorage.get(userLiveSessionPath);
+                    return new Promise(function(resolve, reject) {
+                        UserProfileService.getCurrUserId().then(function (currUid) {
+                            InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
+                                var appName = ENV.firebaseAppScopeName;
+                                var userLiveSessionPath = appName + '/users/' + currUid + '/liveSession/active';
+                                globalStorage.get(userLiveSessionPath).then(function (liveSessionGuid) {
+                                    resolve(!angular.equals(liveSessionGuid, {}));
+                                });
+                            });
+                        }).catch(function (err) {
+                            reject('isActiveLiveSession: Error: ' + err);
                         });
                     });
                 };

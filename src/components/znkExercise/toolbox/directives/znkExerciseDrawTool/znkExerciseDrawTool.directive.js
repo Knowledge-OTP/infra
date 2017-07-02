@@ -605,7 +605,7 @@
                             function _compareFbDimensionsWithElementDimensions(fbDimensions) {
                                 var elementDimensions = _getDimensionsByElementSize();
                                 var finalDimensions = {
-                                    height: Math.max(elementDimensions.height-40, fbDimensions.height-40),
+                                    height: Math.max(elementDimensions.height, fbDimensions.height),
                                     width: Math.max(elementDimensions.width, fbDimensions.width)
                                 };
                                 exerciseDrawingRefProm.child('maxDimensions').update(finalDimensions);
@@ -619,11 +619,12 @@
                                 // FB dimensions
                                 var maxDimensions;
                                 // nothing is saved on FB, set the dimensions to be element dimensions
-                                if (!data.val()) {
+                                var fbDimensions = data.val();
+                                if (!fbDimensions) {
                                     maxDimensions = elementDimensions;
                                 }
                                 else {
-                                    maxDimensions = data.val();
+                                    maxDimensions = fbDimensions;
                                 }
                                 // compare them and set the canvas dimensions to be the larger between the two
                                 // also save the new maxDimensions to FB
@@ -631,7 +632,6 @@
                                 canvasDomContainerElement[0].setAttribute('height', finalDimensions.height);
                                 canvasDomContainerElement[0].setAttribute('width', finalDimensions.width);
                                 canvasDomContainerElement.css('position', 'absolute');
-
                             };
 
                             // this piece of code fetches the previously calculated maxDimensions from firebase, and then kickstart all the functions we just went by above ^

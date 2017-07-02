@@ -7,8 +7,8 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseDrawContainer',
-        function (ZnkExerciseDrawSrv) {
-            //'ngInject';
+        function (ZnkExerciseDrawSrv, $timeout) {
+            'ngInject';
 
             return {
                 require: '^questionBuilder',
@@ -24,7 +24,9 @@
                     }
                     //temporary solution to the firebase multiple error
                     if (ZnkExerciseDrawSrv.addCanvasToElement) {
-                        ZnkExerciseDrawSrv.addCanvasToElement(element, question);
+                        $timeout(function () {
+                            ZnkExerciseDrawSrv.addCanvasToElement(element, question);
+                        });
                     }
                 }
             };
