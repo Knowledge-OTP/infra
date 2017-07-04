@@ -3277,10 +3277,10 @@
                             function _getDimensionsByElementSize() {
                                 var height, width;
                                 if (elementToCoverDomElement.scrollHeight) {
-                                    height = elementToCoverDomElement.scrollHeight;
+                                    height = elementToCoverDomElement.scrollHeight - 3;
                                 }
                                 else {
-                                    height = elementToCoverDomElement.offsetHeight;
+                                    height = elementToCoverDomElement.offsetHeight - 3;
                                 }
                                 if (elementToCoverDomElement.scrollWidth) {
                                     width = elementToCoverDomElement.scrollWidth;
@@ -3321,7 +3321,6 @@
                                 var finalDimensions = _compareFbDimensionsWithElementDimensions(maxDimensions);
                                 canvasDomContainerElement[0].setAttribute('height', finalDimensions.height);
                                 canvasDomContainerElement[0].setAttribute('width', finalDimensions.width);
-                                canvasDomContainerElement.css('position', 'absolute');
                             };
 
                             // this piece of code fetches the previously calculated maxDimensions from firebase, and then kickstart all the functions we just went by above ^
