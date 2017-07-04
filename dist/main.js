@@ -948,7 +948,7 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
                 var refAuthDB = new Firebase(ENV.fbGlobalEndPoint, ENV.firebaseAppScopeName);
                 var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
             }
-            
+
             var authService = {};
 
             authService.saveRegistration = function (registration, login) {
@@ -1899,7 +1899,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function($templateC
                              status = CallsBtnStatusEnum.CALL_BTN.enum;
                      }
                  }
-                 
+
                 return status;
             };
 
@@ -6710,7 +6710,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function($temp
     angular.module('znk.infra.exerciseUtility').factory('ExerciseUtilitySrv',
         function () {
             'ngInject';
-            
+
             var ExerciseUtilitySrv = {};
 
             return ExerciseUtilitySrv;
@@ -6737,7 +6737,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($tem
                 if(!angular.isString(str) || !str.length){
                     return '';
                 }
-                
+
                 return str[0].toUpperCase() + str.substr(1);
             };
         }
@@ -7050,7 +7050,7 @@ angular.module('znk.infra.filters').run(['$templateCache', function($templateCac
  *  In case only one prefix/suffix is provided, it will be used in all attributes
  *  In case no @context-attr is provided, it will set the class attribute by default
  *  No need to pass dashes ('-') to prefix or suffix, they are already appended
- * 
+ *
  * ** Optional **: you can now add an attribute called "type" and assign it the word topic if you want idToTopicName
  */
 (function (angular) {
@@ -9066,7 +9066,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function($templateCac
 
 (function(){
     'use strict';
-    
+
     angular.module('znk.infra.screenSharing').run(
         ["ScreenSharingEventsSrv", function(ScreenSharingEventsSrv){
             'ngInject';
@@ -11078,7 +11078,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.teachers', [
-        
+
     ]);
 })(angular);
 
@@ -11677,7 +11677,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
         this.$get = ['$q', '$log', 'ENV', function ($q, $log, ENV) {
 
             var WebcallSrv = {};
-            var plivoWebSdk; 
+            var plivoWebSdk;
 
             var deferredMap = {
                 call: {},
@@ -11767,7 +11767,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
             function _getSettings(){
 
                 var defaultSettings = { "permOnClick": true, "codecs": ["OPUS","PCMU"], "enableIPV6": false, "audioConstraints": { "optional": [ { "googAutoGainControl": false }, {"googEchoCancellation":false} ] }, "enableTracking": true};
-                if (ENV.debug){ 
+                if (ENV.debug){
                     defaultSettings.debug="DEBUG";
                 }
                 return defaultSettings;
@@ -11805,9 +11805,9 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
             };
 
             WebcallSrv.connect = function (callId) {
-                return _init().then(function () {                        
-                    $log.debug('init done');                            
-                    return _call(callId);                          
+                return _init().then(function () {
+                    $log.debug('init done');
+                    return _call(callId);
                  });
             };
 
@@ -14471,7 +14471,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             questionTypeGetterFn = typeGetterFn;
         };
 
-        var answersFormaterObjMap = {};        
+        var answersFormaterObjMap = {};
         this.setAnswersFormatValidtors = function (_answersFormaterObjMap) {
             answersFormaterObjMap = _answersFormaterObjMap;
         };
@@ -14495,7 +14495,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     return questionTypeGetterFn(question);
                 };
 
-                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {   
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {
                     if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
                         $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
                         return;
@@ -14503,7 +14503,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                    var answersFormaterArr = answersFormaterObjMap[answerTypeId];
 
-                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
+                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer
                    if (angular.isUndefined(userAnswer) ||
                        !angular.isArray(answersFormaterArr) ||
                        !answersFormaterArr.length) {
@@ -14513,10 +14513,10 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                     var answersFormaterArrLength = answersFormaterArr.length;
 
-                    var answerValueBool, currentFormatter, functionGetter;                     
+                    var answerValueBool, currentFormatter, functionGetter;
                     for (var i = 0; i < answersFormaterArrLength; i++) {
                         currentFormatter = answersFormaterArr[i];
-                       
+
                         if (angular.isFunction(currentFormatter)) {
                             try {
                                  functionGetter = $injector.invoke(currentFormatter);
@@ -16981,10 +16981,10 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                             function _getDimensionsByElementSize() {
                                 var height, width;
                                 if (elementToCoverDomElement.scrollHeight) {
-                                    height = elementToCoverDomElement.scrollHeight;
+                                    height = elementToCoverDomElement.scrollHeight - 3;
                                 }
                                 else {
-                                    height = elementToCoverDomElement.offsetHeight;
+                                    height = elementToCoverDomElement.offsetHeight - 3;
                                 }
                                 if (elementToCoverDomElement.scrollWidth) {
                                     width = elementToCoverDomElement.scrollWidth;
@@ -17025,7 +17025,6 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 var finalDimensions = _compareFbDimensionsWithElementDimensions(maxDimensions);
                                 canvasDomContainerElement[0].setAttribute('height', finalDimensions.height);
                                 canvasDomContainerElement[0].setAttribute('width', finalDimensions.width);
-                                canvasDomContainerElement.css('position', 'absolute');
                             };
 
                             // this piece of code fetches the previously calculated maxDimensions from firebase, and then kickstart all the functions we just went by above ^
@@ -17356,7 +17355,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 return function() {
                     return true;
                 };
-            }; 
+            };
 
             this.setShouldBroadCastExerciseGetter = function(_broadCastExerciseFn) {
                 broadCastExerciseFn = _broadCastExerciseFn;
