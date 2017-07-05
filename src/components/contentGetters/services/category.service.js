@@ -11,9 +11,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         var categoryEnumMap = categoryEnum.getEnumMap();
 
         self.get = function () {
-            return StorageRevSrv.getContent({
-                exerciseType: 'category'
-            });
+            return $q.when(categoriesConstant);
         };
 
         function mapCategories(categories) {
