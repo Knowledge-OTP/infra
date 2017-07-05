@@ -44,9 +44,5 @@
                     console.log('hang error');
                 });
             }
-
-            $scope.showPopup = function(type){
-                PopUpSrv.error('Error', 'Bla Bla Bla', 'Accept', 'Cancel');
-            }
         });
 })(angular);
