@@ -15,7 +15,7 @@
             _credentials = credentials;
         };
 
-        this.$get = ['$q', '$log', 'ENV', function ($q, $log, ENV) {
+        this.$get = ['$q', '$log', 'ENV', 'PopUpSrv', function ($q, $log, ENV, PopUpSrv) {
 
             var WebcallSrv = {};
             var plivoWebSdk; 
@@ -74,10 +74,12 @@
                 }
             }
 
-            function _onCallFailed() {
-                $log.debug('_onCallFailed');
+            function _onCallFailed(reason) {
+                PopUpSrv.error('Error making a call', 'Please make sure to allow microphone access in browser.<BR>' + 
+                               'reason: ' + reason + ' <BR>' + WebcallSrv.debugInfo, 'Ok','Cancel');
+                $log.error('_onCallFailed, reason =' + reason);
                 if (!angular.equals({}, deferredMap.call)) {
-                    deferredMap.call.reject();
+                    deferredMap.call.reject(reason);
                 }
             }
 
@@ -101,16 +103,19 @@
                 // plivoWebSdk.client.on('audioDeviceChange',audioDeviceChange);
                 plivoWebSdk.client.setRingTone(true);
                 plivoWebSdk.client.setRingToneBack(false);
+                WebcallSrv.debugInfo = '(debug: ' + 
+                            plivoWebSdk.client.browserDetails.browser + ', ' +
+                            plivoWebSdk.client.browserDetails.version +')';
                 $log.debug('initPhone ready!');
                 plivoWebSdk.client.login(_credentials.username, _credentials.password);
             }
 
             function _getSettings(){
 
-                var defaultSettings = { "permOnClick": true, "codecs": ["OPUS","PCMU"], "enableIPV6": false, "audioConstraints": { "optional": [ { "googAutoGainControl": false }, {"googEchoCancellation":false} ] }, "enableTracking": true};
-                if (ENV.debug){ 
+                var defaultSettings = { "permOnClick": true, "codecs": ["OPUS","PCMU"], "enableIPV6": false, "audioConstraints": { "optional": [ { "googAutoGainControl": false }, {"googEchoCancellation":true} ] }, "enableTracking": true};
+                // if (ENV.debug){ 
                     defaultSettings.debug="DEBUG";
-                }
+                // }
                 return defaultSettings;
             }
 

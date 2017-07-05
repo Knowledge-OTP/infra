@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('demoApp', ['znk.infra.webcall'])
+    angular.module('demoApp', ['znk.infra.webcall', 'znk.infra.popUp'])
         .config(function (WebcallSrvProvider) {
         	WebcallSrvProvider.setCallCred({
         		username:'ZinkerzDev160731091034',
@@ -11,13 +11,13 @@
         .service('ENV', function () {
             this.debug = true;
         })
-        .controller('Main', function ($scope, WebcallSrv) {
+        .controller('Main', function ($scope, WebcallSrv, PopUpSrv) {
             $scope.init = function () {
                 console.log('initiailizing...');
                 return WebcallSrv.connect('1234').then(function () {
                     console.log('connected');
                 }).catch(function (err) {
-                    console.log('connect error');
+                    console.log('connect error, err=' + err);
                 });
             }
 
@@ -26,7 +26,7 @@
                 return WebcallSrv.call(callId).then(function () {
                     console.log('called');
                 }).catch(function (err) {
-                    console.log('called error');
+                    console.log('called error, err=' + err);
                 });
 
             }
@@ -43,6 +43,10 @@
                 }).catch(function () {
                     console.log('hang error');
                 });
+            }
+
+            $scope.showPopup = function(type){
+                PopUpSrv.error('Error', 'Bla Bla Bla', 'Accept', 'Cancel');
             }
         });
 })(angular);
