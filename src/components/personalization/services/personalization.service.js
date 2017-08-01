@@ -88,7 +88,7 @@
                                 if (!isNaN(availableSubjects[j])) {
                                     var subId = parseInt(availableSubjects[j],10);
                                     if (!subjectsToIgnore || (subjectsToIgnore && subjectsToIgnore.indexOf(subId) === -1)) {
-                                      currSubject = subId
+                                      currSubject = subId;
                                       break;
                                     }
                                 }
