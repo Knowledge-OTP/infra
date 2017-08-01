@@ -250,7 +250,7 @@
                             }
                         });
                         filteredStats.orderedStats.sort(function (stat1, stat2) {
-                            return stat2.statAccuracy - stat1.statAccuracy; // TODO: verify desc
+                            return stat1.statAccuracy - stat2.statAccuracy;
                         });
                     }
                     // If the current category isn't in the "availableCategories" and it has no subCategories,
