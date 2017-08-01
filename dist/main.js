@@ -7947,9 +7947,12 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function($template
                             // Run through the availableExercises[timeBundle].availableSubjects
                             var availableSubjects = Object.keys(availableExercises[timeBundles[i]]);
                             for (var j = 0; j < availableSubjects.length; j++) {
-                                if (!subjectsToIgnore || (subjectsToIgnore && subjectsToIgnore.indexOf(availableSubjects[j]) === -1)) {
-                                    currSubject = availableSubjects[j];
-                                    break;
+                                if (!isNaN(availableSubjects[j])) {
+                                    var subId = parseInt(availableSubjects[j],10);
+                                    if (!subjectsToIgnore || (subjectsToIgnore && subjectsToIgnore.indexOf(subId) === -1)) {
+                                      currSubject = subId;
+                                      break;
+                                    }
                                 }
                             }// END availableSubjects.forEach
                             // If we found an availableSubject, break the loop through the availableExercises.timeBundles
@@ -8095,16 +8098,18 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function($template
                         var subCategoryIds = Object.keys(stats.subCategories);
                         angular.forEach(subCategoryIds, function (subCategoryId) {
                             subCategoryId = parseInt(subCategoryId, 10);
-                            filteredStats.subCategories[subCategoryId] = _filterStatsByAvailableCategories(stats.subCategories[subCategoryId], availableCategories);
-                            // Check if we got a sub category (not null / undefined)
-                            hasAvailableSubCategories = filteredStats.subCategories[subCategoryId] ? true : hasAvailableSubCategories;
-
-                            var statsSubCategory = stats.subCategories[subCategoryId];
-                            var orderedStat = {
-                                categoryId: subCategoryId,
-                                statAccuracy: ((1 / statsSubCategory.totalQuestions) + (statsSubCategory.correct / statsSubCategory.totalQuestions))
-                            };
-                            filteredStats.orderedStats.push(orderedStat);
+                            var subCategoryInfo = _filterStatsByAvailableCategories(stats.subCategories[subCategoryId], availableCategories);
+                            // Check if we got a sub category (not null / undefined), if so we add it's info
+                            if (subCategoryInfo) {
+                              filteredStats.subCategories[subCategoryId] = subCategoryInfo;
+                              var statsSubCategory = stats.subCategories[subCategoryId];
+                              var orderedStat = {
+                                  categoryId: subCategoryId,
+                                  statAccuracy: ((1 / statsSubCategory.totalQuestions) + (statsSubCategory.correct / statsSubCategory.totalQuestions))
+                              };
+                              filteredStats.orderedStats.push(orderedStat);
+                              hasAvailableSubCategories = true;
+                            }
                         });
                         filteredStats.orderedStats.sort(function (stat1, stat2) {
                             return stat2.statAccuracy - stat1.statAccuracy; // TODO: verify desc
@@ -8215,6 +8220,20 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function($template
                         angular.forEach(timeBundleKeys, function (timeBundle) {
                             availableExercises[timeBundle] = _filterAvailableExercisesRecursive(allExercises[timeBundle], usedExercises, includeInProgress);
                             availableExercises.availableCategories = availableExercises.availableCategories.concat(availableExercises[timeBundle].availableCategories);
+                            // Remove empty subjects:
+                            var subjectIds = Object.keys(availableExercises[timeBundle]);
+                            subjectIds.forEach(function(subjectId) {
+                              // Verify we're on a subject ID property
+                              if (!isNaN(subjectId)) {
+                                var currSubAvailableExercises = Object.keys(availableExercises[timeBundle][subjectId].exercises);
+                                var currSubAvailableSubCategories = Object.keys(availableExercises[timeBundle][subjectId].subCategories);
+                                // If there are no exercises and not subCategories available for this subject (#.subCategories obj always has the "subCategories" property among the category ids)
+                                if ((currSubAvailableExercises.length === 0) && (currSubAvailableSubCategories.length === 1)) {
+                                  // Remove this subject from the available exercises object  
+                                  delete availableExercises[timeBundle][subjectId];
+                                }
+                              }
+                            });
                         });
                         return availableExercises;
                     });
