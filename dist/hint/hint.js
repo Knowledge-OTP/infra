@@ -103,6 +103,6 @@
     });
 })(angular);
 
-angular.module('znk.infra.hint').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.hint').run(['$templateCache', function ($templateCache) {
 
 }]);

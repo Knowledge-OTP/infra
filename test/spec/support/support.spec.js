@@ -1,4 +1,4 @@
-describe('testing service "SupportSrv":', function () {
+xdescribe('testing service "SupportSrv":', function () {
     'use strict';
 
 

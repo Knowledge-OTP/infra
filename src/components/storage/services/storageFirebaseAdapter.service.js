@@ -44,12 +44,23 @@
                 }
             }
 
-            function StorageFirebaseAdapter(endPoint) {
+            function StorageFirebaseAdapter() {
                 this.__refMap = {};
 
-                this.__refMap.rootRef = new Firebase(endPoint, ENV.firebaseAppScopeName);
+                this.__refMap.rootRef = initializeFireBase(); //new Firebase(endPoint, ENV.firebaseAppScopeName);
 
                 this.__registeredEvents = {};
+            }
+
+            function initializeFireBase(){
+                var config = {
+                    apiKey: ENV.firebase_apiKey,
+                    authDomain:  ENV.firebase_projectId + ".firebaseapp.com",
+                    databaseURL: ENV.fbDataEndPoint,
+                    storageBucket: ENV.firebase_projectId + ".appspot.com",
+                    messagingSenderId: ENV.messagingSenderId
+            };
+                return window.firebase.initializeApp(config);
             }
 
             var storageFirebaseAdapterPrototype = {
@@ -59,7 +70,7 @@
                     }
 
                     if (!this.__refMap[relativePath]) {
-                        this.__refMap[relativePath] = this.__refMap.rootRef.child(relativePath);
+                        this.__refMap[relativePath] = this.__refMap.rootRef.database().child(relativePath);
                     }
 
                     return this.__refMap[relativePath];
@@ -92,7 +103,7 @@
 
                     var defer = $q.defer();
 
-                    this.__refMap.rootRef.update(pathsToUpdateCopy, function (err) {
+                    this.__refMap.rootRef.database().update(pathsToUpdateCopy, function (err) {
                         if (err) {
                             if (angular.isObject(pathsToUpdateCopy)) {
                                 $log.error('storageFirebaseAdapter: failed to set data for the following path ' + JSON.stringify(pathsToUpdateCopy) + ' ' + err);

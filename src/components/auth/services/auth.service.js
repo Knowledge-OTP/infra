@@ -6,10 +6,12 @@
             'ngInject';
 
             if (ENV.fbGlobalEndPoint && ENV.fbDataEndPoint){
-                var refAuthDB = new Firebase(ENV.fbGlobalEndPoint, ENV.firebaseAppScopeName);
-                var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
+                var refAuthDB = initializeFireBase(ENV.fbGlobalEndPoint);
+                var rootRef = initializeFireBase(ENV.fbDataEndPoint);
+
+                refAuthDB = refAuthDB.auth();
             }
-            
+
             var authService = {};
 
             authService.saveRegistration = function (registration, login) {
@@ -25,7 +27,7 @@
 
                 registration.profile = {};
 
-                refAuthDB.createUser(registration).then(function () {
+                refAuthDB.createUserWithEmailAndPassword(registration.email, registration.password).then(function () {
                     registerInProgress = false;
                     $timeout.cancel(timeoutPromise);
 
@@ -52,9 +54,9 @@
             authService.login = function (loginData) {
                 var deferred = $q.defer();
 
-                refAuthDB.unauth();
+                refAuthDB.signOut();
 
-                refAuthDB.authWithPassword(loginData).then(function (authData) {
+                refAuthDB.signInWithEmailAndPassword(loginData.email, loginData.password).then(function (authData) {
                     $log.debug('authSrv::login(): uid=' + authData.uid);
                     _onAuth(authData).then(function () {
                         deferred.resolve(authData);
@@ -68,12 +70,12 @@
             };
 
             authService.logout = function () {
-                refAuthDB.unauth();
-                rootRef.unauth();
+                refAuthDB.signOut();
+                rootRef.auth().signOut();
             };
 
             authService.forgotPassword = function (forgotPasswordData) {
-                return refAuthDB.resetPassword(forgotPasswordData);
+                return refAuthDB.sendPasswordResetEmail(forgotPasswordData.email);
             };
 
             authService.getAuth = function() {
@@ -95,15 +97,13 @@
                 return authData;
             };
 
-            authService.changePassword = function (changePasswordData) {
-                var refAuthData = refAuthDB.getAuth();
-                changePasswordData.email = (refAuthData.password && refAuthData.password.email) ? refAuthData.password.email : '';
-                return refAuthDB.changePassword(changePasswordData);
+            authService.changePassword = function () {
+                return refAuthDB.sendPasswordResetEmail(refAuthDB.currentUser().email );
             };
 
             authService.createAuthWithCustomToken = function (refDB, token) {
                 var deferred = $q.defer();
-                refDB.authWithCustomToken(token, function (error, userData) {
+                refDB.auth().signInWithCustomToken(token, function (error, userData) {
                     if (error) {
                         deferred.reject(error);
                     }
@@ -145,14 +145,14 @@
 
             function _dataLogin() {
                 var postUrl = ENV.backendEndpoint + 'firebase/token';
-                var authData = refAuthDB.getAuth();
+                var authData = refAuthDB.currentUser();
                 var postData = {
-                    email: authData.password ? authData.password.email : '',
+                    email: authData.password,
                     uid: authData.uid,
                     fbDataEndPoint: ENV.fbDataEndPoint,
                     fbEndpoint: ENV.fbGlobalEndPoint,
                     auth: ENV.dataAuthSecret,
-                    token: authData.token
+                    token: authData.refreshToken
                 };
 
                 return $http.post(postUrl, postData).then(function (token) {
@@ -178,6 +178,17 @@
                 }
                 $rootScope.$broadcast('auth:logout');
                 return $q.when();
+            }
+
+            function initializeFireBase(databaseURL){
+                var config = {
+                    apiKey: ENV.firebase_apiKey,
+                    authDomain:  ENV.firebase_projectId + ".firebaseapp.com",
+                    databaseURL: databaseURL,
+                    storageBucket: ENV.firebase_projectId + ".appspot.com",
+                    messagingSenderId: ENV.messagingSenderId
+                };
+                return window.firebase.initializeApp(config);
             }
 
             return authService;

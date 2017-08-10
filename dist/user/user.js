@@ -187,9 +187,9 @@ angular.module('znk.infra.user').service('UserProfileService',
                 };
 
                 function init() {
-                    return InfraConfigSrv.getUserData().then(function (userData) {
-                        var globalLastSessionRef = new Firebase(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
-                        return globalLastSessionRef.once('value').then(function(snapshot){
+                    return InfraConfigSrv.getUserData().then(function () {
+                        var globalLastSessionRef = initializeFireBase(); //(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
+                        return globalLastSessionRef.database().once('value').then(function(snapshot){
                             lastSessionData = snapshot.val();
                             if(!isLastSessionRecordDisabled){
                                 globalLastSessionRef.child('began').set(Firebase.ServerValue.TIMESTAMP);
@@ -200,6 +200,17 @@ angular.module('znk.infra.user').service('UserProfileService',
                     });
                 }
                 initProm = init();
+
+                function initializeFireBase(){
+                    var config = {
+                        apiKey: ENV.firebase_apiKey,
+                        authDomain:  ENV.firebase_projectId + ".firebaseapp.com",
+                        databaseURL: ENV.fbDataEndPoint,
+                        storageBucket: ENV.firebase_projectId + ".appspot.com",
+                        messagingSenderId: ENV.messagingSenderId
+                    };
+                    return window.firebase.initializeApp(config);
+                }
 
                 return UserSessionSrv;
             }];
@@ -225,6 +236,6 @@ angular.module('znk.infra.user').service('UserStorageService',
         return new StorageSrv(fbAdapter, config);
     }]);
 
-angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.user').run(['$templateCache', function ($templateCache) {
 
 }]);
