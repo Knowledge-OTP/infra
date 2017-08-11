@@ -206,6 +206,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                         apiKey: ENV.firebase_apiKey,
                         authDomain:  ENV.firebase_projectId + ".firebaseapp.com",
                         databaseURL: ENV.fbDataEndPoint,
+                        projectId: ENV.firebase_projectId,
                         storageBucket: ENV.firebase_projectId + ".appspot.com",
                         messagingSenderId: ENV.messagingSenderId
                     };
