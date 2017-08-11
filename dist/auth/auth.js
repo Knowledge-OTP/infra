@@ -88,7 +88,7 @@
             };
 
             authService.getAuth = function() {
-                var authData = rootRef ? rootRef.getAuth() : undefined;
+                var authData = rootRef ? rootRef.auth() : undefined;
                 if (!authData) {
                     return null;
                 }
