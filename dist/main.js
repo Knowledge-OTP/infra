@@ -945,8 +945,8 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function ($templ
             'ngInject';
 
             if (ENV.fbGlobalEndPoint && ENV.fbDataEndPoint){
-                var refAuthDB = initializeFireBase(ENV.fbGlobalEndPoint);
-                var rootRef = initializeFireBase(ENV.fbDataEndPoint);
+                var refAuthDB = initializeFireBase(ENV.fbGlobalEndPoint, 'globalEndPoint');
+                var rootRef = initializeFireBase(ENV.fbDataEndPoint, 'dataEndPoint');
 
                 refAuthDB = refAuthDB.auth();
             }
