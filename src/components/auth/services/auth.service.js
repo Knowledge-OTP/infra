@@ -6,8 +6,8 @@
             'ngInject';
 
             if (ENV.fbGlobalEndPoint && ENV.fbDataEndPoint){
-                var refAuthDB = initializeFireBase(ENV.fbGlobalEndPoint, 'globalEndPoint');
-                var rootRef = initializeFireBase(ENV.fbDataEndPoint, 'dataEndPoint');
+                var refAuthDB = initializeAuthFireBase();
+                var rootRef = initializeDataFireBase();
 
                 refAuthDB = refAuthDB.auth();
             }
@@ -180,16 +180,28 @@
                 return $q.when();
             }
 
-            function initializeFireBase(databaseURL){
+            function initializeDataFireBase(){
                 var config = {
                     apiKey: ENV.firebase_apiKey,
                     authDomain:  ENV.firebase_projectId + ".firebaseapp.com",
-                    databaseURL: databaseURL,
+                    databaseURL: ENV.fbDataEndPoint,
                     projectId: ENV.firebase_projectId,
                     storageBucket: ENV.firebase_projectId + ".appspot.com",
                     messagingSenderId: ENV.messagingSenderId
                 };
-                return window.firebase.initializeApp(config);
+                return window.firebase.initializeApp(config, 'dataFireBase');
+            }
+
+            function initializeAuthFireBase(){
+                var config = {
+                    apiKey: ENV.firbase_auth_config.apiKey,
+                    authDomain:  ENV.firbase_auth_config.authDomain,
+                    databaseURL: ENV.firbase_auth_config.databaseURL,
+                    projectId: ENV.firbase_auth_config.projectId,
+                    storageBucket: ENV.firbase_auth_config.storageBucket,
+                    messagingSenderId: ENV.firbase_auth_config.messagingSenderId
+                };
+                return window.firebase.initializeApp(config, 'authFirebase');
             }
 
             return authService;
