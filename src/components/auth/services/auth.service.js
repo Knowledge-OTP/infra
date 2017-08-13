@@ -189,7 +189,7 @@
                     storageBucket: ENV.firebase_projectId + ".appspot.com",
                     messagingSenderId: ENV.messagingSenderId
                 };
-                return window.firebase.initializeApp(config, 'dataFireBase');
+                return window.firebase.initializeApp(config, ENV.appName);
             }
 
             function initializeAuthFireBase(){
@@ -201,7 +201,7 @@
                     storageBucket: ENV.firbase_auth_config.storageBucket,
                     messagingSenderId: ENV.firbase_auth_config.messagingSenderId
                 };
-                return window.firebase.initializeApp(config, 'authFirebase');
+                return window.firebase.initializeApp(config, ENV.firbase_auth_config.projectId);
             }
 
             return authService;

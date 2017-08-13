@@ -401,7 +401,7 @@
             }
 
             function initializeFireBase(){
-                var appName = 'storageFirebase';
+                var appName = ENV.appName;
                 var existApp;
 
                 window.firebase.apps.forEach(function (app) {
