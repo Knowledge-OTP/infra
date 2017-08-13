@@ -43,7 +43,7 @@
                 initProm = init();
 
                 function initializeFireBase(){
-                    var appName = ENV.appName;
+                    var appName = ENV.firebase_projectId;
                     var existApp;
 
                     window.firebase.apps.forEach(function (app) {

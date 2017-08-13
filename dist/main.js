@@ -1128,7 +1128,7 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function ($templ
                     storageBucket: ENV.firebase_projectId + ".appspot.com",
                     messagingSenderId: ENV.messagingSenderId
                 };
-                return window.firebase.initializeApp(config, ENV.appName);
+                return window.firebase.initializeApp(config, ENV.firebase_projectId);
             }
 
             function initializeAuthFireBase(){
@@ -10728,7 +10728,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function ($templateCach
             }
 
             function initializeFireBase(){
-                var appName = ENV.appName;
+                var appName = ENV.firebase_projectId;
                 var existApp;
 
                 window.firebase.apps.forEach(function (app) {
@@ -11405,7 +11405,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                 initProm = init();
 
                 function initializeFireBase(){
-                    var appName = ENV.appName;
+                    var appName = ENV.firebase_projectId;
                     var existApp;
 
                     window.firebase.apps.forEach(function (app) {
