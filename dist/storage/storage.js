@@ -401,15 +401,27 @@
             }
 
             function initializeFireBase(){
-                var config = {
-                    apiKey: ENV.firebase_apiKey,
-                    authDomain:  ENV.firebase_projectId + ".firebaseapp.com",
-                    databaseURL: ENV.fbDataEndPoint,
-                    projectId: ENV.firebase_projectId,
-                    storageBucket: ENV.firebase_projectId + ".appspot.com",
-                    messagingSenderId: ENV.messagingSenderId
-            };
-                return window.firebase.initializeApp(config);
+                var appName = 'storageFirebase';
+                var existApp;
+
+                window.firebase.apps.forEach(function (app) {
+                    if (app.name.toLowerCase() === appName.toLowerCase()) {
+                        existApp = app;
+                    }
+                });
+
+                if (!existApp) {
+                    var config = {
+                        apiKey: ENV.firebase_apiKey,
+                        authDomain:  ENV.firebase_projectId + ".firebaseapp.com",
+                        databaseURL: ENV.fbDataEndPoint,
+                        projectId: ENV.firebase_projectId,
+                        storageBucket: ENV.firebase_projectId + ".appspot.com",
+                        messagingSenderId: ENV.messagingSenderId
+                    };
+                    existApp =  window.firebase.initializeApp(config, appName);
+                }
+               return existApp;
             }
 
             var storageFirebaseAdapterPrototype = {
