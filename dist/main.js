@@ -1120,27 +1120,38 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function ($templ
             }
 
             function initializeDataFireBase(){
-                var config = {
-                    apiKey: ENV.firebase_apiKey,
-                    authDomain:  ENV.firebase_projectId + ".firebaseapp.com",
-                    databaseURL: ENV.fbDataEndPoint,
-                    projectId: ENV.firebase_projectId,
-                    storageBucket: ENV.firebase_projectId + ".appspot.com",
-                    messagingSenderId: ENV.messagingSenderId
-                };
-                return window.firebase.initializeApp(config, ENV.firebase_projectId);
+                var existApp = existFirbaseApp(ENV.firebase_projectId);
+                if(!existApp) {
+                    var config = {
+                        apiKey: ENV.firebase_apiKey,
+                        authDomain:  ENV.firebase_projectId + ".firebaseapp.com",
+                        databaseURL: ENV.fbDataEndPoint,
+                        projectId: ENV.firebase_projectId,
+                        storageBucket: ENV.firebase_projectId + ".appspot.com",
+                        messagingSenderId: ENV.messagingSenderId
+                    };
+                    existApp = window.firebase.initializeApp(config, ENV.firebase_projectId);
+                }
+                return existApp;
             }
 
             function initializeAuthFireBase(){
-                var config = {
-                    apiKey: ENV.firbase_auth_config.apiKey,
-                    authDomain:  ENV.firbase_auth_config.authDomain,
-                    databaseURL: ENV.firbase_auth_config.databaseURL,
-                    projectId: ENV.firbase_auth_config.projectId,
-                    storageBucket: ENV.firbase_auth_config.storageBucket,
-                    messagingSenderId: ENV.firbase_auth_config.messagingSenderId
-                };
-                return window.firebase.initializeApp(config, ENV.firbase_auth_config.projectId);
+                var existApp = existFirbaseApp(ENV.firbase_auth_config.projectId);
+                if(!existApp) {
+                    existApp = window.firebase.initializeApp(ENV.firbase_auth_config, ENV.firbase_auth_config.projectId);
+                }
+              return existApp;
+            }
+
+            function existFirbaseApp(appName) {
+                var existApp;
+
+                window.firebase.apps.forEach(function (app) {
+                    if (app.name.toLowerCase() === appName.toLowerCase()) {
+                        existApp = app;
+                    }
+                });
+                return existApp;
             }
 
             return authService;
@@ -11395,9 +11406,9 @@ angular.module('znk.infra.user').service('UserProfileService',
                         return globalLastSessionRef.database().once('value').then(function(snapshot){
                             lastSessionData = snapshot.val();
                             if(!isLastSessionRecordDisabled){
-                                globalLastSessionRef.child('began').set(Firebase.ServerValue.TIMESTAMP);
-                                globalLastSessionRef.child('ended').set(null);
-                                globalLastSessionRef.child('ended').onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
+                                globalLastSessionRef.database().ref('began').set(Firebase.ServerValue.TIMESTAMP);
+                                globalLastSessionRef.database().ref('ended').set(null);
+                                globalLastSessionRef.database().ref('ended').onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
                             }
                         });
                     });

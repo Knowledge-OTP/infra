@@ -192,9 +192,9 @@ angular.module('znk.infra.user').service('UserProfileService',
                         return globalLastSessionRef.database().once('value').then(function(snapshot){
                             lastSessionData = snapshot.val();
                             if(!isLastSessionRecordDisabled){
-                                globalLastSessionRef.child('began').set(Firebase.ServerValue.TIMESTAMP);
-                                globalLastSessionRef.child('ended').set(null);
-                                globalLastSessionRef.child('ended').onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
+                                globalLastSessionRef.database().ref('began').set(Firebase.ServerValue.TIMESTAMP);
+                                globalLastSessionRef.database().ref('ended').set(null);
+                                globalLastSessionRef.database().ref('ended').onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
                             }
                         });
                     });
