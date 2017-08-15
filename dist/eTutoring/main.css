@@ -1,0 +1,1409 @@
+/* paths*/
+/* fonts size */
+/*
+//backgrounds
+$greyBG1: #B4BAD9;
+$greyBG2: #f5f8fa;
+$greyBG3: #E1E8ED;
+$greyBG4: #d7d7d7;
+$greyBG5: #CCCCCC;
+$greyBG6: #E6E6E6;
+$greyBG7: #e8e8e7;
+$greyBG8: #ebebeb;
+$greyBG9: #e0e0e0;
+$greyBG10: #f2f2f2;
+$greyBG11: #b3b3b3;
+$greyBG12: #c7c7c7;
+$greyBG13: #dfdddd;
+$greyBG14: #f6f6f6;
+$greyBG15: #f0f1f4;
+$greyBG16: #f8f8f8;
+$greyBG17: #d5d2d2;
+$greyBG18: #dfdcdc;
+$greyBG19: #e1e1e2;
+$greyBG20: #e8e8e8;
+$greyBG21: #c1c1c3;
+$greyBG22: #b9bdc3;
+$greyBG23: #888888;
+$greyBG24: #807f7f;
+$greyBG25: #f1f1f1;
+$greyBG26: #787d86;
+$greyBG27: #f8f7f7;
+$greyBG28: #8f8f8f;
+$greyBG29: #808080;
+
+$whiteBG1: #fff;
+$whiteBG2: #fbfbfb;
+$whiteBG3: #f2f3f5;
+$whiteDirtyBG3:#f9f9f9;//todo(igor) why dirty ?
+$whiteBG4: #f4f4f4;
+$whiteBG5: #929090;
+
+
+$greenBG1: #1db398;
+$greenBG2: #00B497;
+$greenBG3: #006E5C;
+$greenBG4: #87ca4d;
+$greenBG5: #97ce68;
+$greenBG6: #80c248;
+$greenBG7: #87e73a;
+
+$blueBG1: #0a9bad;
+$blueBG2: #336699;
+
+$blackBG1: rgba(0, 0, 0, 0.6);
+$blackBG2: #161616;
+$blackBG3:rgba(0, 0, 0, 0.15);
+
+$redBG1: #ff6766;
+$redBG2: #e55958;
+
+$turquoiseBG1: #0a9bad;
+$turquoiseBG2: #10AFC3;
+$turquoiseBG3: #068291;
+
+$orangeBG1: #ff931e;
+$orangeBG2: #d27817;
+$orangeBG3: #ff8b00;
+$orangeBG4: #e77902;
+$paleBlueBG1: #72c9e7;
+
+$yellowBG1: #ffca08;
+$yellowBG2: #cbaf21;
+$yellowBG3: #c8b369;
+$yellowBG4: #c4a63a;
+$yellowBG5: #f9d41b;
+$yellowBG6: #fadd49;
+
+$pinkBG1: #ff5895;
+$pinkBG2: #d7477c;
+$pinkBG3: #d6779a;
+$pinkBG4: #b76583;
+$pinkBG5: #ff8ab5;
+$pinkBG6: #ff79aa;
+
+$purpleBG1: #af89d2;
+$purpleBG2: #a48bbb;
+$purpleBG3: #89739e;
+$purpleBG4: #5f506d;
+$purpleBG5: #9e7abf;
+$purpleBG6: #7a5f94;
+$purpleBG7: #c7acdf;
+
+//background with opacity
+$blackTBG1: rgba(0,0,0,0.7);
+$blackTBG2: rgba(0,0,0,0.18);
+$blackTBG3: rgba(0,0,0,0.08);
+$blackTBG4: rgba(0,0,0,0.6);
+$blackTBG5: rgba(0,0,0,0.23);
+$blackTBG6: rgba(0,0,0,0.42);
+$blackTBG7: rgba(0,0,0,0.75);
+
+$blackBS1: rgba(0,0,0,0.05);
+$clear: rgba(0,0,0,0);
+
+$whiteTBG1: rgba(255,255,255,0.8);
+$whiteTBG2: rgba(255,255,255,0.2);
+$whiteTBG3: rgba(255,255,255,0.3);
+
+$greyTBG1: rgba(85,85,85,0.9);
+
+//font color
+$whiteFC1: #fff;
+
+$WTitle: #434649;
+
+$greenFC1: #2AB79E;
+$greenFC2: #08b195;
+$greenSaveBtnUP:#87e73a;//@todo(igor) wrong name
+
+$blackFC1: #575757;
+$blackFC2: #282834;
+$blackFC3: black;
+$blackFC4: #040404;
+$blackFC5: #4f4d4d;
+$blackFC6: #161616;
+$blackFC7: #818080;
+$blackFC8: #6f6f6f;
+
+$grayFC1: #b4bad9;
+$grayFC2: #6E6E6E;
+$grayFC3: #BDBBBB;
+$grayFC4: #5E656B;
+$grayFC5: #B5C1C8;
+$grayFC6: #3E3E3E;
+$grayFC7: #363636;
+$grayFC8: #4d4d4d;
+$grayFC9: #a1a1a1;
+$grayFC10: #908989;
+$grayFC11: #757a83;
+$grayFC12: #aeaeae;
+$grayFC13: #b3b3b3;
+$grayFC14: #A9A9A9;
+$grayFC15: #a4a7ab;
+$grayFC16: #f0f0f1;
+$greyFC19: #757a83;
+$grayFC17: #e1e1e1;
+$grayFC18: #b7b7b7;
+$grayFC19: #dad5d5;
+$grayFC22: #E6E5E6;
+$grayFC23: #f3efef;
+$grayFC24: #fdfcfc;
+$grayFC25: #626060;
+$grayFC26: #dfe2e2;
+$grayFC27: #f7f6f6;
+$grayFC28: #625a5a;
+$grayFC29: #625a5a;
+$grayFC30: #b5b5b5;
+$grayFC31: #6E6E6E;
+$grayFC32: #4a4a4a;
+$grayFC33: #c7c7c6;
+$grayFC34: #95989c;
+$grayFC34: #807f7f;
+$grayFC35: #c2c2c2;
+$grayFC36: #898989;
+$grayFC37: #d2d2d2;
+$grayFC38: #f7f7f7;
+$grayFC39: #f3f3f3;
+$grayFC40: #959595;
+$grayFC41: #B0B1B2;
+$grayFC42: #7A7A7A;
+$grayFC43: #e2e2e2;
+$greyUP1: #757a83;
+
+$yellowFC1: #ff931e;
+$yellowFC2: #8c6f09;
+
+$orangeFC1: #ad6414;
+$orangeFC2: #f79226;
+$redFC1: #F94040;
+$redFC2: #ff6766;
+$redFC3: #FD4E53;
+
+$greenFC1: #87ca4d;//todo(igor) overriding existing variable !!!
+$BlueFC1: #0d9bad;
+$darkBlueFC1: #2a3747;
+
+$turquoiseFC1: #0a9bad;
+
+$pinkFC1: #d64a7d;
+$pinkFC2: #992f56;
+
+$blueFC1: #225060;
+
+$purpleFC1: #695081;
+//border color
+$greyBC1: #e1e8ed;
+$greyBC2: #CCD6DD;
+$greyBC3: #B5C1C8;
+$greyBC4: #CFCFCF;
+$greyBC5: #eeeff1;
+$greyBC6: #E2E2E2;
+$greyBC7: #ACACAC;
+$greyBC8: #d4d4d4;
+$greyBC9: #e9e9e9;
+$greyBC10: #979c9c;
+$greyBC11: #d0cece;
+$greyBC12: #95989c;
+$greyBC13: #e2e7ec;
+
+$whiteBC1: white;
+$whiteBC2: #E4E4E4;
+
+$redBC1: #F94040;
+$redBC2: #ff6766;
+$redBC3: #e9e3e3;
+$redBC4: #ff9a99;
+
+$greenBC1: #87ca4d;
+$greenBC2: #c9e6b5;
+
+$turquoiseBC1: #0a9bad;
+$turquoiseBC2: #0c8d9d;
+
+$blackBC1: #000;
+
+$pinkBC1: #992f56;
+
+$yellowBC1: #eabb12;
+
+$orangeBC1: #ff931e;
+
+$purpleBC1: #8f6fad;
+//list subject boxs
+//change names
+$blueMath : #6cbfdb;
+$blueMathDone: #3b89a4;
+$blueDoneBorder:#225060;
+$orangeRead: #ffca08;
+$yellowReadDone: #e8b80b;
+$yellowDoneBorder: #8c6f09;
+$pinkWrite: #ff5895;
+$pinkWriteDone: #d64a7d;
+$pinkDoneBorder: #992f56;
+
+
+
+$blueCompleteMath : #66b6d1;
+$orangeCompleteRead: #ecbc0f;
+$pinkCompleteWrite: #dd4b81;
+
+//Header
+$blueBG1: #0d9cae; //used in new app header
+$blueBG2: #0a9bad; //used in blue login button
+$blueBG3: #5794a9;
+$blueBG4: #88b8c9;
+$blueBG5: #6c9fb1;
+$blueBG6: #84CDE8;
+$blueBG7: #75cbe8;
+
+$orangeBG1 : #ffa33f;
+
+$blackFC1: #274854;
+$blackFC2: #5A4A0F;
+$blackFC2: #47202E;
+
+//New Colors for Toefl
+
+$yellowBG6: #f9d41b;
+
+
+$blueBG8: #75cbe8;
+
+
+
+*/
+/* full background image with retina */
+etutoring-action-bar .e-tutor-bar {
+  width: 100%;
+  height: 50px;
+  margin-bottom: 18px;
+  background: #fff;
+  display: -ms-flexbox;
+  display: flex; }
+  etutoring-action-bar .e-tutor-bar .teacher-select-wrap {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-positive: 1;
+        flex-grow: 1;
+    padding-left: 45px; }
+    etutoring-action-bar .e-tutor-bar .teacher-select-wrap .online-indicator-wrap {
+      position: relative; }
+      etutoring-action-bar .e-tutor-bar .teacher-select-wrap .online-indicator-wrap .online-indicator {
+        width: 7px;
+        height: 7px;
+        border: 2px solid #ebebeb;
+        border-radius: 6px;
+        position: absolute;
+        top: 19px;
+        left: -25px; }
+        etutoring-action-bar .e-tutor-bar .teacher-select-wrap .online-indicator-wrap .online-indicator.offline {
+          background: #B33520; }
+        etutoring-action-bar .e-tutor-bar .teacher-select-wrap .online-indicator-wrap .online-indicator.online {
+          background: #87ca4d; }
+        etutoring-action-bar .e-tutor-bar .teacher-select-wrap .online-indicator-wrap .online-indicator.idle {
+          background: #dbb910; }
+    etutoring-action-bar .e-tutor-bar .teacher-select-wrap .teachers-menu {
+      padding: 0; }
+      etutoring-action-bar .e-tutor-bar .teacher-select-wrap .teachers-menu .teacher-open-modal-btn {
+        text-transform: none;
+        font-size: 16px;
+        background: #fff;
+        width: auto;
+        border-radius: 0;
+        height: 100%;
+        padding: 0;
+        margin: 0; }
+        etutoring-action-bar .e-tutor-bar .teacher-select-wrap .teachers-menu .teacher-open-modal-btn:disabled {
+          cursor: not-allowed; }
+          etutoring-action-bar .e-tutor-bar .teacher-select-wrap .teachers-menu .teacher-open-modal-btn:disabled .expand-arrow {
+            color: #dddddd; }
+        etutoring-action-bar .e-tutor-bar .teacher-select-wrap .teachers-menu .teacher-open-modal-btn .teacher-details {
+          min-width: 40px;
+          text-align: left;
+          vertical-align: middle;
+          display: inline-block;
+          position: relative;
+          top: -1.5px; }
+          etutoring-action-bar .e-tutor-bar .teacher-select-wrap .teachers-menu .teacher-open-modal-btn .teacher-details .teacher-name {
+            line-height: 22px;
+            margin-left: -1px;
+            font-size: 20px;
+            color: #4f4d4d;
+            font-family: Quicksand;
+            font-weight: 600; }
+          etutoring-action-bar .e-tutor-bar .teacher-select-wrap .teachers-menu .teacher-open-modal-btn .teacher-details .teacher-subject {
+            line-height: 16px;
+            font-size: 12px;
+            color: #959595;
+            font-family: Lato;
+            font-weight: 200; }
+        etutoring-action-bar .e-tutor-bar .teacher-select-wrap .teachers-menu .teacher-open-modal-btn md-icon {
+          margin-top: 0; }
+  etutoring-action-bar .e-tutor-bar .share-btn-wrap {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+        align-items: center;
+    padding-right: 15px; }
+    etutoring-action-bar .e-tutor-bar .share-btn-wrap .share-btn {
+      min-height: 28px;
+      height: 28px;
+      width: 150px;
+      font-size: 12px;
+      color: #ffffff;
+      font-family: Lato;
+      font-weight: 400; }
+      etutoring-action-bar .e-tutor-bar .share-btn-wrap .share-btn span {
+        display: -ms-flexbox;
+        display: flex;
+        height: 28px;
+        -ms-flex-align: center;
+            align-items: center;
+        -ms-flex-pack: center;
+            justify-content: center; }
+      etutoring-action-bar .e-tutor-bar .share-btn-wrap .share-btn.primary {
+        background-color: #0a9bad; }
+      etutoring-action-bar .e-tutor-bar .share-btn-wrap .share-btn.primary:hover {
+        background-color: #a8999; }
+      etutoring-action-bar .e-tutor-bar .share-btn-wrap .share-btn[disabled="disabled"] {
+        opacity: 0.5;
+        color: #ffffff !important; }
+        etutoring-action-bar .e-tutor-bar .share-btn-wrap .share-btn[disabled="disabled"].primary:hover {
+          background: #0a9bad; }
+        etutoring-action-bar .e-tutor-bar .share-btn-wrap .share-btn[disabled="disabled"].warn:hover {
+          background: #ff931e; }
+      etutoring-action-bar .e-tutor-bar .share-btn-wrap .share-btn.md-focused {
+        background-color: #ff931e; }
+    etutoring-action-bar .e-tutor-bar .share-btn-wrap call-btn {
+      margin-left: 7px; }
+    etutoring-action-bar .e-tutor-bar .share-btn-wrap .separator {
+      width: 2px;
+      height: 25px;
+      background: #ebebeb;
+      margin-right: 4px;
+      margin-left: 4px; }
+
+md-menu-content.md-menu-content-teacher-select {
+  min-width: 210px;
+  max-height: none;
+  padding: 16px 0; }
+  md-menu-content.md-menu-content-teacher-select md-list {
+    padding-top: 0;
+    padding-bottom: 0; }
+    md-menu-content.md-menu-content-teacher-select md-list .divider {
+      height: 1px;
+      margin: 10px 16px;
+      border-top: 1px solid #ebebeb; }
+    md-menu-content.md-menu-content-teacher-select md-list md-list-item.teacher-list-item .online-indicator-wrap {
+      position: relative; }
+      md-menu-content.md-menu-content-teacher-select md-list md-list-item.teacher-list-item .online-indicator-wrap .online-indicator {
+        width: 7px;
+        height: 7px;
+        border: 2px solid #ebebeb;
+        border-radius: 6px;
+        position: absolute;
+        left: -6px;
+        top: -11px; }
+        md-menu-content.md-menu-content-teacher-select md-list md-list-item.teacher-list-item .online-indicator-wrap .online-indicator.offline {
+          background: #B33520; }
+        md-menu-content.md-menu-content-teacher-select md-list md-list-item.teacher-list-item .online-indicator-wrap .online-indicator.online {
+          background: #87ca4d; }
+        md-menu-content.md-menu-content-teacher-select md-list md-list-item.teacher-list-item .online-indicator-wrap .online-indicator.idle {
+          background: #dbb910; }
+    md-menu-content.md-menu-content-teacher-select md-list md-list-item.teacher-list-item .teacher-details {
+      min-width: 40px;
+      text-align: left;
+      padding-left: 15px; }
+      md-menu-content.md-menu-content-teacher-select md-list md-list-item.teacher-list-item .teacher-details .teacher-name {
+        padding-top: 4px;
+        line-height: 18px;
+        font-size: 14px;
+        color: #4f4d4d;
+        font-family: Lato;
+        font-weight: 400; }
+      md-menu-content.md-menu-content-teacher-select md-list md-list-item.teacher-list-item .teacher-details .teacher-subject {
+        line-height: 16px;
+        font-size: 11px;
+        color: #959595;
+        font-family: Lato;
+        font-weight: 200; }
+    md-menu-content.md-menu-content-teacher-select md-list md-list-item.teacher-list-item .md-list-item-inner {
+      width: 100%; }
+    md-menu-content.md-menu-content-teacher-select md-list md-list-item.teacher-list-item:hover {
+      background-color: #f8f8f8; }
+  md-menu-content.md-menu-content-teacher-select .pending-purchase-icon-wrapper {
+    width: 16px;
+    height: auto;
+    margin-left: 10px;
+    position: relative;
+    top: 3px; }
+  md-menu-content.md-menu-content-teacher-select [disabled="disabled"] {
+    opacity: 0.5;
+    cursor: default; }
+
+etutoring-student-navigation-pane .etutoring-student-navigation-pane {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  background: #fff;
+  overflow: hidden; }
+  etutoring-student-navigation-pane .etutoring-student-navigation-pane .navigation-header {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: baseline;
+        align-items: baseline;
+    -ms-flex-pack: distribute;
+        justify-content: space-around; }
+    etutoring-student-navigation-pane .etutoring-student-navigation-pane .navigation-header .lessons-button, etutoring-student-navigation-pane .etutoring-student-navigation-pane .navigation-header .practice-button {
+      font-size: 16px;
+      color: #4f4d4d;
+      font-family: Quicksand;
+      font-weight: 400;
+      width: 50%;
+      height: 51px;
+      cursor: pointer;
+      transition: 0.5s;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-pack: center;
+          justify-content: center;
+      -ms-flex-align: center;
+          align-items: center;
+      cursor: pointer;
+      background-color: #f7f7f7; }
+      etutoring-student-navigation-pane .etutoring-student-navigation-pane .navigation-header .lessons-button .title, etutoring-student-navigation-pane .etutoring-student-navigation-pane .navigation-header .practice-button .title {
+        position: relative; }
+      etutoring-student-navigation-pane .etutoring-student-navigation-pane .navigation-header .lessons-button.inactive, etutoring-student-navigation-pane .etutoring-student-navigation-pane .navigation-header .practice-button.inactive {
+        box-shadow: 0px -1px 7px 0px rgba(0, 0, 0, 0.1) inset; }
+    etutoring-student-navigation-pane .etutoring-student-navigation-pane .navigation-header .practice-button.no-homework {
+      pointer-events: none; }
+  etutoring-student-navigation-pane .etutoring-student-navigation-pane.lessons-pane .lessons-button, etutoring-student-navigation-pane .etutoring-student-navigation-pane.practice-pane .practice-button {
+    background-color: #fff; }
+    etutoring-student-navigation-pane .etutoring-student-navigation-pane.lessons-pane .lessons-button ::before, etutoring-student-navigation-pane .etutoring-student-navigation-pane.practice-pane .practice-button ::before {
+      width: 100%;
+      height: 2px;
+      content: '';
+      position: absolute;
+      bottom: 0; }
+  etutoring-student-navigation-pane .etutoring-student-navigation-pane .search-wrap {
+    padding: 0 18px 18px; }
+    etutoring-student-navigation-pane .etutoring-student-navigation-pane .search-wrap .znk-input-group {
+      position: relative;
+      min-height: 45px; }
+      etutoring-student-navigation-pane .etutoring-student-navigation-pane .search-wrap .znk-input-group input {
+        width: 88%;
+        height: 25px;
+        padding-left: 25px; }
+      etutoring-student-navigation-pane .etutoring-student-navigation-pane .search-wrap .znk-input-group .search-icon {
+        width: 14px;
+        position: absolute;
+        top: 16px;
+        left: 7px; }
+      etutoring-student-navigation-pane .etutoring-student-navigation-pane .search-wrap .znk-input-group .search-icon * {
+        stroke: #c2c2c2; }
+      etutoring-student-navigation-pane .etutoring-student-navigation-pane .search-wrap .znk-input-group .clear-search {
+        font-size: 14px;
+        cursor: pointer;
+        color: #4f4d4d;
+        position: absolute;
+        right: 6px;
+        top: 15px;
+        font-weight: 100;
+        padding-right: 5px; }
+        etutoring-student-navigation-pane .etutoring-student-navigation-pane .search-wrap .znk-input-group .clear-search .close-icon {
+          width: 12px;
+          height: 12px;
+          margin-right: 5px;
+          margin-top: 1px; }
+          etutoring-student-navigation-pane .etutoring-student-navigation-pane .search-wrap .znk-input-group .clear-search .close-icon * {
+            stroke: #c2c2c2; }
+  etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap {
+    height: 85%; }
+    etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container {
+      height: 95%;
+      overflow: auto; }
+      etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item {
+        height: 80px;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: row;
+            flex-direction: row;
+        border-bottom: 2px solid #f2f2f2;
+        border-left: 3px solid #0a9bad;
+        cursor: pointer;
+        background-color: #fff;
+        transition: all, 0.2s; }
+        etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .md-button.md-default-theme:not([disabled]):hover,
+        etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .md-button:not([disabled]):hover {
+          background-color: #f2f2f2; }
+        etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper {
+          width: 60px; }
+          etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper svg-icon {
+            height: 30px;
+            width: 30px;
+            border-radius: 50%;
+            position: relative;
+            text-align: center; }
+            etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper svg-icon svg {
+              width: 65%;
+              height: 65%; }
+              etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper svg-icon svg * {
+                fill: #fff; }
+          etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper .homework-practice-icon svg-icon {
+            border: 1px solid #0a9bad; }
+            etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .icon-wrapper .homework-practice-icon svg-icon svg path {
+              fill: #0a9bad; }
+        etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-details {
+          width: 180px;
+          padding-top: 18px;
+          box-sizing: border-box; }
+          etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-details .module-name {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            font-size: 16px;
+            color: #0a9bad;
+            font-family: Lato;
+            font-weight: 400;
+            margin-bottom: 5px; }
+          etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-details .subject-name {
+            font-size: 12px;
+            color: #4f4d4d;
+            font-family: Lato;
+            font-weight: 400;
+            height: 15px;
+            text-transform: capitalize;
+            margin-bottom: 3px; }
+          etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-details .assigned-date {
+            font-size: 12px;
+            color: #757a83;
+            font-family: Lato;
+            font-weight: 400; }
+          etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-details .due-date {
+            font-size: 12px;
+            color: #4f4d4d;
+            font-family: Lato;
+            font-weight: 400; }
+        etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-status {
+          width: 63px; }
+          etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-status .pill {
+            font-size: 12px;
+            color: #ffffff;
+            font-family: Lato;
+            font-weight: 400;
+            display: inline;
+            background-color: #ff931e;
+            padding: 1px 4px;
+            line-height: normal;
+            border-radius: 4px; }
+          etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-status .in-progress {
+            font-size: 10px;
+            color: #0a9bad;
+            font-family: Lato;
+            font-weight: 400;
+            text-transform: lowercase;
+            font-style: italic;
+            padding-right: 5px; }
+          etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-status svg-icon[name="v-icon"] {
+            width: 20px;
+            height: 20px; }
+            etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-status svg-icon[name="v-icon"] svg line {
+              fill: #87ca4d;
+              stroke: #87ca4d; }
+          etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-status .flex-center {
+            padding-top: 15px;
+            padding-right: 2px; }
+        etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item:hover {
+          background-color: #f2f2f2; }
+        etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.done {
+          border-left: 2px solid #87ca4d; }
+          etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.done button {
+            color: #4f4d4d; }
+        etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.active {
+          background-color: #f2f2f2;
+          border-left: 8px solid #0a9bad; }
+          etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.active button {
+            color: #0a9bad;
+            transition: border 0.2s;
+            border-left: 8px solid #0a9bad; }
+        etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.completed .module-details .module-name {
+          color: #757a83; }
+        etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.completed .module-details .due-date {
+          display: none; }
+        etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.pass-due-date .homework-practice-icon svg-icon, etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.active.pass-due-date .homework-practice-icon svg-icon {
+          border: 1px solid #ff6766; }
+          etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.pass-due-date .homework-practice-icon svg-icon svg path, etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.active.pass-due-date .homework-practice-icon svg-icon svg path {
+            fill: #ff6766; }
+        etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.pass-due-date .module-name, etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.pass-due-date .due-date, etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.active.pass-due-date .module-name, etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.active.pass-due-date .due-date {
+          color: #ff6766; }
+        etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.completed .module-name, etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.completed .due-date, etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-itemcompleted.pass-due-date .module-name, etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-itemcompleted.pass-due-date .due-date, etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.completed.active .module-name, etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.completed.active .due-date {
+          color: #acacac; }
+        etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.completed .homework-practice-icon svg-icon, etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-itemcompleted.pass-due-date .homework-practice-icon svg-icon, etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.completed.active .homework-practice-icon svg-icon {
+          border: 1px solid #acacac; }
+          etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.completed .homework-practice-icon svg-icon svg path, etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-itemcompleted.pass-due-date .homework-practice-icon svg-icon svg path, etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.completed.active .homework-practice-icon svg-icon svg path {
+            fill: #acacac; }
+        etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-btn {
+          width: 100%;
+          height: 100%;
+          border-radius: 0;
+          margin: 0;
+          background-color: inherit;
+          -ms-flex-pack: justify;
+              justify-content: space-between;
+          color: #4f4d4d;
+          display: -ms-flexbox;
+          display: flex;
+          line-height: normal; }
+          etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-btn:hover {
+            background-color: #fcfcfc; }
+          etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-btn .subject-icon {
+            width: 50px;
+            height: 76px;
+            text-align: center; }
+            etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-btn .subject-icon svg-icon {
+              position: absolute;
+              top: 15px;
+              left: 15px;
+              width: 36px;
+              height: 36px;
+              border-radius: 36px; }
+              etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-btn .subject-icon svg-icon * {
+                fill: #fff; }
+          etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-btn .module-name-wrap {
+            height: 76px;
+            display: -ms-flexbox;
+            display: flex;
+            -ms-flex-direction: column;
+                flex-direction: column;
+            -ms-flex-align: end;
+                align-items: flex-end; }
+            etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-btn .module-name-wrap .module-name {
+              font-size: 12px;
+              color: #0a9bad;
+              font-family: Lato;
+              font-weight: 400; }
+            etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-btn .module-name-wrap .module-subject {
+              font-size: 12px;
+              color: #757a83;
+              font-family: Lato;
+              font-weight: 200; }
+            etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-btn .module-name-wrap .assign-date {
+              font-size: 10px;
+              color: #757a83;
+              font-family: Lato;
+              font-weight: 200; }
+          etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item .module-btn .module-status {
+            font-size: 10px;
+            color: #757a83;
+            font-family: Lato;
+            font-weight: 200; }
+      etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.ng-enter {
+        opacity: 0; }
+      etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.ng-enter-active {
+        opacity: 1; }
+      etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.ng-leave {
+        opacity: 1; }
+      etutoring-student-navigation-pane .etutoring-student-navigation-pane .modules-wrap .modules-container .module-item.ng-leave.ng-leave-active {
+        opacity: 0; }
+  etutoring-student-navigation-pane .etutoring-student-navigation-pane .navigation-overlay {
+    position: absolute;
+    top: 106px;
+    text-align: center;
+    /*CSS for basic styling and non-retina image path:*/
+    background-image: url("/assets/images/bg//modules-sidebar-empty.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    display: inline-block;
+    width: 100%;
+    height: 458px;
+    /*CSS for serving the retina image to devices with a high "device-pixel-ratio":*/
+    background-position: -8px -50px;
+    background-size: 311px auto; }
+    @media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) {
+      etutoring-student-navigation-pane .etutoring-student-navigation-pane .navigation-overlay {
+        background-image: url("/assets/images/bg//modules-sidebar-empty@2x.png");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        display: inline-block;
+        width: 100%;
+        height: 458px; } }
+    etutoring-student-navigation-pane .etutoring-student-navigation-pane .navigation-overlay span {
+      font-size: 16px;
+      color: #4f4d4d;
+      font-family: Quicksand;
+      font-weight: 400;
+      width: 100%;
+      position: absolute;
+      top: 25px;
+      left: 0;
+      padding: 0 35px;
+      box-sizing: border-box; }
+
+etutoring-student-navigation-pane .etutoring-student-navigation-pane.practice-pane .modules-wrap .modules-container .module-item .module-details .module-name {
+  margin-bottom: 20px; }
+
+etutoring-student-navigation-pane .etutoring-student-navigation-pane.practice-pane .modules-wrap .modules-container .module-item .module-details .subject-name {
+  display: none; }
+
+md-dialog.e-tutoring-contact-us-modal {
+  overflow: visible;
+  min-width: 90%;
+  min-height: 90%;
+  border: 20px; }
+  md-dialog.e-tutoring-contact-us-modal md-toolbar {
+    height: 40px;
+    max-height: 40px;
+    min-height: 40px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px; }
+    md-dialog.e-tutoring-contact-us-modal md-toolbar:not(.md-menu-toolbar) {
+      background-color: #0a9bad; }
+    md-dialog.e-tutoring-contact-us-modal md-toolbar .close-popup-wrap {
+      position: absolute;
+      top: -35px;
+      right: -35px;
+      height: 14px;
+      width: 14px;
+      padding: 10px;
+      cursor: pointer; }
+      md-dialog.e-tutoring-contact-us-modal md-toolbar .close-popup-wrap .etutoring-close-icon {
+        stroke: #ffffff;
+        stroke-width: 8px; }
+  md-dialog.e-tutoring-contact-us-modal md-dialog-content {
+    background-color: #fff;
+    padding-top: 25px;
+    height: 100%;
+    border-bottom-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    -moz-border-radius-bottomright: 20px;
+    -moz-border-radius-bottomleft: 20px;
+    webkit-border-bottom-right-radius: 20px;
+    -webkit-border-bottom-left-radius: 20px; }
+    md-dialog.e-tutoring-contact-us-modal md-dialog-content .calendly-inline-widget {
+      position: static;
+      height: 630px;
+      min-width: 320px; }
+    md-dialog.e-tutoring-contact-us-modal md-dialog-content .auth-form {
+      width: 430px;
+      margin-right: auto;
+      margin-left: auto;
+      margin-bottom: 10px;
+      margin-top: 43px; }
+      md-dialog.e-tutoring-contact-us-modal md-dialog-content .auth-form .znk-input-group input {
+        width: 100%;
+        display: block;
+        border-radius: 0;
+        padding-left: 20px;
+        box-sizing: border-box; }
+      md-dialog.e-tutoring-contact-us-modal md-dialog-content .auth-form .znk-input-group .locked-icon {
+        width: 14px;
+        display: inline-block;
+        position: absolute;
+        left: 12px;
+        top: 16px; }
+      md-dialog.e-tutoring-contact-us-modal md-dialog-content .auth-form .znk-input-group .locked-icon * {
+        stroke: #cacaca; }
+      md-dialog.e-tutoring-contact-us-modal md-dialog-content .auth-form .btn-wrap {
+        display: -ms-flexbox;
+        display: flex;
+        margin-top: 25px;
+        -ms-flex-pack: distribute;
+            justify-content: space-around; }
+        md-dialog.e-tutoring-contact-us-modal md-dialog-content .auth-form .btn-wrap button {
+          width: 45%;
+          margin: 0;
+          box-shadow: none; }
+  md-dialog.e-tutoring-contact-us-modal .top-icon-wrap {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 40px; }
+    md-dialog.e-tutoring-contact-us-modal .top-icon-wrap .top-icon {
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-pack: center;
+          justify-content: center; }
+      md-dialog.e-tutoring-contact-us-modal .top-icon-wrap .top-icon .round-icon-wrap {
+        width: 76px;
+        height: 76px;
+        border-radius: 38px;
+        background-color: #0a9bad;
+        z-index: 9;
+        margin-top: -15px;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-pack: center;
+            justify-content: center;
+        -ms-flex-align: center;
+            align-items: center; }
+        md-dialog.e-tutoring-contact-us-modal .top-icon-wrap .top-icon .round-icon-wrap .etutoring-calendar-icon {
+          stroke: #fff; }
+        md-dialog.e-tutoring-contact-us-modal .top-icon-wrap .top-icon .round-icon-wrap .etutoring-calendar-icon * {
+          fill: #fff;
+          width: 35px;
+          height: 35px; }
+  md-dialog.e-tutoring-contact-us-modal .main-title {
+    margin-top: 20px;
+    margin-bottom: 20px; }
+  md-dialog.e-tutoring-contact-us-modal .sub-title {
+    font-size: 12px;
+    color: #4f4d4d;
+    font-family: Lato;
+    font-weight: 200;
+    text-align: center; }
+  md-dialog.e-tutoring-contact-us-modal .main-error-msg {
+    position: absolute;
+    width: 100%;
+    -ms-flex-pack: center;
+        justify-content: center;
+    height: 22px;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+        align-items: center;
+    padding-top: 5px;
+    font-size: 14px;
+    color: #ff6766;
+    font-family: Lato;
+    font-weight: 400; }
+  md-dialog.e-tutoring-contact-us-modal .msg-wrap {
+    font-size: 12px;
+    color: #ffffff;
+    font-family: Lato;
+    font-weight: 400;
+    width: 342px;
+    margin: 0 auto;
+    display: -ms-flexbox;
+    display: flex;
+    margin-top: 10px;
+    max-height: 28px;
+    visibility: hidden; }
+    md-dialog.e-tutoring-contact-us-modal .msg-wrap.show-error .error-msg {
+      visibility: visible;
+      width: 100%;
+      height: 22px;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-align: center;
+          align-items: center;
+      padding: 6px 0 6px 5px;
+      font-size: 14px;
+      color: #ff6766;
+      font-family: Lato;
+      font-weight: 400; }
+    md-dialog.e-tutoring-contact-us-modal .msg-wrap .danger-red-icon {
+      width: 20px;
+      margin-right: 17px; }
+      md-dialog.e-tutoring-contact-us-modal .msg-wrap .danger-red-icon * {
+        fill: #c95050; }
+  md-dialog.e-tutoring-contact-us-modal .spinner {
+    margin: auto;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); }
+    md-dialog.e-tutoring-contact-us-modal .spinner * {
+      stroke: #0a9bad; }
+  md-dialog.e-tutoring-contact-us-modal .big-success-msg {
+    margin-top: 65px; }
+    md-dialog.e-tutoring-contact-us-modal .big-success-msg .success-msg {
+      text-align: center;
+      line-height: 48px;
+      padding: 0 92px;
+      font-size: 16px;
+      color: #4f4d4d;
+      font-family: Lato;
+      font-weight: 400; }
+    md-dialog.e-tutoring-contact-us-modal .big-success-msg .success-btn-wrap {
+      margin-top: 120px;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-pack: center;
+          justify-content: center; }
+
+module-exercise-item .module-part {
+  width: 100%;
+  height: 50px;
+  margin-bottom: 5px;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: row;
+      flex-direction: row;
+  border-radius: 15px;
+  border: 1px solid #ebebeb;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.2); }
+  module-exercise-item .module-part .icon-wrap {
+    margin: 0 10px;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+        flex-direction: column;
+    -ms-flex-pack: center;
+        justify-content: center; }
+    module-exercise-item .module-part .icon-wrap .svg-icon-wrap * {
+      width: 20px;
+      height: 20px; }
+    module-exercise-item .module-part .icon-wrap .summary-icon * {
+      width: 18px;
+      height: 18px;
+      stroke: #b7b7b7; }
+  module-exercise-item .module-part .exercise-name-wrap {
+    text-align: left;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+        flex-direction: column;
+    -ms-flex-pack: center;
+        justify-content: center;
+    -ms-flex: 2;
+        flex: 2; }
+    module-exercise-item .module-part .exercise-name-wrap .exercise-name {
+      font-size: 16px;
+      color: #757a83;
+      font-family: Quicksand;
+      font-weight: 600; }
+    module-exercise-item .module-part .exercise-name-wrap .category-name {
+      font-size: 12px;
+      color: #4f4d4d;
+      font-family: Lato;
+      font-weight: 200; }
+  module-exercise-item .module-part .children-count-wrap {
+    width: 200px;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+        align-items: center;
+    border-left: 1px solid #ebebeb; }
+    module-exercise-item .module-part .children-count-wrap .children-count {
+      width: 100%;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-align: center;
+          align-items: center;
+      -ms-flex-pack: justify;
+          justify-content: space-between; }
+      module-exercise-item .module-part .children-count-wrap .children-count .count-content {
+        display: -ms-flexbox;
+        display: flex;
+        font-size: 16px;
+        color: #757a83;
+        font-family: Lato;
+        font-weight: 400;
+        margin-left: 20px; }
+        module-exercise-item .module-part .children-count-wrap .children-count .count-content .count {
+          margin-right: 5px; }
+      module-exercise-item .module-part .children-count-wrap .children-count .locked-icon {
+        margin-right: 15px; }
+        module-exercise-item .module-part .children-count-wrap .children-count .locked-icon * {
+          width: 20px;
+          height: 20px;
+          stroke: #4f4d4d; }
+    module-exercise-item .module-part .children-count-wrap .questions-progress {
+      width: 100%;
+      display: none; }
+      module-exercise-item .module-part .children-count-wrap .questions-progress .total-question {
+        font-size: 14px;
+        color: #4f4d4d;
+        font-family: Lato;
+        font-weight: 400;
+        margin: auto 20px; }
+    module-exercise-item .module-part .children-count-wrap .completed-exercise-summary {
+      display: none; }
+  module-exercise-item .module-part.is-lecture .children-count-wrap .children-count, module-exercise-item .module-part.new .children-count-wrap .children-count {
+    display: -ms-flexbox;
+    display: flex; }
+  module-exercise-item .module-part.is-lecture .children-count-wrap .questions-progress, module-exercise-item .module-part.new .children-count-wrap .questions-progress {
+    display: none; }
+  module-exercise-item .module-part.is-lecture .children-count-wrap .completed-exercise-summary, module-exercise-item .module-part.new .children-count-wrap .completed-exercise-summary {
+    display: none; }
+  module-exercise-item .module-part.in-progress .children-count-wrap .children-count {
+    display: none; }
+  module-exercise-item .module-part.in-progress .children-count-wrap .questions-progress {
+    display: -ms-flexbox;
+    display: flex;
+    height: 100%;
+    -ms-flex-align: center;
+        align-items: center;
+    padding-top: 7px; }
+    module-exercise-item .module-part.in-progress .children-count-wrap .questions-progress .progress-wrap {
+      width: 54px; }
+      module-exercise-item .module-part.in-progress .children-count-wrap .questions-progress .progress-wrap znk-progress-bar .progress-wrap {
+        height: 5px; }
+  module-exercise-item .module-part.in-progress .children-count-wrap .completed-exercise-summary {
+    display: none; }
+  module-exercise-item .module-part.completed {
+    box-shadow: none;
+    background: #fafafa; }
+    module-exercise-item .module-part.completed:not(.is-lecture) .icon-wrap {
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-pack: center;
+          justify-content: center; }
+    module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .children-count {
+      display: none; }
+    module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .questions-progress {
+      display: none; }
+    module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary {
+      width: 100%;
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-pack: distribute;
+          justify-content: space-around; }
+      module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: row;
+            flex-direction: row; }
+        module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat {
+          width: 24px;
+          height: 24px;
+          border-radius: 12px;
+          border-width: 1px;
+          border-style: solid;
+          font-size: 14px;
+          color: #4f4d4d;
+          font-family: Lato;
+          font-weight: 200;
+          display: -ms-flexbox;
+          display: flex;
+          -ms-flex-pack: center;
+              justify-content: center;
+          -ms-flex-align: center;
+              align-items: center;
+          margin-right: 5px; }
+          module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat.correct {
+            border-color: #87ca4d;
+            color: #87ca4d; }
+          module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat.wrong {
+            border-color: #ff6766;
+            color: #ff6766; }
+          module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-questions-stat .stat.unanswered {
+            border-color: #acacac;
+            color: #acacac; }
+      module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .practice-questions-stat {
+        font-size: 14px;
+        color: #757a83;
+        font-family: Lato;
+        font-weight: 400; }
+        module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .practice-questions-stat .text {
+          margin-left: 3px; }
+      module-exercise-item .module-part.completed:not(.is-lecture) .children-count-wrap .completed-exercise-summary .completed-time {
+        margin: auto 0;
+        font-size: 12px;
+        color: #4f4d4d;
+        font-family: Lato;
+        font-weight: 200; }
+  module-exercise-item .module-part:disabled {
+    box-shadow: none;
+    background: #fafafa; }
+    module-exercise-item .module-part:disabled .exercise-name, module-exercise-item .module-part:disabled .children-count-wrap .children-count .count-content {
+      color: #aaaeb4; }
+  module-exercise-item .module-part:hover {
+    box-shadow: 0 1px 7px 0 rgba(0, 0, 0, 0.2);
+    transition: 0.2s box-shadow ease-out; }
+
+module-exercise-item .tooltip {
+  outline: none;
+  text-decoration: none;
+  position: relative; }
+  module-exercise-item .tooltip strong {
+    line-height: 30px; }
+  module-exercise-item .tooltip > span {
+    width: 230px;
+    padding: 10px 20px;
+    margin-top: 0;
+    margin-left: -120px;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 10;
+    position: absolute;
+    font-size: 14px;
+    color: #757a83;
+    font-family: Lato;
+    font-weight: 400;
+    border-radius: 5px;
+    box-shadow: 2px 2px 2px rgba(190, 190, 190, 0.75);
+    transition-property: opacity, margin-top, visibility, margin-left;
+    transition-duration: 0.4s, 0.3s, 0.4s, 0.3s;
+    transition-timing-function: ease-in-out, ease-in-out, ease-in-out, ease-in-out;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.25); }
+  module-exercise-item .tooltip:hover > span {
+    border-color: rgba(0, 0, 0, 0.25);
+    opacity: 1;
+    text-decoration: none;
+    visibility: visible;
+    overflow: visible;
+    margin-top: -90px;
+    display: inline;
+    margin-left: -135px; }
+  module-exercise-item .tooltip span b {
+    width: 10px;
+    height: 10px;
+    margin-left: 100px;
+    margin-top: 39px;
+    display: block;
+    position: absolute;
+    transform: rotate(-45deg);
+    box-shadow: inset 0 1px 0 #ffffff;
+    background: #fff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+    border-left: 1px solid rgba(0, 0, 0, 0.25); }
+
+.ng-include-module-exercise-pane {
+  height: 100%; }
+  .ng-include-module-exercise-pane .lesson-container {
+    padding: 20px 0 20px 20px;
+    height: 95%; }
+    .ng-include-module-exercise-pane .lesson-container .module-container {
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 20px; }
+      .ng-include-module-exercise-pane .lesson-container .module-container .module-name {
+        font-size: 20px;
+        color: #4f4d4d;
+        font-family: Quicksand;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 20px; }
+      .ng-include-module-exercise-pane .lesson-container .module-container .subject-icon {
+        height: 44px;
+        margin-bottom: 10px;
+        text-align: center; }
+        .ng-include-module-exercise-pane .lesson-container .module-container .subject-icon svg-icon svg {
+          height: 40px;
+          width: auto; }
+      .ng-include-module-exercise-pane .lesson-container .module-container .subject-name {
+        font-size: 16px;
+        color: #4f4d4d;
+        font-family: Quicksand;
+        font-weight: 400;
+        text-transform: capitalize;
+        text-align: center;
+        height: 20px; }
+      .ng-include-module-exercise-pane .lesson-container .module-container .divider {
+        width: 100%;
+        height: 1px;
+        background-color: #ebebeb;
+        margin: 15px auto; }
+      .ng-include-module-exercise-pane .lesson-container .module-container .module-desc {
+        text-align: center;
+        font-size: 12px;
+        color: #757a83;
+        font-family: Quicksand;
+        font-weight: 400;
+        height: 25px; }
+      .ng-include-module-exercise-pane .lesson-container .module-container .exercises-box {
+        width: 100%;
+        min-height: 80%;
+        margin: 15px auto 0;
+        background-color: #f9f9f9;
+        box-sizing: border-box; }
+        .ng-include-module-exercise-pane .lesson-container .module-container .exercises-box .content-not-assigned {
+          padding: 45px 0;
+          text-align: center;
+          font-size: 16px;
+          color: #4f4d4d;
+          font-family: Quicksand;
+          font-weight: 400; }
+          .ng-include-module-exercise-pane .lesson-container .module-container .exercises-box .content-not-assigned > div {
+            margin-bottom: 25px; }
+          .ng-include-module-exercise-pane .lesson-container .module-container .exercises-box .content-not-assigned small {
+            font-size: 14px; }
+        .ng-include-module-exercise-pane .lesson-container .module-container .exercises-box .lesson-exercises-container {
+          height: 100%;
+          display: -ms-flexbox;
+          display: flex;
+          -ms-flex-direction: column;
+              flex-direction: column;
+          -ms-flex-wrap: nowrap;
+              flex-wrap: nowrap;
+          padding: 20px; }
+          .ng-include-module-exercise-pane .lesson-container .module-container .exercises-box .lesson-exercises-container .exercise-item-wrap:nth-last-child(1) .divider {
+            display: none; }
+      .ng-include-module-exercise-pane .lesson-container .module-container .e-tutoring-overlay.ng-enter {
+        transition: 0.5s linear all;
+        opacity: 0; }
+    .ng-include-module-exercise-pane .lesson-container .wrapper-overlay {
+      position: relative;
+      text-align: center;
+      /*CSS for basic styling and non-retina image path:*/
+      background-image: url("/assets/images/bg//modules-content-empty.png");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: cover;
+      display: inline-block;
+      width: 100%;
+      height: 100%;
+      /*CSS for serving the retina image to devices with a high "device-pixel-ratio":*/
+      display: block;
+      background-position-y: inherit;
+      background-size: 800px auto; }
+      @media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) {
+        .ng-include-module-exercise-pane .lesson-container .wrapper-overlay {
+          background-image: url("/assets/images/bg//modules-content-empty@2x.png");
+          background-repeat: no-repeat;
+          background-position: center;
+          background-size: cover;
+          display: inline-block;
+          width: 100%;
+          height: 100%; } }
+      .ng-include-module-exercise-pane .lesson-container .wrapper-overlay span {
+        width: 100%;
+        position: absolute;
+        top: 115px;
+        left: 0;
+        padding: 0 40px;
+        box-sizing: border-box;
+        font-size: 16px;
+        color: #4f4d4d;
+        font-family: Quicksand;
+        font-weight: 400; }
+      .ng-include-module-exercise-pane .lesson-container .wrapper-overlay span.sub {
+        top: 145px;
+        font-size: 14px; }
+
+.lesson-container.homework-container .module-container .overdue-assignment-title {
+  display: none; }
+
+.lesson-container.homework-container .module-container .assignment-title-wrapper.pass-due-date {
+  position: relative; }
+  .lesson-container.homework-container .module-container .assignment-title-wrapper.pass-due-date .module-name {
+    color: #ff6766; }
+  .lesson-container.homework-container .module-container .assignment-title-wrapper.pass-due-date .overdue-assignment-title {
+    font-size: 14px;
+    color: #ff6766;
+    font-family: Lato;
+    font-weight: 400;
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 7px; }
+
+.lesson-container.homework-container .module-container .topic-icon {
+  height: 44px;
+  margin-bottom: 10px;
+  text-align: center; }
+  .lesson-container.homework-container .module-container .topic-icon svg-icon svg {
+    height: 40px;
+    width: auto; }
+  .lesson-container.homework-container .module-container .topic-icon svg-icon.english-topic-icon svg * {
+    fill: #f9d623; }
+  .lesson-container.homework-container .module-container .topic-icon svg-icon.math-topic-icon svg * {
+    fill: #a07ec1; }
+
+.lesson-container.homework-container .module-container .topic-name {
+  font-size: 16px;
+  color: #4f4d4d;
+  font-family: Quicksand;
+  font-weight: 400;
+  text-transform: capitalize;
+  text-align: center;
+  height: 20px; }
+
+.lesson-container.homework-container .module-container .exercises-box .homework-exercises-container {
+  padding: 20px 0; }
+  .lesson-container.homework-container .module-container .exercises-box .homework-exercises-container .exercise-item-wrap .exercise-item .divider {
+    display: none; }
+  .lesson-container.homework-container .module-container .exercises-box .homework-exercises-container .exercise-item-wrap .exercise-item module-exercise-item button {
+    width: 625px;
+    margin: 7px auto; }
+
+.flex-center {
+  height: 100%;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-pack: center;
+      justify-content: center;
+  -ms-flex-align: center;
+      align-items: center; }
+
+.app-e-tutoring-overlay {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-pack: center;
+      justify-content: center;
+  -ms-flex-align: center;
+      align-items: center;
+  width: 100%;
+  height: 100%; }
+  .app-e-tutoring-overlay .msg {
+    font-size: 20px;
+    color: #757a83;
+    font-family: Quicksand;
+    font-weight: 400;
+    line-height: 40px;
+    text-align: center;
+    z-index: 2; }
+  .app-e-tutoring-overlay.no-teachers-overlay {
+    /*CSS for basic styling and non-retina image path:*/
+    background-image: url("/assets/images/bg/tutoring-no-teachers-bg.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    display: inline-block;
+    width: 1077px;
+    height: 676px;
+    /*CSS for serving the retina image to devices with a high "device-pixel-ratio":*/ }
+    @media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) {
+      .app-e-tutoring-overlay.no-teachers-overlay {
+        background-image: url("/assets/images/bg/tutoring-no-teachers-bg@2x.png");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        display: inline-block;
+        width: 1077px;
+        height: 676px; } }
+    .app-e-tutoring-overlay.no-teachers-overlay .msg-wrap {
+      position: absolute;
+      top: 120px;
+      text-align: center;
+      z-index: 10;
+      width: 100%; }
+      .app-e-tutoring-overlay.no-teachers-overlay .msg-wrap .big-title {
+        font-size: 22px;
+        color: #4f4d4d;
+        font-family: Quicksand;
+        font-weight: 600;
+        margin-bottom: 50px; }
+      .app-e-tutoring-overlay.no-teachers-overlay .msg-wrap .sub-title {
+        font-size: 18px;
+        color: #4f4d4d;
+        font-family: Quicksand;
+        font-weight: 400;
+        line-height: 40px; }
+      .app-e-tutoring-overlay.no-teachers-overlay .msg-wrap .btn-wrap {
+        display: -ms-flexbox;
+        display: flex;
+        margin-top: 40px;
+        -ms-flex-pack: center;
+            justify-content: center; }
+
+.app-e-tutoring {
+  height: 100%;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+      flex-direction: column; }
+  .app-e-tutoring.blurred-overlay {
+    filter: blur(3px);
+    opacity: 0.3; }
+  .app-e-tutoring .e-tutoring-main-container {
+    display: -ms-flexbox;
+    display: flex;
+    height: 100%; }
+    .app-e-tutoring .e-tutoring-main-container .navigation-pane {
+      overflow: hidden;
+      width: 320px;
+      height: 100%; }
+    .app-e-tutoring .e-tutoring-main-container .app-e-tutoring-container {
+      background: #fff;
+      width: 745px;
+      margin-left: 20px;
+      height: 100%; }
