@@ -1026,7 +1026,7 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function ($templ
                 if (!authData.currentUser) {
                     authData.currentUser = {};
                 }
-                return authData;
+                return authData.currentUser;
             };
 
             authService.changePassword = function () {
