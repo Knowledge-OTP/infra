@@ -464,7 +464,9 @@
 
                     var defer = $q.defer();
 
-                    this.__refMap.rootRef.database().set(pathsToUpdateCopy, function (err) {
+                    this.__refMap.rootRef.database().set(pathsToUpdateCopy).then(function () {
+                        defer.resolve(angular.isString(relativePathOrObject) ? newValue : relativePathOrObject);
+                    }).catch(function (err) {
                         if (err) {
                             if (angular.isObject(pathsToUpdateCopy)) {
                                 $log.error('storageFirebaseAdapter: failed to set data for the following path ' + JSON.stringify(pathsToUpdateCopy) + ' ' + err);
@@ -473,7 +475,6 @@
                             }
                             return defer.reject(err);
                         }
-                        defer.resolve(angular.isString(relativePathOrObject) ? newValue : relativePathOrObject);
                     });
 
                     return defer.promise;
