@@ -1019,13 +1019,10 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function ($templ
 
             authService.getAuth = function() {
                 var authData = rootRef ? rootRef.auth() : undefined;
-                if (!authData) {
+                if (!authData || !authData.currentUser) {
                     return null;
                 }
 
-                if (!authData.currentUser) {
-                    authData.currentUser = {};
-                }
                 return authData.currentUser;
             };
 
@@ -10941,7 +10938,7 @@ angular.module('znk.infra.storage').run(['$templateCache', function ($templateCa
                                     promsArray.push(prom);
                                 });
                                 $q.all(promsArray).then(function () {
-                                    if (!linkedToSupport && authData.auth.email !== SUPPORT_EMAIL) {
+                                    if (!linkedToSupport && authData.email !== SUPPORT_EMAIL) {
                                         _buildDataToSend(callbackFn);
                                     } else {
                                         callbackFn();
@@ -10966,7 +10963,7 @@ angular.module('znk.infra.storage').run(['$templateCache', function ($templateCa
                             }
                         });
 
-                        if (!linkedToSupport && authData.auth.email !== SUPPORT_EMAIL) {
+                        if (!linkedToSupport && authData.email !== SUPPORT_EMAIL) {
                             _buildDataToSend(callbackFn);
                         } else {
                             callbackFn();
@@ -10978,7 +10975,7 @@ angular.module('znk.infra.storage').run(['$templateCache', function ($templateCa
             function _buildDataToSend(callbackFn){
                 UserProfileService.getProfileByUserId(authData.uid).then(function (userProfile) {
                     var receiverName = userProfile.nickname;
-                    var receiverEmail = authData.auth.email || userProfile.email || NO_EMAIL;
+                    var receiverEmail = authData.email || userProfile.email || NO_EMAIL;
                     if (angular.isUndefined(receiverName) || angular.equals(receiverName, '')) {
                         receiverName = receiverEmail;
                     }
@@ -11250,8 +11247,8 @@ angular.module('znk.infra.user').service('UserProfileService',
         }
 
         function _extendProfileFromAuth(profile, authData) {
-            var emailFromAuth = authData.auth ? authData.auth.email : authData.password ? authData.password.email : '';
-            var nickNameFromAuth = authData.auth.name ? authData.auth.name : nickNameFromEmail(emailFromAuth);
+            var emailFromAuth = authData.email || '';
+            var nickNameFromAuth = authData.displayName || nickNameFromEmail(emailFromAuth);
 
             if (!profile.email) {
                 profile.email = emailFromAuth;
@@ -11447,7 +11444,7 @@ angular.module('znk.infra.user').service('UserStorageService',
         var config = {
             variables: {
                 uid: function uid() {
-                    return AuthService.getAuth() && AuthService.getAuth().currentUser.uid;
+                    return AuthService.getAuth() && AuthService.getAuth().uid;
                 }
             }
         };
@@ -18420,7 +18417,7 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function ($tem
             self.success = false;
             self.reportData = reportData;
             self.reportData.app = ENV.firebaseAppScopeName.split('_')[0].toUpperCase();
-            self.reportData.email = userAuth.auth.email;
+            self.reportData.email = userAuth.email;
             emailMessagePromise.then(function (message) {
                 self.reportData.message = message;
             });
@@ -18438,7 +18435,7 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function ($tem
                 if (self.reportForm.$valid) {
                     self.startLoader = true;
                     self.reportData.email = self.reportData.email ?
-                        self.reportData.email : userAuth.auth.email ? userAuth.auth.email : 'N/A';
+                        self.reportData.email : userAuth.email || 'N/A';
 
                     // subject format: ReportQuestion - [App Name]
                     var emailSubject = EMAIL_SUBJECT;
@@ -18450,7 +18447,7 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function ($tem
                     ADD_TO_MESSAGE += '<br>' + 'Exercise ID: ' + self.reportData.parentId + ' | ';
                     ADD_TO_MESSAGE += '<br>' + 'Exercise Type ID: ' + self.reportData.parentTypeId + ' | ';
                     ADD_TO_MESSAGE += '<br>' + 'userEmail: ' + self.reportData.email + ' | ';
-                    ADD_TO_MESSAGE += '<br>' + 'userId: ' + userAuth.auth.uid;
+                    ADD_TO_MESSAGE += '<br>' + 'userId: ' + userAuth.uid;
 
                     var message = self.reportData.message + ADD_TO_MESSAGE;
 

@@ -73,7 +73,7 @@
             self.success = false;
             self.reportData = reportData;
             self.reportData.app = ENV.firebaseAppScopeName.split('_')[0].toUpperCase();
-            self.reportData.email = userAuth.auth.email;
+            self.reportData.email = userAuth.email;
             emailMessagePromise.then(function (message) {
                 self.reportData.message = message;
             });
@@ -91,7 +91,7 @@
                 if (self.reportForm.$valid) {
                     self.startLoader = true;
                     self.reportData.email = self.reportData.email ?
-                        self.reportData.email : userAuth.auth.email ? userAuth.auth.email : 'N/A';
+                        self.reportData.email : userAuth.email || 'N/A';
 
                     // subject format: ReportQuestion - [App Name]
                     var emailSubject = EMAIL_SUBJECT;
@@ -103,7 +103,7 @@
                     ADD_TO_MESSAGE += '<br>' + 'Exercise ID: ' + self.reportData.parentId + ' | ';
                     ADD_TO_MESSAGE += '<br>' + 'Exercise Type ID: ' + self.reportData.parentTypeId + ' | ';
                     ADD_TO_MESSAGE += '<br>' + 'userEmail: ' + self.reportData.email + ' | ';
-                    ADD_TO_MESSAGE += '<br>' + 'userId: ' + userAuth.auth.uid;
+                    ADD_TO_MESSAGE += '<br>' + 'userId: ' + userAuth.uid;
 
                     var message = self.reportData.message + ADD_TO_MESSAGE;
 

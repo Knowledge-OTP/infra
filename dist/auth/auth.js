@@ -89,13 +89,10 @@
 
             authService.getAuth = function() {
                 var authData = rootRef ? rootRef.auth() : undefined;
-                if (!authData) {
+                if (!authData || !authData.currentUser) {
                     return null;
                 }
 
-                if (!authData.currentUser) {
-                    authData.currentUser = {};
-                }
                 return authData.currentUser;
             };
 

@@ -31,7 +31,7 @@
                                     promsArray.push(prom);
                                 });
                                 $q.all(promsArray).then(function () {
-                                    if (!linkedToSupport && authData.auth.email !== SUPPORT_EMAIL) {
+                                    if (!linkedToSupport && authData.email !== SUPPORT_EMAIL) {
                                         _buildDataToSend(callbackFn);
                                     } else {
                                         callbackFn();
@@ -56,7 +56,7 @@
                             }
                         });
 
-                        if (!linkedToSupport && authData.auth.email !== SUPPORT_EMAIL) {
+                        if (!linkedToSupport && authData.email !== SUPPORT_EMAIL) {
                             _buildDataToSend(callbackFn);
                         } else {
                             callbackFn();
@@ -68,7 +68,7 @@
             function _buildDataToSend(callbackFn){
                 UserProfileService.getProfileByUserId(authData.uid).then(function (userProfile) {
                     var receiverName = userProfile.nickname;
-                    var receiverEmail = authData.auth.email || userProfile.email || NO_EMAIL;
+                    var receiverEmail = authData.email || userProfile.email || NO_EMAIL;
                     if (angular.isUndefined(receiverName) || angular.equals(receiverName, '')) {
                         receiverName = receiverEmail;
                     }

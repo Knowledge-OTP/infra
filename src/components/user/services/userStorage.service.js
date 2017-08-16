@@ -8,7 +8,7 @@ angular.module('znk.infra.user').service('UserStorageService',
         var config = {
             variables: {
                 uid: function uid() {
-                    return AuthService.getAuth() && AuthService.getAuth().currentUser.uid;
+                    return AuthService.getAuth() && AuthService.getAuth().uid;
                 }
             }
         };

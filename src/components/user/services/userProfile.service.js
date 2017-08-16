@@ -33,8 +33,8 @@ angular.module('znk.infra.user').service('UserProfileService',
         }
 
         function _extendProfileFromAuth(profile, authData) {
-            var emailFromAuth = authData.auth ? authData.auth.email : authData.password ? authData.password.email : '';
-            var nickNameFromAuth = authData.auth.name ? authData.auth.name : nickNameFromEmail(emailFromAuth);
+            var emailFromAuth = authData.email || '';
+            var nickNameFromAuth = authData.displayName || nickNameFromEmail(emailFromAuth);
 
             if (!profile.email) {
                 profile.email = emailFromAuth;
