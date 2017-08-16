@@ -190,7 +190,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                     return InfraConfigSrv.getUserData().then(function () {
                         var globalLastSessionRef = initializeFireBase(); //(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
                         return globalLastSessionRef.database().once('value').then(function(snapshot){
-                            lastSessionData = snapshot.val();
+                            lastSessionData = snapshot.getValue();
                             if(!isLastSessionRecordDisabled){
                                 globalLastSessionRef.database().ref('began').set(window.firebase.database.ServerValue.TIMESTAMP);
                                 globalLastSessionRef.database().ref('ended').set(null);

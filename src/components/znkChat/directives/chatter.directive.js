@@ -79,8 +79,8 @@
                     }
 
                     function newMessageHandler(snapShot) {
-                        var newData = snapShot.val();
-                        var messageId = snapShot.key();
+                        var newData = snapShot.getValue();
+                        var messageId = snapShot.key;
                         if (angular.isUndefined(scope.chatterObj.lastSeenMessage.messageId) || messageId > scope.chatterObj.lastSeenMessage.messageId) { // check if there is messages the local user didn't saw
                             if (scope.chatterObj.isActive) {
                                 var lastSeenMessage = {};
@@ -117,7 +117,7 @@
                         var evenType = 'value';
 
                         function _newChatHandler(snapshot) {
-                            var newChatObj = snapshot.val();
+                            var newChatObj = snapshot.getValue();
                             if (newChatObj) {
                                 znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher).then(function (localUserChatGuidsArr) {
                                     var newChatGuid = Object.keys(newChatObj)[0];

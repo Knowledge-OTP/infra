@@ -8781,8 +8781,8 @@ angular.module('znk.infra.popUp').run(['$templateCache', function ($templateCach
                         var amOnline = rootRef.getRef('.info/connected');
                         var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
                         amOnline.on('value', function (snapshot) {
-                            if (snapshot.val()) {
-                                userRef.onDisconnect().remove();
+                            if (snapshot.getValue()) {
+                                userRef.onDisconnect().removeValue();
                                 userRef.set(presenceService.userStatus.ONLINE);
                             }
                         });
@@ -8790,7 +8790,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function ($templateCach
                         // added listener for the user to resolve the problem when other tabs are closing
                         // it removes user presence status, turning him offline, although his still online
                         userRef.on('value', function(snapshot) {
-                            var val = snapshot.val();
+                            var val = snapshot.getValue();
                             if (!val && !isUserLoguot) {
                                 userRef.set(presenceService.userStatus.ONLINE);
                             }
@@ -8808,7 +8808,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function ($templateCach
 
                 presenceService.getCurrentUserStatus = function (userId) {
                     return rootRef.getRef(PRESENCE_PATH + userId).once('value').then(function(snapshot) {
-                        return (snapshot.val()) || presenceService.userStatus.OFFLINE;
+                        return (snapshot.getValue()) || presenceService.userStatus.OFFLINE;
                     });
                 };
 
@@ -8834,8 +8834,8 @@ angular.module('znk.infra.popUp').run(['$templateCache', function ($templateCach
                 function trackUserPresenceCB(cb, userId, snapshot) {
                     if (angular.isFunction(cb)) {
                         var status = presenceService.userStatus.OFFLINE;
-                        if (snapshot && snapshot.val()){
-                            status = snapshot.val();
+                        if (snapshot && snapshot.getValue()){
+                            status = snapshot.getValue();
                         }
                         cb(status, userId);
                     }
@@ -10769,7 +10769,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function ($templateCach
 
                     var ref = this.getRef(relativePath);
                     ref.once('value', function (dataSnapshot) {
-                        defer.resolve(dataSnapshot.val());
+                        defer.resolve(dataSnapshot.getValue());
                     }, function (err) {
                         $log.error('storageFirebaseAdapter: failed to retrieve data for the following path ' + relativePath + ' ' + err);
                         defer.reject(err);
@@ -10829,8 +10829,8 @@ angular.module('znk.infra.stats').run(['$templateCache', function ($templateCach
                         ref.on(type, function (snapshot) {
                             if (!self.__registeredEvents[type][path]) { self.__registeredEvents[type][path] = []; }
                             self.__registeredEvents[type][path].firstOnWasInvoked = true;
-                            var newVal = snapshot.val();
-                            var key = snapshot.key();
+                            var newVal = snapshot.getValue();
+                            var key = snapshot.key;
                             self.__invokeEventCb(type, path, [newVal, key]);
                         });
                     } else {
@@ -11395,7 +11395,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                     return InfraConfigSrv.getUserData().then(function () {
                         var globalLastSessionRef = initializeFireBase(); //(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
                         return globalLastSessionRef.database().once('value').then(function(snapshot){
-                            lastSessionData = snapshot.val();
+                            lastSessionData = snapshot.getValue();
                             if(!isLastSessionRecordDisabled){
                                 globalLastSessionRef.database().ref('began').set(window.firebase.database.ServerValue.TIMESTAMP);
                                 globalLastSessionRef.database().ref('ended').set(null);
@@ -13190,8 +13190,8 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function ($t
                     }
 
                     function newMessageHandler(snapShot) {
-                        var newData = snapShot.val();
-                        var messageId = snapShot.key();
+                        var newData = snapShot.getValue();
+                        var messageId = snapShot.key;
                         if (angular.isUndefined(scope.chatterObj.lastSeenMessage.messageId) || messageId > scope.chatterObj.lastSeenMessage.messageId) { // check if there is messages the local user didn't saw
                             if (scope.chatterObj.isActive) {
                                 var lastSeenMessage = {};
@@ -13228,7 +13228,7 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function ($t
                         var evenType = 'value';
 
                         function _newChatHandler(snapshot) {
-                            var newChatObj = snapshot.val();
+                            var newChatObj = snapshot.getValue();
                             if (newChatObj) {
                                 znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher).then(function (localUserChatGuidsArr) {
                                     var newChatGuid = Object.keys(newChatObj)[0];
@@ -16898,8 +16898,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
 
                         function _fbChildChanged(snapShot) {
                             var canvasToChange = _getCanvasContextByContextName(canvasContextName);
-                            var coordsStr = snapShot.key();
-                            var color = snapShot.val();
+                            var coordsStr = snapShot.key;
+                            var color = snapShot.getValue();
 
                             if (color === 0) {
                                 drawer.clearPixel(coordsStr, canvasToChange);
@@ -16911,7 +16911,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
                         function _fbChildRemoved(snapShot) {
                             var canvasToChange = _getCanvasContextByContextName(canvasContextName); // "this" refers to context passed to ref.on in registerFbListeners
 
-                            var coordsStr = snapShot.key();
+                            var coordsStr = snapShot.key;
                             drawer.clearPixel(coordsStr, canvasToChange);
                         }
 

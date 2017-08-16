@@ -53,8 +53,8 @@
                         var amOnline = rootRef.getRef('.info/connected');
                         var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
                         amOnline.on('value', function (snapshot) {
-                            if (snapshot.val()) {
-                                userRef.onDisconnect().remove();
+                            if (snapshot.getValue()) {
+                                userRef.onDisconnect().removeValue();
                                 userRef.set(presenceService.userStatus.ONLINE);
                             }
                         });
@@ -62,7 +62,7 @@
                         // added listener for the user to resolve the problem when other tabs are closing
                         // it removes user presence status, turning him offline, although his still online
                         userRef.on('value', function(snapshot) {
-                            var val = snapshot.val();
+                            var val = snapshot.getValue();
                             if (!val && !isUserLoguot) {
                                 userRef.set(presenceService.userStatus.ONLINE);
                             }
@@ -80,7 +80,7 @@
 
                 presenceService.getCurrentUserStatus = function (userId) {
                     return rootRef.getRef(PRESENCE_PATH + userId).once('value').then(function(snapshot) {
-                        return (snapshot.val()) || presenceService.userStatus.OFFLINE;
+                        return (snapshot.getValue()) || presenceService.userStatus.OFFLINE;
                     });
                 };
 
@@ -106,8 +106,8 @@
                 function trackUserPresenceCB(cb, userId, snapshot) {
                     if (angular.isFunction(cb)) {
                         var status = presenceService.userStatus.OFFLINE;
-                        if (snapshot && snapshot.val()){
-                            status = snapshot.val();
+                        if (snapshot && snapshot.getValue()){
+                            status = snapshot.getValue();
                         }
                         cb(status, userId);
                     }
