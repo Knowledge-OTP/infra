@@ -355,7 +355,7 @@
 
             function processValue(value) {
                 if (value === StorageSrv.variables.currTimeStamp) {
-                    return Firebase.ServerValue.TIMESTAMP;
+                    return window.firebase.database.ServerValue.TIMESTAMP;
                 }
                 return value;
             }

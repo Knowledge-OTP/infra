@@ -53,7 +53,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                 profile.nickname = nickNameFromAuth;
             }
             if (!profile.createdTime) {
-                profile.createdTime = Firebase.ServerValue.TIMESTAMP;
+                profile.createdTime = window.firebase.database.ServerValue.TIMESTAMP;
             }
 
             return _setProfile(profile, authData.uid).then(function () {
@@ -69,7 +69,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                 email: email,
                 nickname: nickname,
                 provider: provider,
-                createdTime: Firebase.ServerValue.TIMESTAMP
+                createdTime: window.firebase.database.ServerValue.TIMESTAMP
             };
 
             return _setProfile(profile, userId).then(function () {
@@ -192,9 +192,9 @@ angular.module('znk.infra.user').service('UserProfileService',
                         return globalLastSessionRef.database().once('value').then(function(snapshot){
                             lastSessionData = snapshot.val();
                             if(!isLastSessionRecordDisabled){
-                                globalLastSessionRef.database().ref('began').set(Firebase.ServerValue.TIMESTAMP);
+                                globalLastSessionRef.database().ref('began').set(window.firebase.database.ServerValue.TIMESTAMP);
                                 globalLastSessionRef.database().ref('ended').set(null);
-                                globalLastSessionRef.database().ref('ended').onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
+                                globalLastSessionRef.database().ref('ended').onDisconnect().set(window.firebase.database.ServerValue.TIMESTAMP);
                             }
                         });
                     });
