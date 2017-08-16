@@ -30,7 +30,7 @@
                         var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
                         amOnline.on('value', function (snapshot) {
                             if (snapshot.exportVal()) {
-                                userRef.onDisconnect().removeValue();
+                                userRef.onDisconnect().remove();
                                 userRef.set(presenceService.userStatus.ONLINE);
                             }
                         });

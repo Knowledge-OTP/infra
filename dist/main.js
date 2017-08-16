@@ -8782,7 +8782,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function ($templateCach
                         var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
                         amOnline.on('value', function (snapshot) {
                             if (snapshot.exportVal()) {
-                                userRef.onDisconnect().removeValue();
+                                userRef.onDisconnect().remove();
                                 userRef.set(presenceService.userStatus.ONLINE);
                             }
                         });
@@ -10787,12 +10787,13 @@ angular.module('znk.infra.stats').run(['$templateCache', function ($templateCach
                     }
 
                     var pathsToUpdateCopy = angular.copy(pathsToUpdate);
-
                     processValuesToSet(pathsToUpdateCopy);
 
+                    var objectPath = Object.keys(pathsToUpdateCopy)[0];
+                    var objectVal = pathsToUpdateCopy[objectPath];
                     var defer = $q.defer();
 
-                    this.__refMap.rootRef.database().set(pathsToUpdateCopy).then(function () {
+                    this.__refMap.rootRef.database().ref(objectPath).set(objectVal).then(function () {
                         defer.resolve(angular.isString(relativePathOrObject) ? newValue : relativePathOrObject);
                     }).catch(function (err) {
                         if (err) {
@@ -11392,9 +11393,10 @@ angular.module('znk.infra.user').service('UserProfileService',
                 };
 
                 function init() {
-                    return InfraConfigSrv.getUserData().then(function () {
+                    return InfraConfigSrv.getUserData().then(function (userData) {
                         var globalLastSessionRef = initializeFireBase(); //(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
-                        return globalLastSessionRef.database().once('value').then(function(snapshot){
+                        var lastSessionPath = ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid;
+                        return globalLastSessionRef.database().ref(lastSessionPath).once('value').then(function(snapshot){
                             lastSessionData = snapshot.exportVal();
                             if(!isLastSessionRecordDisabled){
                                 globalLastSessionRef.database().ref('began').set(window.firebase.database.ServerValue.TIMESTAMP);

@@ -187,9 +187,10 @@ angular.module('znk.infra.user').service('UserProfileService',
                 };
 
                 function init() {
-                    return InfraConfigSrv.getUserData().then(function () {
+                    return InfraConfigSrv.getUserData().then(function (userData) {
                         var globalLastSessionRef = initializeFireBase(); //(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
-                        return globalLastSessionRef.database().once('value').then(function(snapshot){
+                        var lastSessionPath = ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid;
+                        return globalLastSessionRef.database().ref(lastSessionPath).once('value').then(function(snapshot){
                             lastSessionData = snapshot.exportVal();
                             if(!isLastSessionRecordDisabled){
                                 globalLastSessionRef.database().ref('began').set(window.firebase.database.ServerValue.TIMESTAMP);

@@ -459,12 +459,13 @@
                     }
 
                     var pathsToUpdateCopy = angular.copy(pathsToUpdate);
-
                     processValuesToSet(pathsToUpdateCopy);
 
+                    var objectPath = Object.keys(pathsToUpdateCopy)[0];
+                    var objectVal = pathsToUpdateCopy[objectPath];
                     var defer = $q.defer();
 
-                    this.__refMap.rootRef.database().set(pathsToUpdateCopy).then(function () {
+                    this.__refMap.rootRef.database().ref(objectPath).set(objectVal).then(function () {
                         defer.resolve(angular.isString(relativePathOrObject) ? newValue : relativePathOrObject);
                     }).catch(function (err) {
                         if (err) {
