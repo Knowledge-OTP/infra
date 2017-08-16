@@ -3100,7 +3100,7 @@
                         function _fbChildChanged(snapShot) {
                             var canvasToChange = _getCanvasContextByContextName(canvasContextName);
                             var coordsStr = snapShot.key;
-                            var color = snapShot.getValue();
+                            var color = snapShot.exportVal();
 
                             if (color === 0) {
                                 drawer.clearPixel(coordsStr, canvasToChange);

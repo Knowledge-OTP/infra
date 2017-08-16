@@ -441,7 +441,7 @@
 
                     var ref = this.getRef(relativePath);
                     ref.once('value', function (dataSnapshot) {
-                        defer.resolve(dataSnapshot.getValue());
+                        defer.resolve(dataSnapshot.exportVal());
                     }, function (err) {
                         $log.error('storageFirebaseAdapter: failed to retrieve data for the following path ' + relativePath + ' ' + err);
                         defer.reject(err);
@@ -501,7 +501,7 @@
                         ref.on(type, function (snapshot) {
                             if (!self.__registeredEvents[type][path]) { self.__registeredEvents[type][path] = []; }
                             self.__registeredEvents[type][path].firstOnWasInvoked = true;
-                            var newVal = snapshot.getValue();
+                            var newVal = snapshot.exportVal();
                             var key = snapshot.key;
                             self.__invokeEventCb(type, path, [newVal, key]);
                         });
