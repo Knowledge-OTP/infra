@@ -1023,16 +1023,9 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function ($templ
                     return null;
                 }
 
-                if (!authData.auth) {
-                    authData.auth = {};
+                if (!authData.currentUser) {
+                    authData.currentUser = {};
                 }
-
-                if (!authData.password) {
-                    authData.password = {};
-                }
-
-                var userEmail = authData.auth.email || authData.password.email;
-                authData.auth.email = authData.password.email = userEmail;
                 return authData;
             };
 
