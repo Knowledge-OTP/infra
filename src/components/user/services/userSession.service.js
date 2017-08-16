@@ -33,9 +33,9 @@
                         return globalLastSessionRef.database().once('value').then(function(snapshot){
                             lastSessionData = snapshot.val();
                             if(!isLastSessionRecordDisabled){
-                                globalLastSessionRef.database().ref('began').set(Firebase.ServerValue.TIMESTAMP);
+                                globalLastSessionRef.database().ref('began').set(window.firebase.database.ServerValue.TIMESTAMP);
                                 globalLastSessionRef.database().ref('ended').set(null);
-                                globalLastSessionRef.database().ref('ended').onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
+                                globalLastSessionRef.database().ref('ended').onDisconnect().set(window.firebase.database.ServerValue.TIMESTAMP);
                             }
                         });
                     });

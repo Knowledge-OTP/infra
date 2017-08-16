@@ -59,7 +59,7 @@
                         }
                         if (scope.d.newMessage.length > 0 && angular.isDefined(scope.chatterObj) && scope.chatterObj.chatGuid) {
                             var newMessageObj = {
-                                time: Firebase.ServerValue.TIMESTAMP,
+                                time: window.firebase.database.ServerValue.TIMESTAMP,
                                 uid: scope.userId,
                                 text: scope.d.newMessage
                             };
