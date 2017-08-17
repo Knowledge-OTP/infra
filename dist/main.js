@@ -12116,6 +12116,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                 },
                 link:function(scope,element,attrs){
                     var sound;
+                    var soundInititalized = false;
 
                     var TYPES_ENUM = {
                         'NO_CONTROL': 1,
@@ -12268,6 +12269,12 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                                 }
                                 break;
                             case STATE_ENUM.STARTING:
+                                if (!soundInititalized) {
+                                  soundInititalized = true;
+                                  if (scope.autoPlayGetter()) {
+                                    sound.play();
+                                  }
+                                }
                                 hideLoadingSpinner();
                                 if(playerControlElem.length){
                                     playerControlElem.removeClass('ion-play');
@@ -12281,6 +12288,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                         if(sound){
                             sound.stop();
                             sound.release();
+                            soundInititalized = false;
                         }
                         showLoadingSpinner();
                         sound = MediaSrv.loadSound(scope.sourceGetter(),
@@ -12324,9 +12332,9 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                         if(newSrc){
                             loadSound();
 
-                            if(scope.autoPlayGetter()){
-                                sound.play();
-                            }
+                            // if(scope.autoPlayGetter()){
+                            //     sound.play();
+                            // }
                         }
                     });
 
@@ -13132,8 +13140,11 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
 
                                 if(!soundPlaying){
                                     soundPlaying = true;
-                                    sound =  MediaSrv.loadSound(soundPath);
-                                    sound.play();
+                                    sound =  MediaSrv.loadSound(soundPath,null,null,function(status){
+                                      if (status === window.Media.MEDIA_STARTING && soundPlaying === true) {
+                                        sound.play();
+                                      }
+                                    });
                                     sound.onEnded().then(function(){
                                         soundPlaying = false;
                                         sound.release();
