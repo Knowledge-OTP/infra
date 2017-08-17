@@ -94,8 +94,11 @@
 
                                 if(!soundPlaying){
                                     soundPlaying = true;
-                                    sound =  MediaSrv.loadSound(soundPath);
-                                    sound.play();
+                                    sound =  MediaSrv.loadSound(soundPath,null,null,function(status){
+                                      if (status === window.Media.MEDIA_STARTING && soundPlaying === true) {
+                                        sound.play();
+                                      }
+                                    });
                                     sound.onEnded().then(function(){
                                         soundPlaying = false;
                                         sound.release();
