@@ -272,6 +272,6 @@
     );
 })(angular);
 
-angular.module('znk.infra.exerciseUtility').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($templateCache) {
 
 }]);

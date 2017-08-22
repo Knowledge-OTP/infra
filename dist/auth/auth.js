@@ -88,12 +88,16 @@
             };
 
             authService.getAuth = function() {
-                var authData = rootRef ? rootRef.auth() : undefined;
-                if (!authData || !authData.currentUser) {
-                    return null;
-                }
-
-                return authData.currentUser;
+                return new Promise(function(resolve, reject) {
+                    var authRef = rootRef ? rootRef.auth() : resolve(null);
+                    authRef.onAuthStateChanged(user => {
+                        if (user) {
+                            resolve(user); }
+                        else {
+                            resolve (null);
+                        }
+                    }, err => reject(err));
+                });
             };
 
             authService.changePassword = function () {
@@ -252,6 +256,6 @@
         }]);
 })(angular);
 
-angular.module('znk.infra.auth').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.auth').run(['$templateCache', function($templateCache) {
 
 }]);

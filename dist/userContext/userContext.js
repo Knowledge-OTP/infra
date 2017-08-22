@@ -122,6 +122,6 @@
     ]);
 })(angular);
 
-angular.module('znk.infra.userContext').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.userContext').run(['$templateCache', function($templateCache) {
 
 }]);

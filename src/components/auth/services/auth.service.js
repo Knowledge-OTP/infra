@@ -82,7 +82,11 @@
                 return new Promise(function(resolve, reject) {
                     var authRef = rootRef ? rootRef.auth() : resolve(null);
                     authRef.onAuthStateChanged(user => {
-                        user ? resolve(user) : resolve (null);
+                        if (user) {
+                            resolve(user); }
+                        else {
+                            resolve (null);
+                        }
                     }, err => reject(err));
                 });
             };

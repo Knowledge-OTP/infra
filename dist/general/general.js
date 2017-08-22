@@ -740,7 +740,7 @@
 })(angular);
 
 
-angular.module('znk.infra.general').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.general').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/general/directives/timer/timer.template.html",
     "<div ng-switch=\"type\" class=\"timer-drv\">\n" +
     "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +

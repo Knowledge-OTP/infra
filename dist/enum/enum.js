@@ -86,6 +86,6 @@
     ]);
 })(angular);
 
-angular.module('znk.infra.enum').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.enum').run(['$templateCache', function($templateCache) {
 
 }]);

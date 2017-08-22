@@ -569,6 +569,6 @@
         }]);
 })(angular);
 
-angular.module('znk.infra.storage').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.storage').run(['$templateCache', function($templateCache) {
 
 }]);

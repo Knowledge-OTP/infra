@@ -109,8 +109,9 @@ angular.module('znk.infra.user').service('UserProfileService',
         }
 
         function _getCurrUserId(){
-            var authData = AuthService.getAuth();
-            return $q.when(authData.uid);
+            // var authData = AuthService.getAuth();
+            return  AuthService.getAuth().then(authData => {return authData.uid; });
+            // return $q.when(authData.uid);
         }
 
         function _updateUserTeachWorksId(uid, userTeachWorksId){
@@ -249,6 +250,6 @@ angular.module('znk.infra.user').service('UserStorageService',
         return new StorageSrv(fbAdapter, config);
     }]);
 
-angular.module('znk.infra.user').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 
 }]);
