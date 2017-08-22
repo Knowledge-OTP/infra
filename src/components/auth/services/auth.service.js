@@ -79,12 +79,12 @@
             };
 
             authService.getAuth = function() {
-                var authData = rootRef ? rootRef.auth() : undefined;
-                if (!authData || !authData.currentUser) {
-                    return null;
-                }
-
-                return authData.currentUser;
+                return new Promise(function(resolve, reject) {
+                    var authRef = rootRef ? rootRef.auth() : resolve(null);
+                    authRef.onAuthStateChanged(user => {
+                        user ? resolve(user) : resolve (null);
+                    }, err => reject(err));
+                });
             };
 
             authService.changePassword = function () {
