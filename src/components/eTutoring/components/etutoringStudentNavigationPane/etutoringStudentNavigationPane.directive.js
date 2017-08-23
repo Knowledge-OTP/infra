@@ -27,22 +27,23 @@
                         scope.overlayTextObj[ETutoringViewsConst.PRACTICE] = res[noPracticesTitle];
                     });
 
-                    var authData = AuthService.getAuth();
-                    if (authData) {
-                        scope.userId = authData.uid;
-                        StudentContextSrv.setCurrentUid(scope.userId);
+                    AuthService.getAuth().then(authData => {
+                        if (authData) {
+                            scope.userId = authData.uid;
+                            StudentContextSrv.setCurrentUid(scope.userId);
 
-                        scope.ETutoringViewsConst = ETutoringViewsConst;
-                        scope.dueDateUtility = DueDateSrv;
+                            scope.ETutoringViewsConst = ETutoringViewsConst;
+                            scope.dueDateUtility = DueDateSrv;
 
-                        UserAssignModuleService.registerExternalOnValueCB(scope.userId, AssignContentEnum.LESSON.enum, getAssignModulesCB, getAssignModulesCB);
-                        UserAssignModuleService.registerExternalOnValueCB(scope.userId, AssignContentEnum.PRACTICE.enum, getAssignHomeworkCB, getAssignHomeworkCB);
-                    } else {
-                        $log.debug('etutoringStudentNavigationPaneDirective:: no user id');
-                    }
+                            UserAssignModuleService.registerExternalOnValueCB(scope.userId, AssignContentEnum.LESSON.enum, getAssignModulesCB, getAssignModulesCB);
+                            UserAssignModuleService.registerExternalOnValueCB(scope.userId, AssignContentEnum.PRACTICE.enum, getAssignHomeworkCB, getAssignHomeworkCB);
+                        } else {
+                            $log.debug('etutoringStudentNavigationPaneDirective:: no user id');
+                        }
 
-                    angular.forEach(SubjectEnum.getEnumArr(), function (subject) {
-                        scope.subjectsMap[subject.enum] = subject;
+                        angular.forEach(SubjectEnum.getEnumArr(), function (subject) {
+                            scope.subjectsMap[subject.enum] = subject;
+                        });
                     });
 
                     scope.updateModel = function (module) {

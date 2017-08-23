@@ -1,9 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.storage').factory('StorageSrv', [
-        '$cacheFactory', '$q', '$log',
+    angular.module('znk.infra.storage').factory('StorageSrv',
         function ($cacheFactory, $q, $log) {
+        'ngInject'
             var getEntityPromMap = {};
 
             var cacheId = 0;
@@ -86,8 +86,11 @@
                 }
 
                 function _getUid() {
-                    var getUid = angular.isFunction(config.variables.uid) ? config.variables.uid() : config.variables.uid;
-                    return $q.when(getUid);
+                    if (angular.isFunction(config.variables.uid)) {
+                        return config.variables.uid();
+                    } else {
+                        return config.variables.uid;
+                    }
                 }
 
                 return _getUid().then(function (uid) {
@@ -308,5 +311,5 @@
 
             return StorageSrv;
         }
-    ]);
+    );
 })(angular);
