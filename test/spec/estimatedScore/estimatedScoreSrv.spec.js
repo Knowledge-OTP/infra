@@ -1,4 +1,4 @@
-describe('testing service "EstimatedScoreSrv":', function () {
+xdescribe('testing service "EstimatedScoreSrv":', function () {
     'use strict';
 
     beforeEach(module('znk.infra.estimatedScore', 'htmlTemplates', 'testUtility', 'storage.mock', 'estimatedScore.mock', 'znk.infra.presence', 'env.mock', 'user.mock', 'categories.mock'));

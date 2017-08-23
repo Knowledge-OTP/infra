@@ -53,7 +53,7 @@
                         var amOnline = rootRef.getRef('.info/connected');
                         var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
                         amOnline.on('value', function (snapshot) {
-                            if (snapshot.exportVal()) {
+                            if (snapshot.val()) {
                                 userRef.onDisconnect().remove();
                                 userRef.set(presenceService.userStatus.ONLINE);
                             }
@@ -62,7 +62,7 @@
                         // added listener for the user to resolve the problem when other tabs are closing
                         // it removes user presence status, turning him offline, although his still online
                         userRef.on('value', function(snapshot) {
-                            var val = snapshot.exportVal();
+                            var val = snapshot.val();
                             if (!val && !isUserLoguot) {
                                 userRef.set(presenceService.userStatus.ONLINE);
                             }
@@ -80,7 +80,7 @@
 
                 presenceService.getCurrentUserStatus = function (userId) {
                     return rootRef.getRef(PRESENCE_PATH + userId).once('value').then(function(snapshot) {
-                        return (snapshot.exportVal()) || presenceService.userStatus.OFFLINE;
+                        return (snapshot.val()) || presenceService.userStatus.OFFLINE;
                     });
                 };
 
@@ -106,8 +106,8 @@
                 function trackUserPresenceCB(cb, userId, snapshot) {
                     if (angular.isFunction(cb)) {
                         var status = presenceService.userStatus.OFFLINE;
-                        if (snapshot && snapshot.exportVal()){
-                            status = snapshot.exportVal();
+                        if (snapshot && snapshot.val()){
+                            status = snapshot.val();
                         }
                         cb(status, userId);
                     }

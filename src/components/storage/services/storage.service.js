@@ -3,7 +3,8 @@
 
     angular.module('znk.infra.storage').factory('StorageSrv',
         function ($cacheFactory, $q, $log) {
-        'ngInject'
+        'ngInject';
+
             var getEntityPromMap = {};
 
             var cacheId = 0;

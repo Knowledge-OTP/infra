@@ -11,8 +11,8 @@
     'use strict';
 
     angular.module('znk.infra.auth').factory('AuthService',
-        ["ENV", "$q", "$timeout", "$log", "StorageFirebaseAdapter", "StorageSrv", "$http", "$rootScope", function (ENV, $q, $timeout, $log, StorageFirebaseAdapter, StorageSrv, $http, $rootScope) {
-            'ngInject';
+    ["ENV", "$q", "$timeout", "$log", "StorageFirebaseAdapter", "StorageSrv", "$http", "$rootScope", function (ENV, $q, $timeout, $log, StorageFirebaseAdapter, StorageSrv, $http, $rootScope) {
+        'ngInject';
 
             if (ENV.fbGlobalEndPoint && ENV.fbDataEndPoint){
                 var refAuthDB = initializeAuthFireBase();
@@ -89,8 +89,7 @@
 
             authService.getAuth = function() {
                 return new Promise(function(resolve, reject) {
-                    var authRef = rootRef ? rootRef.auth() : resolve(null);
-                    authRef.onAuthStateChanged(user => {
+                    refAuthDB.onAuthStateChanged(user => {
                         if (user) {
                             resolve(user); }
                         else {
@@ -126,20 +125,24 @@
 
             authService.registerFirstLogin = function () {
                 var storageSrv = storageObj();
-                var firstLoginPath = 'firstLogin/' + authService.getAuth().uid;
-                return storageSrv.get(firstLoginPath).then(function (userFirstLoginTime) {
-                    if (angular.equals(userFirstLoginTime, {})) {
-                        storageSrv.set(firstLoginPath, Date.now());
-                    }
+                return authService.getAuth().then(user => {
+                    var firstLoginPath = 'firstLogin/' + user.uid;
+                    return storageSrv.get(firstLoginPath).then(function (userFirstLoginTime) {
+                        if (angular.equals(userFirstLoginTime, {})) {
+                            storageSrv.set(firstLoginPath, Date.now());
+                        }
+                    });
                 });
             };
 
-            function storageObj (){
+            function storageObj() {
                 var fbAdapter = new StorageFirebaseAdapter(ENV.fbDataEndPoint + '/' + ENV.firebaseAppScopeName);
                 var config = {
                     variables: {
                         uid: function () {
-                            return authService.getAuth().uid;
+                            return authService.getAuth().then(user => {
+                                return user.uid;
+                            });
                         }
                     }
                 };
@@ -148,6 +151,7 @@
 
             function _dataLogin() {
                 var postUrl = ENV.backendEndpoint + 'firebase/token';
+                //TODO - CHECK IT (ASSAF)
                 var authData = refAuthDB.currentUser();
                 var postData = {
                     email: authData.password,
@@ -184,7 +188,7 @@
             }
 
             function initializeDataFireBase(){
-                var existApp = existFirbaseApp(ENV.firebase_projectId);
+                var existApp = existFirbaseApp('act_app');
                 if(!existApp) {
                     var config = {
                         apiKey: ENV.firebase_apiKey,
@@ -194,15 +198,15 @@
                         storageBucket: ENV.firebase_projectId + ".appspot.com",
                         messagingSenderId: ENV.messagingSenderId
                     };
-                    existApp = window.firebase.initializeApp(config, ENV.firebase_projectId);
+                    existApp = window.firebase.initializeApp(config, 'act_app');
                 }
                 return existApp;
             }
 
             function initializeAuthFireBase(){
-                var existApp = existFirbaseApp(ENV.firbase_auth_config.projectId);
+                var existApp = existFirbaseApp('myzinkerz_app');
                 if(!existApp) {
-                    existApp = window.firebase.initializeApp(ENV.firbase_auth_config, ENV.firbase_auth_config.projectId);
+                    existApp = window.firebase.initializeApp(ENV.firbase_auth_config, 'myzinkerz_app');
                 }
               return existApp;
             }

@@ -214,5 +214,5 @@
             }
 
             return authService;
-        }]);
+        });
 })(angular);

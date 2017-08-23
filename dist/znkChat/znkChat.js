@@ -527,7 +527,7 @@
                 return _getStorage().then(function (globalStorage) {
                     var messagesPath = znkChatPaths.chatPath + '/' + chatGuid + '/messages';
                     var adapterRef = globalStorage.adapter.getRef(messagesPath);
-                    var messageGuid = adapterRef.push(newMessage).key();
+                    var messageGuid = adapterRef.push(newMessage).key;
                     return messageGuid;
 
                 });
@@ -571,7 +571,7 @@
                     var adapterRef = globalStorage.adapter.getRef();
                     var chatsRef = adapterRef.child(chatPath);
                     var newChatObj = _createNewChatObj(localUser, secondUser);
-                    chatGuid = chatsRef.push(newChatObj).key();
+                    chatGuid = chatsRef.push(newChatObj).key;
 
                     var localUserPath = localUser.isTeacher ? znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';
                     var secondUserPath = secondUser.isTeacher ? znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';

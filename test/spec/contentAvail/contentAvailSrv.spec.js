@@ -1,4 +1,4 @@
-describe('testing service "ContentAvailSrv":', function () {
+xdescribe('testing service "ContentAvailSrv":', function () {
     'use strict';
 
     var ContentAvailSrvProvider;

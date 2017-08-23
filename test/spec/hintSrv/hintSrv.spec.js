@@ -1,4 +1,4 @@
-describe('testing service "HintSrv":', function () {
+xdescribe('testing service "HintSrv":', function () {
     'use strict';
 
     beforeEach(module('znk.infra.hint', 'htmlTemplates', 'storage.mock', 'testUtility'));

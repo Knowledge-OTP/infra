@@ -1,4 +1,4 @@
-describe('testing service "StatsEventsHandlerSrv":', function () {
+xdescribe('testing service "StatsEventsHandlerSrv":', function () {
     'use strict';
 
     beforeEach(module('znk.infra.stats', 'znk.infra.utility', 'htmlTemplates', 'storage.mock', 'testUtility',
