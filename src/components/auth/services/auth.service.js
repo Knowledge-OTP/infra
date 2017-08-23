@@ -179,7 +179,7 @@
             }
 
             function initializeDataFireBase(){
-                var existApp = existFirbaseApp('act_app');
+                var existApp = existFirbaseApp(ENV.firebaseAppScopeName);
                 if(!existApp) {
                     var config = {
                         apiKey: ENV.firebase_apiKey,
@@ -189,15 +189,15 @@
                         storageBucket: ENV.firebase_projectId + ".appspot.com",
                         messagingSenderId: ENV.messagingSenderId
                     };
-                    existApp = window.firebase.initializeApp(config, 'act_app');
+                    existApp = window.firebase.initializeApp(config, ENV.firebaseAppScopeName);
                 }
                 return existApp;
             }
 
             function initializeAuthFireBase(){
-                var existApp = existFirbaseApp('myzinkerz_app');
+                var existApp = existFirbaseApp(ENV.authAppName);
                 if(!existApp) {
-                    existApp = window.firebase.initializeApp(ENV.firbase_auth_config, 'myzinkerz_app');
+                    existApp = window.firebase.initializeApp(ENV.firbase_auth_config, ENV.authAppName);
                 }
               return existApp;
             }

@@ -1118,7 +1118,7 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
             }
 
             function initializeDataFireBase(){
-                var existApp = existFirbaseApp('act_app');
+                var existApp = existFirbaseApp(ENV.firebaseAppScopeName);
                 if(!existApp) {
                     var config = {
                         apiKey: ENV.firebase_apiKey,
@@ -1128,15 +1128,15 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
                         storageBucket: ENV.firebase_projectId + ".appspot.com",
                         messagingSenderId: ENV.messagingSenderId
                     };
-                    existApp = window.firebase.initializeApp(config, 'act_app');
+                    existApp = window.firebase.initializeApp(config, ENV.firebaseAppScopeName);
                 }
                 return existApp;
             }
 
             function initializeAuthFireBase(){
-                var existApp = existFirbaseApp('myzinkerz_app');
+                var existApp = existFirbaseApp(ENV.authAppName);
                 if(!existApp) {
-                    existApp = window.firebase.initializeApp(ENV.firbase_auth_config, 'myzinkerz_app');
+                    existApp = window.firebase.initializeApp(ENV.firbase_auth_config, ENV.authAppName);
                 }
               return existApp;
             }
@@ -10751,8 +10751,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
         }
 
         function initializeFireBase(){
-            //var appName = ENV.firebase_projectId;
-            var appName = 'act_app';
+            var appName = ENV.firebaseAppScopeName;
 
             var existApp;
 

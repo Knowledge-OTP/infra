@@ -61,8 +61,7 @@
         }
 
         function initializeFireBase(){
-            //var appName = ENV.firebase_projectId;
-            var appName = 'act_app';
+            var appName = ENV.firebaseAppScopeName;
 
             var existApp;
 
