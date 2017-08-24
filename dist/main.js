@@ -11446,7 +11446,7 @@ angular.module('znk.infra.user').service('UserProfileService',
             initProm = init();
 
             function initializeFireBase(){
-                var appName = ENV.firebase_projectId;
+                var appName = ENV.firebaseAppScopeName;
                 var existApp;
 
                 window.firebase.apps.forEach(function (app) {
