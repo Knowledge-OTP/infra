@@ -6,16 +6,19 @@
             'ngInject';
 
             var self = this;
-            var userAuth = AuthService.getAuth();
+            var userAuth;
+            self.reportData = reportData;
+            self.reportData.app = ENV.firebaseAppScopeName.split('_')[0].toUpperCase();
+            AuthService.getAuth().then(authData => {
+                userAuth = authData;
+                self.reportData.email = authData.email;
+            });
             var MAIL_TO_SEND = 'support@zinkerz.com';
             var TEMPLATE_KEY = 'reportQuestion';
             var EMAIL_SUBJECT = $translate('REPORT_POPUP.REPORT_QUESTION');
             var emailMessagePromise = $translate('REPORT_POPUP.MESSAGE');
 
             self.success = false;
-            self.reportData = reportData;
-            self.reportData.app = ENV.firebaseAppScopeName.split('_')[0].toUpperCase();
-            self.reportData.email = userAuth.email;
             emailMessagePromise.then(function (message) {
                 self.reportData.message = message;
             });

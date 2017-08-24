@@ -9,8 +9,9 @@
         var config = {
             variables: {
                 uid: function () {
-                    var auth = AuthService.getAuth();
-                    return auth && auth.uid;
+                    return AuthService.getAuth().then(user => {
+                        return user.uid;
+                    });
                 }
             },
             cacheRules: [/.*/]

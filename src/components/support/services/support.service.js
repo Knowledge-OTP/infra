@@ -6,7 +6,10 @@
             'ngInject';
             var SupportSrv = {};
 
-            var authData = AuthService.getAuth();
+            var authData;
+            AuthService.getAuth().then(userData => {
+                authData = userData;
+            });
             var APPROVED_STUDENTS_PATH = 'users/$$uid/approvedStudents/';
             var invitationEndpoint = ENV.backendEndpoint + 'invitation';
             var SUPPORT_EMAIL = ENV.supportEmail;

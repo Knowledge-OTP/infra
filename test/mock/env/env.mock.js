@@ -6,6 +6,7 @@
     angular.module('env.mock', [])
         .constant(mockENVServiceName, {
                 'firebaseAppScopeName': 'test_app',
+                'authAppName': 'myzinkerz_app',
                 'appContext': 'student',
                 'studentAppName': 'test_app',
                 'dashboardAppName': 'test_dashboard',

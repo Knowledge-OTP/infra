@@ -9,13 +9,11 @@
             'ngInject';
 
             $delegate.getAuth = function () {
-                return {
-                    auth: {
-                        uid:"c47f4f57-521c-4832-b505-c0093737ceff",
-                        email:"ofir+s1@zinkerz.com"
-                        },
-                    uid:"c47f4f57-521c-4832-b505-c0093737ceff"
-                    };
+                return new Promise(resolve => resolve ({
+                    uid:"c47f4f57-521c-4832-b505-c0093737ceff",
+                    email:"ofir+s1@zinkerz.com"
+                    }
+                ));
             };
             return $delegate;
         })

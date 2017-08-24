@@ -1,8 +1,6 @@
 xdescribe('testing service "SupportSrv":', function () {
     'use strict';
 
-
-
     beforeEach(module('znk.infra.support', 'storage.mock', 'testUtility','user.mock', 'env.mock','znk.infra.auth', 'znk.infra.teachers'));
 
     var _deps = {};
@@ -20,12 +18,14 @@ xdescribe('testing service "SupportSrv":', function () {
     beforeEach(angular.mock.module(function ($provide) {
         $provide.decorator('AuthService', function ($delegate) {
             $delegate.getAuth = function () {
-                return {
-                    uid: '123456Fake',
-                    auth: {
-                        email: 'fake@Email.com'
+                return new Promise(resolve => resolve(
+                    {
+                        uid: '123456Fake',
+                        auth: {
+                            email: 'fake@Email.com'
+                        }
                     }
-                };
+                ));
             };
             return $delegate;
         });

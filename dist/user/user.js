@@ -114,9 +114,7 @@ angular.module('znk.infra.user').service('UserProfileService',
     }
 
     function _getCurrUserId(){
-        // var authData = AuthService.getAuth();
-        return  AuthService.getAuth().then(authData => {return authData.uid; });
-        // return $q.when(authData.uid);
+        return AuthService.getAuth().then(authData => {return authData.uid; });
     }
 
     function _updateUserTeachWorksId(uid, userTeachWorksId){

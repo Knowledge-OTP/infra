@@ -8786,34 +8786,35 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
                 };
 
                 presenceService.addCurrentUserListeners = function () {
-                    var authData = getAuthData();
-                    if (authData) {
-                        var amOnline = rootRef.getRef('.info/connected');
-                        var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
-                        amOnline.on('value', function (snapshot) {
-                            if (snapshot.val()) {
-                                userRef.onDisconnect().remove();
+                    getAuthData().then(authData => {
+                        if (authData) {
+                            var amOnline = rootRef.getRef('.info/connected');
+                            var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
+                            amOnline.on('value', function (snapshot) {
+                                if (snapshot.val()) {
+                                    userRef.onDisconnect().remove();
+                                    userRef.set(presenceService.userStatus.ONLINE);
+                                }
+                            });
+
+                            // added listener for the user to resolve the problem when other tabs are closing
+                            // it removes user presence status, turning him offline, although his still online
+                            userRef.on('value', function(snapshot) {
+                                var val = snapshot.val();
+                                if (!val && !isUserLoguot) {
+                                    userRef.set(presenceService.userStatus.ONLINE);
+                                }
+                            });
+
+                            $rootScope.$on('IdleStart', function() {
+                                userRef.set(presenceService.userStatus.IDLE);
+                            });
+
+                            $rootScope.$on('IdleEnd', function() {
                                 userRef.set(presenceService.userStatus.ONLINE);
-                            }
-                        });
-
-                        // added listener for the user to resolve the problem when other tabs are closing
-                        // it removes user presence status, turning him offline, although his still online
-                        userRef.on('value', function(snapshot) {
-                            var val = snapshot.val();
-                            if (!val && !isUserLoguot) {
-                                userRef.set(presenceService.userStatus.ONLINE);
-                            }
-                        });
-
-                        $rootScope.$on('IdleStart', function() {
-                            userRef.set(presenceService.userStatus.IDLE);
-                        });
-
-                        $rootScope.$on('IdleEnd', function() {
-                            userRef.set(presenceService.userStatus.ONLINE);
-                        });
-                    }
+                            });
+                        }
+                    });
                 };
 
                 presenceService.getCurrentUserStatus = function (userId) {
@@ -8836,9 +8837,11 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
                     var authData;
                     var authService = $injector.get(AuthSrvName);
                     if (angular.isObject(authService)) {
-                        authData =  authService.getAuth();
+                         return authService.getAuth();
                     }
-                    return authData;
+                    else {
+                        return new Promise(resolve => resolve(authData));
+                    }
                 }
 
                 function trackUserPresenceCB(cb, userId, snapshot) {
@@ -8852,12 +8855,13 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
                 }
 
                 $rootScope.$on('auth:beforeLogout', function () {
-                    var authData = getAuthData();
-                    if (authData) {
-                        var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
-                        isUserLoguot = true;
-                        userRef.remove();
-                    }
+                    getAuthData().then(authData => {
+                        if (authData) {
+                            var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
+                            isUserLoguot = true;
+                            userRef.remove();
+                        }
+                    });
                 });
 
                 return presenceService;
@@ -10353,8 +10357,9 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
         var config = {
             variables: {
                 uid: function () {
-                    var auth = AuthService.getAuth();
-                    return auth && auth.uid;
+                    return AuthService.getAuth().then(user => {
+                        return user.uid;
+                    });
                 }
             },
             cacheRules: [/.*/]
@@ -10938,7 +10943,10 @@ angular.module('znk.infra.storage').run(['$templateCache', function($templateCac
             'ngInject';
             var SupportSrv = {};
 
-            var authData = AuthService.getAuth();
+            var authData;
+            AuthService.getAuth().then(userData => {
+                authData = userData;
+            });
             var APPROVED_STUDENTS_PATH = 'users/$$uid/approvedStudents/';
             var invitationEndpoint = ENV.backendEndpoint + 'invitation';
             var SUPPORT_EMAIL = ENV.supportEmail;
@@ -11343,9 +11351,7 @@ angular.module('znk.infra.user').service('UserProfileService',
     }
 
     function _getCurrUserId(){
-        // var authData = AuthService.getAuth();
-        return  AuthService.getAuth().then(authData => {return authData.uid; });
-        // return $q.when(authData.uid);
+        return AuthService.getAuth().then(authData => {return authData.uid; });
     }
 
     function _updateUserTeachWorksId(uid, userTeachWorksId){
@@ -18444,16 +18450,19 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
             'ngInject';
 
             var self = this;
-            var userAuth = AuthService.getAuth();
+            var userAuth;
+            self.reportData = reportData;
+            self.reportData.app = ENV.firebaseAppScopeName.split('_')[0].toUpperCase();
+            AuthService.getAuth().then(authData => {
+                userAuth = authData;
+                self.reportData.email = authData.email;
+            });
             var MAIL_TO_SEND = 'support@zinkerz.com';
             var TEMPLATE_KEY = 'reportQuestion';
             var EMAIL_SUBJECT = $translate('REPORT_POPUP.REPORT_QUESTION');
             var emailMessagePromise = $translate('REPORT_POPUP.MESSAGE');
 
             self.success = false;
-            self.reportData = reportData;
-            self.reportData.app = ENV.firebaseAppScopeName.split('_')[0].toUpperCase();
-            self.reportData.email = userAuth.email;
             emailMessagePromise.then(function (message) {
                 self.reportData.message = message;
             });

@@ -48,34 +48,35 @@
                 };
 
                 presenceService.addCurrentUserListeners = function () {
-                    var authData = getAuthData();
-                    if (authData) {
-                        var amOnline = rootRef.getRef('.info/connected');
-                        var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
-                        amOnline.on('value', function (snapshot) {
-                            if (snapshot.val()) {
-                                userRef.onDisconnect().remove();
+                    getAuthData().then(authData => {
+                        if (authData) {
+                            var amOnline = rootRef.getRef('.info/connected');
+                            var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
+                            amOnline.on('value', function (snapshot) {
+                                if (snapshot.val()) {
+                                    userRef.onDisconnect().remove();
+                                    userRef.set(presenceService.userStatus.ONLINE);
+                                }
+                            });
+
+                            // added listener for the user to resolve the problem when other tabs are closing
+                            // it removes user presence status, turning him offline, although his still online
+                            userRef.on('value', function(snapshot) {
+                                var val = snapshot.val();
+                                if (!val && !isUserLoguot) {
+                                    userRef.set(presenceService.userStatus.ONLINE);
+                                }
+                            });
+
+                            $rootScope.$on('IdleStart', function() {
+                                userRef.set(presenceService.userStatus.IDLE);
+                            });
+
+                            $rootScope.$on('IdleEnd', function() {
                                 userRef.set(presenceService.userStatus.ONLINE);
-                            }
-                        });
-
-                        // added listener for the user to resolve the problem when other tabs are closing
-                        // it removes user presence status, turning him offline, although his still online
-                        userRef.on('value', function(snapshot) {
-                            var val = snapshot.val();
-                            if (!val && !isUserLoguot) {
-                                userRef.set(presenceService.userStatus.ONLINE);
-                            }
-                        });
-
-                        $rootScope.$on('IdleStart', function() {
-                            userRef.set(presenceService.userStatus.IDLE);
-                        });
-
-                        $rootScope.$on('IdleEnd', function() {
-                            userRef.set(presenceService.userStatus.ONLINE);
-                        });
-                    }
+                            });
+                        }
+                    });
                 };
 
                 presenceService.getCurrentUserStatus = function (userId) {
@@ -98,9 +99,11 @@
                     var authData;
                     var authService = $injector.get(AuthSrvName);
                     if (angular.isObject(authService)) {
-                        authData =  authService.getAuth();
+                         return authService.getAuth();
                     }
-                    return authData;
+                    else {
+                        return new Promise(resolve => resolve(authData));
+                    }
                 }
 
                 function trackUserPresenceCB(cb, userId, snapshot) {
@@ -114,12 +117,13 @@
                 }
 
                 $rootScope.$on('auth:beforeLogout', function () {
-                    var authData = getAuthData();
-                    if (authData) {
-                        var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
-                        isUserLoguot = true;
-                        userRef.remove();
-                    }
+                    getAuthData().then(authData => {
+                        if (authData) {
+                            var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
+                            isUserLoguot = true;
+                            userRef.remove();
+                        }
+                    });
                 });
 
                 return presenceService;
