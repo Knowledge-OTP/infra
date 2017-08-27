@@ -13231,7 +13231,7 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
                     }
 
                     function newMessageHandler(snapShot) {
-                        var newData = snapShot.exportVal();
+                        var newData = snapShot.val();
                         var messageId = snapShot.key;
                         if (angular.isUndefined(scope.chatterObj.lastSeenMessage.messageId) || messageId > scope.chatterObj.lastSeenMessage.messageId) { // check if there is messages the local user didn't saw
                             if (scope.chatterObj.isActive) {
@@ -13269,7 +13269,7 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
                         var evenType = 'value';
 
                         function _newChatHandler(snapshot) {
-                            var newChatObj = snapshot.exportVal();
+                            var newChatObj = snapshot.val();
                             if (newChatObj) {
                                 znkChatSrv.getChatGuidsByUid(scope.localUser.uid, scope.localUser.isTeacher).then(function (localUserChatGuidsArr) {
                                     var newChatGuid = Object.keys(newChatObj)[0];
@@ -16940,7 +16940,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         function _fbChildChanged(snapShot) {
                             var canvasToChange = _getCanvasContextByContextName(canvasContextName);
                             var coordsStr = snapShot.key;
-                            var color = snapShot.exportVal();
+                            var color = snapShot.val();
 
                             if (color === 0) {
                                 drawer.clearPixel(coordsStr, canvasToChange);
