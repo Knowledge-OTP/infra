@@ -25,7 +25,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         _deps.GlobalStorage = _deps.TestUtilitySrv.general.asyncToSync(_deps.InfraConfigSrv.getGlobalStorage, _deps.InfraConfigSrv)();
     }));
 
-    it('when user want to share his screen with me then screen sharing status should be changed to confirmed once i accept', function(){
+    xit('when user want to share his screen with me then screen sharing status should be changed to confirmed once i accept', function(){
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
         var screenSharingDataGuid = '123456789-data-guid';
@@ -64,7 +64,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(_deps.GlobalStorage.adapter.__db.screenSharing[screenSharingDataGuid].status).toBe(_deps.ScreenSharingStatusEnum.CONFIRMED.enum);
     });
 
-    it('when user want to share his screen with me then screen sharing status should be changed to ended once i reject', function(){
+    xit('when user want to share his screen with me then screen sharing status should be changed to ended once i reject', function(){
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
         var screenSharingDataGuid = '123456789-data-guid';
@@ -103,7 +103,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(_deps.GlobalStorage.adapter.__db.screenSharing[screenSharingDataGuid].status).toBe(_deps.ScreenSharingStatusEnum.ENDED.enum);
     });
 
-    it('when i want to share my screen then listener should ignore the change event', function(){
+    xit('when i want to share my screen then listener should ignore the change event', function(){
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
         var screenSharingDataGuid = '123456789-data-guid';
@@ -147,7 +147,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(_deps.ScreenSharingSrv.endSharing).not.toHaveBeenCalled();
     });
 
-    it('when i want to view other user screen then listener should ignore the change event', function(){
+    xit('when i want to view other user screen then listener should ignore the change event', function(){
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
         var screenSharingDataGuid = '123456789-data-guid';
@@ -191,7 +191,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(_deps.ScreenSharingSrv.endSharing).not.toHaveBeenCalled();
     });
 
-    it('when user want to view other user screen then screen sharing status should be changed to confirmed by the other user', function(){
+    xit('when user want to view other user screen then screen sharing status should be changed to confirmed by the other user', function(){
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
         var screenSharingDataGuid = '123456789-data-guid';
@@ -228,7 +228,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(_deps.GlobalStorage.adapter.__db.screenSharing[screenSharingDataGuid].status).toBe(_deps.ScreenSharingStatusEnum.CONFIRMED.enum);
     });
 
-    it('when user start sharing his screen then activate ScreenSharingUiSrv.activateSharing should be called with sharing status', function(){
+    xit('when user start sharing his screen then activate ScreenSharingUiSrv.activateSharing should be called with sharing status', function(){
         var currUid = _deps.UserProfileService.__currUserId;
         var screenSharingDataGuid = '123456789-data-guid';
         var sharerId = currUid;

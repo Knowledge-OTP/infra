@@ -45,7 +45,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         _deps.$rootScope.$digest();
     }
 
-    it('given i\'m a student when requesting to share my screen with a teacher then root shareScreen object and ' +
+    xit('given i\'m a student when requesting to share my screen with a teacher then root shareScreen object and ' +
         'sharer and viewer shareScreen objects should be update accordingly', function () {
         var screenSharingDataGuid = 'guid';
         spyOn(_deps.UtilitySrv.general, 'createGuid').and.returnValue(screenSharingDataGuid);
@@ -100,7 +100,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(currTeacherAppUsersObject).toEqual(jasmine.objectContaining(expectedTeacherAppUsersObject));
     });
 
-    it('given i\'m a student when requesting to share my screen with a student then root shareScreen object and sharer ' +
+    xit('given i\'m a student when requesting to share my screen with a student then root shareScreen object and sharer ' +
         'and viewer shareScreen objects should be update accordingly', function () {
         var screenSharingDataGuid = 'guid';
         spyOn(_deps.UtilitySrv.general, 'createGuid').and.returnValue(screenSharingDataGuid);
@@ -151,7 +151,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(currStudentAppUsersObject).toEqual(jasmine.objectContaining(expectedStudentAppUsersObject));
     });
 
-    it('given i\'m a student which already requested to share my screen with a student when requesting to share ' +
+    xit('given i\'m a student which already requested to share my screen with a student when requesting to share ' +
         'my screen with the same student then new screen sharing request should not be initialized' +
         ' be update accordingly', function () {
         var viewerId = '11223344';
@@ -168,7 +168,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(screenSharingRequestNum).toEqual(expectedScreenSharingRequestNum);
     });
 
-    it('given screen sharing request with status ended exists when trying to share my screen with the same user then new screen sharing' +
+    xit('given screen sharing request with status ended exists when trying to share my screen with the same user then new screen sharing' +
         'data should be create', function () {
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
@@ -222,7 +222,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(screenSharingReqNum).toBe(expectedScreenSharingReqNum);
     });
 
-    it('given i\'m a student when requesting to view other teacher screen then root shareScreen object and ' +
+    xit('given i\'m a student when requesting to view other teacher screen then root shareScreen object and ' +
         'sharer and viewer shareScreen objects should be update accordingly', function () {
         var screenSharingDataGuid = 'guid';
         spyOn(_deps.UtilitySrv.general, 'createGuid').and.returnValue(screenSharingDataGuid);
@@ -277,7 +277,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(currTeacherAppUsersObject).toEqual(jasmine.objectContaining(expectedTeacherAppUsersObject));
     });
 
-    it('given i\'m a student when requesting to view other student screen then root shareScreen object and sharer and ' +
+    xit('given i\'m a student when requesting to view other student screen then root shareScreen object and sharer and ' +
         'viewer shareScreen objects should be update accordingly', function () {
         var screenSharingDataGuid = 'guid';
         spyOn(_deps.UtilitySrv.general, 'createGuid').and.returnValue(screenSharingDataGuid);
@@ -329,7 +329,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(currStudentAppUsersObject).toEqual(jasmine.objectContaining(expectedStudentAppUsersObject));
     });
 
-    it('given user sharing his screen with me when i confirm sharing then sharing status should ' +
+    xit('given user sharing his screen with me when i confirm sharing then sharing status should ' +
         'be changed to confirmed', function () {
         var screenSharingDataGuid = '123456789-data-guid';
         var sharerId = '123456789-sharer-id';
@@ -352,7 +352,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(_deps.GlobalStorage.adapter.__db.screenSharing).toEqual(jasmine.objectContaining(expectedRootScreenSharing));
     });
 
-    it('given user sharing his screen with me when i end screen sharing then sharing status should ' +
+    xit('given user sharing his screen with me when i end screen sharing then sharing status should ' +
         'be changed to ended', function () {
         var screenSharingDataGuid = '123456789-data-guid';
         var sharerId = '123456789-sharer-id';
@@ -392,7 +392,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(_deps.GlobalStorage.adapter.__db[_deps.ENV.studentAppName].users[viewerId].screenSharing[screenSharingDataGuid]).toBeFalsy();
     });
 
-    it('when user close the view other user screen modal then screen sharing data status should change to ended', function () {
+    xit('when user close the view other user screen modal then screen sharing data status should change to ended', function () {
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
         var screenSharingDataGuid = '123456789-data-guid';
@@ -429,7 +429,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(_deps.ScreenSharingUiSrv.endScreenSharing).toHaveBeenCalled();
     });
 
-    it('when screen sharing is active then new screen sharing requests should be ignored', function () {
+    xit('when screen sharing is active then new screen sharing requests should be ignored', function () {
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
         var screenSharingDataGuid = '123456789-data-guid';
@@ -472,7 +472,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(shareMyScreenResult).toBe(expectedResult);
     });
 
-    it('given screen sharing is confirmed when screen sharing data is changed then all registered cb should ' +
+    xit('given screen sharing is confirmed when screen sharing data is changed then all registered cb should ' +
         'be invoked', function () {
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
@@ -518,7 +518,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(valueReceivedInCb).toEqual(newScreenSharingData);
     });
 
-    it('given screen sharing is confirmed when unregistering from active screen sharing changes then callback should ' +
+    xit('given screen sharing is confirmed when unregistering from active screen sharing changes then callback should ' +
         'not be invoked once the active screen sharing data has changed', function () {
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
@@ -565,7 +565,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(valueReceivedInCb).toEqual(screenSharingData);
     });
 
-    it('given screen sharing is confirmed when screen sharing status change to ENDED then once screen sharing data is changed' +
+    xit('given screen sharing is confirmed when screen sharing status change to ENDED then once screen sharing data is changed' +
         ' then no registered cn should be invoked', function () {
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
@@ -612,7 +612,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(valueReceivedInCb).toEqual(screenSharingData);
     });
 
-    it('given screen sharing is confirmed when screen sharing data update then registered cb should be invoked only in case' +
+    xit('given screen sharing is confirmed when screen sharing data update then registered cb should be invoked only in case' +
         ' the active screen sharing data was updated', function () {
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
@@ -659,7 +659,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(valueReceivedInCb).toEqual(screenSharingData);
     });
 
-    it('when registering to current user screen sharing state changes then the callback should be invoked once the ' +
+    xit('when registering to current user screen sharing state changes then the callback should be invoked once the ' +
         'current user state change', function () {
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
@@ -699,7 +699,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(valueFromCb).toBe(expectedValue);
     });
 
-    it('when unregistering from user screen sharing state changes then the callback should not be invoke once the ' +
+    xit('when unregistering from user screen sharing state changes then the callback should not be invoke once the ' +
         'user screen sharing state has changed', function () {
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
@@ -739,7 +739,7 @@ describe('testing service "ScreenSharingSrv":', function () {
         expect(valueFromCb).toBe(expectedValue);
     });
 
-    it('given user sharing his screen when saving screen sharing data then updated by field ' +
+    xit('given user sharing his screen when saving screen sharing data then updated by field ' +
         'should be updated correctly', function () {
         var myUid = _deps.UserProfileService.__currUserId;
         var otherUid = '123456789-other-uid';
