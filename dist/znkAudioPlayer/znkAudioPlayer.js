@@ -355,10 +355,6 @@
                     scope.$watch('sourceGetter()',function(newSrc){
                         if(newSrc){
                             loadSound();
-
-                            // if(scope.autoPlayGetter()){
-                            //     sound.play();
-                            // }
                         }
                     });
 

@@ -10815,15 +10815,12 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                 }
 
                 var pathsToUpdateCopy = angular.copy(pathsToUpdate);
+
                 processValuesToSet(pathsToUpdateCopy);
 
-                var objectPath = Object.keys(pathsToUpdateCopy)[0];
-                var objectVal = pathsToUpdateCopy[objectPath];
                 var defer = $q.defer();
 
-                this.__refMap.rootRef.child(objectPath).set(objectVal).then(function () {
-                    defer.resolve(angular.isString(relativePathOrObject) ? newValue : relativePathOrObject);
-                }).catch(function (err) {
+                this.__refMap.rootRef.update(pathsToUpdateCopy, function (err) {
                     if (err) {
                         if (angular.isObject(pathsToUpdateCopy)) {
                             $log.error('storageFirebaseAdapter: failed to set data for the following path ' + JSON.stringify(pathsToUpdateCopy) + ' ' + err);
@@ -10832,6 +10829,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                         }
                         return defer.reject(err);
                     }
+                    defer.resolve(angular.isString(relativePathOrObject) ? newValue : relativePathOrObject);
                 });
 
                 return defer.promise;
@@ -10943,10 +10941,6 @@ angular.module('znk.infra.storage').run(['$templateCache', function($templateCac
             'ngInject';
             var SupportSrv = {};
 
-            var authData;
-            AuthService.getAuth().then(userData => {
-                authData = userData;
-            });
             var APPROVED_STUDENTS_PATH = 'users/$$uid/approvedStudents/';
             var invitationEndpoint = ENV.backendEndpoint + 'invitation';
             var SUPPORT_EMAIL = ENV.supportEmail;
@@ -10954,76 +10948,82 @@ angular.module('znk.infra.storage').run(['$templateCache', function($templateCac
 
             SupportSrv.connectTeacherWithSupport = function (callbackFn) {
                 $injector.invoke(['GroupsService', function(GroupsService){
-                    if (authData && authData.uid) {
-                        return InfraConfigSrv.getTeacherStorage().then(function (teacherStorage) {
-                            return teacherStorage.get(APPROVED_STUDENTS_PATH).then(function (students) {
-                                var studentKeys = Object.keys(students);
+                    AuthService.getAuth().then(authData => {
+                        if (authData && authData.uid) {
+                            return InfraConfigSrv.getTeacherStorage().then(function (teacherStorage) {
+                                return teacherStorage.get(APPROVED_STUDENTS_PATH).then(function (students) {
+                                    var studentKeys = Object.keys(students);
 
-                                var linkedToSupport = false;
+                                    var linkedToSupport = false;
 
-                                var promsArray = [];
-                                angular.forEach(studentKeys, function (studentId) {
-                                    var prom = GroupsService.getUserData(studentId).then(function (studentData) {
-                                        if (studentData.originalReceiverEmail === SUPPORT_EMAIL) {
-                                            linkedToSupport = true;
+                                    var promsArray = [];
+                                    angular.forEach(studentKeys, function (studentId) {
+                                        var prom = GroupsService.getUserData(studentId).then(function (studentData) {
+                                            if (studentData.originalReceiverEmail === SUPPORT_EMAIL) {
+                                                linkedToSupport = true;
+                                            }
+                                        });
+                                        promsArray.push(prom);
+                                    });
+                                    $q.all(promsArray).then(function () {
+                                        if (!linkedToSupport && authData.email !== SUPPORT_EMAIL) {
+                                            _buildDataToSend(callbackFn);
+                                        } else {
+                                            callbackFn();
                                         }
                                     });
-                                    promsArray.push(prom);
-                                });
-                                $q.all(promsArray).then(function () {
-                                    if (!linkedToSupport && authData.email !== SUPPORT_EMAIL) {
-                                        _buildDataToSend(callbackFn);
-                                    } else {
-                                        callbackFn();
-                                    }
                                 });
                             });
-                        });
-                    }
+                        }
+                    });
                 }]);
             };
 
             SupportSrv.connectStudentWithSupport = function (callbackFn) {
-                if (authData && authData.uid) {
-                    teachersSrv.getAllTeachers().then(function (teachers) {
-                        var teachersKeys = Object.keys(teachers);
-                        var linkedToSupport = false;
+                AuthService.getAuth().then(authData => {
+                    if (authData && authData.uid) {
+                        teachersSrv.getAllTeachers().then(function (teachers) {
+                            var teachersKeys = Object.keys(teachers);
+                            var linkedToSupport = false;
 
-                        angular.forEach(teachersKeys, function (key) {
-                            teachers[key].isTeacher = true;
-                            if (teachers[key].email === SUPPORT_EMAIL) {
-                                linkedToSupport = true;
+                            angular.forEach(teachersKeys, function (key) {
+                                teachers[key].isTeacher = true;
+                                if (teachers[key].email === SUPPORT_EMAIL) {
+                                    linkedToSupport = true;
+                                }
+                            });
+
+                            if (!linkedToSupport && authData.email !== SUPPORT_EMAIL) {
+                                _buildDataToSend(callbackFn);
+                            } else {
+                                callbackFn();
                             }
                         });
-
-                        if (!linkedToSupport && authData.email !== SUPPORT_EMAIL) {
-                            _buildDataToSend(callbackFn);
-                        } else {
-                            callbackFn();
-                        }
-                    });
-                }
+                    }
+                });
             };
 
             function _buildDataToSend(callbackFn){
-                UserProfileService.getProfileByUserId(authData.uid).then(function (userProfile) {
-                    var receiverName = userProfile.nickname;
-                    var receiverEmail = authData.email || userProfile.email || NO_EMAIL;
-                    if (angular.isUndefined(receiverName) || angular.equals(receiverName, '')) {
-                        receiverName = receiverEmail;
-                    }
+                AuthService.getAuth().then(authData => {
+                    UserProfileService.getProfileByUserId(authData.uid).then(function (userProfile) {
+                        var receiverName = userProfile.nickname;
+                        var receiverEmail = authData.email || userProfile.email || NO_EMAIL;
+                        if (angular.isUndefined(receiverName) || angular.equals(receiverName, '')) {
+                            receiverName = receiverEmail;
+                        }
 
-                    var dataToSend = {
-                        receiverAppName: ENV.firebaseAppScopeName,
-                        receiverEmail: receiverEmail,
-                        receiverName: receiverName,
-                        receiverUid: authData.uid,
-                        receiverParentEmail: '',
-                        receiverParentName: ''
-                    };
+                        var dataToSend = {
+                            receiverAppName: ENV.firebaseAppScopeName,
+                            receiverEmail: receiverEmail,
+                            receiverName: receiverName,
+                            receiverUid: authData.uid,
+                            receiverParentEmail: '',
+                            receiverParentName: ''
+                        };
 
-                    _connectSupportToUser(dataToSend).then(function (response) {
-                        callbackFn(response);
+                        _connectSupportToUser(dataToSend).then(function (response) {
+                            callbackFn(response);
+                        });
                     });
                 });
             }
@@ -11412,7 +11412,7 @@ angular.module('znk.infra.user').service('UserProfileService',
             isLastSessionRecordDisabled = !!isDisbaled;
         };
 
-        this.$get = ["InfraConfigSrv", "ENV", function (InfraConfigSrv, ENV) {
+        this.$get = ["InfraConfigSrv", "ENV", "$window", function (InfraConfigSrv, ENV, $window) {
             'ngInject';// jshint ignore:line
 
             var initProm,lastSessionData;
@@ -11431,14 +11431,14 @@ angular.module('znk.infra.user').service('UserProfileService',
 
             function init() {
                 return InfraConfigSrv.getUserData().then(function (userData) {
-                    var globalLastSessionRef = initializeFireBase(); //(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
+                    var globalLastSessionRef = initializeFireBase();
                     var lastSessionPath = ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid;
                     return globalLastSessionRef.database().ref(lastSessionPath).once('value').then(function(snapshot){
                         lastSessionData = snapshot.val();
                         if(!isLastSessionRecordDisabled){
-                            globalLastSessionRef.database().ref('began').set(window.firebase.database.ServerValue.TIMESTAMP);
+                            globalLastSessionRef.database().ref('began').set($window.firebase.database.ServerValue.TIMESTAMP);
                             globalLastSessionRef.database().ref('ended').set(null);
-                            globalLastSessionRef.database().ref('ended').onDisconnect().set(window.firebase.database.ServerValue.TIMESTAMP);
+                            globalLastSessionRef.database().ref('ended').onDisconnect().set($window.firebase.database.ServerValue.TIMESTAMP);
                         }
                     });
                 });
@@ -11449,7 +11449,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                 var appName = ENV.firebaseAppScopeName;
                 var existApp;
 
-                window.firebase.apps.forEach(function (app) {
+                $window.firebase.apps.forEach(function (app) {
                     if (app.name.toLowerCase() === appName.toLowerCase()) {
                         existApp = app;
                     }
@@ -12445,10 +12445,6 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                     scope.$watch('sourceGetter()',function(newSrc){
                         if(newSrc){
                             loadSound();
-
-                            // if(scope.autoPlayGetter()){
-                            //     sound.play();
-                            // }
                         }
                     });
 

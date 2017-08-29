@@ -175,7 +175,7 @@ angular.module('znk.infra.user').service('UserProfileService',
             isLastSessionRecordDisabled = !!isDisbaled;
         };
 
-        this.$get = ["InfraConfigSrv", "ENV", function (InfraConfigSrv, ENV) {
+        this.$get = ["InfraConfigSrv", "ENV", "$window", function (InfraConfigSrv, ENV, $window) {
             'ngInject';// jshint ignore:line
 
             var initProm,lastSessionData;
@@ -194,14 +194,14 @@ angular.module('znk.infra.user').service('UserProfileService',
 
             function init() {
                 return InfraConfigSrv.getUserData().then(function (userData) {
-                    var globalLastSessionRef = initializeFireBase(); //(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
+                    var globalLastSessionRef = initializeFireBase();
                     var lastSessionPath = ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid;
                     return globalLastSessionRef.database().ref(lastSessionPath).once('value').then(function(snapshot){
                         lastSessionData = snapshot.val();
                         if(!isLastSessionRecordDisabled){
-                            globalLastSessionRef.database().ref('began').set(window.firebase.database.ServerValue.TIMESTAMP);
+                            globalLastSessionRef.database().ref('began').set($window.firebase.database.ServerValue.TIMESTAMP);
                             globalLastSessionRef.database().ref('ended').set(null);
-                            globalLastSessionRef.database().ref('ended').onDisconnect().set(window.firebase.database.ServerValue.TIMESTAMP);
+                            globalLastSessionRef.database().ref('ended').onDisconnect().set($window.firebase.database.ServerValue.TIMESTAMP);
                         }
                     });
                 });
@@ -212,7 +212,7 @@ angular.module('znk.infra.user').service('UserProfileService',
                 var appName = ENV.firebaseAppScopeName;
                 var existApp;
 
-                window.firebase.apps.forEach(function (app) {
+                $window.firebase.apps.forEach(function (app) {
                     if (app.name.toLowerCase() === appName.toLowerCase()) {
                         existApp = app;
                     }

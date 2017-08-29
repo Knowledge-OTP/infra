@@ -473,15 +473,12 @@
                 }
 
                 var pathsToUpdateCopy = angular.copy(pathsToUpdate);
+
                 processValuesToSet(pathsToUpdateCopy);
 
-                var objectPath = Object.keys(pathsToUpdateCopy)[0];
-                var objectVal = pathsToUpdateCopy[objectPath];
                 var defer = $q.defer();
 
-                this.__refMap.rootRef.child(objectPath).set(objectVal).then(function () {
-                    defer.resolve(angular.isString(relativePathOrObject) ? newValue : relativePathOrObject);
-                }).catch(function (err) {
+                this.__refMap.rootRef.update(pathsToUpdateCopy, function (err) {
                     if (err) {
                         if (angular.isObject(pathsToUpdateCopy)) {
                             $log.error('storageFirebaseAdapter: failed to set data for the following path ' + JSON.stringify(pathsToUpdateCopy) + ' ' + err);
@@ -490,6 +487,7 @@
                         }
                         return defer.reject(err);
                     }
+                    defer.resolve(angular.isString(relativePathOrObject) ? newValue : relativePathOrObject);
                 });
 
                 return defer.promise;
