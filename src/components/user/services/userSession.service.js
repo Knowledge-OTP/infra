@@ -10,7 +10,7 @@
             isLastSessionRecordDisabled = !!isDisbaled;
         };
 
-        this.$get = function (InfraConfigSrv, ENV) {
+        this.$get = function (InfraConfigSrv, ENV, $window) {
             'ngInject';// jshint ignore:line
 
             var initProm,lastSessionData;
@@ -29,14 +29,14 @@
 
             function init() {
                 return InfraConfigSrv.getUserData().then(function (userData) {
-                    var globalLastSessionRef = initializeFireBase(); //(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
+                    var globalLastSessionRef = initializeFireBase();
                     var lastSessionPath = ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid;
                     return globalLastSessionRef.database().ref(lastSessionPath).once('value').then(function(snapshot){
                         lastSessionData = snapshot.val();
                         if(!isLastSessionRecordDisabled){
-                            globalLastSessionRef.database().ref('began').set(window.firebase.database.ServerValue.TIMESTAMP);
+                            globalLastSessionRef.database().ref('began').set($window.firebase.database.ServerValue.TIMESTAMP);
                             globalLastSessionRef.database().ref('ended').set(null);
-                            globalLastSessionRef.database().ref('ended').onDisconnect().set(window.firebase.database.ServerValue.TIMESTAMP);
+                            globalLastSessionRef.database().ref('ended').onDisconnect().set($window.firebase.database.ServerValue.TIMESTAMP);
                         }
                     });
                 });
@@ -47,7 +47,7 @@
                 var appName = ENV.firebaseAppScopeName;
                 var existApp;
 
-                window.firebase.apps.forEach(function (app) {
+                $window.firebase.apps.forEach(function (app) {
                     if (app.name.toLowerCase() === appName.toLowerCase()) {
                         existApp = app;
                     }
