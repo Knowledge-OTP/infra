@@ -140,6 +140,7 @@
                 },
                 link:function(scope,element,attrs){
                     var sound;
+                    var soundInititalized = false;
 
                     var TYPES_ENUM = {
                         'NO_CONTROL': 1,
@@ -292,6 +293,12 @@
                                 }
                                 break;
                             case STATE_ENUM.STARTING:
+                                if (!soundInititalized) {
+                                  soundInititalized = true;
+                                  if (scope.autoPlayGetter()) {
+                                    sound.play();
+                                  }
+                                }
                                 hideLoadingSpinner();
                                 if(playerControlElem.length){
                                     playerControlElem.removeClass('ion-play');
@@ -305,6 +312,7 @@
                         if(sound){
                             sound.stop();
                             sound.release();
+                            soundInititalized = false;
                         }
                         showLoadingSpinner();
                         sound = MediaSrv.loadSound(scope.sourceGetter(),
@@ -347,10 +355,6 @@
                     scope.$watch('sourceGetter()',function(newSrc){
                         if(newSrc){
                             loadSound();
-
-                            if(scope.autoPlayGetter()){
-                                sound.play();
-                            }
                         }
                     });
 

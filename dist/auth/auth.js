@@ -11,14 +11,16 @@
     'use strict';
 
     angular.module('znk.infra.auth').factory('AuthService',
-        ["ENV", "$q", "$timeout", "$log", "StorageFirebaseAdapter", "StorageSrv", "$http", "$rootScope", function (ENV, $q, $timeout, $log, StorageFirebaseAdapter, StorageSrv, $http, $rootScope) {
-            'ngInject';
+    ["ENV", "$q", "$timeout", "$log", "StorageFirebaseAdapter", "StorageSrv", "$http", "$rootScope", function (ENV, $q, $timeout, $log, StorageFirebaseAdapter, StorageSrv, $http, $rootScope) {
+        'ngInject';
 
             if (ENV.fbGlobalEndPoint && ENV.fbDataEndPoint){
-                var refAuthDB = new Firebase(ENV.fbGlobalEndPoint, ENV.firebaseAppScopeName);
-                var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
+                var refAuthDB = initializeAuthFireBase();
+                var rootRef = initializeDataFireBase();
+
+                refAuthDB = refAuthDB.auth();
             }
-            
+
             var authService = {};
 
             authService.saveRegistration = function (registration, login) {
@@ -34,7 +36,7 @@
 
                 registration.profile = {};
 
-                refAuthDB.createUser(registration).then(function () {
+                refAuthDB.createUserWithEmailAndPassword(registration.email, registration.password).then(function () {
                     registerInProgress = false;
                     $timeout.cancel(timeoutPromise);
 
@@ -61,9 +63,9 @@
             authService.login = function (loginData) {
                 var deferred = $q.defer();
 
-                refAuthDB.unauth();
+                refAuthDB.signOut();
 
-                refAuthDB.authWithPassword(loginData).then(function (authData) {
+                refAuthDB.signInWithEmailAndPassword(loginData.email, loginData.password).then(function (authData) {
                     $log.debug('authSrv::login(): uid=' + authData.uid);
                     _onAuth(authData).then(function () {
                         deferred.resolve(authData);
@@ -77,42 +79,33 @@
             };
 
             authService.logout = function () {
-                refAuthDB.unauth();
-                rootRef.unauth();
+                refAuthDB.signOut();
+                rootRef.auth().signOut();
             };
 
             authService.forgotPassword = function (forgotPasswordData) {
-                return refAuthDB.resetPassword(forgotPasswordData);
+                return refAuthDB.sendPasswordResetEmail(forgotPasswordData.email);
             };
 
             authService.getAuth = function() {
-                var authData = rootRef ? rootRef.getAuth() : undefined;
-                if (!authData) {
-                    return null;
-                }
-
-                if (!authData.auth) {
-                    authData.auth = {};
-                }
-
-                if (!authData.password) {
-                    authData.password = {};
-                }
-
-                var userEmail = authData.auth.email || authData.password.email;
-                authData.auth.email = authData.password.email = userEmail;
-                return authData;
+                return new Promise(function(resolve, reject) {
+                    refAuthDB.onAuthStateChanged(user => {
+                        if (user) {
+                            resolve(user); }
+                        else {
+                            resolve (null);
+                        }
+                    }, err => reject(err));
+                });
             };
 
-            authService.changePassword = function (changePasswordData) {
-                var refAuthData = refAuthDB.getAuth();
-                changePasswordData.email = (refAuthData.password && refAuthData.password.email) ? refAuthData.password.email : '';
-                return refAuthDB.changePassword(changePasswordData);
+            authService.changePassword = function () {
+                return refAuthDB.sendPasswordResetEmail(refAuthDB.currentUser().email );
             };
 
             authService.createAuthWithCustomToken = function (refDB, token) {
                 var deferred = $q.defer();
-                refDB.authWithCustomToken(token, function (error, userData) {
+                refDB.auth().signInWithCustomToken(token, function (error, userData) {
                     if (error) {
                         deferred.reject(error);
                     }
@@ -132,20 +125,24 @@
 
             authService.registerFirstLogin = function () {
                 var storageSrv = storageObj();
-                var firstLoginPath = 'firstLogin/' + authService.getAuth().uid;
-                return storageSrv.get(firstLoginPath).then(function (userFirstLoginTime) {
-                    if (angular.equals(userFirstLoginTime, {})) {
-                        storageSrv.set(firstLoginPath, Date.now());
-                    }
+                return authService.getAuth().then(user => {
+                    var firstLoginPath = 'firstLogin/' + user.uid;
+                    return storageSrv.get(firstLoginPath).then(function (userFirstLoginTime) {
+                        if (angular.equals(userFirstLoginTime, {})) {
+                            storageSrv.set(firstLoginPath, Date.now());
+                        }
+                    });
                 });
             };
 
-            function storageObj (){
+            function storageObj() {
                 var fbAdapter = new StorageFirebaseAdapter(ENV.fbDataEndPoint + '/' + ENV.firebaseAppScopeName);
                 var config = {
                     variables: {
                         uid: function () {
-                            return authService.getAuth().uid;
+                            return authService.getAuth().then(user => {
+                                return user.uid;
+                            });
                         }
                     }
                 };
@@ -154,14 +151,15 @@
 
             function _dataLogin() {
                 var postUrl = ENV.backendEndpoint + 'firebase/token';
-                var authData = refAuthDB.getAuth();
+                //TODO - CHECK IT (ASSAF)
+                var authData = refAuthDB.currentUser();
                 var postData = {
-                    email: authData.password ? authData.password.email : '',
+                    email: authData.password,
                     uid: authData.uid,
                     fbDataEndPoint: ENV.fbDataEndPoint,
                     fbEndpoint: ENV.fbGlobalEndPoint,
                     auth: ENV.dataAuthSecret,
-                    token: authData.token
+                    token: authData.refreshToken
                 };
 
                 return $http.post(postUrl, postData).then(function (token) {
@@ -187,6 +185,41 @@
                 }
                 $rootScope.$broadcast('auth:logout');
                 return $q.when();
+            }
+
+            function initializeDataFireBase(){
+                var existApp = existFirbaseApp(ENV.firebaseAppScopeName);
+                if(!existApp) {
+                    var config = {
+                        apiKey: ENV.firebase_apiKey,
+                        authDomain:  ENV.firebase_projectId + ".firebaseapp.com",
+                        databaseURL: ENV.fbDataEndPoint,
+                        projectId: ENV.firebase_projectId,
+                        storageBucket: ENV.firebase_projectId + ".appspot.com",
+                        messagingSenderId: ENV.messagingSenderId
+                    };
+                    existApp = window.firebase.initializeApp(config, ENV.firebaseAppScopeName);
+                }
+                return existApp;
+            }
+
+            function initializeAuthFireBase(){
+                var existApp = existFirbaseApp(ENV.authAppName);
+                if(!existApp) {
+                    existApp = window.firebase.initializeApp(ENV.firbase_auth_config, ENV.authAppName);
+                }
+              return existApp;
+            }
+
+            function existFirbaseApp(appName) {
+                var existApp;
+
+                window.firebase.apps.forEach(function (app) {
+                    if (app.name.toLowerCase() === appName.toLowerCase()) {
+                        existApp = app;
+                    }
+                });
+                return existApp;
             }
 
             return authService;

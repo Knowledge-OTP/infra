@@ -136,7 +136,7 @@
                         }
                         if (scope.d.newMessage.length > 0 && angular.isDefined(scope.chatterObj) && scope.chatterObj.chatGuid) {
                             var newMessageObj = {
-                                time: Firebase.ServerValue.TIMESTAMP,
+                                time: window.firebase.database.ServerValue.TIMESTAMP,
                                 uid: scope.userId,
                                 text: scope.d.newMessage
                             };
@@ -286,7 +286,7 @@
 
                     function newMessageHandler(snapShot) {
                         var newData = snapShot.val();
-                        var messageId = snapShot.key();
+                        var messageId = snapShot.key;
                         if (angular.isUndefined(scope.chatterObj.lastSeenMessage.messageId) || messageId > scope.chatterObj.lastSeenMessage.messageId) { // check if there is messages the local user didn't saw
                             if (scope.chatterObj.isActive) {
                                 var lastSeenMessage = {};
@@ -300,8 +300,11 @@
 
                                 if(!soundPlaying){
                                     soundPlaying = true;
-                                    sound =  MediaSrv.loadSound(soundPath);
-                                    sound.play();
+                                    sound =  MediaSrv.loadSound(soundPath,null,null,function(status){
+                                      if (status === window.Media.MEDIA_STARTING && soundPlaying === true) {
+                                        sound.play();
+                                      }
+                                    });
                                     sound.onEnded().then(function(){
                                         soundPlaying = false;
                                         sound.release();
@@ -527,7 +530,7 @@
                 return _getStorage().then(function (globalStorage) {
                     var messagesPath = znkChatPaths.chatPath + '/' + chatGuid + '/messages';
                     var adapterRef = globalStorage.adapter.getRef(messagesPath);
-                    var messageGuid = adapterRef.push(newMessage).key();
+                    var messageGuid = adapterRef.push(newMessage).key;
                     return messageGuid;
 
                 });
@@ -571,7 +574,7 @@
                     var adapterRef = globalStorage.adapter.getRef();
                     var chatsRef = adapterRef.child(chatPath);
                     var newChatObj = _createNewChatObj(localUser, secondUser);
-                    chatGuid = chatsRef.push(newChatObj).key();
+                    chatGuid = chatsRef.push(newChatObj).key;
 
                     var localUserPath = localUser.isTeacher ? znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';
                     var secondUserPath = secondUser.isTeacher ? znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';

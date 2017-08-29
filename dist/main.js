@@ -941,14 +941,16 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
     'use strict';
 
     angular.module('znk.infra.auth').factory('AuthService',
-        ["ENV", "$q", "$timeout", "$log", "StorageFirebaseAdapter", "StorageSrv", "$http", "$rootScope", function (ENV, $q, $timeout, $log, StorageFirebaseAdapter, StorageSrv, $http, $rootScope) {
-            'ngInject';
+    ["ENV", "$q", "$timeout", "$log", "StorageFirebaseAdapter", "StorageSrv", "$http", "$rootScope", function (ENV, $q, $timeout, $log, StorageFirebaseAdapter, StorageSrv, $http, $rootScope) {
+        'ngInject';
 
             if (ENV.fbGlobalEndPoint && ENV.fbDataEndPoint){
-                var refAuthDB = new Firebase(ENV.fbGlobalEndPoint, ENV.firebaseAppScopeName);
-                var rootRef = new Firebase(ENV.fbDataEndPoint, ENV.firebaseAppScopeName);
+                var refAuthDB = initializeAuthFireBase();
+                var rootRef = initializeDataFireBase();
+
+                refAuthDB = refAuthDB.auth();
             }
-            
+
             var authService = {};
 
             authService.saveRegistration = function (registration, login) {
@@ -964,7 +966,7 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
 
                 registration.profile = {};
 
-                refAuthDB.createUser(registration).then(function () {
+                refAuthDB.createUserWithEmailAndPassword(registration.email, registration.password).then(function () {
                     registerInProgress = false;
                     $timeout.cancel(timeoutPromise);
 
@@ -991,9 +993,9 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
             authService.login = function (loginData) {
                 var deferred = $q.defer();
 
-                refAuthDB.unauth();
+                refAuthDB.signOut();
 
-                refAuthDB.authWithPassword(loginData).then(function (authData) {
+                refAuthDB.signInWithEmailAndPassword(loginData.email, loginData.password).then(function (authData) {
                     $log.debug('authSrv::login(): uid=' + authData.uid);
                     _onAuth(authData).then(function () {
                         deferred.resolve(authData);
@@ -1007,42 +1009,33 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
             };
 
             authService.logout = function () {
-                refAuthDB.unauth();
-                rootRef.unauth();
+                refAuthDB.signOut();
+                rootRef.auth().signOut();
             };
 
             authService.forgotPassword = function (forgotPasswordData) {
-                return refAuthDB.resetPassword(forgotPasswordData);
+                return refAuthDB.sendPasswordResetEmail(forgotPasswordData.email);
             };
 
             authService.getAuth = function() {
-                var authData = rootRef ? rootRef.getAuth() : undefined;
-                if (!authData) {
-                    return null;
-                }
-
-                if (!authData.auth) {
-                    authData.auth = {};
-                }
-
-                if (!authData.password) {
-                    authData.password = {};
-                }
-
-                var userEmail = authData.auth.email || authData.password.email;
-                authData.auth.email = authData.password.email = userEmail;
-                return authData;
+                return new Promise(function(resolve, reject) {
+                    refAuthDB.onAuthStateChanged(user => {
+                        if (user) {
+                            resolve(user); }
+                        else {
+                            resolve (null);
+                        }
+                    }, err => reject(err));
+                });
             };
 
-            authService.changePassword = function (changePasswordData) {
-                var refAuthData = refAuthDB.getAuth();
-                changePasswordData.email = (refAuthData.password && refAuthData.password.email) ? refAuthData.password.email : '';
-                return refAuthDB.changePassword(changePasswordData);
+            authService.changePassword = function () {
+                return refAuthDB.sendPasswordResetEmail(refAuthDB.currentUser().email );
             };
 
             authService.createAuthWithCustomToken = function (refDB, token) {
                 var deferred = $q.defer();
-                refDB.authWithCustomToken(token, function (error, userData) {
+                refDB.auth().signInWithCustomToken(token, function (error, userData) {
                     if (error) {
                         deferred.reject(error);
                     }
@@ -1062,20 +1055,24 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
 
             authService.registerFirstLogin = function () {
                 var storageSrv = storageObj();
-                var firstLoginPath = 'firstLogin/' + authService.getAuth().uid;
-                return storageSrv.get(firstLoginPath).then(function (userFirstLoginTime) {
-                    if (angular.equals(userFirstLoginTime, {})) {
-                        storageSrv.set(firstLoginPath, Date.now());
-                    }
+                return authService.getAuth().then(user => {
+                    var firstLoginPath = 'firstLogin/' + user.uid;
+                    return storageSrv.get(firstLoginPath).then(function (userFirstLoginTime) {
+                        if (angular.equals(userFirstLoginTime, {})) {
+                            storageSrv.set(firstLoginPath, Date.now());
+                        }
+                    });
                 });
             };
 
-            function storageObj (){
+            function storageObj() {
                 var fbAdapter = new StorageFirebaseAdapter(ENV.fbDataEndPoint + '/' + ENV.firebaseAppScopeName);
                 var config = {
                     variables: {
                         uid: function () {
-                            return authService.getAuth().uid;
+                            return authService.getAuth().then(user => {
+                                return user.uid;
+                            });
                         }
                     }
                 };
@@ -1084,14 +1081,15 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
 
             function _dataLogin() {
                 var postUrl = ENV.backendEndpoint + 'firebase/token';
-                var authData = refAuthDB.getAuth();
+                //TODO - CHECK IT (ASSAF)
+                var authData = refAuthDB.currentUser();
                 var postData = {
-                    email: authData.password ? authData.password.email : '',
+                    email: authData.password,
                     uid: authData.uid,
                     fbDataEndPoint: ENV.fbDataEndPoint,
                     fbEndpoint: ENV.fbGlobalEndPoint,
                     auth: ENV.dataAuthSecret,
-                    token: authData.token
+                    token: authData.refreshToken
                 };
 
                 return $http.post(postUrl, postData).then(function (token) {
@@ -1117,6 +1115,41 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function($templa
                 }
                 $rootScope.$broadcast('auth:logout');
                 return $q.when();
+            }
+
+            function initializeDataFireBase(){
+                var existApp = existFirbaseApp(ENV.firebaseAppScopeName);
+                if(!existApp) {
+                    var config = {
+                        apiKey: ENV.firebase_apiKey,
+                        authDomain:  ENV.firebase_projectId + ".firebaseapp.com",
+                        databaseURL: ENV.fbDataEndPoint,
+                        projectId: ENV.firebase_projectId,
+                        storageBucket: ENV.firebase_projectId + ".appspot.com",
+                        messagingSenderId: ENV.messagingSenderId
+                    };
+                    existApp = window.firebase.initializeApp(config, ENV.firebaseAppScopeName);
+                }
+                return existApp;
+            }
+
+            function initializeAuthFireBase(){
+                var existApp = existFirbaseApp(ENV.authAppName);
+                if(!existApp) {
+                    existApp = window.firebase.initializeApp(ENV.firbase_auth_config, ENV.authAppName);
+                }
+              return existApp;
+            }
+
+            function existFirbaseApp(appName) {
+                var existApp;
+
+                window.firebase.apps.forEach(function (app) {
+                    if (app.name.toLowerCase() === appName.toLowerCase()) {
+                        existApp = app;
+                    }
+                });
+                return existApp;
             }
 
             return authService;
@@ -2905,12 +2938,12 @@ angular.module('znk.infra.calls').run(['$templateCache', function($templateCache
 
                     InfraConfigSrv.getUserData = function(){
                         var userDataInjected;
-                        if(!userDataFn){
+                        if (!userDataFn) {
                             $log.error('InfraConfigSrv: get user data function was not defined');
                             return;
                         }
                         userDataInjected = $injector.invoke(userDataFn);
-                        return $q.when(userDataInjected);
+                        return userDataInjected;
                     };
 
                     return InfraConfigSrv;
@@ -4692,22 +4725,23 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function($temp
                         scope.overlayTextObj[ETutoringViewsConst.PRACTICE] = res[noPracticesTitle];
                     });
 
-                    var authData = AuthService.getAuth();
-                    if (authData) {
-                        scope.userId = authData.uid;
-                        StudentContextSrv.setCurrentUid(scope.userId);
+                    AuthService.getAuth().then(authData => {
+                        if (authData) {
+                            scope.userId = authData.uid;
+                            StudentContextSrv.setCurrentUid(scope.userId);
 
-                        scope.ETutoringViewsConst = ETutoringViewsConst;
-                        scope.dueDateUtility = DueDateSrv;
+                            scope.ETutoringViewsConst = ETutoringViewsConst;
+                            scope.dueDateUtility = DueDateSrv;
 
-                        UserAssignModuleService.registerExternalOnValueCB(scope.userId, AssignContentEnum.LESSON.enum, getAssignModulesCB, getAssignModulesCB);
-                        UserAssignModuleService.registerExternalOnValueCB(scope.userId, AssignContentEnum.PRACTICE.enum, getAssignHomeworkCB, getAssignHomeworkCB);
-                    } else {
-                        $log.debug('etutoringStudentNavigationPaneDirective:: no user id');
-                    }
+                            UserAssignModuleService.registerExternalOnValueCB(scope.userId, AssignContentEnum.LESSON.enum, getAssignModulesCB, getAssignModulesCB);
+                            UserAssignModuleService.registerExternalOnValueCB(scope.userId, AssignContentEnum.PRACTICE.enum, getAssignHomeworkCB, getAssignHomeworkCB);
+                        } else {
+                            $log.debug('etutoringStudentNavigationPaneDirective:: no user id');
+                        }
 
-                    angular.forEach(SubjectEnum.getEnumArr(), function (subject) {
-                        scope.subjectsMap[subject.enum] = subject;
+                        angular.forEach(SubjectEnum.getEnumArr(), function (subject) {
+                            scope.subjectsMap[subject.enum] = subject;
+                        });
                     });
 
                     scope.updateModel = function (module) {
@@ -7767,10 +7801,11 @@ angular.module('znk.infra.general').run(['$templateCache', function($templateCac
                                     };
                                 }
 
-                                hintsStatus[hintName].history.push({
-                                    value: angular.isUndefined(result) ? true : result,
-                                    date: StorageSrv.variables.currTimeStamp
-                                });
+                                // TODO - FIX (ASSAF)
+                                // hintsStatus[hintName].history.push({
+                                //     value: angular.isUndefined(result) ? true : result,
+                                //     date: StorageSrv.variables.currTimeStamp
+                                // });
 
                                 hints.hintsStatus = hintsStatus;
                                 saveHints(hints);
@@ -8751,34 +8786,35 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
                 };
 
                 presenceService.addCurrentUserListeners = function () {
-                    var authData = getAuthData();
-                    if (authData) {
-                        var amOnline = rootRef.getRef('.info/connected');
-                        var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
-                        amOnline.on('value', function (snapshot) {
-                            if (snapshot.val()) {
-                                userRef.onDisconnect().remove();
+                    getAuthData().then(authData => {
+                        if (authData) {
+                            var amOnline = rootRef.getRef('.info/connected');
+                            var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
+                            amOnline.on('value', function (snapshot) {
+                                if (snapshot.val()) {
+                                    userRef.onDisconnect().remove();
+                                    userRef.set(presenceService.userStatus.ONLINE);
+                                }
+                            });
+
+                            // added listener for the user to resolve the problem when other tabs are closing
+                            // it removes user presence status, turning him offline, although his still online
+                            userRef.on('value', function(snapshot) {
+                                var val = snapshot.val();
+                                if (!val && !isUserLoguot) {
+                                    userRef.set(presenceService.userStatus.ONLINE);
+                                }
+                            });
+
+                            $rootScope.$on('IdleStart', function() {
+                                userRef.set(presenceService.userStatus.IDLE);
+                            });
+
+                            $rootScope.$on('IdleEnd', function() {
                                 userRef.set(presenceService.userStatus.ONLINE);
-                            }
-                        });
-
-                        // added listener for the user to resolve the problem when other tabs are closing
-                        // it removes user presence status, turning him offline, although his still online
-                        userRef.on('value', function(snapshot) {
-                            var val = snapshot.val();
-                            if (!val && !isUserLoguot) {
-                                userRef.set(presenceService.userStatus.ONLINE);
-                            }
-                        });
-
-                        $rootScope.$on('IdleStart', function() {
-                            userRef.set(presenceService.userStatus.IDLE);
-                        });
-
-                        $rootScope.$on('IdleEnd', function() {
-                            userRef.set(presenceService.userStatus.ONLINE);
-                        });
-                    }
+                            });
+                        }
+                    });
                 };
 
                 presenceService.getCurrentUserStatus = function (userId) {
@@ -8801,9 +8837,11 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
                     var authData;
                     var authService = $injector.get(AuthSrvName);
                     if (angular.isObject(authService)) {
-                        authData =  authService.getAuth();
+                         return authService.getAuth();
                     }
-                    return authData;
+                    else {
+                        return new Promise(resolve => resolve(authData));
+                    }
                 }
 
                 function trackUserPresenceCB(cb, userId, snapshot) {
@@ -8817,12 +8855,13 @@ angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache
                 }
 
                 $rootScope.$on('auth:beforeLogout', function () {
-                    var authData = getAuthData();
-                    if (authData) {
-                        var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
-                        isUserLoguot = true;
-                        userRef.remove();
-                    }
+                    getAuthData().then(authData => {
+                        if (authData) {
+                            var userRef = rootRef.getRef(PRESENCE_PATH + authData.uid);
+                            isUserLoguot = true;
+                            userRef.remove();
+                        }
+                    });
                 });
 
                 return presenceService;
@@ -10311,37 +10350,39 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
     'use strict';
 
     angular.module('znk.infra.storage').service('InvitationStorageSrv',
-        ["StorageFirebaseAdapter", "ENV", "StorageSrv", "AuthService", function (StorageFirebaseAdapter, ENV, StorageSrv, AuthService) {
-        'ngInjedct';
+    ["StorageFirebaseAdapter", "ENV", "StorageSrv", "AuthService", function (StorageFirebaseAdapter, ENV, StorageSrv, AuthService) {
+    'ngInject';
 
-            var fbAdapter = new StorageFirebaseAdapter(ENV.fbDataEndPoint + 'invitations');
-            var config = {
-                variables: {
-                    uid: function () {
-                        var auth = AuthService.getAuth();
-                        return auth && auth.uid;
-                    }
-                },
-                cacheRules: [/.*/]
-            };
+        var fbAdapter = new StorageFirebaseAdapter(ENV.fbDataEndPoint + 'invitations');
+        var config = {
+            variables: {
+                uid: function () {
+                    return AuthService.getAuth().then(user => {
+                        return user.uid;
+                    });
+                }
+            },
+            cacheRules: [/.*/]
+        };
 
-            var storage = new StorageSrv(fbAdapter, config);
+        var storage = new StorageSrv(fbAdapter, config);
 
-            storage.getInvitationObject = function (inviteId) {
-                return storage.get(inviteId);
-            };
+        storage.getInvitationObject = function (inviteId) {
+            return storage.get(inviteId);
+        };
 
-            return storage;
-        }]
-    );
+        return storage;
+    }]
+);
 })(angular);
 
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.storage').factory('StorageSrv', [
-        '$cacheFactory', '$q', '$log',
-        function ($cacheFactory, $q, $log) {
+    angular.module('znk.infra.storage').factory('StorageSrv',
+        ["$cacheFactory", "$q", "$log", function ($cacheFactory, $q, $log) {
+        'ngInject';
+
             var getEntityPromMap = {};
 
             var cacheId = 0;
@@ -10424,8 +10465,11 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
                 }
 
                 function _getUid() {
-                    var getUid = angular.isFunction(config.variables.uid) ? config.variables.uid() : config.variables.uid;
-                    return $q.when(getUid);
+                    if (angular.isFunction(config.variables.uid)) {
+                        return config.variables.uid();
+                    } else {
+                        return config.variables.uid;
+                    }
                 }
 
                 return _getUid().then(function (uid) {
@@ -10645,205 +10689,238 @@ angular.module('znk.infra.stats').run(['$templateCache', function($templateCache
             };
 
             return StorageSrv;
-        }
-    ]);
+        }]
+    );
 })(angular);
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.storage').service('StorageFirebaseAdapter',
-        ["$log", "$q", "StorageSrv", "ENV", "$timeout", function ($log, $q, StorageSrv, ENV, $timeout) {
-            'ngInject';
+    ["$log", "$q", "StorageSrv", "ENV", "$timeout", function ($log, $q, StorageSrv, ENV, $timeout) {
+        'ngInject';
 
-            function processValue(value) {
-                if (value === StorageSrv.variables.currTimeStamp) {
-                    return Firebase.ServerValue.TIMESTAMP;
-                }
-                return value;
+        function processValue(value) {
+            if (value === StorageSrv.variables.currTimeStamp) {
+                return window.firebase.database.ServerValue.TIMESTAMP;
+            }
+            return value;
+        }
+
+        function processValuesToSet(source) {
+            if (angular.isArray(source)) {
+                source.forEach(function (item, index) {
+                    if (angular.isUndefined(item)) {
+                        source[index] = null;
+                    }
+                    processValuesToSet(item);
+                });
             }
 
-            function processValuesToSet(source) {
-                if (angular.isArray(source)) {
-                    source.forEach(function (item, index) {
-                        if (angular.isUndefined(item)) {
-                            source[index] = null;
+            if (angular.isObject(source)) {
+                var keys = Object.keys(source);
+                keys.forEach(function (key) {
+                    var value = source[key];
+
+                    if (key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length) || (value !== value)) { //value !== value return true if it equals to NaN
+                        if (key !== '$save') {
+                            $log.debug('storageFirebaseAdapter: illegal property was deleted before save ' + key);
                         }
-                        processValuesToSet(item);
-                    });
+                        delete source[key];
+                        return;
+                    }
+
+                    if (angular.isString(value)) {
+                        source[key] = processValue(value);
+                    }
+
+                    processValuesToSet(value);
+                });
+            }
+        }
+
+        function StorageFirebaseAdapter(endPoint) {
+            $log.debug('endPoint:' + endPoint);
+            var extendRef = null;
+            if (endPoint.lastIndexOf('/') + 1 === endPoint.length) {
+                $log.debug('no extended endpoint');
+            } else {
+                extendRef = endPoint.substr(endPoint.lastIndexOf('/') + 1, endPoint.length - endPoint.lastIndexOf('/'));
+                $log.debug('extendRef=' + extendRef);
+            }
+            this.__refMap = {};
+            const fbApp = initializeFireBase();
+            this.__refMap.rootRef = extendRef ? fbApp.database().ref().child(extendRef) : fbApp.database().ref();
+
+            this.__registeredEvents = {};
+        }
+
+        function initializeFireBase(){
+            var appName = ENV.firebaseAppScopeName;
+
+            var existApp;
+
+            window.firebase.apps.forEach(function (app) {
+                if (app.name.toLowerCase() === appName.toLowerCase()) {
+                    existApp = app;
+                }
+            });
+
+            if (!existApp) {
+                var config = {
+                    apiKey: ENV.firebase_apiKey,
+                    authDomain:  ENV.firebase_projectId + ".firebaseapp.com",
+                    databaseURL: ENV.fbDataEndPoint,
+                    projectId: ENV.firebase_projectId,
+                    storageBucket: ENV.firebase_projectId + ".appspot.com",
+                    messagingSenderId: ENV.messagingSenderId
+                };
+                existApp =  window.firebase.initializeApp(config, appName);
+            }
+           return existApp;
+        }
+
+        var storageFirebaseAdapterPrototype = {
+            getRef: function (relativePath) {
+                if (relativePath === '' || angular.isUndefined(relativePath) || angular.isUndefined(relativePath) || relativePath === null) {
+                    return this.__refMap.rootRef;
                 }
 
-                if (angular.isObject(source)) {
-                    var keys = Object.keys(source);
-                    keys.forEach(function (key) {
-                        var value = source[key];
-
-                        if (key[0] === '$' || angular.isUndefined(value) || (angular.isArray(value) && !value.length) || (value !== value)) { //value !== value return true if it equals to NaN
-                            if (key !== '$save') {
-                                $log.debug('storageFirebaseAdapter: illegal property was deleted before save ' + key);
-                            }
-                            delete source[key];
-                            return;
-                        }
-
-                        if (angular.isString(value)) {
-                            source[key] = processValue(value);
-                        }
-
-                        processValuesToSet(value);
-                    });
+                if (!this.__refMap[relativePath]) {
+                    this.__refMap[relativePath] = this.__refMap.rootRef.child(relativePath);
                 }
-            }
 
-            function StorageFirebaseAdapter(endPoint) {
-                this.__refMap = {};
+                return this.__refMap[relativePath];
+            },
+            get: function (relativePath) {
+                var defer = $q.defer();
 
-                this.__refMap.rootRef = new Firebase(endPoint, ENV.firebaseAppScopeName);
+                var ref = this.getRef(relativePath);
+                ref.once('value', function (dataSnapshot) {
+                    defer.resolve(dataSnapshot.val());
+                }, function (err) {
+                    $log.error('storageFirebaseAdapter: failed to retrieve data for the following path ' + relativePath + ' ' + err);
+                    defer.reject(err);
+                });
 
-                this.__registeredEvents = {};
-            }
+                return defer.promise;
+            },
+            update: function (relativePathOrObject, newValue) {
+                var pathsToUpdate = {};
 
-            var storageFirebaseAdapterPrototype = {
-                getRef: function (relativePath) {
-                    if (relativePath === '' || angular.isUndefined(relativePath) || angular.isUndefined(relativePath) || relativePath === null) {
-                        return this.__refMap.rootRef;
+                if (!angular.isObject(relativePathOrObject)) {
+                    pathsToUpdate[relativePathOrObject] = newValue;
+                } else {
+                    pathsToUpdate = relativePathOrObject;
+                }
+
+                var pathsToUpdateCopy = angular.copy(pathsToUpdate);
+
+                processValuesToSet(pathsToUpdateCopy);
+
+                var defer = $q.defer();
+
+                this.__refMap.rootRef.update(pathsToUpdateCopy, function (err) {
+                    if (err) {
+                        if (angular.isObject(pathsToUpdateCopy)) {
+                            $log.error('storageFirebaseAdapter: failed to set data for the following path ' + JSON.stringify(pathsToUpdateCopy) + ' ' + err);
+                        } else {
+                            $log.error('storageFirebaseAdapter: failed to set data for the following path ' + pathsToUpdateCopy + ' ' + err);
+                        }
+                        return defer.reject(err);
                     }
+                    defer.resolve(angular.isString(relativePathOrObject) ? newValue : relativePathOrObject);
+                });
 
-                    if (!this.__refMap[relativePath]) {
-                        this.__refMap[relativePath] = this.__refMap.rootRef.child(relativePath);
-                    }
+                return defer.promise;
+            },
+            set: function (relativePath, newValue) {
+                var newValueCopy = angular.copy(newValue);
 
-                    return this.__refMap[relativePath];
-                },
-                get: function (relativePath) {
-                    var defer = $q.defer();
+                processValuesToSet(newValueCopy);
 
-                    var ref = this.getRef(relativePath);
-                    ref.once('value', function (dataSnapshot) {
-                        defer.resolve(dataSnapshot.val());
-                    }, function (err) {
-                        $log.error('storageFirebaseAdapter: failed to retrieve data for the following path ' + relativePath + ' ' + err);
-                        defer.reject(err);
+                var ref = this.getRef(relativePath);
+                return ref.set(newValueCopy);
+            },
+            onEvent: function (type, path, cb) {
+                var self = this;
+
+                if (!this.__registeredEvents[type]) {
+                    this.__registeredEvents[type] = {};
+                }
+
+                if (!this.__registeredEvents[type][path]) {
+                    this.__registeredEvents[type][path] = [];
+
+                    var ref = this.getRef(path);
+                    ref.on(type, function (snapshot) {
+                        if (!self.__registeredEvents[type][path]) { self.__registeredEvents[type][path] = []; }
+                        self.__registeredEvents[type][path].firstOnWasInvoked = true;
+                        var newVal = snapshot.val();
+                        var key = snapshot.key;
+                        self.__invokeEventCb(type, path, [newVal, key]);
                     });
-
-                    return defer.promise;
-                },
-                update: function (relativePathOrObject, newValue) {
-                    var pathsToUpdate = {};
-
-                    if (!angular.isObject(relativePathOrObject)) {
-                        pathsToUpdate[relativePathOrObject] = newValue;
-                    } else {
-                        pathsToUpdate = relativePathOrObject;
-                    }
-
-                    var pathsToUpdateCopy = angular.copy(pathsToUpdate);
-
-                    processValuesToSet(pathsToUpdateCopy);
-
-                    var defer = $q.defer();
-
-                    this.__refMap.rootRef.update(pathsToUpdateCopy, function (err) {
-                        if (err) {
-                            if (angular.isObject(pathsToUpdateCopy)) {
-                                $log.error('storageFirebaseAdapter: failed to set data for the following path ' + JSON.stringify(pathsToUpdateCopy) + ' ' + err);
+                } else {
+                    if (self.__registeredEvents[type][path].firstOnWasInvoked) {
+                        self.get(path).then(function (newVal) {
+                            if (angular.isDefined(newVal) && newVal !== null && type === 'child_added') {
+                                var keys = Object.keys(newVal);
+                                angular.forEach(keys, function (key) {
+                                    cb(newVal[key], key);
+                                });
                             } else {
-                                $log.error('storageFirebaseAdapter: failed to set data for the following path ' + pathsToUpdateCopy + ' ' + err);
+                                cb(newVal, path);
                             }
-                            return defer.reject(err);
-                        }
-                        defer.resolve(angular.isString(relativePathOrObject) ? newValue : relativePathOrObject);
-                    });
-
-                    return defer.promise;
-                },
-                set: function (relativePath, newValue) {
-                    var newValueCopy = angular.copy(newValue);
-
-                    processValuesToSet(newValueCopy);
-
-                    var ref = this.getRef(relativePath);
-                    return ref.set(newValueCopy);
-                },
-                onEvent: function (type, path, cb) {
-                    var self = this;
-
-                    if (!this.__registeredEvents[type]) {
-                        this.__registeredEvents[type] = {};
-                    }
-
-                    if (!this.__registeredEvents[type][path]) {
-                        this.__registeredEvents[type][path] = [];
-
-                        var ref = this.getRef(path);
-                        ref.on(type, function (snapshot) {
-                            if (!self.__registeredEvents[type][path]) { self.__registeredEvents[type][path] = []; }
-                            self.__registeredEvents[type][path].firstOnWasInvoked = true;
-                            var newVal = snapshot.val();
-                            var key = snapshot.key();
-                            self.__invokeEventCb(type, path, [newVal, key]);
                         });
-                    } else {
-                        if (self.__registeredEvents[type][path].firstOnWasInvoked) {
-                            self.get(path).then(function (newVal) {
-                                if (angular.isDefined(newVal) && newVal !== null && type === 'child_added') {
-                                    var keys = Object.keys(newVal);
-                                    angular.forEach(keys, function (key) {
-                                        cb(newVal[key], key);
-                                    });
-                                } else {
-                                    cb(newVal, path);
-                                }
-                            });
-                        }
-                    }
-
-                    var evtCbArr = this.__registeredEvents[type][path];
-                    evtCbArr.push(cb);
-                },
-                __invokeEventCb: function (type, path, argArr) {
-                    if (!this.__registeredEvents[type] || !this.__registeredEvents[type][path]) {
-                        return;
-                    }
-
-                    var eventCbArr = this.__registeredEvents[type][path];
-                    //fb event so we out of angular
-                    $timeout(function () {
-                        eventCbArr.forEach(function (cb) {
-                            cb.apply(null, argArr);
-                        });
-                    });
-                },
-                offEvent: function (type, path, cb) {
-                    if (!this.__registeredEvents[type] || !this.__registeredEvents[type][path] || angular.isUndefined(cb)) {
-                        if(angular.isUndefined(cb)){
-                            $log.debug('storageFirebaseAdapter: offEvent called without callback');
-                        }
-                        return;
-                    }
-
-                    var _firstOnWasInvoked = this.__registeredEvents[type][path].firstOnWasInvoked;
-
-                    var eventCbArr = this.__registeredEvents[type][path];
-                    var newEventCbArr = [];
-                    eventCbArr.forEach(function (_cb) {
-                        if (cb !== _cb) {
-                            newEventCbArr.push(_cb);
-                        }
-                    });
-
-                    if(newEventCbArr.length > 0){
-                        this.__registeredEvents[type][path] = newEventCbArr;
-                        this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
-                    } else {
-                        delete this.__registeredEvents[type][path];
                     }
                 }
-            };
-            StorageFirebaseAdapter.prototype = storageFirebaseAdapterPrototype;
 
-            return StorageFirebaseAdapter;
-        }]);
+                var evtCbArr = this.__registeredEvents[type][path];
+                evtCbArr.push(cb);
+            },
+            __invokeEventCb: function (type, path, argArr) {
+                if (!this.__registeredEvents[type] || !this.__registeredEvents[type][path]) {
+                    return;
+                }
+
+                var eventCbArr = this.__registeredEvents[type][path];
+                //fb event so we out of angular
+                $timeout(function () {
+                    eventCbArr.forEach(function (cb) {
+                        cb.apply(null, argArr);
+                    });
+                });
+            },
+            offEvent: function (type, path, cb) {
+                if (!this.__registeredEvents[type] || !this.__registeredEvents[type][path] || angular.isUndefined(cb)) {
+                    if(angular.isUndefined(cb)){
+                        $log.debug('storageFirebaseAdapter: offEvent called without callback');
+                    }
+                    return;
+                }
+
+                var _firstOnWasInvoked = this.__registeredEvents[type][path].firstOnWasInvoked;
+
+                var eventCbArr = this.__registeredEvents[type][path];
+                var newEventCbArr = [];
+                eventCbArr.forEach(function (_cb) {
+                    if (cb !== _cb) {
+                        newEventCbArr.push(_cb);
+                    }
+                });
+
+                if(newEventCbArr.length > 0){
+                    this.__registeredEvents[type][path] = newEventCbArr;
+                    this.__registeredEvents[type][path].firstOnWasInvoked = _firstOnWasInvoked;
+                } else {
+                    delete this.__registeredEvents[type][path];
+                }
+            }
+        };
+        StorageFirebaseAdapter.prototype = storageFirebaseAdapterPrototype;
+
+        return StorageFirebaseAdapter;
+    }]);
 })(angular);
 
 angular.module('znk.infra.storage').run(['$templateCache', function($templateCache) {
@@ -10864,7 +10941,6 @@ angular.module('znk.infra.storage').run(['$templateCache', function($templateCac
             'ngInject';
             var SupportSrv = {};
 
-            var authData = AuthService.getAuth();
             var APPROVED_STUDENTS_PATH = 'users/$$uid/approvedStudents/';
             var invitationEndpoint = ENV.backendEndpoint + 'invitation';
             var SUPPORT_EMAIL = ENV.supportEmail;
@@ -10872,76 +10948,82 @@ angular.module('znk.infra.storage').run(['$templateCache', function($templateCac
 
             SupportSrv.connectTeacherWithSupport = function (callbackFn) {
                 $injector.invoke(['GroupsService', function(GroupsService){
-                    if (authData && authData.uid) {
-                        return InfraConfigSrv.getTeacherStorage().then(function (teacherStorage) {
-                            return teacherStorage.get(APPROVED_STUDENTS_PATH).then(function (students) {
-                                var studentKeys = Object.keys(students);
+                    AuthService.getAuth().then(authData => {
+                        if (authData && authData.uid) {
+                            return InfraConfigSrv.getTeacherStorage().then(function (teacherStorage) {
+                                return teacherStorage.get(APPROVED_STUDENTS_PATH).then(function (students) {
+                                    var studentKeys = Object.keys(students);
 
-                                var linkedToSupport = false;
+                                    var linkedToSupport = false;
 
-                                var promsArray = [];
-                                angular.forEach(studentKeys, function (studentId) {
-                                    var prom = GroupsService.getUserData(studentId).then(function (studentData) {
-                                        if (studentData.originalReceiverEmail === SUPPORT_EMAIL) {
-                                            linkedToSupport = true;
+                                    var promsArray = [];
+                                    angular.forEach(studentKeys, function (studentId) {
+                                        var prom = GroupsService.getUserData(studentId).then(function (studentData) {
+                                            if (studentData.originalReceiverEmail === SUPPORT_EMAIL) {
+                                                linkedToSupport = true;
+                                            }
+                                        });
+                                        promsArray.push(prom);
+                                    });
+                                    $q.all(promsArray).then(function () {
+                                        if (!linkedToSupport && authData.email !== SUPPORT_EMAIL) {
+                                            _buildDataToSend(callbackFn);
+                                        } else {
+                                            callbackFn();
                                         }
                                     });
-                                    promsArray.push(prom);
-                                });
-                                $q.all(promsArray).then(function () {
-                                    if (!linkedToSupport && authData.auth.email !== SUPPORT_EMAIL) {
-                                        _buildDataToSend(callbackFn);
-                                    } else {
-                                        callbackFn();
-                                    }
                                 });
                             });
-                        });
-                    }
+                        }
+                    });
                 }]);
             };
 
             SupportSrv.connectStudentWithSupport = function (callbackFn) {
-                if (authData && authData.uid) {
-                    teachersSrv.getAllTeachers().then(function (teachers) {
-                        var teachersKeys = Object.keys(teachers);
-                        var linkedToSupport = false;
+                AuthService.getAuth().then(authData => {
+                    if (authData && authData.uid) {
+                        teachersSrv.getAllTeachers().then(function (teachers) {
+                            var teachersKeys = Object.keys(teachers);
+                            var linkedToSupport = false;
 
-                        angular.forEach(teachersKeys, function (key) {
-                            teachers[key].isTeacher = true;
-                            if (teachers[key].email === SUPPORT_EMAIL) {
-                                linkedToSupport = true;
+                            angular.forEach(teachersKeys, function (key) {
+                                teachers[key].isTeacher = true;
+                                if (teachers[key].email === SUPPORT_EMAIL) {
+                                    linkedToSupport = true;
+                                }
+                            });
+
+                            if (!linkedToSupport && authData.email !== SUPPORT_EMAIL) {
+                                _buildDataToSend(callbackFn);
+                            } else {
+                                callbackFn();
                             }
                         });
-
-                        if (!linkedToSupport && authData.auth.email !== SUPPORT_EMAIL) {
-                            _buildDataToSend(callbackFn);
-                        } else {
-                            callbackFn();
-                        }
-                    });
-                }
+                    }
+                });
             };
 
             function _buildDataToSend(callbackFn){
-                UserProfileService.getProfileByUserId(authData.uid).then(function (userProfile) {
-                    var receiverName = userProfile.nickname;
-                    var receiverEmail = authData.auth.email || userProfile.email || NO_EMAIL;
-                    if (angular.isUndefined(receiverName) || angular.equals(receiverName, '')) {
-                        receiverName = receiverEmail;
-                    }
+                AuthService.getAuth().then(authData => {
+                    UserProfileService.getProfileByUserId(authData.uid).then(function (userProfile) {
+                        var receiverName = userProfile.nickname;
+                        var receiverEmail = authData.email || userProfile.email || NO_EMAIL;
+                        if (angular.isUndefined(receiverName) || angular.equals(receiverName, '')) {
+                            receiverName = receiverEmail;
+                        }
 
-                    var dataToSend = {
-                        receiverAppName: ENV.firebaseAppScopeName,
-                        receiverEmail: receiverEmail,
-                        receiverName: receiverName,
-                        receiverUid: authData.uid,
-                        receiverParentEmail: '',
-                        receiverParentName: ''
-                    };
+                        var dataToSend = {
+                            receiverAppName: ENV.firebaseAppScopeName,
+                            receiverEmail: receiverEmail,
+                            receiverName: receiverName,
+                            receiverUid: authData.uid,
+                            receiverParentEmail: '',
+                            receiverParentName: ''
+                        };
 
-                    _connectSupportToUser(dataToSend).then(function (response) {
-                        callbackFn(response);
+                        _connectSupportToUser(dataToSend).then(function (response) {
+                            callbackFn(response);
+                        });
                     });
                 });
             }
@@ -11163,88 +11245,92 @@ angular.module('znk.infra.teachers').run(['$templateCache', function($templateCa
     ]);
 })(angular);
 
+(function (angular) {
 'use strict';
 
 angular.module('znk.infra.user').service('UserProfileService',
     ["$log", "$q", "ENV", "AuthService", "UserStorageService", "InfraConfigSrv", function ($log, $q, ENV, AuthService, UserStorageService, InfraConfigSrv) {
-        'ngInject';
+    'ngInject';
 
-        function _getProfile() {
-            var authData = AuthService.getAuth();
-            if (!authData) {
-                $log.error('UserProfileService.getProfile: Authenticate user not found');
-                return $q.when(null);
-            } else {
-                var profilePath = 'users/' + authData.uid + '/profile';
-                return UserStorageService.get(profilePath).then(function (profile) {
-                    if (profile && (angular.isDefined(profile.email) || angular.isDefined(profile.nickname))) {
-                        return profile;
-                    } else {
-                        return _extendProfileFromAuth(profile, authData);
-                    }
-                });
-            }
-        }
-
-        function _getProfileByUserId(userId) {
-            if (!userId) {
-                $log.error('UserProfileService._getProfileByUserId: userId is undefined');
-                return $q.when(null);
-            } else {
-                var userProfilePath = 'users/' + userId + '/profile';
-                return UserStorageService.get(userProfilePath);
-            }
-
-        }
-
-        function _extendProfileFromAuth(profile, authData) {
-            var emailFromAuth = authData.auth ? authData.auth.email : authData.password ? authData.password.email : '';
-            var nickNameFromAuth = authData.auth.name ? authData.auth.name : nickNameFromEmail(emailFromAuth);
-
-            if (!profile.email) {
-                profile.email = emailFromAuth;
-            }
-            if (!profile.nickname) {
-                profile.nickname = nickNameFromAuth;
-            }
-            if (!profile.createdTime) {
-                profile.createdTime = Firebase.ServerValue.TIMESTAMP;
-            }
-
-            return _setProfile(profile, authData.uid).then(function () {
-                return profile;
-            }).catch(function (err) {
-                $log.error('UserProfileService.extendProfileFromAuth: Error: ' + err);
+    function _getProfile() {
+        return new Promise(function (resolve) {
+            AuthService.getAuth().then(authData => {
+                if (!authData) {
+                    $log.error('UserProfileService.getProfile: Authenticate user not found');
+                    resolve(null);
+                } else {
+                    var profilePath = 'users/' + authData.uid + '/profile';
+                    UserStorageService.get(profilePath).then(function (profile) {
+                        if (profile && (angular.isDefined(profile.email) || angular.isDefined(profile.nickname))) {
+                            resolve(profile);
+                        } else {
+                            resolve(_extendProfileFromAuth(profile, authData));
+                        }
+                    });
+                }
             });
+        });
+    }
 
+    function _getProfileByUserId(userId) {
+        if (!userId) {
+            $log.error('UserProfileService._getProfileByUserId: userId is undefined');
+            return $q.when(null);
+        } else {
+            var userProfilePath = 'users/' + userId + '/profile';
+            return UserStorageService.get(userProfilePath);
         }
 
-        function _createUserProfile(userId, email, nickname, provider) {
-            var profile = {
-                email: email,
-                nickname: nickname,
-                provider: provider,
-                createdTime: Firebase.ServerValue.TIMESTAMP
-            };
+    }
 
-            return _setProfile(profile, userId).then(function () {
-                return profile;
-            }).catch(function (err) {
-                $log.error('UserProfileService.createUserProfile: Error: ' + err);
-            });
+    function _extendProfileFromAuth(profile, authData) {
+        var emailFromAuth = authData.email || '';
+        var nickNameFromAuth = authData.displayName || nickNameFromEmail(emailFromAuth);
+
+        if (!profile.email) {
+            profile.email = emailFromAuth;
+        }
+        if (!profile.nickname) {
+            profile.nickname = nickNameFromAuth;
+        }
+        if (!profile.createdTime) {
+            profile.createdTime = window.firebase.database.ServerValue.TIMESTAMP;
         }
 
-        function _setProfile(newProfile, userId) {
-            var saveProfileProm = [];
-            var authData = AuthService.getAuth();
-            if (authData || userId){
+        return _setProfile(profile, authData.uid).then(function () {
+            return profile;
+        }).catch(function (err) {
+            $log.error('UserProfileService.extendProfileFromAuth: Error: ' + err);
+        });
+
+    }
+
+    function _createUserProfile(userId, email, nickname, provider) {
+        var profile = {
+            email: email,
+            nickname: nickname,
+            provider: provider,
+            createdTime: window.firebase.database.ServerValue.TIMESTAMP
+        };
+
+        return _setProfile(profile, userId).then(function () {
+            return profile;
+        }).catch(function (err) {
+            $log.error('UserProfileService.createUserProfile: Error: ' + err);
+        });
+    }
+
+    function _setProfile(newProfile, userId) {
+        var saveProfileProm = [];
+        return AuthService.getAuth().then(authData => {
+            if (authData || userId) {
                 var uid = userId ? userId : authData.uid;
                 var profilePath = 'users/' + uid + '/profile';
                 return UserStorageService.get(profilePath).then(function (profile) {
                     if (ENV.setUserProfileTwice) {
                         saveProfileProm.push(_setUserProfileTwice(profilePath, newProfile));
                     }
-                    if (profile){
+                    if (profile) {
                         saveProfileProm.push(UserStorageService.update(profilePath, newProfile));
                     } else {
                         saveProfileProm.push(UserStorageService.set(profilePath, newProfile));
@@ -11253,132 +11339,160 @@ angular.module('znk.infra.user').service('UserProfileService',
                 });
             } else {
                 $log.error('UserProfileService.setProfile: No user were found');
-                return $q.when(null);
+                return null;
             }
-        }
+        });
+    }
 
-        function _setUserProfileTwice(profilePath, newProfile) {
-            return InfraConfigSrv.getGlobalStorage().then(function(globalStorage) {
-                return globalStorage.set(profilePath, newProfile);
-            });
-        }
+    function _setUserProfileTwice(profilePath, newProfile) {
+        return InfraConfigSrv.getGlobalStorage().then(function(globalStorage) {
+            return globalStorage.set(profilePath, newProfile);
+        });
+    }
 
-        function _getCurrUserId(){
-            var authData = AuthService.getAuth();
-            return $q.when(authData.uid);
-        }
+    function _getCurrUserId(){
+        return AuthService.getAuth().then(authData => {return authData.uid; });
+    }
 
-        function _updateUserTeachWorksId(uid, userTeachWorksId){
-            var saveProfileProm = [];
-            var path = 'users/' + uid + '/teachworksId';
-            return UserStorageService.get(path).then(function (teachWorksId) {
-                if (ENV.setUserProfileTwice) {
-                    saveProfileProm.push(_setUserProfileTwice(path, userTeachWorksId));
-                }
-                if (teachWorksId){
-                    saveProfileProm.push(UserStorageService.update(path, userTeachWorksId));
-                } else {
-                    saveProfileProm.push(UserStorageService.set(path, userTeachWorksId));
-                }
-                return $q.all(saveProfileProm);
-            });
-        }
-
-        function _getUserTeachWorksId(uid){
-            var path = 'users/' + uid + '/teachworksId';
-            return UserStorageService.get(path);
-        }
-
-        function _getUserName(uid){
-            var path = 'users/' + uid + '/profile/nickname';
-            return UserStorageService.get(path);
-        }
-
-        function nickNameFromEmail(email) {
-            if (email){
-                return email.split('@')[0];
+    function _updateUserTeachWorksId(uid, userTeachWorksId){
+        var saveProfileProm = [];
+        var path = 'users/' + uid + '/teachworksId';
+        return UserStorageService.get(path).then(function (teachWorksId) {
+            if (ENV.setUserProfileTwice) {
+                saveProfileProm.push(_setUserProfileTwice(path, userTeachWorksId));
             }
+            if (teachWorksId){
+                saveProfileProm.push(UserStorageService.update(path, userTeachWorksId));
+            } else {
+                saveProfileProm.push(UserStorageService.set(path, userTeachWorksId));
+            }
+            return $q.all(saveProfileProm);
+        });
+    }
+
+    function _getUserTeachWorksId(uid){
+        var path = 'users/' + uid + '/teachworksId';
+        return UserStorageService.get(path);
+    }
+
+    function _getUserName(uid){
+        var path = 'users/' + uid + '/profile/nickname';
+        return UserStorageService.get(path);
+    }
+
+    function nickNameFromEmail(email) {
+        if (email){
+            return email.split('@')[0];
         }
+    }
 
 
-        this.getProfile = _getProfile;
-        this.getProfileByUserId = _getProfileByUserId;
-        this.extendProfileFromAuth = _extendProfileFromAuth;
-        this.createUserProfile = _createUserProfile;
-        this.setProfile = _setProfile;
-        this.getCurrUserId = _getCurrUserId;
-        this.updateUserTeachWorksId = _updateUserTeachWorksId;
-        this.getUserTeachWorksId = _getUserTeachWorksId;
-        this.getUserName = _getUserName;
-    }]);
+    this.getProfile = _getProfile;
+    this.getProfileByUserId = _getProfileByUserId;
+    this.extendProfileFromAuth = _extendProfileFromAuth;
+    this.createUserProfile = _createUserProfile;
+    this.setProfile = _setProfile;
+    this.getCurrUserId = _getCurrUserId;
+    this.updateUserTeachWorksId = _updateUserTeachWorksId;
+    this.getUserTeachWorksId = _getUserTeachWorksId;
+    this.getUserName = _getUserName;
+}]);
+
+})(angular);
 
 (function (angular) {
     'use strict';
 
     angular.module('znk.infra.user').provider('UserSessionSrv',
-        function () {
-            'ngInject';
+    function () {
+        'ngInject';
 
-            var isLastSessionRecordDisabled = false;
-            this.disableLastSessionRecord = function (isDisbaled) {
-                isLastSessionRecordDisabled = !!isDisbaled;
+        var isLastSessionRecordDisabled = false;
+        this.disableLastSessionRecord = function (isDisbaled) {
+            isLastSessionRecordDisabled = !!isDisbaled;
+        };
+
+        this.$get = ["InfraConfigSrv", "ENV", "$window", function (InfraConfigSrv, ENV, $window) {
+            'ngInject';// jshint ignore:line
+
+            var initProm,lastSessionData;
+
+            var UserSessionSrv = {};
+
+            UserSessionSrv.isLastSessionRecordDisabled = function () {
+                return isLastSessionRecordDisabled;
             };
 
-            this.$get = ["InfraConfigSrv", "ENV", function (InfraConfigSrv, ENV) {
-                'ngInject';// jshint ignore:line
+            UserSessionSrv.getLastSessionData = function () {
+                return initProm.then(function(){
+                    return lastSessionData;
+                });
+            };
 
-                var initProm,lastSessionData;
-
-                var UserSessionSrv = {};
-
-                UserSessionSrv.isLastSessionRecordDisabled = function () {
-                    return isLastSessionRecordDisabled;
-                };
-
-                UserSessionSrv.getLastSessionData = function () {
-                    return initProm.then(function(){
-                        return lastSessionData;
+            function init() {
+                return InfraConfigSrv.getUserData().then(function (userData) {
+                    var globalLastSessionRef = initializeFireBase();
+                    var lastSessionPath = ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid;
+                    return globalLastSessionRef.database().ref(lastSessionPath).once('value').then(function(snapshot){
+                        lastSessionData = snapshot.val();
+                        if(!isLastSessionRecordDisabled){
+                            globalLastSessionRef.database().ref('began').set($window.firebase.database.ServerValue.TIMESTAMP);
+                            globalLastSessionRef.database().ref('ended').set(null);
+                            globalLastSessionRef.database().ref('ended').onDisconnect().set($window.firebase.database.ServerValue.TIMESTAMP);
+                        }
                     });
-                };
+                });
+            }
+            initProm = init();
 
-                function init() {
-                    return InfraConfigSrv.getUserData().then(function (userData) {
-                        var globalLastSessionRef = new Firebase(ENV.fbDataEndPoint + ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid, ENV.firebaseAppScopeName);
-                        return globalLastSessionRef.once('value').then(function(snapshot){
-                            lastSessionData = snapshot.val();
-                            if(!isLastSessionRecordDisabled){
-                                globalLastSessionRef.child('began').set(Firebase.ServerValue.TIMESTAMP);
-                                globalLastSessionRef.child('ended').set(null);
-                                globalLastSessionRef.child('ended').onDisconnect().set(Firebase.ServerValue.TIMESTAMP);
-                            }
-                        });
-                    });
+            function initializeFireBase(){
+                var appName = ENV.firebaseAppScopeName;
+                var existApp;
+
+                $window.firebase.apps.forEach(function (app) {
+                    if (app.name.toLowerCase() === appName.toLowerCase()) {
+                        existApp = app;
+                    }
+                });
+                if (!existApp) {
+                    var config = {
+                        apiKey: ENV.firebase_apiKey,
+                        authDomain:  ENV.firebase_projectId + ".firebaseapp.com",
+                        databaseURL: ENV.fbDataEndPoint,
+                        projectId: ENV.firebase_projectId,
+                        storageBucket: ENV.firebase_projectId + ".appspot.com",
+                        messagingSenderId: ENV.messagingSenderId
+                    };
+                    existApp =  window.firebase.initializeApp(config, appName);
                 }
-                initProm = init();
+                return existApp;
+            }
 
-                return UserSessionSrv;
-            }];
-        }
-    );
+            return UserSessionSrv;
+        }];
+    }
+);
 })(angular);
 
 'use strict';
 
 angular.module('znk.infra.user').service('UserStorageService',
-    ["StorageFirebaseAdapter", "ENV", "StorageSrv", "AuthService", function (StorageFirebaseAdapter, ENV, StorageSrv, AuthService) {
-        'ngInject';
+["StorageFirebaseAdapter", "ENV", "StorageSrv", "AuthService", function (StorageFirebaseAdapter, ENV, StorageSrv, AuthService) {
+    'ngInject';
 
-        var fbAdapter = new StorageFirebaseAdapter(ENV.fbGlobalEndPoint);
-        var config = {
-            variables: {
-                uid: function uid() {
-                    return AuthService.getAuth() && AuthService.getAuth().uid;
-                }
+    var fbAdapter = new StorageFirebaseAdapter(ENV.fbGlobalEndPoint);
+    var config = {
+        variables: {
+            uid: function () {
+                return AuthService.getAuth().then(user => {
+                    return user.uid;
+                });
             }
-        };
+        }
+    };
 
-        return new StorageSrv(fbAdapter, config);
-    }]);
+    return new StorageSrv(fbAdapter, config);
+}]);
 
 angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 
@@ -12116,6 +12230,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                 },
                 link:function(scope,element,attrs){
                     var sound;
+                    var soundInititalized = false;
 
                     var TYPES_ENUM = {
                         'NO_CONTROL': 1,
@@ -12268,6 +12383,12 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                                 }
                                 break;
                             case STATE_ENUM.STARTING:
+                                if (!soundInititalized) {
+                                  soundInititalized = true;
+                                  if (scope.autoPlayGetter()) {
+                                    sound.play();
+                                  }
+                                }
                                 hideLoadingSpinner();
                                 if(playerControlElem.length){
                                     playerControlElem.removeClass('ion-play');
@@ -12281,6 +12402,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                         if(sound){
                             sound.stop();
                             sound.release();
+                            soundInititalized = false;
                         }
                         showLoadingSpinner();
                         sound = MediaSrv.loadSound(scope.sourceGetter(),
@@ -12323,10 +12445,6 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                     scope.$watch('sourceGetter()',function(newSrc){
                         if(newSrc){
                             loadSound();
-
-                            if(scope.autoPlayGetter()){
-                                sound.play();
-                            }
                         }
                     });
 
@@ -12968,7 +13086,7 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
                         }
                         if (scope.d.newMessage.length > 0 && angular.isDefined(scope.chatterObj) && scope.chatterObj.chatGuid) {
                             var newMessageObj = {
-                                time: Firebase.ServerValue.TIMESTAMP,
+                                time: window.firebase.database.ServerValue.TIMESTAMP,
                                 uid: scope.userId,
                                 text: scope.d.newMessage
                             };
@@ -13118,7 +13236,7 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
 
                     function newMessageHandler(snapShot) {
                         var newData = snapShot.val();
-                        var messageId = snapShot.key();
+                        var messageId = snapShot.key;
                         if (angular.isUndefined(scope.chatterObj.lastSeenMessage.messageId) || messageId > scope.chatterObj.lastSeenMessage.messageId) { // check if there is messages the local user didn't saw
                             if (scope.chatterObj.isActive) {
                                 var lastSeenMessage = {};
@@ -13132,8 +13250,11 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
 
                                 if(!soundPlaying){
                                     soundPlaying = true;
-                                    sound =  MediaSrv.loadSound(soundPath);
-                                    sound.play();
+                                    sound =  MediaSrv.loadSound(soundPath,null,null,function(status){
+                                      if (status === window.Media.MEDIA_STARTING && soundPlaying === true) {
+                                        sound.play();
+                                      }
+                                    });
                                     sound.onEnded().then(function(){
                                         soundPlaying = false;
                                         sound.release();
@@ -13359,7 +13480,7 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
                 return _getStorage().then(function (globalStorage) {
                     var messagesPath = znkChatPaths.chatPath + '/' + chatGuid + '/messages';
                     var adapterRef = globalStorage.adapter.getRef(messagesPath);
-                    var messageGuid = adapterRef.push(newMessage).key();
+                    var messageGuid = adapterRef.push(newMessage).key;
                     return messageGuid;
 
                 });
@@ -13403,7 +13524,7 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
                     var adapterRef = globalStorage.adapter.getRef();
                     var chatsRef = adapterRef.child(chatPath);
                     var newChatObj = _createNewChatObj(localUser, secondUser);
-                    chatGuid = chatsRef.push(newChatObj).key();
+                    chatGuid = chatsRef.push(newChatObj).key;
 
                     var localUserPath = localUser.isTeacher ? znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';
                     var secondUserPath = secondUser.isTeacher ? znkChatPaths.dashboardAppName + '/' : znkChatPaths.studentAppName + '/';
@@ -16825,7 +16946,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
                         function _fbChildChanged(snapShot) {
                             var canvasToChange = _getCanvasContextByContextName(canvasContextName);
-                            var coordsStr = snapShot.key();
+                            var coordsStr = snapShot.key;
                             var color = snapShot.val();
 
                             if (color === 0) {
@@ -16838,7 +16959,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         function _fbChildRemoved(snapShot) {
                             var canvasToChange = _getCanvasContextByContextName(canvasContextName); // "this" refers to context passed to ref.on in registerFbListeners
 
-                            var coordsStr = snapShot.key();
+                            var coordsStr = snapShot.key;
                             drawer.clearPixel(coordsStr, canvasToChange);
                         }
 
@@ -18336,16 +18457,19 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
             'ngInject';
 
             var self = this;
-            var userAuth = AuthService.getAuth();
+            var userAuth;
+            self.reportData = reportData;
+            self.reportData.app = ENV.firebaseAppScopeName.split('_')[0].toUpperCase();
+            AuthService.getAuth().then(authData => {
+                userAuth = authData;
+                self.reportData.email = authData.email;
+            });
             var MAIL_TO_SEND = 'support@zinkerz.com';
             var TEMPLATE_KEY = 'reportQuestion';
             var EMAIL_SUBJECT = $translate('REPORT_POPUP.REPORT_QUESTION');
             var emailMessagePromise = $translate('REPORT_POPUP.MESSAGE');
 
             self.success = false;
-            self.reportData = reportData;
-            self.reportData.app = ENV.firebaseAppScopeName.split('_')[0].toUpperCase();
-            self.reportData.email = userAuth.auth.email;
             emailMessagePromise.then(function (message) {
                 self.reportData.message = message;
             });
@@ -18363,7 +18487,7 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
                 if (self.reportForm.$valid) {
                     self.startLoader = true;
                     self.reportData.email = self.reportData.email ?
-                        self.reportData.email : userAuth.auth.email ? userAuth.auth.email : 'N/A';
+                        self.reportData.email : userAuth.email || 'N/A';
 
                     // subject format: ReportQuestion - [App Name]
                     var emailSubject = EMAIL_SUBJECT;
@@ -18375,7 +18499,7 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
                     ADD_TO_MESSAGE += '<br>' + 'Exercise ID: ' + self.reportData.parentId + ' | ';
                     ADD_TO_MESSAGE += '<br>' + 'Exercise Type ID: ' + self.reportData.parentTypeId + ' | ';
                     ADD_TO_MESSAGE += '<br>' + 'userEmail: ' + self.reportData.email + ' | ';
-                    ADD_TO_MESSAGE += '<br>' + 'userId: ' + userAuth.auth.uid;
+                    ADD_TO_MESSAGE += '<br>' + 'userId: ' + userAuth.uid;
 
                     var message = self.reportData.message + ADD_TO_MESSAGE;
 
