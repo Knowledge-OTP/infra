@@ -61,6 +61,11 @@
                     scope.d.DRAWING_MODES = DRAWING_MODES;
 
                     scope.d.TOOLS = TOOLS;
+                    scope.d.showColorPicker = false;
+
+                    scope.d.openColorPicker = function() {
+                      scope.d.showColorPicker = !scope.d.showColorPicker;
+                    };
 
                     scope.d.toolClicked = function (tool) {
                         if (!currQuestion) {

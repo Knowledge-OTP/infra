@@ -16505,6 +16505,11 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     scope.d.DRAWING_MODES = DRAWING_MODES;
 
                     scope.d.TOOLS = TOOLS;
+                    scope.d.showColorPicker = false;
+
+                    scope.d.openColorPicker = function() {
+                      scope.d.showColorPicker = !scope.d.showColorPicker;
+                    };
 
                     scope.d.toolClicked = function (tool) {
                         if (!currQuestion) {
@@ -17910,11 +17915,19 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</svg-icon>\n" +
     "<!--<svg-icon name=\"znk-exercise-pointer\">-->\n" +
     "<!--</svg-icon>-->\n" +
-    "<svg-icon name=\"znk-exercise-pencil\"\n" +
+    "<!--<svg-icon name=\"znk-exercise-pencil\"\n" +
     "          ng-click=\"d.toolClicked(d.TOOLS.PENCIL)\"\n" +
     "          ng-class=\"{\n" +
     "            active:(d.drawMode === d.DRAWING_MODES.VIEW_DRAW) && (d.drawMode !== d.DRAWING_MODES.NONE)\n" +
     "          }\">\n" +
+    "</svg-icon>-->\n" +
+    "\n" +
+    "<svg-icon name=\"znk-exercise-pencil\"\n" +
+    "          ng-click=\"d.openColorPicker()\"\n" +
+    "          ng-class=\"{\n" +
+    "  active:(d.drawMode === d.DRAWING_MODES.VIEW_DRAW) && (d.drawMode !== d.DRAWING_MODES.NONE)\n" +
+    "}\">\n" +
+    "<znk-color-picker ng-if=\"d.showColorPicker\"></znk-color-picker>\n" +
     "</svg-icon>\n" +
     "<svg-icon name=\"znk-exercise-eraser\"\n" +
     "          ng-click=\"d.toolClicked(d.TOOLS.ERASER)\"\n" +
