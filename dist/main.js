@@ -17900,7 +17900,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</svg>\n" +
     "");
   $templateCache.put("components/znkExercise/toolbox/directives/znkColorPicker/znkColorPicker.template.html",
-    "");
+    "<div>test</div>");
   $templateCache.put("components/znkExercise/toolbox/directives/znkExerciseDrawTool/znkExerciseDrawTool.template.html",
     "<svg-icon name=\"znk-exercise-touche\"\n" +
     "          ng-click=\"d.toolClicked(d.TOOLS.TOUCHE)\"\n" +
