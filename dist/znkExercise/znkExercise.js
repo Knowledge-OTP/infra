@@ -2648,6 +2648,23 @@
 }(angular));
 
 
+(function (angular) {
+  'use strict';
+
+  angular.module('znk.infra.znkExercise').component('znkColorPicker', {
+    templateUrl: 'components/znkExercise/toolbox/directives/znkColorPicker/znkColorPicker.template.html',
+    bindings: {
+      pickedColor: '<',
+      colors: '=?'
+    },
+    controller: function () {
+      'ngInject';
+      // var ctrl = this;
+    }
+
+  });
+})(angular);
+
 /**
  * This directive is bound to elements requesting a canvas to cover them
  * since the canvas is positioned as 'absolute', the directive also sets a 'relative' position to relate to the canvas
@@ -4144,6 +4161,8 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "	<line class=\"st0\" x1=\"7.5\" y1=\"7.5\" x2=\"119\" y2=\"119\"/>\n" +
     "</g>\n" +
     "</svg>\n" +
+    "");
+  $templateCache.put("components/znkExercise/toolbox/directives/znkColorPicker/znkColorPicker.template.html",
     "");
   $templateCache.put("components/znkExercise/toolbox/directives/znkExerciseDrawTool/znkExerciseDrawTool.template.html",
     "<svg-icon name=\"znk-exercise-touche\"\n" +
