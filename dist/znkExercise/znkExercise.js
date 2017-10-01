@@ -2681,7 +2681,7 @@
           code: '#000000'
         }
       ];
-      vm.pickedColor = function (colorCode) {
+      vm.pickColor = function (colorCode) {
         if (vm.pickedColorCb) {
           vm.pickedColorCb(colorCode);
         }
