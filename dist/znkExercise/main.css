@@ -497,6 +497,16 @@ znk-exercise-draw-tool {
     znk-exercise-draw-tool > svg-icon[name="znk-exercise-touche"] {
       border-bottom: 1px solid #cccccc; }
 
+.colors-container {
+  position: absolute;
+  top: 45px;
+  right: -40px;
+  width: 38px;
+  background-color: #b37c7c;
+  height: 100px;
+  border-radius: 8px;
+  box-shadow: 0px 1px 6px 0px #8a8a8a; }
+
 znk-exercise-tool-box {
   height: 195px;
   width: 38px;

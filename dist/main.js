@@ -17912,7 +17912,9 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</svg>\n" +
     "");
   $templateCache.put("components/znkExercise/toolbox/directives/znkColorPicker/znkColorPicker.template.html",
-    "<div>test</div>");
+    "<div class=\"colors-container\">\n" +
+    "  \n" +
+    "</div>");
   $templateCache.put("components/znkExercise/toolbox/directives/znkExerciseDrawTool/znkExerciseDrawTool.template.html",
     "<svg-icon name=\"znk-exercise-touche\"\n" +
     "          ng-click=\"d.toolClicked(d.TOOLS.TOUCHE)\"\n" +
@@ -17934,8 +17936,8 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "          ng-class=\"{\n" +
     "  active:(d.drawMode === d.DRAWING_MODES.VIEW_DRAW) && (d.drawMode !== d.DRAWING_MODES.NONE)\n" +
     "}\">\n" +
-    "<znk-color-picker picked-color=\"d.pickedColor\" ng-if=\"d.showColorPicker\"></znk-color-picker>\n" +
     "</svg-icon>\n" +
+    "<znk-color-picker picked-color=\"d.pickedColor\" ng-if=\"d.showColorPicker\"></znk-color-picker>\n" +
     "<svg-icon name=\"znk-exercise-eraser\"\n" +
     "          ng-click=\"d.toolClicked(d.TOOLS.ERASER)\"\n" +
     "          ng-class=\"{\n" +
