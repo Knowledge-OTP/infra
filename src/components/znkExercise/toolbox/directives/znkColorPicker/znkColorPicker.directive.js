@@ -4,8 +4,8 @@
   angular.module('znk.infra.znkExercise').component('znkColorPicker', {
     templateUrl: 'components/znkExercise/toolbox/directives/znkColorPicker/znkColorPicker.template.html',
     bindings: {
-      pickedColor: '=',
-      colors: '=?'
+      colors: '=?',
+      pickedColorCb: "="
     },
     controllerAs: 'vm',
     controller: function () {
@@ -13,26 +13,28 @@
       var vm = this;
       vm.colorsArr = [
         {
-          code:'#008000'
+          code: '#008000'
         },
         {
-          code:'#ff0000'
+          code: '#ff0000'
         },
         {
-          code:'#3500ff'
+          code: '#3500ff'
         },
         {
-          code:'#e1ff00'
+          code: '#e1ff00'
         },
         {
-          code:'#ff00dd'
+          code: '#ff00dd'
         },
         {
-          code:'#000000'
+          code: '#000000'
         }
       ];
-      vm.pickedColor = function(colorCode) {
-        vm.pickedColor = colorCode;
+      vm.pickedColor = function (colorCode) {
+        if (vm.pickedColorCb) {
+          vm.pickedColorCb(colorCode);
+        }
       };
     }
 
