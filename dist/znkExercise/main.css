@@ -522,7 +522,10 @@ znk-exercise-draw-tool {
       height: 20px;
       margin: 5px;
       border: 1px solid #bdbdbd;
-      border-radius: 50%; }
+      border-radius: 50%;
+      transition: .5s box-shadow linear; }
+    .colors-container .color-items .color-item:hover {
+      box-shadow: 0px 1px 3px 1px #7d7d7d; }
 
 znk-exercise-tool-box {
   height: 195px;
