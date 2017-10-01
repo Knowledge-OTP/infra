@@ -16395,11 +16395,30 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
       colors: '=?'
     },
     controllerAs: 'vm',
-    controller: ["$log", function ($log) {
+    controller: function () {
       'ngInject';
       var vm = this;
-      $log.debug(vm);
-    }]
+      vm.colorsArr = [
+        {
+          code:'#008000'
+        },
+        {
+          code:'#ff0000'
+        },
+        {
+          code:'#3500ff'
+        },
+        {
+          code:'#e1ff00'
+        },
+        {
+          code:'#ff00dd'
+        },
+        {
+          code:'#000000'
+        }
+      ];
+    }
 
   });
 })(angular);
@@ -17913,7 +17932,9 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "");
   $templateCache.put("components/znkExercise/toolbox/directives/znkColorPicker/znkColorPicker.template.html",
     "<div class=\"colors-container\">\n" +
-    "  \n" +
+    "  <div class=\"color-items\">\n" +
+    "    <div class=\"color-item\" ng-repeat=\"color in vm.colorsArr\" ng-style=\"{'background-color': color:code}\"></div>\n" +
+    "  </div>\n" +
     "</div>");
   $templateCache.put("components/znkExercise/toolbox/directives/znkExerciseDrawTool/znkExerciseDrawTool.template.html",
     "<svg-icon name=\"znk-exercise-touche\"\n" +

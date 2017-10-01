@@ -8,10 +8,29 @@
       colors: '=?'
     },
     controllerAs: 'vm',
-    controller: function ($log) {
+    controller: function () {
       'ngInject';
       var vm = this;
-      $log.debug(vm);
+      vm.colorsArr = [
+        {
+          code:'#008000'
+        },
+        {
+          code:'#ff0000'
+        },
+        {
+          code:'#3500ff'
+        },
+        {
+          code:'#e1ff00'
+        },
+        {
+          code:'#ff00dd'
+        },
+        {
+          code:'#000000'
+        }
+      ];
     }
 
   });
