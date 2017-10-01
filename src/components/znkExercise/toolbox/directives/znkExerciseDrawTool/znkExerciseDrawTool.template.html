@@ -14,11 +14,11 @@
 </svg-icon>-->
 
 <svg-icon name="znk-exercise-pencil"
-          ng-click="d.openColorPicker()"
+          ng-click="d.toolClicked(d.TOOLS.PENCIL)"
           ng-class="{
   active:(d.drawMode === d.DRAWING_MODES.VIEW_DRAW) && (d.drawMode !== d.DRAWING_MODES.NONE)
 }">
-<znk-color-picker ng-if="d.showColorPicker"></znk-color-picker>
+<znk-color-picker picked-color="d.pickedColor" ng-if="d.showColorPicker"></znk-color-picker>
 </svg-icon>
 <svg-icon name="znk-exercise-eraser"
           ng-click="d.toolClicked(d.TOOLS.ERASER)"

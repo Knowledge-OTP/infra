@@ -16391,13 +16391,15 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
   angular.module('znk.infra.znkExercise').component('znkColorPicker', {
     templateUrl: 'components/znkExercise/toolbox/directives/znkColorPicker/znkColorPicker.template.html',
     bindings: {
-      pickedColor: '<',
+      pickedColor: '=',
       colors: '=?'
     },
-    controller: function () {
+    controllerAs: 'vm',
+    controller: ["$log", function ($log) {
       'ngInject';
-      // var ctrl = this;
-    }
+      var vm = this;
+      $log.debug(vm);
+    }]
 
   });
 })(angular);
@@ -16453,7 +16455,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseDrawTool',
-        ["ZnkExerciseEvents", "ZnkExerciseDrawSrv", "InfraConfigSrv", "ZnkExerciseViewModeEnum", "$log", "$q", "$compile", "$timeout", "$window", function (ZnkExerciseEvents, ZnkExerciseDrawSrv, InfraConfigSrv, ZnkExerciseViewModeEnum, $log, $q, $compile, $timeout, $window) {
+        ["ZnkExerciseEvents", "ZnkExerciseDrawSrv", "InfraConfigSrv", "ZnkExerciseViewModeEnum", "$log", "$q", "$compile", "$timeout", "$window", "ENV", function (ZnkExerciseEvents, ZnkExerciseDrawSrv, InfraConfigSrv, ZnkExerciseViewModeEnum, $log, $q, $compile, $timeout, $window, ENV) {
             'ngInject';
 
             var TOUCHE_COLORS = {
@@ -16482,7 +16484,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         eventsManager,
                         serverDrawingUpdater,
                         currQuestion,
-                        registerFbListenersInDelayOnce;
+                        registerFbListenersInDelayOnce,
+                        isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
 
                     var PIXEL_SIZE = 2;
                     var SERVER_UPDATED_FLUSH_TIME = 0;
@@ -16507,11 +16510,14 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     scope.d.TOOLS = TOOLS;
                     scope.d.showColorPicker = false;
 
-                    scope.d.openColorPicker = function() {
+                    function _openColorPicker() {
                       scope.d.showColorPicker = !scope.d.showColorPicker;
-                    };
+                    }
 
                     scope.d.toolClicked = function (tool) {
+                      if (isTeacher) {
+                        _openColorPicker(tool);
+                      } else {
                         if (!currQuestion) {
                             $log.debug('znkExerciseDrawTool: curr question was not set yet');
                             return;
@@ -16528,6 +16534,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 scope.d.drawMode = scope.d.drawMode === DRAWING_MODES.VIEW_ERASE ? DRAWING_MODES.VIEW : DRAWING_MODES.VIEW_ERASE;
                                 break;
                         }
+                      }
                     };
 
                     function _getFbRef(currQuestionId, canvasContextName) {
@@ -17923,11 +17930,11 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</svg-icon>-->\n" +
     "\n" +
     "<svg-icon name=\"znk-exercise-pencil\"\n" +
-    "          ng-click=\"d.openColorPicker()\"\n" +
+    "          ng-click=\"d.toolClicked(d.TOOLS.PENCIL)\"\n" +
     "          ng-class=\"{\n" +
     "  active:(d.drawMode === d.DRAWING_MODES.VIEW_DRAW) && (d.drawMode !== d.DRAWING_MODES.NONE)\n" +
     "}\">\n" +
-    "<znk-color-picker ng-if=\"d.showColorPicker\"></znk-color-picker>\n" +
+    "<znk-color-picker picked-color=\"d.pickedColor\" ng-if=\"d.showColorPicker\"></znk-color-picker>\n" +
     "</svg-icon>\n" +
     "<svg-icon name=\"znk-exercise-eraser\"\n" +
     "          ng-click=\"d.toolClicked(d.TOOLS.ERASER)\"\n" +

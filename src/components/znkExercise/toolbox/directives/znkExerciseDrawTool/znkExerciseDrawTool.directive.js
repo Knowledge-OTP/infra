@@ -9,7 +9,7 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').directive('znkExerciseDrawTool',
-        function (ZnkExerciseEvents, ZnkExerciseDrawSrv, InfraConfigSrv, ZnkExerciseViewModeEnum, $log, $q, $compile, $timeout, $window) {
+        function (ZnkExerciseEvents, ZnkExerciseDrawSrv, InfraConfigSrv, ZnkExerciseViewModeEnum, $log, $q, $compile, $timeout, $window, ENV) {
             'ngInject';
 
             var TOUCHE_COLORS = {
@@ -38,7 +38,8 @@
                         eventsManager,
                         serverDrawingUpdater,
                         currQuestion,
-                        registerFbListenersInDelayOnce;
+                        registerFbListenersInDelayOnce,
+                        isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
 
                     var PIXEL_SIZE = 2;
                     var SERVER_UPDATED_FLUSH_TIME = 0;
@@ -63,11 +64,14 @@
                     scope.d.TOOLS = TOOLS;
                     scope.d.showColorPicker = false;
 
-                    scope.d.openColorPicker = function() {
+                    function _openColorPicker() {
                       scope.d.showColorPicker = !scope.d.showColorPicker;
-                    };
+                    }
 
                     scope.d.toolClicked = function (tool) {
+                      if (isTeacher) {
+                        _openColorPicker(tool);
+                      } else {
                         if (!currQuestion) {
                             $log.debug('znkExerciseDrawTool: curr question was not set yet');
                             return;
@@ -84,6 +88,7 @@
                                 scope.d.drawMode = scope.d.drawMode === DRAWING_MODES.VIEW_ERASE ? DRAWING_MODES.VIEW : DRAWING_MODES.VIEW_ERASE;
                                 break;
                         }
+                      }
                     };
 
                     function _getFbRef(currQuestionId, canvasContextName) {

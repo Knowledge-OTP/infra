@@ -4,12 +4,14 @@
   angular.module('znk.infra.znkExercise').component('znkColorPicker', {
     templateUrl: 'components/znkExercise/toolbox/directives/znkColorPicker/znkColorPicker.template.html',
     bindings: {
-      pickedColor: '<',
+      pickedColor: '=',
       colors: '=?'
     },
-    controller: function () {
+    controllerAs: 'vm',
+    controller: function ($log) {
       'ngInject';
-      // var ctrl = this;
+      var vm = this;
+      $log.debug(vm);
     }
 
   });
