@@ -16418,6 +16418,9 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
           code:'#000000'
         }
       ];
+      vm.pickedColor = function(colorCode) {
+        vm.pickedColor = colorCode;
+      };
     }
 
   });
@@ -17933,7 +17936,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
   $templateCache.put("components/znkExercise/toolbox/directives/znkColorPicker/znkColorPicker.template.html",
     "<div class=\"colors-container\">\n" +
     "  <div class=\"color-items\">\n" +
-    "    <div class=\"color-item\" ng-repeat=\"color in vm.colorsArr\" ng-style=\"{'background-color': color.code}\"></div>\n" +
+    "    <div class=\"color-item\" ng-click=\"vm.pickColor(color.code)\" ng-repeat=\"color in vm.colorsArr\" ng-style=\"{'background-color': color.code}\"></div>\n" +
     "  </div>\n" +
     "</div>");
   $templateCache.put("components/znkExercise/toolbox/directives/znkExerciseDrawTool/znkExerciseDrawTool.template.html",

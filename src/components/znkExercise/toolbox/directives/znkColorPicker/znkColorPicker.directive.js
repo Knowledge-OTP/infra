@@ -31,6 +31,9 @@
           code:'#000000'
         }
       ];
+      vm.pickedColor = function(colorCode) {
+        vm.pickedColor = colorCode;
+      };
     }
 
   });

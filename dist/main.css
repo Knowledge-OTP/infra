@@ -6607,7 +6607,7 @@ znk-exercise-draw-tool {
   top: 0px;
   left: -45px;
   width: 38px;
-  background-color: #b37c7c;
+  background-color: #FFFFFF;
   border-radius: 8px;
   box-shadow: 0px 1px 6px 0px #8a8a8a;
   z-index: 1;
@@ -6628,9 +6628,9 @@ znk-exercise-draw-tool {
       margin: 5px;
       border: 1px solid #bdbdbd;
       border-radius: 50%;
-      transition: .5s box-shadow linear; }
+      transition: .2s box-shadow linear; }
     .colors-container .color-items .color-item:hover {
-      box-shadow: 0px 1px 3px 1px #7d7d7d; }
+      box-shadow: 0px 1px 1px 1px #7d7d7d; }
 
 znk-exercise-tool-box {
   height: 195px;
