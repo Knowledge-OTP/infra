@@ -2802,14 +2802,10 @@
           }
 
           scope.d.initiateDrawColor = function (tool) {
-            if (isTeacher) {
-              _openColorPicker();
-            }
             if (!currQuestion) {
               $log.debug('znkExerciseDrawTool: curr question was not set yet');
               return;
             }
-
             switch (tool) {
               case TOOLS.TOUCHE:
                 scope.d.drawMode = scope.d.drawMode === DRAWING_MODES.NONE ? DRAWING_MODES.VIEW : DRAWING_MODES.NONE;
@@ -2821,11 +2817,14 @@
                 scope.d.drawMode = scope.d.drawMode === DRAWING_MODES.VIEW_ERASE ? DRAWING_MODES.VIEW : DRAWING_MODES.VIEW_ERASE;
                 break;
             }
+            if (isTeacher && scope.d.drawMode === DRAWING_MODES.VIEW_DRAW) {
+              _openColorPicker();
+            }
           };
 
           scope.d.toolClicked = function (colorPicked) {
             scope.d.colorPicked = colorPicked;
-            scope.d.showColorPicker = false;
+            scope.d.showColorPicker = !scope.d.showColorPicker;
           };
 
           function _getFbRef(currQuestionId, canvasContextName) {
@@ -2974,7 +2973,7 @@
 
             var coords = coordStr.split(":");
             $window.requestAnimationFrame(function () {
-              canvasToChange.fillStyle = TOUCHE_COLORS[colorId];
+              canvasToChange.fillStyle = scope.d.colorPicked || TOUCHE_COLORS[colorId];
               canvasToChange.fillRect(parseInt(coords[0]), parseInt(coords[1]), PIXEL_SIZE, PIXEL_SIZE);
             });
           };
