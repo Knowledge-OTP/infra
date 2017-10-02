@@ -2805,6 +2805,7 @@
 
           scope.d.TOOLS = TOOLS;
           scope.d.showColorPicker = false;
+          scope.d.colorPicked = TOUCHE_COLORS[2];
           scope.d.isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
 
           function _openColorPicker() {
@@ -2829,14 +2830,14 @@
             }
           };
 
-          scope.d.pickColor = function(){
+          scope.d.pickColor = function () {
             _openColorPicker();
           };
 
           scope.d.returnedColor = function (colorPicked) {
-              scope.d.colorPicked = colorPicked;
-              scope.d.showColorPicker = !scope.d.showColorPicker;
-              drawer.toucheColor = TOUCHE_COLORS[colorPicked];
+            scope.d.colorPicked = colorPicked;
+            scope.d.showColorPicker = !scope.d.showColorPicker;
+            drawer.toucheColor = TOUCHE_COLORS[colorPicked];
           };
 
           function _getFbRef(currQuestionId, canvasContextName) {
@@ -4241,7 +4242,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "  active:(d.drawMode === d.DRAWING_MODES.VIEW_DRAW) && (d.drawMode !== d.DRAWING_MODES.NONE)\n" +
     "}\">\n" +
     "</svg-icon>\n" +
-    "<div ng-if=\"d.isTeacher\" ng-click=\"d.pickColor()\">test</div>\n" +
+    "<div class=\"color-picker-btn\" ng-if=\"d.isTeacher\" ng-click=\"d.pickColor()\">test</div>\n" +
     "<znk-color-picker picked-color-cb=\"d.returnedColor\" ng-if=\"d.showColorPicker\"></znk-color-picker>\n" +
     "<svg-icon name=\"znk-exercise-eraser\"\n" +
     "          ng-click=\"d.toolClicked(d.TOOLS.ERASER)\"\n" +

@@ -476,6 +476,12 @@ znk-exercise .draw-tool-container {
   znk-exercise .draw-tool-container.crosshair-cursor {
     cursor: crosshair; }
 
+.color-picker-btn {
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  border: 1px solid #bdbdbd; }
+
 znk-exercise-draw-tool {
   height: 100%;
   display: -ms-flexbox;

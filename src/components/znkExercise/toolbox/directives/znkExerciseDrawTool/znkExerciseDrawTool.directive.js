@@ -72,6 +72,7 @@
 
           scope.d.TOOLS = TOOLS;
           scope.d.showColorPicker = false;
+          scope.d.colorPicked = TOUCHE_COLORS[2];
           scope.d.isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
 
           function _openColorPicker() {
@@ -96,14 +97,14 @@
             }
           };
 
-          scope.d.pickColor = function(){
+          scope.d.pickColor = function () {
             _openColorPicker();
           };
 
           scope.d.returnedColor = function (colorPicked) {
-              scope.d.colorPicked = colorPicked;
-              scope.d.showColorPicker = !scope.d.showColorPicker;
-              drawer.toucheColor = TOUCHE_COLORS[colorPicked];
+            scope.d.colorPicked = colorPicked;
+            scope.d.showColorPicker = !scope.d.showColorPicker;
+            drawer.toucheColor = TOUCHE_COLORS[colorPicked];
           };
 
           function _getFbRef(currQuestionId, canvasContextName) {
