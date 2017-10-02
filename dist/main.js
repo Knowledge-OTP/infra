@@ -16727,7 +16727,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 
             var coords = coordStr.split(":");
             $window.requestAnimationFrame(function () {
-              canvasToChange.fillStyle = scope.d.colorPicked || TOUCHE_COLORS[colorId];
+              canvasToChange.fillStyle = TOUCHE_COLORS[colorId];
               canvasToChange.fillRect(parseInt(coords[0]), parseInt(coords[1]), PIXEL_SIZE, PIXEL_SIZE);
             });
           };

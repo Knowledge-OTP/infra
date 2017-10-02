@@ -19,7 +19,7 @@
           code: '#ff0000'
         },
         {
-          code: '#3500ff'
+          code: '#af667d'
         },
         {
           code: '#e1ff00'

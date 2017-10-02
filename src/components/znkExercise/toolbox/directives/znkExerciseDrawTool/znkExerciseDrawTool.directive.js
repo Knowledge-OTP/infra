@@ -19,15 +19,13 @@
         3: '#000000',
         4: '#ff00dd',
         5: '#e1ff00',
-        6: '#3500ff',
-        7: '#ff0000',
-        8: '#008000',
+        6: '#ff0000',
+        7: '#008000',
         '#000000': 3,
         '#ff00dd': 4,
         '#e1ff00': 5,
-        '#3500ff': 6,
-        '#ff0000': 7,
-        '#008000': 8
+        '#ff0000': 6,
+        '#008000': 7
       };
 
       return {
@@ -257,7 +255,7 @@
 
             var coords = coordStr.split(":");
             $window.requestAnimationFrame(function () {
-              canvasToChange.fillStyle = scope.d.colorPicked || TOUCHE_COLORS[colorId];
+              canvasToChange.fillStyle = TOUCHE_COLORS[colorId];
               canvasToChange.fillRect(parseInt(coords[0]), parseInt(coords[1]), PIXEL_SIZE, PIXEL_SIZE);
             });
           };
