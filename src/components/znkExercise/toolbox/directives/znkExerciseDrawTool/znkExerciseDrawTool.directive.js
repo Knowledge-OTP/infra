@@ -48,8 +48,7 @@
             eventsManager,
             serverDrawingUpdater,
             currQuestion,
-            registerFbListenersInDelayOnce,
-            isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
+            registerFbListenersInDelayOnce;
 
           var PIXEL_SIZE = 2;
           var SERVER_UPDATED_FLUSH_TIME = 0;
@@ -73,12 +72,13 @@
 
           scope.d.TOOLS = TOOLS;
           scope.d.showColorPicker = false;
+          scope.d.isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
 
           function _openColorPicker() {
             scope.d.showColorPicker = !scope.d.showColorPicker;
           }
 
-          scope.d.initiateDrawColor = function (tool) {
+          scope.d.toolClicked = function (tool) {
             if (!currQuestion) {
               $log.debug('znkExerciseDrawTool: curr question was not set yet');
               return;
@@ -94,19 +94,16 @@
                 scope.d.drawMode = scope.d.drawMode === DRAWING_MODES.VIEW_ERASE ? DRAWING_MODES.VIEW : DRAWING_MODES.VIEW_ERASE;
                 break;
             }
-            if (isTeacher && scope.d.drawMode === DRAWING_MODES.VIEW_DRAW) {
-              _openColorPicker();
-            } else if (!isTeacher) {
-              drawer.toucheColor = 2;
-            }
           };
 
-          scope.d.toolClicked = function (colorPicked) {
-            if (isTeacher) {
+          scope.d.pickColor = function(){
+            _openColorPicker();
+          };
+
+          scope.d.returnedColor = function (colorPicked) {
               scope.d.colorPicked = colorPicked;
               scope.d.showColorPicker = !scope.d.showColorPicker;
               drawer.toucheColor = TOUCHE_COLORS[colorPicked];
-            }
           };
 
           function _getFbRef(currQuestionId, canvasContextName) {

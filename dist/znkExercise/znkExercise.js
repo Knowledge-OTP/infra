@@ -2669,7 +2669,7 @@
           code: '#ff0000'
         },
         {
-          code: '#3500ff'
+          code: '#af667d'
         },
         {
           code: '#e1ff00'
@@ -2752,15 +2752,13 @@
         3: '#000000',
         4: '#ff00dd',
         5: '#e1ff00',
-        6: '#3500ff',
-        7: '#ff0000',
-        8: '#008000',
+        6: '#ff0000',
+        7: '#008000',
         '#000000': 3,
         '#ff00dd': 4,
         '#e1ff00': 5,
-        '#3500ff': 6,
-        '#ff0000': 7,
-        '#008000': 8
+        '#ff0000': 6,
+        '#008000': 7
       };
 
       return {
@@ -2783,8 +2781,7 @@
             eventsManager,
             serverDrawingUpdater,
             currQuestion,
-            registerFbListenersInDelayOnce,
-            isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
+            registerFbListenersInDelayOnce;
 
           var PIXEL_SIZE = 2;
           var SERVER_UPDATED_FLUSH_TIME = 0;
@@ -2808,12 +2805,13 @@
 
           scope.d.TOOLS = TOOLS;
           scope.d.showColorPicker = false;
+          scope.d.isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
 
           function _openColorPicker() {
             scope.d.showColorPicker = !scope.d.showColorPicker;
           }
 
-          scope.d.initiateDrawColor = function (tool) {
+          scope.d.toolClicked = function (tool) {
             if (!currQuestion) {
               $log.debug('znkExerciseDrawTool: curr question was not set yet');
               return;
@@ -2829,19 +2827,16 @@
                 scope.d.drawMode = scope.d.drawMode === DRAWING_MODES.VIEW_ERASE ? DRAWING_MODES.VIEW : DRAWING_MODES.VIEW_ERASE;
                 break;
             }
-            if (isTeacher && scope.d.drawMode === DRAWING_MODES.VIEW_DRAW) {
-              _openColorPicker();
-            } else if (!isTeacher) {
-              drawer.toucheColor = 2;
-            }
           };
 
-          scope.d.toolClicked = function (colorPicked) {
-            if (isTeacher) {
+          scope.d.pickColor = function(){
+            _openColorPicker();
+          };
+
+          scope.d.returnedColor = function (colorPicked) {
               scope.d.colorPicked = colorPicked;
               scope.d.showColorPicker = !scope.d.showColorPicker;
               drawer.toucheColor = TOUCHE_COLORS[colorPicked];
-            }
           };
 
           function _getFbRef(currQuestionId, canvasContextName) {
@@ -4241,12 +4236,13 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "</svg-icon>-->\n" +
     "\n" +
     "<svg-icon name=\"znk-exercise-pencil\"\n" +
-    "          ng-click=\"d.initiateDrawColor(d.TOOLS.PENCIL)\"\n" +
+    "          ng-click=\"d.toolClicked(d.TOOLS.PENCIL)\"\n" +
     "          ng-class=\"{\n" +
     "  active:(d.drawMode === d.DRAWING_MODES.VIEW_DRAW) && (d.drawMode !== d.DRAWING_MODES.NONE)\n" +
     "}\">\n" +
     "</svg-icon>\n" +
-    "<znk-color-picker picked-color-cb=\"d.toolClicked\" ng-if=\"d.showColorPicker\"></znk-color-picker>\n" +
+    "<div ng-if=\"d.isTeacher\" ng-click=\"d.pickColor()\">test</div>\n" +
+    "<znk-color-picker picked-color-cb=\"d.returnedColor\" ng-if=\"d.showColorPicker\"></znk-color-picker>\n" +
     "<svg-icon name=\"znk-exercise-eraser\"\n" +
     "          ng-click=\"d.toolClicked(d.TOOLS.ERASER)\"\n" +
     "          ng-class=\"{\n" +
