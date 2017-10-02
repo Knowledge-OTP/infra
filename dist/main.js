@@ -16485,7 +16485,19 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
       var TOUCHE_COLORS = {
         0: 0,// deleted
         1: '#0072bc',
-        2: '#af667d'
+        2: '#af667d',
+        3: '#000000',
+        4: '#ff00dd',
+        5: '#e1ff00',
+        6: '#3500ff',
+        7: '#ff0000',
+        8: '#008000',
+        '#000000': 3,
+        '#ff00dd': 4,
+        '#e1ff00': 5,
+        '#3500ff': 6,
+        '#ff0000': 7,
+        '#008000': 8
       };
 
       return {
@@ -16556,12 +16568,17 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             }
             if (isTeacher && scope.d.drawMode === DRAWING_MODES.VIEW_DRAW) {
               _openColorPicker();
+            } else if (!isTeacher) {
+              this.toucheColor = 2;
             }
           };
 
           scope.d.toolClicked = function (colorPicked) {
-            scope.d.colorPicked = colorPicked;
-            scope.d.showColorPicker = !scope.d.showColorPicker;
+            if (isTeacher) {
+              scope.d.colorPicked = colorPicked;
+              scope.d.showColorPicker = !scope.d.showColorPicker;
+              this.toucheColor = TOUCHE_COLORS[colorPicked];
+            }
           };
 
           function _getFbRef(currQuestionId, canvasContextName) {
