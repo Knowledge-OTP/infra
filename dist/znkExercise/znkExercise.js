@@ -4242,7 +4242,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "  active:(d.drawMode === d.DRAWING_MODES.VIEW_DRAW) && (d.drawMode !== d.DRAWING_MODES.NONE)\n" +
     "}\">\n" +
     "</svg-icon>\n" +
-    "<div class=\"color-picker-btn\" ng-if=\"d.isTeacher\" ng-click=\"d.pickColor()\">test</div>\n" +
+    "<div class=\"color-picker-btn\" ng-style=\"{'background-color': d.colorPicked}\" ng-if=\"d.isTeacher\" ng-click=\"d.pickColor()\"></div>\n" +
     "<znk-color-picker picked-color-cb=\"d.returnedColor\" ng-if=\"d.showColorPicker\"></znk-color-picker>\n" +
     "<svg-icon name=\"znk-exercise-eraser\"\n" +
     "          ng-click=\"d.toolClicked(d.TOOLS.ERASER)\"\n" +
