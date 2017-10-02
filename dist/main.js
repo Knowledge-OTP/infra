@@ -16569,7 +16569,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             if (isTeacher && scope.d.drawMode === DRAWING_MODES.VIEW_DRAW) {
               _openColorPicker();
             } else if (!isTeacher) {
-              this.toucheColor = 2;
+              drawer.toucheColor = 2;
             }
           };
 
@@ -16577,7 +16577,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             if (isTeacher) {
               scope.d.colorPicked = colorPicked;
               scope.d.showColorPicker = !scope.d.showColorPicker;
-              this.toucheColor = TOUCHE_COLORS[colorPicked];
+              drawer.toucheColor = TOUCHE_COLORS[colorPicked];
             }
           };
 
