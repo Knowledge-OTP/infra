@@ -21,6 +21,7 @@
         5: '#e1ff00',
         6: '#ff0000',
         7: '#008000',
+        '#af667d': 2,
         '#000000': 3,
         '#ff00dd': 4,
         '#e1ff00': 5,
@@ -72,7 +73,7 @@
 
           scope.d.TOOLS = TOOLS;
           scope.d.showColorPicker = false;
-          scope.d.colorPicked = TOUCHE_COLORS[2];
+          scope.d.colorPicked = TOUCHE_COLORS['2'];
           scope.d.isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
 
           function _openColorPicker() {
@@ -180,7 +181,7 @@
               return 1;
             }
 
-            return scope.settings.toucheColorId;
+            return scope.d.isTeacher && scope.d.colorPicked ? TOUCHE_COLORS[scope.d.colorPicked] : scope.settings.toucheColorId;
           }
 
           function _setDrawMode(drawMode) {
