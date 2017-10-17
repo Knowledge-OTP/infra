@@ -3795,7 +3795,7 @@
     );
 })(angular);
 
-angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkExercise').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkExercise/core/template/btnSectionDesktop.template.html",
     "<div class=\"btn-container left-container ng-hide\"\n" +
     "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
@@ -4228,14 +4228,6 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "            active:d.drawMode !== d.DRAWING_MODES.NONE\n" +
     "          }\">\n" +
     "</svg-icon>\n" +
-    "<!--<svg-icon name=\"znk-exercise-pointer\">-->\n" +
-    "<!--</svg-icon>-->\n" +
-    "<!--<svg-icon name=\"znk-exercise-pencil\"\n" +
-    "          ng-click=\"d.toolClicked(d.TOOLS.PENCIL)\"\n" +
-    "          ng-class=\"{\n" +
-    "            active:(d.drawMode === d.DRAWING_MODES.VIEW_DRAW) && (d.drawMode !== d.DRAWING_MODES.NONE)\n" +
-    "          }\">\n" +
-    "</svg-icon>-->\n" +
     "\n" +
     "<svg-icon name=\"znk-exercise-pencil\"\n" +
     "          ng-click=\"d.toolClicked(d.TOOLS.PENCIL)\"\n" +
@@ -4243,8 +4235,11 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "  active:(d.drawMode === d.DRAWING_MODES.VIEW_DRAW) && (d.drawMode !== d.DRAWING_MODES.NONE)\n" +
     "}\">\n" +
     "</svg-icon>\n" +
-    "<div class=\"color-picker-btn\" ng-style=\"{'background-color': d.colorPicked}\" ng-if=\"d.isTeacher && d.drawMode === d.DRAWING_MODES.VIEW_DRAW\" ng-click=\"d.pickColor()\"></div>\n" +
+    "\n" +
+    "<div class=\"color-picker-btn\" ng-style=\"{'background-color': d.colorPicked}\" ng-if=\"d.isTeacher\" ng-click=\"d.pickColor()\"></div>\n" +
+    "\n" +
     "<znk-color-picker picked-color-cb=\"d.returnedColor\" ng-if=\"d.showColorPicker\"></znk-color-picker>\n" +
+    "\n" +
     "<svg-icon name=\"znk-exercise-eraser\"\n" +
     "          ng-click=\"d.toolClicked(d.TOOLS.ERASER)\"\n" +
     "          ng-class=\"{\n" +
