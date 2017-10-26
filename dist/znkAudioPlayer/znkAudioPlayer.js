@@ -309,6 +309,25 @@
                         }
                     };
 
+                    var audioLoadRetry = 1;
+                    
+                    var audioSucessFn = function() {
+                      audioLoadRetry = 1;
+                    };
+                                        
+                    var audioErrFn = function() {
+                      console.log('znkAudioPlayer loadSound failed #' + audioLoadRetry);
+                      sound.release();
+                      if (audioLoadRetry <= 3) {
+                        audioLoadRetry++;
+                        sound = MediaSrv.loadSound(
+                          scope.sourceGetter(),
+                          audioSucessFn,
+                          audioErrFn,
+                          statusChanged
+                        );
+                      }
+                    };
                     function loadSound(){
                         if(sound){
                             sound.stop();
@@ -316,21 +335,11 @@
                             soundInititalized = false;
                         }
                         showLoadingSpinner();
-                        sound = MediaSrv.loadSound(scope.sourceGetter(),
-                            function success(){},
-                            function err(){
-                              console.log('znkAudioPlayer loadSound failed #1');
-                              sound.release();
-                              sound = MediaSrv.loadSound(scope.sourceGetter(),
-                                function success(){},
-                                function err(){
-                                  console.log('znkAudioPlayer loadSound failed #2');
-                                  sound.release();
-                                },
-                                statusChanged
-                              );
-                            },
-                            statusChanged
+                        sound = MediaSrv.loadSound(
+                          scope.sourceGetter(),
+                          audioSucessFn,
+                          audioErrFn,
+                          statusChanged
                         );
                     }
 

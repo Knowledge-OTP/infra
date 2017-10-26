@@ -12285,6 +12285,25 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                         }
                     };
 
+                    var audioLoadRetry = 1;
+                    
+                    var audioSucessFn = function() {
+                      audioLoadRetry = 1;
+                    };
+                                        
+                    var audioErrFn = function() {
+                      console.log('znkAudioPlayer loadSound failed #' + audioLoadRetry);
+                      sound.release();
+                      if (audioLoadRetry <= 3) {
+                        audioLoadRetry++;
+                        sound = MediaSrv.loadSound(
+                          scope.sourceGetter(),
+                          audioSucessFn,
+                          audioErrFn,
+                          statusChanged
+                        );
+                      }
+                    };
                     function loadSound(){
                         if(sound){
                             sound.stop();
@@ -12292,21 +12311,11 @@ angular.module('znk.infra.workouts').run(['$templateCache', function($templateCa
                             soundInititalized = false;
                         }
                         showLoadingSpinner();
-                        sound = MediaSrv.loadSound(scope.sourceGetter(),
-                            function success(){},
-                            function err(){
-                              console.log('znkAudioPlayer loadSound failed #1');
-                              sound.release();
-                              sound = MediaSrv.loadSound(scope.sourceGetter(),
-                                function success(){},
-                                function err(){
-                                  console.log('znkAudioPlayer loadSound failed #2');
-                                  sound.release();
-                                },
-                                statusChanged
-                              );
-                            },
-                            statusChanged
+                        sound = MediaSrv.loadSound(
+                          scope.sourceGetter(),
+                          audioSucessFn,
+                          audioErrFn,
+                          statusChanged
                         );
                     }
 
@@ -13070,6 +13079,34 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
                     var soundPath = ZNK_CHAT.SOUND_PATH + 'sound.mp3';
                     var sound;
 
+                    var audioLoadRetry = 1;
+                    
+                    var audioSucessFn = function() {
+                      audioLoadRetry = 1;
+                    };
+                                
+                    var audioStatusChangeFn = function(status) {
+                      if (status === window.Media.MEDIA_STARTING && soundPlaying === true) {
+                        sound.play();
+                      } else if (status === window.Media.MEDIA_STOPPED) {
+                        sound.release();
+                      }
+                    };
+
+                    var audioErrFn = function() {
+                      console.log('znkChat loadSound failed #' + audioLoadRetry);
+                      sound.release();
+                      if (audioLoadRetry <= 3) {
+                        audioLoadRetry++;
+                        sound = MediaSrv.loadSound(
+                          soundPath,
+                          audioSucessFn,
+                          audioErrFn,
+                          audioStatusChangeFn
+                        );
+                      }
+                    };
+
                     scope.d = {};
                     scope.d.userStatus = PresenceService.userStatus;
                     scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
@@ -13143,34 +13180,14 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($te
                                 scope.chatterObj.messagesNotSeen = scope.chatterObj.messagesNotSeen < ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES ? scope.chatterObj.messagesNotSeen :  ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
 
                                 if(!soundPlaying){
+
                                     soundPlaying = true;
-                                    sound =  MediaSrv.loadSound(soundPath,
-                                      function success(){},
-                                      function err(){
-                                        console.log('znkChat loadSound failed #1');
-                                        sound.release();
-                                        sound = MediaSrv.loadSound(soundPath,
-                                          function success(){},
-                                          function err(){
-                                            console.log('znkChat loadSound failed #2');
-                                            sound.release();
-                                          },
-                                          function(status){
-                                            if (status === window.Media.MEDIA_STARTING && soundPlaying === true) {
-                                              sound.play();
-                                            } else if (status === window.Media.MEDIA_STOPPED) {
-                                              sound.release();
-                                            }
-                                          }
-                                        );
-                                      },
-                                      function(status){
-                                        if (status === window.Media.MEDIA_STARTING && soundPlaying === true) {
-                                          sound.play();
-                                        } else if (status === window.Media.MEDIA_STOPPED) {
-                                          sound.release();
-                                        }
-                                      });
+                                    sound = MediaSrv.loadSound(
+                                      soundPath,
+                                      audioSucessFn,
+                                      audioErrFn,
+                                      audioStatusChangeFn
+                                    );
                                     sound.onEnded().then(function(){
                                         soundPlaying = false;
                                         sound.release();
