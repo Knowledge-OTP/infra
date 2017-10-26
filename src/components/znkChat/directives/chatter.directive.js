@@ -94,11 +94,33 @@
 
                                 if(!soundPlaying){
                                     soundPlaying = true;
-                                    sound =  MediaSrv.loadSound(soundPath,null,null,function(status){
-                                      if (status === window.Media.MEDIA_STARTING && soundPlaying === true) {
-                                        sound.play();
-                                      }
-                                    });
+                                    sound =  MediaSrv.loadSound(soundPath,
+                                      function success(){},
+                                      function err(){
+                                        console.log('znkChat loadSound failed #1');
+                                        sound.release();
+                                        sound = MediaSrv.loadSound(soundPath,
+                                          function success(){},
+                                          function err(){
+                                            console.log('znkChat loadSound failed #2');
+                                            sound.release();
+                                          },
+                                          function(status){
+                                            if (status === window.Media.MEDIA_STARTING && soundPlaying === true) {
+                                              sound.play();
+                                            } else if (status === window.Media.MEDIA_STOPPED) {
+                                              sound.release();
+                                            }
+                                          }
+                                        );
+                                      },
+                                      function(status){
+                                        if (status === window.Media.MEDIA_STARTING && soundPlaying === true) {
+                                          sound.play();
+                                        } else if (status === window.Media.MEDIA_STOPPED) {
+                                          sound.release();
+                                        }
+                                      });
                                     sound.onEnded().then(function(){
                                         soundPlaying = false;
                                         sound.release();
