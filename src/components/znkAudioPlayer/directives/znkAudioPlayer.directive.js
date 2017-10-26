@@ -142,6 +142,7 @@
                         switch(status){
                             case STATE_ENUM.STOPPED:
                                 //$apply causing exceptions ...
+                                sound.release();
                                 $timeout(function(){
                                     scope.onEnded({allowReplay : allowReplay});
                                 });
@@ -193,15 +194,18 @@
                         sound = MediaSrv.loadSound(scope.sourceGetter(),
                             function success(){},
                             function err(){
-                            //    $timeout(function(){
-                            //        var errMsg = NetworkSrv.isDeviceOffline() ? ErrorHandlerSrv.messages.noInternetConnection : ErrorHandlerSrv.messages.defaultErrorMessage;
-                            //        ErrorHandlerSrv.displayErrorMsg(errMsg).then(function() {
-                            //            statusChanged(STATE_ENUM.STOPPED, true);
-                            //        });
-                            //    });
+                              console.log('znkAudioPlayer loadSound failed #1');
+                              sound.release();
+                              sound = MediaSrv.loadSound(scope.sourceGetter(),
+                                function success(){},
+                                function err(){
+                                  console.log('znkAudioPlayer loadSound failed #2');
+                                  sound.release();
+                                },
+                                statusChanged
+                              );
                             },
                             statusChanged
-                            //HACK currently the recorded audio is not save in dataDirectory
                         );
                     }
 
