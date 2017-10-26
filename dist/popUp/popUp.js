@@ -42,8 +42,7 @@
         popupDefer[(reject ? 'reject' : 'resolve')](reason);
       };
 
-      PopUpSrv.popup = function popup(wrapperCls, header, body, buttonsArr, approveCallback) {
-        approveCallback = approveCallback || 0;
+      PopUpSrv.popup = function popup(wrapperCls, header, body, buttonsArr) {
         //kill current popup if exists
         if (popupInstance) {
           PopUpSrv.closePopup();
@@ -91,9 +90,6 @@
           if (button.hasOwnProperty('rejectVal')) {
             childScope.d.close(button.rejectVal, true);
           } else {
-            if (approveCallback) {
-              approveCallback();
-            }
             childScope.d.close(button.resolveVal);
           }
         };
@@ -130,8 +126,7 @@
         return popupInstance;
       };
 
-      function basePopup(wrapperCls, headerIcon, title, content, btnArr, approveCallback) {
-        approveCallback = approveCallback || 0;
+      function basePopup(wrapperCls, headerIcon, title, content, btnArr) {
         wrapperCls = wrapperCls ? wrapperCls + ' base-popup show-hide-animation' : 'base-popup show-hide-animation';
 
         headerIcon = headerIcon || '';
@@ -144,7 +139,7 @@
         content = content || '';
         body = body.replace('%content%', content);
 
-        return PopUpSrv.popup(wrapperCls, header, body, btnArr, approveCallback);
+        return PopUpSrv.popup(wrapperCls, header, body, btnArr);
       }
 
       function BaseButton(text, type, resolveVal, rejectVal, addAutoFocus) {
@@ -188,13 +183,12 @@
         return basePopup('popup-info', 'popup-info-icon', title || '', content, [btn]);
       };
 
-      PopUpSrv.warning = function warning(title, content, acceptBtnTitle, cancelBtnTitle, approveCallback) {
-        approveCallback = approveCallback || 0;
+      PopUpSrv.warning = function warning(title, content, acceptBtnTitle, cancelBtnTitle) {
         var buttons = [
           new BaseButton(acceptBtnTitle, null, acceptBtnTitle),
           new BaseButton(cancelBtnTitle, 'btn-outline', undefined, cancelBtnTitle, true)
         ];
-        return basePopup('warning-popup', 'popup-exclamation-mark', title, content, buttons, approveCallback);
+        return basePopup('warning-popup', 'popup-exclamation-mark', title, content, buttons);
       };
 
       PopUpSrv.isPopupOpen = function () {
@@ -206,7 +200,7 @@
   ]);
 })();
 
-angular.module('znk.infra.popUp').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/popUp/svg/correct-icon.svg",
     "<svg version=\"1.1\"\n" +
     "     class=\"correct-icon-svg\"\n" +
