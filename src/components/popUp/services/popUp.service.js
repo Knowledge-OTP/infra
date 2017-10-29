@@ -73,11 +73,11 @@
         childScope.d.buttons = buttonsArr;
         childScope.d.btnClick = function (button) {
           if (button.hasOwnProperty('rejectVal')) {
-            childScope.d.close(button.rejectVal, true);
-          } else {
             if (approveCallback) {
               approveCallback();
             }
+            childScope.d.close(button.rejectVal, true);
+          } else {
             childScope.d.close(button.resolveVal);
           }
         };
