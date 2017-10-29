@@ -42,7 +42,8 @@
         popupDefer[(reject ? 'reject' : 'resolve')](reason);
       };
 
-      PopUpSrv.popup = function popup(wrapperCls, header, body, buttonsArr) {
+      PopUpSrv.popup = function popup(wrapperCls, header, body, buttonsArr, approveCallback) {
+        approveCallback = approveCallback || 0;
         //kill current popup if exists
         if (popupInstance) {
           PopUpSrv.closePopup();
@@ -88,6 +89,9 @@
         childScope.d.buttons = buttonsArr;
         childScope.d.btnClick = function (button) {
           if (button.hasOwnProperty('rejectVal')) {
+            if (approveCallback) {
+              approveCallback();
+            }
             childScope.d.close(button.rejectVal, true);
           } else {
             childScope.d.close(button.resolveVal);
@@ -126,7 +130,8 @@
         return popupInstance;
       };
 
-      function basePopup(wrapperCls, headerIcon, title, content, btnArr) {
+      function basePopup(wrapperCls, headerIcon, title, content, btnArr, approveCallback) {
+        approveCallback = approveCallback || 0;
         wrapperCls = wrapperCls ? wrapperCls + ' base-popup show-hide-animation' : 'base-popup show-hide-animation';
 
         headerIcon = headerIcon || '';
@@ -139,7 +144,7 @@
         content = content || '';
         body = body.replace('%content%', content);
 
-        return PopUpSrv.popup(wrapperCls, header, body, btnArr);
+        return PopUpSrv.popup(wrapperCls, header, body, btnArr, approveCallback);
       }
 
       function BaseButton(text, type, resolveVal, rejectVal, addAutoFocus) {
@@ -183,12 +188,13 @@
         return basePopup('popup-info', 'popup-info-icon', title || '', content, [btn]);
       };
 
-      PopUpSrv.warning = function warning(title, content, acceptBtnTitle, cancelBtnTitle) {
+      PopUpSrv.warning = function warning(title, content, acceptBtnTitle, cancelBtnTitle, approveCallback) {
+        approveCallback = approveCallback || 0;
         var buttons = [
           new BaseButton(acceptBtnTitle, null, acceptBtnTitle),
           new BaseButton(cancelBtnTitle, 'btn-outline', undefined, cancelBtnTitle, true)
         ];
-        return basePopup('warning-popup', 'popup-exclamation-mark', title, content, buttons);
+        return basePopup('warning-popup', 'popup-exclamation-mark', title, content, buttons, approveCallback);
       };
 
       PopUpSrv.isPopupOpen = function () {
