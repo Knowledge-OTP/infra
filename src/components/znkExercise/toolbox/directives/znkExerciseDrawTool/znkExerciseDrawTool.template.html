@@ -4,14 +4,18 @@
             active:d.drawMode !== d.DRAWING_MODES.NONE
           }">
 </svg-icon>
-<!--<svg-icon name="znk-exercise-pointer">-->
-<!--</svg-icon>-->
+
 <svg-icon name="znk-exercise-pencil"
           ng-click="d.toolClicked(d.TOOLS.PENCIL)"
           ng-class="{
-            active:(d.drawMode === d.DRAWING_MODES.VIEW_DRAW) && (d.drawMode !== d.DRAWING_MODES.NONE)
-          }">
+  active:(d.drawMode === d.DRAWING_MODES.VIEW_DRAW) && (d.drawMode !== d.DRAWING_MODES.NONE)
+}">
 </svg-icon>
+
+<div class="color-picker-btn" ng-style="{'background-color': d.colorPicked}" ng-if="d.isTeacher" ng-click="d.pickColor()"></div>
+
+<znk-color-picker picked-color-cb="d.returnedColor" ng-if="d.showColorPicker"></znk-color-picker>
+
 <svg-icon name="znk-exercise-eraser"
           ng-click="d.toolClicked(d.TOOLS.ERASER)"
           ng-class="{
