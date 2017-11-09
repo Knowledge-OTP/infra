@@ -44,7 +44,8 @@
                             '<div class="znk-popup-header">%header%</div>' +
                             '<div class="znk-popup-body">%body%</div>' +
                             '<div class="znk-popup-buttons">' +
-                                '<div ng-repeat="button in ::d.buttons" class="button-wrapper">' +
+                                '<div ng-if="::d.buttons && ::d.buttons.length" ' +
+                                    'ng-repeat="button in ::d.buttons" class="button-wrapper">' +
                                     '<button class="btn" ' +
                                              'ng-click="d.btnClick(button)" ' +
                                              'ng-class="button.type" ' +
@@ -175,11 +176,8 @@
                 return basePopup('warning-popup','popup-exclamation-mark',title,content,buttons);
             };
 
-            PopUpSrv.wait = function warning(title,content,cancelBtnTitle){
-                var buttons = [
-                    new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle, true)
-                ];
-                return basePopup('warning-popup','popup-exclamation-mark',title,content,buttons);
+            PopUpSrv.wait = function warning(title,content){
+                return basePopup('warning-popup','popup-exclamation-mark',title,content);
             };
 
             PopUpSrv.isPopupOpen = function(){
