@@ -17074,10 +17074,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
             this._mouseEventsRegistered = null;
           };
 
-                        function _fbChildChanged(snapShot) {
-                            var canvasToChange = _getCanvasContextByContextName(canvasContextName);
-                            var coordsStr = snapShot.key;
-                            var color = snapShot.val();
+          var _fbChildCallbackWrapper = function (canvasContextName, fbCallbackNum) {
 
             function _fbChildChanged(snapShot) {
               var canvasToChange = _getCanvasContextByContextName(canvasContextName);
@@ -17091,9 +17088,8 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
               }
             }
 
-                            var coordsStr = snapShot.key;
-                            drawer.clearPixel(coordsStr, canvasToChange);
-                        }
+            function _fbChildRemoved(snapShot) {
+              var canvasToChange = _getCanvasContextByContextName(canvasContextName); // "this" refers to context passed to ref.on in registerFbListeners
 
               var coordsStr = snapShot.key();
               drawer.clearPixel(coordsStr, canvasToChange);
