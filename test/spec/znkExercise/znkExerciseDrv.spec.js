@@ -1,4 +1,4 @@
-describe('testing directive "znkExerciseDrv":', function () {
+xdescribe('testing directive "znkExerciseDrv":', function () {
     'use strict';
 
     // Load  the module, which contains the directive

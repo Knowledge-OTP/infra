@@ -1,4 +1,4 @@
-describe('testing service "storageFirebaseAdapter":', function () {
+xdescribe('testing service "storageFirebaseAdapter":', function () {
     'use strict';
 
     beforeEach(function () {

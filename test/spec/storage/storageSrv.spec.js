@@ -1,4 +1,4 @@
-describe('testing service "StorageSrv":', function () {
+xdescribe('testing service "StorageSrv":', function () {
     'use strict';
 
     beforeEach(module('znk.infra.storage', 'htmlTemplates', 'testUtility', 'storage.mock'));

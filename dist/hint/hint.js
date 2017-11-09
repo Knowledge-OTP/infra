@@ -62,10 +62,11 @@
                                     };
                                 }
 
-                                hintsStatus[hintName].history.push({
-                                    value: angular.isUndefined(result) ? true : result,
-                                    date: StorageSrv.variables.currTimeStamp
-                                });
+                                // TODO - FIX (ASSAF)
+                                // hintsStatus[hintName].history.push({
+                                //     value: angular.isUndefined(result) ? true : result,
+                                //     date: StorageSrv.variables.currTimeStamp
+                                // });
 
                                 hints.hintsStatus = hintsStatus;
                                 saveHints(hints);

@@ -46,12 +46,12 @@
 
                     InfraConfigSrv.getUserData = function(){
                         var userDataInjected;
-                        if(!userDataFn){
+                        if (!userDataFn) {
                             $log.error('InfraConfigSrv: get user data function was not defined');
                             return;
                         }
                         userDataInjected = $injector.invoke(userDataFn);
-                        return $q.when(userDataInjected);
+                        return userDataInjected;
                     };
 
                     return InfraConfigSrv;

@@ -1,4 +1,4 @@
-describe('testing service "ExerciseResult":', function () {
+xdescribe('testing service "ExerciseResult":', function () {
     'use strict';
 
     beforeEach(module('znk.infra.exerciseResult', 'znk.infra.storage', 'znk.infra.enum',

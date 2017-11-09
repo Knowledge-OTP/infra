@@ -3107,45 +3107,27 @@
               return;
             }
 
-            _setDrawMode(newDrawMode);
-            _updateQuestionDrawMode(newDrawMode);
-          });
-
-          scope.$on('$destroy', function () {
-            eventsManager.cleanQuestionListeners();
-            eventsManager.cleanGlobalListeners();
-            // Don't operate when viewing 'diagnostic' page. (temporary (?) solution to the firebase multiple error bugs in sat/act) - Guy
-            ZnkExerciseDrawSrv.addCanvasToElement = undefined;
-          });
-
-          function EventsManager() {
-            this._fbRegisterProm = $q.when();
-            this._fbCallbackEnum =
-              {
-                CHILD_CHANGED: 0,
-                CHILD_REMOVED: 1
-              };
-          }
-
-          EventsManager.prototype.registerHoverEvent = function (elementToHoverOn, onHoverCb) {
-            var domElementToHoverOn = elementToHoverOn[0];
-
-            domElementToHoverOn.addEventListener("mouseenter", onHoverCb);
-
-            if (!this._hoveredElements) {
-              this._hoveredElements = [];
-            }
+                        function _fbChildChanged(snapShot) {
+                            var canvasToChange = _getCanvasContextByContextName(canvasContextName);
+                            var coordsStr = snapShot.key;
+                            var color = snapShot.val();
 
             this._hoveredElements.push({ 'hoveredElement': elementToHoverOn, 'onHoverCb': onHoverCb });
           };
 
 
+<<<<<<< HEAD
           EventsManager.prototype.killHoverEvents = function () {
             angular.forEach(this._hoveredElements, function (elementAndCbPair) {
               var domHoveredElement = elementAndCbPair.hoveredElement[0];
               domHoveredElement.removeEventListener("mouseenter", elementAndCbPair.onHoverCb);
             });
           };
+=======
+                            var coordsStr = snapShot.key;
+                            drawer.clearPixel(coordsStr, canvasToChange);
+                        }
+>>>>>>> zinkerz/dev
 
           EventsManager.prototype.registerMouseEvents = function () {
             if (this._mouseEventsRegistered || !canvasDomElement) {

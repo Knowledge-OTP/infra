@@ -12,7 +12,6 @@
             'ngInject';
             var SupportSrv = {};
 
-            var authData = AuthService.getAuth();
             var APPROVED_STUDENTS_PATH = 'users/$$uid/approvedStudents/';
             var invitationEndpoint = ENV.backendEndpoint + 'invitation';
             var SUPPORT_EMAIL = ENV.supportEmail;
@@ -20,76 +19,82 @@
 
             SupportSrv.connectTeacherWithSupport = function (callbackFn) {
                 $injector.invoke(['GroupsService', function(GroupsService){
-                    if (authData && authData.uid) {
-                        return InfraConfigSrv.getTeacherStorage().then(function (teacherStorage) {
-                            return teacherStorage.get(APPROVED_STUDENTS_PATH).then(function (students) {
-                                var studentKeys = Object.keys(students);
+                    AuthService.getAuth().then(authData => {
+                        if (authData && authData.uid) {
+                            return InfraConfigSrv.getTeacherStorage().then(function (teacherStorage) {
+                                return teacherStorage.get(APPROVED_STUDENTS_PATH).then(function (students) {
+                                    var studentKeys = Object.keys(students);
 
-                                var linkedToSupport = false;
+                                    var linkedToSupport = false;
 
-                                var promsArray = [];
-                                angular.forEach(studentKeys, function (studentId) {
-                                    var prom = GroupsService.getUserData(studentId).then(function (studentData) {
-                                        if (studentData.originalReceiverEmail === SUPPORT_EMAIL) {
-                                            linkedToSupport = true;
+                                    var promsArray = [];
+                                    angular.forEach(studentKeys, function (studentId) {
+                                        var prom = GroupsService.getUserData(studentId).then(function (studentData) {
+                                            if (studentData.originalReceiverEmail === SUPPORT_EMAIL) {
+                                                linkedToSupport = true;
+                                            }
+                                        });
+                                        promsArray.push(prom);
+                                    });
+                                    $q.all(promsArray).then(function () {
+                                        if (!linkedToSupport && authData.email !== SUPPORT_EMAIL) {
+                                            _buildDataToSend(callbackFn);
+                                        } else {
+                                            callbackFn();
                                         }
                                     });
-                                    promsArray.push(prom);
-                                });
-                                $q.all(promsArray).then(function () {
-                                    if (!linkedToSupport && authData.auth.email !== SUPPORT_EMAIL) {
-                                        _buildDataToSend(callbackFn);
-                                    } else {
-                                        callbackFn();
-                                    }
                                 });
                             });
-                        });
-                    }
+                        }
+                    });
                 }]);
             };
 
             SupportSrv.connectStudentWithSupport = function (callbackFn) {
-                if (authData && authData.uid) {
-                    teachersSrv.getAllTeachers().then(function (teachers) {
-                        var teachersKeys = Object.keys(teachers);
-                        var linkedToSupport = false;
+                AuthService.getAuth().then(authData => {
+                    if (authData && authData.uid) {
+                        teachersSrv.getAllTeachers().then(function (teachers) {
+                            var teachersKeys = Object.keys(teachers);
+                            var linkedToSupport = false;
 
-                        angular.forEach(teachersKeys, function (key) {
-                            teachers[key].isTeacher = true;
-                            if (teachers[key].email === SUPPORT_EMAIL) {
-                                linkedToSupport = true;
+                            angular.forEach(teachersKeys, function (key) {
+                                teachers[key].isTeacher = true;
+                                if (teachers[key].email === SUPPORT_EMAIL) {
+                                    linkedToSupport = true;
+                                }
+                            });
+
+                            if (!linkedToSupport && authData.email !== SUPPORT_EMAIL) {
+                                _buildDataToSend(callbackFn);
+                            } else {
+                                callbackFn();
                             }
                         });
-
-                        if (!linkedToSupport && authData.auth.email !== SUPPORT_EMAIL) {
-                            _buildDataToSend(callbackFn);
-                        } else {
-                            callbackFn();
-                        }
-                    });
-                }
+                    }
+                });
             };
 
             function _buildDataToSend(callbackFn){
-                UserProfileService.getProfileByUserId(authData.uid).then(function (userProfile) {
-                    var receiverName = userProfile.nickname;
-                    var receiverEmail = authData.auth.email || userProfile.email || NO_EMAIL;
-                    if (angular.isUndefined(receiverName) || angular.equals(receiverName, '')) {
-                        receiverName = receiverEmail;
-                    }
+                AuthService.getAuth().then(authData => {
+                    UserProfileService.getProfileByUserId(authData.uid).then(function (userProfile) {
+                        var receiverName = userProfile.nickname;
+                        var receiverEmail = authData.email || userProfile.email || NO_EMAIL;
+                        if (angular.isUndefined(receiverName) || angular.equals(receiverName, '')) {
+                            receiverName = receiverEmail;
+                        }
 
-                    var dataToSend = {
-                        receiverAppName: ENV.firebaseAppScopeName,
-                        receiverEmail: receiverEmail,
-                        receiverName: receiverName,
-                        receiverUid: authData.uid,
-                        receiverParentEmail: '',
-                        receiverParentName: ''
-                    };
+                        var dataToSend = {
+                            receiverAppName: ENV.firebaseAppScopeName,
+                            receiverEmail: receiverEmail,
+                            receiverName: receiverName,
+                            receiverUid: authData.uid,
+                            receiverParentEmail: '',
+                            receiverParentName: ''
+                        };
 
-                    _connectSupportToUser(dataToSend).then(function (response) {
-                        callbackFn(response);
+                        _connectSupportToUser(dataToSend).then(function (response) {
+                            callbackFn(response);
+                        });
                     });
                 });
             }
