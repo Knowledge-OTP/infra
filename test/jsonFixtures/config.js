@@ -1,7 +1,7 @@
 (function(){
-    jasmine.getFixtures().fixturesPath = "base/test/jsonFixtures/";
+    // jasmine.getFixtures().fixturesPath = "base/test/jsonFixtures/";
 
-    window.content = JSON.parse(readFixtures("content.json"));
+    // window.content = JSON.parse(readFixtures("content.json"));
 
 /*  cleaning content
     var exercise = content.;

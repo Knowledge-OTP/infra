@@ -455,7 +455,7 @@
     ]);
 })(angular);
 
-angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkAudioPlayer/svg/close-icon.svg",
     "<svg\n" +
     "    x=\"0px\"\n" +

@@ -191,6 +191,13 @@
                 return basePopup('warning-popup','popup-exclamation-mark',title,content,buttons);
             };
 
+            PopUpSrv.wait = function warning(title,content,cancelBtnTitle){
+                var buttons = [
+                    new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle, true)
+                ];
+                return basePopup('warning-popup','popup-exclamation-mark',title,content,buttons);
+            };
+
             PopUpSrv.isPopupOpen = function(){
                 return !!popupInstance;
             };
@@ -200,7 +207,7 @@
     ]);
 })();
 
-angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.popUp').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/popUp/svg/correct-icon.svg",
     "<svg version=\"1.1\"\n" +
     "     class=\"correct-icon-svg\"\n" +

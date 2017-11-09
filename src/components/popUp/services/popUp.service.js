@@ -175,6 +175,13 @@
                 return basePopup('warning-popup','popup-exclamation-mark',title,content,buttons);
             };
 
+            PopUpSrv.wait = function warning(title,content,cancelBtnTitle){
+                var buttons = [
+                    new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle, true)
+                ];
+                return basePopup('warning-popup','popup-exclamation-mark',title,content,buttons);
+            };
+
             PopUpSrv.isPopupOpen = function(){
                 return !!popupInstance;
             };
