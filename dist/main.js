@@ -1932,7 +1932,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function ($template
                              status = CallsBtnStatusEnum.CALL_BTN.enum;
                      }
                  }
-                 
+
                 return status;
             };
 
@@ -6742,7 +6742,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function ($tem
     angular.module('znk.infra.exerciseUtility').factory('ExerciseUtilitySrv',
         function () {
             'ngInject';
-            
+
             var ExerciseUtilitySrv = {};
 
             return ExerciseUtilitySrv;
@@ -6769,7 +6769,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function ($te
                 if(!angular.isString(str) || !str.length){
                     return '';
                 }
-                
+
                 return str[0].toUpperCase() + str.substr(1);
             };
         }
@@ -7082,7 +7082,7 @@ angular.module('znk.infra.filters').run(['$templateCache', function ($templateCa
  *  In case only one prefix/suffix is provided, it will be used in all attributes
  *  In case no @context-attr is provided, it will set the class attribute by default
  *  No need to pass dashes ('-') to prefix or suffix, they are already appended
- * 
+ *
  * ** Optional **: you can now add an attribute called "type" and assign it the word topic if you want idToTopicName
  */
 (function (angular) {
@@ -8264,7 +8264,7 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function ($templat
                                 var currSubAvailableSubCategories = Object.keys(availableExercises[timeBundle][subjectId].subCategories);
                                 // If there are no exercises and not subCategories available for this subject (#.subCategories obj always has the "subCategories" property among the category ids)
                                 if ((currSubAvailableExercises.length === 0) && (currSubAvailableSubCategories.length === 1)) {
-                                  // Remove this subject from the available exercises object  
+                                  // Remove this subject from the available exercises object
                                   delete availableExercises[timeBundle][subjectId];
                                 }
                               }
@@ -8484,192 +8484,196 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function ($templa
 'use strict';
 
 (function () {
-    angular.module('znk.infra.popUp').factory('PopUpSrv',[
-        '$injector', '$q', '$rootScope', '$animate', '$document',
-        function ($injector, $q, $rootScope, $animate, $document) {
-            var PopUpSrv = {};
+  angular.module('znk.infra.popUp').factory('PopUpSrv', [
+    '$injector', '$q', '$rootScope', '$animate', '$document',
+    function ($injector, $q, $rootScope, $animate, $document) {
+      var PopUpSrv = {};
 
-            var $body = angular.element($document[0].body);
-            if (!angular.element($body[0].querySelector('.znk-popup')).length) {
-                var popUpsPlaceHolderElement = angular.element('<div class="znk-popup"></div>');
-                $body.append(popUpsPlaceHolderElement);
-            }
+      var $body = angular.element($document[0].body);
+      if (!angular.element($body[0].querySelector('.znk-popup')).length) {
+        var popUpsPlaceHolderElement = angular.element('<div class="znk-popup"></div>');
+        $body.append(popUpsPlaceHolderElement);
+      }
 
-            var popupInstance,
-                popupDefer;
+      var popupInstance,
+        popupDefer;
 
-            PopUpSrv.closePopup = function(reject,reason){
-                if(!reason){
-                    reason = 'closed';
-                }
-                popUpsPlaceHolderElement.empty();
-                if (popupInstance.scope) {
-                    popupInstance.scope.$destroy();
-                }
-                popupDefer[(reject ? 'reject' : 'resolve')](reason);
-            };
+      PopUpSrv.closePopup = function (reject, reason) {
+        if (!reason) {
+          reason = 'closed';
+        }
+        popUpsPlaceHolderElement.empty();
+        if (popupInstance.scope) {
+          popupInstance.scope.$destroy();
+        }
+        popupDefer[(reject ? 'reject' : 'resolve')](reason);
+      };
 
-            PopUpSrv.popup = function popup(wrapperCls,header,body,buttonsArr){
-                //kill current popup if exists
-                if(popupInstance){
-                    PopUpSrv.closePopup();
-                }
-                var childScope = $rootScope.$new(true);
-                childScope.d = {};
+      PopUpSrv.popup = function popup(wrapperCls, header, body, buttonsArr, approveCallback) {
+        approveCallback = approveCallback || 0;
+        //kill current popup if exists
+        if (popupInstance) {
+          PopUpSrv.closePopup();
+        }
+        var childScope = $rootScope.$new(true);
+        childScope.d = {};
 
-                popupDefer = $q.defer();
-                popupInstance = {};
-                popupInstance.promise = popupDefer.promise;
+        popupDefer = $q.defer();
+        popupInstance = {};
+        popupInstance.promise = popupDefer.promise;
 
-                var template =
-                    '<div class="%wrapperCls%">' +
-                        '<div class="znk-popup-wrapper">' +
-                            '<div class="znk-popup-header">%header%</div>' +
-                            '<div class="znk-popup-body">%body%</div>' +
-                            '<div class="znk-popup-buttons">' +
-                                '<div ng-if="::d.buttons && ::d.buttons.length" ' +
+        var template =
+          '<div class="%wrapperCls%">' +
+          '<div class="znk-popup-wrapper">' +
+          '<div class="znk-popup-header">%header%</div>' +
+          '<div class="znk-popup-body">%body%</div>' +
+          '<div class="znk-popup-buttons">' +
+          '<div ng-if="::d.buttons && ::d.buttons.length" ' +
                                     'ng-repeat="button in ::d.buttons" class="button-wrapper">' +
-                                    '<button class="btn" ' +
-                                             'ng-click="d.btnClick(button)" ' +
-                                             'ng-class="button.type" ' +
-                                             'ng-autofocus="button.addAutoFocus" ' +
-                                             'tabindex="0">' +
-                                             '{{button.text}}' +
-                                    '</button>' +
-                                '</div>' +
-                            '</div>' +
-                        '</div>' +
-                    '</div>';
+          '<button class="btn" ' +
+          'ng-click="d.btnClick(button)" ' +
+          'ng-class="button.type" ' +
+          'ng-autofocus="button.addAutoFocus" ' +
+          'tabindex="0">' +
+          '{{button.text}}' +
+          '</button>' +
+          '</div>' +
+          '</div>' +
+          '</div>' +
+          '</div>';
 
-                wrapperCls = wrapperCls ? ' ' + wrapperCls : '';
-                template = template.replace('%wrapperCls%',wrapperCls);
+        wrapperCls = wrapperCls ? ' ' + wrapperCls : '';
+        template = template.replace('%wrapperCls%', wrapperCls);
 
-                header = header || '';
-                template = template.replace('%header%',header);
+        header = header || '';
+        template = template.replace('%header%', header);
 
-                body = body || '';
-                template = template.replace('%body%',body);
+        body = body || '';
+        template = template.replace('%body%', body);
 
-                if(angular.isDefined(buttonsArr) && !angular.isArray(buttonsArr)){
-                    buttonsArr = [buttonsArr];
-                }
-                childScope.d.buttons = buttonsArr;
-                childScope.d.btnClick = function(button){
-                    if(button.hasOwnProperty('rejectVal')){
-                        childScope.d.close(button.rejectVal,true);
-                    }else{
-                        childScope.d.close(button.resolveVal);
-                    }
-                };
-
-                childScope.d.close = function(reason,reject){
-                    var animationLeaveProm = $animate.leave($template);
-                    animationLeaveProm.then(function(){
-                        if(childScope){
-                            childScope.$destroy();
-                            childScope = null;
-                        }
-                        popupInstance = null;
-                        if (angular.isDefined(popupDefer) && popupDefer !== null) {
-                            var action = reject ? 'reject' : 'resolve';
-                            reason = reason || 'close';
-                            if(popupDefer[action]){
-                                popupDefer[action](reason);  // todo - for some reason this function(reason) never executed.
-                                if(angular.isFunction(reason)){ //this works good.
-                                    reason();
-                                }
-
-                            }
-                            popupDefer = null;
-                        }
-                    });
-                };
-
-                var $template = angular.element(template);
-                $animate.enter($template,popUpsPlaceHolderElement);
-                //was added because injecting $compile dependency causing circular dependency
-                var $compile = $injector.get('$compile');
-                $compile(popUpsPlaceHolderElement.contents())(childScope);
-
-                return popupInstance;
-            };
-
-            function basePopup(wrapperCls,headerIcon,title,content,btnArr){
-                wrapperCls = wrapperCls ? wrapperCls + ' base-popup show-hide-animation' : 'base-popup show-hide-animation';
-
-                headerIcon = headerIcon || '';
-                var header = '<div class="icon-wrapper"><svg-icon name="%headerIcon%"></svg-icon></div>';
-                header = header.replace('%headerIcon%',headerIcon);
-
-                var body = '<div class="title responsive-title">%title%</div><div class="content">%content%</div>';
-                title = title || '';
-                body = body.replace('%title%',title);
-                content = content || '';
-                body = body.replace('%content%',content);
-
-                return PopUpSrv.popup(wrapperCls,header,body,btnArr);
+        if (angular.isDefined(buttonsArr) && !angular.isArray(buttonsArr)) {
+          buttonsArr = [buttonsArr];
+        }
+        childScope.d.buttons = buttonsArr;
+        childScope.d.btnClick = function (button) {
+          if (button.hasOwnProperty('rejectVal')) {
+            if (approveCallback) {
+              approveCallback();
             }
+            childScope.d.close(button.rejectVal, true);
+          } else {
+            childScope.d.close(button.resolveVal);
+          }
+        };
 
-            function BaseButton(text,type,resolveVal,rejectVal, addAutoFocus){
-                var btn = {
-                    text: text || '',
-                    type: type || '',
-                    addAutoFocus: addAutoFocus
-                };
-
-                if(rejectVal){
-                    btn.rejectVal = rejectVal;
-                }else{
-                    btn.resolveVal = resolveVal;
+        childScope.d.close = function (reason, reject) {
+          var animationLeaveProm = $animate.leave($template);
+          animationLeaveProm.then(function () {
+            if (childScope) {
+              childScope.$destroy();
+              childScope = null;
+            }
+            popupInstance = null;
+            if (angular.isDefined(popupDefer) && popupDefer !== null) {
+              var action = reject ? 'reject' : 'resolve';
+              reason = reason || 'close';
+              if (popupDefer[action]) {
+                popupDefer[action](reason);  // todo - for some reason this function(reason) never executed.
+                if (angular.isFunction(reason)) { //this works good.
+                  reason();
                 }
 
-                return btn;
+              }
+              popupDefer = null;
             }
+          });
+        };
 
-            PopUpSrv.basePopup = basePopup;
+        var $template = angular.element(template);
+        $animate.enter($template, popUpsPlaceHolderElement);
+        //was added because injecting $compile dependency causing circular dependency
+        var $compile = $injector.get('$compile');
+        $compile(popUpsPlaceHolderElement.contents())(childScope);
 
-            PopUpSrv.error = function error(title,content){
-                var btn = new BaseButton('OK',null,'ok', undefined, true);
-                return basePopup('error-popup','popup-exclamation-mark',title || 'OOOPS...',content,[btn]);
-            };
+        return popupInstance;
+      };
 
-            PopUpSrv.ErrorConfirmation = function error(title, content, acceptBtnTitle,cancelBtnTitle){
-                var buttons = [
-                    new BaseButton(acceptBtnTitle,null,acceptBtnTitle),
-                    new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle, true)
-                ];
-                return basePopup('error-popup','popup-exclamation-mark',title,content,buttons);
-            };
+      function basePopup(wrapperCls, headerIcon, title, content, btnArr, approveCallback) {
+        approveCallback = approveCallback || 0;
+        wrapperCls = wrapperCls ? wrapperCls + ' base-popup show-hide-animation' : 'base-popup show-hide-animation';
 
-            PopUpSrv.success = function success(title,content){
-                var btn = new BaseButton('OK',null,'ok', undefined, true);
-                return basePopup('success-popup','popup-correct',title || '',content,[btn]);
-            };
+        headerIcon = headerIcon || '';
+        var header = '<div class="icon-wrapper"><svg-icon name="%headerIcon%"></svg-icon></div>';
+        header = header.replace('%headerIcon%', headerIcon);
 
-            PopUpSrv.info = function info(title,content){
-                var btn = new BaseButton('OK',null,'ok', undefined, true);
-                return basePopup('popup-info','popup-info-icon',title || '',content,[btn]);
-            };
+        var body = '<div class="title responsive-title">%title%</div><div class="content">%content%</div>';
+        title = title || '';
+        body = body.replace('%title%', title);
+        content = content || '';
+        body = body.replace('%content%', content);
 
-            PopUpSrv.warning = function warning(title,content,acceptBtnTitle,cancelBtnTitle){
-                var buttons = [
-                    new BaseButton(acceptBtnTitle,null,acceptBtnTitle),
-                    new BaseButton(cancelBtnTitle,'btn-outline',undefined,cancelBtnTitle, true)
-                ];
-                return basePopup('warning-popup','popup-exclamation-mark',title,content,buttons);
-            };
+        return PopUpSrv.popup(wrapperCls, header, body, btnArr, approveCallback);
+      }
+
+      function BaseButton(text, type, resolveVal, rejectVal, addAutoFocus) {
+        var btn = {
+          text: text || '',
+          type: type || '',
+          addAutoFocus: addAutoFocus
+        };
+
+        if (rejectVal) {
+          btn.rejectVal = rejectVal;
+        } else {
+          btn.resolveVal = resolveVal;
+        }
+
+        return btn;
+      }
+
+      PopUpSrv.basePopup = basePopup;
+
+      PopUpSrv.error = function error(title, content) {
+        var btn = new BaseButton('OK', null, 'ok', undefined, true);
+        return basePopup('error-popup', 'popup-exclamation-mark', title || 'OOOPS...', content, [btn]);
+      };
+
+      PopUpSrv.ErrorConfirmation = function error(title, content, acceptBtnTitle, cancelBtnTitle) {
+        var buttons = [
+          new BaseButton(acceptBtnTitle, null, acceptBtnTitle),
+          new BaseButton(cancelBtnTitle, 'btn-outline', undefined, cancelBtnTitle, true)
+        ];
+        return basePopup('error-popup', 'popup-exclamation-mark', title, content, buttons);
+      };
+
+      PopUpSrv.success = function success(title, content) {
+        var btn = new BaseButton('OK', null, 'ok', undefined, true);
+        return basePopup('success-popup', 'popup-correct', title || '', content, [btn]);
+      };
+
+      PopUpSrv.info = function info(title, content) {
+        var btn = new BaseButton('OK', null, 'ok', undefined, true);
+        return basePopup('popup-info', 'popup-info-icon', title || '', content, [btn]);
+      };
+
+      PopUpSrv.warning = function warning(title, content, acceptBtnTitle, cancelBtnTitle, approveCallback) {
+        approveCallback = approveCallback || 0;
+        var buttons = [
+          new BaseButton(acceptBtnTitle, null, acceptBtnTitle),
+          new BaseButton(cancelBtnTitle, 'btn-outline', undefined, cancelBtnTitle, true)
+        ];
+        return basePopup('warning-popup', 'popup-exclamation-mark', title, content, buttons, approveCallback);
+      };
 
             PopUpSrv.wait = function warning(title,content){
                 return basePopup('warning-popup','popup-exclamation-mark',title,content);
-            };
-
-            PopUpSrv.isPopupOpen = function(){
+            };PopUpSrv.isPopupOpen = function(){
                 return !!popupInstance;
             };
 
-            return PopUpSrv;
-        }
-    ]);
+      return PopUpSrv;
+    }
+  ]);
 })();
 
 angular.module('znk.infra.popUp').run(['$templateCache', function ($templateCache) {
@@ -9127,7 +9131,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function ($templateCa
 
 (function(){
     'use strict';
-    
+
     angular.module('znk.infra.screenSharing').run(
         ["ScreenSharingEventsSrv", function(ScreenSharingEventsSrv){
             'ngInject';
@@ -11182,7 +11186,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function ($templateCa
     'use strict';
 
     angular.module('znk.infra.teachers', [
-        
+
     ]);
 })(angular);
 
@@ -11826,7 +11830,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function ($templateCa
         this.$get = ['$q', '$log', 'ENV', 'PopUpSrv', function ($q, $log, ENV, PopUpSrv) {
 
             var WebcallSrv = {};
-            var plivoWebSdk; 
+            var plivoWebSdk;
 
             var deferredMap = {
                 call: {},
@@ -11883,7 +11887,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function ($templateCa
             }
 
             function _onCallFailed(reason) {
-                PopUpSrv.error('Error making a call', 'Please make sure to allow microphone access in browser.<BR>' + 
+                PopUpSrv.error('Error making a call', 'Please make sure to allow microphone access in browser.<BR>' +
                                'reason: ' + reason + ' <BR>' + WebcallSrv.debugInfo, 'Ok','Cancel');
                 $log.error('_onCallFailed, reason =' + reason);
                 if (!angular.equals({}, deferredMap.call)) {
@@ -11911,7 +11915,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function ($templateCa
                 // plivoWebSdk.client.on('audioDeviceChange',audioDeviceChange);
                 plivoWebSdk.client.setRingTone(true);
                 plivoWebSdk.client.setRingToneBack(false);
-                WebcallSrv.debugInfo = '(debug: ' + 
+                WebcallSrv.debugInfo = '(debug: ' +
                             plivoWebSdk.client.browserDetails.browser + ', ' +
                             plivoWebSdk.client.browserDetails.version +')';
                 $log.debug('initPhone ready!');
@@ -11921,7 +11925,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function ($templateCa
             function _getSettings(){
 
                 var defaultSettings = { "permOnClick": true, "codecs": ["OPUS","PCMU"], "enableIPV6": false, "audioConstraints": { "optional": [ { "googAutoGainControl": false }, {"googEchoCancellation":true} ] }, "enableTracking": true};
-                // if (ENV.debug){ 
+                // if (ENV.debug){
                     defaultSettings.debug="DEBUG";
                 // }
                 return defaultSettings;
@@ -11959,9 +11963,9 @@ angular.module('znk.infra.utility').run(['$templateCache', function ($templateCa
             };
 
             WebcallSrv.connect = function (callId) {
-                return _init().then(function () {                        
-                    $log.debug('init done');                            
-                    return _call(callId);                          
+                return _init().then(function () {
+                    $log.debug('init done');
+                    return _call(callId);
                  });
             };
 
@@ -12375,6 +12379,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function ($templateC
                         switch(status){
                             case STATE_ENUM.STOPPED:
                                 //$apply causing exceptions ...
+                                sound.release();
                                 $timeout(function(){
                                     scope.onEnded({allowReplay : allowReplay});
                                 });
@@ -12416,6 +12421,25 @@ angular.module('znk.infra.workouts').run(['$templateCache', function ($templateC
                         }
                     };
 
+                    var audioLoadRetry = 1;
+
+                    var audioSucessFn = function() {
+                      audioLoadRetry = 1;
+                    };
+
+                    var audioErrFn = function() {
+                      console.log('znkAudioPlayer loadSound failed #' + audioLoadRetry);
+                      sound.release();
+                      if (audioLoadRetry <= 3) {
+                        audioLoadRetry++;
+                        sound = MediaSrv.loadSound(
+                          scope.sourceGetter(),
+                          audioSucessFn,
+                          audioErrFn,
+                          statusChanged
+                        );
+                      }
+                    };
                     function loadSound(){
                         if(sound){
                             sound.stop();
@@ -12423,18 +12447,11 @@ angular.module('znk.infra.workouts').run(['$templateCache', function ($templateC
                             soundInititalized = false;
                         }
                         showLoadingSpinner();
-                        sound = MediaSrv.loadSound(scope.sourceGetter(),
-                            function success(){},
-                            function err(){
-                            //    $timeout(function(){
-                            //        var errMsg = NetworkSrv.isDeviceOffline() ? ErrorHandlerSrv.messages.noInternetConnection : ErrorHandlerSrv.messages.defaultErrorMessage;
-                            //        ErrorHandlerSrv.displayErrorMsg(errMsg).then(function() {
-                            //            statusChanged(STATE_ENUM.STOPPED, true);
-                            //        });
-                            //    });
-                            },
-                            statusChanged
-                            //HACK currently the recorded audio is not save in dataDirectory
+                        sound = MediaSrv.loadSound(
+                          scope.sourceGetter(),
+                          audioSucessFn,
+                          audioErrFn,
+                          statusChanged
                         );
                     }
 
@@ -13194,6 +13211,34 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function ($t
                     var soundPath = ZNK_CHAT.SOUND_PATH + 'sound.mp3';
                     var sound;
 
+                    var audioLoadRetry = 1;
+
+                    var audioSucessFn = function() {
+                      audioLoadRetry = 1;
+                    };
+
+                    var audioStatusChangeFn = function(status) {
+                      if (status === window.Media.MEDIA_STARTING && soundPlaying === true) {
+                        sound.play();
+                      } else if (status === window.Media.MEDIA_STOPPED) {
+                        sound.release();
+                      }
+                    };
+
+                    var audioErrFn = function() {
+                      console.log('znkChat loadSound failed #' + audioLoadRetry);
+                      sound.release();
+                      if (audioLoadRetry <= 3) {
+                        audioLoadRetry++;
+                        sound = MediaSrv.loadSound(
+                          soundPath,
+                          audioSucessFn,
+                          audioErrFn,
+                          audioStatusChangeFn
+                        );
+                      }
+                    };
+
                     scope.d = {};
                     scope.d.userStatus = PresenceService.userStatus;
                     scope.d.maxNumUnseenMessages = ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
@@ -13267,12 +13312,14 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function ($t
                                 scope.chatterObj.messagesNotSeen = scope.chatterObj.messagesNotSeen < ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES ? scope.chatterObj.messagesNotSeen :  ZNK_CHAT.MAX_NUM_UNSEEN_MESSAGES;
 
                                 if(!soundPlaying){
+
                                     soundPlaying = true;
-                                    sound =  MediaSrv.loadSound(soundPath,null,null,function(status){
-                                      if (status === window.Media.MEDIA_STARTING && soundPlaying === true) {
-                                        sound.play();
-                                      }
-                                    });
+                                    sound = MediaSrv.loadSound(
+                                      soundPath,
+                                      audioSucessFn,
+                                      audioErrFn,
+                                      audioStatusChangeFn
+                                    );
                                     sound.onEnded().then(function(){
                                         soundPlaying = false;
                                         sound.release();
@@ -14632,7 +14679,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
             questionTypeGetterFn = typeGetterFn;
         };
 
-        var answersFormaterObjMap = {};        
+        var answersFormaterObjMap = {};
         this.setAnswersFormatValidtors = function (_answersFormaterObjMap) {
             answersFormaterObjMap = _answersFormaterObjMap;
         };
@@ -14656,7 +14703,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
                     return questionTypeGetterFn(question);
                 };
 
-                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {   
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {
                     if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
                         $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
                         return;
@@ -14664,7 +14711,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
 
                    var answersFormaterArr = answersFormaterObjMap[answerTypeId];
 
-                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
+                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer
                    if (angular.isUndefined(userAnswer) ||
                        !angular.isArray(answersFormaterArr) ||
                        !answersFormaterArr.length) {
@@ -14674,10 +14721,10 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
 
                     var answersFormaterArrLength = answersFormaterArr.length;
 
-                    var answerValueBool, currentFormatter, functionGetter;                     
+                    var answerValueBool, currentFormatter, functionGetter;
                     for (var i = 0; i < answersFormaterArrLength; i++) {
                         currentFormatter = answersFormaterArr[i];
-                       
+
                         if (angular.isFunction(currentFormatter)) {
                             try {
                                  functionGetter = $injector.invoke(currentFormatter);
@@ -16513,6 +16560,49 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
 }(angular));
 
 
+(function (angular) {
+  'use strict';
+
+  angular.module('znk.infra.znkExercise').component('znkColorPicker', {
+    templateUrl: 'components/znkExercise/toolbox/directives/znkColorPicker/znkColorPicker.template.html',
+    bindings: {
+      colors: '=?',
+      pickedColorCb: "="
+    },
+    controllerAs: 'vm',
+    controller: function () {
+      'ngInject';
+      var vm = this;
+      vm.colorsArr = [
+        {
+          code: '#008000'
+        },
+        {
+          code: '#ff0000'
+        },
+        {
+          code: '#af667d'
+        },
+        {
+          code: '#e1ff00'
+        },
+        {
+          code: '#ff00dd'
+        },
+        {
+          code: '#000000'
+        }
+      ];
+      vm.pickColor = function (colorCode) {
+        if (vm.pickedColorCb) {
+          vm.pickedColorCb(colorCode);
+        }
+      };
+    }
+
+  });
+})(angular);
+
 /**
  * This directive is bound to elements requesting a canvas to cover them
  * since the canvas is positioned as 'absolute', the directive also sets a 'relative' position to relate to the canvas
@@ -16561,703 +16651,730 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
  */
 
 (function (angular) {
-    'use strict';
+  'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('znkExerciseDrawTool',
-        ["ZnkExerciseEvents", "ZnkExerciseDrawSrv", "InfraConfigSrv", "ZnkExerciseViewModeEnum", "$log", "$q", "$compile", "$timeout", "$window", function (ZnkExerciseEvents, ZnkExerciseDrawSrv, InfraConfigSrv, ZnkExerciseViewModeEnum, $log, $q, $compile, $timeout, $window) {
-            'ngInject';
+  angular.module('znk.infra.znkExercise').directive('znkExerciseDrawTool',
+    ["ZnkExerciseEvents", "ZnkExerciseDrawSrv", "InfraConfigSrv", "ZnkExerciseViewModeEnum", "$log", "$q", "$compile", "$timeout", "$window", "ENV", function (ZnkExerciseEvents, ZnkExerciseDrawSrv, InfraConfigSrv, ZnkExerciseViewModeEnum, $log, $q, $compile, $timeout, $window, ENV) {
+      'ngInject';
 
-            var TOUCHE_COLORS = {
-                0: 0,// deleted
-                1: '#0072bc',
-                2: '#af667d'
+      var TOUCHE_COLORS = {
+        0: 0,// deleted
+        1: '#0072bc',
+        2: '#af667d',
+        3: '#000000',
+        4: '#ff00dd',
+        5: '#e1ff00',
+        6: '#ff0000',
+        7: '#008000',
+        '#af667d': 2,
+        '#000000': 3,
+        '#ff00dd': 4,
+        '#e1ff00': 5,
+        '#ff0000': 6,
+        '#008000': 7
+      };
+
+      return {
+        templateUrl: 'components/znkExercise/toolbox/directives/znkExerciseDrawTool/znkExerciseDrawTool.template.html',
+        require: '^znkExerciseToolBox',
+        scope: {
+          settings: '<'
+        },
+        link: function (scope, element, attrs, toolBoxCtrl) {
+
+          // Don't operate when viewing 'diagnostic' page. (temporary (?) solution to the firebase multiple error bugs in sat/act) - Guy
+          if (ZnkExerciseViewModeEnum.MUST_ANSWER.enum === toolBoxCtrl.znkExerciseCtrl.getViewMode()) {
+            return;
+          }
+
+          var canvasDomElement,
+            canvasContext,
+            canvasContainerElementInitial,
+            drawer,
+            eventsManager,
+            serverDrawingUpdater,
+            currQuestion,
+            registerFbListenersInDelayOnce;
+
+          var PIXEL_SIZE = 2;
+          var SERVER_UPDATED_FLUSH_TIME = 0;
+
+          var DRAWING_MODES = {
+            'NONE': 1,
+            'VIEW': 2,
+            'VIEW_DRAW': 3,
+            'VIEW_ERASE': 4
+          };
+
+          var TOOLS = {
+            TOUCHE: 1,
+            PENCIL: 2,
+            ERASER: 3
+          };
+
+          scope.d = {};
+
+          scope.d.DRAWING_MODES = DRAWING_MODES;
+
+          scope.d.TOOLS = TOOLS;
+          scope.d.showColorPicker = false;
+          scope.d.colorPicked = TOUCHE_COLORS['2'];
+          scope.d.isTeacher = (ENV.appContext.toLowerCase()) === 'dashboard';
+
+          function _openColorPicker() {
+            scope.d.showColorPicker = !scope.d.showColorPicker;
+          }
+
+          scope.d.toolClicked = function (tool) {
+            if (!currQuestion) {
+              $log.debug('znkExerciseDrawTool: curr question was not set yet');
+              return;
+            }
+            switch (tool) {
+              case TOOLS.TOUCHE:
+                scope.d.drawMode = scope.d.drawMode === DRAWING_MODES.NONE ? DRAWING_MODES.VIEW : DRAWING_MODES.NONE;
+                break;
+              case TOOLS.PENCIL:
+                scope.d.drawMode = scope.d.drawMode === DRAWING_MODES.VIEW_DRAW ? DRAWING_MODES.VIEW : DRAWING_MODES.VIEW_DRAW;
+                break;
+              case TOOLS.ERASER:
+                scope.d.drawMode = scope.d.drawMode === DRAWING_MODES.VIEW_ERASE ? DRAWING_MODES.VIEW : DRAWING_MODES.VIEW_ERASE;
+                break;
+            }
+          };
+
+          scope.d.pickColor = function () {
+            _openColorPicker();
+          };
+
+          scope.d.returnedColor = function (colorPicked) {
+            scope.d.colorPicked = colorPicked;
+            scope.d.showColorPicker = !scope.d.showColorPicker;
+            drawer.toucheColor = TOUCHE_COLORS[colorPicked];
+          };
+
+          function _getFbRef(currQuestionId, canvasContextName) {
+            var errMsg;
+
+            if (!scope.settings || !scope.settings.exerciseDrawingPathPrefix) {
+              errMsg = 'znkExerciseDrawTool';
+              $log.error(errMsg);
+              return $q.reject(errMsg);
+            }
+
+            if (!currQuestionId) {
+              errMsg = 'znkExerciseDrawTool:_getFbRef: curr question was not set yet';
+              $log.debug(errMsg);
+              return $q.reject(errMsg);
+            }
+
+            var pathPrefixProm;
+            if (angular.isFunction(scope.settings.exerciseDrawingPathPrefix)) {
+              pathPrefixProm = scope.settings.exerciseDrawingPathPrefix();
+            } else {
+              pathPrefixProm = scope.settings.exerciseDrawingPathPrefix;
+            }
+
+            var dataPromMap = {
+              globalStorage: InfraConfigSrv.getGlobalStorage(),
+              pathPrefix: $q.when(pathPrefixProm)
             };
 
-            return {
-                templateUrl: 'components/znkExercise/toolbox/directives/znkExerciseDrawTool/znkExerciseDrawTool.template.html',
-                require: '^znkExerciseToolBox',
-                scope: {
-                    settings: '<'
-                },
-                link: function (scope, element, attrs, toolBoxCtrl) {
-
-                    // Don't operate when viewing 'diagnostic' page. (temporary (?) solution to the firebase multiple error bugs in sat/act) - Guy
-                    if (ZnkExerciseViewModeEnum.MUST_ANSWER.enum === toolBoxCtrl.znkExerciseCtrl.getViewMode()) {
-                        return;
-                    }
-
-                    var canvasDomElement,
-                        canvasContext,
-                        canvasContainerElementInitial,
-                        drawer,
-                        eventsManager,
-                        serverDrawingUpdater,
-                        currQuestion,
-                        registerFbListenersInDelayOnce;
-
-                    var PIXEL_SIZE = 2;
-                    var SERVER_UPDATED_FLUSH_TIME = 0;
-
-                    var DRAWING_MODES = {
-                        'NONE': 1,
-                        'VIEW': 2,
-                        'VIEW_DRAW': 3,
-                        'VIEW_ERASE': 4
-                    };
-
-                    var TOOLS = {
-                        TOUCHE: 1,
-                        PENCIL: 2,
-                        ERASER: 3
-                    };
-
-                    scope.d = {};
-
-                    scope.d.DRAWING_MODES = DRAWING_MODES;
-
-                    scope.d.TOOLS = TOOLS;
-
-                    scope.d.toolClicked = function (tool) {
-                        if (!currQuestion) {
-                            $log.debug('znkExerciseDrawTool: curr question was not set yet');
-                            return;
-                        }
-
-                        switch (tool) {
-                            case TOOLS.TOUCHE:
-                                scope.d.drawMode = scope.d.drawMode === DRAWING_MODES.NONE ? DRAWING_MODES.VIEW : DRAWING_MODES.NONE;
-                                break;
-                            case TOOLS.PENCIL:
-                                scope.d.drawMode = scope.d.drawMode === DRAWING_MODES.VIEW_DRAW ? DRAWING_MODES.VIEW : DRAWING_MODES.VIEW_DRAW;
-                                break;
-                            case TOOLS.ERASER:
-                                scope.d.drawMode = scope.d.drawMode === DRAWING_MODES.VIEW_ERASE ? DRAWING_MODES.VIEW : DRAWING_MODES.VIEW_ERASE;
-                                break;
-                        }
-                    };
-
-                    function _getFbRef(currQuestionId, canvasContextName) {
-                        var errMsg;
-
-                        if (!scope.settings || !scope.settings.exerciseDrawingPathPrefix) {
-                            errMsg = 'znkExerciseDrawTool';
-                            $log.error(errMsg);
-                            return $q.reject(errMsg);
-                        }
-
-                        if (!currQuestionId) {
-                            errMsg = 'znkExerciseDrawTool:_getFbRef: curr question was not set yet';
-                            $log.debug(errMsg);
-                            return $q.reject(errMsg);
-                        }
-
-                        var pathPrefixProm;
-                        if (angular.isFunction(scope.settings.exerciseDrawingPathPrefix)) {
-                            pathPrefixProm = scope.settings.exerciseDrawingPathPrefix();
-                        } else {
-                            pathPrefixProm = scope.settings.exerciseDrawingPathPrefix;
-                        }
-
-                        var dataPromMap = {
-                            globalStorage: InfraConfigSrv.getGlobalStorage(),
-                            pathPrefix: $q.when(pathPrefixProm)
-                        };
-
-                        return $q.all(dataPromMap).then(function (data) {
-                            var path = 'exerciseDrawings/' + data.pathPrefix + '/' + currQuestionId + '/' + canvasContextName;
-                            return data.globalStorage.adapter.getRef(path);
-                        });
-
-                    }
-
-                    function _getCanvasContextByContextName(canvasContextName) {
-                        return ZnkExerciseDrawSrv.canvasContextManager[currQuestion.id][canvasContextName];
-                    }
-
-                    function _getCanvasContextNamesOfQuestion(questionId) {
-                        var canvasContextObj = ZnkExerciseDrawSrv.canvasContextManager[questionId] || {};
-                        return Object.keys(canvasContextObj);
-                    }
-
-                    scope.d.cleanCanvas = function () {
-                        if (!currQuestion) {
-                            var errMsg = 'znkExerciseDrawTool:_getFbRef: curr question was not set yet';
-                            $log.error(errMsg);
-                            return;
-                        }
-
-                        // for each canvas in the current page (the current question), set the global canvasContext to it and clear it using drawer.clean()
-                        var canvasContextNames = _getCanvasContextNamesOfQuestion(currQuestion.id);
-                        angular.forEach(canvasContextNames, function (canvasContextName) {
-                            canvasContext = _getCanvasContextByContextName(canvasContextName);
-                            drawer.clean();
-                            _getFbRef(currQuestion.id, canvasContextName).then(function (exerciseDrawingRef) {
-                                exerciseDrawingRef.set(null);
-                            });
-
-                        });
-                    };
-
-
-                    function _getToucheColor(drawMode) {
-                        if (drawMode === DRAWING_MODES.VIEW_ERASE) {
-                            return 0;
-                        }
-
-                        if (!scope.settings || angular.isUndefined(scope.settings.toucheColorId)) {
-                            $log.debug('znkExerciseDrawTool: touche color was not set');
-                            return 1;
-                        }
-
-                        return scope.settings.toucheColorId;
-                    }
-
-                    function _setDrawMode(drawMode) {
-                        switch (drawMode) {
-                            case DRAWING_MODES.NONE:
-                                eventsManager.cleanQuestionListeners();
-                                drawer.clean();
-                                break;
-                            case DRAWING_MODES.VIEW:
-                                eventsManager.killMouseEvents();
-                                eventsManager.registerFbListeners(currQuestion.id);
-                                break;
-                            default:
-                                eventsManager.registerMouseEvents();
-                                eventsManager.registerFbListeners(currQuestion.id);
-                                drawer.toucheColor = _getToucheColor(drawMode);
-                        }
-                    }
-
-                    function ServerDrawingUpdater(questionUid, canvasContextName) {
-                        if (angular.isUndefined(questionUid)) {
-                            $log.error('znkExerciseDrawTool: Question id was not provided');
-                            return;
-                        }
-
-                        this.pixelsMapToUpdate = {};
-
-                        this.exerciseDrawingRefProm = _getFbRef(questionUid, canvasContextName);
-                    }
-
-                    ServerDrawingUpdater.prototype._triggerServerUpdate = function () {
-                        if (this.alreadyTriggered) {
-                            return;
-                        }
-
-                        this.alreadyTriggered = true;
-
-                        var self = this;
-                        $timeout(function () {
-                            self.alreadyTriggered = false;
-                            self.flush();
-                        }, SERVER_UPDATED_FLUSH_TIME, false);
-                    };
-
-                    ServerDrawingUpdater.prototype.update = function (pixelsMapToUpdate) {
-                        angular.extend(this.pixelsMapToUpdate, pixelsMapToUpdate);
-                        this._triggerServerUpdate();
-                    };
-
-                    ServerDrawingUpdater.prototype.flush = function () {
-                        var self = this;
-
-                        return this.exerciseDrawingRefProm.then(function (exerciseDrawingRef) {
-                            exerciseDrawingRef.child('coordinates').update(self.pixelsMapToUpdate);
-                            self.pixelsMapToUpdate = {};
-                        });
-                    };
-
-                    function Drawer() {
-                        this.lastPoint = null;
-                    }
-
-                    Drawer.prototype.drawPixel = function (coordStr, colorId, canvasToChange) {
-                        if (!canvasContext && !canvasToChange) {
-                            return;
-                        }
-
-                        // relevant canvas can be either passed to the function or be the global one
-                        canvasToChange = canvasToChange || canvasContext;
-
-                        var coords = coordStr.split(":");
-                        $window.requestAnimationFrame(function () {
-                            canvasToChange.fillStyle = TOUCHE_COLORS[colorId];
-                            canvasToChange.fillRect(parseInt(coords[0]), parseInt(coords[1]), PIXEL_SIZE, PIXEL_SIZE);
-                        });
-                    };
-
-                    Drawer.prototype.clearPixel = function (coordStr, canvasToChange) {
-                        if (!canvasContext && !canvasToChange) {
-                            return;
-                        }
-
-                        // relevant canvas can be either passed to the function or be the global one
-                        canvasToChange = canvasToChange || canvasContext;
-
-                        var coords = coordStr.split(":");
-
-                        $window.requestAnimationFrame(function () {
-                            var xCoord = parseInt(coords[0]);
-                            var yCoord = parseInt(coords[1]);
-                            var width = 10 * PIXEL_SIZE;
-                            var height = 10 * PIXEL_SIZE;
-                            var xOffset = width / 2;
-                            var yOffset = height / 2;
-                            canvasToChange.clearRect(xCoord - xOffset, yCoord - yOffset, width, height);
-                        });
-                    };
-
-                    Drawer.prototype.draw = function (e) {
-                        var self = this;
-
-                        var currXCoor = e.offsetX;
-                        var currYCoor = e.offsetY;
-
-                        var prevXCoor = self.lastPoint ? self.lastPoint[0] : currXCoor - 1;
-                        var prevYCoor = self.lastPoint ? self.lastPoint[1] : currYCoor - 1;
-
-                        self.lastPoint = [currXCoor, currYCoor];
-
-                        var xDiff = Math.abs(currXCoor - prevXCoor);
-                        var yDiff = Math.abs(currYCoor - prevYCoor);
-
-                        var pixelsNumToDraw = Math.max(xDiff, yDiff);
-                        var xStepOffset = xDiff / pixelsNumToDraw;
-                        var yStepOffset = yDiff / pixelsNumToDraw;
-                        var pixelsToDrawMap = {};
-                        for (var i = 1; i <= pixelsNumToDraw; i++) {
-                            var pixelXOffset = (currXCoor - prevXCoor > 0) ? 1 : -1;
-                            pixelXOffset *= Math.round(i * xStepOffset);
-
-                            var pixelYOffset = (currYCoor - prevYCoor > 0) ? 1 : -1;
-                            pixelYOffset *= Math.round(i * yStepOffset);
-
-                            var pixelToDrawXCoor = Math.round(prevXCoor + pixelXOffset);
-                            var pixelToDrawYCoor = Math.round(prevYCoor + pixelYOffset);
-
-                            pixelsToDrawMap[pixelToDrawXCoor + ':' + pixelToDrawYCoor] = self.toucheColor;
-                        }
-
-                        angular.forEach(pixelsToDrawMap, function (color, coordsStr) {
-                            if (color) {
-                                self.drawPixel(coordsStr, color);
-                            } else {
-                                self.clearPixel(coordsStr);
-                            }
-                        });
-
-                        serverDrawingUpdater.update(pixelsToDrawMap);
-                    };
-
-                    Drawer.prototype.stopDrawing = function () {
-                        this.lastPoint = null;
-                    };
-
-                    Drawer.prototype.clean = function () {
-                        if (!canvasContext) {
-                            return;
-                        }
-                        canvasContext.clearRect(0, 0, canvasDomElement.offsetWidth, canvasDomElement.offsetHeight);
-                    };
-
-                    function _mousemoveCb(evt) {
-                        drawer.draw(evt);
-                        evt.stopImmediatePropagation();
-                        evt.preventDefault();
-                        return false;
-                    }
-
-                    function _mouseupCb(evt) {
-                        //left mouse
-                        if (evt.which === 1) {
-                            drawer.stopDrawing();
-                            canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
-                            canvasDomElement.removeEventListener('mouseup', _mouseupCb);
-                            evt.stopImmediatePropagation();
-                            evt.preventDefault();
-                            return false;
-                        }
-                    }
-
-                    function _mousedownCb(evt) {
-                        //left mouse
-                        if (evt.which === 1) {
-                            canvasDomElement.addEventListener('mousemove', _mousemoveCb);
-                            canvasDomElement.addEventListener('mouseup', _mouseupCb);
-                            evt.stopImmediatePropagation();
-                            evt.preventDefault();
-                            return false;
-                        }
-                    }
-
-                    function _updateQuestionDrawMode(drawMode) {
-                        toolBoxCtrl.getCurrentQuestion().then(function (currQuestion) {
-                            currQuestion.__questionStatus.drawingToolViewMode = drawMode;
-                        });
-                    }
-
-                    scope.$watch('d.drawMode', function (newDrawMode) {
-                        if (!newDrawMode) {
-                            return;
-                        }
-
-                        _setDrawMode(newDrawMode);
-                        _updateQuestionDrawMode(newDrawMode);
-                    });
-
-                    scope.$on('$destroy', function () {
-                        eventsManager.cleanQuestionListeners();
-                        eventsManager.cleanGlobalListeners();
-                        // Don't operate when viewing 'diagnostic' page. (temporary (?) solution to the firebase multiple error bugs in sat/act) - Guy
-                        ZnkExerciseDrawSrv.addCanvasToElement = undefined;
-                    });
-
-                    function EventsManager() {
-                        this._fbRegisterProm = $q.when();
-                        this._fbCallbackEnum =
-                            {
-                                CHILD_CHANGED: 0,
-                                CHILD_REMOVED: 1
-                            };
-                    }
-
-                    EventsManager.prototype.registerHoverEvent = function (elementToHoverOn, onHoverCb) {
-                        var domElementToHoverOn = elementToHoverOn[0];
-
-                        domElementToHoverOn.addEventListener("mouseenter", onHoverCb);
-
-                        if (!this._hoveredElements) {
-                            this._hoveredElements = [];
-                        }
-
-                        this._hoveredElements.push({'hoveredElement': elementToHoverOn, 'onHoverCb': onHoverCb});
-                    };
-
-
-                    EventsManager.prototype.killHoverEvents = function () {
-                        angular.forEach(this._hoveredElements, function (elementAndCbPair) {
-                            var domHoveredElement = elementAndCbPair.hoveredElement[0];
-                            domHoveredElement.removeEventListener("mouseenter", elementAndCbPair.onHoverCb);
-                        });
-                    };
-
-                    EventsManager.prototype.registerMouseEvents = function () {
-                        if (this._mouseEventsRegistered || !canvasDomElement) {
-                            return;
-                        }
-                        this._mouseEventsRegistered = true;
-
-                        canvasDomElement.addEventListener('mousedown', _mousedownCb);
-                    };
-
-                    EventsManager.prototype.killMouseEvents = function () {
-                        if (this._mouseEventsRegistered) {
-                            canvasDomElement.removeEventListener('mousedown', _mousedownCb);
-                            canvasDomElement.removeEventListener('mouseup', _mouseupCb);
-                            canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
-                        }
-                        this._mouseEventsRegistered = null;
-                    };
-
-                    var _fbChildCallbackWrapper = function (canvasContextName, fbCallbackNum) {
-
-                        function _fbChildChanged(snapShot) {
-                            var canvasToChange = _getCanvasContextByContextName(canvasContextName);
-                            var coordsStr = snapShot.key;
-                            var color = snapShot.val();
-
-                            if (color === 0) {
-                                drawer.clearPixel(coordsStr, canvasToChange);
-                            } else {
-                                drawer.drawPixel(coordsStr, color, canvasToChange);
-                            }
-                        }
-
-                        function _fbChildRemoved(snapShot) {
-                            var canvasToChange = _getCanvasContextByContextName(canvasContextName); // "this" refers to context passed to ref.on in registerFbListeners
-
-                            var coordsStr = snapShot.key;
-                            drawer.clearPixel(coordsStr, canvasToChange);
-                        }
-
-                        switch (fbCallbackNum) {
-                            case eventsManager._fbCallbackEnum.CHILD_CHANGED:
-                                return _fbChildChanged;
-                            case eventsManager._fbCallbackEnum.CHILD_REMOVED:
-                                return _fbChildRemoved;
-                            default:
-                                $log.error('znkExerciseDrawTool:_fbChildCallbackWrapper: wrong fbCallbackNum received!');
-                                return;
-                        }
-                    };
-
-                    var _registerFbListeners = function (questionId) {
-                        if (angular.isUndefined(questionId)) {
-                            $log.error('znkExerciseDrawTool:registerFbListeners: questionId was not provided');
-                            return;
-                        }
-
-                        var self = this;
-
-                        if (self._fbLastRegisteredQuestionId === questionId) {
-                            return;
-                        }
-                        else {
-                            self.killFbListeners();
-                        }
-
-                        var canvasContextNames = _getCanvasContextNamesOfQuestion(questionId);
-
-                        angular.forEach(canvasContextNames, function (canvasContextName) {
-                            _getFbRef(questionId, canvasContextName).then(function (ref) {
-                                self.ref = ref;
-
-                                self.ref.child('coordinates').on("child_added", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
-                                self.ref.child('coordinates').on("child_changed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
-                                self.ref.child('coordinates').on("child_removed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_REMOVED));
-
-                            });
-
-                        });
-
-                        self._fbLastRegisteredQuestionId = questionId;
-                    };
-
-                    EventsManager.prototype.registerFbListeners = function (questionId) {
-                        /* this wrapper was made because of a bug that occurred sometimes when user have entered
-                         to an exercise which has a drawing, and the canvas is empty. as it seems, the problem is
-                         the callback from firebase is invoked to soon, before the canvas has fully loaded
-                         (even tho it seems that the canvas alreay appended and compiled), still the canvas is empty.
-                         because there's no holding ground for when it will be ok to draw, the solution for now it's
-                         to wait 1 sec only for first time entrance and then register callbacks and try drawing.
-                         */
-                        var self = this;
-
-                        if (!registerFbListenersInDelayOnce) {
-
-                            $timeout(function () {
-                                _registerFbListeners.call(self, questionId);
-                            }, 1000);
-
-                        } else {
-                            _registerFbListeners.call(self, questionId);
-                        }
-                    };
-
-
-                    EventsManager.prototype.killFbListeners = function () {
-
-                        var self = this;
-
-                        var canvasContextNames = _getCanvasContextNamesOfQuestion(self._fbLastRegisteredQuestionId);
-                        angular.forEach(canvasContextNames, function (canvasContextName) {
-                            _getFbRef(self._fbLastRegisteredQuestionId, canvasContextName).then(function (ref) {
-                                self.ref = ref;
-
-                                self.ref.child('coordinates').off("child_added", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
-                                self.ref.child('coordinates').off("child_changed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
-                                self.ref.child('coordinates').off("child_removed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_REMOVED));
-                            });
-                        });
-                        self._fbLastRegisteredQuestionId = null;
-                    };
-
-                    EventsManager.prototype.cleanQuestionListeners = function () {
-                        this.killMouseEvents();
-                        this.killFbListeners();
-                    };
-
-                    EventsManager.prototype.registerDimensionsListener = function (dimensionsRef, onValueCb) {
-                        if (!this._dimensionsRefPairs) {
-                            this._dimensionsRefPairs = [];
-                        }
-                        dimensionsRef.on('value', onValueCb);
-                        this._dimensionsRefPairs.push({dimensionsRef: dimensionsRef, onValueCb: onValueCb});
-                    };
-
-                    EventsManager.prototype.killDimensionsListener = function () {
-                        angular.forEach(this._dimensionsRefPairs, function (refAndCbPair) {
-                            refAndCbPair.dimensionsRef.off("value", refAndCbPair.onValueCb);
-                        });
-                    };
-
-                    EventsManager.prototype.cleanGlobalListeners = function () {
-                        this.killDimensionsListener();
-                        this.killHoverEvents();
-                    };
-
-                    function _reloadCanvas() {
-                        if (scope.d.drawMode === DRAWING_MODES.NONE) {
-                            return;
-                        }
-
-                        // clear the canvas each before it will try to reload the new drawing
-                        // because if you move fast between questions, it can draw to the wrong one.
-                        drawer.clean();
-
-                        eventsManager.registerFbListeners(currQuestion.id);
-                    }
-
-                    function _init() {
-                        canvasContainerElementInitial = angular.element(
-                            '<div class="draw-tool-container" ' +
-                            'ng-show="d.drawMode !== d.DRAWING_MODES.NONE" ' +
-                            'ng-class="{' +
-                            '\'no-pointer-events\': d.drawMode === d.DRAWING_MODES.VIEW,' +
-                            '\'crosshair-cursor\': d.drawMode !== d.DRAWING_MODES.NONE && d.drawMode !== d.DRAWING_MODES.VIEW' +
-                            '}">' +
-                            '<canvas></canvas>' +
-                            '</div>'
-                        );
-
-                        drawer = new Drawer();
-                        eventsManager = new EventsManager();
-                    }
-
-                    function _setContextOnHover(elementToHoverOn, canvasOfElement, canvasContextName) {
-
-                        var onHoverCb = function () {
-                            if (currQuestion) {
-                                drawer.stopDrawing();
-                                eventsManager.killMouseEvents();
-
-                                canvasDomElement = canvasOfElement;
-                                canvasContext = canvasDomElement.getContext("2d");
-                                serverDrawingUpdater = new ServerDrawingUpdater(currQuestion.id, canvasContextName);
-
-                                eventsManager.registerMouseEvents();
-                            }
-                        };
-
-                        eventsManager.registerHoverEvent(elementToHoverOn, onHoverCb);
-
-                    }
-
-                    function _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement, canvasContextName, questionId) {
-                        toolBoxCtrl.isExerciseReady().then(function () {
-                            var exerciseDrawingRefProm;
-
-                            // get the height and the width of the wrapper element
-                            function _getDimensionsByElementSize() {
-                                var height, width;
-                                if (elementToCoverDomElement.scrollHeight) {
-                                    height = elementToCoverDomElement.scrollHeight - 3;
-                                }
-                                else {
-                                    height = elementToCoverDomElement.offsetHeight - 3;
-                                }
-                                if (elementToCoverDomElement.scrollWidth) {
-                                    width = elementToCoverDomElement.scrollWidth;
-                                }
-                                else {
-                                    width = elementToCoverDomElement.offsetWidth;
-                                }
-                                return {height: height, width: width};
-                            }
-
-                            // return the larger dimensions out of the element's dimensions and the saved FB dimensions
-                            function _compareFbDimensionsWithElementDimensions(fbDimensions) {
-                                var elementDimensions = _getDimensionsByElementSize();
-                                var finalDimensions = {
-                                    height: Math.max(elementDimensions.height, fbDimensions.height),
-                                    width: Math.max(elementDimensions.width, fbDimensions.width)
-                                };
-                                exerciseDrawingRefProm.child('maxDimensions').update(finalDimensions);
-                                return finalDimensions;
-                            }
-
-                            // set the canvas dimensions to the larger dimensions between the two ^
-                            var setDimensionsCb = function (data) {
-                                // DOM dimensions
-                                var elementDimensions = _getDimensionsByElementSize();
-                                // FB dimensions
-                                var maxDimensions;
-                                // nothing is saved on FB, set the dimensions to be element dimensions
-                                var fbDimensions = data.val();
-                                if (!fbDimensions) {
-                                    maxDimensions = elementDimensions;
-                                }
-                                else {
-                                    maxDimensions = fbDimensions;
-                                }
-                                // compare them and set the canvas dimensions to be the larger between the two
-                                // also save the new maxDimensions to FB
-                                var finalDimensions = _compareFbDimensionsWithElementDimensions(maxDimensions);
-                                canvasDomContainerElement[0].setAttribute('height', finalDimensions.height);
-                                canvasDomContainerElement[0].setAttribute('width', finalDimensions.width);
-                            };
-
-                            // this piece of code fetches the previously calculated maxDimensions from firebase, and then kickstart all the functions we just went by above ^
-                            _getFbRef(questionId, canvasContextName).then(function (ref) {
-                                exerciseDrawingRefProm = ref;
-                                eventsManager.registerDimensionsListener(exerciseDrawingRefProm.child('maxDimensions'), setDimensionsCb);
-                            });
-
-
-                        });
-
-                    }
-
-                    function addCanvasToElement(elementToCover, question) {
-                        // we clone the element defined in _init to not mess with the upcoming append function (which doesn't work multiple times using the same element)
-                        var canvasContainerElement = canvasContainerElementInitial.clone();
-                        // cast selector element to html element
-                        var elementToCoverDomElement = elementToCover[0];
-
-                        // get the <canvas> element from the container
-                        var canvasDomContainerElement = canvasContainerElement.children();
-                        canvasDomElement = canvasDomContainerElement[0];
-
-                        canvasContext = canvasDomElement.getContext("2d");
-
-                        // this is the attribute name passed to znkExerciseDrawContainer directive
-                        var canvasContextName = elementToCover.attr('canvas-name');
-
-                        // when hovering over a canvas, set the global context to it
-                        _setContextOnHover(elementToCover, canvasDomElement, canvasContextName);
-
-                        _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement, canvasContextName, question.id);
-
-
-                        elementToCover.append(canvasContainerElement);
-                        $compile(canvasContainerElement)(scope);
-
-                        // save to service for further management
-                        if (!ZnkExerciseDrawSrv.canvasContextManager[question.id]) {
-                            ZnkExerciseDrawSrv.canvasContextManager[question.id] = {};
-                        }
-
-                        ZnkExerciseDrawSrv.canvasContextManager[question.id][canvasContextName] = canvasContext;
-                    }
-
-
-                    scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex, oldIndex, _currQuestion) {
-                        if (angular.isUndefined(scope.d.drawMode)) {
-                            scope.d.drawMode = DRAWING_MODES.VIEW;
-                        }
-
-                        currQuestion = _currQuestion;
-
-                        // if newIndex not equel oldIndex, it meens not the first entrance, change flag to true
-                        if (newIndex !== oldIndex) {
-                            registerFbListenersInDelayOnce = true;
-                        }
-
-                        if (serverDrawingUpdater) {
-                            serverDrawingUpdater.flush();
-                        }
-
-                        _reloadCanvas(); // re-registers fb listeners to reflect new question
-                    });
-
-                    _init();
-
-                    // publish addCanvasToElement function to make it callable from znkExerciseDrawContainer directive
-                    ZnkExerciseDrawSrv.addCanvasToElement = addCanvasToElement;
+            return $q.all(dataPromMap).then(function (data) {
+              var path = 'exerciseDrawings/' + data.pathPrefix + '/' + currQuestionId + '/' + canvasContextName;
+              return data.globalStorage.adapter.getRef(path);
+            });
+
+          }
+
+          function _getCanvasContextByContextName(canvasContextName) {
+            return ZnkExerciseDrawSrv.canvasContextManager[currQuestion.id][canvasContextName];
+          }
+
+          function _getCanvasContextNamesOfQuestion(questionId) {
+            var canvasContextObj = ZnkExerciseDrawSrv.canvasContextManager[questionId] || {};
+            return Object.keys(canvasContextObj);
+          }
+
+          scope.d.cleanCanvas = function () {
+            if (!currQuestion) {
+              var errMsg = 'znkExerciseDrawTool:_getFbRef: curr question was not set yet';
+              $log.error(errMsg);
+              return;
+            }
+
+            // for each canvas in the current page (the current question), set the global canvasContext to it and clear it using drawer.clean()
+            var canvasContextNames = _getCanvasContextNamesOfQuestion(currQuestion.id);
+            angular.forEach(canvasContextNames, function (canvasContextName) {
+              canvasContext = _getCanvasContextByContextName(canvasContextName);
+              drawer.clean();
+              _getFbRef(currQuestion.id, canvasContextName).then(function (exerciseDrawingRef) {
+                exerciseDrawingRef.set(null);
+              });
+
+            });
+          };
+
+
+          function _getToucheColor(drawMode) {
+            if (drawMode === DRAWING_MODES.VIEW_ERASE) {
+              return 0;
+            }
+
+            if (!scope.settings || angular.isUndefined(scope.settings.toucheColorId)) {
+              $log.debug('znkExerciseDrawTool: touche color was not set');
+              return 1;
+            }
+
+            return scope.d.isTeacher && scope.d.colorPicked ? TOUCHE_COLORS[scope.d.colorPicked] : scope.settings.toucheColorId;
+          }
+
+          function _setDrawMode(drawMode) {
+            switch (drawMode) {
+              case DRAWING_MODES.NONE:
+                eventsManager.cleanQuestionListeners();
+                drawer.clean();
+                break;
+              case DRAWING_MODES.VIEW:
+                eventsManager.killMouseEvents();
+                eventsManager.registerFbListeners(currQuestion.id);
+                break;
+              default:
+                eventsManager.registerMouseEvents();
+                eventsManager.registerFbListeners(currQuestion.id);
+                drawer.toucheColor = _getToucheColor(drawMode);
+            }
+          }
+
+          function ServerDrawingUpdater(questionUid, canvasContextName) {
+            if (angular.isUndefined(questionUid)) {
+              $log.error('znkExerciseDrawTool: Question id was not provided');
+              return;
+            }
+
+            this.pixelsMapToUpdate = {};
+
+            this.exerciseDrawingRefProm = _getFbRef(questionUid, canvasContextName);
+          }
+
+          ServerDrawingUpdater.prototype._triggerServerUpdate = function () {
+            if (this.alreadyTriggered) {
+              return;
+            }
+
+            this.alreadyTriggered = true;
+
+            var self = this;
+            $timeout(function () {
+              self.alreadyTriggered = false;
+              self.flush();
+            }, SERVER_UPDATED_FLUSH_TIME, false);
+          };
+
+          ServerDrawingUpdater.prototype.update = function (pixelsMapToUpdate) {
+            angular.extend(this.pixelsMapToUpdate, pixelsMapToUpdate);
+            this._triggerServerUpdate();
+          };
+
+          ServerDrawingUpdater.prototype.flush = function () {
+            var self = this;
+
+            return this.exerciseDrawingRefProm.then(function (exerciseDrawingRef) {
+              exerciseDrawingRef.child('coordinates').update(self.pixelsMapToUpdate);
+              self.pixelsMapToUpdate = {};
+            });
+          };
+
+          function Drawer() {
+            this.lastPoint = null;
+          }
+
+          Drawer.prototype.drawPixel = function (coordStr, colorId, canvasToChange) {
+            if (!canvasContext && !canvasToChange) {
+              return;
+            }
+
+            // relevant canvas can be either passed to the function or be the global one
+            canvasToChange = canvasToChange || canvasContext;
+
+            var coords = coordStr.split(":");
+            $window.requestAnimationFrame(function () {
+              canvasToChange.fillStyle = TOUCHE_COLORS[colorId];
+              canvasToChange.fillRect(parseInt(coords[0]), parseInt(coords[1]), PIXEL_SIZE, PIXEL_SIZE);
+            });
+          };
+
+          Drawer.prototype.clearPixel = function (coordStr, canvasToChange) {
+            if (!canvasContext && !canvasToChange) {
+              return;
+            }
+
+            // relevant canvas can be either passed to the function or be the global one
+            canvasToChange = canvasToChange || canvasContext;
+
+            var coords = coordStr.split(":");
+
+            $window.requestAnimationFrame(function () {
+              var xCoord = parseInt(coords[0]);
+              var yCoord = parseInt(coords[1]);
+              var width = 10 * PIXEL_SIZE;
+              var height = 10 * PIXEL_SIZE;
+              var xOffset = width / 2;
+              var yOffset = height / 2;
+              canvasToChange.clearRect(xCoord - xOffset, yCoord - yOffset, width, height);
+            });
+          };
+
+          Drawer.prototype.draw = function (e) {
+            var self = this;
+
+            var currXCoor = e.offsetX;
+            var currYCoor = e.offsetY;
+
+            var prevXCoor = self.lastPoint ? self.lastPoint[0] : currXCoor - 1;
+            var prevYCoor = self.lastPoint ? self.lastPoint[1] : currYCoor - 1;
+
+            self.lastPoint = [currXCoor, currYCoor];
+
+            var xDiff = Math.abs(currXCoor - prevXCoor);
+            var yDiff = Math.abs(currYCoor - prevYCoor);
+
+            var pixelsNumToDraw = Math.max(xDiff, yDiff);
+            var xStepOffset = xDiff / pixelsNumToDraw;
+            var yStepOffset = yDiff / pixelsNumToDraw;
+            var pixelsToDrawMap = {};
+            for (var i = 1; i <= pixelsNumToDraw; i++) {
+              var pixelXOffset = (currXCoor - prevXCoor > 0) ? 1 : -1;
+              pixelXOffset *= Math.round(i * xStepOffset);
+
+              var pixelYOffset = (currYCoor - prevYCoor > 0) ? 1 : -1;
+              pixelYOffset *= Math.round(i * yStepOffset);
+
+              var pixelToDrawXCoor = Math.round(prevXCoor + pixelXOffset);
+              var pixelToDrawYCoor = Math.round(prevYCoor + pixelYOffset);
+
+              pixelsToDrawMap[pixelToDrawXCoor + ':' + pixelToDrawYCoor] = self.toucheColor;
+            }
+
+            angular.forEach(pixelsToDrawMap, function (color, coordsStr) {
+              if (color) {
+                self.drawPixel(coordsStr, color);
+              } else {
+                self.clearPixel(coordsStr);
+              }
+            });
+
+            serverDrawingUpdater.update(pixelsToDrawMap);
+          };
+
+          Drawer.prototype.stopDrawing = function () {
+            this.lastPoint = null;
+          };
+
+          Drawer.prototype.clean = function () {
+            if (!canvasContext) {
+              return;
+            }
+            canvasContext.clearRect(0, 0, canvasDomElement.offsetWidth, canvasDomElement.offsetHeight);
+          };
+
+          function _mousemoveCb(evt) {
+            drawer.draw(evt);
+            evt.stopImmediatePropagation();
+            evt.preventDefault();
+            return false;
+          }
+
+          function _mouseupCb(evt) {
+            //left mouse
+            if (evt.which === 1) {
+              drawer.stopDrawing();
+              canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
+              canvasDomElement.removeEventListener('mouseup', _mouseupCb);
+              evt.stopImmediatePropagation();
+              evt.preventDefault();
+              return false;
+            }
+          }
+
+          function _mousedownCb(evt) {
+            //left mouse
+            if (evt.which === 1) {
+              canvasDomElement.addEventListener('mousemove', _mousemoveCb);
+              canvasDomElement.addEventListener('mouseup', _mouseupCb);
+              evt.stopImmediatePropagation();
+              evt.preventDefault();
+              return false;
+            }
+          }
+
+          function _updateQuestionDrawMode(drawMode) {
+            toolBoxCtrl.getCurrentQuestion().then(function (currQuestion) {
+              currQuestion.__questionStatus.drawingToolViewMode = drawMode;
+            });
+          }
+
+          scope.$watch('d.drawMode', function (newDrawMode) {
+            if (!newDrawMode) {
+              return;
+            }
+
+            _setDrawMode(newDrawMode);
+            _updateQuestionDrawMode(newDrawMode);
+          });
+
+          scope.$on('$destroy', function () {
+            eventsManager.cleanQuestionListeners();
+            eventsManager.cleanGlobalListeners();
+            // Don't operate when viewing 'diagnostic' page. (temporary (?) solution to the firebase multiple error bugs in sat/act) - Guy
+            ZnkExerciseDrawSrv.addCanvasToElement = undefined;
+          });
+
+          function EventsManager() {
+            this._fbRegisterProm = $q.when();
+            this._fbCallbackEnum =
+              {
+                CHILD_CHANGED: 0,
+                CHILD_REMOVED: 1
+              };
+          }
+
+          EventsManager.prototype.registerHoverEvent = function (elementToHoverOn, onHoverCb) {
+            var domElementToHoverOn = elementToHoverOn[0];
+
+            domElementToHoverOn.addEventListener("mouseenter", onHoverCb);
+
+            if (!this._hoveredElements) {
+              this._hoveredElements = [];
+            }
+
+            this._hoveredElements.push({ 'hoveredElement': elementToHoverOn, 'onHoverCb': onHoverCb });
+          };
+
+
+          EventsManager.prototype.killHoverEvents = function () {
+            angular.forEach(this._hoveredElements, function (elementAndCbPair) {
+              var domHoveredElement = elementAndCbPair.hoveredElement[0];
+              domHoveredElement.removeEventListener("mouseenter", elementAndCbPair.onHoverCb);
+            });
+          };
+
+          EventsManager.prototype.registerMouseEvents = function () {
+            if (this._mouseEventsRegistered || !canvasDomElement) {
+              return;
+            }
+            this._mouseEventsRegistered = true;
+
+            canvasDomElement.addEventListener('mousedown', _mousedownCb);
+          };
+
+          EventsManager.prototype.killMouseEvents = function () {
+            if (this._mouseEventsRegistered) {
+              canvasDomElement.removeEventListener('mousedown', _mousedownCb);
+              canvasDomElement.removeEventListener('mouseup', _mouseupCb);
+              canvasDomElement.removeEventListener('mousemove', _mousemoveCb);
+            }
+            this._mouseEventsRegistered = null;
+          };
+
+          var _fbChildCallbackWrapper = function (canvasContextName, fbCallbackNum) {
+
+            function _fbChildChanged(snapShot) {
+              var canvasToChange = _getCanvasContextByContextName(canvasContextName);
+              var coordsStr = snapShot.key();
+              var color = snapShot.val();
+
+              if (color === 0) {
+                drawer.clearPixel(coordsStr, canvasToChange);
+              } else {
+                drawer.drawPixel(coordsStr, color, canvasToChange);
+              }
+            }
+
+            function _fbChildRemoved(snapShot) {
+              var canvasToChange = _getCanvasContextByContextName(canvasContextName); // "this" refers to context passed to ref.on in registerFbListeners
+
+              var coordsStr = snapShot.key();
+              drawer.clearPixel(coordsStr, canvasToChange);
+            }
+
+            switch (fbCallbackNum) {
+              case eventsManager._fbCallbackEnum.CHILD_CHANGED:
+                return _fbChildChanged;
+              case eventsManager._fbCallbackEnum.CHILD_REMOVED:
+                return _fbChildRemoved;
+              default:
+                $log.error('znkExerciseDrawTool:_fbChildCallbackWrapper: wrong fbCallbackNum received!');
+                return;
+            }
+          };
+
+          var _registerFbListeners = function (questionId) {
+            if (angular.isUndefined(questionId)) {
+              $log.error('znkExerciseDrawTool:registerFbListeners: questionId was not provided');
+              return;
+            }
+
+            var self = this;
+
+            if (self._fbLastRegisteredQuestionId === questionId) {
+              return;
+            }
+            else {
+              self.killFbListeners();
+            }
+
+            var canvasContextNames = _getCanvasContextNamesOfQuestion(questionId);
+
+            angular.forEach(canvasContextNames, function (canvasContextName) {
+              _getFbRef(questionId, canvasContextName).then(function (ref) {
+                self.ref = ref;
+
+                self.ref.child('coordinates').on("child_added", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                self.ref.child('coordinates').on("child_changed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                self.ref.child('coordinates').on("child_removed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_REMOVED));
+
+              });
+
+            });
+
+            self._fbLastRegisteredQuestionId = questionId;
+          };
+
+          EventsManager.prototype.registerFbListeners = function (questionId) {
+            /* this wrapper was made because of a bug that occurred sometimes when user have entered
+             to an exercise which has a drawing, and the canvas is empty. as it seems, the problem is
+             the callback from firebase is invoked to soon, before the canvas has fully loaded
+             (even tho it seems that the canvas alreay appended and compiled), still the canvas is empty.
+             because there's no holding ground for when it will be ok to draw, the solution for now it's
+             to wait 1 sec only for first time entrance and then register callbacks and try drawing.
+             */
+            var self = this;
+
+            if (!registerFbListenersInDelayOnce) {
+
+              $timeout(function () {
+                _registerFbListeners.call(self, questionId);
+              }, 1000);
+
+            } else {
+              _registerFbListeners.call(self, questionId);
+            }
+          };
+
+
+          EventsManager.prototype.killFbListeners = function () {
+
+            var self = this;
+
+            var canvasContextNames = _getCanvasContextNamesOfQuestion(self._fbLastRegisteredQuestionId);
+            angular.forEach(canvasContextNames, function (canvasContextName) {
+              _getFbRef(self._fbLastRegisteredQuestionId, canvasContextName).then(function (ref) {
+                self.ref = ref;
+
+                self.ref.child('coordinates').off("child_added", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                self.ref.child('coordinates').off("child_changed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_CHANGED));
+                self.ref.child('coordinates').off("child_removed", _fbChildCallbackWrapper(canvasContextName, self._fbCallbackEnum.CHILD_REMOVED));
+              });
+            });
+            self._fbLastRegisteredQuestionId = null;
+          };
+
+          EventsManager.prototype.cleanQuestionListeners = function () {
+            this.killMouseEvents();
+            this.killFbListeners();
+          };
+
+          EventsManager.prototype.registerDimensionsListener = function (dimensionsRef, onValueCb) {
+            if (!this._dimensionsRefPairs) {
+              this._dimensionsRefPairs = [];
+            }
+            dimensionsRef.on('value', onValueCb);
+            this._dimensionsRefPairs.push({ dimensionsRef: dimensionsRef, onValueCb: onValueCb });
+          };
+
+          EventsManager.prototype.killDimensionsListener = function () {
+            angular.forEach(this._dimensionsRefPairs, function (refAndCbPair) {
+              refAndCbPair.dimensionsRef.off("value", refAndCbPair.onValueCb);
+            });
+          };
+
+          EventsManager.prototype.cleanGlobalListeners = function () {
+            this.killDimensionsListener();
+            this.killHoverEvents();
+          };
+
+          function _reloadCanvas() {
+            if (scope.d.drawMode === DRAWING_MODES.NONE) {
+              return;
+            }
+
+            // clear the canvas each before it will try to reload the new drawing
+            // because if you move fast between questions, it can draw to the wrong one.
+            drawer.clean();
+
+            eventsManager.registerFbListeners(currQuestion.id);
+          }
+
+          function _init() {
+            canvasContainerElementInitial = angular.element(
+              '<div class="draw-tool-container" ' +
+              'ng-show="d.drawMode !== d.DRAWING_MODES.NONE" ' +
+              'ng-class="{' +
+              '\'no-pointer-events\': d.drawMode === d.DRAWING_MODES.VIEW,' +
+              '\'crosshair-cursor\': d.drawMode !== d.DRAWING_MODES.NONE && d.drawMode !== d.DRAWING_MODES.VIEW' +
+              '}">' +
+              '<canvas></canvas>' +
+              '</div>'
+            );
+
+            drawer = new Drawer();
+            eventsManager = new EventsManager();
+          }
+
+          function _setContextOnHover(elementToHoverOn, canvasOfElement, canvasContextName) {
+
+            var onHoverCb = function () {
+              if (currQuestion) {
+                drawer.stopDrawing();
+                eventsManager.killMouseEvents();
+
+                canvasDomElement = canvasOfElement;
+                canvasContext = canvasDomElement.getContext("2d");
+                serverDrawingUpdater = new ServerDrawingUpdater(currQuestion.id, canvasContextName);
+
+                eventsManager.registerMouseEvents();
+              }
+            };
+
+            eventsManager.registerHoverEvent(elementToHoverOn, onHoverCb);
+
+          }
+
+          function _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement, canvasContextName, questionId) {
+            toolBoxCtrl.isExerciseReady().then(function () {
+              var exerciseDrawingRefProm;
+
+              // get the height and the width of the wrapper element
+              function _getDimensionsByElementSize() {
+                var height, width;
+                if (elementToCoverDomElement.scrollHeight) {
+                  height = elementToCoverDomElement.scrollHeight - 3;
                 }
-            };
-        }]);
+                else {
+                  height = elementToCoverDomElement.offsetHeight - 3;
+                }
+                if (elementToCoverDomElement.scrollWidth) {
+                  width = elementToCoverDomElement.scrollWidth;
+                }
+                else {
+                  width = elementToCoverDomElement.offsetWidth;
+                }
+                return { height: height, width: width };
+              }
+
+              // return the larger dimensions out of the element's dimensions and the saved FB dimensions
+              function _compareFbDimensionsWithElementDimensions(fbDimensions) {
+                var elementDimensions = _getDimensionsByElementSize();
+                var finalDimensions = {
+                  height: Math.max(elementDimensions.height, fbDimensions.height),
+                  width: Math.max(elementDimensions.width, fbDimensions.width)
+                };
+                exerciseDrawingRefProm.child('maxDimensions').update(finalDimensions);
+                return finalDimensions;
+              }
+
+              // set the canvas dimensions to the larger dimensions between the two ^
+              var setDimensionsCb = function (data) {
+                // DOM dimensions
+                var elementDimensions = _getDimensionsByElementSize();
+                // FB dimensions
+                var maxDimensions;
+                // nothing is saved on FB, set the dimensions to be element dimensions
+                var fbDimensions = data.val();
+                if (!fbDimensions) {
+                  maxDimensions = elementDimensions;
+                }
+                else {
+                  maxDimensions = fbDimensions;
+                }
+                // compare them and set the canvas dimensions to be the larger between the two
+                // also save the new maxDimensions to FB
+                var finalDimensions = _compareFbDimensionsWithElementDimensions(maxDimensions);
+                canvasDomContainerElement[0].setAttribute('height', finalDimensions.height);
+                canvasDomContainerElement[0].setAttribute('width', finalDimensions.width);
+              };
+
+              // this piece of code fetches the previously calculated maxDimensions from firebase, and then kickstart all the functions we just went by above ^
+              _getFbRef(questionId, canvasContextName).then(function (ref) {
+                exerciseDrawingRefProm = ref;
+                eventsManager.registerDimensionsListener(exerciseDrawingRefProm.child('maxDimensions'), setDimensionsCb);
+              });
+
+
+            });
+
+          }
+
+          function addCanvasToElement(elementToCover, question) {
+            // we clone the element defined in _init to not mess with the upcoming append function (which doesn't work multiple times using the same element)
+            var canvasContainerElement = canvasContainerElementInitial.clone();
+            // cast selector element to html element
+            var elementToCoverDomElement = elementToCover[0];
+
+            // get the <canvas> element from the container
+            var canvasDomContainerElement = canvasContainerElement.children();
+            canvasDomElement = canvasDomContainerElement[0];
+
+            canvasContext = canvasDomElement.getContext("2d");
+
+            // this is the attribute name passed to znkExerciseDrawContainer directive
+            var canvasContextName = elementToCover.attr('canvas-name');
+
+            // when hovering over a canvas, set the global context to it
+            _setContextOnHover(elementToCover, canvasDomElement, canvasContextName);
+
+            _setCanvasDimensions(canvasDomContainerElement, elementToCoverDomElement, canvasContextName, question.id);
+
+
+            elementToCover.append(canvasContainerElement);
+            $compile(canvasContainerElement)(scope);
+
+            // save to service for further management
+            if (!ZnkExerciseDrawSrv.canvasContextManager[question.id]) {
+              ZnkExerciseDrawSrv.canvasContextManager[question.id] = {};
+            }
+
+            ZnkExerciseDrawSrv.canvasContextManager[question.id][canvasContextName] = canvasContext;
+          }
+
+
+          scope.$on(ZnkExerciseEvents.QUESTION_CHANGED, function (evt, newIndex, oldIndex, _currQuestion) {
+            if (angular.isUndefined(scope.d.drawMode)) {
+              scope.d.drawMode = DRAWING_MODES.VIEW;
+            }
+
+            currQuestion = _currQuestion;
+
+            // if newIndex not equel oldIndex, it meens not the first entrance, change flag to true
+            if (newIndex !== oldIndex) {
+              registerFbListenersInDelayOnce = true;
+            }
+
+            if (serverDrawingUpdater) {
+              serverDrawingUpdater.flush();
+            }
+
+            _reloadCanvas(); // re-registers fb listeners to reflect new question
+          });
+
+          _init();
+
+          // publish addCanvasToElement function to make it callable from znkExerciseDrawContainer directive
+          ZnkExerciseDrawSrv.addCanvasToElement = addCanvasToElement;
+        }
+      };
+    }]);
 })(angular);
 
 /**
@@ -17516,7 +17633,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
                 return function() {
                     return true;
                 };
-            }; 
+            };
 
             this.setShouldBroadCastExerciseGetter = function(_broadCastExerciseFn) {
                 broadCastExerciseFn = _broadCastExerciseFn;
@@ -18010,6 +18127,12 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function ($templa
     "</g>\n" +
     "</svg>\n" +
     "");
+  $templateCache.put("components/znkExercise/toolbox/directives/znkColorPicker/znkColorPicker.template.html",
+    "<div class=\"colors-container\">\n" +
+    "  <div class=\"color-items\">\n" +
+    "    <div class=\"color-item\" ng-click=\"vm.pickColor(color.code)\" ng-repeat=\"color in vm.colorsArr\" ng-style=\"{'background-color': color.code}\"></div>\n" +
+    "  </div>\n" +
+    "</div>");
   $templateCache.put("components/znkExercise/toolbox/directives/znkExerciseDrawTool/znkExerciseDrawTool.template.html",
     "<svg-icon name=\"znk-exercise-touche\"\n" +
     "          ng-click=\"d.toolClicked(d.TOOLS.TOUCHE)\"\n" +
@@ -18017,14 +18140,18 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function ($templa
     "            active:d.drawMode !== d.DRAWING_MODES.NONE\n" +
     "          }\">\n" +
     "</svg-icon>\n" +
-    "<!--<svg-icon name=\"znk-exercise-pointer\">-->\n" +
-    "<!--</svg-icon>-->\n" +
+    "\n" +
     "<svg-icon name=\"znk-exercise-pencil\"\n" +
     "          ng-click=\"d.toolClicked(d.TOOLS.PENCIL)\"\n" +
     "          ng-class=\"{\n" +
-    "            active:(d.drawMode === d.DRAWING_MODES.VIEW_DRAW) && (d.drawMode !== d.DRAWING_MODES.NONE)\n" +
-    "          }\">\n" +
+    "  active:(d.drawMode === d.DRAWING_MODES.VIEW_DRAW) && (d.drawMode !== d.DRAWING_MODES.NONE)\n" +
+    "}\">\n" +
     "</svg-icon>\n" +
+    "\n" +
+    "<div class=\"color-picker-btn\" ng-style=\"{'background-color': d.colorPicked}\" ng-if=\"d.isTeacher\" ng-click=\"d.pickColor()\"></div>\n" +
+    "\n" +
+    "<znk-color-picker picked-color-cb=\"d.returnedColor\" ng-if=\"d.showColorPicker\"></znk-color-picker>\n" +
+    "\n" +
     "<svg-icon name=\"znk-exercise-eraser\"\n" +
     "          ng-click=\"d.toolClicked(d.TOOLS.ERASER)\"\n" +
     "          ng-class=\"{\n" +

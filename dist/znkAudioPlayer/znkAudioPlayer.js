@@ -267,6 +267,7 @@
                         switch(status){
                             case STATE_ENUM.STOPPED:
                                 //$apply causing exceptions ...
+                                sound.release();
                                 $timeout(function(){
                                     scope.onEnded({allowReplay : allowReplay});
                                 });
@@ -308,6 +309,25 @@
                         }
                     };
 
+                    var audioLoadRetry = 1;
+                    
+                    var audioSucessFn = function() {
+                      audioLoadRetry = 1;
+                    };
+                                        
+                    var audioErrFn = function() {
+                      console.log('znkAudioPlayer loadSound failed #' + audioLoadRetry);
+                      sound.release();
+                      if (audioLoadRetry <= 3) {
+                        audioLoadRetry++;
+                        sound = MediaSrv.loadSound(
+                          scope.sourceGetter(),
+                          audioSucessFn,
+                          audioErrFn,
+                          statusChanged
+                        );
+                      }
+                    };
                     function loadSound(){
                         if(sound){
                             sound.stop();
@@ -315,18 +335,11 @@
                             soundInititalized = false;
                         }
                         showLoadingSpinner();
-                        sound = MediaSrv.loadSound(scope.sourceGetter(),
-                            function success(){},
-                            function err(){
-                            //    $timeout(function(){
-                            //        var errMsg = NetworkSrv.isDeviceOffline() ? ErrorHandlerSrv.messages.noInternetConnection : ErrorHandlerSrv.messages.defaultErrorMessage;
-                            //        ErrorHandlerSrv.displayErrorMsg(errMsg).then(function() {
-                            //            statusChanged(STATE_ENUM.STOPPED, true);
-                            //        });
-                            //    });
-                            },
-                            statusChanged
-                            //HACK currently the recorded audio is not save in dataDirectory
+                        sound = MediaSrv.loadSound(
+                          scope.sourceGetter(),
+                          audioSucessFn,
+                          audioErrFn,
+                          statusChanged
                         );
                     }
 

@@ -6581,6 +6581,12 @@ znk-exercise .draw-tool-container {
   znk-exercise .draw-tool-container.crosshair-cursor {
     cursor: crosshair; }
 
+.color-picker-btn {
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  border: 1px solid #bdbdbd; }
+
 znk-exercise-draw-tool {
   height: 100%;
   display: -ms-flexbox;
@@ -6601,6 +6607,37 @@ znk-exercise-draw-tool {
       fill: #0a9bad; }
     znk-exercise-draw-tool > svg-icon[name="znk-exercise-touche"] {
       border-bottom: 1px solid #cccccc; }
+
+.colors-container {
+  position: absolute;
+  top: 0px;
+  left: -45px;
+  width: 38px;
+  background-color: #FFFFFF;
+  border-radius: 8px;
+  box-shadow: 0px 1px 6px 0px #8a8a8a;
+  z-index: 1;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-pack: center;
+      justify-content: center; }
+  .colors-container .color-items {
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+        flex-direction: column;
+    -ms-flex-pack: space-evenly;
+        justify-content: space-evenly; }
+    .colors-container .color-items .color-item {
+      width: 20px;
+      height: 20px;
+      margin: 5px;
+      border: 1px solid #bdbdbd;
+      border-radius: 50%;
+      transition: .2s box-shadow ease-out;
+      cursor: pointer; }
+    .colors-container .color-items .color-item:hover {
+      box-shadow: 0px 1px 1px 1px #7d7d7d; }
 
 znk-exercise-tool-box {
   height: 195px;
