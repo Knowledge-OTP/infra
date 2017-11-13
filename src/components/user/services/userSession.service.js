@@ -56,8 +56,8 @@
                 }
                 initProm = init();
 
-                function initializeFireBase() {
-                    var appName = ENV.firebaseAppScopeName;
+                function initializeFireBase(authFirebaseRequired) {
+                    var appName = authFirebaseRequired ? ENV.authAppName : ENV.firebaseAppScopeName;
                     var existApp;
 
                     $window.firebase.apps.forEach(function (app) {
@@ -66,14 +66,26 @@
                         }
                     });
                     if (!existApp) {
-                        var config = {
-                            apiKey: ENV.firebase_apiKey,
-                            authDomain: ENV.firebase_projectId + ".firebaseapp.com",
-                            databaseURL: ENV.fbDataEndPoint,
-                            projectId: ENV.firebase_projectId,
-                            storageBucket: ENV.firebase_projectId + ".appspot.com",
-                            messagingSenderId: ENV.messagingSenderId
-                        };
+                        var config;
+                        if (authFirebaseRequired) {
+                            config = {
+                                apiKey: ENV.firbase_auth_config.apiKey,
+                                authDomain: ENV.firbase_auth_config.projectId + ".firebaseapp.com",
+                                databaseURL: ENV.firbase_auth_config.databaseURL,
+                                projectId: ENV.firbase_auth_config.projectId,
+                                storageBucket: ENV.firbase_auth_config.projectId + ".appspot.com",
+                                messagingSenderId: ENV.firbase_auth_config.messagingSenderId
+                            };
+                        } else {
+                            config = {
+                                apiKey: ENV.firebase_apiKey,
+                                authDomain: ENV.firebase_projectId + ".firebaseapp.com",
+                                databaseURL: ENV.fbDataEndPoint,
+                                projectId: ENV.firebase_projectId,
+                                storageBucket: ENV.firebase_projectId + ".appspot.com",
+                                messagingSenderId: ENV.messagingSenderId
+                            };
+                        }
                         existApp = $window.firebase.initializeApp(config, appName);
                     }
                     return existApp;

@@ -221,8 +221,8 @@ angular.module('znk.infra.user').service('UserProfileService',
                 }
                 initProm = init();
 
-                function initializeFireBase() {
-                    var appName = ENV.firebaseAppScopeName;
+                function initializeFireBase(authFirebaseRequired) {
+                    var appName = authFirebaseRequired ? ENV.authAppName : ENV.firebaseAppScopeName;
                     var existApp;
 
                     $window.firebase.apps.forEach(function (app) {
@@ -231,14 +231,26 @@ angular.module('znk.infra.user').service('UserProfileService',
                         }
                     });
                     if (!existApp) {
-                        var config = {
-                            apiKey: ENV.firebase_apiKey,
-                            authDomain: ENV.firebase_projectId + ".firebaseapp.com",
-                            databaseURL: ENV.fbDataEndPoint,
-                            projectId: ENV.firebase_projectId,
-                            storageBucket: ENV.firebase_projectId + ".appspot.com",
-                            messagingSenderId: ENV.messagingSenderId
-                        };
+                        var config;
+                        if (authFirebaseRequired) {
+                            config = {
+                                apiKey: ENV.firbase_auth_config.apiKey,
+                                authDomain: ENV.firbase_auth_config.projectId + ".firebaseapp.com",
+                                databaseURL: ENV.firbase_auth_config.databaseURL,
+                                projectId: ENV.firbase_auth_config.projectId,
+                                storageBucket: ENV.firbase_auth_config.projectId + ".appspot.com",
+                                messagingSenderId: ENV.firbase_auth_config.messagingSenderId
+                            };
+                        } else {
+                            config = {
+                                apiKey: ENV.firebase_apiKey,
+                                authDomain: ENV.firebase_projectId + ".firebaseapp.com",
+                                databaseURL: ENV.fbDataEndPoint,
+                                projectId: ENV.firebase_projectId,
+                                storageBucket: ENV.firebase_projectId + ".appspot.com",
+                                messagingSenderId: ENV.messagingSenderId
+                            };
+                        }
                         existApp = $window.firebase.initializeApp(config, appName);
                     }
                     return existApp;
@@ -255,8 +267,9 @@ angular.module('znk.infra.user').service('UserProfileService',
 angular.module('znk.infra.user').service('UserStorageService',
 ["StorageFirebaseAdapter", "ENV", "StorageSrv", "AuthService", function (StorageFirebaseAdapter, ENV, StorageSrv, AuthService) {
     'ngInject';
-
-    var fbAdapter = new StorageFirebaseAdapter(ENV.fbGlobalEndPoint);
+    // authFirebaseRequired - Indicates we want to instantiate an instance of the AuthFirebaseDB.
+    var authFirebaseRequired = true;
+    var fbAdapter = new StorageFirebaseAdapter(ENV.fbGlobalEndPoint, authFirebaseRequired);
     var config = {
         variables: {
             uid: function () {
@@ -270,6 +283,6 @@ angular.module('znk.infra.user').service('UserStorageService',
     return new StorageSrv(fbAdapter, config);
 }]);
 
-angular.module('znk.infra.user').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 
 }]);
