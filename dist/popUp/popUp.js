@@ -61,7 +61,7 @@
           '<div class="znk-popup-header">%header%</div>' +
           '<div class="znk-popup-body">%body%</div>' +
           '<div class="znk-popup-buttons">' +
-          '<div ng-if="::d.buttons && ::d.buttons.length" ' +
+          '<div ng-if="d.buttons && d.buttons.length" ' +
                                     'ng-repeat="button in ::d.buttons" class="button-wrapper">' +
           '<button class="btn" ' +
           'ng-click="d.btnClick(button)" ' +
