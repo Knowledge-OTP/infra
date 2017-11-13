@@ -681,7 +681,7 @@
     });
 })(angular);
 
-angular.module('znk.infra.screenSharing').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.screenSharing').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/screenSharing/directives/screenSharing/screenSharing.template.html",
     "<div ng-switch=\"$ctrl.userSharingState\"\n" +
     "     ng-class=\"$ctrl.sharingStateCls\">\n" +
