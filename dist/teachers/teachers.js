@@ -56,6 +56,6 @@
     );
 })(angular);
 
-angular.module('znk.infra.teachers').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.teachers').run(['$templateCache', function ($templateCache) {
 
 }]);
