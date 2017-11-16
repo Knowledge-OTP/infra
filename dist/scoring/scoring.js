@@ -137,6 +137,6 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
 });
 
 
-angular.module('znk.infra.scoring').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.scoring').run(['$templateCache', function($templateCache) {
 
 }]);

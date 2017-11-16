@@ -195,6 +195,6 @@
 
 })(angular);
 
-angular.module('znk.infra.webcall').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.webcall').run(['$templateCache', function($templateCache) {
 
 }]);

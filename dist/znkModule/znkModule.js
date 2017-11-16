@@ -30,6 +30,6 @@
 })(angular);
 
 
-angular.module('znk.infra.znkModule').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
 
 }]);

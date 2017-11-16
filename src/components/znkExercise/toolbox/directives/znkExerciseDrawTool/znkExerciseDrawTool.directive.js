@@ -436,7 +436,7 @@
 
             function _fbChildChanged(snapShot) {
               var canvasToChange = _getCanvasContextByContextName(canvasContextName);
-              var coordsStr = snapShot.key();
+              var coordsStr = snapShot.key;
               var color = snapShot.val();
 
               if (color === 0) {
@@ -449,7 +449,7 @@
             function _fbChildRemoved(snapShot) {
               var canvasToChange = _getCanvasContextByContextName(canvasContextName); // "this" refers to context passed to ref.on in registerFbListeners
 
-              var coordsStr = snapShot.key();
+              var coordsStr = snapShot.key;
               drawer.clearPixel(coordsStr, canvasToChange);
             }
 
