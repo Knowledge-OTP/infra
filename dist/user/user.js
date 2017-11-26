@@ -158,7 +158,7 @@
                 return $q.all(profilePromArr)
                     .then(profilesArr => {
                         profilesArr.forEach(profile => {
-                            if (!profile || !profile.darkFeatures || !(profile.darkFeatures.myZinkerz || profile.darkFeatures.all)) {
+                            if (!profile || !profile.darkFeatures || !(profile.darkFeatures.myzinkerz || profile.darkFeatures.all)) {
                                 isValid = false;
                             }
                         });
@@ -301,6 +301,6 @@ angular.module('znk.infra.user').service('UserStorageService',
     return new StorageSrv(fbAdapter, config);
 }]);
 
-angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.user').run(['$templateCache', function ($templateCache) {
 
 }]);
