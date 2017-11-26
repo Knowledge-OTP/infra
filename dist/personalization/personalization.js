@@ -446,6 +446,6 @@
 })(angular);
 
 
-angular.module('znk.infra.personalization').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.personalization').run(['$templateCache', function ($templateCache) {
 
 }]);

@@ -148,7 +148,7 @@
                 return $q.all(profilePromArr)
                     .then(profilesArr => {
                         profilesArr.forEach(profile => {
-                            if (!profile || !profile.darkFeatures || !(profile.darkFeatures.myZinkerz || profile.darkFeatures.all)) {
+                            if (!profile || !profile.darkFeatures || !(profile.darkFeatures.myzinkerz || profile.darkFeatures.all)) {
                                 isValid = false;
                             }
                         });
