@@ -504,6 +504,6 @@
     ]);
 })(angular);
 
-angular.module('znk.infra.exerciseResult').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.exerciseResult').run(['$templateCache', function($templateCache) {
 
 }]);
