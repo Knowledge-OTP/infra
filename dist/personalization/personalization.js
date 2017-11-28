@@ -193,11 +193,16 @@
                  * Searches for any exercise from the bottom most (category) level and returns it (the first it will encounter)
                  *  as long as it is not one of the "exerciseTypesToIgnore" */
                 function _getExerciseForTimeAndSubjectNoWeakestCat(availableExercises, exerciseTypesToIgnore) {
-                    // Get the current level's categories
-                    var categoryIds = Object.keys(availableExercises.subCategories);
-                    angular.forEach(categoryIds, function (categoryId) {
-                        return _getExerciseForTimeAndSubjectNoWeakestCat(availableExercises.subCategories[categoryId], exerciseTypesToIgnore);
-                    });
+                    if (availableExercises && availableExercises.subCategories) {
+                        // Get the current level's categories
+                        var categoryIds = Object.keys(availableExercises.subCategories);
+                        angular.forEach(categoryIds, function (categoryId) {
+                            // Verify that "categoryId" is indeed a number (a categoryId and not just another property name)
+                            if (!isNaN(categoryId)) {
+                                return _getExerciseForTimeAndSubjectNoWeakestCat(availableExercises.subCategories[categoryId], exerciseTypesToIgnore);
+                            }
+                        });
+                    }
                     // Try to get one of the exercises from the current(category) level
                     return _getAvailableExercise(availableExercises, exerciseTypesToIgnore);
                 }
@@ -446,6 +451,6 @@
 })(angular);
 
 
-angular.module('znk.infra.personalization').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.personalization').run(['$templateCache', function($templateCache) {
 
 }]);
