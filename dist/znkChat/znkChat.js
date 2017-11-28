@@ -227,11 +227,11 @@
                     var sound;
 
                     var audioLoadRetry = 1;
-                    
+
                     var audioSucessFn = function() {
                       audioLoadRetry = 1;
                     };
-                                
+
                     var audioStatusChangeFn = function(status) {
                       if (status === window.Media.MEDIA_STARTING && soundPlaying === true) {
                         sound.play();
@@ -378,9 +378,15 @@
                     }
 
                     scope.$on('$destroy', function () {
-                        znkChatEventSrv.offMsgOrNewChatEvent(offEvent.messageEvent.eventType, offEvent.messageEvent.path, offEvent.messageEvent.callback);
-                        znkChatEventSrv.offMsgOrNewChatEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
-                        PresenceService.stopTrackUserPresence(scope.chatterObj.uid);
+                        if (offEvent && offEvent.messageEvent) {
+                            znkChatEventSrv.offMsgOrNewChatEvent(offEvent.messageEvent.eventType, offEvent.messageEvent.path, offEvent.messageEvent.callback);
+                        }
+                        if (offEvent && offEvent.chatConnectionEvent) {
+                            znkChatEventSrv.offMsgOrNewChatEvent(offEvent.chatConnectionEvent.eventType, offEvent.chatConnectionEvent.path, offEvent.chatConnectionEvent.callback);
+                        }
+                        if (scope.chatterObj && scope.chatterObj.uid) {
+                            PresenceService.stopTrackUserPresence(scope.chatterObj.uid);
+                        }
                     });
                 }
             };
