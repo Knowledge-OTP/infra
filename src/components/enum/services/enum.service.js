@@ -1,7 +1,8 @@
 'use strict';
 (function (angular) {
-    angular.module('znk.infra.enum').factory('EnumSrv', [
+    angular.module('znk.infra.enum').factory('EnumSrv',
         function () {
+            'ngInject';
             var EnumSrv = {};
 
             function BaseEnum(enumsArr) {
@@ -77,6 +78,5 @@
             ]);
 
             return EnumSrv;
-        }
-    ]);
+        });
 })(angular);

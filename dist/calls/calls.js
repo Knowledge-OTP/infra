@@ -25,6 +25,8 @@
             controllerAs: 'vm',
             controller: ["$translate", "CallsSrv", "CallsBtnSrv", "CallsErrorSrv", "CallsBtnStatusEnum", "$log", "$scope", "CALL_UPDATE", "ENV", function ($translate, CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope,
                                   CALL_UPDATE, ENV) {
+                'ngInject';
+
                 var vm = this;
                 var receiverId;
                 var isPendingClick = false;
@@ -1389,7 +1391,7 @@
     );
 })(angular);
 
-angular.module('znk.infra.calls').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.calls').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/calls/components/callBtn/callBtn.template.html",
     "<button\n" +
     "    ng-click=\"vm.clickBtn()\"\n" +

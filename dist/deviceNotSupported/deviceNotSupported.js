@@ -16,8 +16,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.deviceNotSupported').directive('deviceNotSupported', ['ENV',
-        function (ENV) {
+    angular.module('znk.infra.deviceNotSupported').directive('deviceNotSupported',
+        ["ENV", function (ENV) {
+            'ngInject';
             return {
                 templateUrl: 'components/deviceNotSupported/deviceNotSupported.template.html',
                 restrict: 'E',
@@ -40,11 +41,10 @@
                     }
                 }
             };
-        }
-    ]);
+        }]);
 })(angular);
 
-angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/deviceNotSupported/directives/deviceNotSupported.template.html",
     "<div class=\"device-not-supported-inner\">\n" +
     "    <h1>{{title}}</h1>\n" +

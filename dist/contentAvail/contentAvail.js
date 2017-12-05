@@ -7,9 +7,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.contentAvail').provider('ContentAvailSrv', [
+    angular.module('znk.infra.contentAvail').provider('ContentAvailSrv',
         function () {
-
+            //'ngInject';
             var _specials;
 
             this.setSpecials = function (specialsObj) {
@@ -240,9 +240,9 @@
                 return ContentAvailSrvObj;
             }];
         }
-    ]);
+    );
 })(angular);
 
-angular.module('znk.infra.contentAvail').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.contentAvail').run(['$templateCache', function ($templateCache) {
 
 }]);

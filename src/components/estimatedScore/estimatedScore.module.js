@@ -7,10 +7,9 @@
             'znk.infra.contentGetters',
             'znk.infra.utility'
         ])
-        .run([
-            'EstimatedScoreEventsHandlerSrv',
+        .run(
             function (EstimatedScoreEventsHandlerSrv) {
+                'ngInject';
                 EstimatedScoreEventsHandlerSrv.init();
-            }
-        ]);
+            });
 })(angular);

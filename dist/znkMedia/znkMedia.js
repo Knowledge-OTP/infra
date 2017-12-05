@@ -6,9 +6,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkMedia').factory('MediaSrv', [
-        'ENV', '$q', '$window', '$log',
-        function (ENV, $q, $window, $log) {
+    angular.module('znk.infra.znkMedia').factory('MediaSrv',
+        ["ENV", "$q", "$window", "$log", function (ENV, $q, $window, $log) {
+            'ngInject';
 
             var isRunningOnDevice = !!$window.cordova;
 
@@ -259,10 +259,9 @@
             };
 
             return MediaSrv;
-        }
-    ]);
+        }]);
 })(angular);
 
-angular.module('znk.infra.znkMedia').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkMedia').run(['$templateCache', function ($templateCache) {
 
 }]);

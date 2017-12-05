@@ -1,9 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkModule').service('ZnkModuleService', [
-        'StorageRevSrv',
+    angular.module('znk.infra.znkModule').service('ZnkModuleService',
         function (StorageRevSrv) {
+            'ngInject';
             var znkModuleService = {};
 
             znkModuleService.getModuleHeaders = function () {
@@ -20,7 +20,6 @@
             };
 
             return znkModuleService;
-        }
-    ]);
+        });
 })(angular);
 

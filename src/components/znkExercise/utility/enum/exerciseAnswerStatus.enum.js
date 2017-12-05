@@ -8,9 +8,9 @@
     };
     angular.module('znk.infra.znkExercise').constant('exerciseAnswerStatusConst', exerciseAnswerStatusConst);
 
-    angular.module('znk.infra.znkExercise').factory('ExerciseAnswerStatusEnum', [
-        'EnumSrv',
+    angular.module('znk.infra.znkExercise').factory('ExerciseAnswerStatusEnum',
         function (EnumSrv) {
+            'ngInject';
             var ExerciseAnswerStatusEnum = new EnumSrv.BaseEnum([
                 ['unanswered', exerciseAnswerStatusConst.unanswered, 'unanswered'],
                 ['correct', exerciseAnswerStatusConst.correct, 'correct'],
@@ -29,6 +29,5 @@
             };
 
             return ExerciseAnswerStatusEnum;
-        }
-    ]);
+        });
 })(angular);

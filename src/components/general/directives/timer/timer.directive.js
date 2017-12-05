@@ -21,9 +21,9 @@
 
 (function (angular) {
 
-    angular.module('znk.infra.general').directive('timer', [
-        '$interval', '$timeout',
+    angular.module('znk.infra.general').directive('timer',
         function ($interval, $timeout) {
+            'ngInject';
             var timerTypes = {
                 'REGULAR': 1,
                 'ROUND_PROGRESSBAR': 2
@@ -158,6 +158,6 @@
                     });
                 }
             };
-        }]);
+        });
 
 })(angular);

@@ -1,9 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.userContext').service('TeacherContextSrv', ['$window', '$log', '$q',
-
+    angular.module('znk.infra.userContext').service('TeacherContextSrv',
         function ($window, $log, $q) {
+            'ngInject';
             var TeacherContextSrv = {};
 
             var _storageTeacherUidKey = 'currentTeacherUid';
@@ -53,6 +53,5 @@
             }
 
             return TeacherContextSrv;
-        }
-    ]);
+        });
 })(angular);

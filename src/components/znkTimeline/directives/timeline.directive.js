@@ -1,8 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkTimeline').directive('znkTimeline', ['$window', '$templateCache', 'TimelineSrv',
+    angular.module('znk.infra.znkTimeline').directive('znkTimeline',
         function ($window, $templateCache, TimelineSrv) {
+            'ngInject';
             var directive = {
                 restrict: 'A',
                 scope: {
@@ -220,6 +221,6 @@
             };
 
             return directive;
-        }]);
+        });
 
 })(angular);

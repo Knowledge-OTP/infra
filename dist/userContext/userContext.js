@@ -7,9 +7,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.userContext').service('StudentContextSrv', ['$window', '$log',
-
-        function ($window, $log) {
+    angular.module('znk.infra.userContext').service('StudentContextSrv',
+        ["$window", "$log", function ($window, $log) {
+            'ngInject';
             var StudentContextSrv = {};
 
             var _storageStudentUidKey = 'currentStudentUid';
@@ -59,16 +59,15 @@
             }
 
             return StudentContextSrv;
-        }
-    ]);
+        }]);
 })(angular);
 
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.userContext').service('TeacherContextSrv', ['$window', '$log', '$q',
-
-        function ($window, $log, $q) {
+    angular.module('znk.infra.userContext').service('TeacherContextSrv',
+        ["$window", "$log", "$q", function ($window, $log, $q) {
+            'ngInject';
             var TeacherContextSrv = {};
 
             var _storageTeacherUidKey = 'currentTeacherUid';
@@ -118,10 +117,9 @@
             }
 
             return TeacherContextSrv;
-        }
-    ]);
+        }]);
 })(angular);
 
-angular.module('znk.infra.userContext').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.userContext').run(['$templateCache', function ($templateCache) {
 
 }]);

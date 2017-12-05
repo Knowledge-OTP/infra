@@ -1,8 +1,8 @@
 (function (angular) {
     'use strict';
-    angular.module('znk.infra.mailSender').service('MailSenderService', [
-        '$log', 'ENV', '$http', 'UserProfileService', '$q',
+    angular.module('znk.infra.mailSender').service('MailSenderService',
         function ($log, ENV, $http, UserProfileService, $q) {
+            'ngInject';
             var mailSenderService = {};
             var backendUrl = ENV.backendEndpoint + '/share/mail';
             var httpConfig = {
@@ -26,7 +26,6 @@
             };
 
             return mailSenderService;
-        }
-    ]);
+        });
 })(angular);
 

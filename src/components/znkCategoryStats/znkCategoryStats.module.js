@@ -11,9 +11,7 @@
         'znk.infra.svgIcon',
         'znk.infra.znkTooltip'
     ])
-    .config([
-        'SvgIconSrvProvider',
-        function (SvgIconSrvProvider) {
+    .config(function (SvgIconSrvProvider) {
             'ngInject';
             var svgMap = {
                 'znkCategoryStats-clock-icon': 'components/znkCategoryStats/svg/clock-icon.svg',
@@ -22,6 +20,5 @@
                 'znkCategoryStats-total-icon': 'components/znkCategoryStats/svg/total-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
-        }
-    ]);
+        });
 })(angular);

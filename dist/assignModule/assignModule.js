@@ -1,11 +1,12 @@
 (function (angular) {
     'use strict';
-    angular.module('znk.infra.assignModule',
-        ['znk.infra.znkModule',
-            'znk.infra.exerciseResult',
-            'znk.infra.userContext',
-            'pascalprecht.translate',
-            'znk.infra.popUp']);
+    angular.module('znk.infra.assignModule', [
+        'znk.infra.znkModule',
+        'znk.infra.exerciseResult',
+        'znk.infra.userContext',
+        'pascalprecht.translate',
+        'znk.infra.popUp'
+    ]);
 })(angular);
 
 (function (angular) {
@@ -653,6 +654,6 @@
     );
 })(angular);
 
-angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.assignModule').run(['$templateCache', function ($templateCache) {
 
 }]);

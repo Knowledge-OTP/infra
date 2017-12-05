@@ -8,9 +8,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.pngSequence').directive('pngSequence', [
-        '$timeout', 'ExpansionSrcSrv', '$window',
+    angular.module('znk.infra.pngSequence').directive('pngSequence',
         function ($timeout, ExpansionSrcSrv, $window) {
+            'ngInject';
             return {
                 restrict: 'E',
                 scope:{
@@ -110,6 +110,5 @@
                     });
                 }
             };
-        }
-    ]);
+        });
 })(angular);

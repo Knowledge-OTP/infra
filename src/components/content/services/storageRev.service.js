@@ -7,8 +7,7 @@
      *      getContent(data={ exerciseType: 'type', exerciseId: '20' });
      *      getAllContentByKey('type');
      */
-    angular.module('znk.infra.content').service('StorageRevSrv', [
-        'ContentSrv', '$log', '$q',
+    angular.module('znk.infra.content').service('StorageRevSrv',
         function (ContentSrv, $log, $q) {
             'ngInject';
 
@@ -39,6 +38,5 @@
                     }
                 });
             };
-        }
-    ]);
+        });
 })(angular);

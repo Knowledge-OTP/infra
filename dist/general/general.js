@@ -8,9 +8,8 @@
             'pascalprecht.translate',
             'angular-svg-round-progressbar'
         ])
-        .config([
-        'SvgIconSrvProvider',
-        function (SvgIconSrvProvider) {
+        .config( ["SvgIconSrvProvider", function (SvgIconSrvProvider) {
+            'ngInject';
             var svgMap = {
                 'general-clock-icon': 'components/general/svg/clock-icon.svg'
             };
@@ -29,15 +28,14 @@
 'use strict';
 
 (function (angular) {
-    angular.module('znk.infra.general').directive('compile', [
-        '$compile','$animate',
-        function($compile,$animate) {
-            return {
-            link: function(scope,element,attrs){
+    angular.module('znk.infra.general').directive('compile', ["$compile", "$animate", function ($compile, $animate) {
+        'ngInject';
+        return {
+            link: function (scope, element, attrs) {
                 var _childScope;
 
-                var watchDestroyer = scope.$watch(attrs.compile,function(newVal){
-                    if(_childScope){
+                var watchDestroyer = scope.$watch(attrs.compile, function (newVal) {
+                    if (_childScope) {
                         _childScope.$destroy();
                         _childScope = null;
                         $animate.leave(element.children());
@@ -45,16 +43,16 @@
                     }
 
 
-                    if(typeof newVal === 'undefined'){
+                    if (typeof newVal === 'undefined') {
                         return;
                     }
 
-                    if(scope.$eval(attrs.bindOnce)){
+                    if (scope.$eval(attrs.bindOnce)) {
                         watchDestroyer();
                     }
 
-                    if(typeof newVal !== 'string'){
-                        if(newVal === null){
+                    if (typeof newVal !== 'string') {
+                        if (newVal === null) {
                             newVal = '';
                         }
                         newVal = '' + newVal;
@@ -64,12 +62,12 @@
                     /**
                      * check if html string , if true create jq lite element of it and append with animation otherwise just append to the dom
                      */
-                    if(_htmlStrRegex.test(newVal)){
+                    if (_htmlStrRegex.test(newVal)) {
                         _childScope = scope.$new();
                         var $content = angular.element(newVal);
-                        $animate.enter($content,element);
+                        $animate.enter($content, element);
                         $compile(element.children())(_childScope);
-                    }else{
+                    } else {
                         element.append(newVal);
                     }
                 });
@@ -81,29 +79,29 @@
 'use strict';
 
 (function (angular) {
-    angular.module('znk.infra.general').directive('disableClickDrv', [
-        function () {
-            return {
-                priority: 200,
-                link: {
-                    pre: function (scope, element, attrs) {
-                        function clickHandler(evt){
-                            if(attrs.disabled){
-                                evt.stopImmediatePropagation();
-                                evt.preventDefault();
-                                return false;
-                            }
+    angular.module('znk.infra.general').directive('disableClickDrv', function () {
+        'ngInject';
+        return {
+            priority: 200,
+            link: {
+                pre: function (scope, element, attrs) {
+                    function clickHandler(evt) {
+                        if (attrs.disabled) {
+                            evt.stopImmediatePropagation();
+                            evt.preventDefault();
+                            return false;
                         }
-                        var eventName = 'click';
-                        element[0].addEventListener (eventName, clickHandler);
-                        scope.$on('$destroy',function(){
-                            element[0].removeEventListener (eventName, clickHandler);
-                        });
                     }
+
+                    var eventName = 'click';
+                    element[0].addEventListener(eventName, clickHandler);
+                    scope.$on('$destroy', function () {
+                        element[0].removeEventListener(eventName, clickHandler);
+                    });
                 }
-            };
-        }
-    ]);
+            }
+        };
+    });
 })(angular);
 
 /**
@@ -178,15 +176,15 @@
  *  In case only one prefix/suffix is provided, it will be used in all attributes
  *  In case no @context-attr is provided, it will set the class attribute by default
  *  No need to pass dashes ('-') to prefix or suffix, they are already appended
- * 
+ *
  * ** Optional **: you can now add an attribute called "type" and assign it the word topic if you want idToTopicName
  */
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.general').directive('subjectIdToAttrDrv', [
-        'SubjectEnum', '$interpolate', 'LiveSessionSubjectEnum',
-        function (SubjectEnum, $interpolate, LiveSessionSubjectEnum) {
+    angular.module('znk.infra.general').directive('subjectIdToAttrDrv',
+        ["SubjectEnum", "$interpolate", "LiveSessionSubjectEnum", function (SubjectEnum, $interpolate, LiveSessionSubjectEnum) {
+            'ngInject';
             return {
                 link: {
                     pre: function (scope, element, attrs) {
@@ -220,7 +218,7 @@
 
                             angular.forEach(attrsArray, function (value, key) {
                                 var attrVal;
-                                if (attrs.type === "topic") {
+                                if (attrs.type === 'topic') {
                                     attrVal = topicNameToAdd + '-' + attrs.type;
                                 } else {
                                     attrVal = subjectNameToAdd;
@@ -262,8 +260,7 @@
                     }
                 }
             };
-        }
-    ]);
+        }]);
 })(angular);
 
 /**
@@ -275,25 +272,25 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.general').directive('subjectIdToClassDrv', [
-        'SubjectEnum',
-        function (SubjectEnum) {
+    angular.module('znk.infra.general').directive('subjectIdToClassDrv',
+        ["SubjectEnum", function (SubjectEnum) {
+            'ngInject';
             return {
                 priority: 1000,
                 link: {
                     pre: function (scope, element, attrs) {
-                        var watchDestroyer = scope.$watch(attrs.subjectIdToClassDrv,function(subjectId){
-                            if(angular.isUndefined(subjectId)){
+                        var watchDestroyer = scope.$watch(attrs.subjectIdToClassDrv, function (subjectId) {
+                            if (angular.isUndefined(subjectId)) {
                                 return;
                             }
 
                             watchDestroyer();
                             var classToAdd;
 
-                            for(var prop in SubjectEnum){
-                                if(SubjectEnum[prop].enum === subjectId){
+                            for (var prop in SubjectEnum) {
+                                if (SubjectEnum[prop].enum === subjectId) {
                                     classToAdd = SubjectEnum[prop].val;
-                                    if(attrs.classSuffix){
+                                    if (attrs.classSuffix) {
                                         classToAdd += attrs.classSuffix;
                                     }
                                     break;
@@ -305,8 +302,7 @@
                     }
                 }
             };
-        }
-    ]);
+        }]);
 })(angular);
 
 
@@ -333,9 +329,9 @@
 
 (function (angular) {
 
-    angular.module('znk.infra.general').directive('timer', [
-        '$interval', '$timeout',
-        function ($interval, $timeout) {
+    angular.module('znk.infra.general').directive('timer',
+        ["$interval", "$timeout", function ($interval, $timeout) {
+            'ngInject';
             var timerTypes = {
                 'REGULAR': 1,
                 'ROUND_PROGRESSBAR': 2
@@ -480,9 +476,9 @@
  */
 'use strict';
 (function (angular) {
-    angular.module('znk.infra.general').directive('videoCtrlDrv', [
-        '$interpolate', '$timeout',
-        function ($interpolate, $timeout) {
+    angular.module('znk.infra.general').directive('videoCtrlDrv',
+        ["$interpolate", "$timeout", function ($interpolate, $timeout) {
+            'ngInject';
             var videoHeightType = {
                 FIT: 'fit',
                 COVER: 'cover'
@@ -704,8 +700,7 @@
                     });
                 }
             };
-        }
-    ]);
+        }]);
 })(angular);
 
 (function (angular) {
@@ -740,7 +735,7 @@
 })(angular);
 
 
-angular.module('znk.infra.general').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.general').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/general/directives/timer/timer.template.html",
     "<div ng-switch=\"type\" class=\"timer-drv\">\n" +
     "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +

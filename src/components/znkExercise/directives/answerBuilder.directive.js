@@ -6,9 +6,9 @@
     'use strict';
 
     var typeToViewMap;
-    angular.module('znk.infra.znkExercise').directive('answerBuilder', [
-        '$compile', 'AnswerTypeEnum', 'ZnkExerciseUtilitySrv', 'ZnkExerciseViewModeEnum',
+    angular.module('znk.infra.znkExercise').directive('answerBuilder',
         function ($compile, AnswerTypeEnum, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum) {
+            'ngInject';
             if(!typeToViewMap) {
                 typeToViewMap = {};
                 angular.forEach(AnswerTypeEnum, function (enumData, enumName) {
@@ -51,6 +51,5 @@
                     }
                 }
             };
-        }
-    ]);
+        });
 })(angular);

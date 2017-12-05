@@ -8,15 +8,14 @@
 'use strict';
 
 (function (angular) {
-    angular.module('znk.infra.general').directive('compile', [
-        '$compile','$animate',
-        function($compile,$animate) {
-            return {
-            link: function(scope,element,attrs){
+    angular.module('znk.infra.general').directive('compile', function ($compile, $animate) {
+        'ngInject';
+        return {
+            link: function (scope, element, attrs) {
                 var _childScope;
 
-                var watchDestroyer = scope.$watch(attrs.compile,function(newVal){
-                    if(_childScope){
+                var watchDestroyer = scope.$watch(attrs.compile, function (newVal) {
+                    if (_childScope) {
                         _childScope.$destroy();
                         _childScope = null;
                         $animate.leave(element.children());
@@ -24,16 +23,16 @@
                     }
 
 
-                    if(typeof newVal === 'undefined'){
+                    if (typeof newVal === 'undefined') {
                         return;
                     }
 
-                    if(scope.$eval(attrs.bindOnce)){
+                    if (scope.$eval(attrs.bindOnce)) {
                         watchDestroyer();
                     }
 
-                    if(typeof newVal !== 'string'){
-                        if(newVal === null){
+                    if (typeof newVal !== 'string') {
+                        if (newVal === null) {
                             newVal = '';
                         }
                         newVal = '' + newVal;
@@ -43,16 +42,16 @@
                     /**
                      * check if html string , if true create jq lite element of it and append with animation otherwise just append to the dom
                      */
-                    if(_htmlStrRegex.test(newVal)){
+                    if (_htmlStrRegex.test(newVal)) {
                         _childScope = scope.$new();
                         var $content = angular.element(newVal);
-                        $animate.enter($content,element);
+                        $animate.enter($content, element);
                         $compile(element.children())(_childScope);
-                    }else{
+                    } else {
                         element.append(newVal);
                     }
                 });
             }
         };
-    }]);
+    });
 })(angular);

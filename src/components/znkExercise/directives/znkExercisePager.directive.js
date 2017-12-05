@@ -6,9 +6,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('znkExercisePager', [
-        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum', 'QuestionTypesSrv',
+    angular.module('znk.infra.znkExercise').directive('znkExercisePager',
         function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum, QuestionTypesSrv) {
+            'ngInject';
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExercisePager.template.html',
                 restrict: 'E',
@@ -143,7 +143,6 @@
                     }
                 }
             };
-        }
-    ]);
+        });
 })(angular);
 

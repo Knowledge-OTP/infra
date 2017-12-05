@@ -6,9 +6,8 @@
         'pascalprecht.translate',
         'znk.infra.svgIcon'
     ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
+        .config(["SvgIconSrvProvider", function (SvgIconSrvProvider) {
+            'ngInject';
                 var svgMap = {
                     'znk-audio-player-play': 'components/znkAudioPlayer/svg/play-icon.svg',
                     'znk-audio-player-pause': 'components/znkAudioPlayer/svg/pause-icon.svg',
@@ -57,8 +56,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkAudioPlayer').directive('znkAudioPlayButton', [
+    angular.module('znk.infra.znkAudioPlayer').directive('znkAudioPlayButton',
         function znkAudioPlayerDrv() {
+            'ngInject';
             return {
                 templateUrl: 'components/znkAudioPlayer/templates/znkAudioPlayButton.template.html',
                 scope: {
@@ -120,16 +120,16 @@
                     });
                 }
             };
-        }]);
+        });
 })(angular);
 
 
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkAudioPlayer').directive('znkAudioPlayer', [
-        '$timeout', '$window', '$interval', 'MediaSrv', '$filter', 'ENV',
-        function znkAudioPlayerDrv($timeout, $window, $interval, MediaSrv, $filter, ENV) {
+    angular.module('znk.infra.znkAudioPlayer').directive('znkAudioPlayer',
+        ["$timeout", "$window", "$interval", "MediaSrv", "$filter", "ENV", function znkAudioPlayerDrv($timeout, $window, $interval, MediaSrv, $filter, ENV) {
+            'ngInject';
             return {
                 templateUrl: 'components/znkAudioPlayer/templates/znkAudioPlayer.template.html',
                 scope: {
@@ -310,11 +310,11 @@
                     };
 
                     var audioLoadRetry = 1;
-                    
+
                     var audioSucessFn = function() {
                       audioLoadRetry = 1;
                     };
-                                        
+
                     var audioErrFn = function() {
                       console.log('znkAudioPlayer loadSound failed #' + audioLoadRetry);
                       sound.release();
@@ -390,9 +390,9 @@
 
 (function (angular) {
 
-    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', [
+    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio',
         function znkImageAudio() {
-
+            'ngInject';
             return {
                 templateUrl: 'components/znkAudioPlayer/templates/znkImageAudio.template.html',
                 scope: {
@@ -445,15 +445,16 @@
                     }
                 }
             };
-        }]);
+        });
 
 })(angular);
 
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkAudioPlayer').filter('secondsToTime', [
+    angular.module('znk.infra.znkAudioPlayer').filter('secondsToTime',
         function () {
+            'ngInject';
             return function (totalSeconds,format) {
                 var min = parseInt(totalSeconds / 60);
                 var paddedMin = min >= 10 ? min : '0' + min;
@@ -464,11 +465,10 @@
                     .replace('ss',paddedSec)
                     .replace('s',sec);
             };
-        }
-    ]);
+        });
 })(angular);
 
-angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkAudioPlayer/svg/close-icon.svg",
     "<svg\n" +
     "    x=\"0px\"\n" +

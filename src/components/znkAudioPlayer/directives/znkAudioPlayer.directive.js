@@ -2,9 +2,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkAudioPlayer').directive('znkAudioPlayer', [
-        '$timeout', '$window', '$interval', 'MediaSrv', '$filter', 'ENV',
+    angular.module('znk.infra.znkAudioPlayer').directive('znkAudioPlayer',
         function znkAudioPlayerDrv($timeout, $window, $interval, MediaSrv, $filter, ENV) {
+            'ngInject';
             return {
                 templateUrl: 'components/znkAudioPlayer/templates/znkAudioPlayer.template.html',
                 scope: {
@@ -185,11 +185,11 @@
                     };
 
                     var audioLoadRetry = 1;
-                    
+
                     var audioSucessFn = function() {
                       audioLoadRetry = 1;
                     };
-                                        
+
                     var audioErrFn = function() {
                       console.log('znkAudioPlayer loadSound failed #' + audioLoadRetry);
                       sound.release();
@@ -258,5 +258,5 @@
                     });
                 }
             };
-        }]);
+        });
 })(angular);

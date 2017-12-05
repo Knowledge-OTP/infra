@@ -102,10 +102,11 @@
             return api;
         }];
 
-    }).run(['znkAnalyticsSrv', '$window', function(znkAnalyticsSrv, $window) {
+    }).run(function(znkAnalyticsSrv, $window) {
+        'ngInject';
         var isDebugMode = znkAnalyticsSrv.getDebugMode();
         if(isDebugMode) {
             $window.znkAnalyticsEvents = znkAnalyticsSrv.getEventsConst();
         }
-    }]);
+    });
 })(angular);

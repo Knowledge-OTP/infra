@@ -1,9 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').controller('ZnkExerciseDrvCtrl', [
-        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$element', 'ZnkExerciseSrv', 'UtilitySrv', 'ENV',
+    angular.module('znk.infra.znkExercise').controller('ZnkExerciseDrvCtrl',
         function ($scope, $q, ZnkExerciseEvents, $log, $element, ZnkExerciseSrv, UtilitySrv, ENV) {
+            'ngInject';
             var self = this;
 
             var questionReadyDefer = $q.defer();
@@ -272,5 +272,5 @@
                 };
 
             })(self);
-        }]);
+        });
 })(angular);

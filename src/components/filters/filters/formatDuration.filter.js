@@ -11,7 +11,8 @@
      *      'HH' - padded hours - (01, 02, 03 etc')
      * @returns formatted time string
      */
-    angular.module('znk.infra.filters').filter('formatDuration', ['$log', function ($log) {
+    angular.module('znk.infra.filters').filter('formatDuration', function ($log) {
+        'ngInject';
         return function (time, exp) {
             if (!angular.isNumber(time) || isNaN(time)) {
                 $log.error('time is not a number:', time);
@@ -39,5 +40,5 @@
                 .replace(/ss/g, seconds)
                 .replace(/SS/g, paddedSeconds);
         };
-    }]);
+    });
 })(angular);

@@ -36,7 +36,8 @@
         },{ correct: 0, wrong: 0, skip: 0 });
     }
 
-    angular.module('znk.infra.analytics').service('znkAnalyticsUtilSrv', ['$log', function ($log) {
+    angular.module('znk.infra.analytics').service('znkAnalyticsUtilSrv', function ($log) {
+        'ngInject';
 
         var self = this;
 
@@ -85,5 +86,5 @@
             setUsername: _eventFn,
             setUserProperties: _eventFn
         };
-    }]);
+    });
 })(angular);

@@ -4,9 +4,9 @@
  */
 'use strict';
 (function (angular) {
-    angular.module('znk.infra.general').directive('videoCtrlDrv', [
-        '$interpolate', '$timeout',
+    angular.module('znk.infra.general').directive('videoCtrlDrv',
         function ($interpolate, $timeout) {
+            'ngInject';
             var videoHeightType = {
                 FIT: 'fit',
                 COVER: 'cover'
@@ -228,6 +228,5 @@
                     });
                 }
             };
-        }
-    ]);
+        });
 })(angular);

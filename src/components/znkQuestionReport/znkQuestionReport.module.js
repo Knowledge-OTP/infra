@@ -14,15 +14,13 @@
             'znk.infra.mailSender',
             'znk.infra.exerciseUtility'
         ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
+        .config(function (SvgIconSrvProvider) {
+            'ngInject';
                 var svgMap = {
                     'report-question-close-popup': 'components/znkQuestionReport/svg/close-popup.svg',
                     'report-question-icon': 'components/znkQuestionReport/svg/report-question-icon.svg',
                     'completed-v-report-icon': 'components/znkQuestionReport/svg/completed-v-report.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
-            }
-        ]);
+            });
 })(angular);

@@ -7,15 +7,14 @@
             'znk.infra.teachers',
             'znk.infra.znkMedia'
         ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
-                var svgMap = {
-                    'znk-chat-chat-icon': 'components/znkChat/svg/znk-chat-chat-icon.svg',
-                    'znk-chat-close-icon': 'components/znkChat/svg/znk-chat-close-icon.svg'
-                };
-                SvgIconSrvProvider.registerSvgSources(svgMap);
-            }]);
+        .config(["SvgIconSrvProvider", function (SvgIconSrvProvider) {
+            'ngInject';
+            var svgMap = {
+                'znk-chat-chat-icon': 'components/znkChat/svg/znk-chat-chat-icon.svg',
+                'znk-chat-close-icon': 'components/znkChat/svg/znk-chat-close-icon.svg'
+            };
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+        }]);
 })(angular);
 
 (function (angular) {
@@ -33,7 +32,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkChat').directive('chatMessage', [
+    angular.module('znk.infra.znkChat').directive('chatMessage',
         function () {
             'ngInject';
             return {
@@ -70,8 +69,7 @@
                     scope.scrollToLastMessage()();
                 }
             };
-        }
-    ]);
+        });
 })(angular);
 
 
@@ -770,7 +768,7 @@
     );
 })(angular);
 
-angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkChat/svg/znk-chat-chat-icon.svg",
     "<svg\n" +
     "    id=\"Layer_1\"\n" +

@@ -9,6 +9,8 @@
             controllerAs: 'vm',
             controller: function ($translate, CallsSrv, CallsBtnSrv, CallsErrorSrv, CallsBtnStatusEnum, $log, $scope,
                                   CALL_UPDATE, ENV) {
+                'ngInject';
+
                 var vm = this;
                 var receiverId;
                 var isPendingClick = false;

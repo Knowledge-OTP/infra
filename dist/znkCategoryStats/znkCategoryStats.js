@@ -11,9 +11,7 @@
         'znk.infra.svgIcon',
         'znk.infra.znkTooltip'
     ])
-    .config([
-        'SvgIconSrvProvider',
-        function (SvgIconSrvProvider) {
+    .config(["SvgIconSrvProvider", function (SvgIconSrvProvider) {
             'ngInject';
             var svgMap = {
                 'znkCategoryStats-clock-icon': 'components/znkCategoryStats/svg/clock-icon.svg',
@@ -22,8 +20,7 @@
                 'znkCategoryStats-total-icon': 'components/znkCategoryStats/svg/total-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
-        }
-    ]);
+        }]);
 })(angular);
 
 (function (angular) {
@@ -76,7 +73,7 @@
         });
 })(angular);
 
-angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkCategoryStats/components/znkCategoryStats.template.html",
     "<div class=\"znk-category-stats\">\n" +
     "    <div class=\"category-wrapper\"\n" +

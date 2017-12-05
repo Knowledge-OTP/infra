@@ -7,12 +7,11 @@
             'znk.infra.contentGetters',
             'znk.infra.utility'
         ])
-        .run([
-            'EstimatedScoreEventsHandlerSrv',
-            function (EstimatedScoreEventsHandlerSrv) {
+        .run(
+            ["EstimatedScoreEventsHandlerSrv", function (EstimatedScoreEventsHandlerSrv) {
+                'ngInject';
                 EstimatedScoreEventsHandlerSrv.init();
-            }
-        ]);
+            }]);
 })(angular);
 
 'use strict';
@@ -547,6 +546,6 @@
     );
 })(angular);
 
-angular.module('znk.infra.estimatedScore').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.estimatedScore').run(['$templateCache', function ($templateCache) {
 
 }]);

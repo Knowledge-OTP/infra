@@ -2,17 +2,15 @@
     'use strict';
 
     angular.module('znk.infra.stats', [
-            'znk.infra.enum',
-            'znk.infra.znkExercise',
-            'znk.infra.utility',
-            'znk.infra.contentGetters'
-        ])
-        .run([
-            'StatsEventsHandlerSrv',
-            function (StatsEventsHandlerSrv) {
-                StatsEventsHandlerSrv.init();
-            }
-        ]);
+        'znk.infra.enum',
+        'znk.infra.znkExercise',
+        'znk.infra.utility',
+        'znk.infra.contentGetters'
+    ])
+        .run(["StatsEventsHandlerSrv", function (StatsEventsHandlerSrv) {
+            'ngInject';
+            StatsEventsHandlerSrv.init();
+        }]);
 })(angular);
 
 (function (angular) {
@@ -214,9 +212,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.stats').factory('StatsEventsHandlerSrv', [
-        'exerciseEventsConst', 'StatsSrv', 'ExerciseTypeEnum', '$log', 'UtilitySrv',
-        function (exerciseEventsConst, StatsSrv, ExerciseTypeEnum, $log, UtilitySrv) {
+    angular.module('znk.infra.stats').factory('StatsEventsHandlerSrv',
+        ["exerciseEventsConst", "StatsSrv", "ExerciseTypeEnum", "$log", "UtilitySrv", function (exerciseEventsConst, StatsSrv, ExerciseTypeEnum, $log, UtilitySrv) {
+            'ngInject';
             var StatsEventsHandlerSrv = {};
 
             StatsEventsHandlerSrv.addNewExerciseResult = function (exerciseType, exercise, results) {
@@ -271,16 +269,15 @@
             StatsEventsHandlerSrv.init = angular.noop;
 
             return StatsEventsHandlerSrv;
-        }
-    ]);
+        }]);
 })(angular);
 
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.stats').service('StatsQuerySrv', [
-        'StatsSrv', '$q',
-        function (StatsSrv, $q) {
+    angular.module('znk.infra.stats').service('StatsQuerySrv',
+        ["StatsSrv", "$q", function (StatsSrv, $q) {
+            'ngInject';
             var StatsQuerySrv = {};
 
             function _getCategoryWeakness(category) {
@@ -373,10 +370,9 @@
             };
 
             return StatsQuerySrv;
-        }
-    ]);
+        }]);
 })(angular);
 
-angular.module('znk.infra.stats').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.stats').run(['$templateCache', function ($templateCache) {
 
 }]);

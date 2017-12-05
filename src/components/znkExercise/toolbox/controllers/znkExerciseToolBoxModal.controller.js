@@ -1,9 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').controller('ZnkExerciseToolBoxModalCtrl', [
-        '$scope', 'ZnkExerciseDrvSrv', 'Settings',
+    angular.module('znk.infra.znkExercise').controller('ZnkExerciseToolBoxModalCtrl',
         function ($scope, ZnkExerciseDrvSrv, Settings) {
+            'ngInject';
             Settings.actions = Settings.actions || {};
             Settings.events = Settings.events || {};
             Settings.events.onToolOpened = Settings.events.onToolOpened || angular.noop;
@@ -100,6 +100,5 @@
                     $scope.d.openTool($scope.d.tools.CALCULATOR);
                 }
             };
-        }
-    ]);
+        });
 })(angular);

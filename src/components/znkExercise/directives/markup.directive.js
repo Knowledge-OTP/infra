@@ -1,9 +1,9 @@
 'use strict';
 
 (function (angular) {
-    angular.module('znk.infra.znkExercise').directive('markup', [
-        '$window',
+    angular.module('znk.infra.znkExercise').directive('markup',
         function ($window) {
+            'ngInject';
             var MAX_IMAGE_WIDTH = 275;
             var dummyElem = angular.element('<P/>');
             return {
@@ -163,7 +163,6 @@
                     });
                 }
             };
-        }
-    ]);
+        });
 })(angular);
 

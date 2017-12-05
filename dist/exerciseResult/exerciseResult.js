@@ -11,9 +11,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum','AssignContentEnum',
-        function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum, AssignContentEnum) {
+    angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv',
+        ["InfraConfigSrv", "$log", "$q", "UtilitySrv", "ExerciseTypeEnum", "StorageSrv", "ExerciseStatusEnum", "AssignContentEnum", function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum, AssignContentEnum) {
+            'ngInject';
             var ExerciseResultSrv = this;
 
             var EXERCISE_RESULTS_PATH = 'exerciseResults';
@@ -500,10 +500,9 @@
                 });
             };
 
-        }
-    ]);
+        }]);
 })(angular);
 
-angular.module('znk.infra.exerciseResult').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.exerciseResult').run(['$templateCache', function ($templateCache) {
 
 }]);

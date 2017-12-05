@@ -1,9 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv', [
-        'InfraConfigSrv', '$log', '$q', 'UtilitySrv', 'ExerciseTypeEnum', 'StorageSrv', 'ExerciseStatusEnum','AssignContentEnum',
+    angular.module('znk.infra.exerciseResult').service('ExerciseResultSrv',
         function (InfraConfigSrv, $log, $q, UtilitySrv, ExerciseTypeEnum, StorageSrv, ExerciseStatusEnum, AssignContentEnum) {
+            'ngInject';
             var ExerciseResultSrv = this;
 
             var EXERCISE_RESULTS_PATH = 'exerciseResults';
@@ -490,6 +490,5 @@
                 });
             };
 
-        }
-    ]);
+        });
 })(angular);

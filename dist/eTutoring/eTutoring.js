@@ -4,9 +4,8 @@
     angular.module('znk.infra.eTutoring',[
         'znk.infra.contentGetters'
     ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
+        .config(["SvgIconSrvProvider", function (SvgIconSrvProvider) {
+                'ngInject';
                 var svgMap = {
                     'homework-icon': 'components/eTutoring/svg/homework-icon.svg',
                     'english-topic-icon': 'components/eTutoring/svg/english-topic-icon.svg',
@@ -825,7 +824,7 @@
         }]);
 })(angular);
 
-angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.eTutoring').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/eTutoring/components/etutoringActionBar/etutoringActionBar.template.html",
     "<div class=\"e-tutor-bar base-border-radius base-box-shadow\" translate-namespace=\"E_TUTORING_ACTION_BAR\">\n" +
     "    <div class=\"teacher-select-wrap\" ng-if=\"myTeachers\">\n" +

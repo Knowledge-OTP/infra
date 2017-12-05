@@ -15,9 +15,8 @@
         'znk.infra.utility',
         'znk.infra.znkSessionData'
     ])
-    .config([
-        'SvgIconSrvProvider',
-        function (SvgIconSrvProvider) {
+    .config(["SvgIconSrvProvider", function (SvgIconSrvProvider) {
+        'ngInject';
             var svgMap = {
                 'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg',
                 'znk-exercise-eraser': 'components/znkExercise/svg/tools-eraser.svg',
@@ -232,9 +231,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('questionBuilder', [
-        '$compile', 'QuestionTypesSrv', '$timeout', 'ZnkExerciseUtilitySrv',
-        function ($compile, QuestionTypesSrv, $timeout, ZnkExerciseUtilitySrv) {
+    angular.module('znk.infra.znkExercise').directive('questionBuilder',
+        ["$compile", "QuestionTypesSrv", "$timeout", "ZnkExerciseUtilitySrv", function ($compile, QuestionTypesSrv, $timeout, ZnkExerciseUtilitySrv) {
+            'ngInject';
             return {
                 restrict: 'E',
                 require: ['questionBuilder', '^znkExercise'],
@@ -286,8 +285,7 @@
                     }
                 }
             };
-        }
-    ]);
+        }]);
 })(angular);
 
 
@@ -301,9 +299,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('questionsCarousel', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum', '$timeout',
-        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum, $timeout) {
+    angular.module('znk.infra.znkExercise').directive('questionsCarousel',
+        ["ZnkExerciseSrv", "PlatformEnum", "$log", "ZnkExerciseSlideDirectionEnum", "$timeout", function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum, $timeout) {
+            'ngInject';
             return {
                 templateUrl: function(){
                     var templateUrl = "components/znkExercise/core/template/";
@@ -376,8 +374,7 @@
                     });
                 }
             };
-        }
-    ]);
+        }]);
 })(angular);
 
 
@@ -395,9 +392,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('znkExerciseBtnSection', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum', '$q', 'ZnkExerciseSlideDirectionEnum',
-        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseEvents, ZnkExerciseViewModeEnum, $q, ZnkExerciseSlideDirectionEnum) {
+    angular.module('znk.infra.znkExercise').directive('znkExerciseBtnSection',
+        ["ZnkExerciseSrv", "PlatformEnum", "$log", "ZnkExerciseEvents", "ZnkExerciseViewModeEnum", "$q", "ZnkExerciseSlideDirectionEnum", function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseEvents, ZnkExerciseViewModeEnum, $q, ZnkExerciseSlideDirectionEnum) {
+            'ngInject';
             return {
                 restrict: 'E',
                 scope: {
@@ -584,8 +581,7 @@
                     }
                 }
             };
-        }
-    ]);
+        }]);
 })(angular);
 
 
@@ -661,9 +657,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('znkSwiper', [
-        '$timeout', '$q',
-        function ($timeout, $q) {
+    angular.module('znk.infra.znkExercise').directive('znkSwiper',
+        ["$timeout", "$q", function ($timeout, $q) {
+            'ngInject';
             return {
                 templateUrl: 'components/znkExercise/core/template/znkSwiper.template.html',
                 replace: true,
@@ -749,8 +745,7 @@
                     };
                 }
             };
-        }
-    ]);
+        }]);
 })(angular);
 
 
@@ -943,9 +938,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').controller('ZnkExerciseDrvCtrl', [
-        '$scope', '$q', 'ZnkExerciseEvents', '$log', '$element', 'ZnkExerciseSrv', 'UtilitySrv', 'ENV',
-        function ($scope, $q, ZnkExerciseEvents, $log, $element, ZnkExerciseSrv, UtilitySrv, ENV) {
+    angular.module('znk.infra.znkExercise').controller('ZnkExerciseDrvCtrl',
+        ["$scope", "$q", "ZnkExerciseEvents", "$log", "$element", "ZnkExerciseSrv", "UtilitySrv", "ENV", function ($scope, $q, ZnkExerciseEvents, $log, $element, ZnkExerciseSrv, UtilitySrv, ENV) {
+            'ngInject';
             var self = this;
 
             var questionReadyDefer = $q.defer();
@@ -1262,9 +1257,11 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('znkExercise', [
-        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ZnkExerciseUtilitySrv', 'QuestionTypesSrv',
-        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout, ZnkExerciseUtilitySrv, QuestionTypesSrv) {
+    angular.module('znk.infra.znkExercise').directive('znkExercise',
+        ["ZnkExerciseSrv", "$location", "$window", "$q", "ZnkExerciseEvents", "PlatformEnum", "$log", "ZnkExerciseViewModeEnum", "ZnkExerciseSlideDirectionEnum", "$timeout", "ZnkExerciseUtilitySrv", "QuestionTypesSrv", function (ZnkExerciseSrv, $location, $window, $q, ZnkExerciseEvents, PlatformEnum, $log,
+                  ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout, ZnkExerciseUtilitySrv,
+                  QuestionTypesSrv) {
+            'ngInject';
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExercise.template.html',
                 restrict: 'E',
@@ -1703,8 +1700,7 @@
                     };
                 }
             };
-        }
-    ]);
+        }]);
 })(angular);
 
 
@@ -1716,9 +1712,9 @@
     'use strict';
 
     var typeToViewMap;
-    angular.module('znk.infra.znkExercise').directive('answerBuilder', [
-        '$compile', 'AnswerTypeEnum', 'ZnkExerciseUtilitySrv', 'ZnkExerciseViewModeEnum',
-        function ($compile, AnswerTypeEnum, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum) {
+    angular.module('znk.infra.znkExercise').directive('answerBuilder',
+        ["$compile", "AnswerTypeEnum", "ZnkExerciseUtilitySrv", "ZnkExerciseViewModeEnum", function ($compile, AnswerTypeEnum, ZnkExerciseUtilitySrv, ZnkExerciseViewModeEnum) {
+            'ngInject';
             if(!typeToViewMap) {
                 typeToViewMap = {};
                 angular.forEach(AnswerTypeEnum, function (enumData, enumName) {
@@ -1761,15 +1757,15 @@
                     }
                 }
             };
-        }
-    ]);
+        }]);
 })(angular);
 
 'use strict';
 
 (function (angular) {
-    angular.module('znk.infra.znkExercise').directive('arrayToStringFmtr', [
+    angular.module('znk.infra.znkExercise').directive('arrayToStringFmtr',
         function () {
+            'ngInject';
             return {
                 require: 'ngModel',
                 link: function (scope, element, attrs, ngModelCtrl) {
@@ -1790,16 +1786,15 @@
                     ngModelCtrl.$formatters.push(formatter);
                 }
             };
-        }
-    ]);
+        });
 })(angular);
 
 'use strict';
 
 (function (angular) {
-    angular.module('znk.infra.znkExercise').directive('markup', [
-        '$window',
-        function ($window) {
+    angular.module('znk.infra.znkExercise').directive('markup',
+        ["$window", function ($window) {
+            'ngInject';
             var MAX_IMAGE_WIDTH = 275;
             var dummyElem = angular.element('<P/>');
             return {
@@ -1959,8 +1954,7 @@
                     });
                 }
             };
-        }
-    ]);
+        }]);
 })(angular);
 
 
@@ -1972,9 +1966,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('znkExercisePager', [
-        '$timeout', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum', 'QuestionTypesSrv',
-        function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum, QuestionTypesSrv) {
+    angular.module('znk.infra.znkExercise').directive('znkExercisePager',
+        ["$timeout", "ZnkExerciseEvents", "ZnkExerciseViewModeEnum", "QuestionTypesSrv", function ($timeout, ZnkExerciseEvents, ZnkExerciseViewModeEnum, QuestionTypesSrv) {
+            'ngInject';
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExercisePager.template.html',
                 restrict: 'E',
@@ -2109,8 +2103,7 @@
                     }
                 }
             };
-        }
-    ]);
+        }]);
 })(angular);
 
 
@@ -2158,9 +2151,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').controller('ZnkExerciseToolBoxModalCtrl', [
-        '$scope', 'ZnkExerciseDrvSrv', 'Settings',
-        function ($scope, ZnkExerciseDrvSrv, Settings) {
+    angular.module('znk.infra.znkExercise').controller('ZnkExerciseToolBoxModalCtrl',
+        ["$scope", "ZnkExerciseDrvSrv", "Settings", function ($scope, ZnkExerciseDrvSrv, Settings) {
+            'ngInject';
             Settings.actions = Settings.actions || {};
             Settings.events = Settings.events || {};
             Settings.events.onToolOpened = Settings.events.onToolOpened || angular.noop;
@@ -2257,18 +2250,14 @@
                     $scope.d.openTool($scope.d.tools.CALCULATOR);
                 }
             };
-        }
-    ]);
+        }]);
 })(angular);
 
-'use strict';
-
 (function () {
-
-    angular.module('znk.infra.znkExercise').directive('blackboardDrv', [
-        'GoBackHardwareSrv',
-        function (GoBackHardwareSrv) {
-
+    'use strict';
+    angular.module('znk.infra.znkExercise').directive('blackboardDrv',
+        ["GoBackHardwareSrv", function (GoBackHardwareSrv) {
+            'ngInject';
             return {
                 restric: 'EA',
                 scope: {
@@ -2402,14 +2391,12 @@
         }]);
 })();
 
-'use strict';
-
 /*globals math */
 (function(angular) {
-
-    angular.module('znk.infra.znkExercise').directive('calculator', [
-        'GoBackHardwareSrv',
-        function(GoBackHardwareSrv) {
+    'use strict';
+    angular.module('znk.infra.znkExercise').directive('calculator',
+        ["GoBackHardwareSrv", function(GoBackHardwareSrv) {
+            'ngInject';
             var cos = math.cos;
             var sin = math.sin;
             var tan = math.tan;
@@ -3598,9 +3585,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('templateByPlatform', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log',
-        function (ZnkExerciseSrv, PlatformEnum, $log) {
+    angular.module('znk.infra.znkExercise').directive('templateByPlatform',
+        ["ZnkExerciseSrv", "PlatformEnum", "$log", function (ZnkExerciseSrv, PlatformEnum, $log) {
+            'ngInject';
             return {
                 templateUrl: function(element, attrs){
                     var templateUrl;
@@ -3621,8 +3608,7 @@
                 },
                 restrict: 'E'
             };
-        }
-    ]);
+        }]);
 })(angular);
 
 
@@ -3636,9 +3622,9 @@
     };
     angular.module('znk.infra.znkExercise').constant('exerciseAnswerStatusConst', exerciseAnswerStatusConst);
 
-    angular.module('znk.infra.znkExercise').factory('ExerciseAnswerStatusEnum', [
-        'EnumSrv',
-        function (EnumSrv) {
+    angular.module('znk.infra.znkExercise').factory('ExerciseAnswerStatusEnum',
+        ["EnumSrv", function (EnumSrv) {
+            'ngInject';
             var ExerciseAnswerStatusEnum = new EnumSrv.BaseEnum([
                 ['unanswered', exerciseAnswerStatusConst.unanswered, 'unanswered'],
                 ['correct', exerciseAnswerStatusConst.correct, 'correct'],
@@ -3657,31 +3643,29 @@
             };
 
             return ExerciseAnswerStatusEnum;
-        }
-    ]);
+        }]);
 })(angular);
 
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').factory('PlatformEnum', [
-        'EnumSrv',
-        function (EnumSrv) {
+    angular.module('znk.infra.znkExercise').factory('PlatformEnum',
+        ["EnumSrv", function (EnumSrv) {
+            'ngInject';
             return new EnumSrv.BaseEnum([
                 ['MOBILE', 1, 'mobile'],
                 ['DESKTOP', 2, 'desktop']
             ]);
-        }
-    ]);
+        }]);
 })(angular);
 
 
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').factory('ZnkExerciseSlideDirectionEnum', [
-        'EnumSrv',
-        function (EnumSrv) {
+    angular.module('znk.infra.znkExercise').factory('ZnkExerciseSlideDirectionEnum',
+        ["EnumSrv", function (EnumSrv) {
+            'ngInject';
             return new EnumSrv.BaseEnum([
                 ['NONE', 1, 'none'],
                 ['ALL', 2, 'all'],
@@ -3689,25 +3673,23 @@
                 ['LEFT', 4, 'left']
             ])
             ;
-        }
-    ]);
+        }]);
 })(angular);
 
 
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').factory('ZnkExerciseViewModeEnum', [
-        'EnumSrv',
-        function (EnumSrv) {
+    angular.module('znk.infra.znkExercise').factory('ZnkExerciseViewModeEnum',
+        ["EnumSrv", function (EnumSrv) {
+            'ngInject';
             return new EnumSrv.BaseEnum([
                 ['ANSWER_WITH_RESULT', 1, 'answer with result'],
                 ['ONLY_ANSWER', 2, 'answer only'],
                 ['REVIEW', 3, 'review'],
                 ['MUST_ANSWER', 4, 'must answer']
             ]);
-        }
-    ]);
+        }]);
 })(angular);
 
 
@@ -3795,7 +3777,7 @@
     );
 })(angular);
 
-angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkExercise').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkExercise/core/template/btnSectionDesktop.template.html",
     "<div class=\"btn-container left-container ng-hide\"\n" +
     "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +

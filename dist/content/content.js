@@ -202,9 +202,8 @@
      *      getContent(data={ exerciseType: 'type', exerciseId: '20' });
      *      getAllContentByKey('type');
      */
-    angular.module('znk.infra.content').service('StorageRevSrv', [
-        'ContentSrv', '$log', '$q',
-        function (ContentSrv, $log, $q) {
+    angular.module('znk.infra.content').service('StorageRevSrv',
+        ["ContentSrv", "$log", "$q", function (ContentSrv, $log, $q) {
             'ngInject';
 
             var self = this;
@@ -234,10 +233,9 @@
                     }
                 });
             };
-        }
-    ]);
+        }]);
 })(angular);
 
-angular.module('znk.infra.content').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.content').run(['$templateCache', function ($templateCache) {
 
 }]);

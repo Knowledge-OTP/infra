@@ -1,8 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.config').provider('InfraConfigSrv', [
+    angular.module('znk.infra.config').provider('InfraConfigSrv',
         function () {
+            'ngInject';
             var userDataFn,
                 storages = {};
 
@@ -51,6 +52,5 @@
                     return InfraConfigSrv;
                 }
             ];
-        }
-    ]);
+        });
 })(angular);

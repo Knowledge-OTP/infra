@@ -1,11 +1,9 @@
-'use strict';
-
 /*globals math */
 (function(angular) {
-
-    angular.module('znk.infra.znkExercise').directive('calculator', [
-        'GoBackHardwareSrv',
+    'use strict';
+    angular.module('znk.infra.znkExercise').directive('calculator',
         function(GoBackHardwareSrv) {
+            'ngInject';
             var cos = math.cos;
             var sin = math.sin;
             var tan = math.tan;
@@ -239,7 +237,7 @@
                 },
                 templateUrl: 'scripts/exercise/templates/calculator.html'
             };
-    }]);
+    });
 
 }(angular));
 

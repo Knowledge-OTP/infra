@@ -13,7 +13,8 @@
     'use strict';
 
     angular.module('znk.infra.autofocus')
-        .directive('ngAutofocus', ['$timeout', function($timeout) {
+        .directive('ngAutofocus', function($timeout) {
+            'ngInject';
             return {
                 restrict: 'A',
                 link : function(scope, element, attrs) {
@@ -24,6 +25,6 @@
                     }
                 }
             };
-        }]);
+        });
 })(angular);
 

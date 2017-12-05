@@ -1,9 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.stats').factory('StatsEventsHandlerSrv', [
-        'exerciseEventsConst', 'StatsSrv', 'ExerciseTypeEnum', '$log', 'UtilitySrv',
+    angular.module('znk.infra.stats').factory('StatsEventsHandlerSrv',
         function (exerciseEventsConst, StatsSrv, ExerciseTypeEnum, $log, UtilitySrv) {
+            'ngInject';
             var StatsEventsHandlerSrv = {};
 
             StatsEventsHandlerSrv.addNewExerciseResult = function (exerciseType, exercise, results) {
@@ -58,6 +58,5 @@
             StatsEventsHandlerSrv.init = angular.noop;
 
             return StatsEventsHandlerSrv;
-        }
-    ]);
+        });
 })(angular);

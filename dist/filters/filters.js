@@ -7,17 +7,16 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.filters').filter('capitalize', [
-        function () {
+    angular.module('znk.infra.filters').filter('capitalize', function () {
+        'ngInject';
             return function (str) {
                 if(!angular.isString(str) || !str.length){
                     return '';
                 }
-                
+
                 return str[0].toUpperCase() + str.substr(1);
             };
-        }
-    ]);
+        });
 })(angular);
 
 (function (angular) {
@@ -33,7 +32,8 @@
      *      'HH' - padded hours - (01, 02, 03 etc')
      * @returns formatted time string
      */
-    angular.module('znk.infra.filters').filter('formatDuration', ['$log', function ($log) {
+    angular.module('znk.infra.filters').filter('formatDuration', ["$log", function ($log) {
+        'ngInject';
         return function (time, exp) {
             if (!angular.isNumber(time) || isNaN(time)) {
                 $log.error('time is not a number:', time);
@@ -75,7 +75,8 @@
      *      ss - total seconds in duration
      *      rss - seconds modulo
      */
-    angular.module('znk.infra.filters').filter('formatTimeDuration', ['$log', function ($log) {
+    angular.module('znk.infra.filters').filter('formatTimeDuration', ["$log", function ($log) {
+        'ngInject';
         return function (time, exp) {
             if (!angular.isNumber(time) || isNaN(time)) {
                 $log.error('time is not a number:', time);
@@ -142,6 +143,6 @@
         }
         );
 })();
-angular.module('znk.infra.filters').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.filters').run(['$templateCache', function ($templateCache) {
 
 }]);
