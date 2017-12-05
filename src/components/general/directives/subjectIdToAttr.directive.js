@@ -8,15 +8,15 @@
  *  In case only one prefix/suffix is provided, it will be used in all attributes
  *  In case no @context-attr is provided, it will set the class attribute by default
  *  No need to pass dashes ('-') to prefix or suffix, they are already appended
- * 
+ *
  * ** Optional **: you can now add an attribute called "type" and assign it the word topic if you want idToTopicName
  */
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.general').directive('subjectIdToAttrDrv', [
-        'SubjectEnum', '$interpolate', 'LiveSessionSubjectEnum',
+    angular.module('znk.infra.general').directive('subjectIdToAttrDrv',
         function (SubjectEnum, $interpolate, LiveSessionSubjectEnum) {
+            'ngInject';
             return {
                 link: {
                     pre: function (scope, element, attrs) {
@@ -50,7 +50,7 @@
 
                             angular.forEach(attrsArray, function (value, key) {
                                 var attrVal;
-                                if (attrs.type === "topic") {
+                                if (attrs.type === 'topic') {
                                     attrVal = topicNameToAdd + '-' + attrs.type;
                                 } else {
                                     attrVal = subjectNameToAdd;
@@ -92,6 +92,5 @@
                     }
                 }
             };
-        }
-    ]);
+        });
 })(angular);

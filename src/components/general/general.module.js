@@ -8,13 +8,12 @@
             'pascalprecht.translate',
             'angular-svg-round-progressbar'
         ])
-        .config([
-        'SvgIconSrvProvider',
-        function (SvgIconSrvProvider) {
+        .config( function (SvgIconSrvProvider) {
+            'ngInject';
             var svgMap = {
                 'general-clock-icon': 'components/general/svg/clock-icon.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
-        }]);
+        });
 
 })(angular);

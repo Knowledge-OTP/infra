@@ -7,9 +7,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('templateByPlatform', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log',
+    angular.module('znk.infra.znkExercise').directive('templateByPlatform',
         function (ZnkExerciseSrv, PlatformEnum, $log) {
+            'ngInject';
             return {
                 templateUrl: function(element, attrs){
                     var templateUrl;
@@ -30,7 +30,6 @@
                 },
                 restrict: 'E'
             };
-        }
-    ]);
+        });
 })(angular);
 

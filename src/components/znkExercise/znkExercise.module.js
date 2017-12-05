@@ -15,9 +15,8 @@
         'znk.infra.utility',
         'znk.infra.znkSessionData'
     ])
-    .config([
-        'SvgIconSrvProvider',
-        function (SvgIconSrvProvider) {
+    .config(function (SvgIconSrvProvider) {
+        'ngInject';
             var svgMap = {
                 'znk-exercise-chevron': 'components/znkExercise/svg/chevron-icon.svg',
                 'znk-exercise-eraser': 'components/znkExercise/svg/tools-eraser.svg',
@@ -27,5 +26,5 @@
                 'znk-exercise-touche': 'components/znkExercise/svg/tools-touche.svg'
             };
             SvgIconSrvProvider.registerSvgSources(svgMap);
-        }]);
+        });
 })(angular);

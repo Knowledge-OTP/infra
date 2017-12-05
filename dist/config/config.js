@@ -7,8 +7,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.config').provider('InfraConfigSrv', [
+    angular.module('znk.infra.config').provider('InfraConfigSrv',
         function () {
+            'ngInject';
             var userDataFn,
                 storages = {};
 
@@ -22,9 +23,7 @@
                 userDataFn = _userDataFn;
             };
 
-            this.$get = [
-                '$injector', '$log', '$q',
-                function ($injector, $log, $q) {
+            this.$get = ["$injector", "$log", "$q", function ($injector, $log, $q) {
                     var InfraConfigSrv = {};
 
                     function _baseStorageGetter(name){
@@ -55,12 +54,10 @@
                     };
 
                     return InfraConfigSrv;
-                }
-            ];
-        }
-    ]);
+                }];
+        });
 })(angular);
 
-angular.module('znk.infra.config').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.config').run(['$templateCache', function ($templateCache) {
 
 }]);

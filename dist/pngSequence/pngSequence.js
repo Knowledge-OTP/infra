@@ -13,9 +13,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.pngSequence').directive('pngSequence', [
-        '$timeout', 'ExpansionSrcSrv', '$window',
-        function ($timeout, ExpansionSrcSrv, $window) {
+    angular.module('znk.infra.pngSequence').directive('pngSequence',
+        ["$timeout", "ExpansionSrcSrv", "$window", function ($timeout, ExpansionSrcSrv, $window) {
+            'ngInject';
             return {
                 restrict: 'E',
                 scope:{
@@ -115,9 +115,9 @@
                     });
                 }
             };
-        }
-    ]);
+        }]);
 })(angular);
-angular.module('znk.infra.pngSequence').run(['$templateCache', function($templateCache) {
+
+angular.module('znk.infra.pngSequence').run(['$templateCache', function ($templateCache) {
 
 }]);

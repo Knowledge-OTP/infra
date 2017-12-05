@@ -2,6 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.screenSharing').provider('ScreenSharingEventsSrv', function () {
+        'ngInject';
         var isEnabled = true;
 
         this.enabled = function (_isEnabled) {
@@ -9,7 +10,6 @@
         };
 
         this.$get = function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, ScreenSharingStatusEnum, UserScreenSharingStateEnum, ScreenSharingSrv, $log, ScreenSharingUiSrv) {
-            'ngInject';
 
             var ScreenSharingEventsSrv = {};
 

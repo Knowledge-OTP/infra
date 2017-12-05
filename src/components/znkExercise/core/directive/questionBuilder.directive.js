@@ -5,9 +5,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('questionBuilder', [
-        '$compile', 'QuestionTypesSrv', '$timeout', 'ZnkExerciseUtilitySrv',
+    angular.module('znk.infra.znkExercise').directive('questionBuilder',
         function ($compile, QuestionTypesSrv, $timeout, ZnkExerciseUtilitySrv) {
+            'ngInject';
             return {
                 restrict: 'E',
                 require: ['questionBuilder', '^znkExercise'],
@@ -59,7 +59,6 @@
                     }
                 }
             };
-        }
-    ]);
+        });
 })(angular);
 

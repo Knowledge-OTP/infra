@@ -5,9 +5,8 @@
         'znk.infra.svgIcon',
         'pascalprecht.translate'
     ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
+        .config(["SvgIconSrvProvider", function (SvgIconSrvProvider) {
+            'ngInject';
                 var svgMap = {};
                 SvgIconSrvProvider.registerSvgSources(svgMap);
             }]);
@@ -37,7 +36,7 @@
 })(angular);
 
 
-angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkProgressBar').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkProgressBar/directives/znkProgressBar.template.html",
     "<div ng-if=\"::showProgressBubble()\" class=\"progress-bubble-wrapper\" ng-style=\"{left: progressWidth + '%'}\">\n" +
     "    <div class=\"progress-percentage\">\n" +

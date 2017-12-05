@@ -43,9 +43,11 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('znkExercise', [
-        'ZnkExerciseSrv', '$location', /*'$analytics',*/ '$window', '$q', 'ZnkExerciseEvents', 'PlatformEnum', '$log', 'ZnkExerciseViewModeEnum', 'ZnkExerciseSlideDirectionEnum', '$timeout', 'ZnkExerciseUtilitySrv', 'QuestionTypesSrv',
-        function (ZnkExerciseSrv, $location, /*$analytics, */$window, $q, ZnkExerciseEvents, PlatformEnum, $log, ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout, ZnkExerciseUtilitySrv, QuestionTypesSrv) {
+    angular.module('znk.infra.znkExercise').directive('znkExercise',
+        function (ZnkExerciseSrv, $location, $window, $q, ZnkExerciseEvents, PlatformEnum, $log,
+                  ZnkExerciseViewModeEnum, ZnkExerciseSlideDirectionEnum, $timeout, ZnkExerciseUtilitySrv,
+                  QuestionTypesSrv) {
+            'ngInject';
             return {
                 templateUrl: 'components/znkExercise/core/template/znkExercise.template.html',
                 restrict: 'E',
@@ -484,7 +486,6 @@
                     };
                 }
             };
-        }
-    ]);
+        });
 })(angular);
 

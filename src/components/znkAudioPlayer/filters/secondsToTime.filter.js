@@ -1,8 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkAudioPlayer').filter('secondsToTime', [
+    angular.module('znk.infra.znkAudioPlayer').filter('secondsToTime',
         function () {
+            'ngInject';
             return function (totalSeconds,format) {
                 var min = parseInt(totalSeconds / 60);
                 var paddedMin = min >= 10 ? min : '0' + min;
@@ -13,6 +14,5 @@
                     .replace('ss',paddedSec)
                     .replace('s',sec);
             };
-        }
-    ]);
+        });
 })(angular);

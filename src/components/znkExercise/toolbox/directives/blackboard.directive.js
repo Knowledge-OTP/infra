@@ -1,11 +1,8 @@
-'use strict';
-
 (function () {
-
-    angular.module('znk.infra.znkExercise').directive('blackboardDrv', [
-        'GoBackHardwareSrv',
+    'use strict';
+    angular.module('znk.infra.znkExercise').directive('blackboardDrv',
         function (GoBackHardwareSrv) {
-
+            'ngInject';
             return {
                 restric: 'EA',
                 scope: {
@@ -136,5 +133,5 @@
                     });
                 }
             };
-        }]);
+        });
 })();

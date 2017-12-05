@@ -6,9 +6,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkModule').service('ZnkModuleService', [
-        'StorageRevSrv',
-        function (StorageRevSrv) {
+    angular.module('znk.infra.znkModule').service('ZnkModuleService',
+        ["StorageRevSrv", function (StorageRevSrv) {
+            'ngInject';
             var znkModuleService = {};
 
             znkModuleService.getModuleHeaders = function () {
@@ -25,11 +25,10 @@
             };
 
             return znkModuleService;
-        }
-    ]);
+        }]);
 })(angular);
 
 
-angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkModule').run(['$templateCache', function ($templateCache) {
 
 }]);

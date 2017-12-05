@@ -14,17 +14,15 @@
             'znk.infra.mailSender',
             'znk.infra.exerciseUtility'
         ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
+        .config(["SvgIconSrvProvider", function (SvgIconSrvProvider) {
+            'ngInject';
                 var svgMap = {
                     'report-question-close-popup': 'components/znkQuestionReport/svg/close-popup.svg',
                     'report-question-icon': 'components/znkQuestionReport/svg/report-question-icon.svg',
                     'completed-v-report-icon': 'components/znkQuestionReport/svg/completed-v-report.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
-            }
-        ]);
+            }]);
 })(angular);
 
 (function (angular) {
@@ -145,7 +143,7 @@
         }]);
 })(angular);
 
-angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkQuestionReport/components/znkReport/znkReport.template.html",
     "<div class=\"report-dialog\">\n" +
     "    <md-dialog class=\"base base-border-radius report-container\" translate-namespace=\"REPORT_POPUP\">\n" +

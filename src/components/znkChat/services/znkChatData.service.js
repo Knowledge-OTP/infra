@@ -1,36 +1,34 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkChat').provider('znkChatDataSrv',
-        function () {
-            'ngInject';
+    angular.module('znk.infra.znkChat').provider('znkChatDataSrv', function () {
+        'ngInject';
 
-            var znkChatPathsObj = {};
-            var buildNewChatterFnGetter;
+        var znkChatPathsObj = {};
+        var buildNewChatterFnGetter;
 
-            this.setChatPaths = function (chatPathsObj) {
-                znkChatPathsObj = chatPathsObj;
+        this.setChatPaths = function (chatPathsObj) {
+            znkChatPathsObj = chatPathsObj;
+        };
+
+        this.setBuildChatterFnGetter = function (buildChatterFn) {
+            buildNewChatterFnGetter = buildChatterFn;
+        };
+
+        this.$get = function ($injector) {
+            var znkChat = {};
+
+            znkChat.getChatPaths = function () {
+                return znkChatPathsObj;
             };
 
-            this.setBuildChatterFnGetter = function (buildChatterFn) {
-                buildNewChatterFnGetter = buildChatterFn;
+            znkChat.buildNewChatter = function (user, userId) {
+                var buildNewChatter = $injector.invoke(buildNewChatterFnGetter);
+                return buildNewChatter(user, userId);
             };
 
-            this.$get = function ($injector) {
-                var znkChat = {};
+            return znkChat;
+        };
 
-                znkChat.getChatPaths = function () {
-                    return znkChatPathsObj;
-                };
-
-                znkChat.buildNewChatter = function (user, userId) {
-                    var buildNewChatter = $injector.invoke(buildNewChatterFnGetter);
-                    return buildNewChatter(user, userId);
-                };
-
-                return znkChat;
-            };
-
-        }
-    );
+    });
 })(angular);

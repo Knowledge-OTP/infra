@@ -7,25 +7,25 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.general').directive('subjectIdToClassDrv', [
-        'SubjectEnum',
+    angular.module('znk.infra.general').directive('subjectIdToClassDrv',
         function (SubjectEnum) {
+            'ngInject';
             return {
                 priority: 1000,
                 link: {
                     pre: function (scope, element, attrs) {
-                        var watchDestroyer = scope.$watch(attrs.subjectIdToClassDrv,function(subjectId){
-                            if(angular.isUndefined(subjectId)){
+                        var watchDestroyer = scope.$watch(attrs.subjectIdToClassDrv, function (subjectId) {
+                            if (angular.isUndefined(subjectId)) {
                                 return;
                             }
 
                             watchDestroyer();
                             var classToAdd;
 
-                            for(var prop in SubjectEnum){
-                                if(SubjectEnum[prop].enum === subjectId){
+                            for (var prop in SubjectEnum) {
+                                if (SubjectEnum[prop].enum === subjectId) {
                                     classToAdd = SubjectEnum[prop].val;
-                                    if(attrs.classSuffix){
+                                    if (attrs.classSuffix) {
                                         classToAdd += attrs.classSuffix;
                                     }
                                     break;
@@ -37,7 +37,6 @@
                     }
                 }
             };
-        }
-    ]);
+        });
 })(angular);
 

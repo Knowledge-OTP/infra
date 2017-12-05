@@ -2,9 +2,9 @@
 
 (function (angular) {
 
-    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio', [
+    angular.module('znk.infra.znkAudioPlayer').directive('znkImageAudio',
         function znkImageAudio() {
-
+            'ngInject';
             return {
                 templateUrl: 'components/znkAudioPlayer/templates/znkImageAudio.template.html',
                 scope: {
@@ -57,6 +57,6 @@
                     }
                 }
             };
-        }]);
+        });
 
 })(angular);

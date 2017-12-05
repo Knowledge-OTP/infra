@@ -10,8 +10,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.deviceNotSupported').directive('deviceNotSupported', ['ENV',
+    angular.module('znk.infra.deviceNotSupported').directive('deviceNotSupported',
         function (ENV) {
+            'ngInject';
             return {
                 templateUrl: 'components/deviceNotSupported/deviceNotSupported.template.html',
                 restrict: 'E',
@@ -34,6 +35,5 @@
                     }
                 }
             };
-        }
-    ]);
+        });
 })(angular);

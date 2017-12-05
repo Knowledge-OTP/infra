@@ -1,7 +1,8 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.utility').service('DueDateSrv', [function () {
+    angular.module('znk.infra.utility').service('DueDateSrv', function () {
+        'ngInject';
         var dayInMs = 86400000;
         var WEEK = 7;
         this.SEVEN_DAYS_IN_MS = dayInMs * WEEK;
@@ -21,6 +22,5 @@
             res.passDue = dueDate - Date.now() < 0;
             return res;
         };
-    }
-    ]);
+    });
 })(angular);

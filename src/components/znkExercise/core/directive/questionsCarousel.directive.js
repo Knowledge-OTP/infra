@@ -8,9 +8,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('questionsCarousel', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseSlideDirectionEnum', '$timeout',
+    angular.module('znk.infra.znkExercise').directive('questionsCarousel',
         function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseSlideDirectionEnum, $timeout) {
+            'ngInject';
             return {
                 templateUrl: function(){
                     var templateUrl = "components/znkExercise/core/template/";
@@ -83,7 +83,6 @@
                     });
                 }
             };
-        }
-    ]);
+        });
 })(angular);
 

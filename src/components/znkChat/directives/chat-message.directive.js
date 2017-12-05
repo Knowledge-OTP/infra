@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkChat').directive('chatMessage', [
+    angular.module('znk.infra.znkChat').directive('chatMessage',
         function () {
             'ngInject';
             return {
@@ -38,7 +38,6 @@
                     scope.scrollToLastMessage()();
                 }
             };
-        }
-    ]);
+        });
 })(angular);
 

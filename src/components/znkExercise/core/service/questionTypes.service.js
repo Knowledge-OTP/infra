@@ -1,6 +1,7 @@
 (function (angular) {
     'use strict';
     angular.module('znk.infra.znkExercise').provider('QuestionTypesSrv', function QuestionTypesProvider() {
+        'ngInject';
         var questionTypeToHtmlTemplateMap = {};
         this.setQuestionTypesHtmlTemplate = function (_questionTypeToHtmlTemplateMap) {
             questionTypeToHtmlTemplateMap = _questionTypeToHtmlTemplateMap;
@@ -11,14 +12,12 @@
             questionTypeGetterFn = typeGetterFn;
         };
 
-        var answersFormaterObjMap = {};        
+        var answersFormaterObjMap = {};
         this.setAnswersFormatValidtors = function (_answersFormaterObjMap) {
             answersFormaterObjMap = _answersFormaterObjMap;
         };
 
-        this.$get = [
-            '$log', '$q', '$injector',
-            function ($log, $q, $injector) {
+        this.$get = function ($log, $q, $injector) {
                 var QuestionTypesSrv = {};
 
                 QuestionTypesSrv.getQuestionHtmlTemplate = function getQuestionHtmlTemplate(question) {
@@ -35,7 +34,7 @@
                     return questionTypeGetterFn(question);
                 };
 
-                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {   
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {
                     if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
                         $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
                         return;
@@ -43,7 +42,7 @@
 
                    var answersFormaterArr = answersFormaterObjMap[answerTypeId];
 
-                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
+                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer
                    if (angular.isUndefined(userAnswer) ||
                        !angular.isArray(answersFormaterArr) ||
                        !answersFormaterArr.length) {
@@ -53,10 +52,10 @@
 
                     var answersFormaterArrLength = answersFormaterArr.length;
 
-                    var answerValueBool, currentFormatter, functionGetter;                     
+                    var answerValueBool, currentFormatter, functionGetter;
                     for (var i = 0; i < answersFormaterArrLength; i++) {
                         currentFormatter = answersFormaterArr[i];
-                       
+
                         if (angular.isFunction(currentFormatter)) {
                             try {
                                  functionGetter = $injector.invoke(currentFormatter);
@@ -85,7 +84,6 @@
                 };
 
                 return QuestionTypesSrv;
-            }
-        ];
+            };
     });
 })(angular);

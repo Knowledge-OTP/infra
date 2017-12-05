@@ -6,14 +6,13 @@
         'pascalprecht.translate',
         'znk.infra.svgIcon'
     ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
+        .config(function (SvgIconSrvProvider) {
+            'ngInject';
                 var svgMap = {
                     'znk-audio-player-play': 'components/znkAudioPlayer/svg/play-icon.svg',
                     'znk-audio-player-pause': 'components/znkAudioPlayer/svg/pause-icon.svg',
                     'znk-audio-player-close': 'components/znkAudioPlayer/svg/close-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
-            }]);
+            });
 })(angular);

@@ -1,8 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').provider('ZnkExerciseSrv',
-        function () {
+    angular.module('znk.infra.znkExercise').provider('ZnkExerciseSrv', function () {
             'ngInject';
 
             var exerciseTypeToAllowedQuestionTimeMap;
@@ -29,8 +28,6 @@
             };
 
             this.$get = function (EnumSrv, $window, PlatformEnum, $log) {
-                'ngInject';//jshint ignore:line
-
                 var platform = !!$window.ionic ? PlatformEnum.MOBILE.enum : PlatformEnum.DESKTOP.enum;
                 var ZnkExerciseSrv = {};
 
@@ -88,6 +85,5 @@
 
                 return ZnkExerciseSrv;
             };
-        }
-    );
+        });
 })(angular);

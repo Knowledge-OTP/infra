@@ -5,10 +5,9 @@
         'znk.infra.svgIcon',
         'pascalprecht.translate'
     ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
+        .config(function (SvgIconSrvProvider) {
+            'ngInject';
                 var svgMap = {};
                 SvgIconSrvProvider.registerSvgSources(svgMap);
-            }]);
+            });
 })(angular);

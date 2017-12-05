@@ -58,7 +58,7 @@
     };
 
     angular.module('znk.infra.analytics').provider('znkAnalyticsSrv', function () {
-
+        'ngInject';
         var debug = false;
         var eventsHandler;
 
@@ -74,7 +74,7 @@
             eventsHandler = _eventsHandler;
         };
 
-        this.$get = ['$log', '$injector', 'znkAnalyticsUtilSrv', function($log, $injector, znkAnalyticsUtilSrv) {
+        this.$get = ["$log", "$injector", "znkAnalyticsUtilSrv", function($log, $injector, znkAnalyticsUtilSrv) {
 
             var api = {
                 getEventsConst: function() {
@@ -108,7 +108,8 @@
             return api;
         }];
 
-    }).run(['znkAnalyticsSrv', '$window', function(znkAnalyticsSrv, $window) {
+    }).run(["znkAnalyticsSrv", "$window", function(znkAnalyticsSrv, $window) {
+        'ngInject';
         var isDebugMode = znkAnalyticsSrv.getDebugMode();
         if(isDebugMode) {
             $window.znkAnalyticsEvents = znkAnalyticsSrv.getEventsConst();
@@ -154,7 +155,8 @@
         },{ correct: 0, wrong: 0, skip: 0 });
     }
 
-    angular.module('znk.infra.analytics').service('znkAnalyticsUtilSrv', ['$log', function ($log) {
+    angular.module('znk.infra.analytics').service('znkAnalyticsUtilSrv', ["$log", function ($log) {
+        'ngInject';
 
         var self = this;
 
@@ -206,6 +208,6 @@
     }]);
 })(angular);
 
-angular.module('znk.infra.analytics').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.analytics').run(['$templateCache', function ($templateCache) {
 
 }]);

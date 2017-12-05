@@ -12,9 +12,9 @@
 
 (function (angular) {
     'use strict';
-    angular.module('znk.infra.scroll').directive('znkScroll', [
-        '$log', '$window', '$timeout', '$interpolate',
-        function ($log, $window, $timeout, $interpolate) {
+    angular.module('znk.infra.scroll').directive('znkScroll',
+        ["$log", "$window", "$timeout", "$interpolate", function ($log, $window, $timeout, $interpolate) {
+            'ngInject';
             var child;
             function setElementTranslateX(element,val,isOffset,minVal,maxVal){
                 var domElement = angular.isArray(element) ? element[0] : element;
@@ -166,10 +166,9 @@
                     };
                 }
             };
-        }
-    ]);
+        }]);
 })(angular);
 
-angular.module('znk.infra.scroll').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.scroll').run(['$templateCache', function ($templateCache) {
 
 }]);

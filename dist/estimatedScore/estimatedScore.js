@@ -7,19 +7,18 @@
             'znk.infra.contentGetters',
             'znk.infra.utility'
         ])
-        .run([
-            'EstimatedScoreEventsHandlerSrv',
-            function (EstimatedScoreEventsHandlerSrv) {
+        .run(
+            ["EstimatedScoreEventsHandlerSrv", function (EstimatedScoreEventsHandlerSrv) {
+                'ngInject';
                 EstimatedScoreEventsHandlerSrv.init();
-            }
-        ]);
+            }]);
 })(angular);
 
 'use strict';
 
 (function (angular) {
     angular.module('znk.infra.estimatedScore').provider('EstimatedScoreSrv',function(){
-
+        'ngInject';
         var subjectsRawScoreEdges;
         this.setSubjectsRawScoreEdges = function(_subjectsRawScoreEdges){
             subjectsRawScoreEdges = _subjectsRawScoreEdges;
@@ -37,9 +36,7 @@
             maxDiagnosticScore = maxScore;
         };
 
-        this.$get = [
-            'EstimatedScoreHelperSrv', 'ExerciseTypeEnum', '$injector', '$q', 'SubjectEnum', '$log',
-            function (EstimatedScoreHelperSrv, ExerciseTypeEnum, $injector, $q, SubjectEnum, $log) {
+        this.$get = ["EstimatedScoreHelperSrv", "ExerciseTypeEnum", "$injector", "$q", "SubjectEnum", "$log", function (EstimatedScoreHelperSrv, ExerciseTypeEnum, $injector, $q, SubjectEnum, $log) {
                 if(!subjectsRawScoreEdges){
                     $log.error('EstimatedScoreSrv: subjectsRawScoreEdges was not set');
                 }
@@ -246,70 +243,73 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.estimatedScore').provider('EstimatedScoreEventsHandlerSrv', function EstimatedScoreEventsHandler() {
-        function pointsMap(correctWithinAllowedTimeFrame, correctAfterAllowedTimeFrame, wrongWithinAllowedTimeFrame, wrongAfterAllowedTimeFrame, correctTooFast, wrongTooFast) {
-            var ret = {};
+    angular.module('znk.infra.estimatedScore').provider('EstimatedScoreEventsHandlerSrv',
+        function EstimatedScoreEventsHandler() {
+            'ngInject';
 
-            if (angular.isDefined(correctWithinAllowedTimeFrame)) {
-                ret.correctWithin = correctWithinAllowedTimeFrame;
+            function pointsMap(correctWithinAllowedTimeFrame, correctAfterAllowedTimeFrame, wrongWithinAllowedTimeFrame, wrongAfterAllowedTimeFrame, correctTooFast, wrongTooFast) {
+                var ret = {};
+
+                if (angular.isDefined(correctWithinAllowedTimeFrame)) {
+                    ret.correctWithin = correctWithinAllowedTimeFrame;
+                }
+
+                if (angular.isDefined(correctAfterAllowedTimeFrame)) {
+                    ret.correctAfter = correctAfterAllowedTimeFrame;
+                }
+
+                if (angular.isDefined(wrongWithinAllowedTimeFrame)) {
+                    ret.wrongWithin = wrongWithinAllowedTimeFrame;
+                }
+
+                if (angular.isDefined(wrongAfterAllowedTimeFrame)) {
+                    ret.wrongAfter = wrongAfterAllowedTimeFrame;
+                }
+
+                if (angular.isDefined(correctTooFast)) {
+                    ret.correctTooFast = correctTooFast;
+                }
+
+                if (angular.isDefined(wrongTooFast)) {
+                    ret.wrongTooFast = wrongTooFast;
+                }
+
+                ret.unanswered = 0;
+
+                return ret;
             }
 
-            if (angular.isDefined(correctAfterAllowedTimeFrame)) {
-                ret.correctAfter = correctAfterAllowedTimeFrame;
-            }
+            var diagnosticScoring = {};
+            this.setDiagnosticScoring = function (diagnosticScoringData) {
+                var keys = Object.keys(diagnosticScoringData);
+                keys.forEach(function (questionDifficulty) {
+                    var scoringDataArr = diagnosticScoringData[questionDifficulty];
+                    diagnosticScoring[questionDifficulty] = pointsMap.apply(this, scoringDataArr);
+                });
+            };
 
-            if (angular.isDefined(wrongWithinAllowedTimeFrame)) {
-                ret.wrongWithin = wrongWithinAllowedTimeFrame;
-            }
+            var exercisesRawScoring = {};
+            this.setExerciseRawPoints = function (exerciseType, scoringData) {
+                exercisesRawScoring[exerciseType] = pointsMap.apply(this, scoringData);
+            };
 
-            if (angular.isDefined(wrongAfterAllowedTimeFrame)) {
-                ret.wrongAfter = wrongAfterAllowedTimeFrame;
-            }
+            var eventProcessControl;
+            this.setEventProcessControl = function (_eventProcessControl) {
+                eventProcessControl = _eventProcessControl;
+            };
 
-            if (angular.isDefined(correctTooFast)) {
-                ret.correctTooFast = correctTooFast;
-            }
+            var getAnswerTimeSpentType = function () { // default function
+                return 'Within';
+            };
 
-            if (angular.isDefined(wrongTooFast)) {
-                ret.wrongTooFast = wrongTooFast;
-            }
-
-            ret.unanswered = 0;
-
-            return ret;
-        }
-
-        var diagnosticScoring = {};
-        this.setDiagnosticScoring = function (diagnosticScoringData) {
-            var keys = Object.keys(diagnosticScoringData);
-            keys.forEach(function (questionDifficulty) {
-                var scoringDataArr = diagnosticScoringData[questionDifficulty];
-                diagnosticScoring[questionDifficulty] = pointsMap.apply(this, scoringDataArr);
-            });
-        };
-
-        var exercisesRawScoring = {};
-        this.setExerciseRawPoints = function (exerciseType, scoringData) {
-            exercisesRawScoring[exerciseType] = pointsMap.apply(this, scoringData);
-        };
-
-        var eventProcessControl;
-        this.setEventProcessControl = function (_eventProcessControl) {
-            eventProcessControl = _eventProcessControl;
-        };
-
-        var getAnswerTimeSpentType = function () { // default function
-            return 'Within';
-        };
-
-        this.setAnswerTimeSpentTypeFn = function (fn) {
-            getAnswerTimeSpentType = fn;
-        };
+            this.setAnswerTimeSpentTypeFn = function (fn) {
+                getAnswerTimeSpentType = fn;
+            };
 
 
-        this.$get = [
-            '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum', 'ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log', 'UtilitySrv', '$injector', '$q', 'CategoryService',
-            function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum, ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log, UtilitySrv, $injector, $q, CategoryService) {
+            this.$get = ["$rootScope", "ExamTypeEnum", "EstimatedScoreSrv", "SubjectEnum", "ExerciseTypeEnum", "ExerciseAnswerStatusEnum", "exerciseEventsConst", "$log", "UtilitySrv", "$injector", "$q", "CategoryService", function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum, ExerciseTypeEnum,
+                                  ExerciseAnswerStatusEnum, exerciseEventsConst, $log, UtilitySrv, $injector, $q,
+                                  CategoryService) {
                 if (angular.equals({}, diagnosticScoring)) {
                     $log.error('EstimatedScoreEventsHandlerSrv: diagnosticScoring was not set !!!');
                 }
@@ -369,7 +369,7 @@
                         }
                     });
                     angular.forEach(scores, function (score, subjectId) {
-                        if(angular.isDefined(subjectId) && subjectId !== null) {
+                        if (angular.isDefined(subjectId) && subjectId !== null) {
                             EstimatedScoreSrv.setDiagnosticSectionScore(score, ExerciseTypeEnum.SECTION.enum, subjectId, section.id);
                         }
                     });
@@ -475,10 +475,9 @@
                         });
                 };
                 return EstimatedScoreEventsHandlerSrv;
-            }
-        ];
+            }];
 
-    });
+        });
 })(angular);
 
 (function (angular) {
@@ -547,6 +546,6 @@
     );
 })(angular);
 
-angular.module('znk.infra.estimatedScore').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.estimatedScore').run(['$templateCache', function ($templateCache) {
 
 }]);

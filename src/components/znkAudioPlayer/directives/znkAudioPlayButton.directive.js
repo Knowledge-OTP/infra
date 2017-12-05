@@ -2,8 +2,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkAudioPlayer').directive('znkAudioPlayButton', [
+    angular.module('znk.infra.znkAudioPlayer').directive('znkAudioPlayButton',
         function znkAudioPlayerDrv() {
+            'ngInject';
             return {
                 templateUrl: 'components/znkAudioPlayer/templates/znkAudioPlayButton.template.html',
                 scope: {
@@ -65,5 +66,5 @@
                     });
                 }
             };
-        }]);
+        });
 })(angular);

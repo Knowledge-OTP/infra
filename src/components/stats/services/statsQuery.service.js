@@ -1,9 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.stats').service('StatsQuerySrv', [
-        'StatsSrv', '$q',
+    angular.module('znk.infra.stats').service('StatsQuerySrv',
         function (StatsSrv, $q) {
+            'ngInject';
             var StatsQuerySrv = {};
 
             function _getCategoryWeakness(category) {
@@ -96,6 +96,5 @@
             };
 
             return StatsQuerySrv;
-        }
-    ]);
+        });
 })(angular);

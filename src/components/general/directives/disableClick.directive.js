@@ -1,27 +1,27 @@
 'use strict';
 
 (function (angular) {
-    angular.module('znk.infra.general').directive('disableClickDrv', [
-        function () {
-            return {
-                priority: 200,
-                link: {
-                    pre: function (scope, element, attrs) {
-                        function clickHandler(evt){
-                            if(attrs.disabled){
-                                evt.stopImmediatePropagation();
-                                evt.preventDefault();
-                                return false;
-                            }
+    angular.module('znk.infra.general').directive('disableClickDrv', function () {
+        'ngInject';
+        return {
+            priority: 200,
+            link: {
+                pre: function (scope, element, attrs) {
+                    function clickHandler(evt) {
+                        if (attrs.disabled) {
+                            evt.stopImmediatePropagation();
+                            evt.preventDefault();
+                            return false;
                         }
-                        var eventName = 'click';
-                        element[0].addEventListener (eventName, clickHandler);
-                        scope.$on('$destroy',function(){
-                            element[0].removeEventListener (eventName, clickHandler);
-                        });
                     }
+
+                    var eventName = 'click';
+                    element[0].addEventListener(eventName, clickHandler);
+                    scope.$on('$destroy', function () {
+                        element[0].removeEventListener(eventName, clickHandler);
+                    });
                 }
-            };
-        }
-    ]);
+            }
+        };
+    });
 })(angular);

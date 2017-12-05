@@ -2,13 +2,13 @@
     'use strict';
 
     angular.module('znk.infra.screenSharing').provider('ScreenSharingUiSrv',function(){
+        'ngInject';
         var screenSharingViewerTemplate;
         this.setScreenSharingViewerTemplate = function(template){
             screenSharingViewerTemplate = template;
         };
 
         this.$get = function ($rootScope, $timeout, $compile, $animate, PopUpSrv, $translate, $q, $log) {
-            'ngInject';
 
             var childScope, screenSharingPhElement, readyProm;
             var ScreenSharingUiSrv = {};

@@ -7,15 +7,14 @@
             'znk.infra.teachers',
             'znk.infra.znkMedia'
         ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
-                var svgMap = {
-                    'znk-chat-chat-icon': 'components/znkChat/svg/znk-chat-chat-icon.svg',
-                    'znk-chat-close-icon': 'components/znkChat/svg/znk-chat-close-icon.svg'
-                };
-                SvgIconSrvProvider.registerSvgSources(svgMap);
-            }]);
+        .config(["SvgIconSrvProvider", function (SvgIconSrvProvider) {
+            'ngInject';
+            var svgMap = {
+                'znk-chat-chat-icon': 'components/znkChat/svg/znk-chat-chat-icon.svg',
+                'znk-chat-close-icon': 'components/znkChat/svg/znk-chat-close-icon.svg'
+            };
+            SvgIconSrvProvider.registerSvgSources(svgMap);
+        }]);
 })(angular);
 
 (function (angular) {
@@ -33,7 +32,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkChat').directive('chatMessage', [
+    angular.module('znk.infra.znkChat').directive('chatMessage',
         function () {
             'ngInject';
             return {
@@ -70,8 +69,7 @@
                     scope.scrollToLastMessage()();
                 }
             };
-        }
-    ]);
+        });
 })(angular);
 
 
@@ -659,38 +657,36 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkChat').provider('znkChatDataSrv',
-        function () {
-            'ngInject';
+    angular.module('znk.infra.znkChat').provider('znkChatDataSrv', function () {
+        'ngInject';
 
-            var znkChatPathsObj = {};
-            var buildNewChatterFnGetter;
+        var znkChatPathsObj = {};
+        var buildNewChatterFnGetter;
 
-            this.setChatPaths = function (chatPathsObj) {
-                znkChatPathsObj = chatPathsObj;
+        this.setChatPaths = function (chatPathsObj) {
+            znkChatPathsObj = chatPathsObj;
+        };
+
+        this.setBuildChatterFnGetter = function (buildChatterFn) {
+            buildNewChatterFnGetter = buildChatterFn;
+        };
+
+        this.$get = ["$injector", function ($injector) {
+            var znkChat = {};
+
+            znkChat.getChatPaths = function () {
+                return znkChatPathsObj;
             };
 
-            this.setBuildChatterFnGetter = function (buildChatterFn) {
-                buildNewChatterFnGetter = buildChatterFn;
+            znkChat.buildNewChatter = function (user, userId) {
+                var buildNewChatter = $injector.invoke(buildNewChatterFnGetter);
+                return buildNewChatter(user, userId);
             };
 
-            this.$get = ["$injector", function ($injector) {
-                var znkChat = {};
+            return znkChat;
+        }];
 
-                znkChat.getChatPaths = function () {
-                    return znkChatPathsObj;
-                };
-
-                znkChat.buildNewChatter = function (user, userId) {
-                    var buildNewChatter = $injector.invoke(buildNewChatterFnGetter);
-                    return buildNewChatter(user, userId);
-                };
-
-                return znkChat;
-            }];
-
-        }
-    );
+    });
 })(angular);
 
 (function (angular) {
@@ -770,7 +766,7 @@
     );
 })(angular);
 
-angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkChat/svg/znk-chat-chat-icon.svg",
     "<svg\n" +
     "    id=\"Layer_1\"\n" +

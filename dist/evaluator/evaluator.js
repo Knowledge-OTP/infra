@@ -8,6 +8,7 @@
 
 (function (angular) {
     angular.module('znk.infra.evaluator').provider('ZnkEvaluatorSrv', function () {
+        'ngInject';
         var self = this;
 
         var evaluateFnMap = {};
@@ -26,7 +27,6 @@
         });
 
         this.$get = ["$q", "$injector", "$log", function ($q, $injector, $log) {
-            'ngInject';
 
             var znkEvaluatorSrvApi = {};
 
@@ -61,6 +61,6 @@
     });
 })(angular);
 
-angular.module('znk.infra.evaluator').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.evaluator').run(['$templateCache', function ($templateCache) {
 
 }]);

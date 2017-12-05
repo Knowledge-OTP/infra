@@ -6,9 +6,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.svgIcon').directive('svgIcon', [
-        '$log', 'SvgIconSrv',
+    angular.module('znk.infra.svgIcon').directive('svgIcon',
         function ($log, SvgIconSrv) {
+            'ngInject';
             return {
                 scope: {
                     name: '@'
@@ -40,7 +40,6 @@
                     }
                 }
             };
-        }
-    ]);
+        });
 })(angular);
 

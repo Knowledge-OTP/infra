@@ -2,25 +2,24 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').provider('ZnkExerciseUtilitySrv', function () {
-
+            'ngInject';
             // default true for all
-            var broadCastExerciseFn = function() {
-                return function() {
+            var broadCastExerciseFn = function () {
+                return function () {
                     return true;
                 };
-            }; 
+            };
 
-            this.setShouldBroadCastExerciseGetter = function(_broadCastExerciseFn) {
+            this.setShouldBroadCastExerciseGetter = function (_broadCastExerciseFn) {
                 broadCastExerciseFn = _broadCastExerciseFn;
             };
 
-            this.$get = function(AnswerTypeEnum, $log, $q, $injector) {
-                'ngInject';
+            this.$get = function (AnswerTypeEnum, $log, $q, $injector) {
 
                 var ZnkExerciseUtilitySrv = {};
                 //@todo(igor) move to utility service
-                ZnkExerciseUtilitySrv.bindFunctions = function(dest,src,functionToCopy){
-                    functionToCopy.forEach(function(fnName){
+                ZnkExerciseUtilitySrv.bindFunctions = function (dest, src, functionToCopy) {
+                    functionToCopy.forEach(function (fnName) {
                         dest[fnName] = src[fnName].bind(src);
                     });
                 };
@@ -68,7 +67,7 @@
                     });
                 };
 
-                ZnkExerciseUtilitySrv.shouldBroadCastExercisePromFnGetter = function() {
+                ZnkExerciseUtilitySrv.shouldBroadCastExercisePromFnGetter = function () {
                     try {
                         return $q.when($injector.invoke(broadCastExerciseFn));
                     } catch (e) {

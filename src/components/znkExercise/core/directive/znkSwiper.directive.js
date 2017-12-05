@@ -18,9 +18,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('znkSwiper', [
-        '$timeout', '$q',
+    angular.module('znk.infra.znkExercise').directive('znkSwiper',
         function ($timeout, $q) {
+            'ngInject';
             return {
                 templateUrl: 'components/znkExercise/core/template/znkSwiper.template.html',
                 replace: true,
@@ -106,7 +106,6 @@
                     };
                 }
             };
-        }
-    ]);
+        });
 })(angular);
 

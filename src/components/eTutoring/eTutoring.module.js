@@ -4,9 +4,8 @@
     angular.module('znk.infra.eTutoring',[
         'znk.infra.contentGetters'
     ])
-        .config([
-            'SvgIconSrvProvider',
-            function (SvgIconSrvProvider) {
+        .config(function (SvgIconSrvProvider) {
+                'ngInject';
                 var svgMap = {
                     'homework-icon': 'components/eTutoring/svg/homework-icon.svg',
                     'english-topic-icon': 'components/eTutoring/svg/english-topic-icon.svg',
@@ -15,5 +14,5 @@
                     'etutoring-exercise-icon': 'components/eTutoring/svg/etutoring-exercise-icon.svg'
                 };
                 SvgIconSrvProvider.registerSvgSources(svgMap);
-            }]);
+            });
 })(angular);

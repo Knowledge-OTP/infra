@@ -12,9 +12,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('znkExerciseBtnSection', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum', '$q', 'ZnkExerciseSlideDirectionEnum',
+    angular.module('znk.infra.znkExercise').directive('znkExerciseBtnSection',
         function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseEvents, ZnkExerciseViewModeEnum, $q, ZnkExerciseSlideDirectionEnum) {
+            'ngInject';
             return {
                 restrict: 'E',
                 scope: {
@@ -201,7 +201,6 @@
                     }
                 }
             };
-        }
-    ]);
+        });
 })(angular);
 

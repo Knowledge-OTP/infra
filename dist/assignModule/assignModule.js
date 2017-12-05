@@ -1,11 +1,12 @@
 (function (angular) {
     'use strict';
-    angular.module('znk.infra.assignModule',
-        ['znk.infra.znkModule',
-            'znk.infra.exerciseResult',
-            'znk.infra.userContext',
-            'pascalprecht.translate',
-            'znk.infra.popUp']);
+    angular.module('znk.infra.assignModule', [
+        'znk.infra.znkModule',
+        'znk.infra.exerciseResult',
+        'znk.infra.userContext',
+        'pascalprecht.translate',
+        'znk.infra.popUp'
+    ]);
 })(angular);
 
 (function (angular) {
@@ -476,9 +477,8 @@
     'use strict';
     angular.module('znk.infra.assignModule').provider('HomeworkSrv',
         function () {
-
+            'ngInject';
             var popupResolveFn = function ($state, AssignContentEnum) {
-                'ngInject';
                 return function () {
                     $state.go('app.eTutoring',
                         {viewId: AssignContentEnum.PRACTICE.enum},
@@ -493,7 +493,6 @@
 
             this.$get = ["$q", "$log", "InfraConfigSrv", "PopUpSrv", "DueDateSrv", "$translate", "$rootScope", "exerciseEventsConst", "ExamSrv", "ENV", "ExerciseResultSrv", "ExamTypeEnum", "StorageSrv", "ExerciseTypeEnum", "$injector", "LiveSessionSubjectEnum", "$window", function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv, ENV,
                                   ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum, $injector, LiveSessionSubjectEnum, $window) {
-                'ngInject';
 
                 var HomeworkSrv = {};
                 var studentStorage = InfraConfigSrv.getStudentStorage();
@@ -653,6 +652,6 @@
     );
 })(angular);
 
-angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.assignModule').run(['$templateCache', function ($templateCache) {
 
 }]);

@@ -1,8 +1,9 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.config').provider('InfraConfigSrv', [
+    angular.module('znk.infra.config').provider('InfraConfigSrv',
         function () {
+            'ngInject';
             var userDataFn,
                 storages = {};
 
@@ -16,9 +17,7 @@
                 userDataFn = _userDataFn;
             };
 
-            this.$get = [
-                '$injector', '$log', '$q',
-                function ($injector, $log, $q) {
+            this.$get = function ($injector, $log, $q) {
                     var InfraConfigSrv = {};
 
                     function _baseStorageGetter(name){
@@ -49,8 +48,6 @@
                     };
 
                     return InfraConfigSrv;
-                }
-            ];
-        }
-    ]);
+                };
+        });
 })(angular);

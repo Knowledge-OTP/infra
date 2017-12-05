@@ -3,14 +3,14 @@
 (function (angular) {
 
     function ContentSrv() {
-
+        'ngInject';
         var setContentFuncRef;
 
         this.setContent = function(func) {
             setContentFuncRef = func;
         };
 
-        this.$get = ['$q', '$log', '$injector', function($q, $log, $injector) {
+        this.$get = function($q, $log, $injector) {
 
             function _getContentData() {
                 var contentData;
@@ -181,7 +181,7 @@
             };
 
             return ContentSrv;
-        }];
+        };
     }
 
     angular.module('znk.infra.content').provider('ContentSrv', ContentSrv);

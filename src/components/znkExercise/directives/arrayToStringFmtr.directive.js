@@ -1,8 +1,9 @@
 'use strict';
 
 (function (angular) {
-    angular.module('znk.infra.znkExercise').directive('arrayToStringFmtr', [
+    angular.module('znk.infra.znkExercise').directive('arrayToStringFmtr',
         function () {
+            'ngInject';
             return {
                 require: 'ngModel',
                 link: function (scope, element, attrs, ngModelCtrl) {
@@ -23,6 +24,5 @@
                     ngModelCtrl.$formatters.push(formatter);
                 }
             };
-        }
-    ]);
+        });
 })(angular);

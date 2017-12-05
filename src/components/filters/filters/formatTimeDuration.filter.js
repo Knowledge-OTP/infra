@@ -9,7 +9,8 @@
      *      ss - total seconds in duration
      *      rss - seconds modulo
      */
-    angular.module('znk.infra.filters').filter('formatTimeDuration', ['$log', function ($log) {
+    angular.module('znk.infra.filters').filter('formatTimeDuration', function ($log) {
+        'ngInject';
         return function (time, exp) {
             if (!angular.isNumber(time) || isNaN(time)) {
                 $log.error('time is not a number:', time);
@@ -36,5 +37,5 @@
                 .replace(/mm/g, minutes)
                 .replace(/ss/g, seconds);
         };
-    }]);
+    });
 })(angular);
