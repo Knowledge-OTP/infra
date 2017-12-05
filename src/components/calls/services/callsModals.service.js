@@ -8,7 +8,7 @@
     'use strict';
 
     function CallsModalService() {
-
+        'ngInject';
         var baseTemplateUrl;
 
         this.setBaseTemplatePath = function(templateUrl) {
@@ -16,7 +16,6 @@
         };
 
         this.$get = function($mdDialog, $rootScope) {
-            'ngInject';
             var CallsModalService = {};
 
             CallsModalService.showBaseModal = function (popupData) {

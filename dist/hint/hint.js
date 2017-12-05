@@ -8,6 +8,7 @@
     'use strict';
 
     angular.module('znk.infra.hint').provider('HintSrv', function () {
+        'ngInject';
         var registeredHints = {};
 
         var _hintMap = {};
@@ -24,7 +25,6 @@
         };
 
         this.$get = ["InfraConfigSrv", "$q", "$log", "$injector", "StorageSrv", function (InfraConfigSrv, $q, $log, $injector, StorageSrv) {
-            'ngInject';
 
             var HintSrv = {};
             var hintPath = StorageSrv.variables.appUserSpacePath + '/hint';

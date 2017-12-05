@@ -1100,7 +1100,7 @@
     angular.module('znk.infra.calls')
         .constant('CALL_UPDATE', 'CallsEventsSrv: call updated')
         .provider('CallsEventsSrv', function () {
-
+            'ngInject';
             var isEnabled = true;
 
             this.enabled = function (_isEnabled) {
@@ -1109,7 +1109,6 @@
 
             this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "$q", "CALL_UPDATE", "CallsActionStatusEnum", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log,
                                   $rootScope, $injector, $q, CALL_UPDATE, CallsActionStatusEnum) {
-                'ngInject';
                 var registeredCbToCurrUserCallStateChange = [];
                 var currUserCallState;
 
@@ -1276,7 +1275,7 @@
     'use strict';
 
     function CallsModalService() {
-
+        'ngInject';
         var baseTemplateUrl;
 
         this.setBaseTemplatePath = function(templateUrl) {
@@ -1284,7 +1283,6 @@
         };
 
         this.$get = ["$mdDialog", "$rootScope", function($mdDialog, $rootScope) {
-            'ngInject';
             var CallsModalService = {};
 
             CallsModalService.showBaseModal = function (popupData) {

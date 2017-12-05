@@ -3,17 +3,17 @@
 (function (angular) {
 
     function WebcallSrv() {
-
+        'ngInject';
         var _credentials;
 
         this.setCallCred = function (credentials) {
             _credentials = credentials;
         };
 
-        this.$get = ['$q', '$log', 'ENV', 'PopUpSrv', function ($q, $log, ENV, PopUpSrv) {
+        this.$get = function ($q, $log, ENV, PopUpSrv) {
 
             var WebcallSrv = {};
-            var plivoWebSdk; 
+            var plivoWebSdk;
 
             var deferredMap = {
                 call: {},
@@ -70,7 +70,7 @@
             }
 
             function _onCallFailed(reason) {
-                PopUpSrv.error('Error making a call', 'Please make sure to allow microphone access in browser.<BR>' + 
+                PopUpSrv.error('Error making a call', 'Please make sure to allow microphone access in browser.<BR>' +
                                'reason: ' + reason + ' <BR>' + WebcallSrv.debugInfo, 'Ok','Cancel');
                 $log.error('_onCallFailed, reason =' + reason);
                 if (!angular.equals({}, deferredMap.call)) {
@@ -98,7 +98,7 @@
                 // plivoWebSdk.client.on('audioDeviceChange',audioDeviceChange);
                 plivoWebSdk.client.setRingTone(true);
                 plivoWebSdk.client.setRingToneBack(false);
-                WebcallSrv.debugInfo = '(debug: ' + 
+                WebcallSrv.debugInfo = '(debug: ' +
                             plivoWebSdk.client.browserDetails.browser + ', ' +
                             plivoWebSdk.client.browserDetails.version +')';
                 $log.debug('initPhone ready!');
@@ -108,7 +108,7 @@
             function _getSettings(){
 
                 var defaultSettings = { "permOnClick": true, "codecs": ["OPUS","PCMU"], "enableIPV6": false, "audioConstraints": { "optional": [ { "googAutoGainControl": false }, {"googEchoCancellation":true} ] }, "enableTracking": true};
-                // if (ENV.debug){ 
+                // if (ENV.debug){
                     defaultSettings.debug="DEBUG";
                 // }
                 return defaultSettings;
@@ -146,9 +146,9 @@
             };
 
             WebcallSrv.connect = function (callId) {
-                return _init().then(function () {                        
-                    $log.debug('init done');                            
-                    return _call(callId);                          
+                return _init().then(function () {
+                    $log.debug('init done');
+                    return _call(callId);
                  });
             };
 
@@ -183,7 +183,7 @@
             };
 
             return WebcallSrv;
-        }];
+        };
     }
 
     angular.module('znk.infra.webcall').provider('WebcallSrv', WebcallSrv);

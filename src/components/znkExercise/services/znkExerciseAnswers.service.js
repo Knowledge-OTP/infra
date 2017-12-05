@@ -2,6 +2,7 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').provider('ZnkExerciseAnswersSrv', function () {
+        'ngInject';
         this.config = {
             selectAnswer:{}
         };
@@ -12,8 +13,7 @@
             selectAnswer.answerIndexFormatter = fn;
         };
 
-        this.$get = [
-            function () {
+        this.$get =  function () {
                 var ZnkExerciseAnswersSrv = {
                     selectAnswer: {}
                 };
@@ -34,7 +34,6 @@
                 };
 
                 return ZnkExerciseAnswersSrv;
-            }
-        ];
+            };
     });
 })(angular);

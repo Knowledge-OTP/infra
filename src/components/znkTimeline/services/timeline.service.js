@@ -12,7 +12,7 @@
     'use strict';
 
     angular.module('znk.infra.znkTimeline').provider('TimelineSrv', function () {
-
+        'ngInject';
         var imgObj = {
             drill: 'components/znkTimeline/svg/icons/timeline-drills-icon.svg',
             practice: 'components/znkTimeline/svg/icons/timeline-practice-icon.svg',
@@ -33,7 +33,6 @@
         };
 
         this.$get = function($log) {
-            'ngInject';
 
             var timelineSrvApi = {};
 

@@ -2,7 +2,7 @@
 
 (function (angular) {
     angular.module('znk.infra.estimatedScore').provider('EstimatedScoreSrv',function(){
-
+        'ngInject';
         var subjectsRawScoreEdges;
         this.setSubjectsRawScoreEdges = function(_subjectsRawScoreEdges){
             subjectsRawScoreEdges = _subjectsRawScoreEdges;
@@ -20,9 +20,7 @@
             maxDiagnosticScore = maxScore;
         };
 
-        this.$get = [
-            'EstimatedScoreHelperSrv', 'ExerciseTypeEnum', '$injector', '$q', 'SubjectEnum', '$log',
-            function (EstimatedScoreHelperSrv, ExerciseTypeEnum, $injector, $q, SubjectEnum, $log) {
+        this.$get = function (EstimatedScoreHelperSrv, ExerciseTypeEnum, $injector, $q, SubjectEnum, $log) {
                 if(!subjectsRawScoreEdges){
                     $log.error('EstimatedScoreSrv: subjectsRawScoreEdges was not set');
                 }
@@ -222,6 +220,6 @@
                 };
 
                 return EstimatedScoreSrv;
-            }];
+            };
     });
 })(angular);

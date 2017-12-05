@@ -477,9 +477,8 @@
     'use strict';
     angular.module('znk.infra.assignModule').provider('HomeworkSrv',
         function () {
-
+            'ngInject';
             var popupResolveFn = function ($state, AssignContentEnum) {
-                'ngInject';
                 return function () {
                     $state.go('app.eTutoring',
                         {viewId: AssignContentEnum.PRACTICE.enum},
@@ -494,7 +493,6 @@
 
             this.$get = ["$q", "$log", "InfraConfigSrv", "PopUpSrv", "DueDateSrv", "$translate", "$rootScope", "exerciseEventsConst", "ExamSrv", "ENV", "ExerciseResultSrv", "ExamTypeEnum", "StorageSrv", "ExerciseTypeEnum", "$injector", "LiveSessionSubjectEnum", "$window", function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv, ENV,
                                   ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum, $injector, LiveSessionSubjectEnum, $window) {
-                'ngInject';
 
                 var HomeworkSrv = {};
                 var studentStorage = InfraConfigSrv.getStudentStorage();

@@ -752,6 +752,7 @@
 (function (angular) {
     'use strict';
     angular.module('znk.infra.znkExercise').provider('QuestionTypesSrv', function QuestionTypesProvider() {
+        'ngInject';
         var questionTypeToHtmlTemplateMap = {};
         this.setQuestionTypesHtmlTemplate = function (_questionTypeToHtmlTemplateMap) {
             questionTypeToHtmlTemplateMap = _questionTypeToHtmlTemplateMap;
@@ -762,14 +763,12 @@
             questionTypeGetterFn = typeGetterFn;
         };
 
-        var answersFormaterObjMap = {};        
+        var answersFormaterObjMap = {};
         this.setAnswersFormatValidtors = function (_answersFormaterObjMap) {
             answersFormaterObjMap = _answersFormaterObjMap;
         };
 
-        this.$get = [
-            '$log', '$q', '$injector',
-            function ($log, $q, $injector) {
+        this.$get = ["$log", "$q", "$injector", function ($log, $q, $injector) {
                 var QuestionTypesSrv = {};
 
                 QuestionTypesSrv.getQuestionHtmlTemplate = function getQuestionHtmlTemplate(question) {
@@ -786,7 +785,7 @@
                     return questionTypeGetterFn(question);
                 };
 
-                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {   
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {
                     if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
                         $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
                         return;
@@ -794,7 +793,7 @@
 
                    var answersFormaterArr = answersFormaterObjMap[answerTypeId];
 
-                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
+                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer
                    if (angular.isUndefined(userAnswer) ||
                        !angular.isArray(answersFormaterArr) ||
                        !answersFormaterArr.length) {
@@ -804,10 +803,10 @@
 
                     var answersFormaterArrLength = answersFormaterArr.length;
 
-                    var answerValueBool, currentFormatter, functionGetter;                     
+                    var answerValueBool, currentFormatter, functionGetter;
                     for (var i = 0; i < answersFormaterArrLength; i++) {
                         currentFormatter = answersFormaterArr[i];
-                       
+
                         if (angular.isFunction(currentFormatter)) {
                             try {
                                  functionGetter = $injector.invoke(currentFormatter);
@@ -836,16 +835,14 @@
                 };
 
                 return QuestionTypesSrv;
-            }
-        ];
+            }];
     });
 })(angular);
 
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').provider('ZnkExerciseSrv',
-        function () {
+    angular.module('znk.infra.znkExercise').provider('ZnkExerciseSrv', function () {
             'ngInject';
 
             var exerciseTypeToAllowedQuestionTimeMap;
@@ -872,8 +869,6 @@
             };
 
             this.$get = ["EnumSrv", "$window", "PlatformEnum", "$log", function (EnumSrv, $window, PlatformEnum, $log) {
-                'ngInject';//jshint ignore:line
-
                 var platform = !!$window.ionic ? PlatformEnum.MOBILE.enum : PlatformEnum.DESKTOP.enum;
                 var ZnkExerciseSrv = {};
 
@@ -931,8 +926,7 @@
 
                 return ZnkExerciseSrv;
             }];
-        }
-    );
+        });
 })(angular);
 
 (function (angular) {
@@ -2111,6 +2105,7 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').provider('ZnkExerciseAnswersSrv', function () {
+        'ngInject';
         this.config = {
             selectAnswer:{}
         };
@@ -2121,8 +2116,7 @@
             selectAnswer.answerIndexFormatter = fn;
         };
 
-        this.$get = [
-            function () {
+        this.$get =  function () {
                 var ZnkExerciseAnswersSrv = {
                     selectAnswer: {}
                 };
@@ -2143,8 +2137,7 @@
                 };
 
                 return ZnkExerciseAnswersSrv;
-            }
-        ];
+            };
     });
 })(angular);
 
@@ -3697,25 +3690,24 @@
     'use strict';
 
     angular.module('znk.infra.znkExercise').provider('ZnkExerciseUtilitySrv', function () {
-
+            'ngInject';
             // default true for all
-            var broadCastExerciseFn = function() {
-                return function() {
+            var broadCastExerciseFn = function () {
+                return function () {
                     return true;
                 };
-            }; 
+            };
 
-            this.setShouldBroadCastExerciseGetter = function(_broadCastExerciseFn) {
+            this.setShouldBroadCastExerciseGetter = function (_broadCastExerciseFn) {
                 broadCastExerciseFn = _broadCastExerciseFn;
             };
 
-            this.$get = ["AnswerTypeEnum", "$log", "$q", "$injector", function(AnswerTypeEnum, $log, $q, $injector) {
-                'ngInject';
+            this.$get = ["AnswerTypeEnum", "$log", "$q", "$injector", function (AnswerTypeEnum, $log, $q, $injector) {
 
                 var ZnkExerciseUtilitySrv = {};
                 //@todo(igor) move to utility service
-                ZnkExerciseUtilitySrv.bindFunctions = function(dest,src,functionToCopy){
-                    functionToCopy.forEach(function(fnName){
+                ZnkExerciseUtilitySrv.bindFunctions = function (dest, src, functionToCopy) {
+                    functionToCopy.forEach(function (fnName) {
                         dest[fnName] = src[fnName].bind(src);
                     });
                 };
@@ -3763,7 +3755,7 @@
                     });
                 };
 
-                ZnkExerciseUtilitySrv.shouldBroadCastExercisePromFnGetter = function() {
+                ZnkExerciseUtilitySrv.shouldBroadCastExercisePromFnGetter = function () {
                     try {
                         return $q.when($injector.invoke(broadCastExerciseFn));
                     } catch (e) {

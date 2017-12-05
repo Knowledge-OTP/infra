@@ -58,7 +58,7 @@
     };
 
     angular.module('znk.infra.analytics').provider('znkAnalyticsSrv', function () {
-
+        'ngInject';
         var debug = false;
         var eventsHandler;
 
@@ -74,7 +74,7 @@
             eventsHandler = _eventsHandler;
         };
 
-        this.$get = ['$log', '$injector', 'znkAnalyticsUtilSrv', function($log, $injector, znkAnalyticsUtilSrv) {
+        this.$get = ["$log", "$injector", "znkAnalyticsUtilSrv", function($log, $injector, znkAnalyticsUtilSrv) {
 
             var api = {
                 getEventsConst: function() {

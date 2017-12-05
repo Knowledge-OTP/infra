@@ -23,9 +23,7 @@
                 userDataFn = _userDataFn;
             };
 
-            this.$get = [
-                '$injector', '$log', '$q',
-                function ($injector, $log, $q) {
+            this.$get = ["$injector", "$log", "$q", function ($injector, $log, $q) {
                     var InfraConfigSrv = {};
 
                     function _baseStorageGetter(name){
@@ -56,8 +54,7 @@
                     };
 
                     return InfraConfigSrv;
-                }
-            ];
+                }];
         });
 })(angular);
 

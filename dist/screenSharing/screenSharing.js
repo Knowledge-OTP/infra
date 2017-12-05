@@ -462,6 +462,7 @@
     'use strict';
 
     angular.module('znk.infra.screenSharing').provider('ScreenSharingEventsSrv', function () {
+        'ngInject';
         var isEnabled = true;
 
         this.enabled = function (_isEnabled) {
@@ -469,7 +470,6 @@
         };
 
         this.$get = ["UserProfileService", "InfraConfigSrv", "$q", "StorageSrv", "ENV", "ScreenSharingStatusEnum", "UserScreenSharingStateEnum", "ScreenSharingSrv", "$log", "ScreenSharingUiSrv", function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, ScreenSharingStatusEnum, UserScreenSharingStateEnum, ScreenSharingSrv, $log, ScreenSharingUiSrv) {
-            'ngInject';
 
             var ScreenSharingEventsSrv = {};
 
@@ -567,13 +567,13 @@
     'use strict';
 
     angular.module('znk.infra.screenSharing').provider('ScreenSharingUiSrv',function(){
+        'ngInject';
         var screenSharingViewerTemplate;
         this.setScreenSharingViewerTemplate = function(template){
             screenSharingViewerTemplate = template;
         };
 
         this.$get = ["$rootScope", "$timeout", "$compile", "$animate", "PopUpSrv", "$translate", "$q", "$log", function ($rootScope, $timeout, $compile, $animate, PopUpSrv, $translate, $q, $log) {
-            'ngInject';
 
             var childScope, screenSharingPhElement, readyProm;
             var ScreenSharingUiSrv = {};

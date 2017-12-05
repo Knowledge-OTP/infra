@@ -771,7 +771,7 @@
 
     angular.module('znk.infra.eTutoring')
         .provider('ETutoringService', function () {
-
+            'ngInject';
             var getSubjectDataByExerciseWrapper, appName;
 
             this.setGetSubjectDataByExercise = function (fn) {

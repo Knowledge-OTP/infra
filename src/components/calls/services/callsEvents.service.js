@@ -4,7 +4,7 @@
     angular.module('znk.infra.calls')
         .constant('CALL_UPDATE', 'CallsEventsSrv: call updated')
         .provider('CallsEventsSrv', function () {
-
+            'ngInject';
             var isEnabled = true;
 
             this.enabled = function (_isEnabled) {
@@ -13,7 +13,6 @@
 
             this.$get = function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log,
                                   $rootScope, $injector, $q, CALL_UPDATE, CallsActionStatusEnum) {
-                'ngInject';
                 var registeredCbToCurrUserCallStateChange = [];
                 var currUserCallState;
 

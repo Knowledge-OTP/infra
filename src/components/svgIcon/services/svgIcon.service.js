@@ -22,9 +22,7 @@
 
         var getSvgPromMap = {};
 
-        this.$get = [
-            '$templateCache', '$q', '$http', '$log',
-            function ($templateCache, $q, $http, $log) {
+        this.$get = function ($templateCache, $q, $http, $log) {
                 var SvgIconSrv = {};
 
                 SvgIconSrv.getSvgByName = function (name) {
@@ -55,7 +53,6 @@
                 };
 
                 return SvgIconSrv;
-            }
-        ];
+            };
     });
 })(angular);

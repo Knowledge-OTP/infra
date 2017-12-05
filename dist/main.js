@@ -117,7 +117,7 @@
     };
 
     angular.module('znk.infra.analytics').provider('znkAnalyticsSrv', function () {
-
+        'ngInject';
         var debug = false;
         var eventsHandler;
 
@@ -133,7 +133,7 @@
             eventsHandler = _eventsHandler;
         };
 
-        this.$get = ['$log', '$injector', 'znkAnalyticsUtilSrv', function($log, $injector, znkAnalyticsUtilSrv) {
+        this.$get = ["$log", "$injector", "znkAnalyticsUtilSrv", function($log, $injector, znkAnalyticsUtilSrv) {
 
             var api = {
                 getEventsConst: function() {
@@ -750,9 +750,8 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
     'use strict';
     angular.module('znk.infra.assignModule').provider('HomeworkSrv',
         function () {
-
+            'ngInject';
             var popupResolveFn = function ($state, AssignContentEnum) {
-                'ngInject';
                 return function () {
                     $state.go('app.eTutoring',
                         {viewId: AssignContentEnum.PRACTICE.enum},
@@ -767,7 +766,6 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
 
             this.$get = ["$q", "$log", "InfraConfigSrv", "PopUpSrv", "DueDateSrv", "$translate", "$rootScope", "exerciseEventsConst", "ExamSrv", "ENV", "ExerciseResultSrv", "ExamTypeEnum", "StorageSrv", "ExerciseTypeEnum", "$injector", "LiveSessionSubjectEnum", "$window", function ($q, $log, InfraConfigSrv, PopUpSrv, DueDateSrv, $translate, $rootScope, exerciseEventsConst, ExamSrv, ENV,
                                   ExerciseResultSrv, ExamTypeEnum, StorageSrv, ExerciseTypeEnum, $injector, LiveSessionSubjectEnum, $window) {
-                'ngInject';
 
                 var HomeworkSrv = {};
                 var studentStorage = InfraConfigSrv.getStudentStorage();
@@ -2340,7 +2338,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function ($template
     angular.module('znk.infra.calls')
         .constant('CALL_UPDATE', 'CallsEventsSrv: call updated')
         .provider('CallsEventsSrv', function () {
-
+            'ngInject';
             var isEnabled = true;
 
             this.enabled = function (_isEnabled) {
@@ -2349,7 +2347,6 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function ($template
 
             this.$get = ["UserProfileService", "InfraConfigSrv", "StorageSrv", "ENV", "CallsStatusEnum", "CallsUiSrv", "$log", "$rootScope", "$injector", "$q", "CALL_UPDATE", "CallsActionStatusEnum", function (UserProfileService, InfraConfigSrv, StorageSrv, ENV, CallsStatusEnum, CallsUiSrv, $log,
                                   $rootScope, $injector, $q, CALL_UPDATE, CallsActionStatusEnum) {
-                'ngInject';
                 var registeredCbToCurrUserCallStateChange = [];
                 var currUserCallState;
 
@@ -2516,7 +2513,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function ($template
     'use strict';
 
     function CallsModalService() {
-
+        'ngInject';
         var baseTemplateUrl;
 
         this.setBaseTemplatePath = function(templateUrl) {
@@ -2524,7 +2521,6 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function ($template
         };
 
         this.$get = ["$mdDialog", "$rootScope", function($mdDialog, $rootScope) {
-            'ngInject';
             var CallsModalService = {};
 
             CallsModalService.showBaseModal = function (popupData) {
@@ -2921,9 +2917,7 @@ angular.module('znk.infra.calls').run(['$templateCache', function ($templateCach
                 userDataFn = _userDataFn;
             };
 
-            this.$get = [
-                '$injector', '$log', '$q',
-                function ($injector, $log, $q) {
+            this.$get = ["$injector", "$log", "$q", function ($injector, $log, $q) {
                     var InfraConfigSrv = {};
 
                     function _baseStorageGetter(name){
@@ -2954,8 +2948,7 @@ angular.module('znk.infra.calls').run(['$templateCache', function ($templateCach
                     };
 
                     return InfraConfigSrv;
-                }
-            ];
+                }];
         });
 })(angular);
 
@@ -2973,14 +2966,14 @@ angular.module('znk.infra.config').run(['$templateCache', function ($templateCac
 (function (angular) {
 
     function ContentSrv() {
-
+        'ngInject';
         var setContentFuncRef;
 
         this.setContent = function(func) {
             setContentFuncRef = func;
         };
 
-        this.$get = ['$q', '$log', '$injector', function($q, $log, $injector) {
+        this.$get = ["$q", "$log", "$injector", function($q, $log, $injector) {
 
             function _getContentData() {
                 var contentData;
@@ -3878,7 +3871,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function ($templateCache
 
 (function (angular) {
     angular.module('znk.infra.estimatedScore').provider('EstimatedScoreSrv',function(){
-
+        'ngInject';
         var subjectsRawScoreEdges;
         this.setSubjectsRawScoreEdges = function(_subjectsRawScoreEdges){
             subjectsRawScoreEdges = _subjectsRawScoreEdges;
@@ -3896,9 +3889,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function ($templateCache
             maxDiagnosticScore = maxScore;
         };
 
-        this.$get = [
-            'EstimatedScoreHelperSrv', 'ExerciseTypeEnum', '$injector', '$q', 'SubjectEnum', '$log',
-            function (EstimatedScoreHelperSrv, ExerciseTypeEnum, $injector, $q, SubjectEnum, $log) {
+        this.$get = ["EstimatedScoreHelperSrv", "ExerciseTypeEnum", "$injector", "$q", "SubjectEnum", "$log", function (EstimatedScoreHelperSrv, ExerciseTypeEnum, $injector, $q, SubjectEnum, $log) {
                 if(!subjectsRawScoreEdges){
                     $log.error('EstimatedScoreSrv: subjectsRawScoreEdges was not set');
                 }
@@ -4105,70 +4096,73 @@ angular.module('znk.infra.enum').run(['$templateCache', function ($templateCache
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.estimatedScore').provider('EstimatedScoreEventsHandlerSrv', function EstimatedScoreEventsHandler() {
-        function pointsMap(correctWithinAllowedTimeFrame, correctAfterAllowedTimeFrame, wrongWithinAllowedTimeFrame, wrongAfterAllowedTimeFrame, correctTooFast, wrongTooFast) {
-            var ret = {};
+    angular.module('znk.infra.estimatedScore').provider('EstimatedScoreEventsHandlerSrv',
+        function EstimatedScoreEventsHandler() {
+            'ngInject';
 
-            if (angular.isDefined(correctWithinAllowedTimeFrame)) {
-                ret.correctWithin = correctWithinAllowedTimeFrame;
+            function pointsMap(correctWithinAllowedTimeFrame, correctAfterAllowedTimeFrame, wrongWithinAllowedTimeFrame, wrongAfterAllowedTimeFrame, correctTooFast, wrongTooFast) {
+                var ret = {};
+
+                if (angular.isDefined(correctWithinAllowedTimeFrame)) {
+                    ret.correctWithin = correctWithinAllowedTimeFrame;
+                }
+
+                if (angular.isDefined(correctAfterAllowedTimeFrame)) {
+                    ret.correctAfter = correctAfterAllowedTimeFrame;
+                }
+
+                if (angular.isDefined(wrongWithinAllowedTimeFrame)) {
+                    ret.wrongWithin = wrongWithinAllowedTimeFrame;
+                }
+
+                if (angular.isDefined(wrongAfterAllowedTimeFrame)) {
+                    ret.wrongAfter = wrongAfterAllowedTimeFrame;
+                }
+
+                if (angular.isDefined(correctTooFast)) {
+                    ret.correctTooFast = correctTooFast;
+                }
+
+                if (angular.isDefined(wrongTooFast)) {
+                    ret.wrongTooFast = wrongTooFast;
+                }
+
+                ret.unanswered = 0;
+
+                return ret;
             }
 
-            if (angular.isDefined(correctAfterAllowedTimeFrame)) {
-                ret.correctAfter = correctAfterAllowedTimeFrame;
-            }
+            var diagnosticScoring = {};
+            this.setDiagnosticScoring = function (diagnosticScoringData) {
+                var keys = Object.keys(diagnosticScoringData);
+                keys.forEach(function (questionDifficulty) {
+                    var scoringDataArr = diagnosticScoringData[questionDifficulty];
+                    diagnosticScoring[questionDifficulty] = pointsMap.apply(this, scoringDataArr);
+                });
+            };
 
-            if (angular.isDefined(wrongWithinAllowedTimeFrame)) {
-                ret.wrongWithin = wrongWithinAllowedTimeFrame;
-            }
+            var exercisesRawScoring = {};
+            this.setExerciseRawPoints = function (exerciseType, scoringData) {
+                exercisesRawScoring[exerciseType] = pointsMap.apply(this, scoringData);
+            };
 
-            if (angular.isDefined(wrongAfterAllowedTimeFrame)) {
-                ret.wrongAfter = wrongAfterAllowedTimeFrame;
-            }
+            var eventProcessControl;
+            this.setEventProcessControl = function (_eventProcessControl) {
+                eventProcessControl = _eventProcessControl;
+            };
 
-            if (angular.isDefined(correctTooFast)) {
-                ret.correctTooFast = correctTooFast;
-            }
+            var getAnswerTimeSpentType = function () { // default function
+                return 'Within';
+            };
 
-            if (angular.isDefined(wrongTooFast)) {
-                ret.wrongTooFast = wrongTooFast;
-            }
-
-            ret.unanswered = 0;
-
-            return ret;
-        }
-
-        var diagnosticScoring = {};
-        this.setDiagnosticScoring = function (diagnosticScoringData) {
-            var keys = Object.keys(diagnosticScoringData);
-            keys.forEach(function (questionDifficulty) {
-                var scoringDataArr = diagnosticScoringData[questionDifficulty];
-                diagnosticScoring[questionDifficulty] = pointsMap.apply(this, scoringDataArr);
-            });
-        };
-
-        var exercisesRawScoring = {};
-        this.setExerciseRawPoints = function (exerciseType, scoringData) {
-            exercisesRawScoring[exerciseType] = pointsMap.apply(this, scoringData);
-        };
-
-        var eventProcessControl;
-        this.setEventProcessControl = function (_eventProcessControl) {
-            eventProcessControl = _eventProcessControl;
-        };
-
-        var getAnswerTimeSpentType = function () { // default function
-            return 'Within';
-        };
-
-        this.setAnswerTimeSpentTypeFn = function (fn) {
-            getAnswerTimeSpentType = fn;
-        };
+            this.setAnswerTimeSpentTypeFn = function (fn) {
+                getAnswerTimeSpentType = fn;
+            };
 
 
-        this.$get = [
-            '$rootScope', 'ExamTypeEnum', 'EstimatedScoreSrv', 'SubjectEnum', 'ExerciseTypeEnum', 'ExerciseAnswerStatusEnum', 'exerciseEventsConst', '$log', 'UtilitySrv', '$injector', '$q', 'CategoryService',
-            function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum, ExerciseTypeEnum, ExerciseAnswerStatusEnum, exerciseEventsConst, $log, UtilitySrv, $injector, $q, CategoryService) {
+            this.$get = ["$rootScope", "ExamTypeEnum", "EstimatedScoreSrv", "SubjectEnum", "ExerciseTypeEnum", "ExerciseAnswerStatusEnum", "exerciseEventsConst", "$log", "UtilitySrv", "$injector", "$q", "CategoryService", function ($rootScope, ExamTypeEnum, EstimatedScoreSrv, SubjectEnum, ExerciseTypeEnum,
+                                  ExerciseAnswerStatusEnum, exerciseEventsConst, $log, UtilitySrv, $injector, $q,
+                                  CategoryService) {
                 if (angular.equals({}, diagnosticScoring)) {
                     $log.error('EstimatedScoreEventsHandlerSrv: diagnosticScoring was not set !!!');
                 }
@@ -4228,7 +4222,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function ($templateCache
                         }
                     });
                     angular.forEach(scores, function (score, subjectId) {
-                        if(angular.isDefined(subjectId) && subjectId !== null) {
+                        if (angular.isDefined(subjectId) && subjectId !== null) {
                             EstimatedScoreSrv.setDiagnosticSectionScore(score, ExerciseTypeEnum.SECTION.enum, subjectId, section.id);
                         }
                     });
@@ -4334,10 +4328,9 @@ angular.module('znk.infra.enum').run(['$templateCache', function ($templateCache
                         });
                 };
                 return EstimatedScoreEventsHandlerSrv;
-            }
-        ];
+            }];
 
-    });
+        });
 })(angular);
 
 (function (angular) {
@@ -5183,7 +5176,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function ($tem
 
     angular.module('znk.infra.eTutoring')
         .provider('ETutoringService', function () {
-
+            'ngInject';
             var getSubjectDataByExerciseWrapper, appName;
 
             this.setGetSubjectDataByExercise = function (fn) {
@@ -5763,6 +5756,7 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function ($template
 
 (function (angular) {
     angular.module('znk.infra.evaluator').provider('ZnkEvaluatorSrv', function () {
+        'ngInject';
         var self = this;
 
         var evaluateFnMap = {};
@@ -5781,7 +5775,6 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function ($template
         });
 
         this.$get = ["$q", "$injector", "$log", function ($q, $injector, $log) {
-            'ngInject';
 
             var znkEvaluatorSrvApi = {};
 
@@ -7743,6 +7736,7 @@ angular.module('znk.infra.general').run(['$templateCache', function ($templateCa
     'use strict';
 
     angular.module('znk.infra.hint').provider('HintSrv', function () {
+        'ngInject';
         var registeredHints = {};
 
         var _hintMap = {};
@@ -7759,7 +7753,6 @@ angular.module('znk.infra.general').run(['$templateCache', function ($templateCa
         };
 
         this.$get = ["InfraConfigSrv", "$q", "$log", "$injector", "StorageSrv", function (InfraConfigSrv, $q, $log, $injector, StorageSrv) {
-            'ngInject';
 
             var HintSrv = {};
             var hintPath = StorageSrv.variables.appUserSpacePath + '/hint';
@@ -8774,16 +8767,14 @@ angular.module('znk.infra.popUp').run(['$templateCache', function ($templateCach
 
 (function (angular) {
     angular.module('znk.infra.presence').provider('PresenceService', function () {
-
+        'ngInject';
         var AuthSrvName;
 
         this.setAuthServiceName = function (authServiceName) {
             AuthSrvName = authServiceName;
         };
 
-        this.$get = [
-            '$log', '$injector', 'ENV', '$rootScope', 'StorageFirebaseAdapter',
-            function ($log, $injector, ENV, $rootScope, StorageFirebaseAdapter) {
+        this.$get = ["$log", "$injector", "ENV", "$rootScope", "StorageFirebaseAdapter", function ($log, $injector, ENV, $rootScope, StorageFirebaseAdapter) {
                 var presenceService = {};
                 var rootRef = new StorageFirebaseAdapter(ENV.fbDataEndPoint);
                 var PRESENCE_PATH = 'presence/';
@@ -8904,8 +8895,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
         _examScoreFnGetter = examScoreFnGetter;
     };
 
-    this.$get = ['$q', 'ExamTypeEnum', 'StorageRevSrv', '$log', '$injector',
-        function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
+    this.$get = ["$q", "ExamTypeEnum", "StorageRevSrv", "$log", "$injector", function($q, ExamTypeEnum, StorageRevSrv, $log, $injector) {
         var scoringServiceObjApi = {};
         var keysMapConst = {
             crossTestScore: 'CrossTestScore',
@@ -9490,6 +9480,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function ($templateCa
     'use strict';
 
     angular.module('znk.infra.screenSharing').provider('ScreenSharingEventsSrv', function () {
+        'ngInject';
         var isEnabled = true;
 
         this.enabled = function (_isEnabled) {
@@ -9497,7 +9488,6 @@ angular.module('znk.infra.scoring').run(['$templateCache', function ($templateCa
         };
 
         this.$get = ["UserProfileService", "InfraConfigSrv", "$q", "StorageSrv", "ENV", "ScreenSharingStatusEnum", "UserScreenSharingStateEnum", "ScreenSharingSrv", "$log", "ScreenSharingUiSrv", function (UserProfileService, InfraConfigSrv, $q, StorageSrv, ENV, ScreenSharingStatusEnum, UserScreenSharingStateEnum, ScreenSharingSrv, $log, ScreenSharingUiSrv) {
-            'ngInject';
 
             var ScreenSharingEventsSrv = {};
 
@@ -9595,13 +9585,13 @@ angular.module('znk.infra.scoring').run(['$templateCache', function ($templateCa
     'use strict';
 
     angular.module('znk.infra.screenSharing').provider('ScreenSharingUiSrv',function(){
+        'ngInject';
         var screenSharingViewerTemplate;
         this.setScreenSharingViewerTemplate = function(template){
             screenSharingViewerTemplate = template;
         };
 
         this.$get = ["$rootScope", "$timeout", "$compile", "$animate", "PopUpSrv", "$translate", "$q", "$log", function ($rootScope, $timeout, $compile, $animate, PopUpSrv, $translate, $q, $log) {
-            'ngInject';
 
             var childScope, screenSharingPhElement, readyProm;
             var ScreenSharingUiSrv = {};
@@ -11147,9 +11137,7 @@ angular.module('znk.infra.support').run(['$templateCache', function ($templateCa
 
         var getSvgPromMap = {};
 
-        this.$get = [
-            '$templateCache', '$q', '$http', '$log',
-            function ($templateCache, $q, $http, $log) {
+        this.$get = ["$templateCache", "$q", "$http", "$log", function ($templateCache, $q, $http, $log) {
                 var SvgIconSrv = {};
 
                 SvgIconSrv.getSvgByName = function (name) {
@@ -11180,8 +11168,7 @@ angular.module('znk.infra.support').run(['$templateCache', function ($templateCa
                 };
 
                 return SvgIconSrv;
-            }
-        ];
+            }];
     });
 })(angular);
 
@@ -11435,100 +11422,98 @@ angular.module('znk.infra.teachers').run(['$templateCache', function ($templateC
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.user').provider('UserSessionSrv',
-        function () {
-            'ngInject';
+    angular.module('znk.infra.user').provider('UserSessionSrv', function () {
+        'ngInject';
 
-            var isLastSessionRecordDisabled = false;
-            this.disableLastSessionRecord = function (isDisbaled) {
-                isLastSessionRecordDisabled = !!isDisbaled;
+        var isLastSessionRecordDisabled = false;
+        this.disableLastSessionRecord = function (isDisbaled) {
+            isLastSessionRecordDisabled = !!isDisbaled;
+        };
+
+        this.$get = ["InfraConfigSrv", "ENV", "$window", function (InfraConfigSrv, ENV, $window) {
+
+            var initProm, lastSessionData;
+
+            var UserSessionSrv = {};
+
+            UserSessionSrv.isLastSessionRecordDisabled = function () {
+                return isLastSessionRecordDisabled;
             };
 
-            this.$get = ["InfraConfigSrv", "ENV", "$window", function (InfraConfigSrv, ENV, $window) {
-                'ngInject';// jshint ignore:line
+            UserSessionSrv.getLastSessionData = function () {
+                return initProm.then(function () {
+                    return lastSessionData;
+                });
+            };
 
-                var initProm, lastSessionData;
+            function init() {
+                return InfraConfigSrv.getUserData().then(function (userData) {
+                    if (userData && userData.uid) {
+                        var dbRef = initializeFireBase();
+                        var db = dbRef.database();
+                        var lastSessionPath = ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid;
+                        var lastSessionRef = db.ref(lastSessionPath);
+                        return lastSessionRef.once('value').then(snapshot => {
+                            lastSessionData = snapshot.val();
+                            if (!isLastSessionRecordDisabled) {
+                                lastSessionRef.child('began').set($window.firebase.database.ServerValue.TIMESTAMP);
+                                lastSessionRef.child('ended').set(null);
+                                lastSessionRef.child('ended').onDisconnect().set($window.firebase.database.ServerValue.TIMESTAMP);
 
-                var UserSessionSrv = {};
+                                var sessionRef = db.ref(ENV.firebaseAppScopeName + '/sessions/' + userData.uid);
+                                var newSessionKey = db.ref().push().key;
+                                sessionRef.child(newSessionKey).child('began').set($window.firebase.database.ServerValue.TIMESTAMP);
+                                sessionRef.child(newSessionKey).child('ended').set(null);
+                                sessionRef.child(newSessionKey).child('ended').onDisconnect().set($window.firebase.database.ServerValue.TIMESTAMP);
 
-                UserSessionSrv.isLastSessionRecordDisabled = function () {
-                    return isLastSessionRecordDisabled;
-                };
-
-                UserSessionSrv.getLastSessionData = function () {
-                    return initProm.then(function () {
-                        return lastSessionData;
-                    });
-                };
-
-                function init() {
-                    return InfraConfigSrv.getUserData().then(function (userData) {
-                        if (userData && userData.uid) {
-                            var dbRef = initializeFireBase();
-                            var db = dbRef.database();
-                            var lastSessionPath = ENV.firebaseAppScopeName + '/lastSessions/' + userData.uid;
-                            var lastSessionRef = db.ref(lastSessionPath);
-                            return lastSessionRef.once('value').then(snapshot => {
-                                lastSessionData = snapshot.val();
-                                if (!isLastSessionRecordDisabled) {
-                                    lastSessionRef.child('began').set($window.firebase.database.ServerValue.TIMESTAMP);
-                                    lastSessionRef.child('ended').set(null);
-                                    lastSessionRef.child('ended').onDisconnect().set($window.firebase.database.ServerValue.TIMESTAMP);
-
-                                    var sessionRef = db.ref(ENV.firebaseAppScopeName + '/sessions/' + userData.uid);
-                                    var newSessionKey = db.ref().push().key;
-                                    sessionRef.child(newSessionKey).child('began').set($window.firebase.database.ServerValue.TIMESTAMP);
-                                    sessionRef.child(newSessionKey).child('ended').set(null);
-                                    sessionRef.child(newSessionKey).child('ended').onDisconnect().set($window.firebase.database.ServerValue.TIMESTAMP);
-
-                                    var userSessionRef = db.ref(ENV.firebaseAppScopeName + '/users/' + userData.uid + '/lastSession');
-                                    userSessionRef.child('ended').onDisconnect().set($window.firebase.database.ServerValue.TIMESTAMP);
-                                }
-                            });
-                        }
-                    });
-                }
-                initProm = init();
-
-                function initializeFireBase(authFirebaseRequired) {
-                    var appName = authFirebaseRequired ? ENV.authAppName : ENV.firebaseAppScopeName;
-                    var existApp;
-
-                    $window.firebase.apps.forEach(function (app) {
-                        if (app.name.toLowerCase() === appName.toLowerCase()) {
-                            existApp = app;
-                        }
-                    });
-                    if (!existApp) {
-                        var config;
-                        if (authFirebaseRequired) {
-                            config = {
-                                apiKey: ENV.firbase_auth_config.apiKey,
-                                authDomain: ENV.firbase_auth_config.projectId + ".firebaseapp.com",
-                                databaseURL: ENV.firbase_auth_config.databaseURL,
-                                projectId: ENV.firbase_auth_config.projectId,
-                                storageBucket: ENV.firbase_auth_config.projectId + ".appspot.com",
-                                messagingSenderId: ENV.firbase_auth_config.messagingSenderId
-                            };
-                        } else {
-                            config = {
-                                apiKey: ENV.firebase_apiKey,
-                                authDomain: ENV.firebase_projectId + ".firebaseapp.com",
-                                databaseURL: ENV.fbDataEndPoint,
-                                projectId: ENV.firebase_projectId,
-                                storageBucket: ENV.firebase_projectId + ".appspot.com",
-                                messagingSenderId: ENV.messagingSenderId
-                            };
-                        }
-                        existApp = $window.firebase.initializeApp(config, appName);
+                                var userSessionRef = db.ref(ENV.firebaseAppScopeName + '/users/' + userData.uid + '/lastSession');
+                                userSessionRef.child('ended').onDisconnect().set($window.firebase.database.ServerValue.TIMESTAMP);
+                            }
+                        });
                     }
-                    return existApp;
-                }
+                });
+            }
 
-                return UserSessionSrv;
-            }];
-        }
-    );
+            initProm = init();
+
+            function initializeFireBase(authFirebaseRequired) {
+                var appName = authFirebaseRequired ? ENV.authAppName : ENV.firebaseAppScopeName;
+                var existApp;
+
+                $window.firebase.apps.forEach(function (app) {
+                    if (app.name.toLowerCase() === appName.toLowerCase()) {
+                        existApp = app;
+                    }
+                });
+                if (!existApp) {
+                    var config;
+                    if (authFirebaseRequired) {
+                        config = {
+                            apiKey: ENV.firbase_auth_config.apiKey,
+                            authDomain: ENV.firbase_auth_config.projectId + '.firebaseapp.com',
+                            databaseURL: ENV.firbase_auth_config.databaseURL,
+                            projectId: ENV.firbase_auth_config.projectId,
+                            storageBucket: ENV.firbase_auth_config.projectId + '.appspot.com',
+                            messagingSenderId: ENV.firbase_auth_config.messagingSenderId
+                        };
+                    } else {
+                        config = {
+                            apiKey: ENV.firebase_apiKey,
+                            authDomain: ENV.firebase_projectId + '.firebaseapp.com',
+                            databaseURL: ENV.fbDataEndPoint,
+                            projectId: ENV.firebase_projectId,
+                            storageBucket: ENV.firebase_projectId + '.appspot.com',
+                            messagingSenderId: ENV.messagingSenderId
+                        };
+                    }
+                    existApp = $window.firebase.initializeApp(config, appName);
+                }
+                return existApp;
+            }
+
+            return UserSessionSrv;
+        }];
+    });
 })(angular);
 
 'use strict';
@@ -11854,17 +11839,17 @@ angular.module('znk.infra.utility').run(['$templateCache', function ($templateCa
 (function (angular) {
 
     function WebcallSrv() {
-
+        'ngInject';
         var _credentials;
 
         this.setCallCred = function (credentials) {
             _credentials = credentials;
         };
 
-        this.$get = ['$q', '$log', 'ENV', 'PopUpSrv', function ($q, $log, ENV, PopUpSrv) {
+        this.$get = ["$q", "$log", "ENV", "PopUpSrv", function ($q, $log, ENV, PopUpSrv) {
 
             var WebcallSrv = {};
-            var plivoWebSdk; 
+            var plivoWebSdk;
 
             var deferredMap = {
                 call: {},
@@ -11921,7 +11906,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function ($templateCa
             }
 
             function _onCallFailed(reason) {
-                PopUpSrv.error('Error making a call', 'Please make sure to allow microphone access in browser.<BR>' + 
+                PopUpSrv.error('Error making a call', 'Please make sure to allow microphone access in browser.<BR>' +
                                'reason: ' + reason + ' <BR>' + WebcallSrv.debugInfo, 'Ok','Cancel');
                 $log.error('_onCallFailed, reason =' + reason);
                 if (!angular.equals({}, deferredMap.call)) {
@@ -11949,7 +11934,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function ($templateCa
                 // plivoWebSdk.client.on('audioDeviceChange',audioDeviceChange);
                 plivoWebSdk.client.setRingTone(true);
                 plivoWebSdk.client.setRingToneBack(false);
-                WebcallSrv.debugInfo = '(debug: ' + 
+                WebcallSrv.debugInfo = '(debug: ' +
                             plivoWebSdk.client.browserDetails.browser + ', ' +
                             plivoWebSdk.client.browserDetails.version +')';
                 $log.debug('initPhone ready!');
@@ -11959,7 +11944,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function ($templateCa
             function _getSettings(){
 
                 var defaultSettings = { "permOnClick": true, "codecs": ["OPUS","PCMU"], "enableIPV6": false, "audioConstraints": { "optional": [ { "googAutoGainControl": false }, {"googEchoCancellation":true} ] }, "enableTracking": true};
-                // if (ENV.debug){ 
+                // if (ENV.debug){
                     defaultSettings.debug="DEBUG";
                 // }
                 return defaultSettings;
@@ -11997,9 +11982,9 @@ angular.module('znk.infra.utility').run(['$templateCache', function ($templateCa
             };
 
             WebcallSrv.connect = function (callId) {
-                return _init().then(function () {                        
-                    $log.debug('init done');                            
-                    return _call(callId);                          
+                return _init().then(function () {
+                    $log.debug('init done');
+                    return _call(callId);
                  });
             };
 
@@ -13673,38 +13658,36 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function ($t
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkChat').provider('znkChatDataSrv',
-        function () {
-            'ngInject';
+    angular.module('znk.infra.znkChat').provider('znkChatDataSrv', function () {
+        'ngInject';
 
-            var znkChatPathsObj = {};
-            var buildNewChatterFnGetter;
+        var znkChatPathsObj = {};
+        var buildNewChatterFnGetter;
 
-            this.setChatPaths = function (chatPathsObj) {
-                znkChatPathsObj = chatPathsObj;
+        this.setChatPaths = function (chatPathsObj) {
+            znkChatPathsObj = chatPathsObj;
+        };
+
+        this.setBuildChatterFnGetter = function (buildChatterFn) {
+            buildNewChatterFnGetter = buildChatterFn;
+        };
+
+        this.$get = ["$injector", function ($injector) {
+            var znkChat = {};
+
+            znkChat.getChatPaths = function () {
+                return znkChatPathsObj;
             };
 
-            this.setBuildChatterFnGetter = function (buildChatterFn) {
-                buildNewChatterFnGetter = buildChatterFn;
+            znkChat.buildNewChatter = function (user, userId) {
+                var buildNewChatter = $injector.invoke(buildNewChatterFnGetter);
+                return buildNewChatter(user, userId);
             };
 
-            this.$get = ["$injector", function ($injector) {
-                var znkChat = {};
+            return znkChat;
+        }];
 
-                znkChat.getChatPaths = function () {
-                    return znkChatPathsObj;
-                };
-
-                znkChat.buildNewChatter = function (user, userId) {
-                    var buildNewChatter = $injector.invoke(buildNewChatterFnGetter);
-                    return buildNewChatter(user, userId);
-                };
-
-                return znkChat;
-            }];
-
-        }
-    );
+    });
 })(angular);
 
 (function (angular) {
@@ -14699,6 +14682,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
 (function (angular) {
     'use strict';
     angular.module('znk.infra.znkExercise').provider('QuestionTypesSrv', function QuestionTypesProvider() {
+        'ngInject';
         var questionTypeToHtmlTemplateMap = {};
         this.setQuestionTypesHtmlTemplate = function (_questionTypeToHtmlTemplateMap) {
             questionTypeToHtmlTemplateMap = _questionTypeToHtmlTemplateMap;
@@ -14709,14 +14693,12 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
             questionTypeGetterFn = typeGetterFn;
         };
 
-        var answersFormaterObjMap = {};        
+        var answersFormaterObjMap = {};
         this.setAnswersFormatValidtors = function (_answersFormaterObjMap) {
             answersFormaterObjMap = _answersFormaterObjMap;
         };
 
-        this.$get = [
-            '$log', '$q', '$injector',
-            function ($log, $q, $injector) {
+        this.$get = ["$log", "$q", "$injector", function ($log, $q, $injector) {
                 var QuestionTypesSrv = {};
 
                 QuestionTypesSrv.getQuestionHtmlTemplate = function getQuestionHtmlTemplate(question) {
@@ -14733,7 +14715,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
                     return questionTypeGetterFn(question);
                 };
 
-                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {   
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {
                     if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
                         $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
                         return;
@@ -14741,7 +14723,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
 
                    var answersFormaterArr = answersFormaterObjMap[answerTypeId];
 
-                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
+                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer
                    if (angular.isUndefined(userAnswer) ||
                        !angular.isArray(answersFormaterArr) ||
                        !answersFormaterArr.length) {
@@ -14751,10 +14733,10 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
 
                     var answersFormaterArrLength = answersFormaterArr.length;
 
-                    var answerValueBool, currentFormatter, functionGetter;                     
+                    var answerValueBool, currentFormatter, functionGetter;
                     for (var i = 0; i < answersFormaterArrLength; i++) {
                         currentFormatter = answersFormaterArr[i];
-                       
+
                         if (angular.isFunction(currentFormatter)) {
                             try {
                                  functionGetter = $injector.invoke(currentFormatter);
@@ -14783,16 +14765,14 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
                 };
 
                 return QuestionTypesSrv;
-            }
-        ];
+            }];
     });
 })(angular);
 
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').provider('ZnkExerciseSrv',
-        function () {
+    angular.module('znk.infra.znkExercise').provider('ZnkExerciseSrv', function () {
             'ngInject';
 
             var exerciseTypeToAllowedQuestionTimeMap;
@@ -14819,8 +14799,6 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
             };
 
             this.$get = ["EnumSrv", "$window", "PlatformEnum", "$log", function (EnumSrv, $window, PlatformEnum, $log) {
-                'ngInject';//jshint ignore:line
-
                 var platform = !!$window.ionic ? PlatformEnum.MOBILE.enum : PlatformEnum.DESKTOP.enum;
                 var ZnkExerciseSrv = {};
 
@@ -14878,8 +14856,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
 
                 return ZnkExerciseSrv;
             }];
-        }
-    );
+        });
 })(angular);
 
 (function (angular) {
@@ -16058,6 +16035,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
     'use strict';
 
     angular.module('znk.infra.znkExercise').provider('ZnkExerciseAnswersSrv', function () {
+        'ngInject';
         this.config = {
             selectAnswer:{}
         };
@@ -16068,8 +16046,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
             selectAnswer.answerIndexFormatter = fn;
         };
 
-        this.$get = [
-            function () {
+        this.$get =  function () {
                 var ZnkExerciseAnswersSrv = {
                     selectAnswer: {}
                 };
@@ -16090,8 +16067,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
                 };
 
                 return ZnkExerciseAnswersSrv;
-            }
-        ];
+            };
     });
 })(angular);
 
@@ -17644,25 +17620,24 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
     'use strict';
 
     angular.module('znk.infra.znkExercise').provider('ZnkExerciseUtilitySrv', function () {
-
+            'ngInject';
             // default true for all
-            var broadCastExerciseFn = function() {
-                return function() {
+            var broadCastExerciseFn = function () {
+                return function () {
                     return true;
                 };
-            }; 
+            };
 
-            this.setShouldBroadCastExerciseGetter = function(_broadCastExerciseFn) {
+            this.setShouldBroadCastExerciseGetter = function (_broadCastExerciseFn) {
                 broadCastExerciseFn = _broadCastExerciseFn;
             };
 
-            this.$get = ["AnswerTypeEnum", "$log", "$q", "$injector", function(AnswerTypeEnum, $log, $q, $injector) {
-                'ngInject';
+            this.$get = ["AnswerTypeEnum", "$log", "$q", "$injector", function (AnswerTypeEnum, $log, $q, $injector) {
 
                 var ZnkExerciseUtilitySrv = {};
                 //@todo(igor) move to utility service
-                ZnkExerciseUtilitySrv.bindFunctions = function(dest,src,functionToCopy){
-                    functionToCopy.forEach(function(fnName){
+                ZnkExerciseUtilitySrv.bindFunctions = function (dest, src, functionToCopy) {
+                    functionToCopy.forEach(function (fnName) {
                         dest[fnName] = src[fnName].bind(src);
                     });
                 };
@@ -17710,7 +17685,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
                     });
                 };
 
-                ZnkExerciseUtilitySrv.shouldBroadCastExercisePromFnGetter = function() {
+                ZnkExerciseUtilitySrv.shouldBroadCastExercisePromFnGetter = function () {
                     try {
                         return $q.when($injector.invoke(broadCastExerciseFn));
                     } catch (e) {
@@ -18930,47 +18905,46 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function ($
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkSessionData').provider('znkSessionDataSrv',
-        function () {
-            var _sessionSubjectsGetter;
+    angular.module('znk.infra.znkSessionData').provider('znkSessionDataSrv', function () {
+        'ngInject';
+        var _sessionSubjectsGetter;
 
-            this.setSessionSubjects = function (sessionSubjectsGetter) {
-                _sessionSubjectsGetter = sessionSubjectsGetter;
+        this.setSessionSubjects = function (sessionSubjectsGetter) {
+            _sessionSubjectsGetter = sessionSubjectsGetter;
+        };
+
+        this.$get = ["$log", "$injector", "$q", "InfraConfigSrv", "ENV", "UserProfileService", function ($log, $injector, $q, InfraConfigSrv, ENV, UserProfileService) {
+            var znkSessionDataSrv = {};
+
+            znkSessionDataSrv.getSessionSubjects = function () {
+                if (!_sessionSubjectsGetter) {
+                    var errMsg = 'znkSessionDataSrv: sessionSubjectsGetter was not set';
+                    $log.error(errMsg);
+                    return $q.reject(errMsg);
+                }
+                return $q.when($injector.invoke(_sessionSubjectsGetter));
             };
 
-            this.$get = ["$log", "$injector", "$q", "InfraConfigSrv", "ENV", "UserProfileService", function ($log, $injector, $q, InfraConfigSrv, ENV, UserProfileService) {
-                'ngInject';
-                var znkSessionDataSrv = {};
-
-                znkSessionDataSrv.getSessionSubjects = function () {
-                    if (!_sessionSubjectsGetter) {
-                        var errMsg = 'znkSessionDataSrv: sessionSubjectsGetter was not set';
-                        $log.error(errMsg);
-                        return $q.reject(errMsg);
-                    }
-                    return $q.when($injector.invoke(_sessionSubjectsGetter));
-                };
-
-                znkSessionDataSrv.isActiveLiveSession = function () {
-                    return new Promise(function(resolve, reject) {
-                        UserProfileService.getCurrUserId().then(function (currUid) {
-                            InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
-                                var appName = ENV.firebaseAppScopeName;
-                                var userLiveSessionPath = appName + '/users/' + currUid + '/liveSession/active';
-                                globalStorage.get(userLiveSessionPath).then(function (liveSessionGuid) {
-                                    resolve(!angular.equals(liveSessionGuid, {}));
-                                });
+            znkSessionDataSrv.isActiveLiveSession = function () {
+                return new Promise(function (resolve, reject) {
+                    UserProfileService.getCurrUserId().then(function (currUid) {
+                        InfraConfigSrv.getGlobalStorage().then(function (globalStorage) {
+                            var appName = ENV.firebaseAppScopeName;
+                            var userLiveSessionPath = appName + '/users/' + currUid + '/liveSession/active';
+                            globalStorage.get(userLiveSessionPath).then(function (liveSessionGuid) {
+                                resolve(!angular.equals(liveSessionGuid, {}));
                             });
-                        }).catch(function (err) {
-                            reject('isActiveLiveSession: Error: ' + err);
                         });
+                    }).catch(function (err) {
+                        reject('isActiveLiveSession: Error: ' + err);
                     });
-                };
+                });
+            };
 
-                return znkSessionDataSrv;
-            }];
+            return znkSessionDataSrv;
+        }];
 
-        });
+    });
 })(angular);
 
 angular.module('znk.infra.znkSessionData').run(['$templateCache', function ($templateCache) {
@@ -19223,7 +19197,7 @@ angular.module('znk.infra.znkSessionData').run(['$templateCache', function ($tem
     'use strict';
 
     angular.module('znk.infra.znkTimeline').provider('TimelineSrv', function () {
-
+        'ngInject';
         var imgObj = {
             drill: 'components/znkTimeline/svg/icons/timeline-drills-icon.svg',
             practice: 'components/znkTimeline/svg/icons/timeline-practice-icon.svg',
@@ -19244,7 +19218,6 @@ angular.module('znk.infra.znkSessionData').run(['$templateCache', function ($tem
         };
 
         this.$get = ["$log", function($log) {
-            'ngInject';
 
             var timelineSrvApi = {};
 

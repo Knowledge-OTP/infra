@@ -26,16 +26,14 @@
 
 (function (angular) {
     angular.module('znk.infra.presence').provider('PresenceService', function () {
-
+        'ngInject';
         var AuthSrvName;
 
         this.setAuthServiceName = function (authServiceName) {
             AuthSrvName = authServiceName;
         };
 
-        this.$get = [
-            '$log', '$injector', 'ENV', '$rootScope', 'StorageFirebaseAdapter',
-            function ($log, $injector, ENV, $rootScope, StorageFirebaseAdapter) {
+        this.$get = ["$log", "$injector", "ENV", "$rootScope", "StorageFirebaseAdapter", function ($log, $injector, ENV, $rootScope, StorageFirebaseAdapter) {
                 var presenceService = {};
                 var rootRef = new StorageFirebaseAdapter(ENV.fbDataEndPoint);
                 var PRESENCE_PATH = 'presence/';
