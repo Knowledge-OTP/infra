@@ -3,7 +3,7 @@
 
     angular.module('znk.infra.contentAvail').provider('ContentAvailSrv',
         function () {
-            //'ngInject';
+            'ngInject';
             var _specials;
 
             this.setSpecials = function (specialsObj) {
@@ -11,7 +11,6 @@
             };
 
             this.$get = function ($q, $parse, $injector, InfraConfigSrv, StorageSrv) {
-                'ngInject';
 
                 var PURCHASED_ALL = 'all';
 

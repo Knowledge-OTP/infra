@@ -3216,7 +3216,7 @@ angular.module('znk.infra.content').run(['$templateCache', function ($templateCa
 
     angular.module('znk.infra.contentAvail').provider('ContentAvailSrv',
         function () {
-            //'ngInject';
+            'ngInject';
             var _specials;
 
             this.setSpecials = function (specialsObj) {
@@ -3224,7 +3224,6 @@ angular.module('znk.infra.content').run(['$templateCache', function ($templateCa
             };
 
             this.$get = ["$q", "$parse", "$injector", "InfraConfigSrv", "StorageSrv", function ($q, $parse, $injector, InfraConfigSrv, StorageSrv) {
-                'ngInject';
 
                 var PURCHASED_ALL = 'all';
 
