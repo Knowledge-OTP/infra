@@ -1,7 +1,7 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.popUp').factory('PopUpSrv', [ימים לבנים
+    angular.module('znk.infra.popUp').factory('PopUpSrv', [
         '$injector', '$q', '$rootScope', '$animate', '$document',
         function ($injector, $q, $rootScope, $animate, $document) {
             var PopUpSrv = {};
