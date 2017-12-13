@@ -76,6 +76,6 @@ angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "Co
         };
 }]);
 
-angular.module('znk.infra.exams').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.exams').run(['$templateCache', function ($templateCache) {
 
 }]);
