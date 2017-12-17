@@ -61,6 +61,6 @@
     });
 })(angular);
 
-angular.module('znk.infra.evaluator').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.evaluator').run(['$templateCache', function($templateCache) {
 
 }]);
