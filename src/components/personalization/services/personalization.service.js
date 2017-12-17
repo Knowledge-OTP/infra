@@ -128,10 +128,10 @@
                                 }
                             } else {
                                 // Look for an exercise for "timeBundle" and "currSubject" ignoring weakest cat (sending only the relevant "availableExercises" and "availableStats" for these time and subject)
-                                foundExercises[timeBundle] = _getExerciseForTimeAndSubjectNoWeakestCat(availableExercises[timeBundle][currSubject], null, exerciseTypesToIgnore, []);
+                                foundExercises[timeBundle] = _getAvailableExercise(availableExercises[timeBundle][currSubject], null, exerciseTypesToIgnore, []);
                                 // If we couldn't find an exercise for this time bundle, try again with no "exerciseTypeToIgnore" constraint
                                 if (!foundExercises[timeBundle]) {
-                                    foundExercises[timeBundle] = _getExerciseForTimeAndSubjectNoWeakestCat(availableExercises[timeBundle][currSubject], availableStats.subCategories[currSubject], [], []);
+                                    foundExercises[timeBundle] = _getAvailableExercise(availableExercises[timeBundle][currSubject], availableStats.subCategories[currSubject], [], []);
                                 }
                             }
                             // If we found an exercises, set the indication that we did and add it's exerciseType to the "exerciseTypesToIgnore" list for the following exercises (for the other timeBundles, to get varaity)
@@ -183,42 +183,28 @@
                     return _getAvailableExercise(availableExercisesDeep, exerciseTypesToIgnore);
                 }
 
-                /* _getExerciseForTimeAndSubjectNoWeakestCat
-                 * Searches for any exercise from the bottom most (category) level and returns it (the first it will encounter)
-                 *  as long as it is not one of the "exerciseTypesToIgnore" */
-                function _getExerciseForTimeAndSubjectNoWeakestCat(availableExercises, exerciseTypesToIgnore) {
-                    if (availableExercises && availableExercises.subCategories) {
-                        // Get the current level's categories
-                        var categoryIds = Object.keys(availableExercises.subCategories);
-                        angular.forEach(categoryIds, function (categoryId) {
-                            // Verify that "categoryId" is indeed a number (a categoryId and not just another property name)
-                            if (!isNaN(categoryId)) {
-                                return _getExerciseForTimeAndSubjectNoWeakestCat(availableExercises.subCategories[categoryId], exerciseTypesToIgnore);
-                            }
-                        });
-                    }
-                    // Try to get one of the exercises from the current(category) level
-                    return _getAvailableExercise(availableExercises, exerciseTypesToIgnore);
-                }
-
                 /* _getAvailableExercise
-                 * Returns an exercise with the "availableStats.id" category from "availableExercises"
-                 * exerciseTypesToIgnore - tries to get an exercise for a type not in "exerciseTypesToIgnore", if not found then get any exercise type */
+                * Recursive function that iterates through the different levels of availableExercises and returns the bottom most exercise found
+                * availableExercises - obj containing the available exercises
+                * exerciseTypesToIgnore - tries to get an exercise for a type not in "exerciseTypesToIgnore" */
                 function _getAvailableExercise(availableExercises, exerciseTypesToIgnore) {
+                    var foundExercise = null;
+                    var index = 0;
+                    // First, check in the current category level for an available exercise
                     if (availableExercises.exercises) {
                         // If we got exercises (found the ones for the requested category), look for a one to return
                         var availableExerciseTypes = Object.keys(availableExercises.exercises).filter(function (item) {
                             return angular.isDefined(item);
                         });
-                        for (var i = 0; i < availableExerciseTypes.length; i++) {
-                            var exerciseTypeId = parseInt(availableExerciseTypes[i], 10);
+                        for (index = 0; index < availableExerciseTypes.length; index++) {
+                            var exerciseTypeId = parseInt(availableExerciseTypes[index], 10);
                             // Go through the types of available exercises and get one that is not in the "exerciseTypesToIgnore" list
                             if (!exerciseTypesToIgnore || (exerciseTypesToIgnore && exerciseTypesToIgnore.indexOf(exerciseTypeId) === -1)) {
                                 // TODO: We found in debug that sometimes "availableExercises.exercises[exerciseTypeId]" is key=value and sometimes the keys are a sequence...
                                 var exerciseIds = availableExercises.exercises[exerciseTypeId];
                                 var exerciseIdKeys = Object.keys(exerciseIds);
                                 if (exerciseIds && exerciseIdKeys.length > 0) {
-                                    var foundExercise = {
+                                    foundExercise = {
                                         exerciseTypeId: exerciseTypeId,
                                         exerciseId: exerciseIds[exerciseIdKeys[0]]
                                     };
@@ -226,7 +212,23 @@
                                 }
                             }
                         }
+                    } 
+                    // Get the current level's categories
+                    var subCategoryIds = Object.keys(availableExercises.subCategories).filter(function(categoryId) {
+                        return !isNaN(categoryId);
+                    });
+                    // If we got here it means we do not have an available exercise in the current category level,
+                    // so check if we have available subCategories, iterate through them and try to find an available exercise in one of them
+                    for (index = 0 ; index < subCategoryIds.length ; index++) {
+                        // Get an availabe exercise for the first available subCategory
+                        foundExercise = _getAvailableExercise(availableExercises.subCategories[subCategoryIds[index]], exerciseTypesToIgnore);
+                        // If we found an available exercise then return it and exit
+                        if (foundExercise !== null) {
+                            return foundExercise;
+                        }
                     }
+                    // If we got here it means we couldn't find an available exercise in our subCategories and no in our current category level as well
+                    // return null hoping we will find an exercise in one of our siblings category levels or in one of our parent category levels
                     return null;
                 }
 

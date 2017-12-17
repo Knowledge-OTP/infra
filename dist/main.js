@@ -265,7 +265,7 @@
     }]);
 })(angular);
 
-angular.module('znk.infra.analytics').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.analytics').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -924,7 +924,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
     );
 })(angular);
 
-angular.module('znk.infra.assignModule').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.assignModule').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -1190,7 +1190,7 @@ angular.module('znk.infra.assignModule').run(['$templateCache', function ($templ
         }]);
 })(angular);
 
-angular.module('znk.infra.auth').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.auth').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -1230,7 +1230,7 @@ angular.module('znk.infra.auth').run(['$templateCache', function ($templateCache
 })(angular);
 
 
-angular.module('znk.infra.autofocus').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.autofocus').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -2625,7 +2625,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function ($template
     );
 })(angular);
 
-angular.module('znk.infra.calls').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.calls').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/calls/components/callBtn/callBtn.template.html",
     "<button\n" +
     "    ng-click=\"vm.clickBtn()\"\n" +
@@ -2953,7 +2953,7 @@ angular.module('znk.infra.calls').run(['$templateCache', function ($templateCach
     ]);
 })(angular);
 
-angular.module('znk.infra.config').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.config').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -3197,7 +3197,7 @@ angular.module('znk.infra.config').run(['$templateCache', function ($templateCac
     ]);
 })(angular);
 
-angular.module('znk.infra.content').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.content').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -3446,7 +3446,7 @@ angular.module('znk.infra.content').run(['$templateCache', function ($templateCa
     ]);
 })(angular);
 
-angular.module('znk.infra.contentAvail').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.contentAvail').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -3700,7 +3700,7 @@ angular.module('znk.infra.contentGetters').service('CategoryService',
         };
     }]);
 
-angular.module('znk.infra.contentGetters').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.contentGetters').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -3750,7 +3750,7 @@ angular.module('znk.infra.contentGetters').run(['$templateCache', function ($tem
     ]);
 })(angular);
 
-angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/deviceNotSupported/directives/deviceNotSupported.template.html",
     "<div class=\"device-not-supported-inner\">\n" +
     "    <h1>{{title}}</h1>\n" +
@@ -3851,7 +3851,7 @@ angular.module('znk.infra.deviceNotSupported').run(['$templateCache', function (
     ]);
 })(angular);
 
-angular.module('znk.infra.enum').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.enum').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -4404,7 +4404,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function ($templateCache
     );
 })(angular);
 
-angular.module('znk.infra.estimatedScore').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.estimatedScore').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -5235,7 +5235,7 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function ($tem
         }]);
 })(angular);
 
-angular.module('znk.infra.eTutoring').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/eTutoring/components/etutoringActionBar/etutoringActionBar.template.html",
     "<div class=\"e-tutor-bar base-border-radius base-box-shadow\" translate-namespace=\"E_TUTORING_ACTION_BAR\">\n" +
     "    <div class=\"teacher-select-wrap\" ng-if=\"myTeachers\">\n" +
@@ -5815,7 +5815,7 @@ angular.module('znk.infra.eTutoring').run(['$templateCache', function ($template
     });
 })(angular);
 
-angular.module('znk.infra.evaluator').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.evaluator').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -5880,7 +5880,7 @@ angular.module('znk.infra.evaluator').run(['$templateCache', function ($template
     );
 })(angular);
 
-angular.module('znk.infra.eventManager').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.eventManager').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -5962,7 +5962,7 @@ angular.module('znk.infra.exams').service('ExamSrv', ["StorageRevSrv", "$q", "Co
         };
 }]);
 
-angular.module('znk.infra.exams').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.exams').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -6472,7 +6472,7 @@ angular.module('znk.infra.exams').run(['$templateCache', function ($templateCach
     ]);
 })(angular);
 
-angular.module('znk.infra.exerciseResult').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.exerciseResult').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -6752,7 +6752,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function ($tem
     );
 })(angular);
 
-angular.module('znk.infra.exerciseUtility').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.exerciseUtility').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -6900,7 +6900,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function ($te
         }
         );
 })();
-angular.module('znk.infra.filters').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.filters').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -7646,7 +7646,7 @@ angular.module('znk.infra.filters').run(['$templateCache', function ($templateCa
 })(angular);
 
 
-angular.module('znk.infra.general').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.general').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/general/directives/timer/timer.template.html",
     "<div ng-switch=\"type\" class=\"timer-drv\">\n" +
     "    <div ng-switch-when=\"1\" class=\"timer-type1\">\n" +
@@ -7845,7 +7845,7 @@ angular.module('znk.infra.general').run(['$templateCache', function ($templateCa
     });
 })(angular);
 
-angular.module('znk.infra.hint').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.hint').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -7887,7 +7887,7 @@ angular.module('znk.infra.hint').run(['$templateCache', function ($templateCache
 })(angular);
 
 
-angular.module('znk.infra.mailSender').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.mailSender').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -8027,10 +8027,10 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function ($templat
                                 }
                             } else {
                                 // Look for an exercise for "timeBundle" and "currSubject" ignoring weakest cat (sending only the relevant "availableExercises" and "availableStats" for these time and subject)
-                                foundExercises[timeBundle] = _getExerciseForTimeAndSubjectNoWeakestCat(availableExercises[timeBundle][currSubject], null, exerciseTypesToIgnore, []);
+                                foundExercises[timeBundle] = _getAvailableExercise(availableExercises[timeBundle][currSubject], null, exerciseTypesToIgnore, []);
                                 // If we couldn't find an exercise for this time bundle, try again with no "exerciseTypeToIgnore" constraint
                                 if (!foundExercises[timeBundle]) {
-                                    foundExercises[timeBundle] = _getExerciseForTimeAndSubjectNoWeakestCat(availableExercises[timeBundle][currSubject], availableStats.subCategories[currSubject], [], []);
+                                    foundExercises[timeBundle] = _getAvailableExercise(availableExercises[timeBundle][currSubject], availableStats.subCategories[currSubject], [], []);
                                 }
                             }
                             // If we found an exercises, set the indication that we did and add it's exerciseType to the "exerciseTypesToIgnore" list for the following exercises (for the other timeBundles, to get varaity)
@@ -8082,42 +8082,28 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function ($templat
                     return _getAvailableExercise(availableExercisesDeep, exerciseTypesToIgnore);
                 }
 
-                /* _getExerciseForTimeAndSubjectNoWeakestCat
-                 * Searches for any exercise from the bottom most (category) level and returns it (the first it will encounter)
-                 *  as long as it is not one of the "exerciseTypesToIgnore" */
-                function _getExerciseForTimeAndSubjectNoWeakestCat(availableExercises, exerciseTypesToIgnore) {
-                    if (availableExercises && availableExercises.subCategories) {
-                        // Get the current level's categories
-                        var categoryIds = Object.keys(availableExercises.subCategories);
-                        angular.forEach(categoryIds, function (categoryId) {
-                            // Verify that "categoryId" is indeed a number (a categoryId and not just another property name)
-                            if (!isNaN(categoryId)) {
-                                return _getExerciseForTimeAndSubjectNoWeakestCat(availableExercises.subCategories[categoryId], exerciseTypesToIgnore);
-                            }
-                        });
-                    }
-                    // Try to get one of the exercises from the current(category) level
-                    return _getAvailableExercise(availableExercises, exerciseTypesToIgnore);
-                }
-
                 /* _getAvailableExercise
-                 * Returns an exercise with the "availableStats.id" category from "availableExercises"
-                 * exerciseTypesToIgnore - tries to get an exercise for a type not in "exerciseTypesToIgnore", if not found then get any exercise type */
+                * Recursive function that iterates through the different levels of availableExercises and returns the bottom most exercise found
+                * availableExercises - obj containing the available exercises
+                * exerciseTypesToIgnore - tries to get an exercise for a type not in "exerciseTypesToIgnore" */
                 function _getAvailableExercise(availableExercises, exerciseTypesToIgnore) {
+                    var foundExercise = null;
+                    var index = 0;
+                    // First, check in the current category level for an available exercise
                     if (availableExercises.exercises) {
                         // If we got exercises (found the ones for the requested category), look for a one to return
                         var availableExerciseTypes = Object.keys(availableExercises.exercises).filter(function (item) {
                             return angular.isDefined(item);
                         });
-                        for (var i = 0; i < availableExerciseTypes.length; i++) {
-                            var exerciseTypeId = parseInt(availableExerciseTypes[i], 10);
+                        for (index = 0; index < availableExerciseTypes.length; index++) {
+                            var exerciseTypeId = parseInt(availableExerciseTypes[index], 10);
                             // Go through the types of available exercises and get one that is not in the "exerciseTypesToIgnore" list
                             if (!exerciseTypesToIgnore || (exerciseTypesToIgnore && exerciseTypesToIgnore.indexOf(exerciseTypeId) === -1)) {
                                 // TODO: We found in debug that sometimes "availableExercises.exercises[exerciseTypeId]" is key=value and sometimes the keys are a sequence...
                                 var exerciseIds = availableExercises.exercises[exerciseTypeId];
                                 var exerciseIdKeys = Object.keys(exerciseIds);
                                 if (exerciseIds && exerciseIdKeys.length > 0) {
-                                    var foundExercise = {
+                                    foundExercise = {
                                         exerciseTypeId: exerciseTypeId,
                                         exerciseId: exerciseIds[exerciseIdKeys[0]]
                                     };
@@ -8125,7 +8111,23 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function ($templat
                                 }
                             }
                         }
+                    } 
+                    // Get the current level's categories
+                    var subCategoryIds = Object.keys(availableExercises.subCategories).filter(function(categoryId) {
+                        return !isNaN(categoryId);
+                    });
+                    // If we got here it means we do not have an available exercise in the current category level,
+                    // so check if we have available subCategories, iterate through them and try to find an available exercise in one of them
+                    for (index = 0 ; index < subCategoryIds.length ; index++) {
+                        // Get an availabe exercise for the first available subCategory
+                        foundExercise = _getAvailableExercise(availableExercises.subCategories[subCategoryIds[index]], exerciseTypesToIgnore);
+                        // If we found an available exercise then return it and exit
+                        if (foundExercise !== null) {
+                            return foundExercise;
+                        }
                     }
+                    // If we got here it means we couldn't find an available exercise in our subCategories and no in our current category level as well
+                    // return null hoping we will find an exercise in one of our siblings category levels or in one of our parent category levels
                     return null;
                 }
 
@@ -8344,7 +8346,7 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function ($templat
 })(angular);
 
 
-angular.module('znk.infra.personalization').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.personalization').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -8468,7 +8470,7 @@ angular.module('znk.infra.personalization').run(['$templateCache', function ($te
         }
     ]);
 })(angular);
-angular.module('znk.infra.pngSequence').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.pngSequence').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -8685,7 +8687,7 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function ($templa
     ]);
 })(angular);
 
-angular.module('znk.infra.popUp').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.popUp').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/popUp/svg/correct-icon.svg",
     "<svg version=\"1.1\"\n" +
     "     class=\"correct-icon-svg\"\n" +
@@ -8887,7 +8889,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function ($templateCach
     });
 })(angular);
 
-angular.module('znk.infra.presence').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.presence').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -9030,7 +9032,7 @@ angular.module('znk.infra.scoring').provider('ScoringService', function() {
 });
 
 
-angular.module('znk.infra.scoring').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.scoring').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -9717,7 +9719,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function ($templateCa
     });
 })(angular);
 
-angular.module('znk.infra.screenSharing').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.screenSharing').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/screenSharing/directives/screenSharing/screenSharing.template.html",
     "<div ng-switch=\"$ctrl.userSharingState\"\n" +
     "     ng-class=\"$ctrl.sharingStateCls\">\n" +
@@ -9961,7 +9963,7 @@ angular.module('znk.infra.screenSharing').run(['$templateCache', function ($temp
     ]);
 })(angular);
 
-angular.module('znk.infra.scroll').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.scroll').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -9971,7 +9973,7 @@ angular.module('znk.infra.scroll').run(['$templateCache', function ($templateCac
     angular.module('znk.infra.sharedScss', []);
 })(angular);
 
-angular.module('znk.infra.sharedScss').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.sharedScss').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -10354,7 +10356,7 @@ angular.module('znk.infra.sharedScss').run(['$templateCache', function ($templat
     ]);
 })(angular);
 
-angular.module('znk.infra.stats').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.stats').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -10953,7 +10955,7 @@ angular.module('znk.infra.stats').run(['$templateCache', function ($templateCach
     }]);
 })(angular);
 
-angular.module('znk.infra.storage').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.storage').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -11081,7 +11083,7 @@ angular.module('znk.infra.storage').run(['$templateCache', function ($templateCa
 
 
 
-angular.module('znk.infra.support').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.support').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -11199,7 +11201,7 @@ angular.module('znk.infra.support').run(['$templateCache', function ($templateCa
         }]);
 })(angular);
 
-angular.module('znk.infra.svgIcon').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.svgIcon').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -11261,7 +11263,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function ($templateCa
     );
 })(angular);
 
-angular.module('znk.infra.teachers').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.teachers').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -11568,7 +11570,7 @@ angular.module('znk.infra.user').service('UserStorageService',
     return new StorageSrv(fbAdapter, config);
 }]);
 
-angular.module('znk.infra.user').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.user').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -11696,7 +11698,7 @@ angular.module('znk.infra.user').run(['$templateCache', function ($templateCache
     ]);
 })(angular);
 
-angular.module('znk.infra.userContext').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.userContext').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -11858,7 +11860,7 @@ angular.module('znk.infra.userContext').run(['$templateCache', function ($templa
     ]);
 })(angular);
 
-angular.module('znk.infra.utility').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.utility').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -12059,7 +12061,7 @@ angular.module('znk.infra.utility').run(['$templateCache', function ($templateCa
 
 })(angular);
 
-angular.module('znk.infra.webcall').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.webcall').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -12158,7 +12160,7 @@ angular.module('znk.infra.webcall').run(['$templateCache', function ($templateCa
     );
 })(angular);
 
-angular.module('znk.infra.workouts').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.workouts').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -12632,7 +12634,7 @@ angular.module('znk.infra.workouts').run(['$templateCache', function ($templateC
     ]);
 })(angular);
 
-angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkAudioPlayer/svg/close-icon.svg",
     "<svg\n" +
     "    x=\"0px\"\n" +
@@ -12841,7 +12843,7 @@ angular.module('znk.infra.znkAudioPlayer').run(['$templateCache', function ($tem
         });
 })(angular);
 
-angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkCategoryStats/components/znkCategoryStats.template.html",
     "<div class=\"znk-category-stats\">\n" +
     "    <div class=\"category-wrapper\"\n" +
@@ -13807,7 +13809,7 @@ angular.module('znk.infra.znkCategoryStats').run(['$templateCache', function ($t
     );
 })(angular);
 
-angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkChat/svg/znk-chat-chat-icon.svg",
     "<svg\n" +
     "    id=\"Layer_1\"\n" +
@@ -17765,7 +17767,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
     );
 })(angular);
 
-angular.module('znk.infra.znkExercise').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkExercise/core/template/btnSectionDesktop.template.html",
     "<div class=\"btn-container left-container ng-hide\"\n" +
     "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
@@ -18492,7 +18494,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function ($templa
     ]);
 })(angular);
 
-angular.module('znk.infra.znkMedia').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkMedia').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -18528,7 +18530,7 @@ angular.module('znk.infra.znkMedia').run(['$templateCache', function ($templateC
 })(angular);
 
 
-angular.module('znk.infra.znkModule').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkModule').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -18571,7 +18573,7 @@ angular.module('znk.infra.znkModule').run(['$templateCache', function ($template
 })(angular);
 
 
-angular.module('znk.infra.znkProgressBar').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkProgressBar/directives/znkProgressBar.template.html",
     "<div ng-if=\"::showProgressBubble()\" class=\"progress-bubble-wrapper\" ng-style=\"{left: progressWidth + '%'}\">\n" +
     "    <div class=\"progress-percentage\">\n" +
@@ -18741,7 +18743,7 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function ($tem
         }]);
 })(angular);
 
-angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkQuestionReport/components/znkReport/znkReport.template.html",
     "<div class=\"report-dialog\">\n" +
     "    <md-dialog class=\"base base-border-radius report-container\" translate-namespace=\"REPORT_POPUP\">\n" +
@@ -19021,7 +19023,7 @@ angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function ($
         });
 })(angular);
 
-angular.module('znk.infra.znkSessionData').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkSessionData').run(['$templateCache', function($templateCache) {
 
 }]);
 
@@ -19312,7 +19314,7 @@ angular.module('znk.infra.znkSessionData').run(['$templateCache', function ($tem
 })(angular);
 
 
-angular.module('znk.infra.znkTimeline').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkTimeline').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkTimeline/svg/icons/timeline-diagnostic-test-icon.svg",
     "<svg version=\"1.1\" id=\"Layer_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\"\n" +
     "	 viewBox=\"-145 277 60 60\" style=\"enable-background:new -145 277 60 60;\" xml:space=\"preserve\" class=\"timeline-diagnostic-test-icon\" width=\"30px\" height=\"30px\">\n" +
@@ -19626,6 +19628,6 @@ angular.module('znk.infra.znkTimeline').run(['$templateCache', function ($templa
         });
 })(angular);
 
-angular.module('znk.infra.znkTooltip').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkTooltip').run(['$templateCache', function($templateCache) {
 
 }]);
