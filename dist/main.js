@@ -11881,16 +11881,18 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
             _credentials = credentials;
         };
 
-        this.$get = ['$q', '$log', 'ENV', 'PopUpSrv', function ($q, $log, ENV, PopUpSrv) {
+        this.$get = ['$q', '$log', 'ENV', 'PopUpSrv', '$http', function ($q, $log, ENV, PopUpSrv, $http) {
 
             var WebcallSrv = {};
-            var plivoWebSdk; 
+            var plivoWebSdk;
 
             var deferredMap = {
                 call: {},
                 init: {},
                 hang: {}
             };
+
+            var endpointUrl = ENV.znkBackendBaseUrl + '/plivo/endpoint/';
 
             var _notSupportedMsg = 'webcall feature is not available';
 
@@ -11911,10 +11913,10 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 
             function _onMediaPermission(isAllowed) {
                 $log.debug('_onMediaPermission, isAllowed=' + isAllowed);
-                if (!isAllowed){
+                if (!isAllowed) {
                     if (!angular.equals({}, deferredMap.call)) {
                         // errorCode : 1 calls module CallsErrorSrv service depends on it, if it's changed here, it should changed there also.
-                        deferredMap.call.reject({ errorCode: 1, error:'No persmission'});
+                        deferredMap.call.reject({ errorCode: 1, error: 'No persmission' });
                     }
                 }
             }
@@ -11941,8 +11943,8 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
             }
 
             function _onCallFailed(reason) {
-                PopUpSrv.error('Error making a call', 'Please make sure to allow microphone access in browser.<BR>' + 
-                               'reason: ' + reason + ' <BR>' + WebcallSrv.debugInfo, 'Ok','Cancel');
+                PopUpSrv.error('Error making a call', 'Please make sure to allow microphone access in browser.<BR>' +
+                    'reason: ' + reason + ' <BR>' + WebcallSrv.debugInfo, 'Ok', 'Cancel');
                 $log.error('_onCallFailed, reason =' + reason);
                 if (!angular.equals({}, deferredMap.call)) {
                     deferredMap.call.reject(reason);
@@ -11951,6 +11953,33 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
 
             function _onCalling() {
                 $log.debug('_onCalling');
+            }
+
+            function _cleanEndpoint() {
+                var endpoint_id = WebcallSrv.endpoint_id;
+                if (endpoint_id) {
+                    var apiUrl = endpointUrl + 'delete';
+                    WebcallSrv.endpoint_id = undefined;
+                    return $http.post(apiUrl, { alias: endpoint_id });
+                } else {
+                    return $q.when(true);
+                }
+            }
+
+            function _getCredFromNewEndpoint() {
+                var apiUrl = endpointUrl + 'create';
+                return $http.post(apiUrl, { alias: _credentials.username })
+                    .then(function (res) {
+                        if (res.data.message === 'created') {
+                            return {
+                                'username': res.data.username,
+                                'password': _credentials.password,
+                                'endpoint_id': res.data.endpoint_id
+                            };
+                        } else {
+                            return $q.reject(new Error('failed to get endpoint data'));
+                        }
+                    });
             }
 
             function _initPlivo() {
@@ -11969,18 +11998,23 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                 // plivoWebSdk.client.on('audioDeviceChange',audioDeviceChange);
                 plivoWebSdk.client.setRingTone(true);
                 plivoWebSdk.client.setRingToneBack(false);
-                WebcallSrv.debugInfo = '(debug: ' + 
-                            plivoWebSdk.client.browserDetails.browser + ', ' +
-                            plivoWebSdk.client.browserDetails.version +')';
+                WebcallSrv.debugInfo = '(debug: ' +
+                    plivoWebSdk.client.browserDetails.browser + ', ' +
+                    plivoWebSdk.client.browserDetails.version + ')';
                 $log.debug('initPhone ready!');
-                plivoWebSdk.client.login(_credentials.username, _credentials.password);
+                _getCredFromNewEndpoint().then(function (res) {
+                    if (res.endpoint_id) {
+                        WebcallSrv.endpoint_id = res.endpoint_id;
+                    }
+                    plivoWebSdk.client.login(res.username, res.password);
+                });
             }
 
-            function _getSettings(){
+            function _getSettings() {
 
-                var defaultSettings = { "permOnClick": true, "codecs": ["OPUS","PCMU"], "enableIPV6": false, "audioConstraints": { "optional": [ { "googAutoGainControl": false }, {"googEchoCancellation":true} ] }, "enableTracking": true};
-                // if (ENV.debug){ 
-                    defaultSettings.debug="DEBUG";
+                var defaultSettings = { "permOnClick": true, "codecs": ["OPUS", "PCMU"], "enableIPV6": false, "audioConstraints": { "optional": [{ "googAutoGainControl": false }, { "googEchoCancellation": true }] }, "enableTracking": true };
+                // if (ENV.debug){
+                defaultSettings.debug = "DEBUG";
                 // }
                 return defaultSettings;
             }
@@ -12017,13 +12051,13 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
             };
 
             WebcallSrv.connect = function (callId) {
-                return _init().then(function () {                        
-                    $log.debug('init done');                            
-                    return _call(callId);                          
-                 });
+                return _init().then(function () {
+                    $log.debug('init done');
+                    return _call(callId);
+                });
             };
 
-             WebcallSrv.login = function () {
+            WebcallSrv.login = function () {
                 _plivoLogin();
             };
 
@@ -12039,11 +12073,11 @@ angular.module('znk.infra.utility').run(['$templateCache', function($templateCac
                 } else {
                     deferredMap.hang.reject();
                 }
-
+                _cleanEndpoint();
                 return deferredMap.hang.promise;
             };
 
-            WebcallSrv.setCallCredRunTime = function(credentials, useForce) {
+            WebcallSrv.setCallCredRunTime = function (credentials, useForce) {
                 if (angular.isDefined(_credentials) && !useForce) {
                     $log.error('WebcallSrv setCallCredRunTime: _credentials already set! ' +
                         'if you wish to force it add true as a second param! credentials: ' + credentials);
