@@ -104,11 +104,11 @@
                                 'username': res.data.username,
                                 'password': _credentials.password,
                                 'endpoint_id': res.data.endpoint_id
-                            }
+                            };
                         } else {
                             return $q.reject(new Error('failed to get endpoint data'));
                         }
-                    })
+                    });
             }
 
             function _initPlivo() {
@@ -136,7 +136,7 @@
                         WebcallSrv.endpoint_id = res.endpoint_id;
                     }
                     plivoWebSdk.client.login(res.username, res.password);
-                })
+                });
             }
 
             function _getSettings() {

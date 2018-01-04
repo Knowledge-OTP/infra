@@ -5,7 +5,7 @@
         .config(function (WebcallSrvProvider) {
         	WebcallSrvProvider.setCallCred({
         		username:'zinkerzend1180102142935',
-        		password:'zink9z2014'
+        		password:'zinkerz$9999'
         	});
         })
         .service('ENV', function () {
