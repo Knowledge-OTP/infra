@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="popUp/main.css">
     <title>Title</title>
-    
+
     <script src="angular/angular.js"></script>
-     <script src="enum/enum.js"></script>
+    <script src="enum/enum.js"></script>
     <script src="svgIcon/svgIcon.js"></script>
     <script src="autofocus/autofocus.js"></script>
     <script src="popUp/popUp.js"></script>
@@ -14,11 +15,25 @@
     <script src="plivo/dist/plivo.min.js"></script>
     <script src="demoApp.js"></script>
 </head>
+
 <body ng-app="demoApp" ng-controller="Main">
+    <p>Insert your call Id (conf number id) and click init to start a call, open another broswer with the samce call id and
+        click init also to peer the call</p>
+        <hr>
+    <br>
+
+    <label>Call Id:</label>
+    <input type="text" name="input" ng-model="callId" placeholder="1234">
+    <br>
+    <br>
     <button ng-click="init()">Init</button>
     <br>
+    <hr>
     <button ng-click="login()">Login</button>
-    <button ng-click="call(1234)">Call</button>
+    <button ng-click="call()">Call</button>
     <button ng-click="hang()">Hang</button>
+    <br>
+
 </body>
+
 </html>
