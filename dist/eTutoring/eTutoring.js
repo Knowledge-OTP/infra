@@ -697,13 +697,13 @@
                     angular.forEach(self.currentModule.exercises, function (exercise) {
                         // Sort the exercises by exerciseTypeId. First - Lecture, Second - Tutorial, Third - Practice
                         exercise.sort(function (a, b) {
+                            var returnVal = 0;
                             if (a.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum || b.exerciseTypeId === ExerciseTypeEnum.PRACTICE.enum) {
-                                return -1;
+                                returnVal = -1;
                             } else if (a.exerciseTypeId === ExerciseTypeEnum.PRACTICE.enum || b.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum) {
-                                return 1;
-                            } else {
-                                return 0;
+                                returnVal = 1;
                             }
+                            return returnVal;
                         });
                     });
                 }
