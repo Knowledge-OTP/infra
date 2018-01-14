@@ -156,6 +156,6 @@
     ]);
 })(angular);
 
-angular.module('znk.infra.utility').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.utility').run(['$templateCache', function ($templateCache) {
 
 }]);

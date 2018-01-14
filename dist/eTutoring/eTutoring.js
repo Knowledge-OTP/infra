@@ -695,14 +695,15 @@
 
                     self.currentModule.exercises = groupBy(self.currentModule.exercises, 'order');
                     angular.forEach(self.currentModule.exercises, function (exercise) {
-                        exercise.sort(function compareLessonSummary(a, b) {
-                            if (a.hasOwnProperty('isLessonSummary') && !b.hasOwnProperty('isLessonSummary')) {
-                                return 1;
-                            }
-                            if (!a.hasOwnProperty('isLessonSummary') && b.hasOwnProperty('isLessonSummary')) {
+                        // Sort the exercises by exerciseTypeId. First - Lecture, Second - Tutorial, Third - Practice
+                        exercise.sort(function (a, b) {
+                            if (a.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum || b.exerciseTypeId === ExerciseTypeEnum.PRACTICE.enum) {
                                 return -1;
+                            } else if (a.exerciseTypeId === ExerciseTypeEnum.PRACTICE.enum || b.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum) {
+                                return 1;
+                            } else {
+                                return 0;
                             }
-                            return 0;
                         });
                     });
                 }
@@ -825,7 +826,7 @@
         }]);
 })(angular);
 
-angular.module('znk.infra.eTutoring').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.eTutoring').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/eTutoring/components/etutoringActionBar/etutoringActionBar.template.html",
     "<div class=\"e-tutor-bar base-border-radius base-box-shadow\" translate-namespace=\"E_TUTORING_ACTION_BAR\">\n" +
     "    <div class=\"teacher-select-wrap\" ng-if=\"myTeachers\">\n" +
