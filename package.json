@@ -1,6 +1,12 @@
 {
   "name": "znkinfra",
   "private": true,
+  "scripts": {
+    "dist": "grunt dist",
+    "build": "grunt build",
+    "test": "grunt test",
+    "lint": "grunt ci"
+  },
   "devDependencies": {
     "grunt": "^1.0.1",
     "grunt-autoprefixer": "^3.0.4",

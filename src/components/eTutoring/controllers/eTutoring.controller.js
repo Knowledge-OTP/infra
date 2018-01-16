@@ -80,14 +80,15 @@
 
                     self.currentModule.exercises = groupBy(self.currentModule.exercises, 'order');
                     angular.forEach(self.currentModule.exercises, function (exercise) {
-                        exercise.sort(function compareLessonSummary(a, b) {
-                            if (a.hasOwnProperty('isLessonSummary') && !b.hasOwnProperty('isLessonSummary')) {
-                                return 1;
+                        // Sort the exercises by exerciseTypeId. First - Lecture, Second - Tutorial, Third - Practice
+                        exercise.sort(function (a, b) {
+                            var returnVal = 0;
+                            if (a.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum || b.exerciseTypeId === ExerciseTypeEnum.PRACTICE.enum) {
+                                returnVal = -1;
+                            } else if (a.exerciseTypeId === ExerciseTypeEnum.PRACTICE.enum || b.exerciseTypeId === ExerciseTypeEnum.LECTURE.enum) {
+                                returnVal = 1;
                             }
-                            if (!a.hasOwnProperty('isLessonSummary') && b.hasOwnProperty('isLessonSummary')) {
-                                return -1;
-                            }
-                            return 0;
+                            return returnVal;
                         });
                     });
                 }
