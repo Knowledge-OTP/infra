@@ -4412,7 +4412,8 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function ($tem
     'use strict';
 
     angular.module('znk.infra.eTutoring',[
-        'znk.infra.contentGetters'
+        'znk.infra.contentGetters',
+        'znk.infra.user'
     ])
         .config([
             'SvgIconSrvProvider',
@@ -5027,8 +5028,9 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function ($tem
     'use strict';
 
     angular.module('znk.infra.eTutoring').controller('ETutoringController',
-        ["$scope", "diagnosticData", "$mdDialog", "$document", "$window", "ENV", "InvitationService", "ExerciseTypeEnum", "ETutoringViewsConst", "$stateParams", "$location", "ETutoringService", function ($scope, diagnosticData, $mdDialog, $document, $window, ENV, InvitationService,
-                  ExerciseTypeEnum, ETutoringViewsConst, $stateParams, $location, ETutoringService) {
+        ["$scope", "diagnosticData", "$mdDialog", "$document", "$window", "ENV", "InvitationService", "ExerciseTypeEnum", "ETutoringViewsConst", "$stateParams", "$location", "ETutoringService", "AccountStatusEnum", function ($scope, diagnosticData, $mdDialog, $document, $window, ENV, InvitationService,
+                  ExerciseTypeEnum, ETutoringViewsConst, $stateParams, $location, ETutoringService,
+                  AccountStatusEnum) {
             'ngInject';
 
             var self = this;
@@ -5125,7 +5127,9 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function ($tem
                 }
                 var teacherskeys = Object.keys(teachers);
                 for (var i = 0; i < teacherskeys.length; i++) {
-                    if (teachers[teacherskeys[i]].senderEmail !== ENV.supportEmail && teachers[teacherskeys[i]].zinkerzTeacher) {
+                    var teacher = teachers[teacherskeys[i]];
+                    var zinkerzTeacher = teacher && teacher.teacherInfo && teacher.teacherInfo.accountStatus === AccountStatusEnum.ACTIVE.enum;
+                    if (zinkerzTeacher && teacher.senderEmail !== ENV.supportEmail) {
                         return true;
                     }
                 }
