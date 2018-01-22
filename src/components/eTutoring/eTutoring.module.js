@@ -2,7 +2,8 @@
     'use strict';
 
     angular.module('znk.infra.eTutoring',[
-        'znk.infra.contentGetters'
+        'znk.infra.contentGetters',
+        'znk.infra.user'
     ])
         .config([
             'SvgIconSrvProvider',
