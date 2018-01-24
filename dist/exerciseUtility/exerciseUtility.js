@@ -189,7 +189,7 @@
             return new EnumSrv.BaseEnum([
                 ['MATH', LiveSessionSubject.MATH, 'math'],
                 ['ENGLISH', LiveSessionSubject.ENGLISH, 'english'],
-                ['SCIENCE', LiveSessionSubject.ENGLISH, 'science']
+                ['SCIENCE', LiveSessionSubject.SCIENCE, 'science']
             ]);
         }
     ]);

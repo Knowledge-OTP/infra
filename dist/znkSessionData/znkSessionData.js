@@ -11,60 +11,6 @@
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkSessionData').factory('SessionBtnStatusEnum',
-        ["EnumSrv", function (EnumSrv) {
-            'ngInject';
-
-            return new EnumSrv.BaseEnum([
-                ['OFFLINE_BTN', 1, 'offline btn'],
-                ['START_BTN', 2, 'start btn'],
-                ['ENDED_BTN', 3, 'ended btn']
-            ]);
-        }]
-    );
-})(angular);
-
-(function (angular) {
-    'use strict';
-
-    angular.module('znk.infra.znkSessionData').factory('SessionsStatusEnum',
-        ["EnumSrv", function (EnumSrv) {
-            'ngInject';
-
-            return new EnumSrv.BaseEnum([
-                ['ENDED', 0, 'ended Session'],
-                ['ACTIVE', 1, 'active Session']
-            ]);
-        }]
-    );
-})(angular);
-
-
-(function (angular) {
-    'use strict';
-
-    var subjectEnum = {
-        MATH: 0,
-        ENGLISH: 5
-    };
-
-    angular.module('znk.infra.znkSessionData').constant('SessionSubjectEnumConst', subjectEnum);
-
-    angular.module('znk.infra.znkSessionData').factory('SessionSubjectEnum', [
-        'EnumSrv',
-        function (EnumSrv) {
-
-            return new EnumSrv.BaseEnum([
-                ['MATH', subjectEnum.MATH, 'math'],
-                ['ENGLISH', subjectEnum.ENGLISH, 'english']
-            ]);
-        }
-    ]);
-})(angular);
-
-(function (angular) {
-    'use strict';
-
     angular.module('znk.infra.znkSessionData').provider('znkSessionDataSrv',
         function () {
             var _sessionSubjectsGetter;
