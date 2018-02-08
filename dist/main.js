@@ -1952,7 +1952,7 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function ($template
                              status = CallsBtnStatusEnum.CALL_BTN.enum;
                      }
                  }
-                 
+
                 return status;
             };
 
@@ -4232,8 +4232,10 @@ angular.module('znk.infra.enum').run(['$templateCache', function ($templateCache
                                 'result index: ', i
                             );
                         } else {
-                            var subjectId1 = CategoryService.getCategoryLevel1ParentByIdSync(question.categoryId);
-                            var subjectId2 = CategoryService.getCategoryLevel1ParentByIdSync(question.categoryId2);
+                            var subjectId1 = (typeof question.subjectId === 'undefined' || question.subjectId === null) ?
+                                CategoryService.getCategoryLevel1ParentByIdSync(question.categoryId) : question.subjectId;
+                            var subjectId2 = (typeof question.subjectId === 'undefined' || question.subjectId === null) ?
+                                CategoryService.getCategoryLevel1ParentByIdSync(question.categoryId2) : question.subjectId;
                             subjectIds = [subjectId1, subjectId2];
                             angular.forEach(subjectIds, function (subjectId) {
                                 if (angular.isDefined(subjectId) && subjectId !== null) {
@@ -4276,8 +4278,10 @@ angular.module('znk.infra.enum').run(['$templateCache', function ($templateCache
                             );
                             return;
                         } else {
-                            var subjectId1 = CategoryService.getCategoryLevel1ParentByIdSync(questionResult.categoryId);
-                            var subjectId2 = CategoryService.getCategoryLevel1ParentByIdSync(questionResult.categoryId2);
+                            var subjectId1 = (typeof questionResult.subjectId === 'undefined' || questionResult.subjectId === null) ?
+                                CategoryService.getCategoryLevel1ParentByIdSync(questionResult.categoryId): questionResult.subjectId;
+                            var subjectId2 = (typeof questionResult.subjectId === 'undefined' || questionResult.subjectId === null) ?
+                                CategoryService.getCategoryLevel1ParentByIdSync(questionResult.categoryId2): questionResult.subjectId;
                             var subjectIds = [subjectId1, subjectId2];
                             angular.forEach(subjectIds, function (subjectId) {
                                 if (angular.isDefined(subjectId) && subjectId !== null) {
@@ -6780,7 +6784,7 @@ angular.module('znk.infra.exerciseResult').run(['$templateCache', function ($tem
     angular.module('znk.infra.exerciseUtility').factory('ExerciseUtilitySrv',
         function () {
             'ngInject';
-            
+
             var ExerciseUtilitySrv = {};
 
             return ExerciseUtilitySrv;
@@ -6807,7 +6811,7 @@ angular.module('znk.infra.exerciseUtility').run(['$templateCache', function ($te
                 if(!angular.isString(str) || !str.length){
                     return '';
                 }
-                
+
                 return str[0].toUpperCase() + str.substr(1);
             };
         }
@@ -7120,7 +7124,7 @@ angular.module('znk.infra.filters').run(['$templateCache', function ($templateCa
  *  In case only one prefix/suffix is provided, it will be used in all attributes
  *  In case no @context-attr is provided, it will set the class attribute by default
  *  No need to pass dashes ('-') to prefix or suffix, they are already appended
- * 
+ *
  * ** Optional **: you can now add an attribute called "type" and assign it the word topic if you want idToTopicName
  */
 (function (angular) {
@@ -8147,7 +8151,7 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function ($templat
                                 }
                             }
                         }
-                    } 
+                    }
                     // Get the current level's categories
                     var subCategoryIds = Object.keys(availableExercises.subCategories).filter(function(categoryId) {
                         return !isNaN(categoryId);
@@ -8309,7 +8313,7 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function ($templat
                                 var currSubAvailableSubCategories = Object.keys(availableExercises[timeBundle][subjectId].subCategories);
                                 // If there are no exercises and not subCategories available for this subject (#.subCategories obj always has the "subCategories" property among the category ids)
                                 if ((currSubAvailableExercises.length === 0) && (currSubAvailableSubCategories.length === 1)) {
-                                  // Remove this subject from the available exercises object  
+                                  // Remove this subject from the available exercises object
                                   delete availableExercises[timeBundle][subjectId];
                                 }
                               }
@@ -9178,7 +9182,7 @@ angular.module('znk.infra.scoring').run(['$templateCache', function ($templateCa
 
 (function(){
     'use strict';
-    
+
     angular.module('znk.infra.screenSharing').run(
         ["ScreenSharingEventsSrv", function(ScreenSharingEventsSrv){
             'ngInject';
@@ -11245,7 +11249,7 @@ angular.module('znk.infra.svgIcon').run(['$templateCache', function ($templateCa
     'use strict';
 
     angular.module('znk.infra.teachers', [
-        
+
     ]);
 })(angular);
 
@@ -12562,11 +12566,11 @@ angular.module('znk.infra.workouts').run(['$templateCache', function ($templateC
                     };
 
                     var audioLoadRetry = 1;
-                    
+
                     var audioSucessFn = function() {
                       audioLoadRetry = 1;
                     };
-                                        
+
                     var audioErrFn = function() {
                       console.log('znkAudioPlayer loadSound failed #' + audioLoadRetry);
                       sound.release();
@@ -14825,7 +14829,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
             questionTypeGetterFn = typeGetterFn;
         };
 
-        var answersFormaterObjMap = {};        
+        var answersFormaterObjMap = {};
         this.setAnswersFormatValidtors = function (_answersFormaterObjMap) {
             answersFormaterObjMap = _answersFormaterObjMap;
         };
@@ -14849,7 +14853,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
                     return questionTypeGetterFn(question);
                 };
 
-                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {   
+                QuestionTypesSrv.checkAnswerAgainstFormatValidtors = function (userAnswer, answerTypeId, callbackValidAnswer, callbackUnValidAnswer, question) {
                     if (!angular.isFunction(callbackValidAnswer)) { // callbackUnValidAnswer is optional
                         $log.error('QuestionTypesSrv checkAnswerAgainstFormatValidtors: callbackValidAnswer are missing!');
                         return;
@@ -14857,7 +14861,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
 
                    var answersFormaterArr = answersFormaterObjMap[answerTypeId];
 
-                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer                    
+                    // if there's no userAnswer or formatters or it's not an array then invoke callbackValidAnswer
                    if (angular.isUndefined(userAnswer) ||
                        !angular.isArray(answersFormaterArr) ||
                        !answersFormaterArr.length) {
@@ -14867,10 +14871,10 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
 
                     var answersFormaterArrLength = answersFormaterArr.length;
 
-                    var answerValueBool, currentFormatter, functionGetter;                     
+                    var answerValueBool, currentFormatter, functionGetter;
                     for (var i = 0; i < answersFormaterArrLength; i++) {
                         currentFormatter = answersFormaterArr[i];
-                       
+
                         if (angular.isFunction(currentFormatter)) {
                             try {
                                  functionGetter = $injector.invoke(currentFormatter);
@@ -17779,7 +17783,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
                 return function() {
                     return true;
                 };
-            }; 
+            };
 
             this.setShouldBroadCastExerciseGetter = function(_broadCastExerciseFn) {
                 broadCastExerciseFn = _broadCastExerciseFn;
