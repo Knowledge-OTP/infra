@@ -110,8 +110,10 @@
                                 'result index: ', i
                             );
                         } else {
-                            var subjectId1 = CategoryService.getCategoryLevel1ParentByIdSync(question.categoryId);
-                            var subjectId2 = CategoryService.getCategoryLevel1ParentByIdSync(question.categoryId2);
+                            var subjectId1 = (typeof question.subjectId === 'undefined' || question.subjectId === null) ?
+                                CategoryService.getCategoryLevel1ParentByIdSync(question.categoryId) : question.subjectId;
+                            var subjectId2 = (typeof question.subjectId === 'undefined' || question.subjectId === null) ?
+                                CategoryService.getCategoryLevel1ParentByIdSync(question.categoryId2) : question.subjectId;
                             subjectIds = [subjectId1, subjectId2];
                             angular.forEach(subjectIds, function (subjectId) {
                                 if (angular.isDefined(subjectId) && subjectId !== null) {
@@ -154,8 +156,10 @@
                             );
                             return;
                         } else {
-                            var subjectId1 = CategoryService.getCategoryLevel1ParentByIdSync(questionResult.categoryId);
-                            var subjectId2 = CategoryService.getCategoryLevel1ParentByIdSync(questionResult.categoryId2);
+                            var subjectId1 = (typeof questionResult.subjectId === 'undefined' || questionResult.subjectId === null) ?
+                                CategoryService.getCategoryLevel1ParentByIdSync(questionResult.categoryId): questionResult.subjectId;
+                            var subjectId2 = (typeof questionResult.subjectId === 'undefined' || questionResult.subjectId === null) ?
+                                CategoryService.getCategoryLevel1ParentByIdSync(questionResult.categoryId2): questionResult.subjectId;
                             var subjectIds = [subjectId1, subjectId2];
                             angular.forEach(subjectIds, function (subjectId) {
                                 if (angular.isDefined(subjectId) && subjectId !== null) {
