@@ -484,6 +484,17 @@
                 });
             };
 
+            this.updateModuleResult = function (newResult) {
+                var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
+                var dataToSave = {};
+                dataToSave[moduleResultPath] = newResult;
+                return InfraConfigSrv.getStudentStorage().then(function (storage) {
+                    return storage.update(dataToSave).then(function (newResults) {
+                        return newResults[moduleResultPath];
+                    });
+                });
+            };
+
             this.getExerciseResultByGuid = function (guid) {
                 return _getExerciseResultByGuid(guid).then(function (exerciseResult) {
                     exerciseResult.$save = exerciseSaveFn;
