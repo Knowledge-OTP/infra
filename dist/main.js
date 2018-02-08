@@ -392,7 +392,8 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
                                     // copy fields from module object to results object for future using
                                     moduleResults[moduleId].name = moduleObj.name;
                                     moduleResults[moduleId].desc = moduleObj.desc;
-                                    moduleResults[moduleId].subjectId = CategoryService.getCategoryLevel1ParentByIdSync(moduleObj.categoryId);
+                                    moduleResults[moduleId].subjectId = moduleObj.subjectId ? moduleObj.subjectId :
+                                        CategoryService.getCategoryLevel1ParentByIdSync(moduleObj.categoryId);
                                     moduleResults[moduleId].order = moduleObj.order;
                                     moduleResults[moduleId].exercises = moduleObj.exercises;
                                     moduleResults[moduleId].assignDate = Date.now();
@@ -480,21 +481,37 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
                     var moduleResults = {};
                     var getPromArr = [];
                     var userId = StudentContextSrv.getCurrUid();
+                    var moduleResultsToUpdate = [];
 
                     angular.forEach(moduleResultsGuids, function (resultGuid, moduleId) {
-                        var getProm = getResultsByModuleId(userId, moduleId, contentType).then(function (moduleResult) {
-                            moduleResults[moduleResult.moduleId] = moduleResult;
+                        var moduleResultProm = getResultsByModuleId(userId, moduleId, contentType).then(function (moduleResult) {
+                            var getModuleProm;
+                            // If there is NOT subjectId on moduleResult add and update
+                            if (typeof moduleResult.subjectId === 'undefined' || moduleResult.subjectId === null) {
+                                getModuleProm = ExerciseResultSrv.getModuleById(moduleId, userId).then(moduleObj => {
+                                    moduleResult.subjectId = moduleObj.subjectId ? moduleObj.subjectId :
+                                        CategoryService.getCategoryLevel1ParentByIdSync(moduleObj.categoryId);
+                                    moduleResultsToUpdate.push(moduleResult);
+                                    return ExerciseResultSrv.updateModuleResult(moduleResult);
+                                });
+                            } else {
+                                getModuleProm = Promise.resolve(moduleResult);
+                            }
+                            return getModuleProm.then(verifiedModuleResult => {
+                                moduleResults[verifiedModuleResult.moduleId] = verifiedModuleResult;
 
-                            angular.forEach(registerEvents[userId][contentType].changeCB, function (cbData) {
-                                if (cbData.guids.indexOf(moduleResult.guid) === -1) {
-                                    cbData.guids.push(moduleResult.guid);
-                                    if(contentType === AssignContentEnum.LESSON.enum) {
-                                        studentStorage.onEvent('child_changed', 'moduleResults/' + moduleResult.guid, callbackWrapper(contentType));
+                                angular.forEach(registerEvents[userId][contentType].changeCB, function (cbData) {
+                                    if (cbData.guids.indexOf(verifiedModuleResult.guid) === -1) {
+                                        cbData.guids.push(verifiedModuleResult.guid);
+                                        if(contentType === AssignContentEnum.LESSON.enum) {
+                                            studentStorage.onEvent('child_changed', 'moduleResults/' + verifiedModuleResult.guid, callbackWrapper(contentType));
+                                        }
                                     }
-                                }
+                                });
                             });
+
                         });
-                        getPromArr.push(getProm);
+                        getPromArr.push(moduleResultProm);
                     });
 
                     $q.all(getPromArr).then(function () {
@@ -6453,6 +6470,17 @@ angular.module('znk.infra.exams').run(['$templateCache', function ($templateCach
                         return storage.update(dataToSave).then(function (newResults) {
                             return newResults[moduleResultPath];
                         });
+                    });
+                });
+            };
+
+            this.updateModuleResult = function (newResult) {
+                var moduleResultPath = MODULE_RESULTS_PATH + '/' + newResult.guid;
+                var dataToSave = {};
+                dataToSave[moduleResultPath] = newResult;
+                return InfraConfigSrv.getStudentStorage().then(function (storage) {
+                    return storage.update(dataToSave).then(function (newResults) {
+                        return newResults[moduleResultPath];
                     });
                 });
             };
