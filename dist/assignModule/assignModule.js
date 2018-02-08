@@ -220,8 +220,8 @@
                             // If there is NOT subjectId on moduleResult add and update
                             if (typeof moduleResult.subjectId === 'undefined' || moduleResult.subjectId === null) {
                                 getModuleProm = ZnkModuleService.getModuleById(moduleId, userId).then(moduleObj => {
-                                    moduleResult.subjectId = moduleObj.subjectId ? moduleObj.subjectId :
-                                        CategoryService.getCategoryLevel1ParentByIdSync(moduleObj.categoryId);
+                                    moduleResult.subjectId = (typeof moduleObj.subjectId === 'undefined' || moduleObj.subjectId === null) ?
+                                        CategoryService.getCategoryLevel1ParentByIdSync(moduleObj.categoryId) : moduleObj.subjectId;
                                     moduleResultsToUpdate.push(moduleResult);
                                     return ExerciseResultSrv.updateModuleResult(moduleResult);
                                 });
