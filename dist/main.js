@@ -342,7 +342,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
                         registerEvents[userId] = {};
                     }
 
-                    if(!registerEvents[userId][contentType]){
+                    if (!registerEvents[userId][contentType]) {
                         registerEvents[userId][contentType] = {};
                     }
 
@@ -392,8 +392,10 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
                                     // copy fields from module object to results object for future using
                                     moduleResults[moduleId].name = moduleObj.name;
                                     moduleResults[moduleId].desc = moduleObj.desc;
-                                    moduleResults[moduleId].subjectId = moduleObj.subjectId ? moduleObj.subjectId :
-                                        CategoryService.getCategoryLevel1ParentByIdSync(moduleObj.categoryId);
+                                    moduleResults[moduleId].subjectId =
+                                        (typeof moduleObj.subjectId === 'undefined' || moduleObj.subjectId === null) ?
+                                            CategoryService.getCategoryLevel1ParentByIdSync(moduleObj.categoryId) :
+                                            moduleObj.subjectId;
                                     moduleResults[moduleId].order = moduleObj.order;
                                     moduleResults[moduleId].exercises = moduleObj.exercises;
                                     moduleResults[moduleId].assignDate = Date.now();
@@ -411,22 +413,22 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
             };
 
             userAssignModuleService.setAssignContent = function (userId, moduleId, contentType) {
-                return ExerciseResultSrv.getModuleResult(userId, moduleId,  false, false, contentType).then(function (moduleResult) {
+                return ExerciseResultSrv.getModuleResult(userId, moduleId, false, false, contentType).then(function (moduleResult) {
                     moduleResult.contentAssign = true;
                     return ExerciseResultSrv.setModuleResult(moduleResult, moduleId, contentType);
                 });
             };
 
-            userAssignModuleService.assignHomework = function(lastAssignmentType){
+            userAssignModuleService.assignHomework = function (lastAssignmentType) {
                 return InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
                     var homeworkObj = _buildHomeworkObj(lastAssignmentType);
-                    studentStorage.set(USER_ASSIGNMENTS_DATA_PATH,homeworkObj);
+                    studentStorage.set(USER_ASSIGNMENTS_DATA_PATH, homeworkObj);
                 });
             };
 
-            userAssignModuleService.registerToFinishExerciseEvents = function() {
-                angular.forEach(exerciseEventsConst,function(eventTypeNameObj){
-                    $rootScope.$on(eventTypeNameObj.FINISH, function(eventData, exerciseContent, currentExerciseResult){
+            userAssignModuleService.registerToFinishExerciseEvents = function () {
+                angular.forEach(exerciseEventsConst, function (eventTypeNameObj) {
+                    $rootScope.$on(eventTypeNameObj.FINISH, function (eventData, exerciseContent, currentExerciseResult) {
                         updateAllHomeworkStatus(currentExerciseResult);
                     });
                 });
@@ -443,8 +445,8 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
 
             function _getContentTypeByPath(path) {
                 var newPath = path;
-                if(path.indexOf('/') > -1) {
-                    newPath = path.substr(path.lastIndexOf('/')+1);
+                if (path.indexOf('/') > -1) {
+                    newPath = path.substr(path.lastIndexOf('/') + 1);
                 }
                 switch (newPath) {
                     case userAssignModuleService.assignType.module.fbPath:
@@ -488,7 +490,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
                             var getModuleProm;
                             // If there is NOT subjectId on moduleResult add and update
                             if (typeof moduleResult.subjectId === 'undefined' || moduleResult.subjectId === null) {
-                                getModuleProm = ExerciseResultSrv.getModuleById(moduleId, userId).then(moduleObj => {
+                                getModuleProm = ZnkModuleService.getModuleById(moduleId, userId).then(moduleObj => {
                                     moduleResult.subjectId = moduleObj.subjectId ? moduleObj.subjectId :
                                         CategoryService.getCategoryLevel1ParentByIdSync(moduleObj.categoryId);
                                     moduleResultsToUpdate.push(moduleResult);
@@ -503,7 +505,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
                                 angular.forEach(registerEvents[userId][contentType].changeCB, function (cbData) {
                                     if (cbData.guids.indexOf(verifiedModuleResult.guid) === -1) {
                                         cbData.guids.push(verifiedModuleResult.guid);
-                                        if(contentType === AssignContentEnum.LESSON.enum) {
+                                        if (contentType === AssignContentEnum.LESSON.enum) {
                                             studentStorage.onEvent('child_changed', 'moduleResults/' + verifiedModuleResult.guid, callbackWrapper(contentType));
                                         }
                                     }
@@ -518,7 +520,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
                         userAssignModuleService.assignModules = moduleResults;
                         applyCB(registerEvents[userId][contentType].valueCB, contentType);
                     }).catch(function (err) {
-                        $log.error('buildResultsFromGuids: Error ' , err);
+                        $log.error('buildResultsFromGuids: Error ', err);
                     });
                 });
             }
@@ -544,7 +546,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
             function applyCB(cbArr, contentType) {
                 angular.forEach(cbArr, function (valueCB) {
                     if (angular.isFunction(valueCB)) {
-                        if(valueCB.type === contentType){
+                        if (valueCB.type === contentType) {
                             valueCB(userAssignModuleService.assignModules);
                         }
                     }
@@ -565,6 +567,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
                         duration: 0
                     };
                 }
+
                 function newOverAll() {
                     return {
                         status: ExerciseStatusEnum.NEW.enum,
@@ -586,11 +589,11 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
                         exerciseTypeId = exercise.exerciseTypeId;
                         exerciseId = exercise.exerciseId;
 
-                        if (!moduleSummary[exerciseTypeId]){
+                        if (!moduleSummary[exerciseTypeId]) {
                             moduleSummary[exerciseTypeId] = {};
                         }
                         var currentExerciseRes;
-                        if (!moduleSummary[exerciseTypeId][exerciseId]){
+                        if (!moduleSummary[exerciseTypeId][exerciseId]) {
                             currentExerciseRes = newSummary();
                         }
 
@@ -599,7 +602,7 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
                         }
 
                         if (_exerciseResults && _exerciseResults[exerciseTypeId]) {
-                            if (_exerciseResults[exerciseTypeId][exerciseId]){
+                            if (_exerciseResults[exerciseTypeId][exerciseId]) {
                                 currentExerciseRes.status = _exerciseResults[exerciseTypeId][exerciseId].isComplete ?
                                     ExerciseStatusEnum.COMPLETED.enum :
                                     (_exerciseResults[exerciseTypeId][exerciseId].questionResults.length > 0 ? ExerciseStatusEnum.ACTIVE.enum : ExerciseStatusEnum.NEW.enum);
@@ -626,14 +629,14 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
 
                     if (assignModule.exerciseResults.length) {
 
-                        var completedExercises = 0, totalDuration=0;
+                        var completedExercises = 0, totalDuration = 0;
 
                         angular.forEach(assignModule.exerciseResults, function (exerciseType) {
                             angular.forEach(exerciseType, function (exerciseResults) {
                                 if (exerciseResults.duration) {
                                     totalDuration += (exerciseResults.duration || 0);
                                 }
-                                if(exerciseResults.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum) {
+                                if (exerciseResults.exerciseTypeId !== ExerciseTypeEnum.LECTURE.enum) {
                                     if (exerciseResults.isComplete) {
                                         completedExercises++;
                                     }
@@ -656,28 +659,28 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
                 return moduleSummary;
             }
 
-            function _buildHomeworkObj(lastAssignmentType){
+            function _buildHomeworkObj(lastAssignmentType) {
                 return {
-                    assignmentStartDate:  StorageSrv.variables.currTimeStamp,
-                    lastAssignmentType : lastAssignmentType,
+                    assignmentStartDate: StorageSrv.variables.currTimeStamp,
+                    lastAssignmentType: lastAssignmentType,
                     assignmentResults: {}
                 };
 
             }
 
-            function _getAllModulesTypesResults () {
+            function _getAllModulesTypesResults() {
                 var userAssignmentsResPath = USER_ASSIGNMENT_RES_PATH;
                 var userModuleResPath = USER_MODULE_RES_PATH;
-                if(ENV.appContext === 'dashboard'){
+                if (ENV.appContext === 'dashboard') {
                     var uid = StudentContextSrv.getCurrUid();
-                    userAssignmentsResPath = userAssignmentsResPath.replace('$$uid',uid);
-                    userModuleResPath = userModuleResPath.replace('$$uid',uid);
+                    userAssignmentsResPath = userAssignmentsResPath.replace('$$uid', uid);
+                    userModuleResPath = userModuleResPath.replace('$$uid', uid);
                 }
                 return InfraConfigSrv.getStudentStorage().then(function (StudentStorageSrv) {
                     return $q.all([
                         StudentStorageSrv.get(userAssignmentsResPath),
                         StudentStorageSrv.get(userModuleResPath)
-                    ]).then(function(res){
+                    ]).then(function (res) {
                         var promArr = [];
                         var moduleResultsArr = [];
 
@@ -685,37 +688,37 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
                         var moduleResultsGuids = UtilitySrv.object.convertToArray(res[1]);
                         var allModuleResultsGuids = moduleResultsGuids.concat(assignmentsResGuids);
 
-                        angular.forEach(allModuleResultsGuids,function(moduleGuid){
-                            var prom = StudentStorageSrv.get(MODULE_RES_PATH + moduleGuid).then(function(moduleRes){
+                        angular.forEach(allModuleResultsGuids, function (moduleGuid) {
+                            var prom = StudentStorageSrv.get(MODULE_RES_PATH + moduleGuid).then(function (moduleRes) {
                                 moduleResultsArr.push(moduleRes);
                             });
                             promArr.push(prom);
                         });
 
-                        return $q.all(promArr).then(function(){
+                        return $q.all(promArr).then(function () {
                             return moduleResultsArr;
                         });
                     });
                 });
             }
 
-            function _updateModuleResultToCompleted(moduleResultGuid){
+            function _updateModuleResultToCompleted(moduleResultGuid) {
                 var path = MODULE_RES_PATH + moduleResultGuid + '/isComplete';
                 return InfraConfigSrv.getStudentStorage().then(function (studentStorage) {
                     studentStorage.update(path, true);
                 });
             }
 
-            function _updateHomeworkStatus(moduleResult, currentExerciseResult){
+            function _updateHomeworkStatus(moduleResult, currentExerciseResult) {
                 var promoArr = [];
                 var exercisesReultsArr = [];
                 var dontInit = true;
-                angular.forEach(moduleResult.exercises, function(exercise){
-                    var prom = ExerciseResultSrv.getExerciseResult(exercise.exerciseTypeId, exercise.exerciseId, exercise.examId, null, dontInit).then(function(exerciseRes){
-                        if(exerciseRes && exerciseRes.guid === currentExerciseResult.guid){
+                angular.forEach(moduleResult.exercises, function (exercise) {
+                    var prom = ExerciseResultSrv.getExerciseResult(exercise.exerciseTypeId, exercise.exerciseId, exercise.examId, null, dontInit).then(function (exerciseRes) {
+                        if (exerciseRes && exerciseRes.guid === currentExerciseResult.guid) {
                             exercisesReultsArr.push(currentExerciseResult);
                         } else {
-                            if(exerciseRes){
+                            if (exerciseRes) {
                                 exercisesReultsArr.push(exerciseRes);
                             }
                         }
@@ -723,8 +726,8 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
                     promoArr.push(prom);
                 });
 
-                $q.all(promoArr).then(function(){
-                    if(moduleResult.exercises.length !== exercisesReultsArr.length) {
+                $q.all(promoArr).then(function () {
+                    if (moduleResult.exercises.length !== exercisesReultsArr.length) {
                         return;
                     }
                     for (var i = 0; i < exercisesReultsArr.length; i++) {
@@ -736,19 +739,19 @@ angular.module('znk.infra.analytics').run(['$templateCache', function ($template
                 });
             }
 
-            function updateAllHomeworkStatus (currentExerciseResult) {
-                _getAllModulesTypesResults().then(function(allModulesTypesResults){
-                    for(var i = 0 ; i < allModulesTypesResults.length; i++){
-                        if(!allModulesTypesResults[i].isComplete && _isExerciseInExercisesArray(allModulesTypesResults[i].exercises, currentExerciseResult)){
-                            _updateHomeworkStatus(allModulesTypesResults[i],currentExerciseResult);
+            function updateAllHomeworkStatus(currentExerciseResult) {
+                _getAllModulesTypesResults().then(function (allModulesTypesResults) {
+                    for (var i = 0; i < allModulesTypesResults.length; i++) {
+                        if (!allModulesTypesResults[i].isComplete && _isExerciseInExercisesArray(allModulesTypesResults[i].exercises, currentExerciseResult)) {
+                            _updateHomeworkStatus(allModulesTypesResults[i], currentExerciseResult);
                         }
                     }
                 });
             }
 
-            function _isExerciseInExercisesArray(exercisesArr, exercises){
-                for(var i = 0 ; i < exercisesArr.length; i++){
-                    if(exercisesArr[i].exerciseId === exercises.exerciseId && exercisesArr[i].exerciseTypeId === exercises.exerciseTypeId){
+            function _isExerciseInExercisesArray(exercisesArr, exercises) {
+                for (var i = 0; i < exercisesArr.length; i++) {
+                    if (exercisesArr[i].exerciseId === exercises.exerciseId && exercisesArr[i].exerciseTypeId === exercises.exerciseTypeId) {
                         return true;
                     }
                 }
