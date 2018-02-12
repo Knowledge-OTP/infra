@@ -20,6 +20,9 @@ znk-exercise {
 
     question-builder, questions-carousel, answer-builder {
         display: block;
+        figure {
+            margin: 0;
+        }
     }
 
     question-builder {
