@@ -6679,6 +6679,8 @@ znk-exercise {
     opacity: 1; }
   znk-exercise .show-opacity-animate.ng-hide {
     opacity: 0; }
+  znk-exercise .answer-container .redactor-roman-list, znk-exercise .question-container .redactor-roman-list {
+    list-style-type: upper-roman; }
 
 /* paths*/
 /* fonts size */
