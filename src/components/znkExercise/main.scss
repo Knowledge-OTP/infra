@@ -61,4 +61,10 @@ znk-exercise {
             opacity: 0;
         }
     }
+
+    .answer-container, .question-container {
+        .redactor-roman-list {
+            list-style-type: upper-roman;
+        }
+    }
 }
