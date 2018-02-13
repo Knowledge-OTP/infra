@@ -6656,6 +6656,8 @@ znk-exercise {
     width: 0; }
   znk-exercise question-builder, znk-exercise questions-carousel, znk-exercise answer-builder {
     display: block; }
+    znk-exercise question-builder figure, znk-exercise questions-carousel figure, znk-exercise answer-builder figure {
+      margin: 0; }
   znk-exercise question-builder {
     height: 100%; }
     znk-exercise question-builder reading-question {
