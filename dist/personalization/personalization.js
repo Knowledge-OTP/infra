@@ -85,7 +85,7 @@
                     });
 
                     // If we couldn't find an available subject in the stats, look for an available subject in the availableExercises
-                    if (!currSubject) {
+                    if (isNaN(currSubject)) {
                         // Run through availableExercises.timeBundles
                         for (var i = 0; i < timeBundles.length; i++) {
                             // Run through the availableExercises[timeBundle].availableSubjects
@@ -100,14 +100,14 @@
                                 }
                             }// END availableSubjects.forEach
                             // If we found an availableSubject, break the loop through the availableExercises.timeBundles
-                            if (currSubject) {
+                            if (!isNaN(currSubject)) {
                                 break;
                             }
                         }// END timeBundles.forEach
                     }
 
                     // If we couldn't find an available subject in the availableExercises as well (as in the availableStats)
-                    if (!currSubject) {
+                    if (isNaN(currSubject)) {
                         // If we have no "subjectsToIgnore" then it means we have no more exercises
                         if (!subjectsToIgnore || subjectsToIgnore.length === 0) {
                             return null;
@@ -453,6 +453,6 @@
 })(angular);
 
 
-angular.module('znk.infra.personalization').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.personalization').run(['$templateCache', function($templateCache) {
 
 }]);
