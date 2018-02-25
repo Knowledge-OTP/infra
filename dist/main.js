@@ -8126,7 +8126,7 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function($template
                 * Recursive function that iterates through the different levels of availableExercises and returns the bottom most exercise found
                 * availableExercises - obj containing the available exercises
                 * exerciseTypesToIgnore - tries to get an exercise for a type not in "exerciseTypesToIgnore" */
-                function _getAvailableExercise(availableExercises, exerciseTypesToIgnore) {
+                function _getAvailableExercise(availableExercises, exerciseTypesToIgnore, currCategoryId) {
                     var foundExercise = null;
                     var index = 0;
                     // First, check in the current category level for an available exercise
@@ -8145,7 +8145,8 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function($template
                                 if (exerciseIds && exerciseIdKeys.length > 0) {
                                     foundExercise = {
                                         exerciseTypeId: exerciseTypeId,
-                                        exerciseId: exerciseIds[exerciseIdKeys[0]]
+                                        exerciseId: exerciseIds[exerciseIdKeys[0]],
+                                        categoryId: currCategoryId,
                                     };
                                     return foundExercise;
                                 }
@@ -8160,7 +8161,7 @@ angular.module('znk.infra.mailSender').run(['$templateCache', function($template
                     // so check if we have available subCategories, iterate through them and try to find an available exercise in one of them
                     for (index = 0 ; index < subCategoryIds.length ; index++) {
                         // Get an availabe exercise for the first available subCategory
-                        foundExercise = _getAvailableExercise(availableExercises.subCategories[subCategoryIds[index]], exerciseTypesToIgnore);
+                        foundExercise = _getAvailableExercise(availableExercises.subCategories[subCategoryIds[index]], exerciseTypesToIgnore, subCategoryIds[index]);
                         // If we found an available exercise then return it and exit
                         if (foundExercise !== null) {
                             return foundExercise;
