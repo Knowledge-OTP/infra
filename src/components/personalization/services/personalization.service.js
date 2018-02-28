@@ -86,10 +86,10 @@
                             var availableSubjects = Object.keys(availableExercises[timeBundles[i]]);
                             for (var j = 0; j < availableSubjects.length; j++) {
                                 if (!isNaN(availableSubjects[j])) {
-                                    var subId = parseInt(availableSubjects[j],10);
+                                    var subId = parseInt(availableSubjects[j], 10);
                                     if (!subjectsToIgnore || (subjectsToIgnore && subjectsToIgnore.indexOf(subId) === -1)) {
-                                      currSubject = subId;
-                                      break;
+                                        currSubject = subId;
+                                        break;
                                     }
                                 }
                             }// END availableSubjects.forEach
@@ -213,14 +213,14 @@
                                 }
                             }
                         }
-                    } 
+                    }
                     // Get the current level's categories
-                    var subCategoryIds = Object.keys(availableExercises.subCategories).filter(function(categoryId) {
+                    var subCategoryIds = Object.keys(availableExercises.subCategories).filter(function (categoryId) {
                         return !isNaN(categoryId);
                     });
                     // If we got here it means we do not have an available exercise in the current category level,
                     // so check if we have available subCategories, iterate through them and try to find an available exercise in one of them
-                    for (index = 0 ; index < subCategoryIds.length ; index++) {
+                    for (index = 0; index < subCategoryIds.length; index++) {
                         // Get an availabe exercise for the first available subCategory
                         foundExercise = _getAvailableExercise(availableExercises.subCategories[subCategoryIds[index]], exerciseTypesToIgnore, subCategoryIds[index]);
                         // If we found an available exercise then return it and exit
@@ -247,14 +247,14 @@
                             var subCategoryInfo = _filterStatsByAvailableCategories(stats.subCategories[subCategoryId], availableCategories);
                             // Check if we got a sub category (not null / undefined), if so we add it's info
                             if (subCategoryInfo) {
-                              filteredStats.subCategories[subCategoryId] = subCategoryInfo;
-                              var statsSubCategory = stats.subCategories[subCategoryId];
-                              var orderedStat = {
-                                  categoryId: subCategoryId,
-                                  statAccuracy: ((1 / statsSubCategory.totalQuestions) + (statsSubCategory.correct / statsSubCategory.totalQuestions))
-                              };
-                              filteredStats.orderedStats.push(orderedStat);
-                              hasAvailableSubCategories = true;
+                                filteredStats.subCategories[subCategoryId] = subCategoryInfo;
+                                var statsSubCategory = stats.subCategories[subCategoryId];
+                                var orderedStat = {
+                                    categoryId: subCategoryId,
+                                    statAccuracy: ((1 / statsSubCategory.totalQuestions) + (statsSubCategory.correct / statsSubCategory.totalQuestions))
+                                };
+                                filteredStats.orderedStats.push(orderedStat);
+                                hasAvailableSubCategories = true;
                             }
                         });
                         filteredStats.orderedStats.sort(function (stat1, stat2) {
@@ -292,7 +292,7 @@
                                 if (stats.level2Categories[categoryIdText].parentsIds) {
                                     var parentId1 = stats.level2Categories[categoryIdText].parentsIds[0];
                                     var categoryId = categoryIdText.split('_').pop();
-                                    if (!isNaN(categoryId)) {
+                                    if (!isNaN(categoryId) && newStats.subCategories[parentId1]) {
                                         var newStatsSubCategories1 = newStats.subCategories[parentId1];
                                         if (!newStatsSubCategories1.subCategories) {
                                             newStatsSubCategories1.subCategories = {};
@@ -313,7 +313,7 @@
                                     var parentId1 = stats.level3Categories[categoryIdText].parentsIds[0];
                                     var parentId2 = stats.level3Categories[categoryIdText].parentsIds[1];
                                     var categoryId = categoryIdText.split('_').pop();
-                                    if (!isNaN(categoryId)) {
+                                    if (!isNaN(categoryId) && newStats.subCategories[parentId2] && newStats.subCategories[parentId2].subCategories && newStats.subCategories[parentId2].subCategories[parentId1]) {
                                         var newStatsSubCategories2 = newStats.subCategories[parentId2].subCategories[parentId1];
                                         if (!newStatsSubCategories2.subCategories) {
                                             newStatsSubCategories2.subCategories = {};
@@ -333,7 +333,7 @@
                                     var parentId2 = stats.level4Categories[categoryIdText].parentsIds[1];
                                     var parentId3 = stats.level4Categories[categoryIdText].parentsIds[2];
                                     var categoryId = categoryIdText.split('_').pop();
-                                    if (!isNaN(categoryId)) {
+                                    if (!isNaN(categoryId) && newStats.subCategories[parentId3] && newStats.subCategories[parentId3].subCategories && newStats.subCategories[parentId3].subCategories[parentId2] && newStats.subCategories[parentId3].subCategories[parentId2].subCategories && newStats.subCategories[parentId3].subCategories[parentId2].subCategories[parentId1]) {
                                         var newStatsSubCategories3 = newStats.subCategories[parentId3].subCategories[parentId2].subCategories[parentId1];
                                         if (!newStatsSubCategories3.subCategories) {
                                             newStatsSubCategories3.subCategories = {};
@@ -368,17 +368,17 @@
                             availableExercises.availableCategories = availableExercises.availableCategories.concat(availableExercises[timeBundle].availableCategories);
                             // Remove empty subjects:
                             var subjectIds = Object.keys(availableExercises[timeBundle]);
-                            subjectIds.forEach(function(subjectId) {
-                              // Verify we're on a subject ID property
-                              if (!isNaN(subjectId)) {
-                                var currSubAvailableExercises = Object.keys(availableExercises[timeBundle][subjectId].exercises);
-                                var currSubAvailableSubCategories = Object.keys(availableExercises[timeBundle][subjectId].subCategories);
-                                // If there are no exercises and not subCategories available for this subject (#.subCategories obj always has the "subCategories" property among the category ids)
-                                if ((currSubAvailableExercises.length === 0) && (currSubAvailableSubCategories.length === 1)) {
-                                  // Remove this subject from the available exercises object  
-                                  delete availableExercises[timeBundle][subjectId];
+                            subjectIds.forEach(function (subjectId) {
+                                // Verify we're on a subject ID property
+                                if (!isNaN(subjectId)) {
+                                    var currSubAvailableExercises = Object.keys(availableExercises[timeBundle][subjectId].exercises);
+                                    var currSubAvailableSubCategories = Object.keys(availableExercises[timeBundle][subjectId].subCategories);
+                                    // If there are no exercises and not subCategories available for this subject (#.subCategories obj always has the "subCategories" property among the category ids)
+                                    if ((currSubAvailableExercises.length === 0) && (currSubAvailableSubCategories.length === 1)) {
+                                        // Remove this subject from the available exercises object  
+                                        delete availableExercises[timeBundle][subjectId];
+                                    }
                                 }
-                              }
                             });
                         });
                         return availableExercises;
@@ -427,7 +427,7 @@
                                 exerciseId = parseInt(exerciseId, 10);
                                 var currUsedExercise = usedExercises[exerciseTypeId][exerciseId];
                                 var exerciseAvailable = includeInProgress ?
-                                (!currUsedExercise) || (currUsedExercise.status !== 2) : (!currUsedExercise) || (currUsedExercise.status !== 1 && currUsedExercise.status !== 2);
+                                    (!currUsedExercise) || (currUsedExercise.status !== 2) : (!currUsedExercise) || (currUsedExercise.status !== 1 && currUsedExercise.status !== 2);
                                 // If this "exerciseId"" is not the "usedExercises" list or it's status is not 1 / 2 (started / completed)
                                 if (exerciseAvailable) {
                                     availableExercises[exerciseTypeId].push(exerciseId);
