@@ -122,6 +122,6 @@
 
 
 
-angular.module('znk.infra.support').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.support').run(['$templateCache', function ($templateCache) {
 
 }]);

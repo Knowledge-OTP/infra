@@ -3795,7 +3795,7 @@
     );
 })(angular);
 
-angular.module('znk.infra.znkExercise').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.znkExercise').run(['$templateCache', function ($templateCache) {
   $templateCache.put("components/znkExercise/core/template/btnSectionDesktop.template.html",
     "<div class=\"btn-container left-container ng-hide\"\n" +
     "     ng-show=\"!!vm.currentQuestionIndex && vm.slideRightAllowed\">\n" +
@@ -3813,7 +3813,8 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
     "<div class=\"done-btn-wrap show-opacity-animate\" ng-if=\"vm.showDoneButton\">\n" +
     "    <button tabindex=\"0\"\n" +
     "            class=\"done-btn\"\n" +
-    "            ng-click=\"onDone()\">DONE\n" +
+    "            translate=\"ZNK_EXERCISE.DONE\"\n" +
+    "            ng-click=\"onDone()\">\n" +
     "    </button>\n" +
     "</div>\n" +
     "");
@@ -3923,7 +3924,7 @@ angular.module('znk.infra.znkExercise').run(['$templateCache', function($templat
   $templateCache.put("components/znkExercise/core/template/znkExerciseReviewSectionBtn.template.html",
     "<div class=\"btn-section\" ng-if=\"showBtn\">\n" +
     "    <div class=\"review-btn-wrap show-opacity-animate ng-scope\">\n" +
-    "        <button class=\"review-btn\" ng-click=\"onReview()\">CONFIRM REVIEW</button>\n" +
+    "        <button class=\"review-btn\" ng-click=\"onReview()\" translate=\"ZNK_EXERCISE.CONFIRM_REVIEW\"></button>\n" +
     "    </div>\n" +
     "</div>\n" +
     "");

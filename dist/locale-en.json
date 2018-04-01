@@ -51,7 +51,9 @@
         "TIME_UP_TITLE": "Time’s Up",
         "STOP": "STOP",
         "PASSAGE": "Passage ",
-        "SECTION": "Section"
+        "SECTION": "Section",
+        "DONE": "DONE",
+        "CONFIRM_REVIEW": "CONFIRM REVIEW"
     },
     "ZNK_AUDIO_PLAYER": {
         "PLAY_AUDIO": "PLAY AUDIO",
