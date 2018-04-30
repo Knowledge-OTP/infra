@@ -120,7 +120,9 @@
                                     if (angular.isUndefined(scores[subjectId])) {
                                         scores[subjectId] = 0;
                                     }
-                                    scores[subjectId] += _getDiagnosticQuestionPoints(question, result);
+                                    if (subjectId !== SubjectEnum.SPEAKING.enum) {
+                                        scores[subjectId] += _getDiagnosticQuestionPoints(question, result);
+                                    }
                                 }
                             });
                         }
