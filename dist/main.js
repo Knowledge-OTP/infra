@@ -4242,7 +4242,7 @@ angular.module('znk.infra.enum').run(['$templateCache', function ($templateCache
                                     if (angular.isUndefined(scores[subjectId])) {
                                         scores[subjectId] = 0;
                                     }
-                                    if (subjectId !== SubjectEnum.SPEAKING.enum) {
+                                    if (subjectId !== 4) { // SubjectEnum.SPEAKING.enum
                                         scores[subjectId] += _getDiagnosticQuestionPoints(question, result);
                                     }
                                 }
