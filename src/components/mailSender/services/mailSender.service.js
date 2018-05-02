@@ -4,7 +4,7 @@
         '$log', 'ENV', '$http', 'UserProfileService', '$q',
         function ($log, ENV, $http, UserProfileService, $q) {
             var mailSenderService = {};
-            var backendUrl = ENV.backendEndpoint + '/share/mail';
+            var backendUrl = ENV.backendEndpoint + 'email/sendTemplate';
             var httpConfig = {
                 headers: 'application/json'
             };
@@ -12,6 +12,7 @@
             mailSenderService.postMailRequest = function (mailObject) {
                 return UserProfileService.getCurrUserId().then(function (userId) {
                     mailObject.uid = userId;
+                    mailObject.serviceId = ENV.serviceId;
                     return $http.post(backendUrl, mailObject, httpConfig).then(
                         function (response) {
                             return {
