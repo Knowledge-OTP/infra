@@ -18817,7 +18817,7 @@ angular.module('znk.infra.znkProgressBar').run(['$templateCache', function($temp
                             self.startLoader = self.fillLoader = false;
                         }, 100);
 
-                        if (res.data.success) {
+                        if (res.data) {
                             self.success = true;
                         } else {
                             $log.error('Error sending mail');
