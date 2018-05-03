@@ -14,7 +14,7 @@
                 self.reportData.email = authData.email;
             });
             var MAIL_TO_SEND = 'support@zinkerz.com';
-            var TEMPLATE_KEY = 'reportQuestion';
+            var TEMPLATE_KEY = 'zinkerz-report-question';
             var EMAIL_SUBJECT = $translate('REPORT_POPUP.REPORT_QUESTION');
             var emailMessagePromise = $translate('REPORT_POPUP.MESSAGE');
 
