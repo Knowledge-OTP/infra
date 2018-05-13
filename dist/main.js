@@ -8603,7 +8603,7 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function ($templa
                 body = body || '';
                 template = template.replace('%body%', body);
 
-                if (angular.isDefined(buttonsArr) && !angular.isArray(buttonsArr)) {
+                if (angular.isDefined(buttonsArr) && !angular.isArray(buttonsArr) ) {
                     buttonsArr = [buttonsArr];
                 }
                 childScope.d.buttons = buttonsArr;
@@ -8717,8 +8717,15 @@ angular.module('znk.infra.pngSequence').run(['$templateCache', function ($templa
                 return basePopup('warning-popup', 'popup-exclamation-mark', title, content, buttons, approveCallback);
             };
 
-            PopUpSrv.wait = function warning(title, content) {
-                return basePopup('warning-popup', 'popup-exclamation-mark', title, content);
+            PopUpSrv.wait = function warning(title, content, acceptBtnTitle, cancelBtnTitle) {
+                var buttons = [];
+                if (acceptBtnTitle) {
+                    buttons.push(new BaseButton(acceptBtnTitle, 'btn-outline', acceptBtnTitle));
+                }
+                if (cancelBtnTitle) {
+                    buttons.push(new BaseButton(cancelBtnTitle, null, undefined, cancelBtnTitle));
+                }
+                return basePopup('warning-popup', 'popup-exclamation-mark', title, content, buttons);
             };
 
             PopUpSrv.isPopupOpen = function () {
