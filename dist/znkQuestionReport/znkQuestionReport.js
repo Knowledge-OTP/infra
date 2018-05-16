@@ -72,7 +72,7 @@
                 self.reportData.email = authData.email;
             });
             var MAIL_TO_SEND = 'support@zinkerz.com';
-            var TEMPLATE_KEY = 'reportQuestion';
+            var TEMPLATE_KEY = 'zinkerz-report-question';
             var EMAIL_SUBJECT = $translate('REPORT_POPUP.REPORT_QUESTION');
             var emailMessagePromise = $translate('REPORT_POPUP.MESSAGE');
 
@@ -124,7 +124,7 @@
                             self.startLoader = self.fillLoader = false;
                         }, 100);
 
-                        if (res.data.success) {
+                        if (res.data) {
                             self.success = true;
                         } else {
                             $log.error('Error sending mail');
@@ -145,7 +145,7 @@
         }]);
 })(angular);
 
-angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function ($templateCache) {
+angular.module('znk.infra.znkQuestionReport').run(['$templateCache', function($templateCache) {
   $templateCache.put("components/znkQuestionReport/components/znkReport/znkReport.template.html",
     "<div class=\"report-dialog\">\n" +
     "    <md-dialog class=\"base base-border-radius report-container\" translate-namespace=\"REPORT_POPUP\">\n" +
