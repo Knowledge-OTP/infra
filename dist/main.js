@@ -14468,9 +14468,9 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
 (function (angular) {
     'use strict';
 
-    angular.module('znk.infra.znkExercise').directive('znkExerciseBtnSection', [
-        'ZnkExerciseSrv', 'PlatformEnum', '$log', 'ZnkExerciseEvents', 'ZnkExerciseViewModeEnum', '$q', 'ZnkExerciseSlideDirectionEnum',
-        function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseEvents, ZnkExerciseViewModeEnum, $q, ZnkExerciseSlideDirectionEnum) {
+    angular.module('znk.infra.znkExercise').directive('znkExerciseBtnSection',
+        ["ZnkExerciseSrv", "PlatformEnum", "$log", "ZnkExerciseEvents", "ZnkExerciseViewModeEnum", "$q", "ZnkExerciseSlideDirectionEnum", "CategoryService", "SubjectEnum", function (ZnkExerciseSrv, PlatformEnum, $log, ZnkExerciseEvents, ZnkExerciseViewModeEnum, $q, ZnkExerciseSlideDirectionEnum, CategoryService, SubjectEnum) {
+            'ngInject';
             return {
                 restrict: 'E',
                 scope: {
@@ -14499,6 +14499,9 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                 },
                 link: {
                     pre: function (scope, element, attrs, znkExerciseDrvCtrl) {
+                        var viewMode = znkExerciseDrvCtrl.getViewMode();
+                        var isWritingQuestion = false;
+
                         function _setCurrentQuestionIndex(index){
                             scope.vm.currentQuestionIndex = index || 0;
                         }
@@ -14547,9 +14550,13 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                                 scope.vm.maxQuestionIndex = questions.length - 1;
                             });
                             _setCurrentQuestionIndex(znkExerciseDrvCtrl.getCurrentIndex());
-                        }
 
-                        var viewMode = znkExerciseDrvCtrl.getViewMode();
+                            znkExerciseDrvCtrl.getCurrentQuestion().then(currentQuestion => {
+                                var questionSubjectId = CategoryService.getCategoryLevel1ParentByIdSync(currentQuestion.categoryId);
+                                isWritingQuestion = SubjectEnum.WRITING && SubjectEnum.WRITING.enum === questionSubjectId;
+                            });
+
+                        }
 
                         scope.vm = {};
 
@@ -14633,7 +14640,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                         body.addEventListener('keyup',keyboardClickCB);
 
                         function keydownCB(e){
-                            if(e.keyCode === 13 && scope.vm.showDoneButton) {
+                            if(e.keyCode === 13 && scope.vm.showDoneButton && !isWritingQuestion) {
                                 scope.onDone();
                             }
                         }
@@ -14657,8 +14664,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function($templateCac
                     }
                 }
             };
-        }
-    ]);
+        }]);
 })(angular);
 
 
