@@ -6,14 +6,14 @@
             'ngInject';
             this.formData = {};
             this.showSpinner = true;
-            UserProfileService.getProfile().then(function(profile){
+            UserProfileService.getProfile().then(function (profile) {
                 if (angular.isDefined(profile)) {
                     this.formData.name = profile.nickname || undefined;
                     this.formData.email = profile.email || undefined;
                 }
             }.bind(this));
 
-            this.sendContactUs = function(authform){
+            this.sendContactUs = function (authform) {
                 this.showError = false;
 
                 if (!authform.$invalid) {
@@ -26,21 +26,21 @@
                         'Email: ' + this.formData.email;
                     var mailRequest = {
                         subject: 'contact us',
-                        message: message,
+                        emailParams: {'MESSAGE_CONTENT': message},
                         emails: emailsArr,
                         appName: appName,
                         templateKey: 'zoeContactUs'
                     };
 
-                    MailSenderService.postMailRequest(mailRequest).then(function(){
+                    MailSenderService.postMailRequest(mailRequest).then(function () {
                         this.fillLoader = true;
-                        $timeout(function(){
+                        $timeout(function () {
                             this.startLoader = this.fillLoader = false;
                             this.showSuccess = true;
                         });
-                    }.bind(this)).catch(function(mailError){
+                    }.bind(this)).catch(function (mailError) {
                         this.fillLoader = true;
-                        $timeout(function(){
+                        $timeout(function () {
                             this.startLoader = this.fillLoader = false;
                             this.showError = true;
                             $log.error('ETutoringContactUsController:sendContactUs:: error send mail', mailError);
