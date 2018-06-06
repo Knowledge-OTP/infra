@@ -118,6 +118,6 @@
         }
     ]);
 })(angular);
-angular.module('znk.infra.pngSequence').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.pngSequence').run(['$templateCache', function ($templateCache) {
 
 }]);

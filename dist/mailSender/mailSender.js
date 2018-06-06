@@ -37,6 +37,6 @@
 })(angular);
 
 
-angular.module('znk.infra.mailSender').run(['$templateCache', function($templateCache) {
+angular.module('znk.infra.mailSender').run(['$templateCache', function ($templateCache) {
 
 }]);
