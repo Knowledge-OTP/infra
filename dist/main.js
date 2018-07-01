@@ -2499,6 +2499,12 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function ($template
                     });
                 }
 
+                function _removeCbFromCbArr(cbArr, cb){
+                    return cbArr.filter(function (iterationCb) {
+                        return iterationCb !== cb;
+                    });
+                }
+
                 CallsEventsSrv.activate = function () {
                     if (isEnabled) {
                         _startListening();
@@ -2512,6 +2518,12 @@ angular.module('znk.infra.autofocus').run(['$templateCache', function ($template
                 CallsEventsSrv.registerToCurrUserCallStateChanges = function (cb) {
                     if (angular.isFunction(cb)) {
                         registeredCbToCurrUserCallStateChange.push(cb);
+                    }
+                };
+
+                CallsEventsSrv.unregisterToCurrUserCallStateChanges = function (cb) {
+                    if (angular.isFunction(cb)) {
+                        registeredCbToCurrUserCallStateChange = _removeCbFromCbArr(registeredCbToCurrUserCallStateChange, cb);
                     }
                 };
 
