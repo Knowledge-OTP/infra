@@ -8849,6 +8849,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function ($templateCach
                 var rootRef = new StorageFirebaseAdapter(ENV.fbDataEndPoint);
                 var PRESENCE_PATH = 'presence/';
                 var isUserLoguot = false;
+                var userPresenceStatusMap = {};
 
                 presenceService.userStatus = {
                     'OFFLINE': 0,
@@ -8888,6 +8889,14 @@ angular.module('znk.infra.popUp').run(['$templateCache', function ($templateCach
                     });
                 };
 
+                presenceService.getUserStatusSync = function (userId) {
+                    let userStatus = null;
+                    if (userPresenceStatusMap[userId]) {
+                        userStatus = userPresenceStatusMap[userId];
+                    }
+                    return userStatus;
+                };
+
                 presenceService.getCurrentUserStatus = function (userId) {
                     return rootRef.getRef(PRESENCE_PATH + userId).once('value').then(function(snapshot) {
                         return (snapshot.val()) || presenceService.userStatus.OFFLINE;
@@ -8900,6 +8909,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function ($templateCach
                 };
 
                 presenceService.stopTrackUserPresence = function (userId) {
+                    userPresenceStatusMap[userId] = null;
                     var userRef = rootRef.getRef(PRESENCE_PATH + userId);
                     userRef.off('value', trackUserPresenceCB);
                 };
@@ -8921,6 +8931,7 @@ angular.module('znk.infra.popUp').run(['$templateCache', function ($templateCach
                         if (snapshot && snapshot.val()){
                             status = snapshot.val();
                         }
+                        userPresenceStatusMap[userId] = status;
                         cb(status, userId);
                     }
                 }

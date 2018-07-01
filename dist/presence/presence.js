@@ -40,6 +40,7 @@
                 var rootRef = new StorageFirebaseAdapter(ENV.fbDataEndPoint);
                 var PRESENCE_PATH = 'presence/';
                 var isUserLoguot = false;
+                var userPresenceStatusMap = {};
 
                 presenceService.userStatus = {
                     'OFFLINE': 0,
@@ -79,6 +80,14 @@
                     });
                 };
 
+                presenceService.getUserStatusSync = function (userId) {
+                    let userStatus = null;
+                    if (userPresenceStatusMap[userId]) {
+                        userStatus = userPresenceStatusMap[userId];
+                    }
+                    return userStatus;
+                };
+
                 presenceService.getCurrentUserStatus = function (userId) {
                     return rootRef.getRef(PRESENCE_PATH + userId).once('value').then(function(snapshot) {
                         return (snapshot.val()) || presenceService.userStatus.OFFLINE;
@@ -91,6 +100,7 @@
                 };
 
                 presenceService.stopTrackUserPresence = function (userId) {
+                    userPresenceStatusMap[userId] = null;
                     var userRef = rootRef.getRef(PRESENCE_PATH + userId);
                     userRef.off('value', trackUserPresenceCB);
                 };
@@ -112,6 +122,7 @@
                         if (snapshot && snapshot.val()){
                             status = snapshot.val();
                         }
+                        userPresenceStatusMap[userId] = status;
                         cb(status, userId);
                     }
                 }
