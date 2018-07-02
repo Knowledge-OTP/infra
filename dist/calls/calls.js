@@ -1243,6 +1243,12 @@
                     });
                 }
 
+                function _removeCbFromCbArr(cbArr, cb){
+                    return cbArr.filter(function (iterationCb) {
+                        return iterationCb !== cb;
+                    });
+                }
+
                 CallsEventsSrv.activate = function () {
                     if (isEnabled) {
                         _startListening();
@@ -1256,6 +1262,12 @@
                 CallsEventsSrv.registerToCurrUserCallStateChanges = function (cb) {
                     if (angular.isFunction(cb)) {
                         registeredCbToCurrUserCallStateChange.push(cb);
+                    }
+                };
+
+                CallsEventsSrv.unregisterToCurrUserCallStateChanges = function (cb) {
+                    if (angular.isFunction(cb)) {
+                        registeredCbToCurrUserCallStateChange = _removeCbFromCbArr(registeredCbToCurrUserCallStateChange, cb);
                     }
                 };
 
