@@ -14714,7 +14714,7 @@ angular.module('znk.infra.znkChat').run(['$templateCache', function ($templateCa
 
                                 function _determineIfShowButton () {
                                     return isInLiveSession && isExerciseComplete && isTeacherApp && isLastQuestion &&
-                                        (exerciseReviewStatus !== ExerciseReviewStatusEnum.YES.enum || exerciseReviewStatus !== ExerciseReviewStatusEnum.DONE_TOGETHER.enum);
+                                    exerciseReviewStatus !== ExerciseReviewStatusEnum.YES.enum && exerciseReviewStatus !== ExerciseReviewStatusEnum.DONE_TOGETHER.enum;
                                 }
 
                                 scope.showBtn = _determineIfShowButton();
