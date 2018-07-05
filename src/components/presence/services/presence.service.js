@@ -64,16 +64,12 @@
 
                 presenceService.startTrackUserPresence = function (userId, cb) {
                     const userRef = rootRef.getRef(PRESENCE_PATH + userId);
-                    userRef.on('value', cb, (errorObject) => {
-                        console.log("startTrackUserPresence: failed: " + errorObject.code);
-                    });
+                    userRef.on('value', cb);
                 };
 
                 presenceService.stopTrackUserPresence = function (userId, cb) {
                     const userRef = rootRef.getRef(PRESENCE_PATH + userId);
-                    userRef.off('value', cb, (errorObject) => {
-                        console.log("stopTrackUserPresence: failed: " + errorObject.code);
-                    });
+                    userRef.off('value', cb);
                 };
 
                 function getAuthData() {
