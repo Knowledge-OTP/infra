@@ -47,6 +47,7 @@
                     'IDLE': 2
                 };
 
+
                 presenceService.addCurrentUserListeners = function () {
                     getAuthData().then(authData => {
                         if (authData) {
@@ -86,13 +87,13 @@
                 };
 
                 presenceService.startTrackUserPresence = function (userId, cb) {
-                    var userRef = rootRef.getRef(PRESENCE_PATH + userId);
-                    userRef.on('value', trackUserPresenceCB.bind(null, cb, userId));
+                    const userRef = rootRef.getRef(PRESENCE_PATH + userId);
+                    userRef.on('value', cb);
                 };
 
-                presenceService.stopTrackUserPresence = function (userId) {
-                    var userRef = rootRef.getRef(PRESENCE_PATH + userId);
-                    userRef.off('value', trackUserPresenceCB);
+                presenceService.stopTrackUserPresence = function (userId, cb) {
+                    const userRef = rootRef.getRef(PRESENCE_PATH + userId);
+                    userRef.off('value', cb);
                 };
 
                 function getAuthData() {
@@ -103,16 +104,6 @@
                     }
                     else {
                         return new Promise(resolve => resolve(authData));
-                    }
-                }
-
-                function trackUserPresenceCB(cb, userId, snapshot) {
-                    if (angular.isFunction(cb)) {
-                        var status = presenceService.userStatus.OFFLINE;
-                        if (snapshot && snapshot.val()){
-                            status = snapshot.val();
-                        }
-                        cb(status, userId);
                     }
                 }
 
