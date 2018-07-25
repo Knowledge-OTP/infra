@@ -5076,7 +5076,8 @@ angular.module('znk.infra.estimatedScore').run(['$templateCache', function ($tem
             var SCRIPT_SRC = 'https://calendly.com/assets/external/widget.js';
 
             self.teachers = null;
-            $scope.diagnosticData = diagnosticData;
+            // Added "|| true" because we decided to remove the diagnostic complete constraint from the live lesson content
+            $scope.diagnosticData = diagnosticData || true;
             $scope.activeViewObj = {
                 view: +$stateParams.viewId || ETutoringViewsConst.LESSON
             };
